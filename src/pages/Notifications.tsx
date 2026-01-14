@@ -1,20 +1,31 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText, MoreVertical, Trash2, Settings, AtSign } from "lucide-react";
+import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText, MoreVertical, Trash2, Settings, AtSign, UserCheck, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 import { useNotificationSync } from "@/hooks/useNotificationSync";
 import { useNotificationSound } from "@/hooks/useNotificationSound";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { NotificationsListSkeleton } from "@/components/shared/SkeletonLoaders";
+import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
+
+// Lazy load heavy dialog components
+const AlertDialog = lazy(() => import("@/components/ui/alert-dialog").then(m => ({ default: m.AlertDialog })));
+const AlertDialogAction = lazy(() => import("@/components/ui/alert-dialog").then(m => ({ default: m.AlertDialogAction })));
+const AlertDialogCancel = lazy(() => import("@/components/ui/alert-dialog").then(m => ({ default: m.AlertDialogCancel })));
+const AlertDialogContent = lazy(() => import("@/components/ui/alert-dialog").then(m => ({ default: m.AlertDialogContent })));
+const AlertDialogDescription = lazy(() => import("@/components/ui/alert-dialog").then(m => ({ default: m.AlertDialogDescription })));
+const AlertDialogFooter = lazy(() => import("@/components/ui/alert-dialog").then(m => ({ default: m.AlertDialogFooter })));
+const AlertDialogHeader = lazy(() => import("@/components/ui/alert-dialog").then(m => ({ default: m.AlertDialogHeader })));
+const AlertDialogTitle = lazy(() => import("@/components/ui/alert-dialog").then(m => ({ default: m.AlertDialogTitle })));
+
+// Lazy load notification permission banner
+const NotificationPermissionBanner = lazy(() => import("@/components/NotificationPermissionBanner").then(m => ({ default: m.NotificationPermissionBanner })));
 
 interface Profile {
   id: string;
@@ -31,7 +42,7 @@ interface Notification {
   user_id: string;
   actor_id: string;
   post_id: string | null;
-  type: "like" | "comment" | "share" | "follow_request" | "new_post" | "group_invitation" | "group_deleted" | "lesson_comment" | "mention";
+  type: "like" | "comment" | "share" | "follow_request" | "follow_accepted" | "new_post" | "group_invitation" | "group_deleted" | "lesson_comment" | "mention";
   content: string | null;
   read: boolean;
   created_at: string;
@@ -39,23 +50,58 @@ interface Notification {
   followRequestPending?: boolean;
 }
 
+const PAGE_SIZE = 20;
+
+// Skeleton component optimized for network conditions
+const NotificationSkeleton = ({ count = 5 }: { count?: number }) => {
+  const { isSlowConnection } = useNetworkAwareLoading();
+  const itemCount = isSlowConnection ? Math.min(count, 3) : count;
+  
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: itemCount }).map((_, i) => (
+        <Card key={i} className="p-3 sm:p-4">
+          <div className="flex items-start gap-2.5 sm:gap-3">
+            <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-full bg-muted animate-pulse" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 bg-muted rounded animate-pulse w-3/4" />
+              <div className="h-3 bg-muted rounded animate-pulse w-1/4" />
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+};
+
 export default function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [deleteNotificationId, setDeleteNotificationId] = useState<string | null>(null);
   const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { playNotificationSound } = useNotificationSound();
+  const { isSlowConnection, shouldLoadFullQuality } = useNetworkAwareLoading();
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const offsetRef = useRef(0);
 
   // Use notification sync hook for cross-tab synchronization
   useNotificationSync(() => {
-    fetchNotifications();
+    resetAndFetch();
   });
+
+  const resetAndFetch = useCallback(() => {
+    offsetRef.current = 0;
+    setHasMore(true);
+    fetchNotifications(true);
+  }, []);
 
   useEffect(() => {
     checkAuth();
-    fetchNotifications();
+    fetchNotifications(true);
     
     let cleanup: (() => void) | undefined;
     subscribeToNotifications().then((cleanupFn) => {
@@ -66,6 +112,23 @@ export default function Notifications() {
       if (cleanup) cleanup();
     };
   }, []);
+
+  // Infinite scroll with Intersection Observer
+  useEffect(() => {
+    if (!loadMoreRef.current || isLoading || isLoadingMore || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+          fetchNotifications(false);
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    );
+
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [isLoading, isLoadingMore, hasMore]);
 
   const checkAuth = async () => {
     const {
@@ -78,8 +141,15 @@ export default function Notifications() {
     }
   };
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (isInitial: boolean = false) => {
     try {
+      if (isInitial) {
+        setIsLoading(true);
+        offsetRef.current = 0;
+      } else {
+        setIsLoadingMore(true);
+      }
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -91,13 +161,15 @@ export default function Notifications() {
         return;
       }
 
-      console.log("✅ Fetching notifications for user:", user.id);
+      console.log(`✅ Fetching notifications for user: ${user.id} (offset: ${offsetRef.current})`);
 
+      // Paginated query
       const { data: notificationsData, error } = await supabase
         .from("notifications")
         .select("*")
         .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .range(offsetRef.current, offsetRef.current + PAGE_SIZE - 1);
 
       if (error) {
         console.error("❌ Error fetching notifications:", error);
@@ -106,65 +178,84 @@ export default function Notifications() {
           description: "Impossible de charger les notifications",
           variant: "destructive"
         });
-        setNotifications([]);
-        setIsLoading(false);
+        if (isInitial) setNotifications([]);
         return;
       }
 
       console.log(`✅ Found ${notificationsData?.length || 0} notifications`);
 
       if (!notificationsData || notificationsData.length === 0) {
-        console.log("ℹ️ No notifications data found");
-        setNotifications([]);
-        setIsLoading(false);
+        console.log("ℹ️ No more notifications");
+        setHasMore(false);
+        if (isInitial) setNotifications([]);
         return;
       }
 
-      const notificationsWithProfiles = await Promise.all(
-        notificationsData.map(async (notification) => {
-          const { data: actorProfile, error: profileError } = await supabase
-            .from("profiles")
-            .select("id, user_id, nickname, full_name, avatar_url, affiliation_points, academic_grade")
-            .eq("user_id", notification.actor_id)
-            .maybeSingle();
+      // Check if there are more to load
+      if (notificationsData.length < PAGE_SIZE) {
+        setHasMore(false);
+      }
 
-          if (profileError) {
-            console.error("⚠️ Error fetching actor profile for", notification.actor_id, ":", profileError);
-          }
+      // OPTIMIZED: Batch fetch all unique actor profiles in ONE query
+      const uniqueActorIds = [...new Set(notificationsData.map(n => n.actor_id))];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, user_id, nickname, full_name, avatar_url, affiliation_points, academic_grade")
+        .in("user_id", uniqueActorIds);
 
-          // Check if follow request is still pending
-          let followRequestPending = false;
-          if (notification.type === "follow_request") {
-            const { data: followData } = await supabase
-              .from("follows")
-              .select("status")
-              .eq("follower_id", notification.actor_id)
-              .eq("following_id", notification.user_id)
-              .eq("status", "pending")
-              .maybeSingle();
-            
-            followRequestPending = !!followData;
-          }
+      if (profilesError) {
+        console.error("⚠️ Error fetching profiles batch:", profilesError);
+      }
 
-          return {
-            ...notification,
-            type: notification.type as "like" | "comment" | "share" | "follow_request" | "new_post" | "group_invitation" | "group_deleted" | "lesson_comment" | "mention",
-            followRequestPending,
-            actorProfile: actorProfile || {
-              id: "",
-              user_id: notification.actor_id,
-              nickname: "Utilisateur inconnu",
-              full_name: "Utilisateur inconnu",
-              avatar_url: null,
-              affiliation_points: 0,
-              academic_grade: "",
-            } as Profile,
-          };
-        })
+      // Create a map for O(1) lookup
+      const profileMap = new Map<string, Profile>(
+        profilesData?.map(p => [p.user_id, p]) || []
       );
 
+      // OPTIMIZED: Batch check pending follow requests
+      const followRequestNotifications = notificationsData.filter(n => n.type === "follow_request");
+      const pendingFollowMap = new Map<string, boolean>();
+      
+      if (followRequestNotifications.length > 0) {
+        const actorIds = followRequestNotifications.map(n => n.actor_id);
+        const { data: followsData } = await supabase
+          .from("follows")
+          .select("follower_id")
+          .in("follower_id", actorIds)
+          .eq("following_id", user.id)
+          .eq("status", "pending");
+        
+        followsData?.forEach(f => pendingFollowMap.set(f.follower_id, true));
+      }
+
+      const notificationsWithProfiles: Notification[] = notificationsData.map((notification) => {
+        const actorProfile = profileMap.get(notification.actor_id) || {
+          id: "",
+          user_id: notification.actor_id,
+          nickname: "Utilisateur inconnu",
+          full_name: "Utilisateur inconnu",
+          avatar_url: null,
+          affiliation_points: 0,
+          academic_grade: "",
+        };
+
+        return {
+          ...notification,
+          type: notification.type as Notification["type"],
+          followRequestPending: pendingFollowMap.get(notification.actor_id) || false,
+          actorProfile,
+        };
+      });
+
       console.log("✅ Processed notifications with profiles:", notificationsWithProfiles.length);
-      setNotifications(notificationsWithProfiles);
+      
+      if (isInitial) {
+        setNotifications(notificationsWithProfiles);
+      } else {
+        setNotifications(prev => [...prev, ...notificationsWithProfiles]);
+      }
+      
+      offsetRef.current += notificationsData.length;
     } catch (err) {
       console.error("❌ Unexpected error in fetchNotifications:", err);
       toast({
@@ -172,9 +263,10 @@ export default function Notifications() {
         description: "Une erreur s'est produite lors du chargement",
         variant: "destructive"
       });
-      setNotifications([]);
+      if (isInitial) setNotifications([]);
     } finally {
       setIsLoading(false);
+      setIsLoadingMore(false);
     }
   };
 
@@ -192,13 +284,10 @@ export default function Notifications() {
           table: "notifications",
           filter: `user_id=eq.${user.id}`,
         },
-        async (payload) => {
-          console.log('New notification received for current user:', payload);
-          // Play notification sound
+        async () => {
+          console.log('New notification received for current user');
           playNotificationSound();
-          // Note: Don't send push notification here - it's already sent from the backend
-          // Just refresh the notifications list
-          fetchNotifications();
+          resetAndFetch();
         }
       )
       .subscribe();
@@ -206,29 +295,6 @@ export default function Notifications() {
     return () => {
       supabase.removeChannel(channel);
     };
-  };
-
-  const getNotificationTextForBrowser = (notification: any, actorName: string): string => {
-    switch (notification.type) {
-      case 'follow_request':
-        return `${actorName} vous a envoyé une demande d'abonnement`;
-      case 'follow_accepted':
-        return `${actorName} a accepté votre demande d'abonnement`;
-      case 'new_post':
-        return `${actorName} a publié quelque chose`;
-      case 'post_like':
-      case 'like':
-        return `${actorName} a aimé votre publication`;
-      case 'post_comment':
-      case 'comment':
-        return `${actorName} a commenté votre publication`;
-      case 'lesson_comment':
-        return `${actorName} a commenté la leçon "${notification.content}"`;
-      case 'group_deleted':
-        return notification.content || 'Un groupe a été supprimé';
-      default:
-        return notification.content || 'Nouvelle notification';
-    }
   };
 
   const markAsRead = async (notificationId: string) => {
@@ -256,7 +322,7 @@ export default function Notifications() {
       .eq("user_id", user.id)
       .eq("read", false);
 
-    await fetchNotifications();
+    setNotifications(notifications.map(n => ({ ...n, read: true })));
   };
 
   const getNotificationIcon = (type: string) => {
@@ -271,6 +337,8 @@ export default function Notifications() {
         return <Share2 size={16} className="text-green-500" />;
       case "follow_request":
         return <UserPlus size={16} className="text-purple-500" />;
+      case "follow_accepted":
+        return <UserCheck size={16} className="text-green-500" />;
       case "new_post":
         return <FileText size={16} className="text-primary" />;
       case "group_invitation":
@@ -280,7 +348,7 @@ export default function Notifications() {
       case "mention":
         return <AtSign size={16} className="text-primary" />;
       default:
-        return null;
+        return <MessageCircle size={16} className="text-muted-foreground" />;
     }
   };
 
@@ -297,6 +365,8 @@ export default function Notifications() {
         return `${actor} a partagé votre publication`;
       case "follow_request":
         return `${actor} a demandé à vous suivre`;
+      case "follow_accepted":
+        return `${actor} a accepté votre demande d'abonnement`;
       case "new_post":
         return `${actor} a publié un nouveau post`;
       case "group_invitation":
@@ -306,7 +376,8 @@ export default function Notifications() {
       case "mention":
         return `${actor} vous a mentionné dans un post`;
       default:
-        return "";
+        // Fallback: use content if available, otherwise show generic message
+        return notification.content || `${actor} a interagi avec vous`;
     }
   };
 
@@ -321,12 +392,11 @@ export default function Notifications() {
     const hours = Math.floor(minutes / 60);
     if (hours < 24) return `${hours}h`;
     const days = Math.floor(hours / 24);
-    return `${days}d`;
+    return `${days}j`;
   };
 
   const handleAcceptFollow = async (notification: Notification) => {
     try {
-      // Find the follow record
       const { data: followData, error: fetchError } = await supabase
         .from("follows")
         .select("id, follower_id")
@@ -340,7 +410,6 @@ export default function Notifications() {
         return;
       }
 
-      // Update the follow status to accepted
       const { error: updateError } = await supabase
         .from("follows")
         .update({ status: "accepted" })
@@ -348,7 +417,6 @@ export default function Notifications() {
 
       if (updateError) throw updateError;
 
-      // Create notification for the person who sent the request
       const { error: notifError } = await supabase
         .from("notifications")
         .insert({
@@ -362,7 +430,6 @@ export default function Notifications() {
         console.error("❌ Error creating acceptance notification:", notifError);
       }
 
-      // Send push notification to the person who sent the request
       try {
         const { data: acceptorProfile } = await supabase
           .from("profiles")
@@ -384,15 +451,14 @@ export default function Notifications() {
         console.error('❌ Error sending push notification:', pushError);
       }
 
-      // Mark notification as read
       await markAsRead(notification.id);
       
-      toast({ title: "Follow request accepted!" });
-      fetchNotifications();
+      toast({ title: "Demande acceptée!" });
+      resetAndFetch();
     } catch (error: any) {
       console.error("Error accepting follow request:", error);
       toast({ 
-        title: "Failed to accept follow request",
+        title: "Échec de l'acceptation",
         variant: "destructive" 
       });
     }
@@ -400,7 +466,6 @@ export default function Notifications() {
 
   const handleDeclineFollow = async (notification: Notification) => {
     try {
-      // Delete the follow record
       const { error } = await supabase
         .from("follows")
         .delete()
@@ -410,15 +475,14 @@ export default function Notifications() {
 
       if (error) throw error;
 
-      // Mark notification as read
       await markAsRead(notification.id);
       
-      toast({ title: "Follow request declined" });
-      fetchNotifications();
+      toast({ title: "Demande refusée" });
+      resetAndFetch();
     } catch (error: any) {
       console.error("Error declining follow request:", error);
       toast({ 
-        title: "Failed to decline follow request",
+        title: "Échec du refus",
         variant: "destructive" 
       });
     }
@@ -448,7 +512,7 @@ export default function Notifications() {
         title: "Notification supprimée",
       });
 
-      await fetchNotifications();
+      setNotifications(notifications.filter(n => n.id !== notificationId));
     } catch (error) {
       console.error("Error deleting notification:", error);
       toast({ 
@@ -488,16 +552,21 @@ export default function Notifications() {
         description: "Impossible de supprimer les notifications",
         variant: "destructive" 
       });
-      await fetchNotifications();
+      resetAndFetch();
     }
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  // Network-aware avatar size
+  const avatarSize = isSlowConnection ? "h-8 w-8 sm:h-10 sm:w-10" : "h-9 w-9 sm:h-11 sm:w-11";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-background/80 px-3 py-4 sm:p-6 pb-24 sm:pb-6">
-      {/* Notification Permission Banner */}
-      {currentUserId && <NotificationPermissionBanner userId={currentUserId} />}
+      {/* Notification Permission Banner - Lazy loaded */}
+      <Suspense fallback={null}>
+        {currentUserId && <NotificationPermissionBanner userId={currentUserId} />}
+      </Suspense>
       
       <div className="max-w-2xl mx-auto">
         {/* Header using PageHeader component */}
@@ -543,7 +612,7 @@ export default function Notifications() {
         )}
 
         {isLoading ? (
-          <NotificationsListSkeleton count={5} />
+          <NotificationSkeleton count={isSlowConnection ? 3 : 5} />
         ) : notifications.length === 0 ? (
           <EmptyState
             illustration="no-notifications"
@@ -564,9 +633,20 @@ export default function Notifications() {
                 }`}
               >
                 <div className="flex items-start gap-2.5 sm:gap-3" onClick={() => handleNotificationClick(notification)}>
-                  {/* Avatar */}
-                  <Avatar className="h-9 w-9 sm:h-11 sm:w-11 flex-shrink-0 ring-2 ring-background shadow-sm">
-                    <AvatarImage src={getAvatarUrl(notification.actorProfile.avatar_url)} />
+                  {/* Avatar - Network aware sizing */}
+                  <Avatar className={`${avatarSize} flex-shrink-0 ring-2 ring-background shadow-sm`}>
+                    {shouldLoadFullQuality ? (
+                      <AvatarImage 
+                        src={getAvatarUrl(notification.actorProfile.avatar_url)} 
+                        loading="lazy"
+                      />
+                    ) : (
+                      <AvatarImage 
+                        src={getAvatarUrl(notification.actorProfile.avatar_url)} 
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    )}
                     <AvatarFallback className="text-xs sm:text-sm font-medium">
                       {notification.actorProfile.nickname
                         .substring(0, 2)
@@ -656,51 +736,72 @@ export default function Notifications() {
                 </div>
               </Card>
             ))}
+            
+            {/* Infinite scroll trigger */}
+            <div ref={loadMoreRef} className="py-4 flex justify-center">
+              {isLoadingMore && (
+                <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Chargement...
+                </div>
+              )}
+              {!hasMore && notifications.length > 0 && (
+                <p className="text-xs text-muted-foreground">Toutes les notifications ont été chargées</p>
+              )}
+            </div>
           </div>
         )}
       </div>
       
-      {/* Delete Notification Confirmation Dialog */}
-      <AlertDialog open={!!deleteNotificationId} onOpenChange={(open) => !open && setDeleteNotificationId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer la notification?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Cette action est irréversible. Cette notification sera définitivement supprimée.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteNotificationId && handleDeleteNotification(deleteNotificationId)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Delete Notification Confirmation Dialog - Lazy loaded */}
+      <Suspense fallback={null}>
+        {deleteNotificationId && (
+          <AlertDialog open={!!deleteNotificationId} onOpenChange={(open) => !open && setDeleteNotificationId(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Supprimer la notification?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Cette action est irréversible. Cette notification sera définitivement supprimée.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => deleteNotificationId && handleDeleteNotification(deleteNotificationId)}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Supprimer
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+      </Suspense>
 
-      {/* Delete All Notifications Confirmation Dialog */}
-      <AlertDialog open={deleteAllDialogOpen} onOpenChange={setDeleteAllDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer toutes les notifications?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Cette action est irréversible. Toutes vos notifications seront définitivement supprimées.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteAllNotifications}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Tout supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Delete All Notifications Confirmation Dialog - Lazy loaded */}
+      <Suspense fallback={null}>
+        {deleteAllDialogOpen && (
+          <AlertDialog open={deleteAllDialogOpen} onOpenChange={setDeleteAllDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Supprimer toutes les notifications?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Cette action est irréversible. Toutes vos notifications seront définitivement supprimées.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteAllNotifications}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Tout supprimer
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+      </Suspense>
     </div>
   );
 }
