@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { X, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import ericStudentDesk from "@/assets/eric-student-desk.png";
 
 interface Message {
@@ -53,9 +54,9 @@ const TypewriterText = ({
 
 export const HomeChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
+const [messages, setMessages] = useState<Message[]>([
     {
-      content: "Bonjour ! Je suis Jude, votre futur professeur. Comment puis-je vous aider à découvrir EDUPRENEURS ? 😊",
+      content: "Bonjour ! Je suis Jude, votre assistant IA sur EDUPRENEURS. Comment puis-je vous aider à découvrir notre plateforme ? 😊",
       sender: "eric"
     }
   ]);
@@ -63,9 +64,10 @@ export const HomeChatbot = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [typingMessageIndex, setTypingMessageIndex] = useState<number | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const chatRef = useRef<HTMLDivElement>(null);
+  const { isSlowConnection, shouldShowAnimations } = useNetworkAwareLoading();
 
   const faqSuggestions = [
     "Qu'est-ce qu'EDUPRENEURS ?",
@@ -175,10 +177,10 @@ export const HomeChatbot = () => {
                   decoding="async"
                 />
                 <div className="eric-message-content">
-                  {message.sender === "eric" && index === typingMessageIndex ? (
+{message.sender === "eric" && index === typingMessageIndex ? (
                     <TypewriterText 
                       text={message.content} 
-                      speed={15} 
+                      speed={isSlowConnection ? 5 : 15} 
                       onComplete={() => setTypingMessageIndex(null)}
                     />
                   ) : (
@@ -248,8 +250,8 @@ export const HomeChatbot = () => {
         className={`w-16 sm:w-20 md:w-24 lg:w-28 flex-shrink-0 ${!isOpen ? 'cursor-pointer' : ''}`}
         onClick={() => !isOpen && setIsOpen(true)}
       >
-        {!isOpen && (
-          <div className="eric-floating-tooltip text-[10px] sm:text-xs whitespace-nowrap">
+{!isOpen && (
+          <div className={`eric-floating-tooltip text-[10px] sm:text-xs whitespace-nowrap ${shouldShowAnimations ? '' : '[animation:none]'}`}>
             Cliquez sur moi
           </div>
         )}
