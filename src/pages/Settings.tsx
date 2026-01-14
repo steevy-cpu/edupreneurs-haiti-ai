@@ -259,8 +259,8 @@ const Settings = () => {
     e.preventDefault();
     
     // Validation
-    if (passwordForm.newPassword.length < 6) {
-      toast.error("Le mot de passe doit contenir au moins 6 caractères");
+    if (passwordForm.newPassword.length < 8) {
+      toast.error("Le mot de passe doit contenir au moins 8 caractères");
       return;
     }
     
@@ -653,12 +653,12 @@ if (pageLoading) {
                         type="password"
                         value={passwordForm.newPassword}
                         onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                        placeholder="Au moins 6 caractères"
+                        placeholder="Au moins 8 caractères"
                         required
-                        minLength={6}
+                        minLength={8}
                       />
-                      {passwordForm.newPassword && passwordForm.newPassword.length < 6 && (
-                        <p className="text-xs text-destructive">Le mot de passe doit contenir au moins 6 caractères</p>
+                      {passwordForm.newPassword && passwordForm.newPassword.length < 8 && (
+                        <p className="text-xs text-destructive">Le mot de passe doit contenir au moins 8 caractères</p>
                       )}
                     </div>
                     <div className="space-y-2">
@@ -677,7 +677,7 @@ if (pageLoading) {
                     </div>
                     <Button 
                       type="submit" 
-                      disabled={savingPassword || passwordForm.newPassword.length < 6 || passwordForm.newPassword !== passwordForm.confirmPassword}
+                      disabled={savingPassword || passwordForm.newPassword.length < 8 || passwordForm.newPassword !== passwordForm.confirmPassword}
                       className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] hover:opacity-90"
                     >
                       {savingPassword ? (
