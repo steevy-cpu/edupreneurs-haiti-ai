@@ -109,7 +109,6 @@ export interface AuthContextType {
     hasMinLength: boolean;
     hasNumber: boolean;
     hasUppercase: boolean;
-    hasSpecial: boolean;
   };
   validatePromoCode: (code: string) => Promise<{ valid: boolean; goldReward?: number; grantsFreeAccess?: boolean; networkError?: boolean }>;
   checkNicknameAvailability: (nickname: string) => void;
@@ -193,10 +192,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   // Memoized password validation
   const passwordValidation = useMemo(() => ({
-    hasMinLength: signupData.password.length >= 6,
+    hasMinLength: signupData.password.length >= 8,
     hasNumber: /[0-9]/.test(signupData.password),
     hasUppercase: /[A-Z]/.test(signupData.password),
-    hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(signupData.password),
   }), [signupData.password]);
   
   // Smooth scroll to input on focus for mobile keyboards

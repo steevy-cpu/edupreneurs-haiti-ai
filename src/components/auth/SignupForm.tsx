@@ -294,7 +294,7 @@ export default function SignupForm() {
                 id="signup-password"
                 type={showSignupPassword ? "text" : "password"}
                 required
-                minLength={6}
+                minLength={8}
                 placeholder="Créez un mot de passe sécurisé"
                 value={signupData.password}
                 onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
@@ -314,16 +314,13 @@ export default function SignupForm() {
             </div>
             <div className="space-y-1 text-xs mt-2">
               <p className={`flex items-center gap-1 ${passwordValidation.hasMinLength ? 'text-success' : 'text-muted-foreground'}`}>
-                {passwordValidation.hasMinLength ? '✓' : '○'} Au moins 6 caractères
+                {passwordValidation.hasMinLength ? '✓' : '○'} Au moins 8 caractères
               </p>
               <p className={`flex items-center gap-1 ${passwordValidation.hasNumber ? 'text-success' : 'text-muted-foreground'}`}>
                 {passwordValidation.hasNumber ? '✓' : '○'} Au moins un chiffre
               </p>
               <p className={`flex items-center gap-1 ${passwordValidation.hasUppercase ? 'text-success' : 'text-muted-foreground'}`}>
                 {passwordValidation.hasUppercase ? '✓' : '○'} Au moins une majuscule
-              </p>
-              <p className={`flex items-center gap-1 ${passwordValidation.hasSpecial ? 'text-success' : 'text-muted-foreground'}`}>
-                {passwordValidation.hasSpecial ? '✓' : '○'} Au moins un caractère spécial
               </p>
             </div>
           </div>
@@ -340,8 +337,8 @@ export default function SignupForm() {
                 toast({ title: "Emails différents", description: "Les emails ne correspondent pas", variant: "destructive" });
                 return;
               }
-              if (signupData.password.length < 6) {
-                toast({ title: "Mot de passe trop court", description: "Le mot de passe doit contenir au moins 6 caractères", variant: "destructive" });
+              if (signupData.password.length < 8) {
+                toast({ title: "Mot de passe trop court", description: "Le mot de passe doit contenir au moins 8 caractères", variant: "destructive" });
                 return;
               }
               setSignupStep(2);

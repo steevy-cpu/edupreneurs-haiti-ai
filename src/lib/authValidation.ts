@@ -68,11 +68,10 @@ export const signupSchema = z.object({
     .or(z.literal('')),
   password: z
     .string()
-    .min(6, "Le mot de passe doit contenir au moins 6 caractères")
+    .min(8, "Le mot de passe doit contenir au moins 8 caractères")
     .max(128, "Le mot de passe ne peut pas dépasser 128 caractères")
     .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre")
-    .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule")
-    .regex(/[!@#$%^&*(),.?":{}|<>]/, "Le mot de passe doit contenir au moins un caractère spécial"),
+    .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule"),
   school: z
     .string()
     .trim()
