@@ -25,7 +25,7 @@ import { VisitorTypeSelector } from "@/components/visitor/VisitorTypeSelector";
 const HomeChatbot = lazy(() => import("@/components/HomeChatbot").then(module => ({ default: module.HomeChatbot })));
 
 // Default fallback values
-const DEFAULT_STATS = { lessons: 2500, exams: 85, users: 10 };
+const DEFAULT_STATS = { lessons: 2800, exams: 90, users: 25 };
 
 const Index = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -66,7 +66,7 @@ const Index = () => {
   useEffect(() => {
     // On slow connections, defer stats loading by 3 seconds
     // On fast connections, load after 500ms (after LCP)
-    const delay = shouldDeferResources ? 3000 : 500;
+    const delay = shouldDeferResources ? 1000 : 100;
     
     const timer = setTimeout(() => {
       fetchStats();
@@ -364,9 +364,9 @@ const Index = () => {
             </div>
             <div className="flex flex-wrap justify-center gap-2 sm:gap-3 lg:gap-4 pt-3 sm:pt-4 lg:pt-6">
               {heroStats.map((stat, idx) => (
-                <Card key={idx} className="bg-gradient-to-br from-card to-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:scale-105 group">
+                <Card key={idx} className={`bg-gradient-to-br from-card to-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:scale-105 group ${!statsLoaded ? 'animate-pulse' : ''}`}>
                   <CardContent className="p-3 sm:p-4 lg:p-5 text-center min-w-[80px] sm:min-w-[100px] lg:min-w-[110px]">
-                    <div className="text-base sm:text-xl lg:text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent group-hover:scale-110 transition-transform whitespace-nowrap">{stat.number}</div>
+                    <div className={`text-base sm:text-xl lg:text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent group-hover:scale-110 transition-transform whitespace-nowrap ${!statsLoaded ? 'opacity-50' : ''}`}>{stat.number}</div>
                     <div className="text-[9px] sm:text-xs lg:text-sm text-muted-foreground font-bold uppercase leading-tight whitespace-nowrap">{stat.label}</div>
                   </CardContent>
                 </Card>
