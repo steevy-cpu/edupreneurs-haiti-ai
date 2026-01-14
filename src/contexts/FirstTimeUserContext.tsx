@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -65,6 +65,9 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
   const [isSuperUser, setIsSuperUser] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Ref to track if onboarding has been initialized this session
+  const hasInitialized = useRef(false);
+
   // Super user IDs
   const SUPER_USER_IDS = [
     '410b9fc5-6df8-4032-8469-df4588089055', // Steevy
@@ -85,6 +88,18 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
     const checkTourStatus = async () => {
       // Only proceed if user is on the dashboard
       if (!isOnDashboard) {
+        setIsLoading(false);
+        return;
+      }
+
+      // CRITICAL FIX: Skip if tour/welcome is already active to prevent restart
+      if (tourActive || showWelcome || showAvatarGeneration) {
+        setIsLoading(false);
+        return;
+      }
+
+      // CRITICAL FIX: Skip if already initialized this session
+      if (hasInitialized.current) {
         setIsLoading(false);
         return;
       }
@@ -119,11 +134,15 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
         const isTestAccount = TEST_ACCOUNT_IDS.includes(user.id);
 
         if (isTestAccount) {
-          // Test accounts always get the tour for testing purposes
-          console.log('Test account detected - showing tour for testing');
-          localStorage.removeItem(`first_time_tour_completed_${user.id}`);
-          setShowWelcome(true);
-          setTourCompleted(false);
+          // Test accounts: only show if not already started in this session
+          const sessionKey = `tour_session_started_${user.id}`;
+          if (!sessionStorage.getItem(sessionKey)) {
+            console.log('Test account detected - showing tour for testing');
+            localStorage.removeItem(`first_time_tour_completed_${user.id}`);
+            sessionStorage.setItem(sessionKey, 'true');
+            setShowWelcome(true);
+            setTourCompleted(false);
+          }
         } else {
           // Check if tour was already completed
           const dbCompleted = profile?.onboarding_tour_completed === true;
@@ -137,6 +156,9 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
             setShowWelcome(true);
           }
         }
+
+        // Mark as initialized after successful setup
+        hasInitialized.current = true;
       } catch (error) {
         console.error('Error checking tour status:', error);
       } finally {
@@ -149,8 +171,13 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user && isOnDashboard) {
-        checkTourStatus();
+        // Only check if not already initialized and tour not active
+        if (!hasInitialized.current && !tourActive && !showWelcome) {
+          checkTourStatus();
+        }
       } else if (event === 'SIGNED_OUT') {
+        // Reset everything on sign out
+        hasInitialized.current = false;
         setShowWelcome(false);
         setWelcomeComplete(false);
         setShowAvatarGeneration(false);
@@ -161,11 +188,15 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
         setUserNickname(null);
         setUserGrade(null);
         setUserId(null);
+        // Clear session storage for this user
+        if (session?.user?.id) {
+          sessionStorage.removeItem(`tour_session_started_${session.user.id}`);
+        }
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [isOnDashboard]);
+  }, [isOnDashboard, tourActive, showWelcome, showAvatarGeneration]);
 
   const completeWelcome = useCallback(() => {
     setWelcomeComplete(true);
@@ -255,8 +286,12 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
     setTourActive(false);
     setTourStep(0);
     
+    // Reset initialization flag to allow restart
+    hasInitialized.current = false;
+    
     if (userId) {
       localStorage.removeItem(`first_time_tour_completed_${userId}`);
+      sessionStorage.removeItem(`tour_session_started_${userId}`);
     }
   }, [userId]);
 
