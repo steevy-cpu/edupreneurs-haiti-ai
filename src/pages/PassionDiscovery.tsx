@@ -30,7 +30,7 @@ import judeWaving from "@/assets/eric-waving.png";
 import judeThumbUp from "@/assets/eric-thumb-up.png";
 import judePointing from "@/assets/eric-pointing-up.png";
 import judeTeaching from "@/assets/eric-teaching.png";
-import judeComputer from "@/assets/eric-computer.png";
+import judePassionDiscovery from "@/assets/jude-passion-discovery.png";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { VisitorPassionOverlay } from "@/components/passion/VisitorPassionOverlay";
 import { useNetwork } from "@/contexts/NetworkContext";
@@ -783,11 +783,10 @@ const PassionDiscoveryContent = () => {
             <div className={`absolute inset-0 bg-gradient-to-r from-violet-500/20 via-fuchsia-500/20 to-amber-500/20 ${shouldShowBlur ? 'blur-3xl' : ''} rounded-full`} />
             <div className="relative flex flex-col md:flex-row items-center gap-6 md:gap-10">
               <div className="relative">
-                <div className={`absolute -inset-4 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 rounded-full ${shouldShowBlur ? 'blur-2xl' : ''} opacity-30 ${shouldShowAnimations ? 'animate-pulse' : ''}`} />
                 <img 
-                  src={judeCelebrating} 
-                  alt="Jude célèbre" 
-                  className={`relative w-40 h-40 md:w-52 md:h-52 drop-shadow-2xl ${shouldShowAnimations ? 'animate-scale-in' : ''}`}
+                  src={judePassionDiscovery} 
+                  alt="Jude découvre" 
+                  className={`relative w-40 h-40 md:w-52 md:h-52 object-contain ${shouldShowAnimations ? 'animate-scale-in' : ''}`}
                   loading="lazy" 
                   decoding="async" 
                 />
@@ -930,8 +929,8 @@ const PassionDiscoveryContent = () => {
                     variant="outline"
                     className={`w-full h-auto min-h-[56px] py-4 px-5 text-left justify-between transition-all duration-300 text-sm md:text-base group ${
                       isSelected 
-                        ? "bg-primary/10 border-primary shadow-lg scale-[1.02] ring-2 ring-primary/30" 
-                        : "hover:bg-primary/5 hover:border-primary/50 hover:shadow-md active:scale-[0.98]"
+                        ? "bg-primary/20 border-primary border-2 shadow-lg scale-[1.02] ring-2 ring-primary/40 text-foreground" 
+                        : "hover:bg-accent/10 hover:border-primary/60 hover:shadow-md active:scale-[0.98]"
                     }`}
                     disabled={isTransitioning || isLoading}
                     aria-pressed={isSelected}
@@ -976,11 +975,10 @@ const PassionDiscoveryContent = () => {
           {/* Celebration Header */}
           <div className="text-center">
             <div className="relative inline-block mb-4">
-              <div className={`absolute -inset-4 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 rounded-full ${shouldShowBlur ? 'blur-2xl' : ''} opacity-30 ${shouldShowAnimations ? 'animate-pulse' : ''}`} />
               <img 
-                src={judeCelebrating} 
+                src={judePassionDiscovery} 
                 alt="Jude célèbre" 
-                className={`relative w-36 h-36 md:w-44 md:h-44 drop-shadow-2xl ${shouldShowAnimations ? 'animate-scale-in' : ''}`}
+                className={`relative w-36 h-36 md:w-44 md:h-44 object-contain ${shouldShowAnimations ? 'animate-scale-in' : ''}`}
                 loading="lazy" 
                 decoding="async" 
               />
@@ -1076,11 +1074,10 @@ const PassionDiscoveryContent = () => {
                 <div className={`absolute inset-0 bg-gradient-to-r from-violet-500/10 via-fuchsia-500/10 to-amber-500/10 ${shouldShowBlur ? 'blur-3xl' : ''} rounded-full`} />
                 <div className="relative flex flex-col md:flex-row items-center gap-6 md:gap-10 p-6 md:p-8 rounded-3xl bg-gradient-to-r from-violet-500/5 via-fuchsia-500/5 to-amber-500/5 backdrop-blur-sm border border-primary/10">
                   <div className="relative flex-shrink-0">
-                    <div className={`absolute -inset-4 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 rounded-full ${shouldShowBlur ? 'blur-2xl' : ''} opacity-20`} />
                     <img 
-                      src={judeComputer} 
+                      src={judePassionDiscovery} 
                       alt="Jude" 
-                      className="relative w-28 h-28 md:w-40 md:h-40 drop-shadow-xl"
+                      className="relative w-28 h-28 md:w-40 md:h-40 object-contain"
                       loading="lazy" 
                       decoding="async" 
                     />
