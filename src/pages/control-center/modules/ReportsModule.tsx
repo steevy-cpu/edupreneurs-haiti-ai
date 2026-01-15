@@ -37,7 +37,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ChevronLeft, ChevronRight, ExternalLink, Eye, RefreshCw, Trash2, UserX, AlertTriangle } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink, Eye, RefreshCw, Save, Trash2, UserX, AlertTriangle } from "lucide-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -67,6 +67,8 @@ export default function ReportsModule() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeletingPost, setIsDeletingPost] = useState(false);
   const [isDeletingUser, setIsDeletingUser] = useState(false);
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
 
   useEffect(() => {
     fetchReports();
@@ -85,6 +87,13 @@ export default function ReportsModule() {
       supabase.removeChannel(channel);
     };
   }, [statusFilter, currentPage]);
+
+  // Sync selectedStatus when a report is selected
+  useEffect(() => {
+    if (selectedReport) {
+      setSelectedStatus(selectedReport.status);
+    }
+  }, [selectedReport]);
 
   const fetchReports = async () => {
     setIsLoading(true);
@@ -163,6 +172,32 @@ export default function ReportsModule() {
       toast.error("Erreur lors de la mise à jour");
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const saveAdminNotes = async () => {
+    if (!selectedReport) return;
+    setIsSavingNotes(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { error } = await supabase
+        .from("user_reports")
+        .update({
+          admin_notes: adminNotes || null,
+          reviewed_by: user?.id,
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq("id", selectedReport.id);
+
+      if (error) throw error;
+      toast.success("Notes sauvegardées");
+      fetchReports();
+    } catch (error) {
+      console.error("Error saving notes:", error);
+      toast.error("Erreur lors de la sauvegarde des notes");
+    } finally {
+      setIsSavingNotes(false);
     }
   };
 
@@ -495,6 +530,15 @@ export default function ReportsModule() {
                   placeholder="Ajouter des notes..."
                   rows={3}
                 />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={saveAdminNotes}
+                  disabled={isSavingNotes || adminNotes === (selectedReport?.admin_notes || '')}
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  {isSavingNotes ? "Sauvegarde..." : "Sauvegarder les notes"}
+                </Button>
               </div>
 
               {/* Moderation Actions */}
@@ -592,9 +636,12 @@ export default function ReportsModule() {
               {/* Status Update Actions */}
               <DialogFooter className="flex-col sm:flex-row gap-2 pt-4 border-t">
                 <Select
-                  defaultValue={selectedReport.status}
-                  onValueChange={(status) => updateReportStatus(selectedReport.id, status)}
-                  disabled={isUpdating}
+                  value={selectedStatus}
+                  onValueChange={(status) => {
+                    setSelectedStatus(status);
+                    updateReportStatus(selectedReport.id, status);
+                  }}
+                  disabled={isUpdating || isSavingNotes}
                 >
                   <SelectTrigger className="w-full sm:w-40">
                     <SelectValue placeholder="Changer statut" />
