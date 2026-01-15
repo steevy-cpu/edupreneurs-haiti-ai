@@ -37,7 +37,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ChevronLeft, ChevronRight, ExternalLink, Eye, RefreshCw, Save, Trash2, UserX, AlertTriangle } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink, Eye, RefreshCw, Save, Trash2, UserX, AlertTriangle, XCircle } from "lucide-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -69,6 +69,10 @@ export default function ReportsModule() {
   const [isDeletingUser, setIsDeletingUser] = useState(false);
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>("");
+  const [isDismissing, setIsDismissing] = useState(false);
+
+  // Computed flag to disable all actions while one is in progress
+  const isActionInProgress = isDeletingPost || isDeletingUser || isDismissing || isSavingNotes || isUpdating;
 
   useEffect(() => {
     fetchReports();
@@ -282,6 +286,35 @@ export default function ReportsModule() {
       toast.error(error instanceof Error ? error.message : "Erreur lors de la suppression du compte");
     } finally {
       setIsDeletingUser(false);
+    }
+  };
+
+  const handleDismissReport = async () => {
+    if (!selectedReport) return;
+    setIsDismissing(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { error } = await supabase
+        .from("user_reports")
+        .update({
+          status: 'dismissed',
+          reviewed_by: user?.id,
+          reviewed_at: new Date().toISOString(),
+          admin_notes: adminNotes || 'Aucune action requise',
+        })
+        .eq("id", selectedReport.id);
+
+      if (error) throw error;
+      toast.success("Signalement classé sans suite");
+      setSelectedReport(null);
+      setAdminNotes("");
+      fetchReports();
+    } catch (error) {
+      console.error("Error dismissing report:", error);
+      toast.error("Erreur lors du classement");
+    } finally {
+      setIsDismissing(false);
     }
   };
 
@@ -549,6 +582,39 @@ export default function ReportsModule() {
                 </p>
                 
                 <div className="flex flex-col gap-2">
+                  {/* Dismiss Report - No Action Needed */}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950"
+                        disabled={isActionInProgress}
+                      >
+                        <XCircle className="mr-2 h-4 w-4" />
+                        {isDismissing ? "Traitement..." : "Aucune action requise"}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Classer sans suite ?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Ce signalement sera marqué comme traité sans qu'aucune action ne soit prise 
+                          contre l'utilisateur ou le contenu signalé.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={handleDismissReport} 
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          Confirmer
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+
                   {/* Delete Post Button */}
                   {selectedReport.post_id && (
                     <AlertDialog>
@@ -557,7 +623,7 @@ export default function ReportsModule() {
                           variant="destructive" 
                           size="sm" 
                           className="w-full"
-                          disabled={isDeletingPost}
+                          disabled={isActionInProgress}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
                           {isDeletingPost ? "Suppression..." : "Supprimer le post"}
@@ -569,6 +635,7 @@ export default function ReportsModule() {
                           <AlertDialogDescription>
                             Cette action est irréversible. Le post sera définitivement supprimé 
                             et tous les signalements associés seront marqués comme résolus.
+                            Un email de notification sera envoyé au propriétaire du post.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -591,7 +658,7 @@ export default function ReportsModule() {
                         variant="destructive" 
                         size="sm" 
                         className="w-full"
-                        disabled={isDeletingUser || isProtectedUser(selectedReport.reported_user_id)}
+                        disabled={isActionInProgress || isProtectedUser(selectedReport.reported_user_id)}
                       >
                         <UserX className="mr-2 h-4 w-4" />
                         {isDeletingUser 
@@ -641,7 +708,7 @@ export default function ReportsModule() {
                     setSelectedStatus(status);
                     updateReportStatus(selectedReport.id, status);
                   }}
-                  disabled={isUpdating || isSavingNotes}
+                  disabled={isActionInProgress}
                 >
                   <SelectTrigger className="w-full sm:w-40">
                     <SelectValue placeholder="Changer statut" />
