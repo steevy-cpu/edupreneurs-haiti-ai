@@ -145,6 +145,54 @@ export type Database = {
           },
         ]
       }
+      announcements: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          recipients_count: number | null
+          scheduled_for: string | null
+          sent_at: string | null
+          sent_by: string
+          status: string
+          success_count: number | null
+          target_grades: string[] | null
+          target_type: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          recipients_count?: number | null
+          scheduled_for?: string | null
+          sent_at?: string | null
+          sent_by: string
+          status?: string
+          success_count?: number | null
+          target_grades?: string[] | null
+          target_type?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          recipients_count?: number | null
+          scheduled_for?: string | null
+          sent_at?: string | null
+          sent_by?: string
+          status?: string
+          success_count?: number | null
+          target_grades?: string[] | null
+          target_type?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       banned_youtube_videos: {
         Row: {
           banned_at: string | null

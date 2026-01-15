@@ -10,6 +10,26 @@ export interface ControlCenterModule {
   badge?: () => Promise<number>;
 }
 
+export interface Announcement {
+  id: string;
+  title: string;
+  message: string;
+  target_type: 'all' | 'grade' | 'verified';
+  target_grades: string[] | null;
+  scheduled_for: string | null;
+  sent_at: string | null;
+  sent_by: string;
+  status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'cancelled';
+  recipients_count: number;
+  success_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export const ACADEMIC_GRADES = [
+  '7AF', '7e', '8AF', '8e', '9AF', 'NS1', 'NS3', 'NS4', 'Philo', 'S1'
+] as const;
+
 export interface UserReport {
   id: string;
   reporter_id: string;
