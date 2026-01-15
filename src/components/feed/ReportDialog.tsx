@@ -74,6 +74,11 @@ export function ReportDialog({
         return;
       }
 
+      // Fire-and-forget: send confirmation email to reporter
+      supabase.functions.invoke('send-report-confirmation', {}).catch(err => {
+        console.error('Report confirmation email failed:', err);
+      });
+
       toast.success("Signalement envoyé", {
         description: "Merci de nous aider à maintenir une communauté saine.",
       });

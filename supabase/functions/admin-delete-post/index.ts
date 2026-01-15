@@ -1,10 +1,77 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Resend } from "https://esm.sh/resend@4.0.0";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const getPostDeletionEmailTemplate = (fullName: string, reason?: string) => `
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publication supprimée - Edupreneurs</title>
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc;">
+      <tr>
+        <td style="padding: 40px 20px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; max-width: 600px;">
+            <tr>
+              <td style="text-align: center; padding-bottom: 30px;">
+                <img src="https://mon-edupreneur.com/logo.png" alt="Edupreneurs" width="180" height="auto" />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: #ffffff; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                  <tr>
+                    <td style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 50px 40px; text-align: center; border-radius: 24px 24px 0 0;">
+                      <div style="font-size: 64px; margin-bottom: 16px;">📢</div>
+                      <h1 style="margin: 0 0 12px 0; font-size: 28px; font-weight: 800; color: #ffffff;">
+                        Publication supprimée
+                      </h1>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 40px;">
+                      <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b;">
+                        Bonjour <strong style="color: #f97316;">${fullName}</strong>,
+                      </p>
+                      <p style="margin: 0 0 24px 0; font-size: 16px; color: #475569; line-height: 1.8;">
+                        Nous vous informons que l'une de vos publications a été supprimée par notre équipe de modération car elle ne respectait pas nos règles communautaires.
+                      </p>
+                      ${reason ? `<p style="margin: 0 0 24px 0; font-size: 14px; color: #64748b; padding: 12px; background: #f1f5f9; border-radius: 8px;"><strong>Motif :</strong> ${reason}</p>` : ''}
+                      <p style="margin: 0 0 24px 0; font-size: 16px; color: #475569; line-height: 1.8;">
+                        Nous vous encourageons à consulter nos règles de la communauté pour éviter que cela ne se reproduise. Si vous pensez qu'il s'agit d'une erreur, vous pouvez nous contacter.
+                      </p>
+                      <p style="margin: 0; font-size: 16px; color: #475569;">
+                        L'équipe Edupreneurs
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 40px 20px; text-align: center;">
+                <p style="margin: 0; font-size: 13px; color: #94a3b8;">
+                  © 2025 Edupreneurs. Tous droits réservés.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+`;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -73,6 +140,29 @@ serve(async (req) => {
       throw new Error('Post not found');
     }
 
+    // Fetch post owner's profile and email for notification
+    let ownerEmail = '';
+    let ownerName = 'Utilisateur';
+
+    try {
+      const { data: ownerProfile } = await supabaseAdmin
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', post.user_id)
+        .single();
+      
+      if (ownerProfile?.full_name) {
+        ownerName = ownerProfile.full_name;
+      }
+
+      const { data: { user: ownerUser } } = await supabaseAdmin.auth.admin.getUserById(post.user_id);
+      if (ownerUser?.email) {
+        ownerEmail = ownerUser.email;
+      }
+    } catch (err) {
+      console.error('Error fetching owner info:', err);
+    }
+
     // Delete media from storage if exists
     const mediaToDelete: string[] = [];
     
@@ -129,6 +219,22 @@ serve(async (req) => {
     if (updateReportsError) {
       console.error('Error updating reports:', updateReportsError);
       // Don't throw, post is already deleted
+    }
+
+    // Send notification email to post owner
+    if (ownerEmail) {
+      try {
+        await resend.emails.send({
+          from: "Edupreneurs <noreply@mon-edupreneur.com>",
+          to: [ownerEmail],
+          subject: "📢 Votre publication a été supprimée",
+          html: getPostDeletionEmailTemplate(ownerName, reason),
+        });
+        console.log('Post deletion email sent to:', ownerEmail);
+      } catch (emailError) {
+        console.error('Error sending post deletion email:', emailError);
+        // Don't throw, post is already deleted
+      }
     }
 
     // Log the admin action (optional - if admin_actions table exists)
