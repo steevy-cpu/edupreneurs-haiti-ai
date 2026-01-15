@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText, MoreVertical, Trash2, Settings, AtSign, UserCheck, Loader2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText, MoreVertical, Trash2, Settings, AtSign, UserCheck, Loader2, Megaphone } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -42,7 +42,7 @@ interface Notification {
   user_id: string;
   actor_id: string;
   post_id: string | null;
-  type: "like" | "comment" | "share" | "follow_request" | "follow_accepted" | "new_post" | "group_invitation" | "group_deleted" | "lesson_comment" | "mention";
+  type: "like" | "comment" | "share" | "follow_request" | "follow_accepted" | "new_post" | "group_invitation" | "group_deleted" | "lesson_comment" | "mention" | "announcement";
   content: string | null;
   read: boolean;
   created_at: string;
@@ -347,6 +347,8 @@ export default function Notifications() {
         return <Trash2 size={16} className="text-destructive" />;
       case "mention":
         return <AtSign size={16} className="text-primary" />;
+      case "announcement":
+        return <Megaphone size={16} className="text-orange-500" />;
       default:
         return <MessageCircle size={16} className="text-muted-foreground" />;
     }
@@ -375,6 +377,9 @@ export default function Notifications() {
         return notification.content || `Un groupe a été supprimé`;
       case "mention":
         return `${actor} vous a mentionné dans un post`;
+      case "announcement":
+        // Announcements display content directly, not actor name
+        return notification.content || "📢 Nouvelle annonce de la plateforme";
       default:
         // Fallback: use content if available, otherwise show generic message
         return notification.content || `${actor} a interagi avec vous`;
@@ -489,6 +494,12 @@ export default function Notifications() {
   };
 
   const handleNotificationClick = (notification: Notification) => {
+    // Announcements just mark as read, no specific navigation
+    if (notification.type === "announcement") {
+      markAsRead(notification.id);
+      return;
+    }
+    
     if (notification.type !== "follow_request") {
       markAsRead(notification.id);
       if (notification.type === "lesson_comment") {
