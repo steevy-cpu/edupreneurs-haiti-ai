@@ -1,12 +1,11 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Music, Palette, Brain, BookOpen, Play, CheckCircle2, Lock, Loader2, ArrowLeft, Send, Youtube, ArrowRight, Award, Users, Heart, Lightbulb, RotateCcw, Search } from "lucide-react";
-import { debounce } from "@/utils/performanceOptimization";
+import { Music, Palette, Brain, BookOpen, Play, CheckCircle2, Lock, Loader2, ArrowLeft, Send, ArrowRight, Award, Users, Heart, Lightbulb, RotateCcw, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -24,7 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { getActivitiesForModule, getCategoriesWithActivities, type ActivityContent } from "@/data/passionActivities";
+import { getActivitiesForModule, type ActivityContent } from "@/data/passionActivities";
 import judeCelebrating from "@/assets/eric-celebrating.png";
 import judeThinking from "@/assets/eric-thinking-pose.png";
 import judeWaving from "@/assets/eric-waving.png";
@@ -34,6 +33,7 @@ import judeTeaching from "@/assets/eric-teaching.png";
 import judeComputer from "@/assets/eric-computer.png";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { VisitorPassionOverlay } from "@/components/passion/VisitorPassionOverlay";
+import { useNetwork } from "@/contexts/NetworkContext";
 
 interface QuizQuestion {
   id: number;
@@ -89,6 +89,12 @@ interface PassionScores {
 const PassionDiscoveryContent = () => {
   const navigate = useNavigate();
   const { isVisitor } = useVisitor();
+  const { 
+    isSlowConnection, 
+    shouldShowAnimations, 
+    shouldShowBlur 
+  } = useNetwork();
+  
   const [quizStep, setQuizStep] = useState<"intro" | "quiz" | "results" | "categories">("intro");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [passionScores, setPassionScores] = useState<PassionScores>({
@@ -111,29 +117,22 @@ const PassionDiscoveryContent = () => {
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [localSearchQuery, setLocalSearchQuery] = useState("");
-  
-  // Debounced search handler (300ms delay for better performance)
-  const debouncedSearch = useMemo(
-    () => debounce((value: string) => setSearchQuery(value), 300),
-    []
-  );
-  
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setLocalSearchQuery(value); // Immediate local update for responsive UI
-    debouncedSearch(value); // Debounced state update
-  };
   const [selectedAnswerIndex, setSelectedAnswerIndex] = useState<number | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [answerHistory, setAnswerHistory] = useState<Array<{ passion: keyof PassionScores; answerIndex: number }>>([]);
   
+  // Chat auto-scroll ref
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  
   // React Query hooks
   const { data: preferences, isLoading: preferencesLoading } = usePassionPreferences(userId);
-  const { getModuleProgress, getCategoryProgress, updateProgress, isLoading: progressLoading } = usePassionProgress(userId);
+  const { getModuleProgress, getCategoryProgress, updateProgress } = usePassionProgress(userId);
   const saveQuizMutation = useSaveQuizResults();
   const resetQuizMutation = useResetQuiz();
+  
+  // Skeleton count based on connection
+  const skeletonCount = isSlowConnection ? 2 : 4;
 
   // Check if there's unsaved progress
   const hasUnsavedProgress = Object.keys(activityStates).length > 0;
@@ -150,6 +149,24 @@ const PassionDiscoveryContent = () => {
     };
     getUser();
   }, [isVisitor]);
+
+  // Set quiz step based on preferences (moved before visitor early return to fix hook order)
+  useEffect(() => {
+    if (preferences?.quiz_completed) {
+      setQuizStep("categories");
+      setPassionScores({
+        music: preferences.music_score ?? 0,
+        arts: preferences.arts_score ?? 0,
+        chess: preferences.chess_score ?? 0,
+        literature: preferences.literature_score ?? 0
+      });
+    }
+  }, [preferences]);
+  
+  // Auto-scroll chat to bottom on new messages
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages, isLoading]);
 
   // For visitors, show intro with overlay
   if (isVisitor) {
@@ -197,18 +214,7 @@ const PassionDiscoveryContent = () => {
     );
   }
 
-  // Set quiz step based on preferences
-  useEffect(() => {
-    if (preferences?.quiz_completed) {
-      setQuizStep("categories");
-      setPassionScores({
-        music: preferences.music_score ?? 0,
-        arts: preferences.arts_score ?? 0,
-        chess: preferences.chess_score ?? 0,
-        literature: preferences.literature_score ?? 0
-      });
-    }
-  }, [preferences]);
+  // NOTE: useEffect for preferences moved before visitor early return (hook order fix)
 
   const handleLeaveModule = useCallback((onConfirm: () => void) => {
     if (hasUnsavedProgress) {
@@ -597,8 +603,10 @@ const PassionDiscoveryContent = () => {
   const searchYouTubeVideos = async (query: string) => {
     setLoadingVideos(true);
     try {
+      // Reduce video count on slow connections for faster loading
+      const maxResults = isSlowConnection ? 3 : 6;
       const { data, error } = await supabase.functions.invoke('youtube-search', {
-        body: { query, maxResults: 6 }
+        body: { query, maxResults }
       });
 
       if (error) throw error;
@@ -738,7 +746,7 @@ const PassionDiscoveryContent = () => {
         <div className="container mx-auto">
           <Skeleton className="h-12 w-48 mb-8" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[1, 2, 3, 4].map(i => (
+            {Array.from({ length: skeletonCount }).map((_, i) => (
               <Card key={i} className="overflow-hidden">
                 <Skeleton className="h-2 w-full" />
                 <CardHeader>
@@ -772,14 +780,14 @@ const PassionDiscoveryContent = () => {
         <div className="max-w-4xl w-full">
           {/* Hero Section */}
           <div className="relative mb-8">
-            <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 via-fuchsia-500/20 to-amber-500/20 blur-3xl rounded-full" />
+            <div className={`absolute inset-0 bg-gradient-to-r from-violet-500/20 via-fuchsia-500/20 to-amber-500/20 ${shouldShowBlur ? 'blur-3xl' : ''} rounded-full`} />
             <div className="relative flex flex-col md:flex-row items-center gap-6 md:gap-10">
               <div className="relative">
-                <div className="absolute -inset-4 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 rounded-full blur-2xl opacity-30 animate-pulse" />
+                <div className={`absolute -inset-4 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 rounded-full ${shouldShowBlur ? 'blur-2xl' : ''} opacity-30 ${shouldShowAnimations ? 'animate-pulse' : ''}`} />
                 <img 
                   src={judeCelebrating} 
                   alt="Jude célèbre" 
-                  className="relative w-40 h-40 md:w-52 md:h-52 drop-shadow-2xl animate-scale-in"
+                  className={`relative w-40 h-40 md:w-52 md:h-52 drop-shadow-2xl ${shouldShowAnimations ? 'animate-scale-in' : ''}`}
                   loading="lazy" 
                   decoding="async" 
                 />
@@ -803,7 +811,7 @@ const PassionDiscoveryContent = () => {
               { icon: Brain, label: "Stratégie", color: "from-amber-500 to-orange-600", bg: "bg-amber-100 dark:bg-amber-900/30" },
               { icon: BookOpen, label: "Littérature", color: "from-emerald-500 to-teal-600", bg: "bg-emerald-100 dark:bg-emerald-900/30" },
             ].map((item) => (
-              <Card key={item.label} className={`${item.bg} border-0 backdrop-blur-sm hover:scale-105 transition-transform duration-300`}>
+              <Card key={item.label} className={`${item.bg} border-0 backdrop-blur-sm ${shouldShowAnimations ? 'hover:scale-105' : ''} transition-transform duration-300`}>
                 <CardContent className="p-4 flex flex-col items-center text-center">
                   <div className={`p-3 rounded-xl bg-gradient-to-br ${item.color} text-white mb-2 shadow-lg`}>
                     <item.icon className="w-5 h-5 md:w-6 md:h-6" />
@@ -968,11 +976,11 @@ const PassionDiscoveryContent = () => {
           {/* Celebration Header */}
           <div className="text-center">
             <div className="relative inline-block mb-4">
-              <div className="absolute -inset-4 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 rounded-full blur-2xl opacity-30 animate-pulse" />
+              <div className={`absolute -inset-4 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 rounded-full ${shouldShowBlur ? 'blur-2xl' : ''} opacity-30 ${shouldShowAnimations ? 'animate-pulse' : ''}`} />
               <img 
                 src={judeCelebrating} 
                 alt="Jude célèbre" 
-                className="relative w-36 h-36 md:w-44 md:h-44 drop-shadow-2xl animate-scale-in"
+                className={`relative w-36 h-36 md:w-44 md:h-44 drop-shadow-2xl ${shouldShowAnimations ? 'animate-scale-in' : ''}`}
                 loading="lazy" 
                 decoding="async" 
               />
@@ -1065,10 +1073,10 @@ const PassionDiscoveryContent = () => {
             <>
               {/* Hero Section */}
               <div className="relative mb-8 md:mb-12">
-                <div className="absolute inset-0 bg-gradient-to-r from-violet-500/10 via-fuchsia-500/10 to-amber-500/10 blur-3xl rounded-full" />
+                <div className={`absolute inset-0 bg-gradient-to-r from-violet-500/10 via-fuchsia-500/10 to-amber-500/10 ${shouldShowBlur ? 'blur-3xl' : ''} rounded-full`} />
                 <div className="relative flex flex-col md:flex-row items-center gap-6 md:gap-10 p-6 md:p-8 rounded-3xl bg-gradient-to-r from-violet-500/5 via-fuchsia-500/5 to-amber-500/5 backdrop-blur-sm border border-primary/10">
                   <div className="relative flex-shrink-0">
-                    <div className="absolute -inset-4 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 rounded-full blur-2xl opacity-20" />
+                    <div className={`absolute -inset-4 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 rounded-full ${shouldShowBlur ? 'blur-2xl' : ''} opacity-20`} />
                     <img 
                       src={judeComputer} 
                       alt="Jude" 
@@ -1125,14 +1133,14 @@ const PassionDiscoveryContent = () => {
                       return (
                         <Card 
                           key={category.id} 
-                          className="hover:shadow-2xl transition-all duration-500 overflow-hidden group cursor-pointer transform hover:-translate-y-2 animate-fade-in"
-                          style={{ animationDelay: `${index * 150}ms` }}
+                          className={`hover:shadow-2xl transition-all duration-500 overflow-hidden group cursor-pointer ${shouldShowAnimations ? 'transform hover:-translate-y-2 animate-fade-in' : ''}`}
+                          style={shouldShowAnimations ? { animationDelay: `${index * 150}ms` } : undefined}
                           onClick={() => setSelectedCategory(category.id)}
                         >
                           <div className={`h-2 bg-gradient-to-r ${category.color} group-hover:h-3 transition-all duration-300`} />
                           <CardHeader>
                             <div className="flex items-start gap-4">
-                              <div className={`p-3 md:p-4 rounded-xl bg-gradient-to-br ${category.color} text-white shadow-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0`}>
+                              <div className={`p-3 md:p-4 rounded-xl bg-gradient-to-br ${category.color} text-white shadow-lg ${shouldShowAnimations ? 'group-hover:scale-110' : ''} transition-transform duration-300 flex-shrink-0`}>
                                 <Icon className="w-6 h-6 md:w-8 md:h-8" />
                               </div>
                               <div className="flex-1 min-w-0">
@@ -1188,7 +1196,7 @@ const PassionDiscoveryContent = () => {
                               </Button>
                             )}
                             <Button 
-                              className={`w-full bg-gradient-to-r ${category.color} hover:opacity-90 text-white font-semibold py-5 md:py-6 text-base md:text-lg group-hover:scale-105 transition-transform`}
+                              className={`w-full bg-gradient-to-r ${category.color} hover:opacity-90 text-white font-semibold py-5 md:py-6 text-base md:text-lg ${shouldShowAnimations ? 'group-hover:scale-105' : ''} transition-transform`}
                             >
                               Commencer l'exploration
                               <Play className="ml-2 h-4 w-4 md:h-5 md:w-5" />
@@ -1215,14 +1223,14 @@ const PassionDiscoveryContent = () => {
                       return (
                         <Card 
                           key={category.id}
-                          className="hover:shadow-2xl transition-all duration-500 overflow-hidden group cursor-pointer transform hover:-translate-y-2 animate-fade-in"
-                          style={{ animationDelay: `${index * 150}ms` }}
+                          className={`hover:shadow-2xl transition-all duration-500 overflow-hidden group cursor-pointer ${shouldShowAnimations ? 'transform hover:-translate-y-2 animate-fade-in' : ''}`}
+                          style={shouldShowAnimations ? { animationDelay: `${index * 150}ms` } : undefined}
                           onClick={() => setSelectedCategory(category.id)}
                         >
                           <div className={`h-2 bg-gradient-to-r ${category.color} group-hover:h-3 transition-all duration-300`} />
                           <CardHeader>
                             <div className="flex flex-col items-center text-center gap-3">
-                              <div className={`p-4 rounded-full bg-gradient-to-br ${category.color} text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                              <div className={`p-4 rounded-full bg-gradient-to-br ${category.color} text-white shadow-lg ${shouldShowAnimations ? 'group-hover:scale-110' : ''} transition-transform duration-300`}>
                                 <Icon className="w-6 h-6 md:w-8 md:h-8" />
                               </div>
                               <CardTitle className="text-lg md:text-xl">{category.title}</CardTitle>
@@ -1265,14 +1273,14 @@ const PassionDiscoveryContent = () => {
                       return (
                         <Card 
                           key={category.id}
-                          className="hover:shadow-2xl transition-all duration-500 overflow-hidden group cursor-pointer transform hover:-translate-y-2 animate-fade-in"
-                          style={{ animationDelay: `${index * 150}ms` }}
+                          className={`hover:shadow-2xl transition-all duration-500 overflow-hidden group cursor-pointer ${shouldShowAnimations ? 'transform hover:-translate-y-2 animate-fade-in' : ''}`}
+                          style={shouldShowAnimations ? { animationDelay: `${index * 150}ms` } : undefined}
                           onClick={() => setSelectedCategory(category.id)}
                         >
                           <div className={`h-2 bg-gradient-to-r ${category.color} group-hover:h-3 transition-all duration-300`} />
                           <CardHeader>
                             <div className="flex items-start gap-4">
-                              <div className={`p-3 md:p-4 rounded-xl bg-gradient-to-br ${category.color} text-white shadow-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0`}>
+                              <div className={`p-3 md:p-4 rounded-xl bg-gradient-to-br ${category.color} text-white shadow-lg ${shouldShowAnimations ? 'group-hover:scale-110' : ''} transition-transform duration-300 flex-shrink-0`}>
                                 <Icon className="w-6 h-6 md:w-8 md:h-8" />
                               </div>
                               <div className="flex-1 min-w-0">
@@ -1309,7 +1317,7 @@ const PassionDiscoveryContent = () => {
                             </div>
 
                             <Button 
-                              className={`w-full bg-gradient-to-r ${category.color} hover:opacity-90 text-white font-semibold py-5 md:py-6 text-base md:text-lg group-hover:scale-105 transition-transform`}
+                              className={`w-full bg-gradient-to-r ${category.color} hover:opacity-90 text-white font-semibold py-5 md:py-6 text-base md:text-lg ${shouldShowAnimations ? 'group-hover:scale-105' : ''} transition-transform`}
                             >
                               Commencer
                               <Play className="ml-2 h-4 w-4 md:h-5 md:w-5" />
@@ -1526,7 +1534,7 @@ const PassionDiscoveryContent = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Youtube className="w-5 h-5 text-red-500" />
+                    <Play className="w-5 h-5 text-red-500" />
                     Vidéos recommandées
                   </CardTitle>
                   {selectedVideo && (
@@ -1560,7 +1568,7 @@ const PassionDiscoveryContent = () => {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {videos.map((video) => (
+                      {(isSlowConnection ? videos.slice(0, 3) : videos).map((video) => (
                         <div
                           key={video.id}
                           className="group cursor-pointer rounded-lg overflow-hidden border hover:shadow-lg transition-all"
@@ -1628,6 +1636,7 @@ const PassionDiscoveryContent = () => {
                       </div>
                     </div>
                   )}
+                  <div ref={chatEndRef} />
                 </div>
                 
                 {/* Suggested questions */}
