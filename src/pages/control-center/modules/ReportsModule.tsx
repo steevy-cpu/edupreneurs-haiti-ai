@@ -26,7 +26,18 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, ExternalLink, Eye, RefreshCw } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { ChevronLeft, ChevronRight, ExternalLink, Eye, RefreshCw, Trash2, UserX, AlertTriangle } from "lucide-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -34,8 +45,15 @@ import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { REPORT_REASONS, REPORT_STATUS, UserReport } from "../types";
+import { FOUNDER_USER_IDS } from "@/lib/founderConstants";
 
 const PAGE_SIZE = 15;
+
+// Protected accounts that cannot be deleted
+const PROTECTED_USER_IDS = [
+  '68f2f959-e14a-47f9-8277-07df3a6fcd79', // Jude AI
+  ...FOUNDER_USER_IDS,
+];
 
 export default function ReportsModule() {
   const navigate = useNavigate();
@@ -47,6 +65,8 @@ export default function ReportsModule() {
   const [selectedReport, setSelectedReport] = useState<UserReport | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeletingPost, setIsDeletingPost] = useState(false);
+  const [isDeletingUser, setIsDeletingUser] = useState(false);
 
   useEffect(() => {
     fetchReports();
@@ -145,6 +165,92 @@ export default function ReportsModule() {
       setIsUpdating(false);
     }
   };
+
+  const handleDeletePost = async (postId: string) => {
+    setIsDeletingPost(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Non authentifié');
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-delete-post`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            postId,
+            reason: adminNotes || 'Supprimé suite à un signalement',
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Erreur lors de la suppression');
+      }
+
+      toast.success("Post supprimé avec succès");
+      setSelectedReport(null);
+      setAdminNotes("");
+      fetchReports();
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      toast.error(error instanceof Error ? error.message : "Erreur lors de la suppression du post");
+    } finally {
+      setIsDeletingPost(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    // Check if user is protected
+    if (PROTECTED_USER_IDS.includes(userId)) {
+      toast.error("Ce compte est protégé et ne peut pas être supprimé");
+      return;
+    }
+
+    setIsDeletingUser(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Non authentifié');
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-delete-user-account`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            targetUserId: userId,
+            reason: adminNotes || 'Supprimé suite à un signalement',
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Erreur lors de la suppression');
+      }
+
+      toast.success("Compte utilisateur supprimé avec succès");
+      setSelectedReport(null);
+      setAdminNotes("");
+      fetchReports();
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      toast.error(error instanceof Error ? error.message : "Erreur lors de la suppression du compte");
+    } finally {
+      setIsDeletingUser(false);
+    }
+  };
+
+  const isProtectedUser = (userId: string) => PROTECTED_USER_IDS.includes(userId);
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
@@ -303,7 +409,7 @@ export default function ReportsModule() {
 
       {/* Report Detail Dialog */}
       <Dialog open={!!selectedReport} onOpenChange={() => setSelectedReport(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Détails du signalement</DialogTitle>
           </DialogHeader>
@@ -391,8 +497,100 @@ export default function ReportsModule() {
                 />
               </div>
 
-              {/* Actions */}
-              <DialogFooter className="flex-col sm:flex-row gap-2">
+              {/* Moderation Actions */}
+              <div className="space-y-3 pt-4 border-t">
+                <p className="text-sm font-medium text-destructive flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  Actions de modération
+                </p>
+                
+                <div className="flex flex-col gap-2">
+                  {/* Delete Post Button */}
+                  {selectedReport.post_id && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="destructive" 
+                          size="sm" 
+                          className="w-full"
+                          disabled={isDeletingPost}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          {isDeletingPost ? "Suppression..." : "Supprimer le post"}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Supprimer ce post ?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Cette action est irréversible. Le post sera définitivement supprimé 
+                            et tous les signalements associés seront marqués comme résolus.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeletePost(selectedReport.post_id!)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Supprimer le post
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+
+                  {/* Delete User Account Button */}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="destructive" 
+                        size="sm" 
+                        className="w-full"
+                        disabled={isDeletingUser || isProtectedUser(selectedReport.reported_user_id)}
+                      >
+                        <UserX className="mr-2 h-4 w-4" />
+                        {isDeletingUser 
+                          ? "Suppression..." 
+                          : isProtectedUser(selectedReport.reported_user_id)
+                            ? "Compte protégé"
+                            : "Supprimer le compte utilisateur"
+                        }
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-destructive">
+                          ⚠️ Supprimer ce compte utilisateur ?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="space-y-2">
+                          <p>
+                            <strong>Cette action est irréversible.</strong> Le compte de{" "}
+                            <span className="font-semibold">
+                              {selectedReport.reported_user?.full_name || "cet utilisateur"}
+                            </span>{" "}
+                            sera définitivement supprimé.
+                          </p>
+                          <p>Toutes les données associées (posts, messages, etc.) seront également supprimées.</p>
+                          <p>Un email de notification sera envoyé à l'utilisateur.</p>
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDeleteUser(selectedReport.reported_user_id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Oui, supprimer le compte
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+
+              {/* Status Update Actions */}
+              <DialogFooter className="flex-col sm:flex-row gap-2 pt-4 border-t">
                 <Select
                   defaultValue={selectedReport.status}
                   onValueChange={(status) => updateReportStatus(selectedReport.id, status)}

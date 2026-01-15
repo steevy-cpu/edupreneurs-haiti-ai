@@ -148,5 +148,8 @@ verify_jwt = true
 [functions.generate-custom-avatar]
 verify_jwt = false
 
-[functions.generate-custom-avatar]
+[functions.admin-delete-user-account]
+verify_jwt = false
+
+[functions.admin-delete-post]
 verify_jwt = false
