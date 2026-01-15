@@ -156,3 +156,6 @@ verify_jwt = false
 
 [functions.send-report-confirmation]
 verify_jwt = false
+
+[functions.send-announcement]
+verify_jwt = false
