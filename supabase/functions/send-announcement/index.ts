@@ -135,51 +135,34 @@ serve(async (req) => {
     console.log(`📢 Sending announcement: ${announcement.title}`);
     console.log(`   Target: ${announcement.target_type}, Grades: ${announcement.target_grades?.join(', ') || 'N/A'}`);
 
-    // Get target user IDs based on criteria
-    let targetUserIds: string[] = [];
+    // Step 1: Get ALL target user IDs (for in-app notifications)
+    let allTargetUserIds: string[] = [];
 
     if (announcement.target_type === 'all') {
-      // Get all users with push subscriptions
-      const { data: subs } = await supabase
-        .from('push_subscriptions')
+      const { data: profiles } = await supabase
+        .from('profiles')
         .select('user_id');
-      
-      targetUserIds = [...new Set(subs?.map(s => s.user_id) || [])];
+      allTargetUserIds = profiles?.map(p => p.user_id) || [];
     } else if (announcement.target_type === 'grade' && announcement.target_grades?.length) {
-      // Get users from specific grades
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id')
         .in('academic_grade', announcement.target_grades);
-      
-      if (profiles?.length) {
-        const { data: subs } = await supabase
-          .from('push_subscriptions')
-          .select('user_id')
-          .in('user_id', profiles.map(p => p.user_id));
-        
-        targetUserIds = [...new Set(subs?.map(s => s.user_id) || [])];
-      }
+      allTargetUserIds = profiles?.map(p => p.user_id) || [];
     } else if (announcement.target_type === 'verified') {
-      // Get verified users
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id')
         .eq('verified', true);
-      
-      if (profiles?.length) {
-        const { data: subs } = await supabase
-          .from('push_subscriptions')
-          .select('user_id')
-          .in('user_id', profiles.map(p => p.user_id));
-        
-        targetUserIds = [...new Set(subs?.map(s => s.user_id) || [])];
-      }
+      allTargetUserIds = profiles?.map(p => p.user_id) || [];
     }
 
-    console.log(`📊 Found ${targetUserIds.length} unique users to notify`);
+    // Remove duplicates and exclude the sender
+    allTargetUserIds = [...new Set(allTargetUserIds)].filter(id => id !== user.id);
+    
+    console.log(`📊 Found ${allTargetUserIds.length} total target users`);
 
-    if (targetUserIds.length === 0) {
+    if (allTargetUserIds.length === 0) {
       await supabase
         .from('announcements')
         .update({ 
@@ -193,11 +176,48 @@ serve(async (req) => {
       return secureJsonResponse({ success: true, message: 'No recipients found', successCount: 0, totalCount: 0 });
     }
 
-    // Get all subscriptions for target users
+    // Step 2: Create in-app notifications for ALL target users
+    console.log(`📝 Creating ${allTargetUserIds.length} in-app notifications...`);
+
+    // Truncate content to prevent UI overflow (max ~200 chars)
+    const truncatedContent = announcement.message.length > 180 
+      ? `📢 ${announcement.title}: ${announcement.message.substring(0, 150)}...`
+      : `📢 ${announcement.title}: ${announcement.message}`;
+
+    const notificationRecords = allTargetUserIds.map(userId => ({
+      user_id: userId,
+      actor_id: user.id,
+      type: 'announcement',
+      content: truncatedContent,
+      post_id: null,
+      read: false
+    }));
+
+    // Batch insert notifications (500 at a time)
+    const NOTIFICATION_BATCH_SIZE = 500;
+    let notifInsertCount = 0;
+
+    for (let i = 0; i < notificationRecords.length; i += NOTIFICATION_BATCH_SIZE) {
+      const batch = notificationRecords.slice(i, i + NOTIFICATION_BATCH_SIZE);
+      
+      const { error: insertError } = await supabase
+        .from('notifications')
+        .insert(batch);
+      
+      if (insertError) {
+        console.error('Error inserting notification batch:', insertError);
+      } else {
+        notifInsertCount += batch.length;
+      }
+    }
+
+    console.log(`✅ Created ${notifInsertCount} in-app notifications`);
+
+    // Step 3: Get push subscriptions for target users
     const { data: allSubscriptions } = await supabase
       .from('push_subscriptions')
       .select('*')
-      .in('user_id', targetUserIds);
+      .in('user_id', allTargetUserIds);
 
     const subscriptions = allSubscriptions || [];
     console.log(`📱 Total subscriptions to send: ${subscriptions.length}`);
@@ -280,12 +300,13 @@ serve(async (req) => {
     console.log(`✅ Announcement sent: ${successCount}/${subscriptions.length} successful`);
 
     // Update announcement with results
+    // recipients_count = total in-app notifications, success_count = push successes
     await supabase
       .from('announcements')
       .update({ 
         status: 'sent', 
         sent_at: new Date().toISOString(),
-        recipients_count: subscriptions.length,
+        recipients_count: allTargetUserIds.length,
         success_count: successCount
       })
       .eq('id', announcementId);
