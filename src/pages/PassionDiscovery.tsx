@@ -889,16 +889,13 @@ const PassionDiscoveryContent = () => {
             <div className="h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500" />
             <CardHeader className="pb-4">
               <div className="flex flex-col sm:flex-row items-center gap-4 mb-4">
-                <div className="relative">
-                  <div className="absolute -inset-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full blur-lg opacity-20" />
-                  <img 
-                    src={question.judeImage} 
-                    alt="Jude"
-                    className="relative w-20 h-20 md:w-24 md:h-24 drop-shadow-lg" 
-                    loading="lazy" 
-                    decoding="async" 
-                  />
-                </div>
+                <img 
+                  src={question.judeImage} 
+                  alt="Jude"
+                  className="w-20 h-20 md:w-24 md:h-24 object-contain" 
+                  loading="lazy" 
+                  decoding="async" 
+                />
                 <CardTitle className="text-xl md:text-2xl text-center sm:text-left flex-1">
                   {question.question}
                 </CardTitle>
@@ -929,8 +926,8 @@ const PassionDiscoveryContent = () => {
                     variant="outline"
                     className={`w-full h-auto min-h-[56px] py-4 px-5 text-left justify-between transition-all duration-300 text-sm md:text-base group ${
                       isSelected 
-                        ? "bg-primary/20 border-primary border-2 shadow-lg scale-[1.02] ring-2 ring-primary/40 text-foreground" 
-                        : "hover:bg-accent/10 hover:border-primary/60 hover:shadow-md active:scale-[0.98]"
+                        ? "bg-primary/20 border-primary border-2 shadow-lg scale-[1.02] ring-2 ring-primary/40 text-foreground hover:bg-primary/25 hover:text-foreground" 
+                        : "hover:bg-primary/10 hover:border-primary/60 hover:shadow-md hover:text-foreground active:scale-[0.98]"
                     }`}
                     disabled={isTransitioning || isLoading}
                     aria-pressed={isSelected}
@@ -1599,7 +1596,7 @@ const PassionDiscoveryContent = () => {
             <Card className="lg:sticky lg:top-6 h-[70vh] lg:h-[calc(100vh-6rem)] flex flex-col">
               <CardHeader className="border-b py-3 md:py-4">
                 <div className="flex items-center gap-3">
-                  <img src={judePointing} alt="Jude" className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover" loading="lazy" decoding="async" />
+                  <img src={judePointing} alt="Jude" className="w-10 h-10 md:w-12 md:h-12 object-contain" loading="lazy" decoding="async" />
                   <div className="min-w-0">
                     <CardTitle className="text-base md:text-lg">Discute avec Jude</CardTitle>
                     <CardDescription className="text-xs md:text-sm">Ton tuteur IA personnel</CardDescription>
