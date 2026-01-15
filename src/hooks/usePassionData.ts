@@ -95,7 +95,7 @@ export const usePassionProgress = (userId: string | null) => {
           progress_percentage: progressPercentage,
           completed: completed,
           completed_at: completed ? new Date().toISOString() : null,
-        });
+        }, { onConflict: 'user_id,category_id,module_id' });
       
       if (error) throw error;
       
@@ -202,7 +202,7 @@ export const useSaveQuizResults = () => {
           literature_score: scores.literature,
           quiz_completed: true,
           completed_at: new Date().toISOString(),
-        });
+        }, { onConflict: 'user_id' });
       
       if (error) throw error;
     },
