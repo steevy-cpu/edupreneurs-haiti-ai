@@ -786,23 +786,23 @@ const PassionDiscoveryContent = () => {
         </div>
         <div className="max-w-4xl w-full">
           {/* Hero Section */}
-          <div className="relative mb-8">
+          <div className="relative mb-6 sm:mb-8">
             <div className={`absolute inset-0 bg-gradient-to-r from-violet-500/20 via-fuchsia-500/20 to-amber-500/20 ${shouldShowBlur ? 'blur-3xl' : ''} rounded-full`} />
-            <div className="relative flex flex-col md:flex-row items-center gap-6 md:gap-10">
-              <div className="relative">
+            <div className="relative flex flex-col items-center gap-4 sm:gap-6 md:flex-row md:gap-10">
+              <div className="relative flex-shrink-0">
                 <img 
                   src={judePassionDiscovery} 
                   alt="Jude découvre" 
-                  className={`relative w-40 h-40 md:w-52 md:h-52 object-contain ${shouldShowAnimations ? 'animate-scale-in' : ''}`}
+                  className={`relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-52 lg:h-52 object-contain ${shouldShowAnimations ? 'animate-scale-in' : ''}`}
                   loading="lazy" 
                   decoding="async" 
                 />
               </div>
-              <div className="text-center md:text-left flex-1">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black mb-4 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent leading-tight">
+              <div className="text-center md:text-left flex-1 px-2 sm:px-0">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black mb-3 sm:mb-4 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent leading-tight">
                   Découvre ta Passion!
                 </h1>
-                <p className="text-lg md:text-xl text-muted-foreground max-w-lg">
+                <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-lg mx-auto md:mx-0">
                   Salut! Je suis <span className="font-bold text-foreground">Jude</span>, ton guide personnel. En 2 minutes, découvre ce qui te passionne vraiment!
                 </p>
               </div>
@@ -867,9 +867,9 @@ const PassionDiscoveryContent = () => {
         <div className="fixed top-4 right-4 z-50">
           <ThemeToggle />
         </div>
-        <div className="max-w-2xl w-full space-y-4 md:space-y-6">
+        <div className="max-w-2xl w-full space-y-3 sm:space-y-4 md:space-y-6 px-1 sm:px-0">
           {/* Progress Header - Sticky on mobile */}
-          <div className="sticky top-2 z-10 bg-background/80 backdrop-blur-md rounded-lg p-3 md:p-0 md:bg-transparent md:backdrop-blur-none md:static">
+          <div className="sticky top-2 z-10 bg-background/80 backdrop-blur-md rounded-lg p-2 sm:p-3 md:p-0 md:bg-transparent md:backdrop-blur-none md:static">
             <div className="flex items-center justify-between text-sm mb-2">
               <div className="flex items-center gap-2">
                 {currentQuestion > 0 && (
@@ -911,7 +911,7 @@ const PassionDiscoveryContent = () => {
                 </CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3 pb-6">
+            <CardContent className="space-y-2 sm:space-y-3 pb-4 sm:pb-6 px-3 sm:px-6">
               {saveError && (
                 <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mb-4">
                   <p className="text-sm text-destructive mb-2">Erreur lors de la sauvegarde</p>
@@ -977,30 +977,30 @@ const PassionDiscoveryContent = () => {
     const topCategories = categories.filter(cat => topPassions.includes(cat.id));
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-50 to-amber-50 dark:from-violet-950/30 dark:via-fuchsia-950/20 dark:to-amber-950/20 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-50 to-amber-50 dark:from-violet-950/30 dark:via-fuchsia-950/20 dark:to-amber-950/20 flex items-center justify-center p-3 sm:p-4">
         <div className="fixed top-4 right-4 z-50">
           <ThemeToggle />
         </div>
-        <div className="max-w-3xl w-full space-y-6">
+        <div className="max-w-3xl w-full space-y-4 sm:space-y-6 px-1 sm:px-2">
           {/* Celebration Header */}
           <div className="text-center">
-            <div className="relative inline-block mb-4">
+            <div className="relative inline-block mb-3 sm:mb-4">
               <img 
                 src={judePassionDiscovery} 
                 alt="Jude célèbre" 
-                className={`relative w-36 h-36 md:w-44 md:h-44 object-contain ${shouldShowAnimations ? 'animate-scale-in' : ''}`}
+                className={`relative w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-44 lg:h-44 object-contain ${shouldShowAnimations ? 'animate-scale-in' : ''}`}
                 loading="lazy" 
                 decoding="async" 
               />
             </div>
-            <h1 className="text-3xl md:text-4xl font-black mb-2 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black mb-2 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent">
               Résultats Découverts!
             </h1>
-            <p className="text-muted-foreground text-lg">Voici tes passions principales</p>
+            <p className="text-muted-foreground text-sm sm:text-base md:text-lg">Voici tes passions principales</p>
           </div>
 
           {/* Results Cards */}
-          <div className="grid gap-4">
+          <div className="grid gap-3 sm:gap-4">
             {topCategories.map((category, index) => {
               const Icon = category.icon;
               const medals = ["🥇", "🥈", "🥉"];
@@ -1011,15 +1011,15 @@ const PassionDiscoveryContent = () => {
                   style={{ animationDelay: `${index * 150}ms` }}
                 >
                   <div className={`h-1 bg-gradient-to-r ${category.color}`} />
-                  <CardContent className="p-4 md:p-5">
-                    <div className="flex items-center gap-4">
-                      <span className="text-2xl md:text-3xl">{medals[index]}</span>
-                      <div className={`p-3 rounded-xl bg-gradient-to-br ${category.color} text-white shadow-lg flex-shrink-0`}>
-                        <Icon className="w-5 h-5 md:w-6 md:h-6" />
+                  <CardContent className="p-3 sm:p-4 md:p-5">
+                    <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
+                      <span className="text-xl sm:text-2xl md:text-3xl flex-shrink-0">{medals[index]}</span>
+                      <div className={`p-2 sm:p-3 rounded-xl bg-gradient-to-br ${category.color} text-white shadow-lg flex-shrink-0`}>
+                        <Icon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-base md:text-lg">{category.title}</h3>
-                        <p className="text-sm text-muted-foreground truncate">{category.description}</p>
+                        <h3 className="font-bold text-sm sm:text-base md:text-lg">{category.title}</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">{category.description}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -1051,11 +1051,11 @@ const PassionDiscoveryContent = () => {
   // Category & Module Selection
   if (!selectedModule) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-violet-50/30 to-fuchsia-50/30 dark:from-background dark:via-violet-950/10 dark:to-fuchsia-950/10">
+      <div className="min-h-screen bg-gradient-to-br from-background via-violet-50/30 to-fuchsia-50/30 dark:from-background dark:via-violet-950/10 dark:to-fuchsia-950/10 pb-24 lg:pb-8">
         <div className="fixed top-4 right-4 z-50">
           <ThemeToggle />
         </div>
-        <div className="container mx-auto px-4 py-6 md:py-8">
+        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <Button
               variant="ghost"
@@ -1086,23 +1086,23 @@ const PassionDiscoveryContent = () => {
           {!selectedCategory && (
             <>
               {/* Hero Section */}
-              <div className="relative mb-8 md:mb-12">
+              <div className="relative mb-6 sm:mb-8 md:mb-12">
                 <div className={`absolute inset-0 bg-gradient-to-r from-violet-500/10 via-fuchsia-500/10 to-amber-500/10 ${shouldShowBlur ? 'blur-3xl' : ''} rounded-full`} />
-                <div className="relative flex flex-col md:flex-row items-center gap-6 md:gap-10 p-6 md:p-8 rounded-3xl bg-gradient-to-r from-violet-500/5 via-fuchsia-500/5 to-amber-500/5 backdrop-blur-sm border border-primary/10">
+                <div className="relative flex flex-col items-center gap-4 sm:gap-6 md:flex-row md:gap-10 p-4 sm:p-6 md:p-8 rounded-3xl bg-gradient-to-r from-violet-500/5 via-fuchsia-500/5 to-amber-500/5 backdrop-blur-sm border border-primary/10">
                   <div className="relative flex-shrink-0">
                     <img 
                       src={judePassionDiscovery} 
                       alt="Jude" 
-                      className="relative w-28 h-28 md:w-40 md:h-40 object-contain"
+                      className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 object-contain"
                       loading="lazy" 
                       decoding="async" 
                     />
                   </div>
                   <div className="text-center md:text-left flex-1">
-                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-black mb-3 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent leading-tight">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black mb-2 sm:mb-3 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent leading-tight">
                       Découverte & Épanouissement
                     </h1>
-                    <p className="text-base md:text-lg text-muted-foreground max-w-2xl">
+                    <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl">
                       Explore tes passions, développe ta citoyenneté et deviens la meilleure version de toi-même
                     </p>
                   </div>
@@ -1125,10 +1125,10 @@ const PassionDiscoveryContent = () => {
               </div>
 
               <Tabs defaultValue="passion" className="w-full max-w-6xl mx-auto">
-                <TabsList className="grid w-full grid-cols-3 mb-6 md:mb-8" role="tablist" aria-label="Types de catégories">
-                  <TabsTrigger value="passion" className="text-xs md:text-sm">Passion</TabsTrigger>
-                  <TabsTrigger value="civic" className="text-xs md:text-sm">Civique</TabsTrigger>
-                  <TabsTrigger value="development" className="text-xs md:text-sm">Personnel</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6 md:mb-8 h-auto" role="tablist" aria-label="Types de catégories">
+                  <TabsTrigger value="passion" className="text-xs sm:text-sm py-2 px-2 sm:px-4">Passion</TabsTrigger>
+                  <TabsTrigger value="civic" className="text-xs sm:text-sm py-2 px-2 sm:px-4">Civique</TabsTrigger>
+                  <TabsTrigger value="development" className="text-xs sm:text-sm py-2 px-2 sm:px-4">Personnel</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="passion" className="space-y-6" role="tabpanel" aria-label="Catégories passion">
@@ -1169,12 +1169,12 @@ const PassionDiscoveryContent = () => {
                               {category.fullDescription}
                             </p>
                             
-                            <div>
-                              <div className="flex justify-between text-sm mb-2">
+                            <div className="relative z-10">
+                              <div className="flex justify-between text-xs sm:text-sm mb-2">
                                 <span className="font-medium">Progression</span>
                                 <span className="text-muted-foreground">{categoryProgress.completed}/{categoryProgress.total} modules</span>
                               </div>
-                              <Progress value={categoryProgress.percentage} className="h-3" />
+                              <Progress value={categoryProgress.percentage} className="h-2 sm:h-3" />
                             </div>
 
                             <div className="flex flex-wrap gap-2">
@@ -1380,21 +1380,23 @@ const PassionDiscoveryContent = () => {
                       }`}
                       onClick={() => !module.locked && startModule(currentCategory.id, module.id)}
                     >
-                      <CardContent className="p-4 md:p-6">
-                        <div className="flex items-start gap-3 md:gap-4">
-                          <div className={`flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br ${currentCategory.color} text-white flex items-center justify-center font-bold text-lg md:text-xl`}>
+                      <CardContent className="p-3 sm:p-4 md:p-6">
+                        <div className="flex items-start gap-2 sm:gap-3 md:gap-4">
+                          <div className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br ${currentCategory.color} text-white flex items-center justify-center font-bold text-base sm:text-lg md:text-xl`}>
                             {index + 1}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
-                              <h3 className="text-lg md:text-xl font-bold flex items-center gap-2 flex-wrap">
-                                {module.title}
-                                {moduleProgress.completed && <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />}
-                                {module.locked && <Lock className="w-5 h-5 text-muted-foreground flex-shrink-0" />}
-                              </h3>
-                              <Badge variant="secondary" className="self-start">{module.duration}</Badge>
+                            <div className="flex flex-col gap-1 sm:gap-2 mb-2">
+                              <div className="flex items-start justify-between gap-2">
+                                <h3 className="text-base sm:text-lg md:text-xl font-bold flex items-center gap-1 sm:gap-2 flex-wrap">
+                                  {module.title}
+                                  {moduleProgress.completed && <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />}
+                                  {module.locked && <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground flex-shrink-0" />}
+                                </h3>
+                                <Badge variant="secondary" className="text-xs flex-shrink-0">{module.duration}</Badge>
+                              </div>
                             </div>
-                            <p className="text-muted-foreground mb-3 text-sm md:text-base">{module.description}</p>
+                            <p className="text-muted-foreground mb-3 text-xs sm:text-sm md:text-base">{module.description}</p>
                             
                             {module.locked && (
                               <p className="text-xs text-amber-600 dark:text-amber-400 mb-3">
@@ -1411,14 +1413,15 @@ const PassionDiscoveryContent = () => {
                             
                             {!module.locked && (
                               <Button 
-                                className={`bg-gradient-to-r ${currentCategory.color} hover:opacity-90 text-white`}
+                                className={`w-full sm:w-auto bg-gradient-to-r ${currentCategory.color} hover:opacity-90 text-white text-sm`}
+                                size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   startModule(currentCategory.id, module.id);
                                 }}
                               >
                                 <Play className="mr-2 h-4 w-4" />
-                                {moduleProgress.progress_percentage > 0 ? "Continuer" : "Commencer ce module"}
+                                {moduleProgress.progress_percentage > 0 ? "Continuer" : "Commencer"}
                               </Button>
                             )}
                           </div>
@@ -1437,7 +1440,7 @@ const PassionDiscoveryContent = () => {
 
   // Learning Module View
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-purple-50/30 to-pink-50/30 dark:from-background dark:via-purple-950/10 dark:to-pink-950/10">
+    <div className="min-h-screen bg-gradient-to-br from-background via-purple-50/30 to-pink-50/30 dark:from-background dark:via-purple-950/10 dark:to-pink-950/10 pb-24 lg:pb-8">
       {/* Leave confirmation dialog */}
       <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
         <AlertDialogContent>
@@ -1612,19 +1615,19 @@ const PassionDiscoveryContent = () => {
           </div>
 
           <div className="lg:col-span-1 order-first lg:order-last">
-            <Card className="lg:sticky lg:top-6 h-[70vh] lg:h-[calc(100vh-6rem)] flex flex-col">
-              <CardHeader className="border-b py-3 md:py-4">
-                <div className="flex items-center gap-3">
-                  <img src={judePointing} alt="Jude" className="w-10 h-10 md:w-12 md:h-12 object-contain" loading="lazy" decoding="async" />
+            <Card className="lg:sticky lg:top-6 h-[50vh] sm:h-[60vh] lg:h-[calc(100vh-6rem)] flex flex-col">
+              <CardHeader className="border-b py-2 sm:py-3 md:py-4 px-3 sm:px-6">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <img src={judePointing} alt="Jude" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 object-contain" loading="lazy" decoding="async" />
                   <div className="min-w-0">
-                    <CardTitle className="text-base md:text-lg">Discute avec Jude</CardTitle>
-                    <CardDescription className="text-xs md:text-sm">Ton tuteur IA personnel</CardDescription>
+                    <CardTitle className="text-sm sm:text-base md:text-lg">Discute avec Jude</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">Ton tuteur IA</CardDescription>
                   </div>
                 </div>
               </CardHeader>
               
-              <CardContent className="flex-1 flex flex-col p-3 md:p-4 overflow-hidden">
-                <div className="flex-1 overflow-y-auto space-y-3 md:space-y-4 mb-3 md:mb-4 pr-2">
+              <CardContent className="flex-1 flex flex-col p-2 sm:p-3 md:p-4 overflow-hidden">
+                <div className="flex-1 overflow-y-auto space-y-2 sm:space-y-3 md:space-y-4 mb-2 sm:mb-3 md:mb-4 pr-1 sm:pr-2">
                   {chatMessages.map((msg, idx) => (
                     <div
                       key={idx}
