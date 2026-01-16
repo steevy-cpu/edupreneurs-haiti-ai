@@ -630,6 +630,51 @@ export type Database = {
           },
         ]
       }
+      daily_words: {
+        Row: {
+          audio_url: string | null
+          category: string | null
+          created_at: string | null
+          definition: string
+          difficulty_level: string | null
+          example: string
+          id: string
+          is_active: boolean | null
+          part_of_speech: string
+          phonetic: string
+          updated_at: string | null
+          word: string
+        }
+        Insert: {
+          audio_url?: string | null
+          category?: string | null
+          created_at?: string | null
+          definition: string
+          difficulty_level?: string | null
+          example: string
+          id?: string
+          is_active?: boolean | null
+          part_of_speech: string
+          phonetic: string
+          updated_at?: string | null
+          word: string
+        }
+        Update: {
+          audio_url?: string | null
+          category?: string | null
+          created_at?: string | null
+          definition?: string
+          difficulty_level?: string | null
+          example?: string
+          id?: string
+          is_active?: boolean | null
+          part_of_speech?: string
+          phonetic?: string
+          updated_at?: string | null
+          word?: string
+        }
+        Relationships: []
+      }
       english_practice_conversations: {
         Row: {
           created_at: string | null
@@ -2541,6 +2586,35 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_seen_words: {
+        Row: {
+          id: string
+          seen_at: string | null
+          user_id: string
+          word_id: string
+        }
+        Insert: {
+          id?: string
+          seen_at?: string | null
+          user_id: string
+          word_id: string
+        }
+        Update: {
+          id?: string
+          seen_at?: string | null
+          user_id?: string
+          word_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_seen_words_word_id_fkey"
+            columns: ["word_id"]
+            isOneToOne: false
+            referencedRelation: "daily_words"
             referencedColumns: ["id"]
           },
         ]

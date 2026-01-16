@@ -47,6 +47,7 @@ import {
   DashboardFullSkeleton
 } from "@/components/shared/SkeletonLoaders";
 import { ChartErrorBoundary } from "@/components/dashboard/ChartErrorBoundary";
+import { WordOfTheDayCard } from "@/components/dashboard/WordOfTheDayCard";
 
 // Lazy-load heavy chart and widget components for 3G optimization
 const WeeklyActivityChart = lazy(() => 
@@ -414,6 +415,9 @@ const Dashboard = () => {
               showThemeToggle={true}
             />
           </div>
+
+          {/* Word of the Day */}
+          <WordOfTheDayCard />
 
           {/* Quick Actions Card */}
           <QuickActionsCard />
