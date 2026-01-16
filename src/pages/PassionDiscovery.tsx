@@ -644,7 +644,7 @@ const PassionDiscoveryContent = () => {
 
     const welcomeMessage = {
       role: "assistant",
-      content: `Bonjour! Je suis Jude, ton guide pour découvrir "${module.title}". 🎓\n\n${module.description}\n\nJe vais t'accompagner dans ce module d'environ ${module.duration}. Nous allons apprendre ensemble de manière interactive!\n\nPour commencer, dis-moi: Qu'est-ce qui t'intéresse le plus dans ${category.title}? As-tu déjà une expérience avec ce sujet?`
+      content: `Salut! Je suis Jude, ton guide pour découvrir "${module.title}". 🎓\n\n${module.description}\n\nJe vais t'accompagner dans ce module d'environ ${module.duration}. Nous allons apprendre ensemble de manière interactive!`
     };
     
     setChatMessages([welcomeMessage]);
@@ -1613,7 +1613,7 @@ const PassionDiscoveryContent = () => {
           </div>
 
           <div className="lg:col-span-1">
-            <Card className="lg:sticky lg:top-6 h-[45vh] sm:h-[50vh] lg:h-[calc(100vh-6rem)] flex flex-col">
+            <Card className="lg:sticky lg:top-6 h-[55vh] sm:h-[60vh] lg:h-[calc(100vh-6rem)] flex flex-col">
               <CardHeader className="border-b py-2 px-3 sm:px-4">
                 <div className="flex items-center gap-2">
                   <img src={judePointing} alt="Jude" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" loading="lazy" decoding="async" />
