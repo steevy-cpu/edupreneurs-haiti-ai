@@ -128,6 +128,13 @@ function detectNavigation(response: string): string | null {
     'paramètres': '/settings',
     'réglages': '/settings',
     'notifications': '/notifications',
+    'bibliothèque': '/lecture',
+    'lecture': '/lecture',
+    'livres': '/lecture',
+    'lire': '/lecture',
+    'ebooks': '/lecture',
+    'livre': '/lecture',
+    'e-books': '/lecture',
   };
 
   const lowerResponse = response.toLowerCase();
@@ -283,6 +290,7 @@ serve(async (req) => {
       '/profile': 'sur ton profil',
       '/settings': 'dans les paramètres',
       '/notifications': 'sur les notifications',
+      '/lecture': 'dans la bibliothèque',
     };
     
     const pageContext = pageContextMap[currentPage] || 
@@ -313,6 +321,7 @@ Pages principales:
 - Échecs (/chess-game): Jouer aux échecs avec moi comme coach!
 - Passions (/passion-discovery): Découvrir des activités extra-scolaires
 - Baccalauréat (/baccalaureat): Préparation aux examens officiels
+- Bibliothèque (/lecture): Lire des livres en français et anglais avec mon aide!
 - Profil (/profile): Voir et modifier ton profil
 - Paramètres (/settings): Gérer ton compte
 - Notifications (/notifications): Voir tes notifications
