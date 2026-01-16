@@ -24,6 +24,15 @@ interface UseWordOfTheDayReturn {
   error: string | null;
 }
 
+const VISITOR_WORD_KEY = 'visitor_word_of_day';
+
+// Get today's date in Haiti timezone (YYYY-MM-DD format)
+const getHaitiDate = (): string => {
+  return new Date().toLocaleDateString('en-CA', { 
+    timeZone: 'America/Port-au-Prince' 
+  });
+};
+
 export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
   const { isVisitor } = useVisitor();
   const [word, setWord] = useState<DailyWord | null>(null);
@@ -33,69 +42,120 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
   const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Fetch word of the day
+  // Fetch word of the day - same word until midnight Haiti time
   useEffect(() => {
     const fetchWord = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
+        const haitiDate = getHaitiDate();
         const { data: { user } } = await supabase.auth.getUser();
         
         let wordData: DailyWord | null = null;
 
         if (user && !isVisitor) {
-          // For authenticated users, get an unseen word
-          const { data: seenWordIds } = await supabase
-            .from('user_seen_words')
-            .select('word_id')
-            .eq('user_id', user.id);
-
-          const seenIds = seenWordIds?.map(sw => sw.word_id) || [];
-
-          let query = supabase
-            .from('daily_words')
-            .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category')
-            .eq('is_active', true);
-
-          if (seenIds.length > 0) {
-            query = query.not('id', 'in', `(${seenIds.join(',')})`);
-          }
-
-          const { data, error: fetchError } = await query.limit(1).maybeSingle();
-
-          if (fetchError) throw fetchError;
-
-          // If all words have been seen, get a random one
-          if (!data) {
-            const { data: randomWord, error: randomError } = await supabase
-              .from('daily_words')
-              .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category')
-              .eq('is_active', true)
-              .limit(1)
-              .maybeSingle();
-
-            if (randomError) throw randomError;
-            wordData = randomWord;
-          } else {
-            wordData = data;
-
-            // Mark as seen
-            await supabase
-              .from('user_seen_words')
-              .insert({ user_id: user.id, word_id: data.id });
-          }
-        } else {
-          // For visitors, just get a random word
-          const { data, error: fetchError } = await supabase
-            .from('daily_words')
-            .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category')
-            .eq('is_active', true)
-            .limit(1)
+          // For authenticated users, check if they already have a word for today
+          const { data: todaysWord, error: todayError } = await supabase
+            .from('user_daily_word')
+            .select('word_id, daily_words(*)')
+            .eq('user_id', user.id)
+            .eq('date', haitiDate)
             .maybeSingle();
 
-          if (fetchError) throw fetchError;
-          wordData = data;
+          if (todayError) throw todayError;
+
+          // If user already has a word for today, return it
+          if (todaysWord?.daily_words) {
+            wordData = todaysWord.daily_words as unknown as DailyWord;
+          } else {
+            // No word for today - pick a new one avoiding recently seen words
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
+
+            // Get words seen in last 30 days
+            const { data: recentWords } = await supabase
+              .from('user_daily_word')
+              .select('word_id')
+              .eq('user_id', user.id)
+              .gte('date', thirtyDaysAgoStr);
+
+            const recentIds = recentWords?.map(w => w.word_id) || [];
+
+            // Get all active words
+            const { data: allActiveWords, error: wordsError } = await supabase
+              .from('daily_words')
+              .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category')
+              .eq('is_active', true);
+
+            if (wordsError) throw wordsError;
+
+            // Filter out recently seen words
+            let availableWords = allActiveWords || [];
+            if (recentIds.length > 0 && availableWords.length > recentIds.length) {
+              availableWords = availableWords.filter(w => !recentIds.includes(w.id));
+            }
+
+            // Pick a random word from available
+            if (availableWords.length > 0) {
+              const randomIndex = Math.floor(Math.random() * availableWords.length);
+              wordData = availableWords[randomIndex];
+
+              // Save as today's word using upsert to prevent race conditions
+              await supabase
+                .from('user_daily_word')
+                .upsert(
+                  { user_id: user.id, word_id: wordData.id, date: haitiDate },
+                  { onConflict: 'user_id,date', ignoreDuplicates: true }
+                );
+            }
+          }
+        } else {
+          // For visitors, use localStorage to persist word for the day
+          const stored = localStorage.getItem(VISITOR_WORD_KEY);
+          
+          if (stored) {
+            try {
+              const { wordId, date } = JSON.parse(stored);
+              if (date === haitiDate && wordId) {
+                // Fetch the same word
+                const { data: existingWord, error: fetchError } = await supabase
+                  .from('daily_words')
+                  .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category')
+                  .eq('id', wordId)
+                  .eq('is_active', true)
+                  .maybeSingle();
+
+                if (!fetchError && existingWord) {
+                  wordData = existingWord;
+                }
+              }
+            } catch {
+              // Invalid localStorage data, ignore
+            }
+          }
+
+          // If no valid stored word, get a random one
+          if (!wordData) {
+            const { data: allWords, error: fetchError } = await supabase
+              .from('daily_words')
+              .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category')
+              .eq('is_active', true);
+
+            if (fetchError) throw fetchError;
+
+            if (allWords && allWords.length > 0) {
+              const randomIndex = Math.floor(Math.random() * allWords.length);
+              wordData = allWords[randomIndex];
+
+              // Save to localStorage for the day
+              localStorage.setItem(VISITOR_WORD_KEY, JSON.stringify({
+                wordId: wordData.id,
+                date: haitiDate
+              }));
+            }
+          }
         }
 
         setWord(wordData);

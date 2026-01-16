@@ -4,6 +4,13 @@ import { corsHeaders, corsPreflightResponse, secureJsonResponse, secureErrorResp
 const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
+
+// Founder/Super User IDs - only these users can regenerate audio
+const FOUNDER_USER_IDS = [
+  '0de08330-4183-48f9-b169-19b92f4d114f', // Steevy
+  '7580cd10-e18c-4b2f-ac50-def28d046c9d', // Djood
+];
 
 // Sarah voice - clear French pronunciation
 const VOICE_ID = 'EXAVITQu4vr4xnSDxMaL';
@@ -15,6 +22,29 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Verify authentication - only founders can generate audio
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return secureErrorResponse('Unauthorized - No token provided', 401);
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const supabaseAuth = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error('Auth error:', authError);
+      return secureErrorResponse('Unauthorized - Invalid token', 401);
+    }
+
+    // Check if user is a founder
+    if (!FOUNDER_USER_IDS.includes(user.id)) {
+      console.log(`User ${user.id} attempted to generate audio - not authorized`);
+      return secureErrorResponse('Forbidden - Founders only', 403);
+    }
+
+    console.log(`Founder ${user.id} authorized to generate audio`);
+
     // Check for API key
     if (!ELEVENLABS_API_KEY) {
       return secureErrorResponse('ElevenLabs API key not configured', 500);
