@@ -3,9 +3,10 @@ import { Loader2, ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import * as pdfjsLib from "pdfjs-dist";
+import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
-// Set worker path - required for PDF.js
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Set worker path - using local bundled worker for Vite compatibility
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 interface EbookPDFViewerProps {
   fileUrl: string;
