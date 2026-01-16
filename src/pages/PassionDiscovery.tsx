@@ -1056,14 +1056,16 @@ const PassionDiscoveryContent = () => {
           <ThemeToggle />
         </div>
         <div className="container mx-auto px-4 py-6 md:py-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <Button
               variant="ghost"
               onClick={() => navigate("/dashboard")}
-              className="group"
+              className="group self-start"
+              size="sm"
             >
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-              Retour au tableau de bord
+              <span className="hidden sm:inline">Retour au tableau de bord</span>
+              <span className="sm:hidden">Retour</span>
             </Button>
             
             {preferences?.quiz_completed && (
@@ -1072,10 +1074,11 @@ const PassionDiscoveryContent = () => {
                 size="sm"
                 onClick={handleRetakeQuiz}
                 disabled={resetQuizMutation.isPending}
-                className="gap-2"
+                className="gap-2 self-start sm:self-auto"
               >
                 <RotateCcw className="h-4 w-4" />
-                Refaire le quiz
+                <span className="hidden sm:inline">Refaire le quiz</span>
+                <span className="sm:hidden">Quiz</span>
               </Button>
             )}
           </div>
