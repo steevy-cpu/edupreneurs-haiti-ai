@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useVisitor } from '@/contexts/VisitorContext';
+import { toast } from 'sonner';
 
 export interface DailyWord {
   id: string;
@@ -16,42 +17,24 @@ export interface DailyWord {
 interface UseWordOfTheDayReturn {
   word: DailyWord | null;
   isLoading: boolean;
-  isDismissed: boolean;
   isPlaying: boolean;
+  isGenerating: boolean;
   playAudio: () => void;
   stopAudio: () => void;
-  dismiss: () => void;
   error: string | null;
 }
-
-const getDismissKey = (): string => {
-  const today = new Date().toISOString().split('T')[0];
-  return `word_dismissed_${today}`;
-};
 
 export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
   const { isVisitor } = useVisitor();
   const [word, setWord] = useState<DailyWord | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDismissed, setIsDismissed] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Check if dismissed today
-  useEffect(() => {
-    const dismissKey = getDismissKey();
-    const dismissed = localStorage.getItem(dismissKey) === 'true';
-    setIsDismissed(dismissed);
-  }, []);
-
   // Fetch word of the day
   useEffect(() => {
-    if (isDismissed) {
-      setIsLoading(false);
-      return;
-    }
-
     const fetchWord = async () => {
       try {
         setIsLoading(true);
@@ -125,7 +108,7 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
     };
 
     fetchWord();
-  }, [isDismissed, isVisitor]);
+  }, [isVisitor]);
 
   // Cleanup audio on unmount
   useEffect(() => {
@@ -137,28 +120,68 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
     };
   }, []);
 
-  const playAudio = useCallback(() => {
-    if (!word?.audio_url) return;
+  const playAudio = useCallback(async () => {
+    if (!word) return;
 
+    // Stop any currently playing audio
     if (audioRef.current) {
       audioRef.current.pause();
     }
 
-    const audio = new Audio(word.audio_url);
-    audioRef.current = audio;
+    // If audio exists, play it directly
+    if (word.audio_url) {
+      const audio = new Audio(word.audio_url);
+      audioRef.current = audio;
 
-    audio.onplay = () => setIsPlaying(true);
-    audio.onended = () => setIsPlaying(false);
-    audio.onerror = () => {
-      setIsPlaying(false);
-      console.error('Error playing audio');
-    };
+      audio.onplay = () => setIsPlaying(true);
+      audio.onended = () => setIsPlaying(false);
+      audio.onerror = () => {
+        setIsPlaying(false);
+        console.error('Error playing audio');
+      };
 
-    audio.play().catch(err => {
-      console.error('Error starting playback:', err);
-      setIsPlaying(false);
-    });
-  }, [word?.audio_url]);
+      audio.play().catch(err => {
+        console.error('Error starting playback:', err);
+        setIsPlaying(false);
+      });
+      return;
+    }
+
+    // Otherwise, generate audio on-demand
+    setIsGenerating(true);
+    try {
+      const response = await supabase.functions.invoke('generate-word-audio', {
+        body: { wordId: word.id, word: word.word }
+      });
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      if (response.data?.audioUrl) {
+        // Update local state with new audio URL
+        setWord(prev => prev ? { ...prev, audio_url: response.data.audioUrl } : null);
+
+        // Play the newly generated audio
+        const audio = new Audio(response.data.audioUrl);
+        audioRef.current = audio;
+
+        audio.onplay = () => setIsPlaying(true);
+        audio.onended = () => setIsPlaying(false);
+        audio.onerror = () => {
+          setIsPlaying(false);
+          console.error('Error playing generated audio');
+        };
+
+        await audio.play();
+      }
+    } catch (err) {
+      console.error('Error generating audio:', err);
+      toast.error('Erreur lors de la génération audio');
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [word]);
 
   const stopAudio = useCallback(() => {
     if (audioRef.current) {
@@ -168,20 +191,13 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
     }
   }, []);
 
-  const dismiss = useCallback(() => {
-    const dismissKey = getDismissKey();
-    localStorage.setItem(dismissKey, 'true');
-    setIsDismissed(true);
-  }, []);
-
   return {
     word,
     isLoading,
-    isDismissed,
     isPlaying,
+    isGenerating,
     playAudio,
     stopAudio,
-    dismiss,
     error,
   };
 };
