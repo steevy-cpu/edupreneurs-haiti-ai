@@ -20,6 +20,7 @@ import { CurriculumAnalyzer } from "@/components/content-editor/CurriculumAnalyz
 import { LessonImageManager } from "@/components/content-editor/LessonImageManager";
 import { LessonValidationPanel } from "@/components/content-editor/LessonValidationPanel";
 import { BatchGenerationValidation } from "@/components/content-editor/BatchGenerationValidation";
+import { DailyWordsManager } from "@/components/content-editor/DailyWordsManager";
 
 const CONTENT_EDITOR_STORAGE_KEY = 'content_editor_preferences';
 
@@ -242,14 +243,14 @@ const ContentEditor = () => {
         {/* Main Content with Tabs */}
         <div className="max-w-[1600px] mx-auto">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5 lg:w-[1000px]">
+            <TabsList className="grid w-full grid-cols-6 lg:w-[1200px]">
               <TabsTrigger value="review">
                 <BookOpen className="mr-2 h-4 w-4" />
                 Révision
               </TabsTrigger>
               <TabsTrigger value="batch">
                 <Zap className="mr-2 h-4 w-4" />
-                Génération & Validation
+                Génération
               </TabsTrigger>
               <TabsTrigger value="exams">
                 <BarChart3 className="mr-2 h-4 w-4" />
@@ -262,6 +263,10 @@ const ContentEditor = () => {
               <TabsTrigger value="passion-videos">
                 <Youtube className="mr-2 h-4 w-4" />
                 Passions
+              </TabsTrigger>
+              <TabsTrigger value="daily-words">
+                <Sparkles className="mr-2 h-4 w-4" />
+                Mots du Jour
               </TabsTrigger>
             </TabsList>
 
@@ -389,6 +394,10 @@ const ContentEditor = () => {
 
             <TabsContent value="passion-videos">
               <PassionVideoManager />
+            </TabsContent>
+
+            <TabsContent value="daily-words">
+              <DailyWordsManager />
             </TabsContent>
           </Tabs>
         </div>
