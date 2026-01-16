@@ -100,7 +100,8 @@ const EricChatbotWrapper = () => {
   ];
   
   const isLessonPage = location.pathname.startsWith('/course/') && location.pathname.split('/').length > 2;
-  const isHidden = hiddenRoutes.includes(location.pathname) || isLessonPage;
+  const isLecturePage = location.pathname.startsWith('/lecture/');
+  const isHidden = hiddenRoutes.includes(location.pathname) || isLessonPage || isLecturePage;
   
   if (isHidden) return null;
   
