@@ -26,7 +26,7 @@ interface UseWordOfTheDayReturn {
   shouldDeferAudio: boolean;
 }
 
-const CACHED_WORD_KEY = 'cached_daily_word';
+const CACHED_WORD_KEY = 'cached_daily_word_v2';
 
 // Get today's date in Haiti timezone (YYYY-MM-DD format)
 const getHaitiDate = (): string => {
