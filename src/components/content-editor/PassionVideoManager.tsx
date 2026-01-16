@@ -1,14 +1,14 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Loader2, Save, Trash2, Youtube, Music, Palette, Brain, BookOpen, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, ExternalLink, Video } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Loader2, Save, Trash2, Youtube, Music, Palette, Brain, BookOpen, CheckCircle2, AlertCircle, ExternalLink, Video, ChevronRight, Plus, Edit2, FolderOpen } from "lucide-react";
 import { useAllPassionVideos, useSavePassionVideo, useDeletePassionVideo, type PassionVideo } from "@/hooks/usePassionVideos";
-import { musicActivities, artsActivities, chessActivities, literatureActivities, type ActivityContent } from "@/data/passionActivities";
+import { musicActivities, artsActivities, chessActivities, literatureActivities, type ActivityContent, type ModuleContent } from "@/data/passionActivities";
 
 // Passion categories configuration
 const passionCategories = [
@@ -49,27 +49,87 @@ const getModuleTitle = (categoryId: string, moduleId: string): string => {
   return module?.title || moduleId;
 };
 
+// Tree structure types
+interface TreeModule extends ModuleContent {
+  videoActivities: ActivityContent[];
+  configuredCount: number;
+  totalCount: number;
+  configuredVideos: PassionVideo[];
+}
+
+interface TreeCategory {
+  id: string;
+  title: string;
+  emoji: string;
+  modules: TreeModule[];
+  configuredCount: number;
+  totalCount: number;
+}
+
 export const PassionVideoManager = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedModule, setSelectedModule] = useState<string>('');
   const [videoUrls, setVideoUrls] = useState<Record<string, string>>({});
   const [savingActivity, setSavingActivity] = useState<string | null>(null);
-  const [overviewOpen, setOverviewOpen] = useState(true);
-  const [deletingFromOverview, setDeletingFromOverview] = useState<string | null>(null);
+  const [deletingFromTree, setDeletingFromTree] = useState<string | null>(null);
+  
+  const configSectionRef = useRef<HTMLDivElement>(null);
 
   const { data: allVideos, isLoading } = useAllPassionVideos();
   const saveVideo = useSavePassionVideo();
   const deleteVideo = useDeletePassionVideo();
 
-  // Calculate video counts per category
-  const videoCounts = useMemo(() => {
-    if (!allVideos) return {};
-    const counts: Record<string, number> = {};
-    passionCategories.forEach(cat => {
-      counts[cat.id] = allVideos.filter((v: PassionVideo) => v.category_id === cat.id).length;
+  // Build hierarchical tree structure
+  const categoryTree = useMemo((): TreeCategory[] => {
+    return passionCategories.map(category => {
+      const modules = Object.values(category.activities).map((module: ModuleContent) => {
+        const videoActivities = module.activities.filter(a => a.type === 'video');
+        const configuredVideos = allVideos?.filter(
+          (v: PassionVideo) => 
+            v.category_id === category.id && 
+            v.module_id === module.id
+        ) || [];
+        
+        return {
+          ...module,
+          videoActivities,
+          configuredCount: configuredVideos.length,
+          totalCount: videoActivities.length,
+          configuredVideos
+        };
+      });
+      
+      const totalConfigured = modules.reduce((sum, m) => sum + m.configuredCount, 0);
+      const totalVideos = modules.reduce((sum, m) => sum + m.totalCount, 0);
+      
+      return {
+        id: category.id,
+        title: category.title,
+        emoji: category.emoji,
+        modules,
+        configuredCount: totalConfigured,
+        totalCount: totalVideos
+      };
     });
-    return counts;
   }, [allVideos]);
+
+  // Get modules for selected category
+  const modules = useMemo(() => {
+    if (!selectedCategory) return [];
+    const category = passionCategories.find(c => c.id === selectedCategory);
+    if (!category) return [];
+    return Object.values(category.activities);
+  }, [selectedCategory]);
+
+  // Get video activities for selected module
+  const videoActivities = useMemo(() => {
+    if (!selectedCategory || !selectedModule) return [];
+    const category = passionCategories.find(c => c.id === selectedCategory);
+    if (!category) return [];
+    const module = category.activities[selectedModule];
+    if (!module) return [];
+    return module.activities.filter(a => a.type === 'video');
+  }, [selectedCategory, selectedModule]);
 
   // Calculate video counts per module for selected category
   const moduleVideoCounts = useMemo(() => {
@@ -94,24 +154,6 @@ export const PassionVideoManager = () => {
     if (!module) return 0;
     return module.activities.filter(a => a.type === 'video').length;
   };
-
-  // Get modules for selected category
-  const modules = useMemo(() => {
-    if (!selectedCategory) return [];
-    const category = passionCategories.find(c => c.id === selectedCategory);
-    if (!category) return [];
-    return Object.values(category.activities);
-  }, [selectedCategory]);
-
-  // Get video activities for selected module
-  const videoActivities = useMemo(() => {
-    if (!selectedCategory || !selectedModule) return [];
-    const category = passionCategories.find(c => c.id === selectedCategory);
-    if (!category) return [];
-    const module = category.activities[selectedModule];
-    if (!module) return [];
-    return module.activities.filter(a => a.type === 'video');
-  }, [selectedCategory, selectedModule]);
 
   // Sort activities: configured first, then unconfigured
   const sortedVideoActivities = useMemo((): { configured: ActivityContent[]; unconfigured: ActivityContent[] } => {
@@ -209,9 +251,21 @@ export const PassionVideoManager = () => {
     }
   };
 
-  // Handle delete from overview table
-  const handleDeleteFromOverview = async (video: PassionVideo) => {
-    setDeletingFromOverview(video.id);
+  // Handle quick select from tree view - navigate to configuration section
+  const handleQuickSelect = (categoryId: string, moduleId: string) => {
+    setSelectedCategory(categoryId);
+    setSelectedModule(moduleId);
+    setVideoUrls({});
+    
+    // Scroll to configuration section
+    setTimeout(() => {
+      configSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
+  // Handle delete from tree view
+  const handleDeleteFromTree = async (video: PassionVideo) => {
+    setDeletingFromTree(video.id);
     try {
       await deleteVideo.mutateAsync({
         categoryId: video.category_id,
@@ -219,13 +273,18 @@ export const PassionVideoManager = () => {
         activityId: video.activity_id
       });
     } finally {
-      setDeletingFromOverview(null);
+      setDeletingFromTree(null);
     }
   };
 
-  // Get category info by ID
-  const getCategoryInfo = (categoryId: string) => {
-    return passionCategories.find(c => c.id === categoryId);
+  // Check if an activity is configured
+  const isActivityConfigured = (categoryId: string, moduleId: string, activityId: string): PassionVideo | undefined => {
+    return allVideos?.find(
+      (v: PassionVideo) => 
+        v.category_id === categoryId && 
+        v.module_id === moduleId && 
+        v.activity_id === activityId
+    );
   };
 
   if (isLoading) {
@@ -237,159 +296,235 @@ export const PassionVideoManager = () => {
   }
 
   const totalVideos = allVideos?.length || 0;
+  const totalPossibleVideos = categoryTree.reduce((sum, cat) => sum + cat.totalCount, 0);
 
   return (
     <div className="space-y-6">
-      {/* Video Overview Dashboard */}
+      {/* Summary Stats Header */}
       <Card className="border-2 border-primary/20">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Video className="h-5 w-5 text-primary" />
-                Résumé des Vidéos Configurées
+                Vidéos Passion - Vue d'ensemble
               </CardTitle>
               <CardDescription className="mt-1">
-                {totalVideos} vidéo{totalVideos !== 1 ? 's' : ''} personnalisée{totalVideos !== 1 ? 's' : ''} au total
+                {totalVideos}/{totalPossibleVideos} vidéos configurées
               </CardDescription>
             </div>
-            <Badge variant="secondary" className="text-lg px-3 py-1">
-              {totalVideos}
+            <Badge 
+              variant={totalVideos === totalPossibleVideos ? "default" : "secondary"} 
+              className={`text-lg px-3 py-1 ${totalVideos === totalPossibleVideos ? 'bg-green-500' : ''}`}
+            >
+              {Math.round((totalVideos / totalPossibleVideos) * 100)}%
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Category Video Counts */}
+        <CardContent>
           <div className="flex flex-wrap gap-3">
-            {passionCategories.map(category => {
-              const count = videoCounts[category.id] || 0;
+            {categoryTree.map(category => {
+              const allConfigured = category.configuredCount >= category.totalCount;
+              const someConfigured = category.configuredCount > 0 && category.configuredCount < category.totalCount;
+              
               return (
                 <div
                   key={category.id}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
-                    count > 0 
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
+                    allConfigured 
                       ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
-                      : 'bg-muted border-border'
+                      : someConfigured
+                        ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
+                        : 'bg-muted border-border hover:bg-muted/80'
                   }`}
+                  onClick={() => handleQuickSelect(category.id, category.modules[0]?.id || '')}
                 >
                   <span className="text-lg">{category.emoji}</span>
                   <span className="font-medium">{category.title}</span>
                   <Badge 
-                    variant={count > 0 ? "default" : "outline"}
-                    className={count > 0 ? "bg-green-500 hover:bg-green-600" : ""}
+                    variant={category.configuredCount > 0 ? "default" : "outline"}
+                    className={
+                      allConfigured 
+                        ? 'bg-green-500 hover:bg-green-600' 
+                        : someConfigured 
+                          ? 'bg-yellow-500 hover:bg-yellow-600' 
+                          : ''
+                    }
                   >
-                    {count}
+                    {category.configuredCount}/{category.totalCount}
                   </Badge>
                 </div>
               );
             })}
           </div>
-
-          {/* Collapsible All Videos Table */}
-          {totalVideos > 0 && (
-            <Collapsible open={overviewOpen} onOpenChange={setOverviewOpen}>
-              <CollapsibleTrigger asChild>
-                <Button variant="outline" className="w-full justify-between">
-                  <span className="flex items-center gap-2">
-                    <Youtube className="h-4 w-4 text-red-500" />
-                    Voir toutes les vidéos configurées
-                  </span>
-                  {overviewOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-3">
-                <div className="rounded-lg border overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead className="bg-muted">
-                      <tr>
-                        <th className="text-left p-3 font-medium">Catégorie</th>
-                        <th className="text-left p-3 font-medium">Module</th>
-                        <th className="text-left p-3 font-medium">Activité</th>
-                        <th className="text-left p-3 font-medium">URL</th>
-                        <th className="text-center p-3 font-medium">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                      {allVideos?.map((video: PassionVideo) => {
-                        const categoryInfo = getCategoryInfo(video.category_id);
-                        const videoId = extractYouTubeVideoId(video.youtube_url || '');
-                        const isDeleting = deletingFromOverview === video.id;
-                        
-                        return (
-                          <tr key={video.id} className="hover:bg-muted/50">
-                            <td className="p-3">
-                              <span className="flex items-center gap-2">
-                                <span>{categoryInfo?.emoji}</span>
-                                <span>{categoryInfo?.title || video.category_id}</span>
-                              </span>
-                            </td>
-                            <td className="p-3">
-                              {getModuleTitle(video.category_id, video.module_id)}
-                            </td>
-                            <td className="p-3 font-medium">
-                              {video.title || getActivityTitle(video.category_id, video.module_id, video.activity_id)}
-                            </td>
-                            <td className="p-3">
-                              <div className="flex items-center gap-2">
-                                {videoId && (
-                                  <img 
-                                    src={`https://img.youtube.com/vi/${videoId}/default.jpg`}
-                                    alt="Thumbnail"
-                                    className="w-16 h-12 object-cover rounded"
-                                  />
-                                )}
-                                <a 
-                                  href={video.youtube_url || '#'} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="text-primary hover:underline flex items-center gap-1"
-                                >
-                                  <ExternalLink className="h-3 w-3" />
-                                  Voir
-                                </a>
-                              </div>
-                            </td>
-                            <td className="p-3 text-center">
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleDeleteFromOverview(video)}
-                                disabled={isDeleting}
-                              >
-                                {isDeleting ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Trash2 className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          )}
-
-          {totalVideos === 0 && (
-            <div className="text-center py-4 text-muted-foreground">
-              Aucune vidéo configurée. Sélectionnez une catégorie et un module pour commencer.
-            </div>
-          )}
         </CardContent>
       </Card>
 
-      {/* Main Video Manager */}
+      {/* Hierarchical Tree View */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Youtube className="h-5 w-5 text-red-500" />
-            Gestion des Vidéos - Passions
+            <FolderOpen className="h-5 w-5 text-primary" />
+            Structure des Passions
           </CardTitle>
           <CardDescription>
-            Configurez les vidéos YouTube pour chaque activité des catégories passion
+            Vue hiérarchique: Catégorie → Module → Activités vidéo
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Accordion type="multiple" className="w-full">
+            {categoryTree.map(category => (
+              <AccordionItem key={category.id} value={category.id} className="border rounded-lg mb-2 px-2">
+                <AccordionTrigger className="hover:no-underline py-3">
+                  <div className="flex items-center gap-3 flex-1">
+                    <span className="text-xl">{category.emoji}</span>
+                    <span className="font-semibold text-base">{category.title}</span>
+                    <Badge 
+                      variant={category.configuredCount > 0 ? "default" : "outline"}
+                      className={`ml-auto mr-2 ${
+                        category.configuredCount >= category.totalCount 
+                          ? 'bg-green-500' 
+                          : category.configuredCount > 0 
+                            ? 'bg-yellow-500' 
+                            : ''
+                      }`}
+                    >
+                      {category.configuredCount}/{category.totalCount} vidéos
+                    </Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="pb-3">
+                  <div className="space-y-2 ml-4">
+                    {category.modules.map(module => (
+                      <div key={module.id} className="border rounded-lg overflow-hidden">
+                        {/* Module Header */}
+                        <div 
+                          className={`flex items-center justify-between p-3 ${
+                            module.configuredCount >= module.totalCount 
+                              ? 'bg-green-50 dark:bg-green-900/20' 
+                              : module.configuredCount > 0 
+                                ? 'bg-yellow-50 dark:bg-yellow-900/20' 
+                                : 'bg-muted/50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">{module.title}</span>
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs ${
+                                module.configuredCount >= module.totalCount 
+                                  ? 'border-green-500 text-green-700 dark:text-green-400' 
+                                  : module.configuredCount > 0 
+                                    ? 'border-yellow-500 text-yellow-700 dark:text-yellow-400' 
+                                    : ''
+                              }`}
+                            >
+                              {module.configuredCount}/{module.totalCount}
+                            </Badge>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleQuickSelect(category.id, module.id)}
+                            className="text-xs"
+                          >
+                            <Edit2 className="h-3 w-3 mr-1" />
+                            Gérer
+                          </Button>
+                        </div>
+                        
+                        {/* Module Activities */}
+                        <div className="divide-y">
+                          {module.videoActivities.map(activity => {
+                            const configuredVideo = isActivityConfigured(category.id, module.id, activity.id);
+                            const videoId = configuredVideo?.youtube_url ? extractYouTubeVideoId(configuredVideo.youtube_url) : null;
+                            const isDeleting = deletingFromTree === configuredVideo?.id;
+                            
+                            return (
+                              <div 
+                                key={activity.id} 
+                                className="flex items-center gap-3 p-3 pl-8 text-sm hover:bg-muted/30"
+                              >
+                                {/* Status Icon */}
+                                {configuredVideo ? (
+                                  <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                                ) : (
+                                  <AlertCircle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                )}
+                                
+                                {/* Activity Title */}
+                                <span className={`flex-1 ${configuredVideo ? 'font-medium' : 'text-muted-foreground'}`}>
+                                  {activity.title}
+                                </span>
+                                
+                                {/* Configured Video Info */}
+                                {configuredVideo && videoId && (
+                                  <div className="flex items-center gap-2">
+                                    <img 
+                                      src={`https://img.youtube.com/vi/${videoId}/default.jpg`}
+                                      alt="Thumbnail"
+                                      className="w-12 h-8 object-cover rounded"
+                                    />
+                                    <a 
+                                      href={configuredVideo.youtube_url || '#'} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-primary hover:underline flex items-center gap-1"
+                                    >
+                                      <ExternalLink className="h-3 w-3" />
+                                    </a>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                                      onClick={() => handleDeleteFromTree(configuredVideo)}
+                                      disabled={isDeleting}
+                                    >
+                                      {isDeleting ? (
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                      ) : (
+                                        <Trash2 className="h-3 w-3" />
+                                      )}
+                                    </Button>
+                                  </div>
+                                )}
+                                
+                                {/* Not Configured - Quick Add Button */}
+                                {!configuredVideo && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 text-xs"
+                                    onClick={() => handleQuickSelect(category.id, module.id)}
+                                  >
+                                    <Plus className="h-3 w-3 mr-1" />
+                                    Configurer
+                                  </Button>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </CardContent>
+      </Card>
+
+      {/* Detailed Configuration Section */}
+      <Card ref={configSectionRef} id="video-config-section">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Youtube className="h-5 w-5 text-red-500" />
+            Configuration Détaillée
+          </CardTitle>
+          <CardDescription>
+            Sélectionnez une catégorie et un module pour configurer les vidéos
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -409,23 +544,26 @@ export const PassionVideoManager = () => {
                   <SelectValue placeholder="Sélectionnez une catégorie" />
                 </SelectTrigger>
                 <SelectContent>
-                  {passionCategories.map(category => {
-                    const count = videoCounts[category.id] || 0;
-                    return (
-                      <SelectItem key={category.id} value={category.id}>
-                        <span className="flex items-center gap-2 w-full">
-                          <span>{category.emoji}</span>
-                          <span className="flex-1">{category.title}</span>
-                          <Badge 
-                            variant={count > 0 ? "default" : "outline"} 
-                            className={`ml-2 ${count > 0 ? 'bg-green-500' : ''}`}
-                          >
-                            {count}
-                          </Badge>
-                        </span>
-                      </SelectItem>
-                    );
-                  })}
+                  {categoryTree.map(category => (
+                    <SelectItem key={category.id} value={category.id}>
+                      <span className="flex items-center gap-2 w-full">
+                        <span>{category.emoji}</span>
+                        <span className="flex-1">{category.title}</span>
+                        <Badge 
+                          variant={category.configuredCount > 0 ? "default" : "outline"} 
+                          className={`ml-2 ${
+                            category.configuredCount >= category.totalCount 
+                              ? 'bg-green-500' 
+                              : category.configuredCount > 0 
+                                ? 'bg-yellow-500' 
+                                : ''
+                          }`}
+                        >
+                          {category.configuredCount}/{category.totalCount}
+                        </Badge>
+                      </span>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -540,7 +678,7 @@ export const PassionVideoManager = () => {
 
           {!selectedCategory && (
             <div className="text-center py-8 text-muted-foreground">
-              Sélectionnez une catégorie pour commencer
+              Sélectionnez une catégorie pour commencer, ou utilisez la vue hiérarchique ci-dessus
             </div>
           )}
 
