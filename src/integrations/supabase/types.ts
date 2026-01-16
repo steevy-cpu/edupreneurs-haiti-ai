@@ -1605,6 +1605,51 @@ export type Database = {
         }
         Relationships: []
       }
+      passion_recommended_videos: {
+        Row: {
+          category_id: string
+          channel_title: string | null
+          created_at: string | null
+          created_by: string | null
+          display_order: number | null
+          id: string
+          module_id: string
+          thumbnail: string | null
+          title: string | null
+          updated_at: string | null
+          video_id: string
+          youtube_url: string
+        }
+        Insert: {
+          category_id: string
+          channel_title?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          display_order?: number | null
+          id?: string
+          module_id: string
+          thumbnail?: string | null
+          title?: string | null
+          updated_at?: string | null
+          video_id: string
+          youtube_url: string
+        }
+        Update: {
+          category_id?: string
+          channel_title?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          display_order?: number | null
+          id?: string
+          module_id?: string
+          thumbnail?: string | null
+          title?: string | null
+          updated_at?: string | null
+          video_id?: string
+          youtube_url?: string
+        }
+        Relationships: []
+      }
       password_reset_tokens: {
         Row: {
           created_at: string | null
