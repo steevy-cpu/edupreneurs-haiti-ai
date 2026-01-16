@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-interface PassionVideo {
+export interface PassionVideo {
   id: string;
   category_id: string;
   module_id: string;
