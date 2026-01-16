@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Music, Palette, Brain, BookOpen, Play, CheckCircle2, Lock, Loader2, ArrowLeft, Send, ArrowRight, Award, Users, Heart, Lightbulb, RotateCcw, Search } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -743,6 +744,9 @@ const PassionDiscoveryContent = () => {
   if (preferencesLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-purple-50/30 to-pink-50/30 dark:from-background dark:via-purple-950/10 dark:to-pink-950/10 p-4">
+        <div className="fixed top-4 right-4 z-50">
+          <ThemeToggle />
+        </div>
         <div className="container mx-auto">
           <Skeleton className="h-12 w-48 mb-8" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -777,6 +781,9 @@ const PassionDiscoveryContent = () => {
   if (quizStep === "intro") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-50 to-amber-50 dark:from-violet-950/30 dark:via-fuchsia-950/20 dark:to-amber-950/20 flex items-center justify-center p-4">
+        <div className="fixed top-4 right-4 z-50">
+          <ThemeToggle />
+        </div>
         <div className="max-w-4xl w-full">
           {/* Hero Section */}
           <div className="relative mb-8">
@@ -857,6 +864,9 @@ const PassionDiscoveryContent = () => {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-50 to-amber-50 dark:from-violet-950/30 dark:via-fuchsia-950/20 dark:to-amber-950/20 flex items-center justify-center p-4">
+        <div className="fixed top-4 right-4 z-50">
+          <ThemeToggle />
+        </div>
         <div className="max-w-2xl w-full space-y-4 md:space-y-6">
           {/* Progress Header - Sticky on mobile */}
           <div className="sticky top-2 z-10 bg-background/80 backdrop-blur-md rounded-lg p-3 md:p-0 md:bg-transparent md:backdrop-blur-none md:static">
@@ -968,6 +978,9 @@ const PassionDiscoveryContent = () => {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-50 to-amber-50 dark:from-violet-950/30 dark:via-fuchsia-950/20 dark:to-amber-950/20 flex items-center justify-center p-4">
+        <div className="fixed top-4 right-4 z-50">
+          <ThemeToggle />
+        </div>
         <div className="max-w-3xl w-full space-y-6">
           {/* Celebration Header */}
           <div className="text-center">
@@ -1039,6 +1052,9 @@ const PassionDiscoveryContent = () => {
   if (!selectedModule) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-violet-50/30 to-fuchsia-50/30 dark:from-background dark:via-violet-950/10 dark:to-fuchsia-950/10">
+        <div className="fixed top-4 right-4 z-50">
+          <ThemeToggle />
+        </div>
         <div className="container mx-auto px-4 py-6 md:py-8">
           <div className="flex items-center justify-between mb-6">
             <Button
