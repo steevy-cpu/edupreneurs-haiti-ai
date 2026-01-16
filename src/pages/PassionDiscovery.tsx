@@ -1059,12 +1059,12 @@ const PassionDiscoveryContent = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <Button
               variant="ghost"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => selectedCategory ? setSelectedCategory(null) : navigate("/dashboard")}
               className="group self-start"
               size="sm"
             >
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-              <span className="hidden sm:inline">Retour au tableau de bord</span>
+              <span className="hidden sm:inline">{selectedCategory ? "Retour aux catégories" : "Retour au tableau de bord"}</span>
               <span className="sm:hidden">Retour</span>
             </Button>
             
@@ -1348,14 +1348,6 @@ const PassionDiscoveryContent = () => {
 
           {selectedCategory && currentCategory && (
             <>
-              <Button
-                variant="ghost"
-                onClick={() => setSelectedCategory(null)}
-                className="mb-6 group"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                Retour aux catégories
-              </Button>
 
               <div className="text-center mb-8 md:mb-12">
                 <div className={`inline-flex p-4 md:p-6 rounded-2xl bg-gradient-to-br ${currentCategory.color} text-white shadow-2xl mb-6`}>
