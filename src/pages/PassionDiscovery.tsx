@@ -5,7 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Music, Palette, Brain, BookOpen, Play, CheckCircle2, Lock, Loader2, ArrowLeft, Send, ArrowRight, Award, Users, Heart, Lightbulb, RotateCcw, Search } from "lucide-react";
+import { Music, Palette, Brain, BookOpen, Play, CheckCircle2, Lock, Loader2, ArrowLeft, Send, ArrowRight, Award, Users, Heart, Lightbulb, RotateCcw, Search, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -1607,13 +1613,13 @@ const PassionDiscoveryContent = () => {
           </div>
 
           <div className="lg:col-span-1">
-            <Card className="lg:sticky lg:top-6 h-[40vh] sm:h-[45vh] lg:h-[calc(100vh-6rem)] flex flex-col">
-              <CardHeader className="border-b py-2 sm:py-3 md:py-4 px-3 sm:px-6">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <img src={judePointing} alt="Jude" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 object-contain" loading="lazy" decoding="async" />
+            <Card className="lg:sticky lg:top-6 h-[45vh] sm:h-[50vh] lg:h-[calc(100vh-6rem)] flex flex-col">
+              <CardHeader className="border-b py-2 px-3 sm:px-4">
+                <div className="flex items-center gap-2">
+                  <img src={judePointing} alt="Jude" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" loading="lazy" decoding="async" />
                   <div className="min-w-0">
-                    <CardTitle className="text-sm sm:text-base md:text-lg">Discute avec Jude</CardTitle>
-                    <CardDescription className="text-xs sm:text-sm">Ton tuteur IA</CardDescription>
+                    <CardTitle className="text-sm sm:text-base">Discute avec Jude</CardTitle>
+                    <CardDescription className="text-xs">Ton tuteur IA</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -1647,23 +1653,30 @@ const PassionDiscoveryContent = () => {
                   <div ref={chatEndRef} />
                 </div>
                 
-                {/* Suggested questions */}
+                {/* Suggested questions - compact dropdown */}
                 {chatMessages.length <= 1 && !isLoading && (
-                  <div className="flex flex-wrap gap-2 mb-3 pb-3 border-b">
-                    {[
-                      "Qu'est-ce que je vais apprendre?",
-                      "Donne-moi un exemple",
-                      "Comment progresser?"
-                    ].map((question, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => sendMessage(question)}
-                        className="text-xs px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary transition-colors border border-primary/20"
-                        disabled={isLoading}
-                      >
-                        {question}
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-2 mb-2 pb-2 border-b">
+                    <span className="text-xs text-muted-foreground">Suggestions:</span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
+                          <Lightbulb className="w-3 h-3" />
+                          Que demander?
+                          <ChevronDown className="w-3 h-3" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="bg-popover z-50">
+                        <DropdownMenuItem onClick={() => sendMessage("Qu'est-ce que je vais apprendre?")}>
+                          📚 Qu'est-ce que je vais apprendre?
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => sendMessage("Donne-moi un exemple")}>
+                          💡 Donne-moi un exemple
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => sendMessage("Comment progresser?")}>
+                          🚀 Comment progresser?
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 )}
                 
