@@ -585,10 +585,10 @@ export const Layout = ({ children }: LayoutProps) => {
             )}
           </Link>
           <Link 
-            to="/chess-game" 
+            to="/games" 
             onClick={() => setSidebarOpen(false)}
             className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
-              isActive("/chess-game") 
+              isActive("/games") || isActive("/chess-game") || isActive("/quiz-battle")
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
                 : "text-foreground hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1"
             }`}
