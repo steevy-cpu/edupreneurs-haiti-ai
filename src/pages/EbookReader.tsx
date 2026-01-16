@@ -14,6 +14,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { MessageSquare } from "lucide-react";
+import { EbookJudeAssistant } from "@/components/ebook/EbookJudeAssistant";
 
 // Lazy load PDF viewer to reduce initial bundle
 import { lazy, Suspense } from "react";
@@ -199,6 +200,15 @@ export default function EbookReader() {
           </div>
         </div>
       </main>
+
+      {/* Jude Reading Assistant */}
+      {isAuthenticated && ebook && (
+        <EbookJudeAssistant
+          bookTitle={ebook.title}
+          bookAuthor={ebook.author || undefined}
+          currentPage={currentPage}
+        />
+      )}
 
       {/* Visitor Overlay */}
       {showOverlay && <VisitorLibraryOverlay />}

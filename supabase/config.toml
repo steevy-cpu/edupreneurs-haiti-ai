@@ -159,3 +159,6 @@ verify_jwt = false
 
 [functions.send-announcement]
 verify_jwt = false
+
+[functions.reading-tutor]
+verify_jwt = false

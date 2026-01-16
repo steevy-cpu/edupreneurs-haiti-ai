@@ -12,7 +12,7 @@ interface NavItem {
 }
 
 // Navigation paths for swipe gestures
-const NAV_PATHS = ["/dashboard", "/matieres", "/feed", "/community", "/notifications", "/settings"];
+const NAV_PATHS = ["/dashboard", "/matieres", "/lecture", "/feed", "/community", "/notifications", "/settings"];
 
 export const useMobileSwipeNavigation = () => {
   const navigate = useNavigate();

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, BookOpen, Zap, BarChart3, Sparkles, GraduationCap, Youtube, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, BookOpen, BookMarked, Zap, BarChart3, Sparkles, GraduationCap, Youtube, CheckCircle2 } from "lucide-react";
 import { LessonBrowser } from "@/components/content-editor/LessonBrowser";
 import { LessonPreview } from "@/components/content-editor/LessonPreview";
 import { YouTubeManager } from "@/components/content-editor/YouTubeManager";
@@ -21,6 +21,7 @@ import { LessonImageManager } from "@/components/content-editor/LessonImageManag
 import { LessonValidationPanel } from "@/components/content-editor/LessonValidationPanel";
 import { BatchGenerationValidation } from "@/components/content-editor/BatchGenerationValidation";
 import { DailyWordsManager } from "@/components/content-editor/DailyWordsManager";
+import { EbookManager } from "@/components/content-editor/EbookManager";
 
 const CONTENT_EDITOR_STORAGE_KEY = 'content_editor_preferences';
 
@@ -243,7 +244,7 @@ const ContentEditor = () => {
         {/* Main Content with Tabs */}
         <div className="max-w-[1600px] mx-auto">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6 lg:w-[1200px]">
+            <TabsList className="grid w-full grid-cols-7 lg:w-[1400px]">
               <TabsTrigger value="review">
                 <BookOpen className="mr-2 h-4 w-4" />
                 Révision
@@ -267,6 +268,10 @@ const ContentEditor = () => {
               <TabsTrigger value="daily-words">
                 <Sparkles className="mr-2 h-4 w-4" />
                 Mots du Jour
+              </TabsTrigger>
+              <TabsTrigger value="ebooks">
+                <BookMarked className="mr-2 h-4 w-4" />
+                Bibliothèque
               </TabsTrigger>
             </TabsList>
 
@@ -398,6 +403,10 @@ const ContentEditor = () => {
 
             <TabsContent value="daily-words">
               <DailyWordsManager />
+            </TabsContent>
+
+            <TabsContent value="ebooks">
+              <EbookManager />
             </TabsContent>
           </Tabs>
         </div>
