@@ -91,6 +91,7 @@ const EricChatbotWrapper = () => {
     '/feed',
     '/chess-game',
     '/privacy-policy',
+    '/passion-discovery',
   ];
   
   const isLessonPage = location.pathname.startsWith('/course/') && location.pathname.split('/').length > 2;
