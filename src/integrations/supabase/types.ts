@@ -675,6 +675,146 @@ export type Database = {
         }
         Relationships: []
       }
+      ebook_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          ebook_id: string
+          id: string
+          rating: number | null
+          user_id: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          ebook_id: string
+          id?: string
+          rating?: number | null
+          user_id: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          ebook_id?: string
+          id?: string
+          rating?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ebook_comments_ebook_id_fkey"
+            columns: ["ebook_id"]
+            isOneToOne: false
+            referencedRelation: "ebooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ebook_reading_progress: {
+        Row: {
+          current_page: number
+          ebook_id: string
+          id: string
+          is_completed: boolean
+          last_read_at: string
+          user_id: string
+        }
+        Insert: {
+          current_page?: number
+          ebook_id: string
+          id?: string
+          is_completed?: boolean
+          last_read_at?: string
+          user_id: string
+        }
+        Update: {
+          current_page?: number
+          ebook_id?: string
+          id?: string
+          is_completed?: boolean
+          last_read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ebook_reading_progress_ebook_id_fkey"
+            columns: ["ebook_id"]
+            isOneToOne: false
+            referencedRelation: "ebooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ebooks: {
+        Row: {
+          author: string | null
+          category: string | null
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          file_url: string
+          id: string
+          is_published: boolean
+          language: string
+          page_count: number | null
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          author?: string | null
+          category?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          file_url: string
+          id?: string
+          is_published?: boolean
+          language?: string
+          page_count?: number | null
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          author?: string | null
+          category?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          file_url?: string
+          id?: string
+          is_published?: boolean
+          language?: string
+          page_count?: number | null
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ebooks_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "leaderboard_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "ebooks_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "ebooks_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       english_practice_conversations: {
         Row: {
           created_at: string | null
