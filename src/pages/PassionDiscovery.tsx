@@ -1205,10 +1205,10 @@ const PassionDiscoveryContent = () => {
                             {category.hasGameLink && (
                               <Button 
                                 className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 text-white font-semibold py-5 md:py-6 text-base md:text-lg mb-2"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate('/chess-game');
-                                }}
+                              onClick={(e: React.MouseEvent) => {
+                                e.stopPropagation();
+                                navigate('/chess-game');
+                              }}
                               >
                                 ♟️ Jouer aux Échecs avec Jude
                                 <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
@@ -1413,10 +1413,10 @@ const PassionDiscoveryContent = () => {
                               <Button 
                                 className={`w-full sm:w-auto bg-gradient-to-r ${currentCategory.color} hover:opacity-90 text-white text-sm`}
                                 size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  startModule(currentCategory.id, module.id);
-                                }}
+                            onClick={(e: React.MouseEvent) => {
+                              e.stopPropagation();
+                              startModule(currentCategory.id, module.id);
+                            }}
                               >
                                 <Play className="mr-2 h-4 w-4" />
                                 {moduleProgress.progress_percentage > 0 ? "Continuer" : "Commencer"}

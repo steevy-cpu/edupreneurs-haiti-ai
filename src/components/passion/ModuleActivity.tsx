@@ -3,10 +3,10 @@ import { sanitizeHtml } from "@/lib/sanitize";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, Play, Youtube, FileText, Brain, Trophy, XCircle } from "lucide-react";
+import { CheckCircle2, Play, Video, FileText, Brain, Trophy, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
-import { getActivitiesForModule, type ActivityContent } from "@/data/passionActivities";
+import { getActivitiesForModule } from "@/data/passionActivities";
 import { usePassionModuleVideos } from "@/hooks/usePassionVideos";
 import { toast } from "sonner";
 
@@ -55,18 +55,18 @@ export const ModuleActivity = ({
 
   // Get real activity content if available
   const realActivities = getActivitiesForModule(categoryId, moduleId);
-  const currentRealActivity = realActivities?.find(a => a.id === selectedActivity?.id);
+  const currentRealActivity = realActivities?.find((a: { id: string }) => a.id === selectedActivity?.id);
 
   // Get custom video URL for an activity
   const getCustomVideoUrl = (activityId: string): string | null => {
     if (!customVideos) return null;
-    const video = customVideos.find(v => v.activity_id === activityId);
+    const video = customVideos.find((v: { activity_id: string; youtube_url?: string }) => v.activity_id === activityId);
     return video?.youtube_url || null;
   };
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case "video": return <Youtube className="w-5 h-5" aria-hidden="true" />;
+      case "video": return <Video className="w-5 h-5" aria-hidden="true" />;
       case "quiz": return <Brain className="w-5 h-5" aria-hidden="true" />;
       case "reading": return <FileText className="w-5 h-5" aria-hidden="true" />;
       case "game": return <Trophy className="w-5 h-5" aria-hidden="true" />;
@@ -179,7 +179,7 @@ export const ModuleActivity = ({
               <div className="p-6 bg-muted rounded-lg">
                 <h3 className="font-semibold mb-4 text-lg">{currentQuestion.question}</h3>
                 <div className="space-y-2" role="radiogroup" aria-label="Options de réponse">
-                  {currentQuestion.options.map((option, index) => {
+                  {currentQuestion.options.map((option: string, index: number) => {
                     const isSelected = quizState.selectedAnswer === index;
                     const isCorrect = index === currentQuestion.correctIndex;
                     const showResult = quizState.answered;
@@ -324,7 +324,7 @@ export const ModuleActivity = ({
               className={`cursor-pointer transition-all ${activity.completed ? 'bg-muted/50' : 'hover:shadow-md'}`}
               role="listitem"
               tabIndex={0}
-              onKeyDown={(e) => {
+              onKeyDown={(e: React.KeyboardEvent) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   if (!activity.completed) handleActivityStart(activity);
