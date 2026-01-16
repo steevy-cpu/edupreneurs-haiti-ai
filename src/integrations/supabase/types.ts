@@ -2132,6 +2132,289 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_battle_badges: {
+        Row: {
+          badge_key: string
+          badge_name: string
+          description: string | null
+          earned_at: string
+          icon: string
+          id: string
+          subject_id: string | null
+          user_id: string
+        }
+        Insert: {
+          badge_key: string
+          badge_name: string
+          description?: string | null
+          earned_at?: string
+          icon?: string
+          id?: string
+          subject_id?: string | null
+          user_id: string
+        }
+        Update: {
+          badge_key?: string
+          badge_name?: string
+          description?: string | null
+          earned_at?: string
+          icon?: string
+          id?: string
+          subject_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_battle_badges_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_battle_matchmaking: {
+        Row: {
+          battle_id: string | null
+          difficulty: Database["public"]["Enums"]["quiz_difficulty"]
+          expires_at: string
+          grade_level: string
+          id: string
+          joined_at: string
+          matched_with: string | null
+          subject_id: string | null
+          user_id: string
+        }
+        Insert: {
+          battle_id?: string | null
+          difficulty?: Database["public"]["Enums"]["quiz_difficulty"]
+          expires_at?: string
+          grade_level: string
+          id?: string
+          joined_at?: string
+          matched_with?: string | null
+          subject_id?: string | null
+          user_id: string
+        }
+        Update: {
+          battle_id?: string | null
+          difficulty?: Database["public"]["Enums"]["quiz_difficulty"]
+          expires_at?: string
+          grade_level?: string
+          id?: string
+          joined_at?: string
+          matched_with?: string | null
+          subject_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_battle_matchmaking_battle_id_fkey"
+            columns: ["battle_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_battles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_battle_matchmaking_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_battle_players: {
+        Row: {
+          answers: Json
+          battle_id: string
+          correct_answers: number
+          created_at: string
+          current_question: number
+          finished_at: string | null
+          id: string
+          is_ready: boolean
+          score: number
+          time_per_question: Json
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          battle_id: string
+          correct_answers?: number
+          created_at?: string
+          current_question?: number
+          finished_at?: string | null
+          id?: string
+          is_ready?: boolean
+          score?: number
+          time_per_question?: Json
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          battle_id?: string
+          correct_answers?: number
+          created_at?: string
+          current_question?: number
+          finished_at?: string | null
+          id?: string
+          is_ready?: boolean
+          score?: number
+          time_per_question?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_battle_players_battle_id_fkey"
+            columns: ["battle_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_battles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_battle_stats: {
+        Row: {
+          avg_response_time_ms: number | null
+          battles_drawn: number
+          battles_lost: number
+          battles_won: number
+          created_at: string
+          current_streak: number
+          id: string
+          level: number
+          longest_streak: number
+          multi_battles: number
+          perfect_games: number
+          rank_points: number
+          solo_battles: number
+          total_battles: number
+          total_correct_answers: number
+          total_questions_answered: number
+          total_xp: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_response_time_ms?: number | null
+          battles_drawn?: number
+          battles_lost?: number
+          battles_won?: number
+          created_at?: string
+          current_streak?: number
+          id?: string
+          level?: number
+          longest_streak?: number
+          multi_battles?: number
+          perfect_games?: number
+          rank_points?: number
+          solo_battles?: number
+          total_battles?: number
+          total_correct_answers?: number
+          total_questions_answered?: number
+          total_xp?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_response_time_ms?: number | null
+          battles_drawn?: number
+          battles_lost?: number
+          battles_won?: number
+          created_at?: string
+          current_streak?: number
+          id?: string
+          level?: number
+          longest_streak?: number
+          multi_battles?: number
+          perfect_games?: number
+          rank_points?: number
+          solo_battles?: number
+          total_battles?: number
+          total_correct_answers?: number
+          total_questions_answered?: number
+          total_xp?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quiz_battles: {
+        Row: {
+          created_at: string
+          created_by: string
+          difficulty: Database["public"]["Enums"]["quiz_difficulty"]
+          ended_at: string | null
+          grade_level: string
+          id: string
+          invite_code: string | null
+          lesson_id: string | null
+          max_players: number
+          mode: Database["public"]["Enums"]["quiz_battle_mode"]
+          questions: Json
+          started_at: string | null
+          status: Database["public"]["Enums"]["quiz_battle_status"]
+          subject_id: string | null
+          time_per_question: number
+          total_questions: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          difficulty?: Database["public"]["Enums"]["quiz_difficulty"]
+          ended_at?: string | null
+          grade_level: string
+          id?: string
+          invite_code?: string | null
+          lesson_id?: string | null
+          max_players?: number
+          mode?: Database["public"]["Enums"]["quiz_battle_mode"]
+          questions?: Json
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["quiz_battle_status"]
+          subject_id?: string | null
+          time_per_question?: number
+          total_questions?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          difficulty?: Database["public"]["Enums"]["quiz_difficulty"]
+          ended_at?: string | null
+          grade_level?: string
+          id?: string
+          invite_code?: string | null
+          lesson_id?: string | null
+          max_players?: number
+          mode?: Database["public"]["Enums"]["quiz_battle_mode"]
+          questions?: Json
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["quiz_battle_status"]
+          subject_id?: string | null
+          time_per_question?: number
+          total_questions?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_battles_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_battles_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quiz_validations: {
         Row: {
           ai_analysis: string | null
@@ -2791,6 +3074,7 @@ export type Database = {
         Args: { p_avatar_url?: string; p_description?: string; p_name: string }
         Returns: string
       }
+      generate_invite_code: { Args: never; Returns: string }
       generate_password_reset_token: {
         Args: { user_email: string }
         Returns: {
@@ -2854,6 +3138,7 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      level_from_xp: { Args: { xp: number }; Returns: number }
       notify_group_deletion: {
         Args: {
           p_admin_id: string
@@ -2888,10 +3173,14 @@ export type Database = {
           valid: boolean
         }[]
       }
+      xp_for_level: { Args: { lvl: number }; Returns: number }
     }
     Enums: {
       content_editor_role: "admin" | "editor" | "viewer"
       follow_status: "pending" | "accepted" | "rejected"
+      quiz_battle_mode: "solo" | "friend" | "random"
+      quiz_battle_status: "waiting" | "in_progress" | "completed" | "cancelled"
+      quiz_difficulty: "easy" | "medium" | "hard"
       workflow_status:
         | "draft"
         | "in_review"
@@ -3027,6 +3316,9 @@ export const Constants = {
     Enums: {
       content_editor_role: ["admin", "editor", "viewer"],
       follow_status: ["pending", "accepted", "rejected"],
+      quiz_battle_mode: ["solo", "friend", "random"],
+      quiz_battle_status: ["waiting", "in_progress", "completed", "cancelled"],
+      quiz_difficulty: ["easy", "medium", "hard"],
       workflow_status: [
         "draft",
         "in_review",
