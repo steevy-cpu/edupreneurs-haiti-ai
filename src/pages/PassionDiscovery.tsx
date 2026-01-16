@@ -332,7 +332,8 @@ const PassionDiscoveryContent = () => {
     }
   ];
 
-  const getModuleActivities = (categoryId: string, moduleId: string, moduleTitle: string): Activity[] => {
+  // Memoized function to get module activities - prevents recreation on every render
+  const getModuleActivities = useCallback((categoryId: string, moduleId: string, moduleTitle: string): Activity[] => {
     // Try to get real activities first
     const realActivities = getActivitiesForModule(categoryId, moduleId);
     
@@ -378,10 +379,10 @@ const PassionDiscoveryContent = () => {
         completed: activityStates[`${moduleId}-game`] || false
       }
     ];
-  };
+  }, [activityStates]);
 
-  // Build categories with module locking based on progress
-  const buildModulesWithLocking = (baseModules: Omit<Module, 'locked' | 'activities'>[], categoryId: string): Module[] => {
+  // Memoized function to build modules with locking - prevents recreation on every render
+  const buildModulesWithLocking = useCallback((baseModules: Omit<Module, 'locked' | 'activities'>[], categoryId: string): Module[] => {
     return baseModules.map((module, index) => {
       const moduleProgress = getModuleProgress(categoryId, module.id);
       const previousModuleCompleted = index === 0 ? true : 
@@ -394,9 +395,10 @@ const PassionDiscoveryContent = () => {
         activities: getModuleActivities(categoryId, module.id, module.title)
       };
     });
-  };
+  }, [getModuleProgress, getModuleActivities]);
 
-  const baseCategories = [
+  // Memoize base categories to prevent recreation on every render
+  const baseCategories = useMemo(() => [
     {
       id: "music",
       title: "La Musique 🎵",
@@ -454,9 +456,10 @@ const PassionDiscoveryContent = () => {
         { id: "expression", title: "Expression Artistique", description: "Valorise la culture haïtienne par les mots", duration: "20 min", completed: false }
       ]
     }
-  ];
+  ], []);
 
-  const baseCivicCategories = [
+  // Memoize civic categories
+  const baseCivicCategories = useMemo(() => [
     {
       id: "rights",
       title: "Droits Fondamentaux 🏛️",
@@ -499,9 +502,10 @@ const PassionDiscoveryContent = () => {
         { id: "conflict", title: "Résolution de Conflits", description: "Apprends à résoudre les conflits pacifiquement", duration: "20 min", completed: false }
       ]
     }
-  ];
+  ], []);
 
-  const baseDevelopmentCategories = [
+  // Memoize development categories
+  const baseDevelopmentCategories = useMemo(() => [
     {
       id: "personal",
       title: "Croissance Personnelle 🌱",
@@ -516,23 +520,29 @@ const PassionDiscoveryContent = () => {
         { id: "communication", title: "Communication", description: "Améliore ta façon de communiquer", duration: "15 min", completed: false }
       ]
     }
-  ];
+  ], []);
 
-  // Build categories with proper locking
-  const categories: Category[] = baseCategories.map(cat => ({
-    ...cat,
-    modules: buildModulesWithLocking(cat.modules, cat.id)
-  }));
+  // Build categories with proper locking - MEMOIZED
+  const categories: Category[] = useMemo(() => 
+    baseCategories.map(cat => ({
+      ...cat,
+      modules: buildModulesWithLocking(cat.modules, cat.id)
+    }))
+  , [baseCategories, buildModulesWithLocking]);
 
-  const civicCategories: Category[] = baseCivicCategories.map(cat => ({
-    ...cat,
-    modules: buildModulesWithLocking(cat.modules, cat.id)
-  }));
+  const civicCategories: Category[] = useMemo(() => 
+    baseCivicCategories.map(cat => ({
+      ...cat,
+      modules: buildModulesWithLocking(cat.modules, cat.id)
+    }))
+  , [baseCivicCategories, buildModulesWithLocking]);
 
-  const developmentCategories: Category[] = baseDevelopmentCategories.map(cat => ({
-    ...cat,
-    modules: buildModulesWithLocking(cat.modules, cat.id)
-  }));
+  const developmentCategories: Category[] = useMemo(() => 
+    baseDevelopmentCategories.map(cat => ({
+      ...cat,
+      modules: buildModulesWithLocking(cat.modules, cat.id)
+    }))
+  , [baseDevelopmentCategories, buildModulesWithLocking]);
 
   const handleAnswerSelect = (passion: keyof PassionScores, answerIndex: number) => {
     if (isTransitioning || isLoading) return;
@@ -689,12 +699,16 @@ const PassionDiscoveryContent = () => {
     }
   };
 
-  const handleActivityComplete = (activityId: string) => {
+  // Memoize allCategories to prevent recreation on every render
+  const allCategories = useMemo(() => 
+    [...categories, ...civicCategories, ...developmentCategories]
+  , [categories, civicCategories, developmentCategories]);
+
+  const handleActivityComplete = useCallback((activityId: string) => {
     setActivityStates(prev => ({ ...prev, [activityId]: true }));
     
     if (selectedCategory && selectedModule) {
-      const allCats = [...categories, ...civicCategories, ...developmentCategories];
-      const category = allCats.find(c => c.id === selectedCategory);
+      const category = allCategories.find(c => c.id === selectedCategory);
       const module = category?.modules.find(m => m.id === selectedModule);
       
       if (module) {
@@ -711,11 +725,15 @@ const PassionDiscoveryContent = () => {
         });
       }
     }
-  };
+  }, [selectedCategory, selectedModule, allCategories, getModuleActivities, activityStates, updateProgress]);
 
-  const allCategories = [...categories, ...civicCategories, ...developmentCategories];
-  const currentCategory = allCategories.find(cat => cat.id === selectedCategory);
-  const currentModule = currentCategory?.modules.find(mod => mod.id === selectedModule);
+  const currentCategory = useMemo(() => 
+    allCategories.find(cat => cat.id === selectedCategory)
+  , [allCategories, selectedCategory]);
+  
+  const currentModule = useMemo(() => 
+    currentCategory?.modules.find(mod => mod.id === selectedModule)
+  , [currentCategory, selectedModule]);
 
   // Filter categories based on search
   const filteredCategories = useMemo(() => {
