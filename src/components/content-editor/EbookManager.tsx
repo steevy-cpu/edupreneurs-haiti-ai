@@ -241,7 +241,7 @@ export function EbookManager() {
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-[1200]">
                         <SelectItem value="fr">🇫🇷 Français</SelectItem>
                         <SelectItem value="en">🇬🇧 English</SelectItem>
                       </SelectContent>
@@ -259,7 +259,7 @@ export function EbookManager() {
                       <SelectTrigger>
                         <SelectValue placeholder="Sélectionner..." />
                       </SelectTrigger>
-                      <SelectContent className="bg-popover z-50">
+                      <SelectContent className="bg-popover z-[1200]">
                         {CATEGORIES.map((cat) => (
                           <SelectItem key={cat.value} value={cat.value}>
                             {cat.label}
