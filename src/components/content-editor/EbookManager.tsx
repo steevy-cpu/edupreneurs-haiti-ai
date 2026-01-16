@@ -251,7 +251,7 @@ export function EbookManager() {
                   <div className="space-y-2">
                     <Label>Catégorie</Label>
                     <Select
-                      value={formData.category}
+                      value={formData.category || undefined}
                       onValueChange={(value) => 
                         setFormData(prev => ({ ...prev, category: value }))
                       }
@@ -259,7 +259,7 @@ export function EbookManager() {
                       <SelectTrigger>
                         <SelectValue placeholder="Sélectionner..." />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-popover z-50">
                         {CATEGORIES.map((cat) => (
                           <SelectItem key={cat.value} value={cat.value}>
                             {cat.label}
