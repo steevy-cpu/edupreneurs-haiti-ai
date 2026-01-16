@@ -2,11 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Loader2, ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import * as pdfjsLib from "pdfjs-dist";
-import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
-
-// Set worker path - using local bundled worker for Vite compatibility
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+import pdfWorkerSrc from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url";
 
 interface EbookPDFViewerProps {
   fileUrl: string;
@@ -15,13 +11,15 @@ interface EbookPDFViewerProps {
   totalPages: number;
 }
 
+type PDFDocumentProxy = Awaited<ReturnType<typeof import("pdfjs-dist")["getDocument"]>>["promise"] extends Promise<infer T> ? T : never;
+
 export default function EbookPDFViewer({ 
   fileUrl, 
   currentPage, 
   onPageChange,
   totalPages: initialTotalPages
 }: EbookPDFViewerProps) {
-  const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
+  const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [scale, setScale] = useState(1.2);
@@ -29,15 +27,22 @@ export default function EbookPDFViewer({
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const renderIdRef = useRef(0);
+  const pdfjsRef = useRef<typeof import("pdfjs-dist") | null>(null);
 
-  // Load PDF document
+  // Load PDF.js library and document
   useEffect(() => {
     const loadPdf = async () => {
       setLoading(true);
       setError(null);
       
       try {
-        const loadingTask = pdfjsLib.getDocument(fileUrl);
+        // Dynamic import for better compatibility
+        const pdfjs = await import("pdfjs-dist");
+        pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
+        pdfjsRef.current = pdfjs;
+
+        const loadingTask = pdfjs.getDocument(fileUrl);
         const pdf = await loadingTask.promise;
         setPdfDoc(pdf);
         setTotalPages(pdf.numPages);
@@ -56,40 +61,45 @@ export default function EbookPDFViewer({
 
   // Render current page
   const renderPage = useCallback(async (pageNum: number) => {
-    if (!pdfDoc || !canvasRef.current || pageRendering) return;
+    if (!pdfDoc || !canvasRef.current) return;
     
+    // Increment render ID to cancel stale renders
+    const currentRenderId = ++renderIdRef.current;
     setPageRendering(true);
     
     try {
       const page = await pdfDoc.getPage(pageNum);
+      
+      // Check if this render is still valid
+      if (currentRenderId !== renderIdRef.current) return;
+      
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d');
       
       if (!ctx) return;
 
-      // Calculate scale to fit container width
-      const containerWidth = containerRef.current?.clientWidth || 800;
-      const viewport = page.getViewport({ scale: 1 });
-      const calculatedScale = Math.min(
-        (containerWidth - 32) / viewport.width, 
-        scale
-      );
-      const scaledViewport = page.getViewport({ scale: calculatedScale });
+      // Use the scale directly for proper zoom functionality
+      const viewport = page.getViewport({ scale });
 
-      canvas.height = scaledViewport.height;
-      canvas.width = scaledViewport.width;
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
 
       await page.render({
         canvasContext: ctx,
-        viewport: scaledViewport,
+        viewport: viewport,
         canvas: canvas,
       }).promise;
     } catch (err) {
-      console.error('Error rendering page:', err);
+      // Only log if this was the current render attempt
+      if (currentRenderId === renderIdRef.current) {
+        console.error('Error rendering page:', err);
+      }
     } finally {
-      setPageRendering(false);
+      if (currentRenderId === renderIdRef.current) {
+        setPageRendering(false);
+      }
     }
-  }, [pdfDoc, scale, pageRendering]);
+  }, [pdfDoc, scale]);
 
   // Re-render when page or scale changes
   useEffect(() => {
