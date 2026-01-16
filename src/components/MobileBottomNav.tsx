@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, BookOpen, Rss, MessageSquare, Bell, Settings } from "lucide-react";
+import { Home, BookOpen, Rss, MessageSquare, Gamepad2, Settings } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -96,8 +96,7 @@ export const MobileBottomNav = () => {
     { icon: BookOpen, path: "/matieres" },
     { icon: Rss, path: "/feed", badge: unreadFeedPosts > 0 ? unreadFeedPosts : undefined, prefetchKey: ["feed-posts"] },
     { icon: MessageSquare, path: "/community", badge: unreadMessages > 0 ? unreadMessages : undefined, prefetchKey: ["conversations"] },
-    { icon: Bell, path: "/notifications", badge: unreadNotifications > 0 ? unreadNotifications : undefined },
-    { icon: Settings, path: "/settings" },
+    { icon: Gamepad2, path: "/games" },
   ];
 
   useEffect(() => {
@@ -167,9 +166,10 @@ export const MobileBottomNav = () => {
   };
 
   // Hide on certain pages or when keyboard is open on community
-  const hiddenPaths = ["/auth", "/onboarding", "/chess-game"];
+  const hiddenPaths = ["/auth", "/onboarding", "/chess-game", "/quiz-battle/solo"];
   const isLessonPage = location.pathname.includes("-lesson/");
   const isCommunityPage = location.pathname === "/community";
+  const isQuizBattlePage = location.pathname.startsWith("/quiz-battle");
   
   if (hiddenPaths.includes(location.pathname) || isLessonPage || (isCommunityPage && keyboardOpen)) {
     return null;
