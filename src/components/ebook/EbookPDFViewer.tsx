@@ -9,6 +9,7 @@ interface EbookPDFViewerProps {
   currentPage: number;
   onPageChange: (page: number) => void;
   totalPages: number;
+  isSlowConnection?: boolean;
 }
 
 type PDFDocumentProxy = Awaited<ReturnType<typeof import("pdfjs-dist")["getDocument"]>>["promise"] extends Promise<infer T> ? T : never;
@@ -17,12 +18,14 @@ export default function EbookPDFViewer({
   fileUrl, 
   currentPage, 
   onPageChange,
-  totalPages: initialTotalPages
+  totalPages: initialTotalPages,
+  isSlowConnection = false
 }: EbookPDFViewerProps) {
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [scale, setScale] = useState(1.2);
+  // Lower initial scale on slow connections for faster rendering
+  const [scale, setScale] = useState(isSlowConnection ? 1.0 : 1.2);
   const [pageRendering, setPageRendering] = useState(false);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -80,9 +83,16 @@ export default function EbookPDFViewer({
 
       // Use the scale directly for proper zoom functionality
       const viewport = page.getViewport({ scale });
+      
+      // Reduce render quality on slow networks for faster loading
+      const pixelRatio = isSlowConnection ? 1 : Math.min(window.devicePixelRatio || 1, 2);
 
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
+      canvas.height = viewport.height * pixelRatio;
+      canvas.width = viewport.width * pixelRatio;
+      canvas.style.height = `${viewport.height}px`;
+      canvas.style.width = `${viewport.width}px`;
+
+      ctx.scale(pixelRatio, pixelRatio);
 
       await page.render({
         canvasContext: ctx,
@@ -99,7 +109,7 @@ export default function EbookPDFViewer({
         setPageRendering(false);
       }
     }
-  }, [pdfDoc, scale]);
+  }, [pdfDoc, scale, isSlowConnection]);
 
   // Re-render when page or scale changes
   useEffect(() => {
@@ -127,7 +137,7 @@ export default function EbookPDFViewer({
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className={`h-8 w-8 text-primary ${!isSlowConnection ? 'animate-spin' : ''}`} />
         <p className="mt-4 text-sm text-muted-foreground">Chargement du document...</p>
       </div>
     );
@@ -135,7 +145,7 @@ export default function EbookPDFViewer({
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="flex flex-col items-center justify-center rounded-xl border border-destructive/30 bg-destructive/5 py-12 text-center">
         <p className="text-destructive">{error}</p>
         <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
           Réessayer
@@ -145,80 +155,90 @@ export default function EbookPDFViewer({
   }
 
   return (
-    <div ref={containerRef} className="flex flex-col items-center">
-      {/* Zoom Controls (Desktop) */}
-      <div className="mb-4 hidden items-center gap-4 rounded-lg border bg-muted/50 p-2 md:flex">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-          disabled={currentPage <= 1}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
+    <div ref={containerRef} className="flex flex-col items-center gap-3 sm:gap-4">
+      {/* Desktop/Tablet Controls - Compact and calm styling */}
+      <div className="mb-2 hidden w-full items-center justify-between gap-3 rounded-lg border border-border/50 bg-muted/20 p-2 backdrop-blur-sm sm:gap-4 md:flex">
+        {/* Page Navigation */}
+        <div className="flex items-center gap-1 sm:gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+            disabled={currentPage <= 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="min-w-[80px] text-center text-sm text-muted-foreground sm:min-w-[100px]">
+            Page {currentPage} / {totalPages}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage >= totalPages}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
 
-        <span className="min-w-[100px] text-center text-sm">
-          Page {currentPage} / {totalPages}
-        </span>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-          disabled={currentPage >= totalPages}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-
-        <div className="mx-4 h-6 w-px bg-border" />
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setScale(Math.max(0.5, scale - 0.2))}
-          disabled={scale <= 0.5}
-        >
-          <ZoomOut className="h-4 w-4" />
-        </Button>
-
-        <span className="min-w-[50px] text-center text-sm">{Math.round(scale * 100)}%</span>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setScale(Math.min(3, scale + 0.2))}
-          disabled={scale >= 3}
-        >
-          <ZoomIn className="h-4 w-4" />
-        </Button>
+        {/* Zoom Controls */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setScale(Math.max(0.5, scale - 0.2))}
+            disabled={scale <= 0.5}
+          >
+            <ZoomOut className="h-4 w-4" />
+          </Button>
+          <span className="min-w-[50px] text-center text-sm text-muted-foreground">
+            {Math.round(scale * 100)}%
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setScale(Math.min(3, scale + 0.2))}
+            disabled={scale >= 3}
+          >
+            <ZoomIn className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
-      {/* PDF Canvas */}
-      <div className="relative w-full overflow-auto rounded-lg border bg-white shadow-lg dark:bg-gray-900">
-        {pageRendering && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/50">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      {/* PDF Canvas - Calm container styling */}
+      <div className="relative w-full overflow-auto rounded-xl border border-border/40 bg-white shadow-sm dark:bg-gray-900/95">
+        {pageRendering && !isSlowConnection && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/30 backdrop-blur-[1px]">
+            <Loader2 className="h-6 w-6 animate-spin text-primary/70" />
           </div>
         )}
-        <canvas 
-          ref={canvasRef} 
-          className="mx-auto block"
-          style={{ maxWidth: '100%' }}
-        />
+        <div className="flex justify-center p-2 sm:p-4">
+          <canvas 
+            ref={canvasRef} 
+            className="max-w-full shadow-md transition-shadow hover:shadow-lg" 
+          />
+        </div>
       </div>
 
       {/* Mobile Zoom Slider */}
-      <div className="mt-4 flex w-full items-center gap-4 md:hidden">
+      <div className="flex w-full items-center gap-3 rounded-lg border border-border/50 bg-muted/20 p-3 md:hidden">
         <ZoomOut className="h-4 w-4 text-muted-foreground" />
         <Slider
-          value={[scale * 100]}
-          onValueChange={([value]) => setScale(value / 100)}
-          min={50}
-          max={200}
-          step={10}
+          value={[scale]}
+          min={0.5}
+          max={2.5}
+          step={0.1}
+          onValueChange={(value) => setScale(value[0])}
           className="flex-1"
         />
         <ZoomIn className="h-4 w-4 text-muted-foreground" />
+        <span className="min-w-[45px] text-right text-sm text-muted-foreground">
+          {Math.round(scale * 100)}%
+        </span>
       </div>
     </div>
   );
