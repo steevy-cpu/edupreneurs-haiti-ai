@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { Users, AlertTriangle, BarChart3, CreditCard, Megaphone } from "lucide-react";
+import { Users, AlertTriangle, BarChart3, CreditCard, Megaphone, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ControlCenterModule } from "./types";
 
@@ -60,6 +60,21 @@ export const CONTROL_CENTER_MODULES: ControlCenterModule[] = [
     shortLabel: "Stats",
     icon: BarChart3,
     component: lazy(() => import("./modules/StatsModule")),
+  },
+  {
+    id: "words",
+    label: "Mots du Jour",
+    shortLabel: "Mots",
+    icon: BookOpen,
+    component: lazy(() => import("./modules/WordsModule")),
+    badge: async () => {
+      const { count } = await supabase
+        .from("daily_words")
+        .select("id", { count: "exact", head: true })
+        .eq("is_active", true)
+        .is("audio_url", null);
+      return count || 0;
+    },
   },
   // 🔥 ADD NEW MODULES HERE - Just add to this array!
 ];

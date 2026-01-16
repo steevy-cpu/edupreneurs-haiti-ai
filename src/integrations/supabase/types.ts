@@ -2685,6 +2685,38 @@ export type Database = {
         }
         Relationships: []
       }
+      user_daily_word: {
+        Row: {
+          created_at: string | null
+          date: string
+          id: string
+          user_id: string
+          word_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          user_id: string
+          word_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          user_id?: string
+          word_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_daily_word_word_id_fkey"
+            columns: ["word_id"]
+            isOneToOne: false
+            referencedRelation: "daily_words"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_favorites: {
         Row: {
           created_at: string
