@@ -32,6 +32,7 @@ const CATEGORIES: Omit<NotificationCategory, 'enabled'>[] = [
   { category: 'follow', label: 'Abonnements', description: 'Demandes d\'abonnement et nouveaux abonnés', icon: Users },
   { category: 'lesson', label: 'Leçons', description: 'Commentaires sur vos leçons', icon: BookOpen },
   { category: 'group', label: 'Groupes', description: 'Invitations et activités de groupe', icon: Users },
+  { category: 'word_of_day', label: 'Mot du jour', description: 'Notification quotidienne avec le nouveau mot français', icon: BookOpen },
 ];
 
 export default function NotificationSettings() {
@@ -170,6 +171,7 @@ export default function NotificationSettings() {
         'follow': 'follow_request',
         'lesson': 'lesson_comment',
         'group': 'group_invitation',
+        'word_of_day': 'word_of_day',
       };
 
       const notificationType = typeMap[category] || 'like';

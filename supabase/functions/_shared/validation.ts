@@ -194,7 +194,8 @@ export const pushNotificationSchema = z.object({
   conversationId: z.string().uuid().optional(),
   type: z.enum([
     'message', 'like', 'comment', 'share', 
-    'follow', 'follow_accepted', 'mention', 'post'
+    'follow', 'follow_accepted', 'mention', 'post',
+    'word_of_day'
   ]).optional(),
   actorId: z.string().uuid().optional(),
   entityId: z.string().uuid().optional(),

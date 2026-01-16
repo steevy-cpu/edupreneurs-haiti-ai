@@ -112,6 +112,7 @@ function getCategoryFromType(type?: string): string {
     'group_member_removed': 'group',
     'lesson_comment': 'lesson',
     'system': 'system',
+    'word_of_day': 'word_of_day',
   };
   return typeMap[type || ''] || 'message';
 }

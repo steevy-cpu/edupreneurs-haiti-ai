@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
@@ -12,7 +13,9 @@ import {
   Loader2, 
   CheckCircle2, 
   XCircle,
-  AlertTriangle
+  AlertTriangle,
+  Send,
+  Bell
 } from "lucide-react";
 import {
   AlertDialog,
@@ -40,9 +43,21 @@ const WordsModule = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [generatingWordId, setGeneratingWordId] = useState<string | null>(null);
   const [playingWordId, setPlayingWordId] = useState<string | null>(null);
-  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; word: DailyWord | null }>({
+  const [sendingNotification, setSendingNotification] = useState(false);
+  const [notificationResult, setNotificationResult] = useState<{
+    success: boolean;
+    word?: string;
+    sentCount?: number;
+    eligibleUsers?: number;
+  } | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{ 
+    open: boolean; 
+    word: DailyWord | null;
+    type: 'regenerate' | 'notification';
+  }>({
     open: false,
     word: null,
+    type: 'regenerate',
   });
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -107,7 +122,7 @@ const WordsModule = () => {
   const handleRegenerateClick = (word: DailyWord) => {
     if (word.audio_url) {
       // Show confirmation dialog for existing audio
-      setConfirmDialog({ open: true, word });
+      setConfirmDialog({ open: true, word, type: 'regenerate' });
     } else {
       // Generate directly if no audio exists
       generateAudio(word);
@@ -115,7 +130,7 @@ const WordsModule = () => {
   };
 
   const generateAudio = async (word: DailyWord) => {
-    setConfirmDialog({ open: false, word: null });
+    setConfirmDialog({ open: false, word: null, type: 'regenerate' });
     setGeneratingWordId(word.id);
 
     try {
@@ -152,6 +167,51 @@ const WordsModule = () => {
     }
   };
 
+  const handleSendNotificationClick = () => {
+    // Show confirmation dialog for sending notification
+    setConfirmDialog({ open: true, word: null, type: 'notification' });
+  };
+
+  const sendDailyWordNotification = async () => {
+    setConfirmDialog({ open: false, word: null, type: 'notification' });
+    setSendingNotification(true);
+    setNotificationResult(null);
+
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.access_token) {
+        toast.error("Session expirée, veuillez vous reconnecter");
+        return;
+      }
+
+      const response = await supabase.functions.invoke("send-daily-word-notification", {
+        body: {}
+      });
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      if (response.data?.success) {
+        setNotificationResult({
+          success: true,
+          word: response.data.word,
+          sentCount: response.data.sentCount,
+          eligibleUsers: response.data.eligibleUsers
+        });
+        toast.success(`Notification envoyée à ${response.data.sentCount} utilisateur(s)!`);
+      } else {
+        throw new Error(response.data?.error || "Erreur inconnue");
+      }
+    } catch (err) {
+      console.error("Error sending notification:", err);
+      toast.error(`Erreur: ${err instanceof Error ? err.message : "Échec de l'envoi"}`);
+      setNotificationResult({ success: false });
+    } finally {
+      setSendingNotification(false);
+    }
+  };
+
   // Cleanup audio on unmount
   useEffect(() => {
     return () => {
@@ -180,6 +240,61 @@ const WordsModule = () => {
 
   return (
     <div className="space-y-6">
+      {/* Daily Notification Section */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Bell className="h-4 w-4 text-primary" />
+            Notification Quotidienne
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Envoyer une notification push avec le mot du jour à tous les utilisateurs 
+            qui ont activé cette catégorie de notification.
+          </p>
+          
+          <Button
+            onClick={handleSendNotificationClick}
+            disabled={sendingNotification}
+            className="w-full sm:w-auto gap-2"
+          >
+            {sendingNotification ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Envoi en cours...
+              </>
+            ) : (
+              <>
+                <Send className="h-4 w-4" />
+                Envoyer le mot du jour
+              </>
+            )}
+          </Button>
+
+          {notificationResult && (
+            <div className={`p-3 rounded-lg text-sm ${
+              notificationResult.success 
+                ? 'bg-green-500/10 text-green-700 dark:text-green-400' 
+                : 'bg-destructive/10 text-destructive'
+            }`}>
+              {notificationResult.success ? (
+                <>
+                  <p className="font-medium">✅ Notification envoyée !</p>
+                  <p>Mot: <strong>{notificationResult.word}</strong></p>
+                  <p>Utilisateurs éligibles: {notificationResult.eligibleUsers}</p>
+                  <p>Notifications envoyées: {notificationResult.sentCount}</p>
+                </>
+              ) : (
+                <p>❌ Échec de l'envoi. Vérifiez les logs.</p>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Separator />
+
       {/* Stats Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -255,22 +370,41 @@ const WordsModule = () => {
       {/* Confirmation Dialog */}
       <AlertDialog
         open={confirmDialog.open}
-        onOpenChange={open => !open && setConfirmDialog({ open: false, word: null })}
+        onOpenChange={open => !open && setConfirmDialog({ open: false, word: null, type: 'regenerate' })}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Régénérer l'audio ?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {confirmDialog.type === 'notification' 
+                ? 'Envoyer la notification ?' 
+                : "Régénérer l'audio ?"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Le mot <strong>"{confirmDialog.word?.word}"</strong> a déjà un audio.
-              Voulez-vous le remplacer par une nouvelle génération ?
+              {confirmDialog.type === 'notification' ? (
+                <>
+                  Une notification push sera envoyée à tous les utilisateurs qui ont 
+                  activé la catégorie "Mot du jour". Un mot aléatoire sera sélectionné.
+                </>
+              ) : (
+                <>
+                  Le mot <strong>"{confirmDialog.word?.word}"</strong> a déjà un audio.
+                  Voulez-vous le remplacer par une nouvelle génération ?
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => confirmDialog.word && generateAudio(confirmDialog.word)}
+              onClick={() => {
+                if (confirmDialog.type === 'notification') {
+                  sendDailyWordNotification();
+                } else if (confirmDialog.word) {
+                  generateAudio(confirmDialog.word);
+                }
+              }}
             >
-              Régénérer
+              {confirmDialog.type === 'notification' ? 'Envoyer' : 'Régénérer'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
