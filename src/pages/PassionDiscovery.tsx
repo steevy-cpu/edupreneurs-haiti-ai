@@ -1614,8 +1614,8 @@ const PassionDiscoveryContent = () => {
             )}
           </div>
 
-          <div className="lg:col-span-1 order-first lg:order-last">
-            <Card className="lg:sticky lg:top-6 h-[50vh] sm:h-[60vh] lg:h-[calc(100vh-6rem)] flex flex-col">
+          <div className="lg:col-span-1">
+            <Card className="lg:sticky lg:top-6 h-[40vh] sm:h-[45vh] lg:h-[calc(100vh-6rem)] flex flex-col">
               <CardHeader className="border-b py-2 sm:py-3 md:py-4 px-3 sm:px-6">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <img src={judePointing} alt="Jude" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 object-contain" loading="lazy" decoding="async" />

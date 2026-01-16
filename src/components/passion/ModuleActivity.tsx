@@ -302,21 +302,21 @@ export const ModuleActivity = ({
   }
 
   return (
-    <Card role="region" aria-label={`Module: ${moduleTitle}`}>
-      <CardHeader>
-        <CardTitle>{moduleTitle}</CardTitle>
+    <Card role="region" aria-label={`Module: ${moduleTitle}`} className="relative z-10">
+      <CardHeader className="pb-3 sm:pb-4">
+        <CardTitle className="text-lg sm:text-xl">{moduleTitle}</CardTitle>
         {moduleDescription && (
-          <CardDescription className="mt-2">{moduleDescription}</CardDescription>
+          <CardDescription className="mt-1 sm:mt-2 text-sm">{moduleDescription}</CardDescription>
         )}
-        <div className="space-y-2 mt-4">
-          <div className="flex justify-between text-sm">
+        <div className="space-y-2 mt-3 sm:mt-4">
+          <div className="flex justify-between text-xs sm:text-sm">
             <span>Progression</span>
             <span className="font-medium" aria-live="polite">{completedCount}/{activities.length} activités</span>
           </div>
           <Progress value={progressPercentage} className="h-2" aria-label={`${Math.round(progressPercentage)}% complété`} />
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         <div className="space-y-3" role="list" aria-label="Liste des activités">
           {activities.map((activity, index) => (
             <Card 
@@ -331,39 +331,47 @@ export const ModuleActivity = ({
                 }
               }}
             >
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-lg ${activity.completed ? 'bg-green-500/10' : 'bg-primary/10'}`}>
-                    {activity.completed ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-500" aria-hidden="true" />
-                    ) : (
-                      getActivityIcon(activity.type)
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                  {/* Icon and Header Row */}
+                  <div className="flex items-start gap-3">
+                    <div className={`p-2 sm:p-3 rounded-lg flex-shrink-0 ${activity.completed ? 'bg-green-500/10' : 'bg-primary/10'}`}>
+                      {activity.completed ? (
+                        <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" aria-hidden="true" />
+                      ) : (
+                        getActivityIcon(activity.type)
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-medium text-muted-foreground">Activité {index + 1}</span>
+                        <Badge variant="secondary" className="text-xs">{activity.duration}</Badge>
+                      </div>
+                      <h4 className="font-semibold text-sm sm:text-base">{activity.title}</h4>
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{activity.description}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Action Button - Full width on mobile */}
+                  <div className="flex-shrink-0 mt-2 sm:mt-0">
+                    {!activity.completed && (
+                      <Button 
+                        onClick={() => handleActivityStart(activity)} 
+                        size="sm"
+                        className="w-full sm:w-auto"
+                        aria-label={`Commencer l'activité ${activity.title}`}
+                      >
+                        <Play className="w-4 h-4 mr-1" aria-hidden="true" />
+                        Commencer
+                      </Button>
+                    )}
+                    {activity.completed && (
+                      <Badge variant="default" className="bg-green-500 w-full sm:w-auto justify-center">
+                        <CheckCircle2 className="w-3 h-3 mr-1" aria-hidden="true" />
+                        Terminé
+                      </Badge>
                     )}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-medium text-muted-foreground">Activité {index + 1}</span>
-                      <Badge variant="secondary" className="text-xs">{activity.duration}</Badge>
-                    </div>
-                    <h4 className="font-semibold">{activity.title}</h4>
-                    <p className="text-sm text-muted-foreground">{activity.description}</p>
-                  </div>
-                  {!activity.completed && (
-                    <Button 
-                      onClick={() => handleActivityStart(activity)} 
-                      size="sm"
-                      aria-label={`Commencer l'activité ${activity.title}`}
-                    >
-                      <Play className="w-4 h-4 mr-1" aria-hidden="true" />
-                      Commencer
-                    </Button>
-                  )}
-                  {activity.completed && (
-                    <Badge variant="default" className="bg-green-500">
-                      <CheckCircle2 className="w-3 h-3 mr-1" aria-hidden="true" />
-                      Terminé
-                    </Badge>
-                  )}
                 </div>
               </CardContent>
             </Card>
