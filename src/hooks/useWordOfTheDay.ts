@@ -26,7 +26,6 @@ interface UseWordOfTheDayReturn {
   shouldDeferAudio: boolean;
 }
 
-const VISITOR_WORD_KEY = 'visitor_word_of_day';
 const CACHED_WORD_KEY = 'cached_daily_word';
 
 // Get today's date in Haiti timezone (YYYY-MM-DD format)
@@ -34,6 +33,16 @@ const getHaitiDate = (): string => {
   return new Date().toLocaleDateString('en-CA', { 
     timeZone: 'America/Port-au-Prince' 
   });
+};
+
+// Deterministic word selection based on date - ensures same word for everyone
+const getGlobalWordIndex = (date: string, totalWords: number): number => {
+  let hash = 0;
+  for (let i = 0; i < date.length; i++) {
+    hash = ((hash << 5) - hash) + date.charCodeAt(i);
+    hash |= 0; // Convert to 32-bit integer
+  }
+  return Math.abs(hash) % totalWords;
 };
 
 export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
@@ -74,126 +83,38 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
           }
         }
 
-        const { data: { user } } = await supabase.auth.getUser();
-        
+        // Fetch all active words (ordered for consistent selection)
+        const { data: allWords, error: wordsError } = await supabase
+          .from('daily_words')
+          .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category')
+          .eq('is_active', true)
+          .order('id', { ascending: true });
+
+        if (wordsError) throw wordsError;
+
         let wordData: DailyWord | null = null;
 
-        if (user && !isVisitor) {
-          // For authenticated users, check if they already have a word for today
-          const { data: todaysWord, error: todayError } = await supabase
-            .from('user_daily_word')
-            .select('word_id, daily_words(id, word, phonetic, part_of_speech, definition, example, audio_url, category)')
-            .eq('user_id', user.id)
-            .eq('date', haitiDate)
-            .maybeSingle();
-
-          if (todayError) throw todayError;
-
-          // If user already has a word for today, return it
-          if (todaysWord?.daily_words) {
-            const rawWord = todaysWord.daily_words as unknown as DailyWord;
-            // On slow connections, clear audio_url to defer loading
-            wordData = shouldDeferAudio 
-              ? { ...rawWord, audio_url: null }
-              : rawWord;
-          } else {
-            // No word for today - pick a new one avoiding recently seen words
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
-
-            // Get words seen in last 30 days
-            const { data: recentWords } = await supabase
-              .from('user_daily_word')
-              .select('word_id')
-              .eq('user_id', user.id)
-              .gte('date', thirtyDaysAgoStr);
-
-            const recentIds = recentWords?.map(w => w.word_id) || [];
-
-            // Get all active words
-            const { data: allActiveWords, error: wordsError } = await supabase
-              .from('daily_words')
-              .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category')
-              .eq('is_active', true);
-
-            if (wordsError) throw wordsError;
-
-            // Filter out recently seen words
-            let availableWords = allActiveWords || [];
-            if (recentIds.length > 0 && availableWords.length > recentIds.length) {
-              availableWords = availableWords.filter(w => !recentIds.includes(w.id));
-            }
-
-            // Pick a random word from available
-            if (availableWords.length > 0) {
-              const randomIndex = Math.floor(Math.random() * availableWords.length);
-              const rawWord = availableWords[randomIndex];
-              // On slow connections, clear audio_url to defer loading
-              wordData = shouldDeferAudio 
-                ? { ...rawWord, audio_url: null }
-                : rawWord;
-
-              // Save as today's word using upsert to prevent race conditions
-              await supabase
-                .from('user_daily_word')
-                .upsert(
-                  { user_id: user.id, word_id: rawWord.id, date: haitiDate },
-                  { onConflict: 'user_id,date', ignoreDuplicates: true }
-                );
-            }
-          }
-        } else {
-          // For visitors, use localStorage to persist word for the day
-          const stored = localStorage.getItem(VISITOR_WORD_KEY);
+        if (allWords && allWords.length > 0) {
+          // Use deterministic selection based on today's date
+          const wordIndex = getGlobalWordIndex(haitiDate, allWords.length);
+          const rawWord = allWords[wordIndex];
           
-          if (stored) {
-            try {
-              const { wordId, date } = JSON.parse(stored);
-              if (date === haitiDate && wordId) {
-                // Fetch the same word
-                const { data: existingWord, error: fetchError } = await supabase
-                  .from('daily_words')
-                  .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category')
-                  .eq('id', wordId)
-                  .eq('is_active', true)
-                  .maybeSingle();
+          // On slow connections, clear audio_url to defer loading
+          wordData = shouldDeferAudio 
+            ? { ...rawWord, audio_url: null }
+            : rawWord;
 
-                if (!fetchError && existingWord) {
-                  // On slow connections, clear audio_url to defer loading
-                  wordData = shouldDeferAudio 
-                    ? { ...existingWord, audio_url: null }
-                    : existingWord;
-                }
-              }
-            } catch {
-              // Invalid localStorage data, ignore
-            }
-          }
-
-          // If no valid stored word, get a random one
-          if (!wordData) {
-            const { data: allWords, error: fetchError } = await supabase
-              .from('daily_words')
-              .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category')
-              .eq('is_active', true);
-
-            if (fetchError) throw fetchError;
-
-            if (allWords && allWords.length > 0) {
-              const randomIndex = Math.floor(Math.random() * allWords.length);
-              const rawWord = allWords[randomIndex];
-              // On slow connections, clear audio_url to defer loading
-              wordData = shouldDeferAudio 
-                ? { ...rawWord, audio_url: null }
-                : rawWord;
-
-              // Save to localStorage for the day
-              localStorage.setItem(VISITOR_WORD_KEY, JSON.stringify({
-                wordId: rawWord.id,
-                date: haitiDate
-              }));
-            }
+          // Optionally track for authenticated users (analytics)
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user && !isVisitor) {
+            // Track which word was shown today (fire and forget)
+            supabase
+              .from('user_daily_word')
+              .upsert(
+                { user_id: user.id, word_id: rawWord.id, date: haitiDate },
+                { onConflict: 'user_id,date', ignoreDuplicates: true }
+              )
+              .then(() => {});
           }
         }
 

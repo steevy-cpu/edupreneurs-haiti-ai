@@ -38,12 +38,29 @@ interface DailyWord {
   is_active: boolean;
 }
 
+// Same deterministic algorithm as useWordOfTheDay and edge function
+const getGlobalWordIndex = (date: string, totalWords: number): number => {
+  let hash = 0;
+  for (let i = 0; i < date.length; i++) {
+    hash = ((hash << 5) - hash) + date.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash) % totalWords;
+};
+
+const getHaitiDate = (): string => {
+  return new Date().toLocaleDateString('en-CA', { 
+    timeZone: 'America/Port-au-Prince' 
+  });
+};
+
 const WordsModule = () => {
   const [words, setWords] = useState<DailyWord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [generatingWordId, setGeneratingWordId] = useState<string | null>(null);
   const [playingWordId, setPlayingWordId] = useState<string | null>(null);
   const [sendingNotification, setSendingNotification] = useState(false);
+  const [todaysWord, setTodaysWord] = useState<DailyWord | null>(null);
   const [notificationResult, setNotificationResult] = useState<{
     success: boolean;
     word?: string;
@@ -68,14 +85,24 @@ const WordsModule = () => {
   const fetchWords = async () => {
     try {
       setIsLoading(true);
+      // Fetch with consistent ordering (same as useWordOfTheDay and edge function)
       const { data, error } = await supabase
         .from("daily_words")
         .select("id, word, phonetic, part_of_speech, definition, audio_url, is_active")
         .eq("is_active", true)
-        .order("word", { ascending: true });
+        .order("id", { ascending: true });
 
       if (error) throw error;
-      setWords(data || []);
+      
+      const wordsList = data || [];
+      setWords(wordsList);
+      
+      // Calculate today's word using deterministic algorithm
+      if (wordsList.length > 0) {
+        const haitiDate = getHaitiDate();
+        const wordIndex = getGlobalWordIndex(haitiDate, wordsList.length);
+        setTodaysWord(wordsList[wordIndex]);
+      }
     } catch (err) {
       console.error("Error fetching words:", err);
       toast.error("Erreur lors du chargement des mots");
@@ -254,6 +281,18 @@ const WordsModule = () => {
             qui ont activé cette catégorie de notification.
           </p>
           
+          {/* Today's word preview */}
+          {todaysWord && (
+            <div className="p-3 rounded-lg bg-background border">
+              <p className="text-xs text-muted-foreground mb-1">Mot du jour (sera envoyé) :</p>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-primary">{todaysWord.word}</span>
+                <span className="text-xs text-muted-foreground font-mono">[{todaysWord.phonetic}]</span>
+              </div>
+              <p className="text-sm text-muted-foreground truncate">{todaysWord.definition}</p>
+            </div>
+          )}
+          
           <Button
             onClick={handleSendNotificationClick}
             disabled={sendingNotification}
@@ -383,7 +422,12 @@ const WordsModule = () => {
               {confirmDialog.type === 'notification' ? (
                 <>
                   Une notification push sera envoyée à tous les utilisateurs qui ont 
-                  activé la catégorie "Mot du jour". Un mot aléatoire sera sélectionné.
+                  activé la catégorie "Mot du jour".
+                  {todaysWord && (
+                    <span className="block mt-2 font-medium">
+                      Mot: <strong className="text-primary">{todaysWord.word}</strong> [{todaysWord.phonetic}]
+                    </span>
+                  )}
                 </>
               ) : (
                 <>

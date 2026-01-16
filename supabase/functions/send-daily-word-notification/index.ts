@@ -29,6 +29,23 @@ interface DailyWord {
   definition: string;
 }
 
+// Deterministic word selection based on date - ensures same word for everyone
+const getGlobalWordIndex = (date: string, totalWords: number): number => {
+  let hash = 0;
+  for (let i = 0; i < date.length; i++) {
+    hash = ((hash << 5) - hash) + date.charCodeAt(i);
+    hash |= 0; // Convert to 32-bit integer
+  }
+  return Math.abs(hash) % totalWords;
+};
+
+// Get today's date in Haiti timezone (YYYY-MM-DD format)
+const getHaitiDate = (): string => {
+  return new Date().toLocaleDateString('en-CA', { 
+    timeZone: 'America/Port-au-Prince' 
+  });
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -77,46 +94,47 @@ serve(async (req) => {
       // No body, use random word
     }
 
-    // Get today's word - either specific or random active word
-    let todaysWord: DailyWord | null = null;
+    // Get today's word using deterministic selection (same as frontend)
+    const haitiDate = getHaitiDate();
+    
+    // Fetch all active words with consistent ordering
+    const { data: allWords, error: wordsError } = await supabase
+      .from('daily_words')
+      .select('id, word, phonetic, definition')
+      .eq('is_active', true)
+      .order('id', { ascending: true });
 
-    if (specificWordId) {
-      const { data, error } = await supabase
-        .from('daily_words')
-        .select('id, word, phonetic, definition')
-        .eq('id', specificWordId)
-        .eq('is_active', true)
-        .single();
-
-      if (error) {
-        console.error('Error fetching specific word:', error);
-        return new Response(
-          JSON.stringify({ error: 'Word not found' }),
-          { status: 404, headers: responseHeaders }
-        );
-      }
-      todaysWord = data;
-    } else {
-      // Get a random active word
-      const { data: allWords, error } = await supabase
-        .from('daily_words')
-        .select('id, word, phonetic, definition')
-        .eq('is_active', true);
-
-      if (error || !allWords || allWords.length === 0) {
-        console.error('Error fetching words:', error);
-        return new Response(
-          JSON.stringify({ error: 'No active words found' }),
-          { status: 404, headers: responseHeaders }
-        );
-      }
-
-      // Pick random word
-      const randomIndex = Math.floor(Math.random() * allWords.length);
-      todaysWord = allWords[randomIndex];
+    if (wordsError || !allWords || allWords.length === 0) {
+      console.error('Error fetching words:', wordsError);
+      return new Response(
+        JSON.stringify({ error: 'No active words found' }),
+        { status: 404, headers: responseHeaders }
+      );
     }
 
-    console.log(`📖 Daily word: "${todaysWord.word}" [${todaysWord.phonetic}]`);
+    // Use deterministic selection - same word everyone sees today
+    let todaysWord: DailyWord;
+    
+    if (specificWordId) {
+      // If a specific word is requested, use it (for testing)
+      const specificWord = allWords.find(w => w.id === specificWordId);
+      if (!specificWord) {
+        return new Response(
+          JSON.stringify({ error: 'Specified word not found' }),
+          { status: 404, headers: responseHeaders }
+        );
+      }
+      todaysWord = specificWord;
+    } else {
+      // Deterministic selection based on date
+      const wordIndex = getGlobalWordIndex(haitiDate, allWords.length);
+      todaysWord = allWords[wordIndex];
+    }
+    
+    console.log(`📅 Haiti date: ${haitiDate}`);
+    console.log(`📖 Today's word (deterministic): "${todaysWord.word}" [${todaysWord.phonetic}]`);
+
+    
 
     // Get all users with push subscriptions
     const { data: subscriptions, error: subError } = await supabase
