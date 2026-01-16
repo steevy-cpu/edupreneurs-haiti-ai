@@ -649,8 +649,38 @@ const PassionDiscoveryContent = () => {
     
     if (!category || !module) return;
 
-    const searchQuery = `${category.title} ${module.title} tutoriel français`;
-    await searchYouTubeVideos(searchQuery);
+    // First, try to fetch curated recommended videos from database
+    const { data: curatedVideos } = await supabase
+      .from('passion_recommended_videos')
+      .select('*')
+      .eq('category_id', categoryId)
+      .eq('module_id', moduleId)
+      .order('display_order', { ascending: true });
+
+    // Also get banned video IDs
+    const { data: bannedData } = await supabase
+      .from('banned_youtube_videos')
+      .select('video_id');
+    const bannedIds = new Set(bannedData?.map(v => v.video_id) || []);
+
+    if (curatedVideos && curatedVideos.length > 0) {
+      // Use curated videos, filter out banned ones
+      const filtered = curatedVideos
+        .filter(v => !bannedIds.has(v.video_id))
+        .map(v => ({
+          id: v.video_id,
+          title: v.title || '',
+          thumbnail: v.thumbnail || `https://img.youtube.com/vi/${v.video_id}/mqdefault.jpg`,
+          channelTitle: v.channel_title || ''
+        }));
+      setVideos(filtered);
+    } else {
+      // Fallback to YouTube search
+      const searchQuery = `${category.title} ${module.title} tutoriel français`;
+      await searchYouTubeVideos(searchQuery);
+      // Filter out banned videos from search results
+      setVideos(prev => prev.filter(v => !bannedIds.has(v.id)));
+    }
 
     const welcomeMessage = {
       role: "assistant",
