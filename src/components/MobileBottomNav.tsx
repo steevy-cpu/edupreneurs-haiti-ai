@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, BookOpen, Rss, MessageSquare, Gamepad2, Settings } from "lucide-react";
+import { Home, BookOpen, Rss, Bell, MessageSquare, Gamepad2 } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -95,6 +95,7 @@ export const MobileBottomNav = () => {
     { icon: Home, path: "/dashboard" },
     { icon: BookOpen, path: "/matieres" },
     { icon: Rss, path: "/feed", badge: unreadFeedPosts > 0 ? unreadFeedPosts : undefined, prefetchKey: ["feed-posts"] },
+    { icon: Bell, path: "/notifications", badge: unreadNotifications > 0 ? unreadNotifications : undefined, prefetchKey: ["notifications"] },
     { icon: MessageSquare, path: "/community", badge: unreadMessages > 0 ? unreadMessages : undefined, prefetchKey: ["conversations"] },
     { icon: Gamepad2, path: "/games" },
   ];
