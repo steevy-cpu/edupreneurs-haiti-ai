@@ -132,7 +132,7 @@
     
     <!-- Mermaid for diagrams - only load when diagrams exist on page -->
     <script type="module">
-      // Mermaid loader - only imports when .mermaid elements are found
+      // Mermaid loader - deferred until page is interactive to improve TTI
       let mermaidLoaded = false;
       
       const loadMermaid = async () => {
@@ -172,7 +172,6 @@
       
       // Only observe for mermaid diagrams - don't load eagerly
       const observer = new MutationObserver((mutations) => {
-        // Check if any added nodes contain mermaid diagrams
         for (const mutation of mutations) {
           for (const node of mutation.addedNodes) {
             if (node.nodeType === 1) {
@@ -185,16 +184,25 @@
         }
       });
       
-      // Start observing after DOM is ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-          observer.observe(document.body, { childList: true, subtree: true });
-          // Check if diagrams already exist
-          if (document.querySelector('.mermaid')) loadMermaid();
-        });
-      } else {
+      // Defer observer initialization until browser is idle to improve TTI
+      const initObserver = () => {
         observer.observe(document.body, { childList: true, subtree: true });
         if (document.querySelector('.mermaid')) loadMermaid();
+      };
+      
+      // Use requestIdleCallback with fallback for better TTI
+      const deferInit = (callback) => {
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(callback, { timeout: 2000 });
+        } else {
+          setTimeout(callback, 100);
+        }
+      };
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => deferInit(initObserver));
+      } else {
+        deferInit(initObserver);
       }
     </script>
 </head>
