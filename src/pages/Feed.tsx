@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, MessageCircle, Send, Plus, Image, Share2, Trash2, Smile, Reply, BadgeCheck, ArrowLeft, RefreshCw, Globe, MoreHorizontal, Flag } from "lucide-react";
+import { Heart, MessageCircle, Send, Plus, Image, Share2, Trash2, Smile, Reply, BadgeCheck, ArrowLeft, RefreshCw, Globe, MoreHorizontal, Flag, Pencil } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,8 @@ import { ReportDialog } from "@/components/feed/ReportDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { CreatePostDialog } from "@/components/feed/CreatePostDialog";
+import { EditPostDialog } from "@/components/feed/EditPostDialog";
+import { JUDE_USER_ID } from "@/types/community";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -169,6 +171,7 @@ const Feed = () => {
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [postToReport, setPostToReport] = useState<Post | null>(null);
   const [isFounder, setIsFounder] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
 
   // Mobile keyboard optimization - scroll input into view
   const handleInputFocus = useCallback((e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -1101,8 +1104,16 @@ const Feed = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-background border z-50">
-                        {/* Delete option - shown for own posts OR if user is founder */}
-                        {(post.user_id === currentUser?.id || isFounder) && (
+                        {/* Edit option - shown for own posts OR founders on Jude's posts */}
+                        {(post.user_id === currentUser?.id || (isFounder && post.user_id === JUDE_USER_ID)) && (
+                          <DropdownMenuItem onClick={() => setEditingPost(post)}>
+                            <Pencil className="h-4 w-4 mr-2" />
+                            Modifier
+                          </DropdownMenuItem>
+                        )}
+                        
+                        {/* Delete option - shown for own posts OR founders on Jude's posts */}
+                        {(post.user_id === currentUser?.id || (isFounder && post.user_id === JUDE_USER_ID)) && (
                           <DropdownMenuItem 
                             onClick={() => setDeletePostId(post.id)}
                             className="text-destructive focus:text-destructive"
@@ -1112,8 +1123,8 @@ const Feed = () => {
                           </DropdownMenuItem>
                         )}
                         
-                        {/* Separator if both options are shown */}
-                        {isFounder && post.user_id !== currentUser?.id && (
+                        {/* Separator - only when founder viewing Jude's post */}
+                        {isFounder && post.user_id === JUDE_USER_ID && (
                           <DropdownMenuSeparator />
                         )}
                         
@@ -1369,6 +1380,19 @@ const Feed = () => {
         reportedUserId={postToReport?.user_id || ""}
         reportedUserName={postToReport?.profile?.full_name || postToReport?.profile?.nickname}
       />
+
+      {/* Edit Post Dialog */}
+      {editingPost && (
+        <EditPostDialog
+          post={editingPost}
+          isOpen={!!editingPost}
+          onOpenChange={(open) => !open && setEditingPost(null)}
+          onPostUpdated={() => {
+            setEditingPost(null);
+            refreshFeed();
+          }}
+        />
+      )}
     </div>
   );
 };
