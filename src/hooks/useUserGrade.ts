@@ -7,9 +7,17 @@ const SUPER_USER_IDS = [
   '7580cd10-e18c-4b2f-ac50-def28d046c9d', // Djood
 ];
 
-// Valid grade levels
+// Valid grade levels (academic grades only - for course access)
 export const VALID_GRADES = ['7AF', '8AF', '9AF', 'NS1', 'NS2', 'NS3', 'NS4'] as const;
 export type GradeLevel = typeof VALID_GRADES[number];
+
+// All possible grades including non-academic
+export const ALL_GRADES = ['7AF', '8AF', '9AF', 'NS1', 'NS2', 'NS3', 'NS4', 'UNIV', 'NONE'] as const;
+export type AllGradeTypes = typeof ALL_GRADES[number];
+
+// Non-academic grades (no access to Matieres/Exams)
+export const NON_ACADEMIC_GRADES = ['UNIV', 'NONE'] as const;
+export type NonAcademicGrade = typeof NON_ACADEMIC_GRADES[number];
 
 // Legacy grade mapping (old format -> new format)
 const LEGACY_GRADE_MAP: Record<string, GradeLevel> = {
@@ -36,7 +44,7 @@ export const normalizeGrade = (grade: string | null): GradeLevel | null => {
 };
 
 // Grade labels for display
-export const GRADE_LABELS: Record<GradeLevel, string> = {
+export const GRADE_LABELS: Record<AllGradeTypes, string> = {
   '7AF': '7ème année fondamentale',
   '8AF': '8ème année fondamentale',
   '9AF': '9ème année fondamentale',
@@ -44,19 +52,27 @@ export const GRADE_LABELS: Record<GradeLevel, string> = {
   'NS2': 'Nouveau Secondaire 2',
   'NS3': 'Nouveau Secondaire 3 (Rhéto)',
   'NS4': 'Nouveau Secondaire 4 (Philo)',
+  'UNIV': 'Université',
+  'NONE': 'Pas d\'école / Autodidacte',
+};
+
+// Check if a grade is non-academic
+export const isNonAcademicGrade = (grade: string | null): boolean => {
+  return grade !== null && NON_ACADEMIC_GRADES.includes(grade as NonAcademicGrade);
 };
 
 interface UseUserGradeResult {
-  userGrade: GradeLevel | null;
+  userGrade: AllGradeTypes | null;
   isSuperUser: boolean;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isNonAcademic: boolean;
   canAccessGrade: (gradeId: string) => boolean;
   userId: string | null;
 }
 
 export function useUserGrade(): UseUserGradeResult {
-  const [userGrade, setUserGrade] = useState<GradeLevel | null>(null);
+  const [userGrade, setUserGrade] = useState<AllGradeTypes | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -88,9 +104,14 @@ export function useUserGrade(): UseUserGradeResult {
           console.error('Error fetching user grade:', error);
           setUserGrade(null);
         } else {
-          // Normalize the grade to new format
-          const normalizedGrade = normalizeGrade(profile?.academic_grade);
-          setUserGrade(normalizedGrade);
+          // Normalize the grade to new format (or keep UNIV/NONE as-is)
+          const grade = profile?.academic_grade;
+          if (grade && ALL_GRADES.includes(grade as AllGradeTypes)) {
+            setUserGrade(grade as AllGradeTypes);
+          } else {
+            const normalizedGrade = normalizeGrade(grade);
+            setUserGrade(normalizedGrade as AllGradeTypes | null);
+          }
         }
       } catch (error) {
         console.error('Error in useUserGrade:', error);
@@ -118,11 +139,17 @@ export function useUserGrade(): UseUserGradeResult {
 
   // Check if current user is a super user
   const isSuperUser = userId ? SUPER_USER_IDS.includes(userId) : false;
+  
+  // Check if user has a non-academic grade (UNIV or NONE)
+  const isNonAcademic = isNonAcademicGrade(userGrade);
 
   // Function to check if user can access a specific grade
   const canAccessGrade = (gradeId: string): boolean => {
     // Super users (Steevy & Djood) can access all grades
     if (isSuperUser) return true;
+    
+    // Non-academic users (UNIV/NONE) cannot access any grade-specific content
+    if (isNonAcademic) return false;
     
     // Normalize the requested grade for comparison
     const normalizedRequestedGrade = normalizeGrade(gradeId);
@@ -137,6 +164,7 @@ export function useUserGrade(): UseUserGradeResult {
     isSuperUser,
     isLoading,
     isAuthenticated,
+    isNonAcademic,
     canAccessGrade,
     userId,
   };

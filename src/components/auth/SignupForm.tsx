@@ -422,7 +422,17 @@ export default function SignupForm() {
               </Label>
               <Select
                 value={signupData.academicGrade}
-                onValueChange={(value) => setSignupData({ ...signupData, academicGrade: value })}
+                onValueChange={(value) => {
+                  // When selecting NONE, auto-fill school with N/A
+                  if (value === 'NONE') {
+                    setSignupData({ ...signupData, academicGrade: value, school: 'N/A' });
+                  } else if (signupData.academicGrade === 'NONE' && signupData.school === 'N/A') {
+                    // Clear N/A when switching away from NONE
+                    setSignupData({ ...signupData, academicGrade: value, school: '' });
+                  } else {
+                    setSignupData({ ...signupData, academicGrade: value });
+                  }
+                }}
               >
                 <SelectTrigger className="w-full bg-muted/50">
                   <SelectValue placeholder="Sélectionnez votre niveau..." />
@@ -435,6 +445,11 @@ export default function SignupForm() {
                   ))}
                 </SelectContent>
               </Select>
+              {(signupData.academicGrade === 'UNIV' || signupData.academicGrade === 'NONE') && (
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  ⚠️ Note: Les matières scolaires et examens ne seront pas disponibles pour ce niveau.
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="signup-gender" className="text-sm text-muted-foreground">
@@ -474,21 +489,36 @@ export default function SignupForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="signup-school" className="text-sm text-muted-foreground">
-                Nom de l'école *
+                {signupData.academicGrade === 'NONE' 
+                  ? 'Institution (optionnel)' 
+                  : signupData.academicGrade === 'UNIV' 
+                    ? 'Nom de l\'université *'
+                    : 'Nom de l\'école *'
+                }
               </Label>
               <Input
                 id="signup-school"
                 type="text"
-                required
-                placeholder="ex: Collège Sacré-coeur"
+                required={signupData.academicGrade !== 'NONE'}
+                disabled={signupData.academicGrade === 'NONE'}
+                placeholder={
+                  signupData.academicGrade === 'NONE' 
+                    ? 'N/A' 
+                    : signupData.academicGrade === 'UNIV'
+                      ? 'ex: Université d\'État d\'Haïti'
+                      : 'ex: Collège Sacré-coeur'
+                }
                 value={signupData.school}
                 onChange={(e) => setSignupData({ ...signupData, school: e.target.value })}
                 onFocus={handleInputFocus}
                 autoComplete="organization"
                 autoCapitalize="words"
                 enterKeyHint="next"
-                className="auth-input"
+                className={`auth-input ${signupData.academicGrade === 'NONE' ? 'bg-muted/70 cursor-not-allowed' : ''}`}
               />
+              {signupData.academicGrade === 'NONE' && (
+                <p className="text-xs text-muted-foreground">Ce champ est automatiquement rempli pour les autodidactes.</p>
+              )}
             </div>
           </div>
 
@@ -549,8 +579,10 @@ export default function SignupForm() {
                   toast({ title: "Genre requis", description: "Veuillez sélectionner votre genre", variant: "destructive" });
                   return;
                 }
-                if (!signupData.school || signupData.school.trim().length === 0) {
-                  toast({ title: "École requise", description: "Veuillez entrer le nom de votre école", variant: "destructive" });
+                // School validation - skip for NONE grade
+                if (signupData.academicGrade !== 'NONE' && (!signupData.school || signupData.school.trim().length === 0)) {
+                  const schoolLabel = signupData.academicGrade === 'UNIV' ? 'université' : 'école';
+                  toast({ title: `${schoolLabel.charAt(0).toUpperCase() + schoolLabel.slice(1)} requise`, description: `Veuillez entrer le nom de votre ${schoolLabel}`, variant: "destructive" });
                   return;
                 }
                 setSignupStep(3);
