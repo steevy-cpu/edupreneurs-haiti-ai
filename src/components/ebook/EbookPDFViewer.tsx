@@ -209,18 +209,29 @@ export default function EbookPDFViewer({
         </div>
       </div>
 
-      {/* PDF Canvas - Calm container styling */}
-      <div className="relative w-full overflow-auto rounded-xl border border-border/40 bg-white shadow-sm dark:bg-gray-900/95">
+      {/* PDF Canvas - Fixed viewport with scroll */}
+      <div className="relative w-full rounded-xl border border-border/40 bg-white shadow-sm dark:bg-gray-900/95">
+        {/* Loading overlay */}
         {pageRendering && !isSlowConnection && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/30 backdrop-blur-[1px]">
             <Loader2 className="h-6 w-6 animate-spin text-primary/70" />
           </div>
         )}
-        <div className="flex justify-center p-2 sm:p-4">
-          <canvas 
-            ref={canvasRef} 
-            className="max-w-full shadow-md transition-shadow hover:shadow-lg" 
-          />
+        
+        {/* Scrollable viewport - fixed height */}
+        <div 
+          className="h-[60vh] overflow-auto sm:h-[65vh] md:h-[70vh]"
+          style={{ maxHeight: 'calc(100vh - 250px)' }}
+        >
+          {/* Canvas wrapper - centers content and allows expansion */}
+          <div className="inline-block min-w-full p-2 sm:p-4">
+            <div className="flex justify-center">
+              <canvas 
+                ref={canvasRef} 
+                className="shadow-md transition-shadow hover:shadow-lg" 
+              />
+            </div>
+          </div>
         </div>
       </div>
 
