@@ -43,7 +43,7 @@ export const chatMessageSchema = z.object({
     .transform(s => s.trim()),
   chatHistory: z.array(chatHistoryItemSchema).max(50).optional().default([]),
   userNickname: z.string().max(100).optional(),
-  currentPage: z.string().max(200).optional(),
+  currentPage: z.union([z.string(), z.number()]).transform(v => String(v)).optional(),
   enableVoice: z.boolean().optional().default(true),
   lessonTitle: z.string().max(500).optional(),
   lessonContent: z.string().max(100000).optional(),

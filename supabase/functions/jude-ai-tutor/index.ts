@@ -293,9 +293,10 @@ serve(async (req) => {
       '/lecture': 'dans la bibliothèque',
     };
     
-    const pageContext = pageContextMap[currentPage] || 
-      (currentPage.startsWith('/course/') ? `sur le cours de ${currentPage.replace('/course/', '').replace(/-/g, ' ')}` : 
-       currentPage.startsWith('/lesson/') ? 'sur une leçon' : '');
+    const currentPageStr = String(currentPage || '');
+    const pageContext = pageContextMap[currentPageStr] || 
+      (currentPageStr.startsWith('/course/') ? `sur le cours de ${currentPageStr.replace('/course/', '').replace(/-/g, ' ')}` : 
+       currentPageStr.startsWith('/lesson/') ? 'sur une leçon' : '');
 
     // System prompt for Jude
     const systemPrompt = `Tu es Jude, l'assistant officiel de la plateforme éducative EDUPRENEURS.
