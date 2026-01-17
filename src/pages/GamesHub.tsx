@@ -3,11 +3,13 @@ import { Layout } from '@/components/Layout';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Gamepad2, Swords, Crown, Target, Users, Zap, ArrowRight } from 'lucide-react';
+import { Gamepad2, Swords, Crown, Target, Users, Zap, ArrowRight, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useUserGrade } from '@/hooks/useUserGrade';
 
 const GamesHub = () => {
   const navigate = useNavigate();
+  const { isSuperUser, isLoading } = useUserGrade();
 
   const games = [
     {
@@ -19,6 +21,7 @@ const GamesHub = () => {
       features: ['Mode Solo', 'Multijoueur', 'Badges & XP'],
       path: '/quiz-battle',
       isNew: true,
+      isLocked: !isLoading && !isSuperUser,
     },
     {
       id: 'chess',
@@ -29,6 +32,7 @@ const GamesHub = () => {
       features: ['Contre l\'IA', 'Puzzles', 'Classement ELO'],
       path: '/chess-game',
       isNew: false,
+      isLocked: false,
     },
   ];
 
@@ -45,8 +49,13 @@ const GamesHub = () => {
           {games.map((game) => (
             <Card 
               key={game.id}
-              className="overflow-hidden border-2 border-transparent hover:border-primary/20 transition-all duration-300 group cursor-pointer"
-              onClick={() => navigate(game.path)}
+              className={cn(
+                "overflow-hidden border-2 transition-all duration-300 group relative",
+                game.isLocked 
+                  ? "border-muted cursor-not-allowed" 
+                  : "border-transparent hover:border-primary/20 cursor-pointer"
+              )}
+              onClick={() => !game.isLocked && navigate(game.path)}
             >
               <CardContent className="p-0">
                 <div className={cn(
@@ -66,7 +75,7 @@ const GamesHub = () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-xl font-bold text-foreground">{game.title}</h3>
-                        {game.isNew && (
+                        {game.isNew && !game.isLocked && (
                           <span className="px-2 py-0.5 text-xs font-bold bg-accent text-accent-foreground rounded-full animate-pulse">
                             NOUVEAU
                           </span>
@@ -87,17 +96,46 @@ const GamesHub = () => {
                       </div>
                       <Button 
                         className={cn(
-                          "bg-gradient-to-r shadow-md group-hover:shadow-lg transition-all",
-                          game.color
+                          "shadow-md transition-all",
+                          game.isLocked 
+                            ? "bg-muted text-muted-foreground" 
+                            : cn("bg-gradient-to-r group-hover:shadow-lg", game.color)
                         )}
+                        disabled={game.isLocked}
                       >
-                        Jouer
-                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                        {game.isLocked ? (
+                          <>
+                            <Lock className="w-4 h-4 mr-2" />
+                            Verrouillé
+                          </>
+                        ) : (
+                          <>
+                            Jouer
+                            <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </>
+                        )}
                       </Button>
                     </div>
                   </div>
                 </div>
               </CardContent>
+              
+              {/* Lock Overlay */}
+              {game.isLocked && (
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-[2px] flex items-center justify-center z-10 rounded-lg">
+                  <div className="flex flex-col items-center gap-3 text-center p-4">
+                    <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
+                      <Lock className="w-7 h-7 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">Bientôt disponible</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Cette fonctionnalité arrive très prochainement!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </Card>
           ))}
         </div>
