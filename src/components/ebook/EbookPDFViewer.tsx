@@ -25,7 +25,7 @@ export default function EbookPDFViewer({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   // Lower initial scale on slow connections for faster rendering
-  const [scale, setScale] = useState(isSlowConnection ? 1.0 : 1.2);
+  const [scale, setScale] = useState(0.7);
   const [pageRendering, setPageRendering] = useState(false);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const canvasRef = useRef<HTMLCanvasElement>(null);
