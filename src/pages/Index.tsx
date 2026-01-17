@@ -7,19 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { ProgressiveImage } from "@/components/ProgressiveImage";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 
-// Static imports for critical above-the-fold images - preloaded
-// LCP hero image uses public path for correct preload matching
-// WebP version provides ~50% smaller file size for 3G optimization
-const ericCelebrating = "/images/eric-celebrating.png";
-const ericCelebratingWebP = "/images/eric-celebrating.webp";
-
-// Logo uses public paths for WebP optimization
-const edupreneursLogo = "/images/edupreneurs-new-logo.png";
-const edupreneursLogoWebP = "/images/edupreneurs-new-logo.webp";
-
-// eric-right-pointing uses public paths for WebP
-const ericPointingRightPath = "/images/eric-right-pointing.png";
-const ericPointingRightWebP = "/images/eric-right-pointing.webp";
+// Static imports for critical above-the-fold images
+// Using original PNG files which have proper transparency
+import ericCelebrating from "@/assets/eric-celebrating.png";
+import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
+import ericPointingRight from "@/assets/eric-right-pointing.png";
 
 // Lazy load non-critical images
 const ericMain01 = () => import("@/assets/eric-main01.png").then(m => m.default);
@@ -48,8 +40,6 @@ const Index = () => {
   
   // Lazy loaded images state
   const [lazyImages, setLazyImages] = useState<{
-    ericPointingRight?: string;
-    ericPointingRightWebP?: string;
     judeProfile?: string;
   }>({});
 
@@ -90,8 +80,6 @@ const Index = () => {
     const loadLazyImages = async () => {
       const jude = await judeProfile();
       setLazyImages({
-        ericPointingRight: ericPointingRightPath,
-        ericPointingRightWebP: ericPointingRightWebP,
         judeProfile: jude
       });
     };
@@ -217,12 +205,12 @@ const Index = () => {
       <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-lg border-b border-border/50 shadow-sm transition-all duration-300">
         <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-1.5 sm:gap-3">
-            <ProgressiveImage 
+            <img 
               src={edupreneursLogo} 
-              webpSrc={edupreneursLogoWebP}
               alt="EDUPRENEURS Logo" 
               className="h-8 sm:h-12 w-auto object-contain" 
-              priority 
+              loading="eager"
+              fetchPriority="high"
             />
           </Link>
           
@@ -391,12 +379,12 @@ const Index = () => {
             {shouldShowBlur && (
               <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full blur-3xl animate-pulse"></div>
             )}
-            <ProgressiveImage 
+            <img 
               src={ericCelebrating} 
-              webpSrc={ericCelebratingWebP}
               alt="Jude - Assistant IA EDUPRENEURS" 
               className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-md drop-shadow-2xl hover:scale-105 transition-transform duration-500 relative z-10"
-              priority={true}
+              loading="eager"
+              fetchPriority="high"
               width={448}
               height={672}
             />
@@ -418,17 +406,13 @@ const Index = () => {
               </p>
             </div>
             <div className="flex-shrink-0">
-              {lazyImages.ericPointingRight ? (
-                <img 
-                  src={lazyImages.ericPointingRight} 
-                  alt="Eric vous guide" 
-                  className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
-                  loading="lazy"
-                  decoding="async"
-                />
-              ) : (
-                <div className="w-32 h-32 sm:w-40 sm:h-40 bg-muted/30 rounded-full animate-pulse" />
-              )}
+              <img 
+                src={ericPointingRight} 
+                alt="Eric vous guide" 
+                className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
+                loading="lazy"
+                decoding="async"
+              />
             </div>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
