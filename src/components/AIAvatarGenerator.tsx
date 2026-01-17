@@ -171,22 +171,55 @@ export const AIAvatarGenerator = ({ open, onOpenChange, onAvatarGenerated, userI
 
     setIsSaving(true);
     try {
-      // Convert base64 to blob
-      const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, '');
-      const byteCharacters = atob(base64Data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'image/png' });
+      // Create an image element from the base64 data for compression
+      const img = new Image();
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = generatedImage;
+      });
 
-      // Upload to storage
-      const fileName = `${userId}/avatar-${Date.now()}.png`;
+      // Create canvas for compression and resizing
+      const canvas = document.createElement('canvas');
+      const MAX_SIZE = 256; // Optimal size for avatars (good quality at small display sizes)
+      
+      // Calculate dimensions maintaining aspect ratio
+      let width = img.width;
+      let height = img.height;
+      if (width > MAX_SIZE || height > MAX_SIZE) {
+        const ratio = Math.min(MAX_SIZE / width, MAX_SIZE / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Could not get canvas context');
+      
+      // High-quality image smoothing for resize
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // Convert to compressed JPEG blob (quality 0.75 balances size and quality for 3G)
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          (b) => b ? resolve(b) : reject(new Error('Failed to compress image')),
+          'image/jpeg',
+          0.75
+        );
+      });
+
+      console.log(`Avatar compressed: ${(blob.size / 1024).toFixed(1)}KB`);
+
+      // Upload to storage with JPEG extension
+      const fileName = `${userId}/avatar-${Date.now()}.jpg`;
       const { error: uploadError } = await supabase.storage
         .from('user-avatars')
         .upload(fileName, blob, {
-          contentType: 'image/png',
+          contentType: 'image/jpeg',
           upsert: true,
         });
 
