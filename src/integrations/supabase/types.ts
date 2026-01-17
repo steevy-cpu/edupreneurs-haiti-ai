@@ -3301,7 +3301,9 @@ export type Database = {
         Args: { conversation_uuid: string; user_uuid: string }
         Returns: boolean
       }
-      is_founder: { Args: { check_user_id: string }; Returns: boolean }
+      is_founder:
+        | { Args: never; Returns: boolean }
+        | { Args: { check_user_id: string }; Returns: boolean }
       is_group_admin: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
@@ -3310,6 +3312,7 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      is_jude_post: { Args: { _user_id: string }; Returns: boolean }
       level_from_xp: { Args: { xp: number }; Returns: number }
       notify_group_deletion: {
         Args: {

@@ -8,7 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Heart, MessageCircle, Share2, Trash2, BadgeCheck, MoreHorizontal, Flag } from "lucide-react";
+import { Heart, MessageCircle, Share2, Trash2, BadgeCheck, MoreHorizontal, Flag, Pencil } from "lucide-react";
+import { JUDE_USER_ID } from "@/types/community";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { formatTimeAgo } from "@/utils/dateUtils";
 import { Post } from "@/types/feed";
@@ -95,19 +96,23 @@ const renderContentWithLinks = (content: string) => {
 interface PostCardProps {
   post: Post;
   currentUserId: string;
+  isFounder?: boolean;
   onLike: (postId: string, isLiked: boolean) => void;
   onComment: (postId: string) => void;
   onShare: (post: Post) => void;
   onDelete: (postId: string) => void;
+  onEdit?: (post: Post) => void;
 }
 
 export function PostCard({
   post,
   currentUserId,
+  isFounder = false,
   onLike,
   onComment,
   onShare,
   onDelete,
+  onEdit,
 }: PostCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
@@ -117,6 +122,7 @@ export function PostCard({
     : post.content;
 
   const isOwnPost = post.user_id === currentUserId;
+  const canModifyPost = isOwnPost || (isFounder && post.user_id === JUDE_USER_ID);
 
   return (
     <>
@@ -151,7 +157,16 @@ export function PostCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {isOwnPost ? (
+              {/* Edit option */}
+              {canModifyPost && onEdit && (
+                <DropdownMenuItem onClick={() => onEdit(post)}>
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Modifier
+                </DropdownMenuItem>
+              )}
+              
+              {/* Delete option */}
+              {canModifyPost && (
                 <DropdownMenuItem 
                   onClick={() => onDelete(post.id)}
                   className="text-destructive focus:text-destructive"
@@ -159,7 +174,10 @@ export function PostCard({
                   <Trash2 className="h-4 w-4 mr-2" />
                   Supprimer
                 </DropdownMenuItem>
-              ) : (
+              )}
+              
+              {/* Report option - shown for other users' posts */}
+              {!isOwnPost && (
                 <DropdownMenuItem 
                   onClick={() => setIsReportDialogOpen(true)}
                   className="text-amber-600 focus:text-amber-600"
