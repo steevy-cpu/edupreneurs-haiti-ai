@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { BookOpen, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, BookOpen, Sparkles } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useEbooks, type EbookFilters } from "@/hooks/useEbooks";
 import { useAllReadingProgress } from "@/hooks/useReadingProgress";
@@ -10,9 +11,11 @@ import { useVisitor } from "@/contexts/VisitorContext";
 import { supabase } from "@/integrations/supabase/client";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Library() {
+  const navigate = useNavigate();
   const { isVisitor } = useVisitor();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [filters, setFilters] = useState<EbookFilters>({});
@@ -55,6 +58,17 @@ export default function Library() {
       </div>
 
       <div className="container relative mx-auto px-4 py-6">
+        {/* Back Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/dashboard")}
+          className="mb-4 gap-2 text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Retour au tableau de bord
+        </Button>
+
         {/* Enhanced Header */}
         <div className="mb-8 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-emerald-500/10 p-6 backdrop-blur-sm">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
