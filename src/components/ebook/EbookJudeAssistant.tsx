@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, X, BookOpen, Loader2, Sparkles } from "lucide-react";
+import { Send, X, BookOpen, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -90,10 +90,14 @@ export function EbookJudeAssistant({
     }
   };
 
-  const quickActions = [
-    { label: "Définition", prompt: selectedText ? `Définis "${selectedText}"` : "Définis ce mot" },
-    { label: "Synonymes", prompt: selectedText ? `Donne des synonymes de "${selectedText}"` : "Donne des synonymes" },
-    { label: "Traduire", prompt: selectedText ? `Traduis "${selectedText}" en anglais` : "Traduis en anglais" },
+  const quickActions = selectedText ? [
+    { label: "📖 Définition", prompt: `Que signifie "${selectedText}" ?` },
+    { label: "✨ Synonymes", prompt: `Donne-moi des synonymes de "${selectedText}"` },
+    { label: "🌍 Traduis", prompt: `Traduis "${selectedText}" en français` },
+    { label: "🔍 Contexte", prompt: `Explique "${selectedText}" dans le contexte du livre` },
+  ] : [
+    { label: "📚 Aide lecture", prompt: "Comment ce livre peut m'aider dans mes études ?" },
+    { label: "📝 Vocabulaire", prompt: "Quels sont les mots importants à retenir ?" },
   ];
 
   if (!isOpen) {
@@ -125,7 +129,7 @@ export function EbookJudeAssistant({
               <h3 className="font-semibold text-sm">Jude - Assistant Lecture</h3>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <BookOpen className="h-3 w-3" />
-                {bookTitle}
+                {bookTitle} • Page {currentPage}
               </p>
             </div>
           </div>
@@ -138,28 +142,26 @@ export function EbookJudeAssistant({
         <ScrollArea className="flex-1 p-3" ref={scrollRef}>
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <Sparkles className="h-12 w-12 text-primary/30 mb-3" />
-              <p className="text-sm text-muted-foreground">
-                Sélectionne un mot dans le texte ou pose une question sur ta lecture !
+              <img src={judeProfile} alt="Jude" className="h-16 w-16 rounded-full object-cover mb-3" />
+              <p className="text-sm text-muted-foreground mb-4">
+                Sélectionne un mot que tu ne comprends pas, ou pose-moi une question sur ta lecture ! 📚
               </p>
               
               {/* Quick Actions */}
-              {selectedText && (
-                <div className="mt-4 flex flex-wrap justify-center gap-2">
-                  {quickActions.map((action) => (
-                    <Button
-                      key={action.label}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setInput(action.prompt);
-                      }}
-                    >
-                      {action.label}
-                    </Button>
-                  ))}
-                </div>
-              )}
+              <div className="flex flex-wrap justify-center gap-2">
+                {quickActions.map((action) => (
+                  <Button
+                    key={action.label}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setInput(action.prompt);
+                    }}
+                  >
+                    {action.label}
+                  </Button>
+                ))}
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
