@@ -218,10 +218,10 @@ export default function EbookPDFViewer({
           </div>
         )}
         
-        {/* Scrollable viewport - fixed height */}
+        {/* Scrollable viewport - taller fixed height */}
         <div 
-          className="h-[60vh] overflow-auto sm:h-[65vh] md:h-[70vh]"
-          style={{ maxHeight: 'calc(100vh - 250px)' }}
+          className="h-[75vh] overflow-auto sm:h-[78vh] md:h-[82vh]"
+          style={{ maxHeight: 'calc(100vh - 180px)' }}
         >
           {/* Canvas wrapper - centers content and allows expansion */}
           <div className="inline-block min-w-full p-2 sm:p-4">
