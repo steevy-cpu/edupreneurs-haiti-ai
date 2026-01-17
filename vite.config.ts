@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -17,7 +18,63 @@ export default defineConfig(({ mode }) => ({
     // Ensure next-themes uses the same React instance as the rest of the app
     include: ["next-themes"],
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  plugins: [
+    react(),
+    mode === "development" && componentTagger(),
+    // Build-time image optimization - tuned for 3G connections in Haiti
+    ViteImageOptimizer({
+      test: /\.(jpe?g|png|gif|tiff|webp|avif)$/i,
+      includePublic: true,
+      logStats: true,
+      ansiColors: true,
+      // PNG - aggressive compression for 3G
+      png: {
+        quality: 65,
+        compressionLevel: 9,
+        palette: true,
+      },
+      // JPEG - optimized for 3G bandwidth
+      jpeg: {
+        quality: 65,
+        mozjpeg: true,
+      },
+      jpg: {
+        quality: 65,
+        mozjpeg: true,
+      },
+      // WebP - primary format for modern browsers on 3G
+      webp: {
+        lossless: false,
+        quality: 65,
+        alphaQuality: 70,
+        effort: 6,
+        smartSubsample: true,
+      },
+      // AVIF - maximum compression for slowest connections
+      avif: {
+        lossless: false,
+        quality: 45,
+        effort: 9,
+        chromaSubsampling: '4:2:0',
+      },
+      // GIF optimization
+      gif: {},
+      // SVG optimization
+      svg: {
+        plugins: [
+          'removeViewBox',
+          'sortAttrs',
+          'removeDimensions',
+          'removeMetadata',
+          'removeComments',
+          'cleanupIds',
+        ],
+      },
+      // Cache optimization results between builds
+      cache: true,
+      cacheLocation: 'node_modules/.cache/image-optimizer',
+    }),
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
