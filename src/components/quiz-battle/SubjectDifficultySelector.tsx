@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, ArrowRight, Sparkles, Zap, Flame, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { VALID_GRADES, gradeLevels } from '@/lib/matieresConstants';
 
 interface Subject {
   id: string;
@@ -28,7 +29,8 @@ export const SubjectDifficultySelector = ({
 }: SubjectDifficultySelectorProps) => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
-  const [selectedGrade, setSelectedGrade] = useState<string>(defaultGrade || '9AF');
+  const initialGrade = defaultGrade && VALID_GRADES.includes(defaultGrade as any) ? defaultGrade : '9AF';
+  const [selectedGrade, setSelectedGrade] = useState<string>(initialGrade);
   const [selectedDifficulty, setSelectedDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -57,7 +59,7 @@ export const SubjectDifficultySelector = ({
     fetchSubjects();
   }, [selectedGrade]);
 
-  const gradeOptions = ['7AF', '8AF', '9AF', 'NS3', 'NS4', 'Philo', 'Terminale'];
+  // Use centralized grade levels from matieresConstants
 
   const difficultyOptions = [
     { value: 'easy', label: 'Facile', icon: Sparkles, color: 'text-success', bg: 'bg-success/10', time: 30 },
@@ -94,17 +96,18 @@ export const SubjectDifficultySelector = ({
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            {gradeOptions.map((grade) => (
+            {gradeLevels.map((grade) => (
               <Button
-                key={grade}
-                variant={selectedGrade === grade ? 'default' : 'outline'}
+                key={grade.id}
+                variant={selectedGrade === grade.id ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => {
-                  setSelectedGrade(grade);
-                  setSelectedSubject(null); // Reset subject when grade changes
+                  setSelectedGrade(grade.id);
+                  setSelectedSubject(null);
                 }}
+                title={grade.fullName}
               >
-                {grade}
+                {grade.label}
               </Button>
             ))}
           </div>
