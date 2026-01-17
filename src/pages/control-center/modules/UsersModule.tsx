@@ -19,12 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, ChevronLeft, ChevronRight, BadgeCheck, ExternalLink } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, BadgeCheck, ExternalLink, Wifi } from "lucide-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useOnlineUsers } from "../hooks/useOnlineUsers";
 
 interface UserProfile {
   id: string;
@@ -58,8 +59,12 @@ export default function UsersModule() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [gradeFilter, setGradeFilter] = useState("all");
+  const [onlineFilter, setOnlineFilter] = useState<"all" | "online">("all");
   const [currentPage, setCurrentPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+
+  // Real-time online users tracking
+  const { onlineUserIds, onlineCount, isConnected, isOnline } = useOnlineUsers();
 
   useEffect(() => {
     fetchUsers();
@@ -94,6 +99,11 @@ export default function UsersModule() {
       setIsLoading(false);
     }
   };
+
+  // Filter users by online status (client-side since it's real-time data)
+  const displayUsers = onlineFilter === "online"
+    ? users.filter(u => isOnline(u.user_id))
+    : users;
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
@@ -130,11 +140,39 @@ export default function UsersModule() {
             ))}
           </SelectContent>
         </Select>
+        <Select value={onlineFilter} onValueChange={(v: "all" | "online") => setOnlineFilter(v)}>
+          <SelectTrigger className="w-full sm:w-44">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les utilisateurs</SelectItem>
+            <SelectItem value="online">
+              <span className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-green-500" />
+                En ligne ({onlineCount})
+              </span>
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Stats */}
       <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>{totalCount} utilisateur{totalCount !== 1 ? 's' : ''} trouvé{totalCount !== 1 ? 's' : ''}</span>
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-1.5">
+            <span className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-muted'}`} />
+            <span className={isConnected ? 'text-green-600 dark:text-green-400 font-medium' : ''}>
+              {onlineCount} en ligne
+            </span>
+          </span>
+          <span className="text-muted-foreground/50">•</span>
+          <span>
+            {onlineFilter === "online" 
+              ? `${displayUsers.length} affiché${displayUsers.length !== 1 ? 's' : ''}`
+              : `${totalCount} utilisateur${totalCount !== 1 ? 's' : ''}`
+            }
+          </span>
+        </div>
         <span>Page {currentPage + 1} sur {totalPages || 1}</span>
       </div>
 
@@ -167,22 +205,30 @@ export default function UsersModule() {
                   <TableCell><Skeleton className="h-8 w-8" /></TableCell>
                 </TableRow>
               ))
-            ) : users.length === 0 ? (
+            ) : displayUsers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                  Aucun utilisateur trouvé
+                  {onlineFilter === "online" 
+                    ? "Aucun utilisateur en ligne dans cette page"
+                    : "Aucun utilisateur trouvé"
+                  }
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((user) => (
+              displayUsers.map((user) => (
                 <TableRow key={user.id} className="hover:bg-muted/30 cursor-pointer" onClick={() => navigate(`/profile/${user.user_id}`)}>
                   <TableCell>
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={getAvatarUrl(user.avatar_url)} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                        {user.full_name?.[0] || "?"}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="relative">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={getAvatarUrl(user.avatar_url)} />
+                        <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                          {user.full_name?.[0] || "?"}
+                        </AvatarFallback>
+                      </Avatar>
+                      {isOnline(user.user_id) && (
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1.5">
@@ -207,7 +253,14 @@ export default function UsersModule() {
                     {formatDate(user.created_at)}
                   </TableCell>
                   <TableCell className="hidden lg:table-cell text-muted-foreground text-sm">
-                    {formatDate(user.last_seen)}
+                    {isOnline(user.user_id) ? (
+                      <span className="text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
+                        <Wifi className="h-3 w-3" />
+                        En ligne
+                      </span>
+                    ) : (
+                      formatDate(user.last_seen)
+                    )}
                   </TableCell>
                   <TableCell>
                     <Button 
