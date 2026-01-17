@@ -1,4 +1,4 @@
-import { Search, Filter, X } from "lucide-react";
+import { Search, X, Globe, Tag } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,13 +17,13 @@ interface EbookFiltersProps {
 }
 
 const CATEGORIES = [
-  { value: 'roman', label: 'Roman' },
-  { value: 'poesie', label: 'Poésie' },
-  { value: 'sciences', label: 'Sciences' },
-  { value: 'histoire', label: 'Histoire' },
-  { value: 'biographie', label: 'Biographie' },
-  { value: 'philosophie', label: 'Philosophie' },
-  { value: 'autre', label: 'Autre' },
+  { value: 'roman', label: 'Roman', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/20' },
+  { value: 'poesie', label: 'Poésie', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/20' },
+  { value: 'sciences', label: 'Sciences', color: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30 hover:bg-green-500/20' },
+  { value: 'histoire', label: 'Histoire', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/20' },
+  { value: 'biographie', label: 'Biographie', color: 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/30 hover:bg-pink-500/20' },
+  { value: 'philosophie', label: 'Philosophie', color: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/20' },
+  { value: 'autre', label: 'Autre', color: 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/30 hover:bg-slate-500/20' },
 ];
 
 export function EbookFilters({ filters, onFiltersChange }: EbookFiltersProps) {
@@ -38,7 +38,7 @@ export function EbookFilters({ filters, onFiltersChange }: EbookFiltersProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 rounded-xl border bg-card/80 p-4 shadow-sm backdrop-blur-sm">
       {/* Search Bar */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -46,7 +46,7 @@ export function EbookFilters({ filters, onFiltersChange }: EbookFiltersProps) {
           placeholder="Rechercher un livre..."
           value={filters.search || ''}
           onChange={(e) => onFiltersChange({ ...filters, search: e.target.value || undefined })}
-          className="pl-10"
+          className="pl-10 bg-background/50 focus:bg-background transition-colors"
         />
       </div>
 
@@ -62,7 +62,8 @@ export function EbookFilters({ filters, onFiltersChange }: EbookFiltersProps) {
             })
           }
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[150px] bg-background/50">
+            <Globe className="mr-2 h-4 w-4 text-muted-foreground" />
             <SelectValue placeholder="Langue" />
           </SelectTrigger>
           <SelectContent>
@@ -82,7 +83,8 @@ export function EbookFilters({ filters, onFiltersChange }: EbookFiltersProps) {
             })
           }
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-[170px] bg-background/50">
+            <Tag className="mr-2 h-4 w-4 text-muted-foreground" />
             <SelectValue placeholder="Catégorie" />
           </SelectTrigger>
           <SelectContent>
@@ -101,7 +103,7 @@ export function EbookFilters({ filters, onFiltersChange }: EbookFiltersProps) {
             variant="ghost" 
             size="sm" 
             onClick={clearFilters}
-            className="text-muted-foreground"
+            className="text-muted-foreground hover:text-foreground"
           >
             <X className="mr-1 h-4 w-4" />
             Effacer ({activeFiltersCount})
@@ -110,22 +112,29 @@ export function EbookFilters({ filters, onFiltersChange }: EbookFiltersProps) {
       </div>
 
       {/* Quick Category Chips (Mobile-friendly horizontal scroll) */}
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide md:hidden">
-        {CATEGORIES.map((cat) => (
-          <Badge
-            key={cat.value}
-            variant={filters.category === cat.value ? "default" : "outline"}
-            className="cursor-pointer whitespace-nowrap"
-            onClick={() => 
-              onFiltersChange({ 
-                ...filters, 
-                category: filters.category === cat.value ? undefined : cat.value 
-              })
-            }
-          >
-            {cat.label}
-          </Badge>
-        ))}
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide md:hidden">
+        {CATEGORIES.map((cat) => {
+          const isSelected = filters.category === cat.value;
+          return (
+            <Badge
+              key={cat.value}
+              variant="outline"
+              className={`cursor-pointer whitespace-nowrap border transition-all ${
+                isSelected 
+                  ? `${cat.color} scale-105 shadow-sm` 
+                  : 'hover:bg-muted/50'
+              }`}
+              onClick={() => 
+                onFiltersChange({ 
+                  ...filters, 
+                  category: isSelected ? undefined : cat.value 
+                })
+              }
+            >
+              {cat.label}
+            </Badge>
+          );
+        })}
       </div>
     </div>
   );
