@@ -1728,22 +1728,21 @@ const PassionDiscoveryContent = () => {
                   </div>
                 )}
                 
-                <div className="flex gap-2 pt-2 border-t">
+                <div className="flex gap-2 pt-2 border-t w-full overflow-hidden">
                   <input
                     type="text"
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Pose une question à Jude..."
-                    className="flex-1 px-3 md:px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs md:text-sm bg-background"
+                    className="flex-1 min-w-0 px-3 md:px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs md:text-sm bg-background"
                     disabled={isLoading}
                     aria-label="Message pour Jude"
                   />
                   <Button 
                     onClick={() => sendMessage()} 
                     disabled={isLoading || !userInput.trim()}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 rounded-full px-3 md:px-4"
-                    size="icon"
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 rounded-full aspect-square h-9 w-9 flex-shrink-0 p-0 flex items-center justify-center"
                     aria-label="Envoyer le message"
                   >
                     <Send className="h-4 w-4" />
