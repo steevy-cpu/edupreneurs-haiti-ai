@@ -127,24 +127,51 @@ Pour les questions de compréhension générale, réponds de manière conversati
 
     console.log("Calling Lovable AI Gateway for reading tutor");
 
-    // Call Lovable AI Gateway
-    const response = await fetch("https://ai-gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages,
-        max_tokens: 800,
-        temperature: 0.7,
-      }),
-    });
+    // Call Lovable AI Gateway (with fallback domain)
+    const gatewayUrls = [
+      "https://ai-gateway.lovable.dev/v1/chat/completions",
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+    ];
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Lovable AI Gateway error:", response.status, errorText);
+    let response: Response | null = null;
+    let lastError: unknown = null;
+
+    for (const url of gatewayUrls) {
+      try {
+        response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages,
+            max_tokens: 800,
+            temperature: 0.7,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Lovable AI Gateway error:", url, response.status, errorText);
+          lastError = new Error(`Gateway ${url} returned ${response.status}`);
+          response = null;
+          continue;
+        }
+
+        // Success
+        break;
+      } catch (err) {
+        console.error("Lovable AI Gateway network error:", url, err);
+        lastError = err;
+        response = null;
+        continue;
+      }
+    }
+
+    if (!response) {
+      console.error("All Lovable AI Gateway endpoints failed", lastError);
       return secureErrorResponse("Erreur du service IA", 500);
     }
 
