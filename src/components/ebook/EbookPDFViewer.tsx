@@ -2,8 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Loader2, ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { PageNumberInput } from "./PageNumberInput";
 import pdfWorkerSrc from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url";
-
 interface EbookPDFViewerProps {
   fileUrl: string;
   currentPage: number;
@@ -177,9 +177,11 @@ export default function EbookPDFViewer({
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="min-w-[80px] text-center text-sm text-muted-foreground sm:min-w-[100px]">
-            Page {currentPage} / {totalPages}
-          </span>
+          <PageNumberInput
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+          />
           <Button
             variant="ghost"
             size="icon"
