@@ -32,8 +32,8 @@ export const QuickMessageFAB = ({ isVisitor = false }: QuickMessageFABProps) => 
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Hide on community page
-  if (location.pathname === "/community") return null;
+  // Hide on community page and passion-discovery page (has its own chat)
+  if (location.pathname === "/community" || location.pathname === "/passion-discovery") return null;
 
   useEffect(() => {
     if (!isVisitor) {
