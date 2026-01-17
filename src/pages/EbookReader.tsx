@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, BookOpen, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,10 +47,19 @@ export default function EbookReader() {
     checkAuth();
   }, []);
 
-  // Restore reading position from progress
+  // Track if we've restored position to prevent overwriting user navigation
+  const hasRestoredPosition = useRef(false);
+
+  // Reset restoration flag when ebook changes
   useEffect(() => {
-    if (progress && !progressLoading) {
+    hasRestoredPosition.current = false;
+  }, [ebookId]);
+
+  // Restore reading position from progress (only once on initial load)
+  useEffect(() => {
+    if (progress && !progressLoading && !hasRestoredPosition.current) {
       setCurrentPage(progress.current_page);
+      hasRestoredPosition.current = true;
     }
   }, [progress, progressLoading]);
 
