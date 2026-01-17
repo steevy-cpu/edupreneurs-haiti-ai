@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { BookOpen, Loader2, Sparkles } from "lucide-react";
+import { BookOpen, Sparkles } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useEbooks, type EbookFilters } from "@/hooks/useEbooks";
 import { useAllReadingProgress } from "@/hooks/useReadingProgress";
 import { EbookCard } from "@/components/ebook/EbookCard";
@@ -83,6 +84,7 @@ export default function Library() {
               <Badge variant="secondary" className="gap-1.5">
                 {ebooks?.length || 0} livres
               </Badge>
+              <ThemeToggle />
             </div>
           </div>
         </div>
