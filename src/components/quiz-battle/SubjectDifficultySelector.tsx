@@ -39,7 +39,7 @@ export const SubjectDifficultySelector = ({
       // Fetch lessons to find subjects with content for the selected grade
       const { data: lessons, error } = await supabase
         .from('lessons')
-        .select('subject_id, subjects(id, name, slug, icon, color)')
+        .select('subject_id, subjects(id, name, slug, icon_name, color)')
         .eq('grade_level', selectedGrade)
         .eq('is_published', true);
 
@@ -48,7 +48,10 @@ export const SubjectDifficultySelector = ({
         const subjectMap = new Map<string, Subject>();
         lessons.forEach((l: any) => {
           if (l.subjects && !subjectMap.has(l.subjects.id)) {
-            subjectMap.set(l.subjects.id, l.subjects);
+            subjectMap.set(l.subjects.id, {
+              ...l.subjects,
+              icon: l.subjects.icon_name // Map icon_name to icon for compatibility
+            });
           }
         });
         setSubjects(Array.from(subjectMap.values()));
