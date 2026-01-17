@@ -106,36 +106,51 @@
     }
     </script>
     
-    <!-- Mermaid for diagrams -->
+    <!-- Mermaid for diagrams - defer loading until needed -->
     <script type="module">
-      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-      mermaid.initialize({ 
-        startOnLoad: true, 
-        theme: 'default',
-        themeVariables: {
-          primaryColor: '#e3f2fd',
-          primaryTextColor: '#1976d2',
-          primaryBorderColor: '#1976d2',
-          lineColor: '#1976d2',
-          secondaryColor: '#f3e5f5',
-          tertiaryColor: '#e8f5e9',
-          background: '#ffffff',
-          mainBkg: '#ffffff',
-          secondBkg: '#f5f5f5',
-          labelBackground: '#ffffff',
-          fontFamily: 'ui-sans-serif, system-ui, sans-serif',
-          fontSize: '14px'
-        },
-        flowchart: {
-          htmlLabels: true,
-          curve: 'basis',
-          padding: 15
-        }
-      });
+      // Lazy load mermaid only when diagrams are present (improves LCP)
+      const loadMermaid = async () => {
+        const mermaidElements = document.querySelectorAll('.mermaid:not([data-processed])');
+        if (mermaidElements.length === 0) return;
+        
+        const { default: mermaid } = await import('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs');
+        mermaid.initialize({ 
+          startOnLoad: false, 
+          theme: 'default',
+          themeVariables: {
+            primaryColor: '#e3f2fd',
+            primaryTextColor: '#1976d2',
+            primaryBorderColor: '#1976d2',
+            lineColor: '#1976d2',
+            secondaryColor: '#f3e5f5',
+            tertiaryColor: '#e8f5e9',
+            background: '#ffffff',
+            mainBkg: '#ffffff',
+            secondBkg: '#f5f5f5',
+            labelBackground: '#ffffff',
+            fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+            fontSize: '14px'
+          },
+          flowchart: {
+            htmlLabels: true,
+            curve: 'basis',
+            padding: 15
+          }
+        });
+        mermaid.run({ nodes: mermaidElements });
+      };
+      
+      // Wait for idle or timeout before loading mermaid
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(loadMermaid, { timeout: 3000 });
+      } else {
+        setTimeout(loadMermaid, 1500);
+      }
       
       // Re-render mermaid diagrams when content changes
       const observer = new MutationObserver(() => {
-        mermaid.init(undefined, document.querySelectorAll('.mermaid:not([data-processed])'));
+        const els = document.querySelectorAll('.mermaid:not([data-processed])');
+        if (els.length > 0) loadMermaid();
       });
       
       observer.observe(document.body, {

@@ -383,6 +383,8 @@ const Index = () => {
               alt="Jude - Assistant IA EDUPRENEURS" 
               className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-md drop-shadow-2xl hover:scale-105 transition-transform duration-500 relative z-10"
               priority={true}
+              width={448}
+              height={672}
             />
           </div>
         </div>

@@ -82,7 +82,19 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     // Optimizations for production - especially 3G connections
-    minify: 'esbuild',
+    // Use terser for better minification (saves ~58KB on chess bundle)
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+      },
+      mangle: true,
+      format: {
+        comments: false,
+      },
+    },
     target: 'es2020',
     cssCodeSplit: true,
     rollupOptions: {
