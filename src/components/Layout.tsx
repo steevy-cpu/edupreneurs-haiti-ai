@@ -596,6 +596,9 @@ export const Layout = ({ children }: LayoutProps) => {
           >
             <BookMarked size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Lecture
+            <span className="ml-auto rounded-full bg-emerald-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+              Nouveau
+            </span>
           </Link>
           <Link 
             to="/games" 
