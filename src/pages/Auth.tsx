@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Telescope } from "lucide-react";
 import { VisitorTypeSelector } from "@/components/visitor/VisitorTypeSelector";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useVisitor } from "@/contexts/VisitorContext";
 
 // Lazy load auth forms
 const LoginForm = lazy(() => import("@/components/auth/LoginForm"));
@@ -33,9 +34,10 @@ function AuthFormSkeleton() {
 
 function AuthContent() {
   const { activeTab, setActiveTab, showVisitorSelector, setShowVisitorSelector } = useAuth();
+  const { isVisitor } = useVisitor();
 
   return (
-    <div className="auth-page min-h-screen bg-background pt-0 mt-0">
+    <div className={`auth-page min-h-screen bg-background ${isVisitor ? 'pt-10' : ''}`}>
       <AuthHeader />
 
       {/* Main Content */}

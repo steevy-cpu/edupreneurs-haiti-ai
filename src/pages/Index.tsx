@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
+import { useVisitor } from "@/contexts/VisitorContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,6 +38,7 @@ const Index = () => {
   
   // Network-aware loading for 3G optimization
   const { shouldDeferResources, shouldShowBlur, shouldShowAnimations, isSlowConnection } = useNetworkAwareLoading();
+  const { isVisitor } = useVisitor();
   
   // Lazy loaded images state
   const [lazyImages, setLazyImages] = useState<{
@@ -188,7 +190,7 @@ const Index = () => {
   ], []);
 
   return (
-    <div className="min-h-screen bg-background font-poppins">
+    <div className={`min-h-screen bg-background font-poppins ${isVisitor ? 'pt-10' : ''}`}>
       {/* SEO Meta Tags */}
       <Helmet>
         <title>EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA | Plateforme MENFP</title>
