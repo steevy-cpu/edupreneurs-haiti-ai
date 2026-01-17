@@ -208,6 +208,8 @@ const Index = () => {
             <img 
               src={edupreneursLogo} 
               alt="EDUPRENEURS Logo" 
+              width={45}
+              height={56}
               className="h-8 sm:h-12 w-auto object-contain" 
               loading="eager"
               fetchPriority="high"
@@ -409,6 +411,8 @@ const Index = () => {
               <img 
                 src={ericPointingRight} 
                 alt="Eric vous guide" 
+                width={160}
+                height={240}
                 className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
                 loading="lazy"
                 decoding="async"
@@ -863,7 +867,7 @@ const Index = () => {
         <div className="container mx-auto relative z-10">
           {/* Logo and Tagline */}
           <div className="text-center mb-12">
-            <img src={edupreneursLogo} alt="Edupreneurs" className="h-14 mx-auto mb-4 brightness-110" />
+            <img src={edupreneursLogo} alt="Edupreneurs" width={45} height={56} className="h-14 mx-auto mb-4 brightness-110" />
             <p className="text-slate-300 max-w-md mx-auto text-sm font-medium">
               Révolutionner l'éducation haïtienne avec l'intelligence artificielle
             </p>
