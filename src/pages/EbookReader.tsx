@@ -16,6 +16,7 @@ import {
 import { MessageSquare } from "lucide-react";
 import { EbookJudeAssistant } from "@/components/ebook/EbookJudeAssistant";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
+import { PageNumberInput } from "@/components/ebook/PageNumberInput";
 
 // Lazy load PDF viewer to reduce initial bundle
 import { lazy, Suspense } from "react";
@@ -171,9 +172,11 @@ export default function EbookReader() {
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="min-w-[70px] text-center text-sm text-muted-foreground">
-              {currentPage} / {totalPages}
-            </span>
+            <PageNumberInput
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
             <Button
               variant="ghost"
               size="icon"
