@@ -95,8 +95,8 @@ export const MobileBottomNav = () => {
     { icon: Home, path: "/dashboard" },
     { icon: BookOpen, path: "/matieres" },
     { icon: Rss, path: "/feed", badge: unreadFeedPosts > 0 ? unreadFeedPosts : undefined, prefetchKey: ["feed-posts"] },
-    { icon: Bell, path: "/notifications", badge: unreadNotifications > 0 ? unreadNotifications : undefined, prefetchKey: ["notifications"] },
     { icon: MessageSquare, path: "/community", badge: unreadMessages > 0 ? unreadMessages : undefined, prefetchKey: ["conversations"] },
+    { icon: Bell, path: "/notifications", badge: unreadNotifications > 0 ? unreadNotifications : undefined, prefetchKey: ["notifications"] },
     { icon: Gamepad2, path: "/games" },
   ];
 
