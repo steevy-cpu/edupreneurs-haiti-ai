@@ -288,6 +288,10 @@ export function useMatieresData(gradeLevel: string, series: string | null = null
     // Super users can access all grades
     if (isSuperUser) return true;
     
+    // Non-academic users (UNIV, NONE) cannot access any grade-specific content
+    const NON_ACADEMIC = ['UNIV', 'NONE'];
+    if (userGrade && NON_ACADEMIC.includes(userGrade)) return false;
+    
     // Normalize grades for comparison
     const normalizeGradeLocal = (g: string) => {
       const map: Record<string, string> = { 

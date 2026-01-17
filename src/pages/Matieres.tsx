@@ -17,7 +17,7 @@ import {
 import menfpLogo from "@/assets/menfp-logo.webp";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useMatieresData } from "@/hooks/useMatieresData";
-import { GRADE_LABELS } from "@/hooks/useUserGrade";
+import { GRADE_LABELS, isNonAcademicGrade, type AllGradeTypes } from "@/hooks/useUserGrade";
 import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
 import { toast } from "sonner";
 import { useVisitor } from "@/contexts/VisitorContext";
@@ -32,6 +32,7 @@ import {
   colorMap 
 } from "@/lib/matieresConstants";
 import { MatieresGridSkeleton } from "@/components/shared/SkeletonLoaders";
+import { NonAcademicLockedOverlay } from "@/components/shared/NonAcademicLockedOverlay";
 
 // Lazy-load heavy sub-components for 3G optimization
 const ContinueLearningSection = lazy(() => 
@@ -107,11 +108,14 @@ export default function Matieres() {
 
   const currentGrade = gradeLevels.find(g => g.id === selectedGrade);
   const isNS3OrNS4 = selectedGrade === "NS3" || selectedGrade === "NS4";
+  
+  // Check if user has a non-academic grade (UNIV or NONE)
+  const isNonAcademic = isAuthenticated && isNonAcademicGrade(userGrade);
 
   // Auto-select user's grade on initial load with toast notification
   useEffect(() => {
     if (userGrade && isAuthenticated) {
-      // Only set if userGrade is a valid grade level
+      // Only set if userGrade is a valid academic grade level (not UNIV/NONE)
       if (VALID_GRADES.includes(userGrade as GradeLevel)) {
         setSelectedGrade(userGrade as GradeLevel);
         // Show toast notification confirming auto-detection
@@ -121,7 +125,7 @@ export default function Matieres() {
           duration: 3000,
         });
       }
-      // If invalid grade (like "Philo"), keep default "7AF"
+      // If non-academic grade (UNIV/NONE), keep default "7AF" but show locked overlay
     }
   }, []); // Only run once on mount
 
@@ -273,6 +277,18 @@ export default function Matieres() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Non-Academic User Locked State */}
+        {isNonAcademic && (
+          <NonAcademicLockedOverlay 
+            userGrade={userGrade as AllGradeTypes}
+            title="Matières scolaires non disponibles"
+            description="Cette section est réservée aux élèves inscrits dans le système éducatif haïtien (7AF - NS4). Explorez nos autres fonctionnalités!"
+          />
+        )}
+
+        {/* Main content - only show if not non-academic */}
+        {!isNonAcademic && (
+          <>
         {/* Grade Level Selection */}
         <div className="mb-8">
           <h3 className="text-lg font-semibold mb-4 text-center">Sélectionnez votre niveau</h3>
@@ -626,6 +642,8 @@ export default function Matieres() {
             </div>
           </div>
         </Card>
+          </>
+        )}
       </div>
     </div>
   );

@@ -1,8 +1,11 @@
 import { z } from "zod";
 
 // Valid academic grade values (standardized format)
-export const ACADEMIC_GRADES = ['7AF', '8AF', '9AF', 'NS1', 'NS2', 'NS3', 'NS4'] as const;
+export const ACADEMIC_GRADES = ['7AF', '8AF', '9AF', 'NS1', 'NS2', 'NS3', 'NS4', 'UNIV', 'NONE'] as const;
 export type AcademicGrade = typeof ACADEMIC_GRADES[number];
+
+// Non-academic grades (no access to Matieres/Exams)
+export const NON_ACADEMIC_GRADES: AcademicGrade[] = ['UNIV', 'NONE'];
 
 // Grade options for signup dropdown
 export const GRADE_OPTIONS: { value: AcademicGrade; label: string }[] = [
@@ -13,6 +16,8 @@ export const GRADE_OPTIONS: { value: AcademicGrade; label: string }[] = [
   { value: 'NS2', label: 'Nouveau Secondaire 2' },
   { value: 'NS3', label: 'Nouveau Secondaire 3 (Rhéto)' },
   { value: 'NS4', label: 'Nouveau Secondaire 4 (Philo)' },
+  { value: 'UNIV', label: 'Université' },
+  { value: 'NONE', label: 'Pas d\'école / Autodidacte' },
 ];
 
 // Login validation schema
@@ -75,8 +80,10 @@ export const signupSchema = z.object({
   school: z
     .string()
     .trim()
-    .min(1, "L'école est requise")
-    .max(100, "Le nom de l'école ne peut pas dépasser 100 caractères"),
+    .max(100, "Le nom de l'école ne peut pas dépasser 100 caractères")
+    .optional()
+    .or(z.literal('N/A'))
+    .or(z.literal('')),
   gender: z
     .string()
     .min(1, "Le genre est requis"),
@@ -91,6 +98,14 @@ export const signupSchema = z.object({
 }).refine((data) => data.email === data.emailConfirm, {
   message: "Les emails ne correspondent pas",
   path: ["emailConfirm"],
+}).refine((data) => {
+  // School is NOT required if grade is "NONE"
+  if (data.academicGrade === 'NONE') return true;
+  // School IS required for all other grades (including UNIV)
+  return data.school && data.school.trim().length > 0;
+}, {
+  message: "L'école est requise",
+  path: ["school"],
 });
 
 // Password reset validation schema
