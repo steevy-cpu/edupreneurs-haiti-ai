@@ -118,9 +118,17 @@ export default function EbookPDFViewer({
     }
   }, [pdfDoc, currentPage, scale, renderPage, totalPages]);
 
-  // Keyboard navigation
+  // Keyboard navigation - only when not typing in an input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't capture keyboard events if user is typing in an input or textarea
+      const activeElement = document.activeElement;
+      const isTyping = activeElement instanceof HTMLInputElement || 
+                       activeElement instanceof HTMLTextAreaElement ||
+                       activeElement?.getAttribute('contenteditable') === 'true';
+      
+      if (isTyping) return;
+
       if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault();
         onPageChange(Math.max(1, currentPage - 1));
