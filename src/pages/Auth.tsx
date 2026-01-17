@@ -35,7 +35,7 @@ function AuthContent() {
   const { activeTab, setActiveTab, showVisitorSelector, setShowVisitorSelector } = useAuth();
 
   return (
-    <div className="auth-page min-h-screen bg-background">
+    <div className="auth-page min-h-screen bg-background pt-0 mt-0">
       <AuthHeader />
 
       {/* Main Content */}
