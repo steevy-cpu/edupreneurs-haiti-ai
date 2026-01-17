@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, X, BookOpen, Loader2, Sparkles, MessageSquare } from "lucide-react";
+import { Send, X, BookOpen, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import judeProfile from "@/assets/jude-profile.jpeg";
+import ericAiHelper from "@/assets/eric-ai-helper.png";
 
 interface Message {
   role: "user" | "assistant";
@@ -99,10 +100,14 @@ export function EbookJudeAssistant({
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 right-4 z-50 h-14 w-14 rounded-full shadow-lg md:bottom-6"
+        className="fixed bottom-24 right-4 z-50 h-14 w-14 rounded-full p-0 shadow-lg md:bottom-6 overflow-hidden"
         size="icon"
       >
-        <Sparkles className="h-6 w-6" />
+        <img 
+          src={ericAiHelper} 
+          alt="Jude Assistant" 
+          className="h-full w-full object-cover"
+        />
       </Button>
     );
   }
