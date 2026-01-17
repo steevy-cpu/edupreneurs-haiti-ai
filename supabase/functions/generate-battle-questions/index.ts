@@ -67,13 +67,19 @@ GÉNÈRE EXACTEMENT ${questionCount} questions au format JSON suivant:
 
 IMPORTANT: correct_answer est l'INDEX (0-3) de la bonne réponse dans le tableau options.`;
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      console.error('LOVABLE_API_KEY not configured');
+      throw new Error('API key not configured');
+    }
+
+    console.log(`Generating ${questionCount} questions for ${subject} (${gradeLevel}, ${difficulty})`);
+
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENROUTER_API_KEY')}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://edupreneurs-haiti-ai.lovable.app',
-        'X-Title': 'Edupreneurs Quiz Battle',
       },
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
@@ -94,9 +100,25 @@ IMPORTANT: correct_answer est l'INDEX (0-3) de la bonne réponse dans le tableau
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenRouter API error:', errorText);
+      console.error('Lovable AI Gateway error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Trop de requêtes. Réessaie dans quelques secondes.', questions: generateFallbackQuestions(subject, gradeLevel, questionCount) }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: 'Crédits IA épuisés.', questions: generateFallbackQuestions(subject, gradeLevel, questionCount) }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       throw new Error(`API error: ${response.status}`);
     }
+
+    console.log('AI response received successfully');
 
     const data = await response.json();
     const content = data.choices[0]?.message?.content || '';
