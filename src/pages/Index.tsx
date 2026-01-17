@@ -8,7 +8,8 @@ import { ProgressiveImage } from "@/components/ProgressiveImage";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 
 // Static imports for critical above-the-fold images - preloaded
-import ericCelebrating from "@/assets/eric-celebrating.png";
+// LCP hero image uses public path for correct preload matching
+const ericCelebrating = "/images/eric-celebrating.png";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 
 // Lazy load non-critical images
