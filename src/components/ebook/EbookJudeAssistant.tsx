@@ -98,17 +98,16 @@ export function EbookJudeAssistant({
 
   if (!isOpen) {
     return (
-      <Button
+      <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 right-4 z-50 h-14 w-14 rounded-full p-0 shadow-lg md:bottom-6 overflow-hidden"
-        size="icon"
+        className="fixed bottom-24 right-4 z-50 h-14 w-14 rounded-full md:bottom-6 overflow-hidden bg-transparent border-0 shadow-none p-0"
       >
         <img 
           src={ericAiHelper} 
           alt="Jude Assistant" 
           className="h-full w-full object-cover"
         />
-      </Button>
+      </button>
     );
   }
 
