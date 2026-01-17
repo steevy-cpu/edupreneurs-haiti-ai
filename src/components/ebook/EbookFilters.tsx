@@ -51,7 +51,7 @@ export function EbookFilters({ filters, onFiltersChange }: EbookFiltersProps) {
       </div>
 
       {/* Filter Row */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex items-center gap-3">
         {/* Language Filter */}
         <Select
           value={filters.language || 'all'}
@@ -62,18 +62,18 @@ export function EbookFilters({ filters, onFiltersChange }: EbookFiltersProps) {
             })
           }
         >
-          <SelectTrigger className="w-[150px] bg-background/50">
-            <Globe className="mr-2 h-4 w-4 text-muted-foreground" />
+          <SelectTrigger className="w-[130px] bg-background">
+            <Globe className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
             <SelectValue placeholder="Langue" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Toutes langues</SelectItem>
+          <SelectContent className="bg-popover">
+            <SelectItem value="all">Toutes</SelectItem>
             <SelectItem value="fr">🇫🇷 Français</SelectItem>
             <SelectItem value="en">🇬🇧 English</SelectItem>
           </SelectContent>
         </Select>
 
-        {/* Category Filter */}
+        {/* Category Filter - Hidden on mobile, shown on md+ */}
         <Select
           value={filters.category || 'all'}
           onValueChange={(value) => 
@@ -83,11 +83,11 @@ export function EbookFilters({ filters, onFiltersChange }: EbookFiltersProps) {
             })
           }
         >
-          <SelectTrigger className="w-[170px] bg-background/50">
-            <Tag className="mr-2 h-4 w-4 text-muted-foreground" />
+          <SelectTrigger className="hidden w-[160px] bg-background md:flex">
+            <Tag className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
             <SelectValue placeholder="Catégorie" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-popover">
             <SelectItem value="all">Toutes catégories</SelectItem>
             {CATEGORIES.map((cat) => (
               <SelectItem key={cat.value} value={cat.value}>
