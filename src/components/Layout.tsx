@@ -29,7 +29,10 @@ import {
 } from "lucide-react";
 import { isFounder } from "@/lib/founderConstants";
 import dashboardImage from "@/assets/dashboard00.png";
-import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
+
+// Use public paths for WebP optimization
+const edupreneursLogo = "/images/edupreneurs-new-logo.png";
+const edupreneursLogoWebP = "/images/edupreneurs-new-logo.webp";
 
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { MobileBottomNav, useMobileSwipeNavigation } from "@/components/MobileBottomNav";

@@ -12,12 +12,18 @@ import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 // WebP version provides ~50% smaller file size for 3G optimization
 const ericCelebrating = "/images/eric-celebrating.png";
 const ericCelebratingWebP = "/images/eric-celebrating.webp";
-import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
+
+// Logo uses public paths for WebP optimization
+const edupreneursLogo = "/images/edupreneurs-new-logo.png";
+const edupreneursLogoWebP = "/images/edupreneurs-new-logo.webp";
+
+// eric-right-pointing uses public paths for WebP
+const ericPointingRightPath = "/images/eric-right-pointing.png";
+const ericPointingRightWebP = "/images/eric-right-pointing.webp";
 
 // Lazy load non-critical images
 const ericMain01 = () => import("@/assets/eric-main01.png").then(m => m.default);
 const ericThinkingPose = () => import("@/assets/eric-thinking-pose.png").then(m => m.default);
-const ericPointingRight = () => import("@/assets/eric-right-pointing.png").then(m => m.default);
 const judeProfile = () => import("@/assets/jude-profile.jpeg").then(m => m.default);
 
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -43,6 +49,7 @@ const Index = () => {
   // Lazy loaded images state
   const [lazyImages, setLazyImages] = useState<{
     ericPointingRight?: string;
+    ericPointingRightWebP?: string;
     judeProfile?: string;
   }>({});
 
@@ -81,12 +88,10 @@ const Index = () => {
   // Lazy load non-critical images after initial render
   useEffect(() => {
     const loadLazyImages = async () => {
-      const [pointingRight, jude] = await Promise.all([
-        ericPointingRight(),
-        judeProfile()
-      ]);
+      const jude = await judeProfile();
       setLazyImages({
-        ericPointingRight: pointingRight,
+        ericPointingRight: ericPointingRightPath,
+        ericPointingRightWebP: ericPointingRightWebP,
         judeProfile: jude
       });
     };
@@ -212,7 +217,13 @@ const Index = () => {
       <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-lg border-b border-border/50 shadow-sm transition-all duration-300">
         <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-1.5 sm:gap-3">
-            <img src={edupreneursLogo} alt="EDUPRENEURS Logo" className="h-8 sm:h-12 w-auto object-contain" loading="eager" decoding="async" />
+            <ProgressiveImage 
+              src={edupreneursLogo} 
+              webpSrc={edupreneursLogoWebP}
+              alt="EDUPRENEURS Logo" 
+              className="h-8 sm:h-12 w-auto object-contain" 
+              priority 
+            />
           </Link>
           
           {/* Navigation Menu - Hidden on tablet, shown on large screens */}

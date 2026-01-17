@@ -20,8 +20,11 @@ import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
 import { CreateGroupDialog } from "@/components/CreateGroupDialog";
 import { GroupInfoDialog } from "@/components/GroupInfoDialog";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
-import ericAiHelper from "@/assets/eric-ai-helper.png";
 import chatBackground from "@/assets/background-chat.png";
+
+// Use public paths for WebP optimization
+const ericAiHelper = "/images/eric-ai-helper.png";
+const ericAiHelperWebP = "/images/eric-ai-helper.webp";
 import { logger } from "@/utils/logger";
 import { preloadImage } from "@/utils/performanceOptimization";
 import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";

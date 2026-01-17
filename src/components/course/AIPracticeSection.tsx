@@ -2,9 +2,11 @@ import { useState } from "react";
 import { MessageCircle, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { OptimizedImage } from "@/components/OptimizedImage";
-import judeAiHelper from "@/assets/eric-ai-helper.png"; // Asset file - will rename later
 import { cn } from "@/lib/utils";
+
+// Use public paths for WebP optimization
+const judeAiHelper = "/images/eric-ai-helper.png";
+const judeAiHelperWebP = "/images/eric-ai-helper.webp";
 
 interface AIPracticeSectionProps {
   subjectName: string;
@@ -80,11 +82,15 @@ export const AIPracticeSection = ({
           {/* Jude Avatar */}
           <div className="relative flex-shrink-0">
             <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
-            <OptimizedImage
-              src={judeAiHelper}
-              alt="Jude AI Assistant"
-              className="relative w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-background shadow-lg object-cover"
-            />
+            <picture>
+              <source srcSet={judeAiHelperWebP} type="image/webp" />
+              <img
+                src={judeAiHelper}
+                alt="Jude AI Assistant"
+                className="relative w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-background shadow-lg object-cover"
+                loading="lazy"
+              />
+            </picture>
             <div className="absolute -bottom-1 -right-1 bg-success text-success-foreground rounded-full p-1.5 shadow-md">
               <Sparkles className="w-3 h-3" />
             </div>

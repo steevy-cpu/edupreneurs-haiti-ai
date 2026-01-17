@@ -6,7 +6,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import judeProfile from "@/assets/jude-profile.jpeg";
-import ericAiHelper from "@/assets/eric-ai-helper.png";
+
+// Use public paths for WebP optimization  
+const ericAiHelper = "/images/eric-ai-helper.png";
+const ericAiHelperWebP = "/images/eric-ai-helper.webp";
 
 interface Message {
   role: "user" | "assistant";
@@ -106,11 +109,15 @@ export function EbookJudeAssistant({
         onClick={() => setIsOpen(true)}
         className="fixed bottom-24 right-4 z-50 h-14 w-14 rounded-full md:bottom-6 overflow-hidden bg-transparent border-0 shadow-none p-0"
       >
-        <img 
-          src={ericAiHelper} 
-          alt="Jude Assistant" 
-          className="h-full w-full object-cover"
-        />
+        <picture>
+          <source srcSet={ericAiHelperWebP} type="image/webp" />
+          <img 
+            src={ericAiHelper} 
+            alt="Jude Assistant" 
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
+        </picture>
       </button>
     );
   }
