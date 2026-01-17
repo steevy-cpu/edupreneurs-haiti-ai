@@ -2,7 +2,7 @@
 
 const MAX_IMAGE_WIDTH = 1920;
 const MAX_IMAGE_HEIGHT = 1920;
-const IMAGE_QUALITY = 0.85;
+const IMAGE_QUALITY = 0.75;
 const MAX_VIDEO_SIZE_MB = 50;
 
 /**
