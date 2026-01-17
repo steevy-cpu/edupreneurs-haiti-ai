@@ -72,7 +72,7 @@ export function PageNumberInput({
     }
   };
 
-  const handleBlur = (e: FocusEvent<HTMLInputElement>) => {
+  const handleBlur = () => {
     validateAndNavigate();
   };
 
