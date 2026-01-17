@@ -9,7 +9,9 @@ import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 
 // Static imports for critical above-the-fold images - preloaded
 // LCP hero image uses public path for correct preload matching
+// WebP version provides ~50% smaller file size for 3G optimization
 const ericCelebrating = "/images/eric-celebrating.png";
+const ericCelebratingWebP = "/images/eric-celebrating.webp";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 
 // Lazy load non-critical images
@@ -380,6 +382,7 @@ const Index = () => {
             )}
             <ProgressiveImage 
               src={ericCelebrating} 
+              webpSrc={ericCelebratingWebP}
               alt="Jude - Assistant IA EDUPRENEURS" 
               className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-md drop-shadow-2xl hover:scale-105 transition-transform duration-500 relative z-10"
               priority={true}

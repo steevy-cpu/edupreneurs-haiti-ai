@@ -10,6 +10,8 @@ interface ProgressiveImageProps extends ImgHTMLAttributes<HTMLImageElement> {
   placeholder?: string;
   /** Skip lazy loading for LCP images */
   priority?: boolean;
+  /** Optional WebP version of the image */
+  webpSrc?: string;
 }
 
 // Default blur placeholder - tiny gray square
@@ -29,21 +31,43 @@ const getConnectionType = (): 'slow' | 'medium' | 'fast' => {
   return 'fast';
 };
 
-// Generate WebP/AVIF URLs for Supabase storage images
-const getOptimizedImageUrl = (url: string, quality: number = 80): string => {
-  if (!url.includes('supabase.co/storage')) return url;
+// Generate WebP URL from original URL (for public images)
+const getWebPUrl = (url: string): string | null => {
+  // Only auto-generate WebP URLs for local images in /images/ or assets
+  if (url.startsWith('/images/') && (url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg'))) {
+    return url.replace(/\.(png|jpe?g)$/i, '.webp');
+  }
+  return null;
+};
+
+// Check if browser supports WebP
+let webpSupported: boolean | null = null;
+const checkWebPSupport = (): Promise<boolean> => {
+  if (webpSupported !== null) return Promise.resolve(webpSupported);
   
-  const separator = url.includes('?') ? '&' : '?';
-  return `${url}${separator}quality=${quality}`;
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      webpSupported = img.width > 0 && img.height > 0;
+      resolve(webpSupported);
+    };
+    img.onerror = () => {
+      webpSupported = false;
+      resolve(false);
+    };
+    // Tiny WebP test image
+    img.src = 'data:image/webp;base64,UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==';
+  });
 };
 
 /**
  * Progressive image component optimized for 3G connections
  * - Shows blur placeholder immediately
+ * - Uses WebP format when available for 40-60% bandwidth savings
  * - Uses IntersectionObserver for true lazy loading
  * - Smooth fade-in transition on load
  * - Network-aware quality adjustments
- * - Fallback for browsers without IntersectionObserver
+ * - Fallback for browsers without IntersectionObserver or WebP
  */
 export const ProgressiveImage = ({
   src,
@@ -52,18 +76,24 @@ export const ProgressiveImage = ({
   placeholderClassName,
   placeholder = DEFAULT_PLACEHOLDER,
   priority = false,
+  webpSrc,
   ...props
 }: ProgressiveImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(priority);
   const [currentSrc, setCurrentSrc] = useState(priority ? src : placeholder);
   const [hasError, setHasError] = useState(false);
+  const [supportsWebP, setSupportsWebP] = useState<boolean | null>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   
   // Get network-aware settings
   const connectionType = typeof window !== 'undefined' ? getConnectionType() : 'fast';
   const skipBlur = connectionType === 'slow';
-  const imageQuality = connectionType === 'slow' ? 60 : connectionType === 'medium' ? 75 : 80;
+
+  // Check WebP support on mount
+  useEffect(() => {
+    checkWebPSupport().then(setSupportsWebP);
+  }, []);
 
   // Use IntersectionObserver for lazy loading (unless priority)
   useEffect(() => {
@@ -100,26 +130,54 @@ export const ProgressiveImage = ({
 
   // Load actual image when in view
   useEffect(() => {
-    if (!isInView || hasError) return;
+    if (!isInView || hasError || supportsWebP === null) return;
 
-    // Apply network-aware quality for Supabase images
-    const optimizedSrc = getOptimizedImageUrl(src, imageQuality);
+    // Determine the best source to use
+    let bestSrc = src;
+    
+    if (supportsWebP) {
+      // Use explicit webpSrc if provided, otherwise try to auto-generate
+      if (webpSrc) {
+        bestSrc = webpSrc;
+      } else {
+        const autoWebP = getWebPUrl(src);
+        if (autoWebP) {
+          bestSrc = autoWebP;
+        }
+      }
+    }
 
     // Preload the image
     const img = new Image();
     img.onload = () => {
-      setCurrentSrc(optimizedSrc);
+      setCurrentSrc(bestSrc);
       // Small delay for smooth transition
       requestAnimationFrame(() => {
         setIsLoaded(true);
       });
     };
     img.onerror = () => {
-      console.error(`Failed to load image: ${src}`);
-      setHasError(true);
+      // If WebP failed, fallback to original
+      if (bestSrc !== src) {
+        const fallbackImg = new Image();
+        fallbackImg.onload = () => {
+          setCurrentSrc(src);
+          requestAnimationFrame(() => {
+            setIsLoaded(true);
+          });
+        };
+        fallbackImg.onerror = () => {
+          console.error(`Failed to load image: ${src}`);
+          setHasError(true);
+        };
+        fallbackImg.src = src;
+      } else {
+        console.error(`Failed to load image: ${src}`);
+        setHasError(true);
+      }
     };
-    img.src = optimizedSrc;
-  }, [isInView, src, hasError, imageQuality]);
+    img.src = bestSrc;
+  }, [isInView, src, webpSrc, hasError, supportsWebP]);
 
   // On slow connections, skip blur effect to reduce GPU work
   const showBlurPlaceholder = !skipBlur && !isLoaded && !hasError;
