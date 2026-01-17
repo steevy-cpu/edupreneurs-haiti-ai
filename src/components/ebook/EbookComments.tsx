@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Send, Trash2, Star, Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,7 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { getAvatarUrl } from "@/lib/avatarMap";
-
 interface EbookCommentsProps {
   ebookId: string;
 }
@@ -97,8 +97,11 @@ export function EbookComments({ ebookId }: EbookCommentsProps) {
               onClick={handleSubmit}
               disabled={!newComment.trim() || createComment.isPending}
             >
-              {createComment.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+            {createComment.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Publication...
+                </>
               ) : (
                 <>
                   <Send className="mr-2 h-4 w-4" />
@@ -107,6 +110,18 @@ export function EbookComments({ ebookId }: EbookCommentsProps) {
               )}
             </Button>
           </div>
+        </div>
+      )}
+
+      {/* Sign-in prompt for visitors */}
+      {currentUserId === null && !isLoading && (
+        <div className="rounded-lg border border-dashed bg-muted/20 p-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            Connectez-vous pour laisser un commentaire
+          </p>
+          <Button variant="link" size="sm" asChild className="mt-1">
+            <Link to="/auth">Se connecter</Link>
+          </Button>
         </div>
       )}
 
