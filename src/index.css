@@ -438,6 +438,8 @@ All colors MUST be HSL.
   /* Auth Page Styles */
   .auth-page {
     font-family: Arial, Helvetica, sans-serif;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
   }
 
   .auth-header {
