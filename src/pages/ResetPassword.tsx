@@ -6,8 +6,12 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
+import { ProgressiveImage } from "@/components/ProgressiveImage";
 import { Loader2, Eye, EyeOff, Check, X } from "lucide-react";
+
+// Use public paths for WebP optimization
+const edupreneursLogo = "/images/edupreneurs-new-logo.png";
+const edupreneursLogoWebP = "/images/edupreneurs-new-logo.webp";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -213,12 +217,12 @@ export default function ResetPassword() {
         <div className="bg-card border border-border rounded-2xl shadow-xl p-8 backdrop-blur-sm">
           {/* Logo */}
           <div className="flex justify-center mb-6">
-            <img 
-              src={edupreneursLogo} 
+            <ProgressiveImage 
+              src={edupreneursLogo}
+              webpSrc={edupreneursLogoWebP}
               alt="Edupreneurs" 
               className="h-16 w-16 rounded-xl object-cover"
-              loading="eager"
-              decoding="async"
+              priority
             />
           </div>
 

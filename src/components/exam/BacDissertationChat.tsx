@@ -18,8 +18,11 @@ import {
   Sparkles
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import ericAiHelper from "@/assets/eric-ai-helper.png";
 import 'katex/dist/katex.min.css';
+
+// Use public paths for WebP optimization
+const ericAiHelper = "/images/eric-ai-helper.png";
+const ericAiHelperWebP = "/images/eric-ai-helper.webp";
 import { InlineMath, BlockMath } from 'react-katex';
 
 // Check if content has LaTeX delimiters or math patterns
@@ -351,7 +354,10 @@ export function BacDissertationChat({ examId, subjects, onComplete }: BacDissert
       <Card className="lg:w-2/3 flex flex-col h-[600px]">
         <CardHeader className="pb-3 border-b">
           <div className="flex items-center gap-3">
-            <img src={ericAiHelper} alt="Jude" className="w-10 h-10 rounded-full" />
+            <picture>
+              <source srcSet={ericAiHelperWebP} type="image/webp" />
+              <img src={ericAiHelper} alt="Jude" className="w-10 h-10 rounded-full" loading="lazy" />
+            </picture>
             <div>
               <CardTitle className="text-lg">Jude - Professeur de Philosophie</CardTitle>
               <p className="text-sm text-muted-foreground">

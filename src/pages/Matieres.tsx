@@ -65,10 +65,11 @@ export default function Matieres() {
   // Lazy-loaded images for 3G optimization
   const [lazyImages, setLazyImages] = useState<{
     ericPointing?: string;
+    ericPointingWebP?: string;
     edupreneursBg?: string;
   }>({});
   
-  // Load heavy images after initial render
+  // Load heavy images after initial render - use public paths for WebP
   useEffect(() => {
     const loadImages = async () => {
       // Only load background on fast connections
@@ -76,9 +77,12 @@ export default function Matieres() {
         const bgMod = await import("@/assets/edupreneurs-bg.png");
         setLazyImages(prev => ({ ...prev, edupreneursBg: bgMod.default }));
       }
-      // Always load Eric image but after initial render
-      const ericMod = await import("@/assets/eric-right-pointing.png");
-      setLazyImages(prev => ({ ...prev, ericPointing: ericMod.default }));
+      // Use public paths for Eric image with WebP support
+      setLazyImages(prev => ({ 
+        ...prev, 
+        ericPointing: "/images/eric-right-pointing.png",
+        ericPointingWebP: "/images/eric-right-pointing.webp"
+      }));
     };
     loadImages();
   }, [isSlowConnection]);
