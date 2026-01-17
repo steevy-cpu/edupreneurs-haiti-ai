@@ -43,12 +43,12 @@ export function EbookJudeAssistant({
     }
   }, [selectedText]);
 
-  // Scroll to bottom on new message
+  // Scroll to bottom on new message or loading
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -139,68 +139,70 @@ export function EbookJudeAssistant({
         </div>
 
         {/* Messages */}
-        <ScrollArea className="flex-1 p-3" ref={scrollRef}>
-          {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <img src={judeProfile} alt="Jude" className="h-16 w-16 rounded-full object-cover mb-3" />
-              <p className="text-sm text-muted-foreground mb-4">
-                Sélectionne un mot que tu ne comprends pas, ou pose-moi une question sur ta lecture ! 📚
-              </p>
-              
-              {/* Quick Actions */}
-              <div className="flex flex-wrap justify-center gap-2">
-                {quickActions.map((action) => (
-                  <Button
-                    key={action.label}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setInput(action.prompt);
-                    }}
-                  >
-                    {action.label}
-                  </Button>
-                ))}
+        <ScrollArea className="flex-1 p-3">
+          <div ref={scrollRef}>
+            {messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <img src={judeProfile} alt="Jude" className="h-16 w-16 rounded-full object-cover mb-3" />
+                <p className="text-sm text-muted-foreground mb-4">
+                  Sélectionne un mot que tu ne comprends pas, ou pose-moi une question sur ta lecture ! 📚
+                </p>
+                
+                {/* Quick Actions */}
+                <div className="flex flex-wrap justify-center gap-2">
+                  {quickActions.map((action) => (
+                    <Button
+                      key={action.label}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setInput(action.prompt);
+                      }}
+                    >
+                      {action.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {messages.map((msg, i) => (
-                <div
-                  key={i}
-                  className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  {msg.role === "assistant" && (
+            ) : (
+              <div className="space-y-4">
+                {messages.map((msg, i) => (
+                  <div
+                    key={i}
+                    className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    {msg.role === "assistant" && (
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={judeProfile} alt="Jude" />
+                        <AvatarFallback>J</AvatarFallback>
+                      </Avatar>
+                    )}
+                    <div
+                      className={`max-w-[80%] rounded-lg p-3 text-sm ${
+                        msg.role === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted"
+                      }`}
+                    >
+                      <div className="whitespace-pre-wrap">{msg.content}</div>
+                    </div>
+                  </div>
+                ))}
+                
+                {isLoading && (
+                  <div className="flex gap-2">
                     <Avatar className="h-6 w-6">
                       <AvatarImage src={judeProfile} alt="Jude" />
                       <AvatarFallback>J</AvatarFallback>
                     </Avatar>
-                  )}
-                  <div
-                    className={`max-w-[80%] rounded-lg p-3 text-sm ${
-                      msg.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
-                    }`}
-                  >
-                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                    <div className="rounded-lg bg-muted p-3">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </div>
                   </div>
-                </div>
-              ))}
-              
-              {isLoading && (
-                <div className="flex gap-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={judeProfile} alt="Jude" />
-                    <AvatarFallback>J</AvatarFallback>
-                  </Avatar>
-                  <div className="rounded-lg bg-muted p-3">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
+          </div>
         </ScrollArea>
 
         {/* Selected Text Preview */}
