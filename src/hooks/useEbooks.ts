@@ -107,16 +107,23 @@ export function useEbookComments(ebookId: string | undefined) {
       if (commentsError) throw commentsError;
       if (!comments || comments.length === 0) return [];
 
-      // Fetch profiles for comment authors
+      // Fetch profiles for comment authors - with error handling for unauthenticated access
       const userIds = [...new Set(comments.map(c => c.user_id))];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, nickname, avatar_url')
-        .in('user_id', userIds);
+      let profileMap = new Map<string, { nickname: string; avatar_url: string | null }>();
 
-      const profileMap = new Map(
-        profiles?.map(p => [p.user_id, { nickname: p.nickname, avatar_url: p.avatar_url }]) || []
-      );
+      try {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, nickname, avatar_url')
+          .in('user_id', userIds);
+        
+        profileMap = new Map(
+          profiles?.map(p => [p.user_id, { nickname: p.nickname, avatar_url: p.avatar_url }]) || []
+        );
+      } catch (e) {
+        // If profile fetch fails (e.g., unauthenticated), continue with empty profiles
+        console.log('Could not fetch profiles, using fallback');
+      }
 
       // Combine comments with profiles
       return comments.map(comment => ({
@@ -233,9 +240,15 @@ export function useCreateEbookComment() {
       queryClient.invalidateQueries({ queryKey: ['ebook-comments', variables.ebookId] });
       toast.success('Commentaire ajouté');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Error creating comment:', error);
-      toast.error('Erreur lors de l\'ajout du commentaire');
+      if (error?.message?.includes('row-level security') || error?.code === '42501') {
+        toast.error('Vous devez être connecté pour commenter');
+      } else if (error?.message === 'Not authenticated') {
+        toast.error('Veuillez vous connecter pour commenter');
+      } else {
+        toast.error('Erreur lors de l\'ajout du commentaire');
+      }
     },
   });
 }
