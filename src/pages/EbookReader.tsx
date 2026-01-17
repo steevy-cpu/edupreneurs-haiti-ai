@@ -17,6 +17,7 @@ import { MessageSquare } from "lucide-react";
 import { EbookJudeAssistant } from "@/components/ebook/EbookJudeAssistant";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import { PageNumberInput } from "@/components/ebook/PageNumberInput";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 // Lazy load PDF viewer to reduce initial bundle
 import { lazy, Suspense } from "react";
@@ -123,14 +124,16 @@ export default function EbookReader() {
             </div>
           </div>
 
-          {/* Mobile: Just show page count */}
-          <div className="text-xs text-muted-foreground xs:hidden">
-            {currentPage}/{totalPages}
+          {/* Mobile: Just show page count + theme toggle */}
+          <div className="flex items-center gap-2 xs:hidden">
+            <span className="text-xs text-muted-foreground">{currentPage}/{totalPages}</span>
+            <ThemeToggle />
           </div>
 
-          {/* Tablet/Desktop: Full progress info */}
+          {/* Tablet/Desktop: Full progress info + theme toggle */}
           <div className="hidden items-center gap-2 text-xs text-muted-foreground xs:flex sm:gap-4 sm:text-sm">
             {progressPercent}% • Page {currentPage}/{totalPages}
+            <ThemeToggle />
           </div>
         </div>
 
