@@ -8,6 +8,7 @@ import { BattleResults } from '@/components/quiz-battle/BattleResults';
 import { toast } from 'sonner';
 import { 
   calculateLevel, 
+  getWeekStart,
   MATH_SUBJECTS, 
   SCIENCE_SUBJECTS, 
   LANGUAGE_SUBJECTS,
@@ -237,6 +238,33 @@ const QuizBattleSolo = () => {
             avg_response_time_ms: newAvgResponseTime,
           })
           .eq('user_id', userId);
+
+        // Track weekly XP for weekly_champion badge
+        const weekStart = getWeekStart();
+        const { data: weeklyEntry } = await supabase
+          .from('quiz_battle_weekly_xp')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('week_start', weekStart)
+          .maybeSingle();
+
+        if (weeklyEntry) {
+          await supabase
+            .from('quiz_battle_weekly_xp')
+            .update({
+              xp_earned: weeklyEntry.xp_earned + gameResult.xpEarned,
+              battles_played: weeklyEntry.battles_played + 1,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', weeklyEntry.id);
+        } else {
+          await supabase.from('quiz_battle_weekly_xp').insert({
+            user_id: userId,
+            week_start: weekStart,
+            xp_earned: gameResult.xpEarned,
+            battles_played: 1,
+          });
+        }
       }
 
       // Track subject stats for subject-specific badges

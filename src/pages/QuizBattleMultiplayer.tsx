@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { Loader2, Swords, Trophy } from 'lucide-react';
-import { calculateLevel } from '@/lib/quizBattleUtils';
+import { calculateLevel, getWeekStart } from '@/lib/quizBattleUtils';
 import type { BattleQuestion, BattleResult } from './QuizBattleSolo';
 import { useRealtimeSubscription } from '@/hooks/useRealtimeSubscription';
 
@@ -312,12 +312,13 @@ const QuizBattleMultiplayer = () => {
         const newTotalXp = currentStats.total_xp + adjustedXp;
         const newLevel = calculateLevel(newTotalXp);
         const newStreak = isWinner ? currentStats.current_streak + 1 : 0;
+        const newMultiBattles = currentStats.multi_battles + 1;
 
         await supabase
           .from('quiz_battle_stats')
           .update({
             total_battles: currentStats.total_battles + 1,
-            multi_battles: currentStats.multi_battles + 1,
+            multi_battles: newMultiBattles,
             battles_won: isWinner ? currentStats.battles_won + 1 : currentStats.battles_won,
             current_streak: newStreak,
             longest_streak: Math.max(currentStats.longest_streak, newStreak),
@@ -328,6 +329,54 @@ const QuizBattleMultiplayer = () => {
             perfect_games: myResult.isPerfect ? currentStats.perfect_games + 1 : currentStats.perfect_games,
           })
           .eq('user_id', userId);
+
+        // Track weekly XP for weekly_champion badge
+        const weekStart = getWeekStart();
+        const { data: weeklyEntry } = await supabase
+          .from('quiz_battle_weekly_xp')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('week_start', weekStart)
+          .maybeSingle();
+
+        if (weeklyEntry) {
+          await supabase
+            .from('quiz_battle_weekly_xp')
+            .update({
+              xp_earned: weeklyEntry.xp_earned + adjustedXp,
+              battles_played: weeklyEntry.battles_played + 1,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', weeklyEntry.id);
+        } else {
+          await supabase.from('quiz_battle_weekly_xp').insert({
+            user_id: userId,
+            week_start: weekStart,
+            xp_earned: adjustedXp,
+            battles_played: 1,
+          });
+        }
+
+        // Check for social_butterfly badge (10 multiplayer games)
+        if (newMultiBattles >= 10) {
+          const { data: existingBadge } = await supabase
+            .from('quiz_battle_badges')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('badge_key', 'social_butterfly')
+            .maybeSingle();
+
+          if (!existingBadge) {
+            await supabase.from('quiz_battle_badges').insert({
+              user_id: userId,
+              badge_key: 'social_butterfly',
+              badge_name: 'Social',
+              description: '10 parties multijoueur complétées!',
+              icon: '🤝',
+            });
+            toast.success('🏆 Nouveau badge: Social!');
+          }
+        }
       }
     } catch (error) {
       console.error('Error finishing battle:', error);
