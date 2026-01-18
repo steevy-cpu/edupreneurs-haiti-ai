@@ -62,6 +62,7 @@ const ChessGame = lazy(() => import("./pages/ChessGame"));
 const GamesHub = lazy(() => import("./pages/GamesHub"));
 const QuizBattle = lazy(() => import("./pages/QuizBattle"));
 const QuizBattleSolo = lazy(() => import("./pages/QuizBattleSolo"));
+const QuizBattleLeaderboard = lazy(() => import("./pages/QuizBattleLeaderboard"));
 const ControlCenter = lazy(() => import("./pages/ControlCenter"));
 const ContentEditor = lazy(() => import("./pages/ContentEditor"));
 const DataMigration = lazy(() => import("./pages/DataMigration"));
@@ -235,6 +236,7 @@ const App = () => (
             <Route path="/chess-game" element={<Layout><ChessGame /></Layout>} />
             <Route path="/quiz-battle" element={<QuizBattle />} />
             <Route path="/quiz-battle/solo" element={<QuizBattleSolo />} />
+            <Route path="/quiz-battle/leaderboard" element={<QuizBattleLeaderboard />} />
             <Route path="/control-center" element={<ControlCenter />} />
             <Route path="/content-editor" element={<Layout><ContentEditor /></Layout>} />
             <Route path="/ai-analytics" element={<Layout><AIGenerationAnalytics /></Layout>} />

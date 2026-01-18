@@ -21,7 +21,7 @@ const GamesHub = () => {
       features: ['Mode Solo', 'Multijoueur', 'Badges & XP'],
       path: '/quiz-battle',
       isNew: true,
-      isLocked: !isLoading && !isSuperUser,
+      isLocked: false,
     },
     {
       id: 'chess',
