@@ -6,6 +6,7 @@ import { SubjectDifficultySelector } from '@/components/quiz-battle/SubjectDiffi
 import { BattleGameplay } from '@/components/quiz-battle/BattleGameplay';
 import { BattleResults } from '@/components/quiz-battle/BattleResults';
 import { toast } from 'sonner';
+import { calculateLevel } from '@/lib/quizBattleUtils';
 
 type GamePhase = 'setup' | 'loading' | 'playing' | 'results';
 
@@ -196,26 +197,38 @@ const QuizBattleSolo = () => {
         .single();
 
       if (currentStats) {
-        const newStreak = gameResult.correctAnswers >= gameResult.totalQuestions * 0.7 
-          ? currentStats.current_streak + 1 
-          : 0;
+        const isWin = gameResult.correctAnswers >= gameResult.totalQuestions * 0.7;
+        const newStreak = isWin ? currentStats.current_streak + 1 : 0;
+        const newTotalXp = currentStats.total_xp + gameResult.xpEarned;
+        const newLevel = calculateLevel(newTotalXp);
+
+        // Calculate average response time
+        const totalTimeMs = gameResult.answers.reduce((sum, a) => sum + a.timeMs, 0);
+        const avgGameResponseMs = Math.round(totalTimeMs / gameResult.answers.length);
+        const oldAvg = currentStats.avg_response_time_ms || avgGameResponseMs;
+        const previousAnswers = currentStats.total_questions_answered;
+        const newAnswers = gameResult.totalQuestions;
+        const newAvgResponseTime = Math.round(
+          (oldAvg * previousAnswers + avgGameResponseMs * newAnswers) / 
+          (previousAnswers + newAnswers)
+        );
 
         await supabase
           .from('quiz_battle_stats')
           .update({
             total_battles: currentStats.total_battles + 1,
             solo_battles: currentStats.solo_battles + 1,
-            battles_won: gameResult.correctAnswers >= gameResult.totalQuestions * 0.7 
-              ? currentStats.battles_won + 1 
-              : currentStats.battles_won,
+            battles_won: isWin ? currentStats.battles_won + 1 : currentStats.battles_won,
             current_streak: newStreak,
             longest_streak: Math.max(currentStats.longest_streak, newStreak),
-            total_xp: currentStats.total_xp + gameResult.xpEarned,
+            total_xp: newTotalXp,
+            level: newLevel,
             total_correct_answers: currentStats.total_correct_answers + gameResult.correctAnswers,
             total_questions_answered: currentStats.total_questions_answered + gameResult.totalQuestions,
             perfect_games: gameResult.isPerfect 
               ? currentStats.perfect_games + 1 
               : currentStats.perfect_games,
+            avg_response_time_ms: newAvgResponseTime,
           })
           .eq('user_id', userId);
       }
@@ -275,6 +288,46 @@ const QuizBattleSolo = () => {
         name: 'Imbattable',
         description: '5 victoires consécutives!',
         icon: '💪',
+      });
+    }
+
+    if (newStreak === 10) {
+      badgesToAward.push({
+        key: 'streak_10',
+        name: 'Légende',
+        description: '10 victoires consécutives!',
+        icon: '👑',
+      });
+    }
+
+    // Speed demon badge - correct answer in less than 3 seconds
+    const hasSpeedAnswer = result.answers.some(a => a.correct && a.timeMs < 3000);
+    if (hasSpeedAnswer) {
+      const { data: existingBadge } = await supabase
+        .from('quiz_battle_badges')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('badge_key', 'speed_demon')
+        .maybeSingle();
+      
+      if (!existingBadge) {
+        badgesToAward.push({
+          key: 'speed_demon',
+          name: 'Éclair',
+          description: 'Réponse correcte en moins de 3 secondes!',
+          icon: '⚡',
+        });
+      }
+    }
+
+    // Dedication badge - 50 games played
+    const newTotalBattles = (stats?.total_battles || 0) + 1;
+    if (newTotalBattles === 50) {
+      badgesToAward.push({
+        key: 'dedication',
+        name: 'Dévoué',
+        description: '50 parties jouées!',
+        icon: '📚',
       });
     }
 

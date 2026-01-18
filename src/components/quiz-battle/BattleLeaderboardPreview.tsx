@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { Crown, Medal, Trophy, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { FOUNDER_USER_IDS, calculateLevel } from '@/lib/quizBattleUtils';
 
 interface LeaderboardEntry {
   user_id: string;
@@ -29,13 +30,18 @@ export const BattleLeaderboardPreview = () => {
           .from('quiz_battle_stats')
           .select('user_id, total_xp, level, battles_won')
           .order('total_xp', { ascending: false })
-          .limit(5);
+          .limit(10); // Fetch more to account for filtered founders
 
         if (error) throw error;
 
         if (stats && stats.length > 0) {
+          // Filter out founders and take top 5
+          const filteredStats = stats
+            .filter(s => !FOUNDER_USER_IDS.includes(s.user_id))
+            .slice(0, 5);
+
           // Fetch profiles for these users
-          const userIds = stats.map(s => s.user_id);
+          const userIds = filteredStats.map(s => s.user_id);
           const { data: profiles } = await supabase
             .from('profiles')
             .select('user_id, nickname, avatar_url')
@@ -43,8 +49,9 @@ export const BattleLeaderboardPreview = () => {
 
           const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
           
-          const enriched = stats.map(s => ({
+          const enriched = filteredStats.map(s => ({
             ...s,
+            level: calculateLevel(s.total_xp), // Recalculate level for display
             nickname: profileMap.get(s.user_id)?.nickname,
             avatar_url: profileMap.get(s.user_id)?.avatar_url,
           }));

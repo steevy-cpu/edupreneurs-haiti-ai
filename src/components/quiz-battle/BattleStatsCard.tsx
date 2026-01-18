@@ -3,6 +3,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BarChart3, Trophy, Target, Zap, TrendingUp } from 'lucide-react';
 import type { BattleStats } from '@/hooks/useBattleStats';
+import { calculateLevel, getXpForLevel, getLevelProgress } from '@/lib/quizBattleUtils';
 
 interface BattleStatsCardProps {
   stats: BattleStats | null;
@@ -25,13 +26,10 @@ export const BattleStatsCard = ({ stats, isLoading }: BattleStatsCardProps) => {
     );
   }
 
-  const level = stats?.level || 1;
   const currentXP = stats?.total_xp || 0;
-  const xpForCurrentLevel = 100 * (level - 1) * (level - 1);
-  const xpForNextLevel = 100 * level * level;
-  const xpProgress = xpForNextLevel > xpForCurrentLevel 
-    ? ((currentXP - xpForCurrentLevel) / (xpForNextLevel - xpForCurrentLevel)) * 100
-    : 0;
+  const level = calculateLevel(currentXP);
+  const xpProgress = getLevelProgress(currentXP);
+  const xpForNextLevel = getXpForLevel(level + 1);
 
   const winRate = stats?.total_battles && stats.total_battles > 0
     ? Math.round((stats.battles_won / stats.total_battles) * 100)
