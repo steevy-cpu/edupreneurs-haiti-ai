@@ -77,8 +77,8 @@ export const getLevelProgress = (totalXp: number): number => {
  * Founder user IDs to exclude from leaderboards
  */
 export const FOUNDER_USER_IDS = [
-  '4fd396e7-8467-4dc5-86df-a5c0edbecd04',
-  '6cfce68c-ceb7-493a-beb6-4e98cb5d1e7a',
+  '0de08330-4183-48f9-b169-19b92f4d114f', // Steevy
+  '7580cd10-e18c-4b2f-ac50-def28d046c9d', // Djood
 ];
 
 /**
@@ -86,4 +86,43 @@ export const FOUNDER_USER_IDS = [
  */
 export const isFounder = (userId: string): boolean => {
   return FOUNDER_USER_IDS.includes(userId);
+};
+
+/**
+ * Subject names that count for the math_expert badge
+ */
+export const MATH_SUBJECTS = ['Mathématiques'];
+
+/**
+ * Subject names that count for the science_master badge
+ */
+export const SCIENCE_SUBJECTS = [
+  'Physique',
+  'Chimie',
+  'Biologie et géologie',
+  'Biologie et Géologie',
+  'Sciences Expérimentales',
+];
+
+/**
+ * Subject names that count for the language_pro badge
+ * (User needs success in 3 different languages)
+ */
+export const LANGUAGE_SUBJECTS = [
+  'Français',
+  'Anglais',
+  'Espagnol',
+  'Créole',
+  'Kreyòl',
+  'KREYÒL',
+  'Kreyòl Ayisyen',
+];
+
+/**
+ * Required correct answers to unlock subject badges
+ */
+export const SUBJECT_BADGE_THRESHOLDS = {
+  math_expert: 50,
+  science_master: 50,
+  language_pro: 10, // 10 correct answers in each of 3 languages
 };
