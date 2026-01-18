@@ -43,59 +43,137 @@ const QuizBattleLeaderboard = () => {
     getCurrentUser();
   }, []);
 
+  const getDateFilter = (timeFilter: TimeFilter): string | null => {
+    const now = new Date();
+    switch (timeFilter) {
+      case 'today':
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        return today.toISOString();
+      case 'week':
+        const weekAgo = new Date(now);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return weekAgo.toISOString();
+      case 'month':
+        const monthAgo = new Date(now);
+        monthAgo.setMonth(monthAgo.getMonth() - 1);
+        return monthAgo.toISOString();
+      default:
+        return null;
+    }
+  };
+
   useEffect(() => {
     const fetchLeaderboard = async () => {
       setIsLoading(true);
       try {
-        // For now, we only support 'all' time filter since we don't track XP by period
-        // Other filters would require a different table structure or date-based XP tracking
-        const { data: stats, error } = await supabase
-          .from('quiz_battle_stats')
-          .select('user_id, total_xp, level, battles_won, total_battles, avg_response_time_ms')
-          .order('total_xp', { ascending: false })
-          .limit(200);
+        const dateFrom = getDateFilter(filter);
+        
+        if (filter === 'all' || !dateFrom) {
+          // Use quiz_battle_stats directly for all-time
+          const { data: stats, error } = await supabase
+            .from('quiz_battle_stats')
+            .select('user_id, total_xp, level, battles_won, total_battles, avg_response_time_ms')
+            .order('total_xp', { ascending: false })
+            .limit(200);
 
-        if (error) throw error;
+          if (error) throw error;
 
-        if (stats && stats.length > 0) {
-          // Filter out founders
-          const filteredStats = stats.filter(s => !FOUNDER_USER_IDS.includes(s.user_id));
+          if (stats && stats.length > 0) {
+            await processAndDisplayStats(stats);
+          } else {
+            setEntries([]);
+          }
+        } else {
+          // For time-filtered results, calculate XP from recent battles
+          const { data: battles, error } = await supabase
+            .from('quiz_battles')
+            .select(`
+              id,
+              created_by,
+              quiz_battle_players(user_id, score, correct_answers)
+            `)
+            .gte('created_at', dateFrom)
+            .eq('status', 'completed');
 
-          // Fetch profiles for these users
-          const userIds = filteredStats.map(s => s.user_id);
-          const { data: profiles } = await supabase
-            .from('profiles')
-            .select('user_id, nickname, avatar_url')
-            .in('user_id', userIds);
+          if (error) throw error;
 
-          const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+          // Aggregate XP by user from battles in the period
+          const userXpMap = new Map<string, { xp: number; wins: number; battles: number }>();
           
-          const enriched: LeaderboardEntry[] = filteredStats.map((s, index) => ({
-            rank: index + 1,
-            user_id: s.user_id,
-            total_xp: s.total_xp,
-            level: calculateLevel(s.total_xp),
-            battles_won: s.battles_won,
-            total_battles: s.total_battles,
-            avg_response_time_ms: s.avg_response_time_ms,
-            nickname: profileMap.get(s.user_id)?.nickname,
-            avatar_url: profileMap.get(s.user_id)?.avatar_url,
-          }));
+          battles?.forEach(battle => {
+            battle.quiz_battle_players?.forEach((player: any) => {
+              const current = userXpMap.get(player.user_id) || { xp: 0, wins: 0, battles: 0 };
+              // Calculate XP: 10 points per correct answer + 20 bonus for good score
+              const earnedXp = player.correct_answers * 10 + (player.score >= 70 ? 20 : 0);
+              const isWin = player.score >= 70;
+              userXpMap.set(player.user_id, {
+                xp: current.xp + earnedXp,
+                wins: current.wins + (isWin ? 1 : 0),
+                battles: current.battles + 1,
+              });
+            });
+          });
 
-          setEntries(enriched);
+          // Convert to array and sort
+          const periodStats = Array.from(userXpMap.entries())
+            .map(([user_id, data]) => ({
+              user_id,
+              total_xp: data.xp,
+              battles_won: data.wins,
+              total_battles: data.battles,
+              avg_response_time_ms: null,
+            }))
+            .sort((a, b) => b.total_xp - a.total_xp)
+            .slice(0, 100);
 
-          // Find current user's rank
-          if (currentUserId) {
-            const userEntry = enriched.find(e => e.user_id === currentUserId);
-            if (userEntry) {
-              setCurrentUserRank(userEntry.rank);
-            }
+          if (periodStats.length > 0) {
+            await processAndDisplayStats(periodStats);
+          } else {
+            setEntries([]);
           }
         }
       } catch (error) {
         console.error('Error fetching leaderboard:', error);
       } finally {
         setIsLoading(false);
+      }
+    };
+
+    const processAndDisplayStats = async (stats: any[]) => {
+      // Filter out founders
+      const filteredStats = stats.filter(s => !FOUNDER_USER_IDS.includes(s.user_id));
+
+      // Fetch profiles for these users
+      const userIds = filteredStats.map(s => s.user_id);
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, nickname, avatar_url')
+        .in('user_id', userIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+      
+      const enriched: LeaderboardEntry[] = filteredStats.map((s, index) => ({
+        rank: index + 1,
+        user_id: s.user_id,
+        total_xp: s.total_xp,
+        level: calculateLevel(s.total_xp),
+        battles_won: s.battles_won,
+        total_battles: s.total_battles,
+        avg_response_time_ms: s.avg_response_time_ms,
+        nickname: profileMap.get(s.user_id)?.nickname,
+        avatar_url: profileMap.get(s.user_id)?.avatar_url,
+      }));
+
+      setEntries(enriched);
+
+      // Find current user's rank
+      if (currentUserId) {
+        const userEntry = enriched.find(e => e.user_id === currentUserId);
+        if (userEntry) {
+          setCurrentUserRank(userEntry.rank);
+        } else {
+          setCurrentUserRank(null);
+        }
       }
     };
 
@@ -161,7 +239,7 @@ const QuizBattleLeaderboard = () => {
           />
         </div>
 
-        {/* Time filters - disabled for now since we only support 'all' */}
+        {/* Time filters */}
         <div className="flex gap-2 overflow-x-auto pb-2">
           {filterButtons.map((btn) => (
             <Button
@@ -169,11 +247,7 @@ const QuizBattleLeaderboard = () => {
               variant={filter === btn.key ? 'default' : 'outline'}
               size="sm"
               onClick={() => setFilter(btn.key)}
-              disabled={btn.key !== 'all'}
-              className={cn(
-                'whitespace-nowrap',
-                btn.key !== 'all' && 'opacity-50'
-              )}
+              className="whitespace-nowrap"
             >
               {btn.label}
             </Button>

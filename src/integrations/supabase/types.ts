@@ -2480,6 +2480,44 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_battle_subject_stats: {
+        Row: {
+          correct_answers: number
+          created_at: string
+          id: string
+          subject_id: string
+          total_answers: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          correct_answers?: number
+          created_at?: string
+          id?: string
+          subject_id: string
+          total_answers?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          correct_answers?: number
+          created_at?: string
+          id?: string
+          subject_id?: string
+          total_answers?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_battle_subject_stats_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quiz_battles: {
         Row: {
           created_at: string

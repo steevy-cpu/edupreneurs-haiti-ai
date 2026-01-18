@@ -1,5 +1,6 @@
 // Founder user IDs - these users are platform founders/co-founders
 // They should not appear in leaderboards and have special profile display rules
+// NOTE: Keep in sync with src/lib/quizBattleUtils.ts
 
 export const FOUNDER_USER_IDS = [
   '0de08330-4183-48f9-b169-19b92f4d114f', // Steevy

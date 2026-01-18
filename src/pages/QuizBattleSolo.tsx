@@ -6,7 +6,13 @@ import { SubjectDifficultySelector } from '@/components/quiz-battle/SubjectDiffi
 import { BattleGameplay } from '@/components/quiz-battle/BattleGameplay';
 import { BattleResults } from '@/components/quiz-battle/BattleResults';
 import { toast } from 'sonner';
-import { calculateLevel } from '@/lib/quizBattleUtils';
+import { 
+  calculateLevel, 
+  MATH_SUBJECTS, 
+  SCIENCE_SUBJECTS, 
+  LANGUAGE_SUBJECTS,
+  SUBJECT_BADGE_THRESHOLDS 
+} from '@/lib/quizBattleUtils';
 
 type GamePhase = 'setup' | 'loading' | 'playing' | 'results';
 
@@ -233,18 +239,59 @@ const QuizBattleSolo = () => {
           .eq('user_id', userId);
       }
 
+      // Track subject stats for subject-specific badges
+      await updateSubjectStats(userId, selectedSubject!, gameResult);
+
       // Check for badges
-      await checkAndAwardBadges(userId, gameResult, currentStats);
+      await checkAndAwardBadges(userId, gameResult, currentStats, selectedSubject!);
 
     } catch (error) {
       console.error('Error saving game result:', error);
     }
   };
 
+  const updateSubjectStats = async (
+    userId: string,
+    subjectId: string,
+    result: BattleResult
+  ) => {
+    try {
+      const { data: existingStat } = await supabase
+        .from('quiz_battle_subject_stats')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('subject_id', subjectId)
+        .maybeSingle();
+
+      if (existingStat) {
+        await supabase
+          .from('quiz_battle_subject_stats')
+          .update({
+            correct_answers: existingStat.correct_answers + result.correctAnswers,
+            total_answers: existingStat.total_answers + result.totalQuestions,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingStat.id);
+      } else {
+        await supabase
+          .from('quiz_battle_subject_stats')
+          .insert({
+            user_id: userId,
+            subject_id: subjectId,
+            correct_answers: result.correctAnswers,
+            total_answers: result.totalQuestions,
+          });
+      }
+    } catch (error) {
+      console.error('Error updating subject stats:', error);
+    }
+  };
+
   const checkAndAwardBadges = async (
     userId: string, 
     result: BattleResult, 
-    stats: any
+    stats: any,
+    subjectId: string
   ) => {
     const badgesToAward: { key: string; name: string; description: string; icon: string }[] = [];
 
@@ -331,6 +378,9 @@ const QuizBattleSolo = () => {
       });
     }
 
+    // Subject-specific badges - check after updating subject stats
+    await checkSubjectBadges(userId, subjectId, badgesToAward);
+
     // Award badges
     for (const badge of badgesToAward) {
       try {
@@ -349,6 +399,87 @@ const QuizBattleSolo = () => {
         // Badge might already exist
         console.log('Badge already earned or error:', badge.key);
       }
+    }
+  };
+
+  const checkSubjectBadges = async (
+    userId: string,
+    currentSubjectId: string,
+    badgesToAward: { key: string; name: string; description: string; icon: string }[]
+  ) => {
+    try {
+      // Get all subject stats with subject names
+      const { data: subjectStats } = await supabase
+        .from('quiz_battle_subject_stats')
+        .select(`
+          subject_id,
+          correct_answers,
+          subjects!inner(name)
+        `)
+        .eq('user_id', userId);
+
+      if (!subjectStats) return;
+
+      // Check for existing badges
+      const { data: existingBadges } = await supabase
+        .from('quiz_battle_badges')
+        .select('badge_key')
+        .eq('user_id', userId)
+        .in('badge_key', ['math_expert', 'science_master', 'language_pro']);
+
+      const earnedBadgeKeys = new Set(existingBadges?.map(b => b.badge_key) || []);
+
+      // Math Expert badge
+      if (!earnedBadgeKeys.has('math_expert')) {
+        const mathCorrect = subjectStats
+          .filter(s => MATH_SUBJECTS.includes((s.subjects as any)?.name))
+          .reduce((sum, s) => sum + s.correct_answers, 0);
+
+        if (mathCorrect >= SUBJECT_BADGE_THRESHOLDS.math_expert) {
+          badgesToAward.push({
+            key: 'math_expert',
+            name: 'Expert Maths',
+            description: '50 bonnes réponses en Maths!',
+            icon: '🧮',
+          });
+        }
+      }
+
+      // Science Master badge
+      if (!earnedBadgeKeys.has('science_master')) {
+        const scienceCorrect = subjectStats
+          .filter(s => SCIENCE_SUBJECTS.includes((s.subjects as any)?.name))
+          .reduce((sum, s) => sum + s.correct_answers, 0);
+
+        if (scienceCorrect >= SUBJECT_BADGE_THRESHOLDS.science_master) {
+          badgesToAward.push({
+            key: 'science_master',
+            name: 'Maître Sciences',
+            description: '50 bonnes réponses en Sciences!',
+            icon: '🔬',
+          });
+        }
+      }
+
+      // Language Pro badge (3 different languages with 10+ correct each)
+      if (!earnedBadgeKeys.has('language_pro')) {
+        const languageStats = subjectStats
+          .filter(s => LANGUAGE_SUBJECTS.includes((s.subjects as any)?.name) && s.correct_answers >= SUBJECT_BADGE_THRESHOLDS.language_pro);
+
+        // Get unique language names
+        const uniqueLanguages = new Set(languageStats.map(s => (s.subjects as any)?.name));
+        
+        if (uniqueLanguages.size >= 3) {
+          badgesToAward.push({
+            key: 'language_pro',
+            name: 'Polyglotte',
+            description: 'Quiz réussi en 3 langues différentes!',
+            icon: '🌍',
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error checking subject badges:', error);
     }
   };
 
