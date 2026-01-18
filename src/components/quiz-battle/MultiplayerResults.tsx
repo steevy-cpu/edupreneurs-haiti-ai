@@ -14,7 +14,6 @@ import {
 import { cn } from '@/lib/utils';
 import type { BattleResult } from '@/pages/QuizBattleSolo';
 import { useEffect } from 'react';
-import { useEffect } from 'react';
 
 interface OpponentProgress {
   score: number;

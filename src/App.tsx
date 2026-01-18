@@ -62,6 +62,8 @@ const ChessGame = lazy(() => import("./pages/ChessGame"));
 const GamesHub = lazy(() => import("./pages/GamesHub"));
 const QuizBattle = lazy(() => import("./pages/QuizBattle"));
 const QuizBattleSolo = lazy(() => import("./pages/QuizBattleSolo"));
+const QuizBattleLobby = lazy(() => import("./pages/QuizBattleLobby"));
+const QuizBattleMultiplayer = lazy(() => import("./pages/QuizBattleMultiplayer"));
 const QuizBattleLeaderboard = lazy(() => import("./pages/QuizBattleLeaderboard"));
 const ControlCenter = lazy(() => import("./pages/ControlCenter"));
 const ContentEditor = lazy(() => import("./pages/ContentEditor"));
@@ -236,6 +238,8 @@ const App = () => (
             <Route path="/chess-game" element={<Layout><ChessGame /></Layout>} />
             <Route path="/quiz-battle" element={<QuizBattle />} />
             <Route path="/quiz-battle/solo" element={<QuizBattleSolo />} />
+            <Route path="/quiz-battle/lobby" element={<QuizBattleLobby />} />
+            <Route path="/quiz-battle/multiplayer/:battleId" element={<QuizBattleMultiplayer />} />
             <Route path="/quiz-battle/leaderboard" element={<QuizBattleLeaderboard />} />
             <Route path="/control-center" element={<ControlCenter />} />
             <Route path="/content-editor" element={<Layout><ContentEditor /></Layout>} />
