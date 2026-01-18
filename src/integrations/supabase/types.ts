@@ -2518,6 +2518,36 @@ export type Database = {
           },
         ]
       }
+      quiz_battle_weekly_xp: {
+        Row: {
+          battles_played: number
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+          week_start: string
+          xp_earned: number
+        }
+        Insert: {
+          battles_played?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          week_start: string
+          xp_earned?: number
+        }
+        Update: {
+          battles_played?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+          xp_earned?: number
+        }
+        Relationships: []
+      }
       quiz_battles: {
         Row: {
           created_at: string

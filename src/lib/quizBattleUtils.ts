@@ -126,3 +126,15 @@ export const SUBJECT_BADGE_THRESHOLDS = {
   science_master: 50,
   language_pro: 10, // 10 correct answers in each of 3 languages
 };
+
+/**
+ * Get the start of the current week (Monday) as YYYY-MM-DD
+ */
+export const getWeekStart = (): string => {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Monday
+  const monday = new Date(now.getFullYear(), now.getMonth(), diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday.toISOString().split('T')[0]; // YYYY-MM-DD
+};
