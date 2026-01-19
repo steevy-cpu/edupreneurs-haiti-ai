@@ -33,6 +33,7 @@ const QuizBattleLobby = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const mode = (searchParams.get('mode') || 'friend') as 'friend' | 'random';
+  const invitationId = searchParams.get('invitation');
   
   const [userId, setUserId] = useState<string | null>(null);
   const [userGrade, setUserGrade] = useState<string | null>(null);
@@ -48,6 +49,12 @@ const QuizBattleLobby = () => {
   // For random mode - invitation dialog
   const [selectedPlayer, setSelectedPlayer] = useState<OnlinePlayer | null>(null);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
+  
+  // For revanche/invitation waiting mode
+  const [isWaitingForInvitation, setIsWaitingForInvitation] = useState(!!invitationId);
+  const [invitationRecipient, setInvitationRecipient] = useState<string | null>(null);
+  const [invitationExpiresAt, setInvitationExpiresAt] = useState<Date | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number>(0);
 
   // Check auth
   useEffect(() => {
@@ -100,6 +107,104 @@ const QuizBattleLobby = () => {
     };
   }, [step, multiplayer.phase, startLobbyMusic, stopLobbyMusic]);
 
+  // Handle revanche/invitation waiting mode
+  useEffect(() => {
+    if (!invitationId || !userId) return;
+    
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    
+    const fetchAndSubscribe = async () => {
+      // Fetch invitation to get recipient name
+      const { data: invitation, error } = await supabase
+        .from('quiz_battle_invitations')
+        .select('*, recipient:profiles!quiz_battle_invitations_recipient_id_fkey(nickname)')
+        .eq('id', invitationId)
+        .single();
+      
+      if (error || !invitation) {
+        toast.error('Invitation introuvable');
+        navigate('/quiz-battle');
+        return;
+      }
+      
+      // Set recipient name and expiry
+      setInvitationRecipient((invitation.recipient as any)?.nickname || 'Adversaire');
+      setInvitationExpiresAt(new Date(invitation.expires_at));
+      
+      // Check if already accepted
+      if (invitation.status === 'accepted' && invitation.battle_id) {
+        toast.success('Invitation acceptée!');
+        navigate(`/quiz-battle/multiplayer/${invitation.battle_id}`);
+        return;
+      }
+      
+      // Check if expired or declined
+      if (invitation.status === 'declined') {
+        toast.error('Invitation refusée');
+        navigate('/quiz-battle');
+        return;
+      }
+      
+      if (invitation.status === 'expired') {
+        toast.error('Invitation expirée');
+        navigate('/quiz-battle');
+        return;
+      }
+      
+      // Subscribe to invitation changes
+      channel = supabase
+        .channel(`invitation-sender-${invitationId}`)
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'quiz_battle_invitations',
+          filter: `id=eq.${invitationId}`,
+        }, (payload) => {
+          const updated = payload.new as any;
+          if (updated.status === 'accepted' && updated.battle_id) {
+            toast.success('Invitation acceptée!');
+            navigate(`/quiz-battle/multiplayer/${updated.battle_id}`);
+          } else if (updated.status === 'declined') {
+            toast.error('Invitation refusée');
+            navigate('/quiz-battle');
+          } else if (updated.status === 'expired') {
+            toast.error('Invitation expirée');
+            navigate('/quiz-battle');
+          }
+        })
+        .subscribe();
+    };
+    
+    fetchAndSubscribe();
+    
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [invitationId, userId, navigate]);
+  
+  // Countdown timer for invitation expiry
+  useEffect(() => {
+    if (!invitationExpiresAt || !isWaitingForInvitation) return;
+    
+    const updateTimer = () => {
+      const now = new Date();
+      const diff = Math.max(0, Math.floor((invitationExpiresAt.getTime() - now.getTime()) / 1000));
+      setTimeLeft(diff);
+      
+      if (diff <= 0) {
+        toast.error('Invitation expirée');
+        navigate('/quiz-battle');
+      }
+    };
+    
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    
+    return () => clearInterval(interval);
+  }, [invitationExpiresAt, isWaitingForInvitation, navigate]);
+
   // Navigate to game when starting
   useEffect(() => {
     if (multiplayer.phase === 'starting' && multiplayer.battleId) {
@@ -146,7 +251,18 @@ const QuizBattleLobby = () => {
   };
 
   const handleBack = () => {
-    if (step === 'waiting') {
+    if (isWaitingForInvitation) {
+      // Cancel the invitation if going back
+      if (invitationId) {
+        supabase
+          .from('quiz_battle_invitations')
+          .update({ status: 'cancelled' })
+          .eq('id', invitationId)
+          .then(() => {});
+      }
+      setIsWaitingForInvitation(false);
+      navigate('/quiz-battle');
+    } else if (step === 'waiting') {
       multiplayer.cancelBattle();
       setStep('config');
     } else if (step === 'join-code') {
@@ -158,6 +274,12 @@ const QuizBattleLobby = () => {
     }
   };
 
+  const formatTimeLeft = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const handleSelectPlayer = (player: OnlinePlayer) => {
     setSelectedPlayer(player);
     setShowInviteDialog(true);
@@ -165,6 +287,59 @@ const QuizBattleLobby = () => {
 
   // Render different views based on step and mode
   const renderContent = () => {
+    // Waiting for invitation response (Revanche mode)
+    if (isWaitingForInvitation && invitationId) {
+      return (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={handleBack}>
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold">Revanche envoyée</h1>
+                <p className="text-muted-foreground">En attente de réponse</p>
+              </div>
+            </div>
+          </div>
+
+          <Card>
+            <CardContent className="py-12 text-center space-y-4">
+              <div className="relative inline-block">
+                <Loader2 className="w-20 h-20 animate-spin text-primary mx-auto" />
+                <Swords className="w-10 h-10 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">En attente de réponse</h3>
+                <p className="text-muted-foreground">
+                  Invitation envoyée à <span className="font-semibold text-foreground">{invitationRecipient || 'Adversaire'}</span>
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  La partie démarrera automatiquement dès qu'il accepte
+                </p>
+              </div>
+              
+              {/* Countdown timer */}
+              {timeLeft > 0 && (
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mt-4">
+                  <Clock className="w-4 h-4" />
+                  <span>Expire dans: {formatTimeLeft(timeLeft)}</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={handleBack}
+          >
+            Annuler l'invitation
+          </Button>
+        </div>
+      );
+    }
+    
     // Join code input screen
     if (step === 'join-code') {
       return (
