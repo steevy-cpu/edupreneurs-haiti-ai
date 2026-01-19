@@ -114,21 +114,31 @@ const QuizBattleLobby = () => {
     let channel: ReturnType<typeof supabase.channel> | null = null;
     
     const fetchAndSubscribe = async () => {
-      // Fetch invitation to get recipient name
+      // Fetch invitation
       const { data: invitation, error } = await supabase
         .from('quiz_battle_invitations')
-        .select('*, recipient:profiles!quiz_battle_invitations_recipient_id_fkey(nickname)')
+        .select('*')
         .eq('id', invitationId)
         .single();
       
       if (error || !invitation) {
+        console.error('[QuizBattleLobby] Invitation not found:', error);
         toast.error('Invitation introuvable');
         navigate('/quiz-battle');
         return;
       }
       
+      console.log('[QuizBattleLobby] Loaded invitation:', invitation.id, 'status:', invitation.status);
+      
+      // Fetch recipient name separately
+      const { data: recipientProfile } = await supabase
+        .from('profiles')
+        .select('nickname')
+        .eq('user_id', invitation.recipient_id)
+        .single();
+      
       // Set recipient name and expiry
-      setInvitationRecipient((invitation.recipient as any)?.nickname || 'Adversaire');
+      setInvitationRecipient(recipientProfile?.nickname || 'Adversaire');
       setInvitationExpiresAt(new Date(invitation.expires_at));
       
       // Check if already accepted
@@ -152,6 +162,7 @@ const QuizBattleLobby = () => {
       }
       
       // Subscribe to invitation changes
+      console.log('[QuizBattleLobby] Subscribing to invitation updates:', invitationId);
       channel = supabase
         .channel(`invitation-sender-${invitationId}`)
         .on('postgres_changes', {
@@ -160,8 +171,10 @@ const QuizBattleLobby = () => {
           table: 'quiz_battle_invitations',
           filter: `id=eq.${invitationId}`,
         }, (payload) => {
+          console.log('[QuizBattleLobby] Received invitation update:', payload.new);
           const updated = payload.new as any;
           if (updated.status === 'accepted' && updated.battle_id) {
+            console.log('[QuizBattleLobby] Invitation accepted! Navigating to battle:', updated.battle_id);
             toast.success('Invitation acceptée!');
             navigate(`/quiz-battle/multiplayer/${updated.battle_id}`);
           } else if (updated.status === 'declined') {
@@ -172,7 +185,9 @@ const QuizBattleLobby = () => {
             navigate('/quiz-battle');
           }
         })
-        .subscribe();
+        .subscribe((status) => {
+          console.log('[QuizBattleLobby] Subscription status:', status);
+        });
     };
     
     fetchAndSubscribe();
