@@ -9,7 +9,7 @@ interface PushNotificationData {
   title: string;
   body: string;
   conversationId?: string;
-  type?: 'message' | 'like' | 'comment' | 'share' | 'follow' | 'follow_accepted' | 'mention' | 'post' | 'group_message' | 'new_post';
+  type?: 'message' | 'like' | 'comment' | 'share' | 'follow' | 'follow_accepted' | 'mention' | 'post' | 'group_message' | 'new_post' | 'quiz_invite';
   actorId?: string;
   entityId?: string;
   url?: string;
@@ -221,5 +221,25 @@ export async function notifyNewPost(
     actorId,
     entityId: postId,
     url: '/feed'
+  });
+}
+
+/**
+ * Send notification for quiz battle invitation
+ */
+export async function notifyQuizInvitation(
+  recipientUserId: string,
+  actorId: string,
+  senderNickname: string,
+  invitationId: string
+): Promise<SendResult> {
+  return sendPushToUser({
+    recipientUserId,
+    title: '⚔️ Défi Quiz Battle!',
+    body: `${senderNickname} te défie en Quiz Battle!`,
+    type: 'quiz_invite',
+    actorId,
+    entityId: invitationId,
+    url: `/quiz-battle?invitation=${invitationId}`
   });
 }

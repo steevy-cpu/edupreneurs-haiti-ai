@@ -50,6 +50,7 @@ import {
 import { useVisitor } from "@/contexts/VisitorContext";
 import { JudeWelcomePopup } from "@/components/visitor";
 import { GlobalSearch, QuickMessageFAB } from "@/components/shared";
+import { QuizInvitationHandler } from "@/components/quiz-battle/QuizInvitationHandler";
 
 interface LayoutProps {
   children: ReactNode;
@@ -778,6 +779,9 @@ export const Layout = ({ children }: LayoutProps) => {
 
       {/* Quick Message FAB */}
       {!hideLayoutNav && <QuickMessageFAB isVisitor={isVisitor} />}
+
+      {/* Quiz Invitation Handler - Global listener for incoming battle invitations */}
+      {userId && !isVisitor && <QuizInvitationHandler userId={userId} />}
 
       {/* Jude Welcome Popup for Visitors */}
       <JudeWelcomePopup 
