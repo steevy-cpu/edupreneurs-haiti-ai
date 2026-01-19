@@ -169,6 +169,14 @@ export const SendInvitationDialog = ({
 
   // Handle sent invitation status changes
   useEffect(() => {
+    // If we're waiting and sentInvitation becomes null, close the dialog (declined externally)
+    if (step === 'waiting' && sentInvitation === null) {
+      const timer = setTimeout(() => {
+        onOpenChange(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+
     if (!sentInvitation) return;
 
     if (sentInvitation.status === 'accepted' && sentInvitation.battle_id) {
@@ -182,11 +190,13 @@ export const SendInvitationDialog = ({
     } else if (sentInvitation.status === 'declined') {
       setResult('declined');
       setStep('result');
+      // Auto-close after showing result briefly
+      setTimeout(() => onOpenChange(false), 2000);
     } else if (sentInvitation.status === 'expired') {
       setResult('expired');
       setStep('result');
     }
-  }, [sentInvitation, navigate, onOpenChange]);
+  }, [sentInvitation, navigate, onOpenChange, step]);
 
   // Countdown timer when waiting
   useEffect(() => {
@@ -430,17 +440,38 @@ export const SendInvitationDialog = ({
             </DialogHeader>
 
             <div className="py-8 text-center space-y-6">
-              {/* Timer */}
-              <div className="relative inline-block">
-                <div className="w-24 h-24 rounded-full border-4 border-primary/20 flex items-center justify-center">
-                  <span className={cn(
-                    "text-3xl font-bold",
-                    timeLeft <= 30 ? "text-destructive" : "text-primary"
-                  )}>
-                    {formatTime(timeLeft)}
-                  </span>
-                </div>
-                <Loader2 className="absolute -top-2 -right-2 w-8 h-8 text-primary animate-spin" />
+              {/* Timer with SVG Progress Ring */}
+              <div className="relative inline-flex items-center justify-center">
+                <svg className="w-28 h-28 -rotate-90" viewBox="0 0 112 112">
+                  {/* Background circle */}
+                  <circle
+                    cx="56"
+                    cy="56"
+                    r="48"
+                    className="fill-none stroke-primary/20"
+                    strokeWidth="6"
+                  />
+                  {/* Animated progress circle */}
+                  <circle
+                    cx="56"
+                    cy="56"
+                    r="48"
+                    className={cn(
+                      "fill-none transition-all duration-1000",
+                      timeLeft <= 30 ? "stroke-destructive" : "stroke-primary"
+                    )}
+                    strokeWidth="6"
+                    strokeLinecap="round"
+                    strokeDasharray={`${(timeLeft / 120) * 301.59} 301.59`}
+                  />
+                </svg>
+                {/* Timer text centered */}
+                <span className={cn(
+                  "absolute text-3xl font-bold",
+                  timeLeft <= 30 ? "text-destructive" : "text-primary"
+                )}>
+                  {formatTime(timeLeft)}
+                </span>
               </div>
 
               {/* Info */}
