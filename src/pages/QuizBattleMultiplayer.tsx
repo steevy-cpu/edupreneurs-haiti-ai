@@ -99,6 +99,14 @@ const QuizBattleMultiplayer = () => {
         return;
       }
 
+      // CRITICAL: Check if battle is already finished - prevent restart on refresh
+      if (battle.status === 'completed' || battle.status === 'cancelled') {
+        console.log('[Multiplayer] Battle already finished, redirecting to lobby');
+        toast.info('Cette bataille est terminée');
+        navigate('/quiz-battle/lobby');
+        return;
+      }
+
       setDifficulty(battle.difficulty as any);
       setBattleMode(battle.mode as any);
       
