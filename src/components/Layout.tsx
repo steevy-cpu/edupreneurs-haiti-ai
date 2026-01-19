@@ -239,6 +239,8 @@ export const Layout = ({ children }: LayoutProps) => {
             
             // Show different messages based on notification type
             let message = "";
+            let actionPath = "/notifications";
+            
             if (notification.type === "follow_request") {
               message = `${actorName} a demandé à vous suivre`;
             } else if (notification.type === "like") {
@@ -247,6 +249,13 @@ export const Layout = ({ children }: LayoutProps) => {
               message = `${actorName} a commenté votre publication`;
             } else if (notification.type === "share") {
               message = `${actorName} a partagé votre publication`;
+            } else if (notification.type === "quiz_invite") {
+              message = `${actorName} te défie en Quiz Battle!`;
+              actionPath = `/quiz-battle/lobby?mode=friend&invitation=${notification.content}`;
+            } else if (notification.type === "group_invitation") {
+              message = `${actorName} t'a invité à rejoindre un groupe`;
+            } else if (notification.type === "announcement") {
+              message = notification.content || "Nouvelle annonce";
             } else {
               message = notification.content || "Nouvelle notification";
             }
@@ -255,7 +264,7 @@ export const Layout = ({ children }: LayoutProps) => {
               duration: 5000,
               action: {
                 label: "Voir",
-                onClick: () => navigate("/notifications"),
+                onClick: () => navigate(actionPath),
               },
             });
           }
