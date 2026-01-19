@@ -2313,6 +2313,63 @@ export type Database = {
           },
         ]
       }
+      quiz_battle_invitations: {
+        Row: {
+          battle_id: string | null
+          created_at: string
+          difficulty: string
+          expires_at: string
+          grade_level: string
+          id: string
+          recipient_id: string
+          responded_at: string | null
+          sender_id: string
+          status: string
+          subject_id: string
+        }
+        Insert: {
+          battle_id?: string | null
+          created_at?: string
+          difficulty: string
+          expires_at?: string
+          grade_level: string
+          id?: string
+          recipient_id: string
+          responded_at?: string | null
+          sender_id: string
+          status?: string
+          subject_id: string
+        }
+        Update: {
+          battle_id?: string | null
+          created_at?: string
+          difficulty?: string
+          expires_at?: string
+          grade_level?: string
+          id?: string
+          recipient_id?: string
+          responded_at?: string | null
+          sender_id?: string
+          status?: string
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_battle_invitations_battle_id_fkey"
+            columns: ["battle_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_battles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_battle_invitations_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quiz_battle_matchmaking: {
         Row: {
           battle_id: string | null
@@ -3272,6 +3329,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_quiz_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: string
+      }
       add_user_to_group: {
         Args: {
           p_conversation_id: string
@@ -3411,6 +3472,7 @@ export type Database = {
         Args: { other_user_id: string }
         Returns: string
       }
+      user_has_active_battle: { Args: { p_user_id: string }; Returns: boolean }
       verify_email_code: {
         Args: { p_code: string; p_user_id: string }
         Returns: Json

@@ -7,7 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SubjectDifficultySelector } from '@/components/quiz-battle/SubjectDifficultySelector';
+import { OnlinePlayersBrowser } from '@/components/quiz-battle/OnlinePlayersBrowser';
+import { SendInvitationDialog } from '@/components/quiz-battle/SendInvitationDialog';
 import { useMultiplayerBattle, LobbyPhase } from '@/hooks/useMultiplayerBattle';
+import { OnlinePlayer } from '@/hooks/useOnlinePlayers';
 import { toast } from 'sonner';
 import { 
   ArrowLeft, 
@@ -21,7 +24,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type LobbyStep = 'config' | 'waiting' | 'join-code';
+type LobbyStep = 'config' | 'waiting' | 'join-code' | 'browse-players';
 
 const QuizBattleLobby = () => {
   const navigate = useNavigate();
@@ -30,7 +33,7 @@ const QuizBattleLobby = () => {
   
   const [userId, setUserId] = useState<string | null>(null);
   const [userGrade, setUserGrade] = useState<string | null>(null);
-  const [step, setStep] = useState<LobbyStep>(mode === 'random' ? 'config' : 'config');
+  const [step, setStep] = useState<LobbyStep>(mode === 'random' ? 'browse-players' : 'config');
   const [joinCodeInput, setJoinCodeInput] = useState('');
   const [copied, setCopied] = useState(false);
   
@@ -38,6 +41,10 @@ const QuizBattleLobby = () => {
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [selectedGrade, setSelectedGrade] = useState<string | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
+  
+  // For random mode - invitation dialog
+  const [selectedPlayer, setSelectedPlayer] = useState<OnlinePlayer | null>(null);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
 
   // Check auth
   useEffect(() => {
@@ -124,9 +131,16 @@ const QuizBattleLobby = () => {
       setStep('config');
     } else if (step === 'join-code') {
       setStep('config');
+    } else if (step === 'browse-players') {
+      navigate('/quiz-battle');
     } else {
       navigate('/quiz-battle');
     }
+  };
+
+  const handleSelectPlayer = (player: OnlinePlayer) => {
+    setSelectedPlayer(player);
+    setShowInviteDialog(true);
   };
 
   // Render different views based on step and mode
@@ -348,6 +362,46 @@ const QuizBattleLobby = () => {
       );
     }
 
+    // Browse online players screen (for random mode)
+    if (step === 'browse-players') {
+      return (
+        <div className="space-y-6">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={handleBack}>
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold">Joueur Aléatoire</h1>
+              <p className="text-muted-foreground">Choisis un adversaire en ligne</p>
+            </div>
+          </div>
+
+          <OnlinePlayersBrowser
+            currentUserId={userId}
+            onSelectPlayer={handleSelectPlayer}
+            selectedPlayerId={selectedPlayer?.user_id}
+          />
+
+          {/* Fallback option */}
+          <Card className="border-dashed">
+            <CardContent className="py-4 text-center">
+              <p className="text-sm text-muted-foreground mb-3">
+                Pas de joueurs en ligne? Invite un ami!
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate('/quiz-battle/lobby?mode=friend')}
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Inviter un ami
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
     return null;
   };
 
@@ -366,6 +420,17 @@ const QuizBattleLobby = () => {
       <div className="container max-w-2xl mx-auto px-4 py-6">
         {renderContent()}
       </div>
+
+      {/* Send Invitation Dialog for random mode */}
+      {userId && userGrade && (
+        <SendInvitationDialog
+          open={showInviteDialog}
+          onOpenChange={setShowInviteDialog}
+          player={selectedPlayer}
+          userId={userId}
+          userGrade={userGrade}
+        />
+      )}
     </Layout>
   );
 };
