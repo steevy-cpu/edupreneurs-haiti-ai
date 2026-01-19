@@ -5,6 +5,7 @@ import { Layout } from '@/components/Layout';
 import { SubjectDifficultySelector } from '@/components/quiz-battle/SubjectDifficultySelector';
 import { BattleGameplay } from '@/components/quiz-battle/BattleGameplay';
 import { BattleResults } from '@/components/quiz-battle/BattleResults';
+import { QuizLoadingState } from '@/components/quiz-battle/QuizLoadingState';
 import { toast } from 'sonner';
 import { 
   calculateLevel, 
@@ -40,6 +41,7 @@ export interface BattleResult {
   }[];
   questions: BattleQuestion[];
   isPerfect: boolean;
+  wasAbandoned?: boolean;
 }
 
 const QuizBattleSolo = () => {
@@ -173,6 +175,36 @@ const QuizBattleSolo = () => {
     setPhase('results');
 
     if (!userId || !battleId) return;
+
+    // Handle abandoned quizzes - NO XP/CREDITS awarded
+    if (gameResult.wasAbandoned || gameResult.xpEarned === 0) {
+      try {
+        await supabase
+          .from('quiz_battles')
+          .update({
+            status: 'cancelled',
+            ended_at: new Date().toISOString(),
+          })
+          .eq('id', battleId);
+
+        // Update player record without XP
+        await supabase
+          .from('quiz_battle_players')
+          .update({
+            score: 0,
+            correct_answers: gameResult.correctAnswers,
+            answers: gameResult.answers,
+            finished_at: new Date().toISOString(),
+          })
+          .eq('battle_id', battleId)
+          .eq('user_id', userId);
+
+        toast.info('Quiz interrompu - Aucun XP gagné');
+      } catch (error) {
+        console.error('Error updating abandoned battle:', error);
+      }
+      return; // Skip all XP/badge logic
+    }
 
     try {
       // Update battle status
@@ -524,7 +556,7 @@ const QuizBattleSolo = () => {
 
   return (
     <Layout>
-      <div className="container max-w-4xl mx-auto px-4 py-6">
+      <div className="container max-w-4xl mx-auto px-4 py-4 sm:py-6">
         {phase === 'setup' && (
           <SubjectDifficultySelector
             defaultGrade={selectedGrade}
@@ -533,13 +565,7 @@ const QuizBattleSolo = () => {
           />
         )}
 
-        {phase === 'loading' && (
-          <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
-            <p className="text-lg text-muted-foreground">Génération des questions...</p>
-            <p className="text-sm text-muted-foreground">Cela peut prendre quelques secondes</p>
-          </div>
-        )}
+        {phase === 'loading' && <QuizLoadingState />}
 
         {phase === 'playing' && questions.length > 0 && (
           <BattleGameplay

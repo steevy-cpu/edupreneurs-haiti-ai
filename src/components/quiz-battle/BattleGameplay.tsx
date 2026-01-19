@@ -2,9 +2,19 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Clock, CheckCircle2, XCircle, Zap, Volume2, VolumeX } from 'lucide-react';
+import { Clock, CheckCircle2, XCircle, Zap, Volume2, VolumeX, StopCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useQuizBattleSounds } from '@/hooks/useQuizBattleSounds';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import type { BattleQuestion, BattleResult } from '@/pages/QuizBattleSolo';
 
 interface BattleGameplayProps {
@@ -26,6 +36,7 @@ export const BattleGameplay = ({ questions, difficulty, onComplete }: BattleGame
   const [showFeedback, setShowFeedback] = useState(false);
   const [answers, setAnswers] = useState<BattleResult['answers']>([]);
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
+  const [showStopDialog, setShowStopDialog] = useState(false);
   const hasPlayedGameStart = useRef(false);
 
   const {
@@ -126,7 +137,6 @@ export const BattleGameplay = ({ questions, difficulty, onComplete }: BattleGame
         // Game complete
         const allAnswers = [...answers, newAnswer];
         const correctCount = allAnswers.filter((a) => a.correct).length;
-        const avgTime = allAnswers.reduce((sum, a) => sum + a.timeMs, 0) / allAnswers.length;
         
         // Play game complete sound
         playGameComplete();
@@ -158,6 +168,32 @@ export const BattleGameplay = ({ questions, difficulty, onComplete }: BattleGame
     }, 1500);
   }, [currentIndex, currentQuestion, questions, answers, questionStartTime, showFeedback, onComplete, stopTicking, playCorrect, playIncorrect, playGameComplete]);
 
+  const handleStop = () => {
+    stopTicking();
+    setShowStopDialog(true);
+  };
+
+  const confirmStop = () => {
+    const correctCount = answers.filter((a) => a.correct).length;
+    onComplete({
+      score: answers.length > 0 ? Math.round((correctCount / answers.length) * 100) : 0,
+      totalQuestions: questions.length,
+      correctAnswers: correctCount,
+      xpEarned: 0, // NO XP for incomplete quiz
+      timeBonus: 0,
+      answers,
+      questions,
+      isPerfect: false,
+      wasAbandoned: true, // Flag for abandoned quizzes
+    });
+  };
+
+  const cancelStop = () => {
+    setShowStopDialog(false);
+    // Resume ticking
+    startTickingTimer(timeLeft, maxTime);
+  };
+
   const getOptionStyle = (index: number) => {
     if (!showFeedback) {
       return selectedAnswer === index 
@@ -180,13 +216,24 @@ export const BattleGameplay = ({ questions, difficulty, onComplete }: BattleGame
   const timePercent = (timeLeft / maxTime) * 100;
 
   return (
-    <div className="space-y-4">
-      {/* Progress Bar */}
-      <div className="flex items-center gap-4">
-        <span className="text-sm font-medium text-muted-foreground">
-          Question {currentIndex + 1}/{questions.length}
+    <div className="space-y-3 sm:space-y-4">
+      {/* Progress Bar - Compact on mobile */}
+      <div className="flex items-center gap-2 sm:gap-4">
+        <span className="text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">
+          {currentIndex + 1}/{questions.length}
         </span>
-        <Progress value={progressPercent} className="flex-1 h-2" />
+        <Progress value={progressPercent} className="flex-1 h-1.5 sm:h-2" />
+        
+        {/* Stop Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleStop}
+          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+          title="Arrêter le quiz"
+        >
+          <StopCircle className="w-4 h-4" />
+        </Button>
         
         {/* Mute/Unmute Button */}
         <Button
@@ -204,24 +251,24 @@ export const BattleGameplay = ({ questions, difficulty, onComplete }: BattleGame
         </Button>
       </div>
 
-      {/* Timer */}
+      {/* Timer - Compact on mobile */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <Clock className={cn(
-            "w-5 h-5",
+            "w-4 h-4 sm:w-5 sm:h-5",
             timeLeft <= 5 ? "text-destructive animate-pulse" : "text-muted-foreground"
           )} />
           <span className={cn(
-            "font-mono font-bold text-lg",
+            "font-mono font-bold text-base sm:text-lg",
             timeLeft <= 5 ? "text-destructive" : "text-foreground"
           )}>
             {timeLeft}s
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          <Zap className="w-4 h-4 text-accent" />
-          <span className="text-sm text-muted-foreground">
-            {answers.filter(a => a.correct).length} bonnes réponses
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
+          <span className="text-xs sm:text-sm text-muted-foreground">
+            {answers.filter(a => a.correct).length} correct
           </span>
         </div>
       </div>
@@ -237,30 +284,34 @@ export const BattleGameplay = ({ questions, difficulty, onComplete }: BattleGame
 
       {/* Question Card */}
       <Card className="border-2">
-        <CardContent className="p-6">
-          <div className="mb-2">
-            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+        <CardContent className="p-4 sm:p-6">
+          {/* Concept badge */}
+          <div className="mb-1.5 sm:mb-2">
+            <span className="text-[10px] sm:text-xs text-muted-foreground bg-muted px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
               {currentQuestion.concept}
             </span>
           </div>
-          <h2 className="text-lg sm:text-xl font-semibold mb-6">
+          
+          {/* Question text */}
+          <h2 className="text-base sm:text-lg md:text-xl font-semibold mb-4 sm:mb-6 leading-snug">
             {currentQuestion.question}
           </h2>
 
-          {/* Options */}
-          <div className="space-y-3">
+          {/* Options - minimum 48px touch targets */}
+          <div className="space-y-2 sm:space-y-3">
             {currentQuestion.options.map((option, index) => (
               <button
                 key={index}
                 onClick={() => handleAnswer(index)}
                 disabled={showFeedback}
                 className={cn(
-                  "w-full p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3",
+                  "w-full p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 text-left transition-all",
+                  "flex items-center gap-2 sm:gap-3 min-h-[48px]",
                   getOptionStyle(index)
                 )}
               >
                 <span className={cn(
-                  "flex items-center justify-center w-8 h-8 rounded-full border-2 font-medium text-sm shrink-0",
+                  "flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 font-medium text-xs sm:text-sm shrink-0",
                   showFeedback && index === currentQuestion.correct_answer
                     ? "border-success bg-success text-success-foreground"
                     : showFeedback && index === selectedAnswer
@@ -268,39 +319,67 @@ export const BattleGameplay = ({ questions, difficulty, onComplete }: BattleGame
                     : "border-current"
                 )}>
                   {showFeedback && index === currentQuestion.correct_answer ? (
-                    <CheckCircle2 className="w-5 h-5" />
+                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
                   ) : showFeedback && index === selectedAnswer ? (
-                    <XCircle className="w-5 h-5" />
+                    <XCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                   ) : (
                     String.fromCharCode(65 + index)
                   )}
                 </span>
-                <span className="flex-1">{option}</span>
+                <span className="flex-1 text-sm sm:text-base">{option}</span>
               </button>
             ))}
           </div>
 
-          {/* Feedback */}
+          {/* Feedback - Compact on mobile */}
           {showFeedback && (
             <div className={cn(
-              "mt-6 p-4 rounded-lg",
+              "mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg",
               selectedAnswer === currentQuestion.correct_answer
                 ? "bg-success/10 border border-success/30"
                 : "bg-destructive/10 border border-destructive/30"
             )}>
               <p className={cn(
-                "font-medium mb-1",
+                "font-medium mb-0.5 sm:mb-1 text-sm sm:text-base",
                 selectedAnswer === currentQuestion.correct_answer ? "text-success" : "text-destructive"
               )}>
                 {selectedAnswer === currentQuestion.correct_answer ? '✓ Correct!' : '✗ Incorrect'}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {currentQuestion.explanation}
               </p>
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Stop Confirmation Dialog */}
+      <AlertDialog open={showStopDialog} onOpenChange={setShowStopDialog}>
+        <AlertDialogContent className="max-w-[90vw] sm:max-w-md mx-4">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Arrêter le quiz?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <span className="block">
+                Tu as répondu à {answers.length} question(s) sur {questions.length}.
+              </span>
+              <span className="block font-medium text-destructive">
+                ⚠️ Si tu arrêtes maintenant, tu ne gagneras aucun XP ni crédit.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel onClick={cancelStop} className="w-full sm:w-auto">
+              Continuer le quiz
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmStop} 
+              className="w-full sm:w-auto bg-destructive hover:bg-destructive/90"
+            >
+              Oui, arrêter
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
