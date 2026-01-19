@@ -38,28 +38,65 @@ export const useQuizInvitations = ({ userId, enabled = true }: UseQuizInvitation
   const [isSending, setIsSending] = useState(false);
   const [isAccepting, setIsAccepting] = useState(false);
 
-  // Cleanup stale waiting battles (older than 5 minutes)
+  // Cleanup stale waiting AND in_progress battles
   const cleanupStaleBattles = useCallback(async (): Promise<void> => {
     if (!userId) return;
     
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     
-    // Find battles where user is a participant with status 'waiting' and older than 5 minutes
-    const { data: staleBattles } = await supabase
+    // 1. Cleanup stale 'waiting' battles (older than 5 minutes)
+    const { data: staleWaiting } = await supabase
       .from('quiz_battle_players')
       .select('battle_id, quiz_battles!inner(status, created_at)')
       .eq('user_id', userId)
       .eq('quiz_battles.status', 'waiting')
       .lt('quiz_battles.created_at', fiveMinutesAgo);
     
-    if (staleBattles && staleBattles.length > 0) {
-      const battleIds = staleBattles.map(b => b.battle_id);
+    // 2. Cleanup stale 'in_progress' battles (older than 10min with no recent activity)
+    const { data: staleInProgress } = await supabase
+      .from('quiz_battle_players')
+      .select('battle_id, quiz_battles!inner(status, created_at, round_started_at)')
+      .eq('user_id', userId)
+      .eq('quiz_battles.status', 'in_progress')
+      .lt('quiz_battles.created_at', tenMinutesAgo);
+    
+    // Filter in_progress to only those with no recent round activity
+    const stuckInProgressIds = (staleInProgress || [])
+      .filter((b: any) => {
+        const roundStarted = b.quiz_battles?.round_started_at;
+        return !roundStarted || new Date(roundStarted) < new Date(fiveMinutesAgo);
+      })
+      .map((b: any) => b.battle_id);
+    
+    // 3. Check for orphaned battles (user is the only player, in_progress for 5+ min)
+    const { data: orphanedBattles } = await supabase
+      .from('quiz_battles')
+      .select('id, status, created_at, quiz_battle_players(user_id)')
+      .eq('status', 'in_progress')
+      .lt('created_at', fiveMinutesAgo);
+    
+    const orphanedIds = (orphanedBattles || [])
+      .filter((b: any) => 
+        b.quiz_battle_players?.length === 1 && 
+        b.quiz_battle_players[0].user_id === userId
+      )
+      .map((b: any) => b.id);
+    
+    // Combine all stale battle IDs
+    const allStaleIds = [
+      ...(staleWaiting || []).map((b: any) => b.battle_id),
+      ...stuckInProgressIds,
+      ...orphanedIds,
+    ].filter((id, index, self) => self.indexOf(id) === index); // dedupe
+    
+    if (allStaleIds.length > 0) {
       await supabase
         .from('quiz_battles')
         .update({ status: 'cancelled', ended_at: new Date().toISOString() })
-        .in('id', battleIds);
+        .in('id', allStaleIds);
       
-      console.log('[QuizInvitations] Cleaned up stale battles:', battleIds);
+      console.log('[QuizInvitations] Cleaned up stale battles:', allStaleIds);
     }
   }, [userId]);
 
