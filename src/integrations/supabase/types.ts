@@ -3361,6 +3361,10 @@ export type Database = {
           verified: boolean
         }[]
       }
+      is_battle_participant: {
+        Args: { battle_uuid: string; user_uuid: string }
+        Returns: boolean
+      }
       is_content_editor: {
         Args: {
           _min_role?: Database["public"]["Enums"]["content_editor_role"]
