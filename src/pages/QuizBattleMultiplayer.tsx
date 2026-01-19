@@ -34,6 +34,7 @@ const QuizBattleMultiplayer = () => {
   const [myResult, setMyResult] = useState<BattleResult | null>(null);
   const [opponentResult, setOpponentResult] = useState<OpponentProgress | null>(null);
   const [opponent, setOpponent] = useState<{ id: string; nickname: string; avatar_url: string | null } | null>(null);
+  const [myProfile, setMyProfile] = useState<{ nickname: string; avatar_url: string | null } | null>(null);
   const [isHost, setIsHost] = useState(false);
   const [generationStartTime, setGenerationStartTime] = useState<number | null>(null);
   const [battleMode, setBattleMode] = useState<'friend' | 'random' | 'solo'>('random');
@@ -106,6 +107,20 @@ const QuizBattleMultiplayer = () => {
       const host = battle.created_by === user.id;
       setIsHost(host);
       console.log('[Multiplayer] Battle loaded, host=', host, 'battleId=', battleId, 'mode=', battle.mode);
+
+      // Fetch my profile
+      const { data: myProfileData } = await supabase
+        .from('profiles')
+        .select('nickname, avatar_url')
+        .eq('user_id', user.id)
+        .single();
+
+      if (myProfileData) {
+        setMyProfile({
+          nickname: myProfileData.nickname,
+          avatar_url: myProfileData.avatar_url,
+        });
+      }
 
       // Find opponent
       const opponentPlayer = battle.quiz_battle_players?.find(
@@ -550,6 +565,7 @@ const QuizBattleMultiplayer = () => {
             myResult={myResult}
             opponentResult={opponentResult}
             opponent={opponent}
+            myProfile={myProfile}
             onPlayAgain={handlePlayAgain}
             onBackToMenu={handleBackToMenu}
           />
