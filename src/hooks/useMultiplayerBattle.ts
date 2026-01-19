@@ -20,6 +20,12 @@ interface UseMultiplayerBattleOptions {
   enabled?: boolean;
 }
 
+interface CreateBattleOptions {
+  subjectId?: string;
+  gradeLevel?: string;
+  difficulty?: 'easy' | 'medium' | 'hard';
+}
+
 interface UseMultiplayerBattleReturn {
   battleId: string | null;
   inviteCode: string | null;
@@ -29,9 +35,9 @@ interface UseMultiplayerBattleReturn {
   bothReady: boolean;
   countdown: number;
   
-  createPrivateBattle: () => Promise<void>;
+  createPrivateBattle: (options?: CreateBattleOptions) => Promise<void>;
   joinWithCode: (code: string) => Promise<boolean>;
-  joinMatchmaking: () => Promise<void>;
+  joinMatchmaking: (options?: CreateBattleOptions) => Promise<void>;
   leaveMatchmaking: () => void;
   setReady: () => Promise<void>;
   cancelBattle: () => Promise<void>;
@@ -157,8 +163,15 @@ export const useMultiplayerBattle = ({
     }
   };
 
-  const createPrivateBattle = useCallback(async () => {
-    if (!userId || !subjectId) return;
+  const createPrivateBattle = useCallback(async (options?: { subjectId?: string; gradeLevel?: string; difficulty?: 'easy' | 'medium' | 'hard' }) => {
+    const subj = options?.subjectId || subjectId;
+    const grade = options?.gradeLevel || gradeLevel;
+    const diff = options?.difficulty || difficulty;
+    
+    if (!userId || !subj) {
+      console.error('[Multiplayer] Missing userId or subjectId', { userId, subj });
+      return;
+    }
     
     setPhase('waiting');
     setIsHost(true);
@@ -171,9 +184,9 @@ export const useMultiplayerBattle = ({
         .from('quiz_battles')
         .insert({
           status: 'waiting',
-          subject_id: subjectId,
-          grade_level: gradeLevel,
-          difficulty,
+          subject_id: subj,
+          grade_level: grade,
+          difficulty: diff,
           created_by: userId,
           invite_code: code,
         } as any)
@@ -255,8 +268,15 @@ export const useMultiplayerBattle = ({
     }
   }, [userId]);
 
-  const joinMatchmaking = useCallback(async () => {
-    if (!userId || !subjectId) return;
+  const joinMatchmaking = useCallback(async (options?: CreateBattleOptions) => {
+    const subj = options?.subjectId || subjectId;
+    const grade = options?.gradeLevel || gradeLevel;
+    const diff = options?.difficulty || difficulty;
+    
+    if (!userId || !subj) {
+      console.error('[Multiplayer] Missing userId or subjectId', { userId, subj });
+      return;
+    }
     
     setPhase('waiting');
     
@@ -318,9 +338,9 @@ export const useMultiplayerBattle = ({
       const { data: existingMatch } = await supabase
         .from('quiz_battle_matchmaking')
         .select('*')
-        .eq('grade_level', gradeLevel)
-        .eq('subject_id', subjectId)
-        .eq('difficulty', difficulty)
+        .eq('grade_level', grade)
+        .eq('subject_id', subj)
+        .eq('difficulty', diff)
         .is('matched_with', null)
         .neq('user_id', userId)
         .gt('expires_at', new Date().toISOString())
@@ -336,9 +356,9 @@ export const useMultiplayerBattle = ({
           .from('quiz_battles')
           .insert({
             status: 'waiting',
-            subject_id: subjectId,
-            grade_level: gradeLevel,
-            difficulty,
+            subject_id: subj,
+            grade_level: grade,
+            difficulty: diff,
             created_by: existingMatch.user_id,
           } as any)
           .select()
@@ -375,9 +395,9 @@ export const useMultiplayerBattle = ({
           .from('quiz_battle_matchmaking')
           .insert({
             user_id: userId,
-            grade_level: gradeLevel,
-            subject_id: subjectId,
-            difficulty,
+            grade_level: grade,
+            subject_id: subj,
+            difficulty: diff,
             expires_at: expiresAt.toISOString(),
           })
           .select()

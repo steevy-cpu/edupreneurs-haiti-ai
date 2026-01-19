@@ -298,14 +298,12 @@ const QuizBattleLobby = () => {
     setSelectedDifficulty(difficulty);
     setStep('waiting');
 
-    // Small delay to ensure state is set before hook activates
-    setTimeout(() => {
-      if (mode === 'random') {
-        multiplayer.joinMatchmaking();
-      } else {
-        multiplayer.createPrivateBattle();
-      }
-    }, 100);
+    // Pass parameters directly to avoid stale closure issues
+    if (mode === 'random') {
+      multiplayer.joinMatchmaking({ subjectId, gradeLevel, difficulty });
+    } else {
+      multiplayer.createPrivateBattle({ subjectId, gradeLevel, difficulty });
+    }
   };
 
   const handleJoinWithCode = async () => {
