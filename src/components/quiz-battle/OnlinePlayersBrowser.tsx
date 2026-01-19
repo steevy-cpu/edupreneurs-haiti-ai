@@ -103,7 +103,7 @@ export const OnlinePlayersBrowser = ({
               >
                 {/* Avatar with online indicator */}
                 <div className="relative">
-                  <Avatar className="h-12 w-12 border-2 border-success/30">
+                  <Avatar className="h-12 w-12 border-2 border-border">
                     <AvatarImage 
                       src={player.avatar_url ? getAvatarUrl(player.avatar_url) : undefined} 
                     />
@@ -111,7 +111,8 @@ export const OnlinePlayersBrowser = ({
                       {player.nickname?.[0]?.toUpperCase() || '?'}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-success rounded-full border-2 border-background" />
+                  {/* Green online indicator */}
+                  <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-sm animate-pulse" />
                 </div>
 
                 {/* Player Info */}
