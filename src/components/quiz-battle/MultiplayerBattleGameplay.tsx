@@ -203,6 +203,7 @@ export const MultiplayerBattleGameplay = ({
       questions,
       isPerfect: correctCount === questions.length,
       roundsWon: myRoundsWon,
+      opponentRoundsWon: opponentRoundsWon,
     });
   }, [answers, questions, myRoundsWon, onComplete, playGameComplete]);
 
@@ -326,6 +327,7 @@ export const MultiplayerBattleGameplay = ({
       isPerfect: false,
       wasAbandoned: true,
       roundsWon: myRoundsWon,
+      opponentRoundsWon: opponentRoundsWon,
     });
   };
 
