@@ -543,14 +543,10 @@ const QuizBattleLobby = () => {
                     <UserPlus className="w-8 h-8" />
                     <span>Rejoindre</span>
                   </Button>
-                  <Button
-                    className="h-24 flex flex-col gap-2"
-                    onClick={() => {/* Continue to config below */}}
-                    disabled
-                  >
+                  <div className="h-24 flex flex-col gap-2 items-center justify-center bg-primary/10 rounded-lg border-2 border-primary text-primary">
                     <Swords className="w-8 h-8" />
-                    <span>Créer ↓</span>
-                  </Button>
+                    <span className="font-medium">Créer ↓</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
