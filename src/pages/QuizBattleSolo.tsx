@@ -42,6 +42,7 @@ export interface BattleResult {
   questions: BattleQuestion[];
   isPerfect: boolean;
   wasAbandoned?: boolean;
+  roundsWon?: number; // For multiplayer: number of rounds won
 }
 
 const QuizBattleSolo = () => {

@@ -2609,6 +2609,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string
+          current_question_index: number | null
           difficulty: Database["public"]["Enums"]["quiz_difficulty"]
           ended_at: string | null
           grade_level: string
@@ -2618,6 +2619,8 @@ export type Database = {
           max_players: number
           mode: Database["public"]["Enums"]["quiz_battle_mode"]
           questions: Json
+          round_answers: Json | null
+          round_started_at: string | null
           started_at: string | null
           status: Database["public"]["Enums"]["quiz_battle_status"]
           subject_id: string | null
@@ -2629,6 +2632,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by: string
+          current_question_index?: number | null
           difficulty?: Database["public"]["Enums"]["quiz_difficulty"]
           ended_at?: string | null
           grade_level: string
@@ -2638,6 +2642,8 @@ export type Database = {
           max_players?: number
           mode?: Database["public"]["Enums"]["quiz_battle_mode"]
           questions?: Json
+          round_answers?: Json | null
+          round_started_at?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["quiz_battle_status"]
           subject_id?: string | null
@@ -2649,6 +2655,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string
+          current_question_index?: number | null
           difficulty?: Database["public"]["Enums"]["quiz_difficulty"]
           ended_at?: string | null
           grade_level?: string
@@ -2658,6 +2665,8 @@ export type Database = {
           max_players?: number
           mode?: Database["public"]["Enums"]["quiz_battle_mode"]
           questions?: Json
+          round_answers?: Json | null
+          round_started_at?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["quiz_battle_status"]
           subject_id?: string | null
@@ -3471,6 +3480,16 @@ export type Database = {
       start_direct_conversation: {
         Args: { other_user_id: string }
         Returns: string
+      }
+      submit_multiplayer_answer: {
+        Args: {
+          p_answer: number
+          p_battle_id: string
+          p_is_correct: boolean
+          p_question_index: number
+          p_user_id: string
+        }
+        Returns: Json
       }
       user_has_active_battle: { Args: { p_user_id: string }; Returns: boolean }
       verify_email_code: {

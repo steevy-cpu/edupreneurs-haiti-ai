@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Layout } from '@/components/Layout';
 import { BattleGameplay } from '@/components/quiz-battle/BattleGameplay';
+import { MultiplayerBattleGameplay } from '@/components/quiz-battle/MultiplayerBattleGameplay';
 import { MultiplayerResults } from '@/components/quiz-battle/MultiplayerResults';
 import { QuizLoadingState } from '@/components/quiz-battle/QuizLoadingState';
 import { Card, CardContent } from '@/components/ui/card';
@@ -35,6 +36,7 @@ const QuizBattleMultiplayer = () => {
   const [opponent, setOpponent] = useState<{ id: string; nickname: string; avatar_url: string | null } | null>(null);
   const [isHost, setIsHost] = useState(false);
   const [generationStartTime, setGenerationStartTime] = useState<number | null>(null);
+  const [battleMode, setBattleMode] = useState<'friend' | 'random' | 'solo'>('random');
 
   // Helper to safely cancel a battle that's still in 'waiting' status
   const cancelBattleSafely = useCallback(async (id: string) => {
@@ -97,12 +99,13 @@ const QuizBattleMultiplayer = () => {
       }
 
       setDifficulty(battle.difficulty as any);
+      setBattleMode(battle.mode as any);
       
       // CRITICAL: Compute host status synchronously BEFORE using it for branching
       // React state updates (setIsHost) are async and won't be available in same render
       const host = battle.created_by === user.id;
       setIsHost(host);
-      console.log('[Multiplayer] Battle loaded, host=', host, 'battleId=', battleId);
+      console.log('[Multiplayer] Battle loaded, host=', host, 'battleId=', battleId, 'mode=', battle.mode);
 
       // Find opponent
       const opponentPlayer = battle.quiz_battle_players?.find(
@@ -188,13 +191,16 @@ const QuizBattleMultiplayer = () => {
 
       const parsedQuestions = generatedQuestions?.questions || [];
       
-      // Save questions to battle
+      // Save questions to battle with sync fields initialized
       await supabase
         .from('quiz_battles')
         .update({ 
           questions: parsedQuestions,
           status: 'in_progress',
           started_at: new Date().toISOString(),
+          current_question_index: 0,
+          round_started_at: new Date().toISOString(),
+          round_answers: [],
         })
         .eq('id', battle.id);
 
@@ -478,42 +484,58 @@ const QuizBattleMultiplayer = () => {
 
   // Playing
   if (phase === 'playing' && questions.length > 0) {
+    // Use synchronized MultiplayerBattleGameplay for random/friend battles
+    const useMultiplayerMode = (battleMode === 'random' || battleMode === 'friend') && opponent && userId;
+    
     return (
       <Layout>
         <div className="container max-w-4xl mx-auto px-4 py-6">
-          {/* Opponent indicator */}
-          {opponent && (
-            <Card className="mb-4">
-              <CardContent className="py-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Swords className="w-5 h-5 text-accent" />
-                    <span className="text-sm text-muted-foreground">VS</span>
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={opponent.avatar_url || undefined} />
-                      <AvatarFallback>{opponent.nickname?.[0]?.toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <span className="font-medium">{opponent.nickname}</span>
-                  </div>
-                  {opponentResult && (
-                    <div className="text-sm text-muted-foreground">
-                      {opponentResult.finished ? (
-                        <span className="text-success">Terminé!</span>
-                      ) : (
-                        <span>{opponentResult.correctAnswers} bonnes réponses</span>
+          {useMultiplayerMode ? (
+            // Real-time synchronized multiplayer gameplay
+            <MultiplayerBattleGameplay
+              battleId={battleId!}
+              questions={questions}
+              difficulty={difficulty}
+              userId={userId}
+              opponent={opponent}
+              onComplete={handleGameComplete}
+            />
+          ) : (
+            // Fallback to independent play (shouldn't happen in multiplayer)
+            <>
+              {opponent && (
+                <Card className="mb-4">
+                  <CardContent className="py-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Swords className="w-5 h-5 text-accent" />
+                        <span className="text-sm text-muted-foreground">VS</span>
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={opponent.avatar_url || undefined} />
+                          <AvatarFallback>{opponent.nickname?.[0]?.toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium">{opponent.nickname}</span>
+                      </div>
+                      {opponentResult && (
+                        <div className="text-sm text-muted-foreground">
+                          {opponentResult.finished ? (
+                            <span className="text-success">Terminé!</span>
+                          ) : (
+                            <span>{opponentResult.correctAnswers} bonnes réponses</span>
+                          )}
+                        </div>
                       )}
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              )}
+              <BattleGameplay
+                questions={questions}
+                difficulty={difficulty}
+                onComplete={handleGameComplete}
+              />
+            </>
           )}
-
-          <BattleGameplay
-            questions={questions}
-            difficulty={difficulty}
-            onComplete={handleGameComplete}
-          />
         </div>
       </Layout>
     );
