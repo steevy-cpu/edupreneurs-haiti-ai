@@ -42,7 +42,7 @@ export const useQuizInvitations = ({ userId, enabled = true }: UseQuizInvitation
     if (!userId || !enabled) return;
 
     const { data, error } = await invitationsTable()
-      .select('*, sender:profiles!quiz_battle_invitations_sender_id_fkey(nickname, avatar_url), subject:subjects!quiz_battle_invitations_subject_id_fkey(name)')
+      .select('*')
       .eq('recipient_id', userId)
       .eq('status', 'pending')
       .gt('expires_at', new Date().toISOString())
@@ -50,12 +50,22 @@ export const useQuizInvitations = ({ userId, enabled = true }: UseQuizInvitation
 
     if (error) { console.error('Error fetching invitations:', error); return; }
 
-    const invitations = (data || []).map((inv: any) => ({
-      ...inv,
-      sender: Array.isArray(inv.sender) ? inv.sender[0] : inv.sender,
-      subject: Array.isArray(inv.subject) ? inv.subject[0] : inv.subject,
-    }));
-    setPendingInvitations(invitations);
+    // Fetch sender profiles and subjects separately
+    const invitationsWithDetails = await Promise.all(
+      (data || []).map(async (inv: any) => {
+        const [senderRes, subjectRes] = await Promise.all([
+          supabase.from('profiles').select('nickname, avatar_url').eq('user_id', inv.sender_id).single(),
+          supabase.from('subjects').select('name').eq('id', inv.subject_id).single()
+        ]);
+        return {
+          ...inv,
+          sender: senderRes.data,
+          subject: subjectRes.data,
+        };
+      })
+    );
+    setPendingInvitations(invitationsWithDetails);
+
   }, [userId, enabled]);
 
   const fetchSentInvitation = useCallback(async () => {
