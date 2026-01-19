@@ -56,6 +56,7 @@ const QuizBattleLobby = () => {
   const [step, setStep] = useState<LobbyStep>(mode === 'random' ? 'browse-players' : 'config');
   const [joinCodeInput, setJoinCodeInput] = useState('');
   const [copied, setCopied] = useState(false);
+  const [autoJoinAttempted, setAutoJoinAttempted] = useState(false);
   
   // Selected config
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
@@ -89,6 +90,8 @@ const QuizBattleLobby = () => {
       if (!user) {
         // Preserve the full URL including query params (joinCode, mode, etc.)
         const currentUrl = window.location.pathname + window.location.search;
+        // Save to sessionStorage to survive page refresh during auth flow
+        sessionStorage.setItem('quiz_battle_return_url', currentUrl);
         navigate('/auth', { state: { returnTo: currentUrl } });
         return;
       }
@@ -256,13 +259,26 @@ const QuizBattleLobby = () => {
     }
   }, [multiplayer.phase, multiplayer.battleId, navigate]);
 
-  // Auto-fill join code from URL
+  // Auto-join when user is authenticated and joinCode is in URL
   useEffect(() => {
-    if (joinCodeFromUrl && mode === 'friend' && step === 'config') {
+    if (joinCodeFromUrl && mode === 'friend' && userId && !autoJoinAttempted) {
+      setAutoJoinAttempted(true);
       setJoinCodeInput(joinCodeFromUrl.toUpperCase());
-      setStep('join-code');
+      
+      // Automatically attempt to join the battle
+      const autoJoin = async () => {
+        const success = await multiplayer.joinWithCode(joinCodeFromUrl.toUpperCase());
+        if (success) {
+          setStep('waiting');
+        } else {
+          // If auto-join fails, show the join-code step so user can retry
+          setStep('join-code');
+        }
+      };
+      
+      autoJoin();
     }
-  }, [joinCodeFromUrl, mode, step]);
+  }, [joinCodeFromUrl, mode, userId, autoJoinAttempted, multiplayer]);
 
   // Set friend mode expiry when entering waiting phase
   useEffect(() => {

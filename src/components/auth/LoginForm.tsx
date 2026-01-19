@@ -15,8 +15,9 @@ export default function LoginForm() {
   const location = useLocation();
   const { toast } = useToast();
   
-  // Get returnTo URL from location state (for redirecting after login)
-  const returnTo = (location.state as { returnTo?: string })?.returnTo;
+  // Get returnTo URL from location state OR sessionStorage (survives page refresh)
+  const returnTo = (location.state as { returnTo?: string })?.returnTo 
+    || sessionStorage.getItem('quiz_battle_return_url');
   const {
     loginData,
     setLoginData,
@@ -187,6 +188,9 @@ export default function LoginForm() {
         description: "Bienvenue !",
       });
 
+      // Clear sessionStorage after successful login
+      sessionStorage.removeItem('quiz_battle_return_url');
+      
       // Navigate to returnTo URL if provided, otherwise dashboard
       navigate(returnTo || "/dashboard");
     } catch (error: any) {
