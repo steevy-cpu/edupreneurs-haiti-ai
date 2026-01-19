@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 const JUDE_USER_ID = '68f2f959-e14a-47f9-8277-07df3a6fcd79';
@@ -21,47 +21,51 @@ export const useOnlinePlayers = ({ excludeUserId, searchQuery }: UseOnlinePlayer
   const [onlineUserIds, setOnlineUserIds] = useState<string[]>([]);
   const [profiles, setProfiles] = useState<Map<string, OnlinePlayer>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Subscribe to online-users presence channel with proper join/leave/sync events
+  // Get online users from the shared channel (same pattern as Community.tsx)
+  const getOnlineUsers = useCallback(() => {
+    const allChannels = supabase.getChannels();
+    const onlineChannel = allChannels.find(ch => ch.topic === 'realtime:online-users');
+    
+    if (onlineChannel) {
+      const state = onlineChannel.presenceState();
+      const userIds: string[] = [];
+      
+      Object.values(state).forEach((presences: any) => {
+        presences.forEach((p: any) => {
+          if (p.user_id && p.user_id !== excludeUserId && p.user_id !== JUDE_USER_ID) {
+            userIds.push(p.user_id);
+          }
+        });
+      });
+      
+      setOnlineUserIds(prev => {
+        // Only update if changed to prevent unnecessary re-renders
+        const prevSet = new Set(prev);
+        const newSet = new Set(userIds);
+        if (prevSet.size !== newSet.size || !userIds.every(id => prevSet.has(id))) {
+          return userIds;
+        }
+        return prev;
+      });
+    }
+  }, [excludeUserId]);
+
+  // Poll the shared channel for online users (same as Community page pattern)
   useEffect(() => {
-    // Use a listener channel to receive presence broadcasts from the main 'online-users' channel
-    const channel = supabase.channel('online-users-player-browser');
-    
-    const extractUserIds = (presences: any[]): string[] => {
-      return presences
-        .map((p: any) => p.user_id)
-        .filter((id: string) => id && id !== excludeUserId && id !== JUDE_USER_ID);
-    };
-    
-    channel
-      .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState();
-        const userIds = Object.values(state)
-          .flat()
-          .map((p: any) => p.user_id)
-          .filter((id: string) => id && id !== excludeUserId && id !== JUDE_USER_ID);
-        setOnlineUserIds(userIds);
-      })
-      .on('presence', { event: 'join' }, ({ newPresences }) => {
-        // Add new users immediately when they come online
-        const newUserIds = extractUserIds(newPresences);
-        if (newUserIds.length > 0) {
-          setOnlineUserIds(prev => [...new Set([...prev, ...newUserIds])]);
-        }
-      })
-      .on('presence', { event: 'leave' }, ({ leftPresences }) => {
-        // Remove users immediately when they go offline
-        const leftUserIds = leftPresences.map((p: any) => p.user_id);
-        if (leftUserIds.length > 0) {
-          setOnlineUserIds(prev => prev.filter(id => !leftUserIds.includes(id)));
-        }
-      })
-      .subscribe();
+    // Initial fetch
+    getOnlineUsers();
+
+    // Poll every 5 seconds for updates (3G-friendly)
+    intervalRef.current = setInterval(getOnlineUsers, 5000);
 
     return () => {
-      supabase.removeChannel(channel);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     };
-  }, [excludeUserId]);
+  }, [getOnlineUsers]);
 
   // Fetch profiles for online users
   useEffect(() => {
