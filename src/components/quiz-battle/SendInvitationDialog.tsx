@@ -307,24 +307,24 @@ export const SendInvitationDialog = ({
               {/* Step 2: Series Selection (only for NS3/NS4) */}
               {isNS3orNS4 && (
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
+                  <Label className="flex items-center gap-2 text-sm">
                     <GraduationCap className="w-4 h-4 text-primary" />
                     Série
                   </Label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                     {seriesOptions.map((series) => (
                       <Button
                         key={series.id}
                         variant={selectedSeries === series.id ? 'default' : 'outline'}
                         size="sm"
-                        className="h-auto py-2 flex flex-col items-center"
+                        className="h-auto py-1.5 sm:py-2 px-2 flex flex-col items-center text-center"
                         onClick={() => {
                           setSelectedSeries(series.id);
                           setSelectedSubject('');
                         }}
                       >
-                        <span className="font-medium">{series.label}</span>
-                        <span className="text-[10px] opacity-80">{series.fullName}</span>
+                        <span className="font-medium text-xs sm:text-sm">{series.label}</span>
+                        <span className="text-[8px] sm:text-[10px] opacity-80 leading-tight truncate max-w-full">{series.fullName}</span>
                       </Button>
                     ))}
                   </div>
@@ -333,9 +333,9 @@ export const SendInvitationDialog = ({
 
               {/* Step 3: Subject Selection */}
               <div className="space-y-2">
-                <Label>Matière</Label>
+                <Label className="text-sm">Matière</Label>
                 {isNS3orNS4 && !selectedSeries ? (
-                  <p className="text-sm text-muted-foreground py-2 px-3 rounded-md border border-dashed">
+                  <p className="text-xs sm:text-sm text-muted-foreground py-2 px-3 rounded-md border border-dashed">
                     Sélectionne d'abord ta série pour voir les matières
                   </p>
                 ) : (
@@ -344,7 +344,7 @@ export const SendInvitationDialog = ({
                     onValueChange={setSelectedSubject}
                     disabled={isLoadingSubjects}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="text-sm">
                       <SelectValue placeholder={isLoadingSubjects ? "Chargement..." : "Choisir une matière"} />
                     </SelectTrigger>
                     <SelectContent position="popper" className="z-[1200] bg-popover max-h-60">
@@ -365,11 +365,11 @@ export const SendInvitationDialog = ({
 
               {/* Step 4: Difficulty Selection */}
               <div className="space-y-2">
-                <Label>Difficulté</Label>
+                <Label className="text-sm">Difficulté</Label>
                 <RadioGroup
                   value={selectedDifficulty}
                   onValueChange={(val) => setSelectedDifficulty(val as 'easy' | 'medium' | 'hard')}
-                  className="grid grid-cols-3 gap-2"
+                  className="grid grid-cols-3 gap-1.5 sm:gap-2"
                 >
                   {[
                     { value: 'easy', label: 'Facile', color: 'text-success' },
@@ -380,7 +380,7 @@ export const SendInvitationDialog = ({
                       key={option.value}
                       htmlFor={option.value}
                       className={cn(
-                        "flex items-center justify-center p-3 rounded-lg border cursor-pointer transition-colors",
+                        "flex items-center justify-center p-2 sm:p-3 rounded-lg border cursor-pointer transition-colors text-xs sm:text-sm",
                         selectedDifficulty === option.value
                           ? "border-primary bg-primary/10"
                           : "border-border hover:border-primary/50"
@@ -396,14 +396,14 @@ export const SendInvitationDialog = ({
               </div>
             </div>
 
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+            <div className="flex gap-2 sm:gap-3 pt-2">
+              <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 text-sm">
                 Annuler
               </Button>
               <Button 
                 onClick={handleSendInvitation} 
                 disabled={!selectedSubject || isSending}
-                className="flex-1"
+                className="flex-1 text-sm"
               >
                 {isSending ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
