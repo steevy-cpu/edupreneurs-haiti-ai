@@ -97,7 +97,12 @@ const QuizBattleMultiplayer = () => {
       }
 
       setDifficulty(battle.difficulty as any);
-      setIsHost(battle.created_by === user.id);
+      
+      // CRITICAL: Compute host status synchronously BEFORE using it for branching
+      // React state updates (setIsHost) are async and won't be available in same render
+      const host = battle.created_by === user.id;
+      setIsHost(host);
+      console.log('[Multiplayer] Battle loaded, host=', host, 'battleId=', battleId);
 
       // Find opponent
       const opponentPlayer = battle.quiz_battle_players?.find(
@@ -122,15 +127,18 @@ const QuizBattleMultiplayer = () => {
 
       // Check if questions already generated
       if (battle.questions && Array.isArray(battle.questions) && battle.questions.length > 0) {
+        console.log('[Multiplayer] Questions already exist, starting gameplay');
         setQuestions(battle.questions as unknown as BattleQuestion[]);
         setPhase('playing');
-      } else if (isHost) {
-        // Host generates questions
+      } else if (host) {
+        // Host generates questions - use local 'host' variable, NOT state
+        console.log('[Multiplayer] Host generating questions...');
         setPhase('generating');
         setGenerationStartTime(Date.now());
         await generateQuestions(battle);
       } else {
         // Guest waits for questions
+        console.log('[Multiplayer] Guest polling for questions...');
         setPhase('loading');
         setGenerationStartTime(Date.now());
         pollForQuestions(battleId);
@@ -203,33 +211,46 @@ const QuizBattleMultiplayer = () => {
 
   const pollForQuestions = useCallback((bId: string) => {
     let resolved = false;
+    console.log('[Multiplayer] Guest starting poll for battleId:', bId);
     
     const interval = setInterval(async () => {
       if (resolved) return;
       const { data: battle } = await supabase
         .from('quiz_battles')
-        .select('questions')
+        .select('questions, status')
         .eq('id', bId)
         .single();
+
+      // Exit early if battle was cancelled
+      if (battle?.status === 'cancelled') {
+        resolved = true;
+        clearInterval(interval);
+        console.log('[Multiplayer] Battle was cancelled, exiting poll');
+        toast.error('La partie a été annulée');
+        navigate('/quiz-battle');
+        return;
+      }
 
       if (battle?.questions && Array.isArray(battle.questions) && battle.questions.length > 0) {
         resolved = true;
         clearInterval(interval);
+        console.log('[Multiplayer] Questions received:', battle.questions.length);
         setQuestions(battle.questions as unknown as BattleQuestion[]);
         setPhase('playing');
       }
     }, 1000);
 
-    // Timeout after 30 seconds
+    // Timeout after 45 seconds (increased for 3G + cold starts)
     setTimeout(async () => {
       clearInterval(interval);
       if (!resolved) {
+        console.log('[Multiplayer] Guest poll timeout after 45s');
         toast.error('Timeout: questions non générées');
         // Cancel the stuck waiting battle before navigating away
         await cancelBattleSafely(bId);
         navigate('/quiz-battle');
       }
-    }, 30000);
+    }, 45000);
   }, [cancelBattleSafely, navigate]);
 
   const handleGameComplete = async (result: BattleResult) => {
