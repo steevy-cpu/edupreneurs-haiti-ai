@@ -251,7 +251,7 @@ export const SendInvitationDialog = ({
                   <SelectTrigger>
                     <SelectValue placeholder={isLoadingSubjects ? "Chargement..." : "Choisir une matière"} />
                   </SelectTrigger>
-                  <SelectContent className="z-[1200] bg-popover">
+                  <SelectContent position="popper" className="z-[1200] bg-popover max-h-60">
                     {subjects.length === 0 && !isLoadingSubjects && (
                       <div className="py-6 text-center text-sm text-muted-foreground">
                         Aucune matière disponible pour ton niveau
