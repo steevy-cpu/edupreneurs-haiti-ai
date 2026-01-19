@@ -1,12 +1,33 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 
+// Kahoot-style melody notes (frequencies in Hz)
+const LOBBY_MELODY = [
+  { freq: 523.25, dur: 0.15 }, // C5
+  { freq: 659.25, dur: 0.15 }, // E5
+  { freq: 783.99, dur: 0.15 }, // G5
+  { freq: 659.25, dur: 0.15 }, // E5
+  { freq: 523.25, dur: 0.15 }, // C5
+  { freq: 392.00, dur: 0.15 }, // G4
+  { freq: 440.00, dur: 0.15 }, // A4
+  { freq: 493.88, dur: 0.15 }, // B4
+];
+
+const LOBBY_BASS = [
+  { freq: 130.81, dur: 0.3 }, // C3
+  { freq: 164.81, dur: 0.3 }, // E3
+  { freq: 196.00, dur: 0.3 }, // G3
+  { freq: 164.81, dur: 0.3 }, // E3
+];
+
 export const useQuizBattleSounds = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const tickIntervalRef = useRef<number | null>(null);
+  const lobbyIntervalRef = useRef<number | null>(null);
+  const lobbyTimeoutRef = useRef<number | null>(null);
   const [isMuted, setIsMuted] = useState(() => {
-    // Persist mute preference
     return localStorage.getItem('quiz-sounds-muted') === 'true';
   });
+  const [isLobbyMusicPlaying, setIsLobbyMusicPlaying] = useState(false);
 
   const getAudioContext = useCallback(() => {
     if (!audioContextRef.current) {
@@ -43,6 +64,105 @@ export const useQuizBattleSounds = () => {
     }
   }, [isMuted, getAudioContext]);
 
+  // Play a single melody note with smooth attack/release
+  const playMelodyNote = useCallback((frequency: number, duration: number, delay: number = 0) => {
+    if (isMuted) return;
+    
+    try {
+      const ctx = getAudioContext();
+      if (ctx.state === 'suspended') ctx.resume();
+      
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(frequency, ctx.currentTime + delay);
+      
+      // Smooth envelope
+      gainNode.gain.setValueAtTime(0, ctx.currentTime + delay);
+      gainNode.gain.linearRampToValueAtTime(0.12, ctx.currentTime + delay + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + delay + duration);
+      
+      oscillator.start(ctx.currentTime + delay);
+      oscillator.stop(ctx.currentTime + delay + duration);
+    } catch (e) {
+      // Silent fail
+    }
+  }, [isMuted, getAudioContext]);
+
+  // Play bass note
+  const playBassNote = useCallback((frequency: number, duration: number, delay: number = 0) => {
+    if (isMuted) return;
+    
+    try {
+      const ctx = getAudioContext();
+      if (ctx.state === 'suspended') ctx.resume();
+      
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      
+      oscillator.type = 'triangle';
+      oscillator.frequency.setValueAtTime(frequency, ctx.currentTime + delay);
+      
+      gainNode.gain.setValueAtTime(0, ctx.currentTime + delay);
+      gainNode.gain.linearRampToValueAtTime(0.08, ctx.currentTime + delay + 0.05);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + delay + duration);
+      
+      oscillator.start(ctx.currentTime + delay);
+      oscillator.stop(ctx.currentTime + delay + duration);
+    } catch (e) {
+      // Silent fail
+    }
+  }, [isMuted, getAudioContext]);
+
+  // Start the Kahoot-style lobby music
+  const startLobbyMusic = useCallback(() => {
+    if (isMuted || isLobbyMusicPlaying) return;
+    
+    setIsLobbyMusicPlaying(true);
+    
+    const playMelodyLoop = () => {
+      let melodyDelay = 0;
+      LOBBY_MELODY.forEach((note) => {
+        playMelodyNote(note.freq, note.dur + 0.05, melodyDelay);
+        melodyDelay += note.dur;
+      });
+      
+      // Bass plays slower
+      let bassDelay = 0;
+      LOBBY_BASS.forEach((note) => {
+        playBassNote(note.freq, note.dur + 0.1, bassDelay);
+        bassDelay += note.dur;
+      });
+    };
+    
+    // Play immediately
+    playMelodyLoop();
+    
+    // Loop every ~1.2 seconds (melody length)
+    const loopDuration = LOBBY_MELODY.reduce((sum, n) => sum + n.dur, 0) * 1000;
+    lobbyIntervalRef.current = window.setInterval(playMelodyLoop, loopDuration);
+  }, [isMuted, isLobbyMusicPlaying, playMelodyNote, playBassNote]);
+
+  // Stop lobby music
+  const stopLobbyMusic = useCallback(() => {
+    if (lobbyIntervalRef.current) {
+      clearInterval(lobbyIntervalRef.current);
+      lobbyIntervalRef.current = null;
+    }
+    if (lobbyTimeoutRef.current) {
+      clearTimeout(lobbyTimeoutRef.current);
+      lobbyTimeoutRef.current = null;
+    }
+    setIsLobbyMusicPlaying(false);
+  }, []);
+
   const playCorrect = useCallback(() => {
     if (isMuted) return;
     
@@ -50,8 +170,7 @@ export const useQuizBattleSounds = () => {
       const ctx = getAudioContext();
       if (ctx.state === 'suspended') ctx.resume();
       
-      // Cheerful ascending arpeggio (C-E-G)
-      const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+      const notes = [523.25, 659.25, 783.99];
       notes.forEach((freq, i) => {
         setTimeout(() => playTone(freq, 0.2, 'sine', 0.25), i * 80);
       });
@@ -67,7 +186,6 @@ export const useQuizBattleSounds = () => {
       const ctx = getAudioContext();
       if (ctx.state === 'suspended') ctx.resume();
       
-      // Soft descending buzz
       playTone(200, 0.3, 'triangle', 0.2);
       setTimeout(() => playTone(150, 0.2, 'triangle', 0.15), 100);
     } catch (e) {
@@ -90,7 +208,6 @@ export const useQuizBattleSounds = () => {
       const ctx = getAudioContext();
       if (ctx.state === 'suspended') ctx.resume();
       
-      // Quick whoosh/pop sound (frequency sweep)
       const oscillator = ctx.createOscillator();
       const gainNode = ctx.createGain();
       
@@ -115,8 +232,7 @@ export const useQuizBattleSounds = () => {
     if (isMuted) return;
     
     try {
-      // Quick ascending fanfare
-      const notes = [392, 440, 494, 523, 587, 659]; // G4 to E5
+      const notes = [392, 440, 494, 523, 587, 659];
       notes.forEach((freq, i) => {
         setTimeout(() => playTone(freq, 0.15, 'sine', 0.2), i * 60);
       });
@@ -129,13 +245,11 @@ export const useQuizBattleSounds = () => {
     if (isMuted) return;
     
     try {
-      // Victory jingle - ascending with final chord
-      const melody = [523, 587, 659, 784]; // C5-D5-E5-G5
+      const melody = [523, 587, 659, 784];
       melody.forEach((freq, i) => {
         setTimeout(() => playTone(freq, 0.2, 'sine', 0.25), i * 100);
       });
       
-      // Final chord
       setTimeout(() => {
         [523, 659, 784].forEach(freq => playTone(freq, 0.4, 'sine', 0.2));
       }, 450);
@@ -145,23 +259,20 @@ export const useQuizBattleSounds = () => {
   }, [isMuted, playTone]);
 
   const startTickingTimer = useCallback((timeLeft: number, maxTime: number) => {
-    // Clear any existing interval
     if (tickIntervalRef.current) {
       clearInterval(tickIntervalRef.current);
     }
     
     if (isMuted) return;
     
-    // Calculate tick frequency based on time remaining
     const getTickDelay = (time: number) => {
-      if (time <= 3) return 250; // Very fast when critically low
-      if (time <= 5) return 400; // Fast when urgent
-      if (time <= 10) return 600; // Medium pace
-      return 1000; // Normal pace
+      if (time <= 3) return 250;
+      if (time <= 5) return 400;
+      if (time <= 10) return 600;
+      return 1000;
     };
     
     let lastTick = Date.now();
-    const isUrgent = timeLeft <= 5;
     
     tickIntervalRef.current = window.setInterval(() => {
       const now = Date.now();
@@ -186,19 +297,24 @@ export const useQuizBattleSounds = () => {
     setIsMuted(prev => {
       const newValue = !prev;
       localStorage.setItem('quiz-sounds-muted', String(newValue));
+      if (newValue) {
+        stopLobbyMusic();
+        stopTicking();
+      }
       return newValue;
     });
-  }, []);
+  }, [stopLobbyMusic, stopTicking]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       stopTicking();
+      stopLobbyMusic();
       if (audioContextRef.current) {
         audioContextRef.current.close();
       }
     };
-  }, [stopTicking]);
+  }, [stopTicking, stopLobbyMusic]);
 
   return {
     playCorrect,
@@ -209,6 +325,9 @@ export const useQuizBattleSounds = () => {
     playGameComplete,
     startTickingTimer,
     stopTicking,
+    startLobbyMusic,
+    stopLobbyMusic,
+    isLobbyMusicPlaying,
     isMuted,
     toggleMute,
   };
