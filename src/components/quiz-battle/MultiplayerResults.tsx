@@ -27,6 +27,7 @@ interface MultiplayerResultsProps {
   myResult: BattleResult;
   opponentResult: OpponentProgress | null;
   opponent: { id: string; nickname: string; avatar_url: string | null } | null;
+  myProfile?: { nickname: string; avatar_url: string | null };
   onPlayAgain: () => void;
   onBackToMenu: () => void;
 }
@@ -35,6 +36,7 @@ export const MultiplayerResults = ({
   myResult,
   opponentResult,
   opponent,
+  myProfile,
   onPlayAgain,
   onBackToMenu,
 }: MultiplayerResultsProps) => {
@@ -113,49 +115,55 @@ export const MultiplayerResults = ({
         </CardContent>
       </Card>
 
-      {/* Score comparison */}
+      {/* Score comparison - Clean avatar-based design */}
       <Card>
         <CardContent className="py-6">
-          <div className="grid grid-cols-3 gap-4 items-center">
-            {/* My score - show rounds won for synchronized mode */}
+          <div className="flex items-center justify-center gap-6">
+            {/* My score */}
             <div className={cn(
-              "text-center p-4 rounded-xl",
-              isWinner ? "bg-success/10 ring-2 ring-success" : "bg-muted"
+              "flex flex-col items-center p-4 rounded-xl flex-1 max-w-[140px]",
+              isWinner ? "bg-success/10 ring-2 ring-success" : "bg-muted/50"
             )}>
-              <div className="text-4xl font-bold text-foreground">
-                {myResult.roundsWon !== undefined ? myRoundsWon : myResult.score + '%'}
+              <Avatar className="h-14 w-14 mb-2 ring-2 ring-offset-2 ring-offset-background ring-primary">
+                <AvatarImage src={myProfile?.avatar_url || undefined} />
+                <AvatarFallback className="text-lg font-bold">
+                  {myProfile?.nickname?.[0]?.toUpperCase() || 'T'}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs text-muted-foreground mb-1 font-medium truncate max-w-[100px]">
+                {myProfile?.nickname || 'Toi'}
+              </span>
+              <div className={cn(
+                "text-4xl font-bold",
+                isWinner ? "text-success" : "text-foreground"
+              )}>
+                {myRoundsWon}
               </div>
-              <div className="text-sm text-muted-foreground mt-1">
-                {myResult.roundsWon !== undefined ? 'Manches gagnées' : 'Toi'}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {myResult.correctAnswers}/{myResult.totalQuestions} correct
-              </div>
+              <span className="text-xs text-muted-foreground">manches</span>
             </div>
 
-            {/* VS */}
-            <div className="text-center">
-              <div className="text-2xl font-bold text-muted-foreground">VS</div>
-            </div>
+            {/* VS divider */}
+            <div className="text-xl font-bold text-muted-foreground">VS</div>
 
             {/* Opponent score */}
             <div className={cn(
-              "text-center p-4 rounded-xl",
-              isLoser ? "bg-success/10 ring-2 ring-success" : "bg-muted"
+              "flex flex-col items-center p-4 rounded-xl flex-1 max-w-[140px]",
+              isLoser ? "bg-success/10 ring-2 ring-success" : "bg-muted/50"
             )}>
-              <Avatar className="h-10 w-10 mx-auto mb-2">
+              <Avatar className="h-14 w-14 mb-2 ring-2 ring-offset-2 ring-offset-background ring-muted-foreground">
                 <AvatarImage src={opponent?.avatar_url || undefined} />
-                <AvatarFallback>{opponent?.nickname?.[0]?.toUpperCase() || '?'}</AvatarFallback>
+                <AvatarFallback className="text-lg">{opponent?.nickname?.[0]?.toUpperCase() || '?'}</AvatarFallback>
               </Avatar>
-              <div className="text-4xl font-bold text-foreground">
-                {myResult.roundsWon !== undefined ? opponentRoundsWon : (opponentResult?.score || 0) + '%'}
-              </div>
-              <div className="text-sm text-muted-foreground mt-1 truncate max-w-[80px] mx-auto">
+              <span className="text-xs text-muted-foreground mb-1 font-medium truncate max-w-[100px]">
                 {opponent?.nickname || 'Adversaire'}
+              </span>
+              <div className={cn(
+                "text-4xl font-bold",
+                isLoser ? "text-success" : "text-foreground"
+              )}>
+                {opponentRoundsWon}
               </div>
-              <div className="text-xs text-muted-foreground">
-                {opponentResult?.correctAnswers || 0}/{myResult.totalQuestions} correct
-              </div>
+              <span className="text-xs text-muted-foreground">manches</span>
             </div>
           </div>
         </CardContent>
