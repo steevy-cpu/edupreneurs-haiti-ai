@@ -161,25 +161,25 @@ export const SubjectDifficultySelector = ({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-3">
-              {seriesOptions.map((series) => (
-                <Button
-                  key={series.id}
-                  variant={selectedSeries === series.id ? 'default' : 'outline'}
-                  className="h-auto py-3 flex flex-col"
-                  onClick={() => {
-                    setSelectedSeries(series.id);
-                    setSelectedSubject(null);
-                  }}
-                >
-                  <span className="font-medium">{series.label}</span>
-                  <span className="text-xs opacity-80">{series.fullName}</span>
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <div className="grid grid-cols-2 gap-3">
+        {seriesOptions.map((series) => (
+          <Button
+            key={series.id}
+            variant={selectedSeries === series.id ? 'default' : 'outline'}
+            className="h-auto py-3 px-2 flex flex-col items-center text-center w-full overflow-hidden"
+            onClick={() => {
+              setSelectedSeries(series.id);
+              setSelectedSubject(null);
+            }}
+          >
+            <span className="font-medium">{series.label}</span>
+            <span className="text-[10px] sm:text-xs opacity-80 leading-tight line-clamp-2 w-full">{series.fullName}</span>
+          </Button>
+        ))}
+      </div>
+    </CardContent>
+  </Card>
+)}
 
       {/* Subject Selection */}
       <Card>
