@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getAvatarUrl } from '@/lib/avatarMap';
-import { Swords, Clock, Loader2, X, CheckCircle } from 'lucide-react';
+import { Swords, Clock, Loader2, X, CheckCircle, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface QuizInvitationHandlerProps {
@@ -23,6 +23,7 @@ export const QuizInvitationHandler = ({ userId }: QuizInvitationHandlerProps) =>
   const [activeInvitation, setActiveInvitation] = useState<QuizInvitation | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [isPreparing, setIsPreparing] = useState(false);
 
   const {
     pendingInvitations,
@@ -72,8 +73,16 @@ export const QuizInvitationHandler = ({ userId }: QuizInvitationHandlerProps) =>
     const battleId = await acceptInvitation(activeInvitation.id);
     
     if (battleId) {
+      // Show preparing state inside the popup
+      setIsPreparing(true);
+      
+      // Brief delay for visual feedback before navigation
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Now close and navigate
       setIsOpen(false);
       setActiveInvitation(null);
+      setIsPreparing(false);
       navigate(`/quiz-battle/multiplayer/${battleId}`);
     }
   };
@@ -122,95 +131,121 @@ export const QuizInvitationHandler = ({ userId }: QuizInvitationHandlerProps) =>
   if (!activeInvitation) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={(open) => {
+        if (isPreparing) return; // Prevent closing while preparing
+        if (!open) handleClose();
+      }}
+    >
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <Swords className="w-6 h-6 text-primary animate-pulse" />
-            Défi Quiz Battle!
-          </DialogTitle>
-          <DialogDescription>
-            Tu as reçu une invitation pour un duel
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="py-6 space-y-6">
-          {/* Sender Info */}
-          <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
-            <Avatar className="h-16 w-16 border-2 border-primary">
-              <AvatarImage 
-                src={activeInvitation.sender?.avatar_url 
-                  ? getAvatarUrl(activeInvitation.sender.avatar_url) 
-                  : undefined
-                } 
-              />
-              <AvatarFallback className="text-lg bg-primary/20 text-primary">
-                {activeInvitation.sender?.nickname?.[0]?.toUpperCase() || '?'}
-              </AvatarFallback>
-            </Avatar>
+        {isPreparing ? (
+          // Preparing state - shows after acceptance
+          <div className="py-12 text-center space-y-4">
+            <div className="relative mx-auto w-20 h-20">
+              <div className="absolute inset-0 rounded-full border-4 border-primary/30" />
+              <div className="absolute inset-0 rounded-full border-4 border-t-primary animate-spin" />
+              <Brain className="absolute inset-0 m-auto w-8 h-8 text-primary animate-pulse" />
+            </div>
             <div>
-              <p className="font-bold text-xl">
-                {activeInvitation.sender?.nickname || 'Joueur'}
-              </p>
-              <p className="text-muted-foreground">te défie en duel!</p>
-            </div>
-          </div>
-
-          {/* Quiz Details */}
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="p-3 rounded-lg bg-muted/50 text-center">
-              <p className="text-muted-foreground">Matière</p>
-              <p className="font-semibold mt-1">
-                {activeInvitation.subject?.name || 'Quiz'}
-              </p>
-            </div>
-            <div className="p-3 rounded-lg bg-muted/50 text-center">
-              <p className="text-muted-foreground">Difficulté</p>
-              <p className={cn("font-semibold mt-1", getDifficultyColor(activeInvitation.difficulty))}>
-                {getDifficultyLabel(activeInvitation.difficulty)}
+              <h3 className="text-lg font-bold text-primary">Préparation du quiz...</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Génération des questions en cours
               </p>
             </div>
           </div>
+        ) : (
+          // Normal invitation content
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-xl">
+                <Swords className="w-6 h-6 text-primary animate-pulse" />
+                Défi Quiz Battle!
+              </DialogTitle>
+              <DialogDescription>
+                Tu as reçu une invitation pour un duel
+              </DialogDescription>
+            </DialogHeader>
 
-          {/* Timer */}
-          <div className="flex items-center justify-center gap-2 text-lg">
-            <Clock className={cn(
-              "w-5 h-5",
-              timeLeft <= 30 ? "text-destructive animate-pulse" : "text-muted-foreground"
-            )} />
-            <span className={cn(
-              "font-mono font-bold",
-              timeLeft <= 30 ? "text-destructive" : "text-foreground"
-            )}>
-              {formatTime(timeLeft)}
-            </span>
-          </div>
-        </div>
+            <div className="py-6 space-y-6">
+              {/* Sender Info */}
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
+                <Avatar className="h-16 w-16 border-2 border-primary">
+                  <AvatarImage 
+                    src={activeInvitation.sender?.avatar_url 
+                      ? getAvatarUrl(activeInvitation.sender.avatar_url) 
+                      : undefined
+                    } 
+                  />
+                  <AvatarFallback className="text-lg bg-primary/20 text-primary">
+                    {activeInvitation.sender?.nickname?.[0]?.toUpperCase() || '?'}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-bold text-xl">
+                    {activeInvitation.sender?.nickname || 'Joueur'}
+                  </p>
+                  <p className="text-muted-foreground">te défie en duel!</p>
+                </div>
+              </div>
 
-        {/* Actions */}
-        <div className="flex gap-3">
-          <Button 
-            variant="outline" 
-            onClick={handleDecline}
-            disabled={isAccepting}
-            className="flex-1"
-          >
-            <X className="w-4 h-4 mr-2" />
-            Refuser
-          </Button>
-          <Button 
-            onClick={handleAccept}
-            disabled={isAccepting}
-            className="flex-1 bg-gradient-to-r from-primary to-accent hover:opacity-90"
-          >
-            {isAccepting ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <CheckCircle className="w-4 h-4 mr-2" />
-            )}
-            Accepter!
-          </Button>
-        </div>
+              {/* Quiz Details */}
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="p-3 rounded-lg bg-muted/50 text-center">
+                  <p className="text-muted-foreground">Matière</p>
+                  <p className="font-semibold mt-1">
+                    {activeInvitation.subject?.name || 'Quiz'}
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/50 text-center">
+                  <p className="text-muted-foreground">Difficulté</p>
+                  <p className={cn("font-semibold mt-1", getDifficultyColor(activeInvitation.difficulty))}>
+                    {getDifficultyLabel(activeInvitation.difficulty)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Timer */}
+              <div className="flex items-center justify-center gap-2 text-lg">
+                <Clock className={cn(
+                  "w-5 h-5",
+                  timeLeft <= 30 ? "text-destructive animate-pulse" : "text-muted-foreground"
+                )} />
+                <span className={cn(
+                  "font-mono font-bold",
+                  timeLeft <= 30 ? "text-destructive" : "text-foreground"
+                )}>
+                  {formatTime(timeLeft)}
+                </span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={handleDecline}
+                disabled={isAccepting}
+                className="flex-1"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Refuser
+              </Button>
+              <Button 
+                onClick={handleAccept}
+                disabled={isAccepting}
+                className="flex-1 bg-gradient-to-r from-primary to-accent hover:opacity-90"
+              >
+                {isAccepting ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                )}
+                Accepter!
+              </Button>
+            </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
