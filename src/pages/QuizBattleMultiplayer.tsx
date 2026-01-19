@@ -36,6 +36,20 @@ const QuizBattleMultiplayer = () => {
   const [isHost, setIsHost] = useState(false);
   const [generationStartTime, setGenerationStartTime] = useState<number | null>(null);
 
+  // Helper to safely cancel a battle that's still in 'waiting' status
+  const cancelBattleSafely = useCallback(async (id: string) => {
+    try {
+      await supabase
+        .from('quiz_battles')
+        .update({ status: 'cancelled', ended_at: new Date().toISOString() })
+        .eq('id', id)
+        .eq('status', 'waiting'); // Only cancel if still waiting
+      console.log('[QuizBattleMultiplayer] Cancelled waiting battle:', id);
+    } catch (err) {
+      console.error('[QuizBattleMultiplayer] Error cancelling battle:', err);
+    }
+  }, []);
+
   // Subscribe to opponent's progress
   useRealtimeSubscription({
     table: 'quiz_battle_players',
@@ -181,19 +195,25 @@ const QuizBattleMultiplayer = () => {
     } catch (error) {
       console.error('Error generating questions:', error);
       toast.error('Erreur lors de la génération des questions');
+      // Cancel the stuck waiting battle before navigating away
+      if (battleId) await cancelBattleSafely(battleId);
       navigate('/quiz-battle');
     }
   };
 
-  const pollForQuestions = (battleId: string) => {
+  const pollForQuestions = useCallback((bId: string) => {
+    let resolved = false;
+    
     const interval = setInterval(async () => {
+      if (resolved) return;
       const { data: battle } = await supabase
         .from('quiz_battles')
         .select('questions')
-        .eq('id', battleId)
+        .eq('id', bId)
         .single();
 
       if (battle?.questions && Array.isArray(battle.questions) && battle.questions.length > 0) {
+        resolved = true;
         clearInterval(interval);
         setQuestions(battle.questions as unknown as BattleQuestion[]);
         setPhase('playing');
@@ -201,14 +221,16 @@ const QuizBattleMultiplayer = () => {
     }, 1000);
 
     // Timeout after 30 seconds
-    setTimeout(() => {
+    setTimeout(async () => {
       clearInterval(interval);
-      if (questions.length === 0) {
+      if (!resolved) {
         toast.error('Timeout: questions non générées');
+        // Cancel the stuck waiting battle before navigating away
+        await cancelBattleSafely(bId);
         navigate('/quiz-battle');
       }
     }, 30000);
-  };
+  }, [cancelBattleSafely, navigate]);
 
   const handleGameComplete = async (result: BattleResult) => {
     setMyResult(result);

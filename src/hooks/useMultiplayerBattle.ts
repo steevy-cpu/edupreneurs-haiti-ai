@@ -261,6 +261,30 @@ export const useMultiplayerBattle = ({
     setPhase('waiting');
     
     try {
+      // Cleanup stale 'waiting' battles (>90s, no questions) to prevent blocking
+      const ninetySecsAgo = new Date(Date.now() - 90 * 1000).toISOString();
+      const { data: staleBattles } = await supabase
+        .from('quiz_battle_players')
+        .select('battle_id, quiz_battles!inner(status, created_at, questions)')
+        .eq('user_id', userId)
+        .eq('quiz_battles.status', 'waiting')
+        .lt('quiz_battles.created_at', ninetySecsAgo);
+      
+      if (staleBattles && staleBattles.length > 0) {
+        // Filter battles with null/empty questions (clearly stuck before generation)
+        const stuckIds = staleBattles
+          .filter((b: any) => !b.quiz_battles?.questions || (Array.isArray(b.quiz_battles.questions) && b.quiz_battles.questions.length === 0))
+          .map((b: any) => b.battle_id);
+        
+        if (stuckIds.length > 0) {
+          await supabase
+            .from('quiz_battles')
+            .update({ status: 'cancelled', ended_at: new Date().toISOString() })
+            .in('id', stuckIds);
+          console.log('[Multiplayer] Cleaned up stale battles before matchmaking:', stuckIds);
+        }
+      }
+
       // Check for existing opponent waiting
       const { data: existingMatch } = await supabase
         .from('quiz_battle_matchmaking')
