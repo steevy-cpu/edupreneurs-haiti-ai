@@ -22,6 +22,7 @@ import {
 import { OnlinePlayer } from '@/hooks/useOnlinePlayers';
 import { QuizInvitation, useQuizInvitations } from '@/hooks/useQuizInvitations';
 import { getAvatarUrl } from '@/lib/avatarMap';
+import { normalizeGrade } from '@/hooks/useUserGrade';
 import { 
   Loader2, 
   Swords, 
@@ -83,10 +84,13 @@ export const SendInvitationDialog = ({
     const fetchSubjects = async () => {
       setIsLoadingSubjects(true);
       
+      // Normalize the grade to match lessons table format (e.g., "Philo" → "NS4")
+      const normalizedGrade = normalizeGrade(userGrade) || userGrade;
+      
       const { data, error } = await supabase
         .from('lessons')
         .select('subject_id, subjects!inner(id, name)')
-        .eq('grade_level', userGrade)
+        .eq('grade_level', normalizedGrade)
         .eq('is_published', true);
 
       if (error) {
@@ -164,12 +168,15 @@ export const SendInvitationDialog = ({
   const handleSendInvitation = async () => {
     if (!player || !selectedSubject) return;
 
+    // Normalize grade for database consistency
+    const normalizedGrade = normalizeGrade(userGrade) || userGrade;
+
     const invitation = await sendInvitation(
       player.user_id,
       player.nickname,
       {
         subjectId: selectedSubject,
-        gradeLevel: userGrade,
+        gradeLevel: normalizedGrade,
         difficulty: selectedDifficulty,
       }
     );
@@ -245,6 +252,11 @@ export const SendInvitationDialog = ({
                     <SelectValue placeholder={isLoadingSubjects ? "Chargement..." : "Choisir une matière"} />
                   </SelectTrigger>
                   <SelectContent>
+                    {subjects.length === 0 && !isLoadingSubjects && (
+                      <div className="py-6 text-center text-sm text-muted-foreground">
+                        Aucune matière disponible pour ton niveau
+                      </div>
+                    )}
                     {subjects.map(subject => (
                       <SelectItem key={subject.id} value={subject.id}>
                         {subject.name}
