@@ -23,9 +23,25 @@ import {
   Clock,
   UserPlus,
   Volume2,
-  VolumeX
+  VolumeX,
+  Link,
+  Share2,
+  MessageCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Social media icons
+const FacebookIcon = () => (
+  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+  </svg>
+);
+
+const InstagramIcon = () => (
+  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+  </svg>
+);
 
 type LobbyStep = 'config' | 'waiting' | 'join-code' | 'browse-players';
 
@@ -55,6 +71,16 @@ const QuizBattleLobby = () => {
   const [invitationRecipient, setInvitationRecipient] = useState<string | null>(null);
   const [invitationExpiresAt, setInvitationExpiresAt] = useState<Date | null>(null);
   const [timeLeft, setTimeLeft] = useState<number>(0);
+  
+  // For friend mode timer (5 minutes)
+  const [friendModeTimeLeft, setFriendModeTimeLeft] = useState<number>(300);
+  const [friendModeExpiresAt, setFriendModeExpiresAt] = useState<Date | null>(null);
+  
+  // For link sharing
+  const [linkCopied, setLinkCopied] = useState(false);
+  
+  // Get joinCode from URL params for auto-join
+  const joinCodeFromUrl = searchParams.get('joinCode');
 
   // Check auth
   useEffect(() => {
@@ -228,6 +254,44 @@ const QuizBattleLobby = () => {
     }
   }, [multiplayer.phase, multiplayer.battleId, navigate]);
 
+  // Auto-fill join code from URL
+  useEffect(() => {
+    if (joinCodeFromUrl && mode === 'friend' && step === 'config') {
+      setJoinCodeInput(joinCodeFromUrl.toUpperCase());
+      setStep('join-code');
+    }
+  }, [joinCodeFromUrl, mode, step]);
+
+  // Set friend mode expiry when entering waiting phase
+  useEffect(() => {
+    if (mode === 'friend' && step === 'waiting' && multiplayer.phase === 'waiting' && !friendModeExpiresAt) {
+      setFriendModeExpiresAt(new Date(Date.now() + 5 * 60 * 1000)); // 5 minutes
+    }
+  }, [mode, step, multiplayer.phase, friendModeExpiresAt]);
+
+  // Friend mode countdown timer
+  useEffect(() => {
+    if (!friendModeExpiresAt || mode !== 'friend' || step !== 'waiting') return;
+    
+    const updateTimer = () => {
+      const now = new Date();
+      const diff = Math.max(0, Math.floor((friendModeExpiresAt.getTime() - now.getTime()) / 1000));
+      setFriendModeTimeLeft(diff);
+      
+      if (diff <= 0) {
+        toast.info('Temps écoulé. Personne n\'a rejoint.');
+        multiplayer.cancelBattle();
+        setStep('config');
+        setFriendModeExpiresAt(null);
+      }
+    };
+    
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    
+    return () => clearInterval(interval);
+  }, [friendModeExpiresAt, mode, step, multiplayer]);
+
   const handleStartSearch = async (subjectId: string, gradeLevel: string, difficulty: 'easy' | 'medium' | 'hard') => {
     setSelectedSubject(subjectId);
     setSelectedGrade(gradeLevel);
@@ -262,6 +326,64 @@ const QuizBattleLobby = () => {
       setCopied(true);
       toast.success('Code copié!');
       setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  // Get shareable link for friend mode
+  const getShareableLink = () => {
+    if (!multiplayer.inviteCode) return '';
+    return `${window.location.origin}/quiz-battle/lobby?mode=friend&joinCode=${multiplayer.inviteCode}`;
+  };
+
+  // Copy full shareable link
+  const copyShareableLink = () => {
+    const link = getShareableLink();
+    if (link) {
+      navigator.clipboard.writeText(link);
+      setLinkCopied(true);
+      toast.success('Lien copié!');
+      setTimeout(() => setLinkCopied(false), 2000);
+    }
+  };
+
+  // Share to WhatsApp
+  const shareToWhatsApp = () => {
+    const link = getShareableLink();
+    const message = encodeURIComponent(
+      `🎮 Je te défie à un Quiz Battle sur EDUPRENEURS! Clique ici pour me rejoindre: ${link}`
+    );
+    window.open(`https://wa.me/?text=${message}`, '_blank');
+  };
+
+  // Share to Facebook
+  const shareToFacebook = () => {
+    const link = getShareableLink();
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`,
+      '_blank',
+      'width=600,height=400'
+    );
+  };
+
+  // Share to Instagram (copy link + instruction)
+  const shareToInstagram = () => {
+    const link = getShareableLink();
+    navigator.clipboard.writeText(link);
+    toast.info('Lien copié! Colle-le dans ta story ou message Instagram');
+  };
+
+  // Native share API (mobile)
+  const handleNativeShare = async () => {
+    const link = getShareableLink();
+    try {
+      await navigator.share({
+        title: 'Quiz Battle - EDUPRENEURS',
+        text: '🎮 Rejoins mon Quiz Battle!',
+        url: link,
+      });
+    } catch (err) {
+      // User cancelled or not supported - fallback to copy
+      copyShareableLink();
     }
   };
 
@@ -476,13 +598,17 @@ const QuizBattleLobby = () => {
             </Button>
           </div>
 
-          {/* Invite code for friend mode */}
+          {/* Invite link for friend mode */}
           {mode === 'friend' && multiplayer.inviteCode && multiplayer.phase === 'waiting' && (
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Code d'invitation</CardTitle>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Link className="w-5 h-5" />
+                  Lien d'invitation
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Code display */}
                 <div 
                   className="flex items-center justify-center gap-4 p-4 bg-muted rounded-lg cursor-pointer"
                   onClick={copyInviteCode}
@@ -494,8 +620,68 @@ const QuizBattleLobby = () => {
                     {copied ? <Check className="w-5 h-5 text-success" /> : <Copy className="w-5 h-5" />}
                   </Button>
                 </div>
+                
+                {/* Copy Link Button */}
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={copyShareableLink}
+                >
+                  {linkCopied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
+                  {linkCopied ? 'Lien copié!' : 'Copier le lien'}
+                </Button>
+                
+                {/* Social Share Buttons */}
+                <div className="flex justify-center gap-3">
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={shareToWhatsApp}
+                    className="rounded-full bg-green-500/10 hover:bg-green-500/20 border-green-500/30"
+                    title="Partager sur WhatsApp"
+                  >
+                    <MessageCircle className="w-5 h-5 text-green-600" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={shareToFacebook}
+                    className="rounded-full bg-blue-500/10 hover:bg-blue-500/20 border-blue-500/30"
+                    title="Partager sur Facebook"
+                  >
+                    <FacebookIcon />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={shareToInstagram}
+                    className="rounded-full bg-pink-500/10 hover:bg-pink-500/20 border-pink-500/30"
+                    title="Partager sur Instagram"
+                  >
+                    <InstagramIcon />
+                  </Button>
+                  {/* Native Share (mobile) */}
+                  {typeof navigator !== 'undefined' && 'share' in navigator && (
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={handleNativeShare}
+                      className="rounded-full"
+                      title="Partager"
+                    >
+                      <Share2 className="w-5 h-5" />
+                    </Button>
+                  )}
+                </div>
+                
+                {/* Timer display */}
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="w-4 h-4" />
+                  <span>Expire dans: {formatTimeLeft(friendModeTimeLeft)}</span>
+                </div>
+                
                 <p className="text-sm text-muted-foreground text-center">
-                  Partage ce code avec ton ami pour qu'il puisse te rejoindre
+                  Partage ce lien avec ton ami pour qu'il puisse te rejoindre
                 </p>
               </CardContent>
             </Card>
