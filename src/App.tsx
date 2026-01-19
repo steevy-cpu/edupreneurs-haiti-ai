@@ -100,11 +100,16 @@ const EricChatbotWrapper = () => {
     '/chess-game',
     '/privacy-policy',
     '/passion-discovery',
+    '/quiz-battle/lobby',
+    '/quiz-battle/solo',
   ];
+  
+  // Also hide on quiz battle multiplayer game pages
+  const isQuizBattleGame = location.pathname.startsWith('/quiz-battle/multiplayer/');
   
   const isLessonPage = location.pathname.startsWith('/course/') && location.pathname.split('/').length > 2;
   const isLecturePage = location.pathname.startsWith('/lecture/');
-  const isHidden = hiddenRoutes.includes(location.pathname) || isLessonPage || isLecturePage;
+  const isHidden = hiddenRoutes.includes(location.pathname) || isLessonPage || isLecturePage || isQuizBattleGame;
   
   if (isHidden) return null;
   
