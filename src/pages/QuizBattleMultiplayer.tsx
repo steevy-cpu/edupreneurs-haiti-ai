@@ -459,8 +459,73 @@ const QuizBattleMultiplayer = () => {
     }
   };
 
-  const handlePlayAgain = () => {
-    navigate('/quiz-battle/lobby?mode=random');
+  const generateInviteCode = (): string => {
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+  };
+
+  const handlePlayAgain = async () => {
+    if (!opponent || !userId) {
+      // Fallback if no opponent data
+      navigate('/quiz-battle/lobby?mode=random');
+      return;
+    }
+
+    try {
+      // Get battle info to reuse same settings
+      const { data: currentBattle } = await supabase
+        .from('quiz_battles')
+        .select('subject_id, grade_level, difficulty')
+        .eq('id', battleId)
+        .single();
+
+      if (!currentBattle) {
+        navigate('/quiz-battle/lobby?mode=random');
+        return;
+      }
+
+      // Create a new battle with the same settings
+      const { data: newBattle, error: battleError } = await supabase
+        .from('quiz_battles')
+        .insert({
+          created_by: userId,
+          mode: 'friend',
+          difficulty: currentBattle.difficulty,
+          grade_level: currentBattle.grade_level,
+          subject_id: currentBattle.subject_id,
+          status: 'waiting',
+          invite_code: generateInviteCode(),
+        })
+        .select('id')
+        .single();
+
+      if (battleError || !newBattle) throw battleError;
+
+      // Add creator as first player
+      await supabase.from('quiz_battle_players').insert({
+        battle_id: newBattle.id,
+        user_id: userId,
+        is_ready: true,
+      });
+
+      // Send invitation notification to opponent
+      await supabase.from('notifications').insert({
+        user_id: opponent.id,
+        actor_id: userId,
+        type: 'quiz_invite',
+        content: newBattle.id,
+        read: false,
+      });
+
+      toast.info(`Invitation de revanche envoyée à ${opponent.nickname}!`);
+      
+      // Navigate to the new battle waiting state
+      navigate(`/quiz-battle/multiplayer/${newBattle.id}`);
+      
+    } catch (error) {
+      console.error('Error creating rematch:', error);
+      toast.error('Erreur lors de la création de la revanche');
+      navigate('/quiz-battle/lobby?mode=random');
+    }
   };
 
   const handleBackToMenu = () => {
