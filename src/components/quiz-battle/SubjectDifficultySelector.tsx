@@ -20,12 +20,18 @@ interface SubjectDifficultySelectorProps {
   defaultGrade: string | null;
   onStart: (subjectId: string, gradeLevel: string, difficulty: 'easy' | 'medium' | 'hard') => void;
   onBack: () => void;
+  title?: string;
+  subtitle?: string;
+  hideHeader?: boolean;
 }
 
 export const SubjectDifficultySelector = ({
   defaultGrade,
   onStart,
   onBack,
+  title = 'Mode Solo',
+  subtitle = 'Configure ton quiz',
+  hideHeader = false,
 }: SubjectDifficultySelectorProps) => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
@@ -111,16 +117,18 @@ export const SubjectDifficultySelector = ({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={onBack}>
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">Mode Solo</h1>
-          <p className="text-muted-foreground">Configure ton quiz</p>
+      {/* Header - can be hidden when used inline */}
+      {!hideHeader && (
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={onBack}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">{title}</h1>
+            <p className="text-muted-foreground">{subtitle}</p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Grade Selection */}
       <Card>

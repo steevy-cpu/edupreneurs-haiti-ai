@@ -561,6 +561,9 @@ const QuizBattleLobby = () => {
               defaultGrade={userGrade}
               onStart={handleStartSearch}
               onBack={() => navigate('/quiz-battle')}
+              hideHeader={mode === 'friend'}
+              title={mode === 'friend' ? 'Créer une partie' : 'Mode Solo'}
+              subtitle={mode === 'friend' ? 'Configure le quiz pour ton ami' : 'Configure ton quiz'}
             />
           </div>
         </div>
