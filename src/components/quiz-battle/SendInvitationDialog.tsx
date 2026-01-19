@@ -20,9 +20,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { OnlinePlayer } from '@/hooks/useOnlinePlayers';
-import { QuizInvitation, useQuizInvitations } from '@/hooks/useQuizInvitations';
+import { useQuizInvitations } from '@/hooks/useQuizInvitations';
 import { getAvatarUrl } from '@/lib/avatarMap';
 import { normalizeGrade } from '@/hooks/useUserGrade';
+import { gradeLevels } from '@/lib/matieresConstants';
 import { 
   Loader2, 
   Swords, 
@@ -30,13 +31,18 @@ import {
   X, 
   CheckCircle, 
   XCircle,
-  Timer
+  Timer,
+  BookOpen,
+  GraduationCap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Subject {
   id: string;
   name: string;
+  slug?: string;
+  icon?: string | null;
+  color?: string | null;
 }
 
 interface SendInvitationDialogProps {
@@ -49,6 +55,14 @@ interface SendInvitationDialogProps {
 
 type DialogStep = 'configure' | 'waiting' | 'result';
 type InvitationResult = 'accepted' | 'declined' | 'expired' | 'cancelled';
+
+// Series options for NS3/NS4
+const seriesOptions = [
+  { id: 'LLA', label: 'LLA', fullName: 'Lettres, Langues et Arts' },
+  { id: 'SES', label: 'SES', fullName: 'Sciences Économiques et Sociales' },
+  { id: 'SMP', label: 'SMP', fullName: 'Sciences Mathématiques et Physiques' },
+  { id: 'SVT', label: 'SVT', fullName: 'Sciences de la Vie et de la Terre' },
+];
 
 export const SendInvitationDialog = ({
   open,
@@ -65,10 +79,17 @@ export const SendInvitationDialog = ({
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
-  const [isLoadingSubjects, setIsLoadingSubjects] = useState(true);
+  const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
+  
+  // NEW: Grade and series selection state
+  const [selectedGrade, setSelectedGrade] = useState<string>(normalizeGrade(userGrade) || '9AF');
+  const [selectedSeries, setSelectedSeries] = useState<string | null>(null);
   
   // Timer state
   const [timeLeft, setTimeLeft] = useState(120); // 2 minutes
+
+  // Computed: Is NS3 or NS4 selected?
+  const isNS3orNS4 = selectedGrade === 'NS3' || selectedGrade === 'NS4';
 
   const { 
     sendInvitation, 
@@ -77,21 +98,33 @@ export const SendInvitationDialog = ({
     isSending 
   } = useQuizInvitations({ userId, enabled: open });
 
-  // Fetch subjects when dialog opens
+  // Fetch subjects when dialog opens and grade/series changes
   useEffect(() => {
-    if (!open || !userGrade) return;
+    if (!open) return;
     
     const fetchSubjects = async () => {
+      // For NS3/NS4, require series selection before fetching
+      if (isNS3orNS4 && !selectedSeries) {
+        setSubjects([]);
+        setIsLoadingSubjects(false);
+        return;
+      }
+
       setIsLoadingSubjects(true);
-      
-      // Normalize the grade to match lessons table format (e.g., "Philo" → "NS4")
-      const normalizedGrade = normalizeGrade(userGrade) || userGrade;
-      
-      const { data, error } = await supabase
+
+      // Build query with optional series filter
+      let query = supabase
         .from('lessons')
-        .select('subject_id, subjects!inner(id, name)')
-        .eq('grade_level', normalizedGrade)
+        .select('subject_id, subjects!inner(id, name, slug, icon_name, color, series)')
+        .eq('grade_level', selectedGrade)
         .eq('is_published', true);
+
+      // Add series filter for NS3/NS4
+      if (selectedSeries) {
+        query = query.eq('subjects.series', selectedSeries);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching subjects:', error);
@@ -101,10 +134,16 @@ export const SendInvitationDialog = ({
 
       // Get unique subjects
       const uniqueSubjects = new Map<string, Subject>();
-      data?.forEach(lesson => {
-        const subject = lesson.subjects as unknown as Subject;
+      data?.forEach((lesson: any) => {
+        const subject = lesson.subjects;
         if (subject && !uniqueSubjects.has(subject.id)) {
-          uniqueSubjects.set(subject.id, subject);
+          uniqueSubjects.set(subject.id, {
+            id: subject.id,
+            name: subject.name,
+            slug: subject.slug,
+            icon: subject.icon_name,
+            color: subject.color
+          });
         }
       });
 
@@ -113,18 +152,20 @@ export const SendInvitationDialog = ({
     };
 
     fetchSubjects();
-  }, [open, userGrade]);
+  }, [open, selectedGrade, selectedSeries, isNS3orNS4]);
 
   // Reset state when dialog closes
   useEffect(() => {
     if (!open) {
       setStep('configure');
       setResult(null);
+      setSelectedGrade(normalizeGrade(userGrade) || '9AF');
+      setSelectedSeries(null);
       setSelectedSubject('');
       setSelectedDifficulty('medium');
       setTimeLeft(120);
     }
-  }, [open]);
+  }, [open, userGrade]);
 
   // Handle sent invitation status changes
   useEffect(() => {
@@ -168,15 +209,12 @@ export const SendInvitationDialog = ({
   const handleSendInvitation = async () => {
     if (!player || !selectedSubject) return;
 
-    // Normalize grade for database consistency
-    const normalizedGrade = normalizeGrade(userGrade) || userGrade;
-
     const invitation = await sendInvitation(
       player.user_id,
       player.nickname,
       {
         subjectId: selectedSubject,
-        gradeLevel: normalizedGrade,
+        gradeLevel: selectedGrade, // Use selectedGrade, not userGrade
         difficulty: selectedDifficulty,
       }
     );
@@ -208,7 +246,7 @@ export const SendInvitationDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         {/* Configure Step */}
         {step === 'configure' && (
           <>
@@ -222,7 +260,7 @@ export const SendInvitationDialog = ({
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-6 py-4">
+            <div className="space-y-5 py-4">
               {/* Player Card */}
               <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
                 <div className="relative">
@@ -240,33 +278,92 @@ export const SendInvitationDialog = ({
                 </div>
               </div>
 
-              {/* Subject Selection */}
+              {/* Step 1: Grade Selection */}
               <div className="space-y-2">
-                <Label>Matière</Label>
-                <Select
-                  value={selectedSubject}
-                  onValueChange={setSelectedSubject}
-                  disabled={isLoadingSubjects}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={isLoadingSubjects ? "Chargement..." : "Choisir une matière"} />
-                  </SelectTrigger>
-                  <SelectContent position="popper" className="z-[1200] bg-popover max-h-60">
-                    {subjects.length === 0 && !isLoadingSubjects && (
-                      <div className="py-6 text-center text-sm text-muted-foreground">
-                        Aucune matière disponible pour ton niveau
-                      </div>
-                    )}
-                    {subjects.map(subject => (
-                      <SelectItem key={subject.id} value={subject.id}>
-                        {subject.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-primary" />
+                  Niveau
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {gradeLevels.map((grade) => (
+                    <Button
+                      key={grade.id}
+                      variant={selectedGrade === grade.id ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => {
+                        setSelectedGrade(grade.id);
+                        setSelectedSubject('');
+                        setSelectedSeries(null);
+                      }}
+                      title={grade.fullName}
+                      className="min-w-[50px]"
+                    >
+                      {grade.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
 
-              {/* Difficulty Selection */}
+              {/* Step 2: Series Selection (only for NS3/NS4) */}
+              {isNS3orNS4 && (
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <GraduationCap className="w-4 h-4 text-primary" />
+                    Série
+                  </Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {seriesOptions.map((series) => (
+                      <Button
+                        key={series.id}
+                        variant={selectedSeries === series.id ? 'default' : 'outline'}
+                        size="sm"
+                        className="h-auto py-2 flex flex-col items-center"
+                        onClick={() => {
+                          setSelectedSeries(series.id);
+                          setSelectedSubject('');
+                        }}
+                      >
+                        <span className="font-medium">{series.label}</span>
+                        <span className="text-[10px] opacity-80">{series.fullName}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Subject Selection */}
+              <div className="space-y-2">
+                <Label>Matière</Label>
+                {isNS3orNS4 && !selectedSeries ? (
+                  <p className="text-sm text-muted-foreground py-2 px-3 rounded-md border border-dashed">
+                    Sélectionne d'abord ta série pour voir les matières
+                  </p>
+                ) : (
+                  <Select
+                    value={selectedSubject}
+                    onValueChange={setSelectedSubject}
+                    disabled={isLoadingSubjects}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={isLoadingSubjects ? "Chargement..." : "Choisir une matière"} />
+                    </SelectTrigger>
+                    <SelectContent position="popper" className="z-[1200] bg-popover max-h-60">
+                      {subjects.length === 0 && !isLoadingSubjects && (
+                        <div className="py-6 text-center text-sm text-muted-foreground">
+                          Aucune matière disponible pour ce niveau
+                        </div>
+                      )}
+                      {subjects.map(subject => (
+                        <SelectItem key={subject.id} value={subject.id}>
+                          {subject.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+
+              {/* Step 4: Difficulty Selection */}
               <div className="space-y-2">
                 <Label>Difficulté</Label>
                 <RadioGroup
