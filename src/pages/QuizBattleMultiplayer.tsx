@@ -483,43 +483,35 @@ const QuizBattleMultiplayer = () => {
         return;
       }
 
-      // Create a new battle with the same settings
-      const { data: newBattle, error: battleError } = await supabase
-        .from('quiz_battles')
+      // Create an invitation in quiz_battle_invitations table
+      // This will trigger the popup dialog on the opponent's side via QuizInvitationHandler
+      const { data: invitation, error: invitationError } = await supabase
+        .from('quiz_battle_invitations')
         .insert({
-          created_by: userId,
-          mode: 'friend',
-          difficulty: currentBattle.difficulty,
-          grade_level: currentBattle.grade_level,
+          sender_id: userId,
+          recipient_id: opponent.id,
           subject_id: currentBattle.subject_id,
-          status: 'waiting',
-          invite_code: generateInviteCode(),
+          grade_level: currentBattle.grade_level,
+          difficulty: currentBattle.difficulty,
         })
         .select('id')
         .single();
 
-      if (battleError || !newBattle) throw battleError;
+      if (invitationError || !invitation) throw invitationError;
 
-      // Add creator as first player
-      await supabase.from('quiz_battle_players').insert({
-        battle_id: newBattle.id,
-        user_id: userId,
-        is_ready: true,
-      });
-
-      // Send invitation notification to opponent
+      // Also send a notification for users not currently on the app
       await supabase.from('notifications').insert({
         user_id: opponent.id,
         actor_id: userId,
         type: 'quiz_invite',
-        content: newBattle.id,
+        content: invitation.id,
         read: false,
       });
 
       toast.info(`Invitation de revanche envoyée à ${opponent.nickname}!`);
       
-      // Navigate to the new battle waiting state
-      navigate(`/quiz-battle/multiplayer/${newBattle.id}`);
+      // Navigate to lobby with friend mode to show waiting state
+      navigate(`/quiz-battle/lobby?mode=friend&invitation=${invitation.id}`);
       
     } catch (error) {
       console.error('Error creating rematch:', error);
