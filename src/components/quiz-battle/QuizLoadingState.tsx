@@ -9,9 +9,31 @@ const LOADING_TIPS = [
   "Conseil: Réponds rapidement pour plus de points!",
 ];
 
-export const QuizLoadingState = () => {
+interface QuizLoadingStateProps {
+  startTime?: number;
+  estimatedDuration?: number; // in seconds, default 18
+}
+
+export const QuizLoadingState = ({ 
+  startTime = Date.now(), 
+  estimatedDuration = 18 
+}: QuizLoadingStateProps) => {
+  const [progress, setProgress] = useState(0);
   const [currentTip, setCurrentTip] = useState(0);
 
+  // Update progress based on elapsed time
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const elapsed = (Date.now() - startTime) / 1000;
+      // Ease out curve - slows down as it approaches 95%
+      const rawProgress = (elapsed / estimatedDuration) * 100;
+      const easedProgress = Math.min(95, rawProgress * (2 - rawProgress / 100));
+      setProgress(easedProgress);
+    }, 200);
+    return () => clearInterval(interval);
+  }, [startTime, estimatedDuration]);
+
+  // Rotate tips
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTip((prev) => (prev + 1) % LOADING_TIPS.length);
@@ -37,10 +59,17 @@ export const QuizLoadingState = () => {
         </p>
       </div>
       
-      {/* Animated progress bar */}
+      {/* Progress bar with percentage */}
       <div className="w-full max-w-xs">
-        <div className="h-2 bg-muted rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-primary via-primary/70 to-primary rounded-full animate-loading-bar"></div>
+        <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
+          <span>Préparation en cours...</span>
+          <span className="font-medium">{Math.round(progress)}%</span>
+        </div>
+        <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-primary via-primary/80 to-primary rounded-full transition-all duration-300 ease-out"
+            style={{ width: `${progress}%` }}
+          />
         </div>
       </div>
       

@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Layout } from '@/components/Layout';
 import { BattleGameplay } from '@/components/quiz-battle/BattleGameplay';
 import { MultiplayerResults } from '@/components/quiz-battle/MultiplayerResults';
+import { QuizLoadingState } from '@/components/quiz-battle/QuizLoadingState';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -33,6 +34,7 @@ const QuizBattleMultiplayer = () => {
   const [opponentResult, setOpponentResult] = useState<OpponentProgress | null>(null);
   const [opponent, setOpponent] = useState<{ id: string; nickname: string; avatar_url: string | null } | null>(null);
   const [isHost, setIsHost] = useState(false);
+  const [generationStartTime, setGenerationStartTime] = useState<number | null>(null);
 
   // Subscribe to opponent's progress
   useRealtimeSubscription({
@@ -111,10 +113,12 @@ const QuizBattleMultiplayer = () => {
       } else if (isHost) {
         // Host generates questions
         setPhase('generating');
+        setGenerationStartTime(Date.now());
         await generateQuestions(battle);
       } else {
         // Guest waits for questions
         setPhase('loading');
+        setGenerationStartTime(Date.now());
         pollForQuestions(battleId);
       }
     };
@@ -396,12 +400,7 @@ const QuizBattleMultiplayer = () => {
     return (
       <Layout>
         <div className="container max-w-4xl mx-auto px-4 py-6">
-          <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
-            <p className="text-lg text-muted-foreground">
-              {phase === 'generating' ? 'Génération des questions...' : 'Chargement de la partie...'}
-            </p>
-          </div>
+          <QuizLoadingState startTime={generationStartTime || Date.now()} />
         </div>
       </Layout>
     );

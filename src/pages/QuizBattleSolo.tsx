@@ -56,6 +56,7 @@ const QuizBattleSolo = () => {
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [selectedGrade, setSelectedGrade] = useState<string | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
+  const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -85,6 +86,7 @@ const QuizBattleSolo = () => {
     if (!userId) return;
 
     setPhase('loading');
+    setLoadingStartTime(Date.now());
     setSelectedSubject(subjectId);
     setSelectedGrade(gradeLevel);
     setSelectedDifficulty(difficulty);
@@ -565,7 +567,7 @@ const QuizBattleSolo = () => {
           />
         )}
 
-        {phase === 'loading' && <QuizLoadingState />}
+        {phase === 'loading' && <QuizLoadingState startTime={loadingStartTime || Date.now()} />}
 
         {phase === 'playing' && questions.length > 0 && (
           <BattleGameplay

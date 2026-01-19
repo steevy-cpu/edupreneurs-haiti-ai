@@ -28,9 +28,15 @@ serve(async (req) => {
       hard: "Questions approfondies qui testent la maîtrise du sujet. Les options restent distinctes et sans ambiguïté - la difficulté vient de la profondeur du concept, PAS de formulations confuses."
     };
 
+    // Trim lesson content for faster processing
     const lessonInfo = lessonContext && lessonContext.length > 0
-      ? lessonContext.map(l => `- ${l.title}: ${l.objective || ''} ${l.content?.substring(0, 300) || ''}`).join('\n')
+      ? lessonContext.map(l => `- ${l.title}: ${l.objective || ''} ${l.content?.substring(0, 200) || ''}`).join('\n')
       : "Utilise le programme scolaire haïtien standard pour ce niveau.";
+    
+    // Select model based on difficulty - use faster model for easy questions
+    const model = difficulty === 'easy' 
+      ? 'google/gemini-2.5-flash-lite' 
+      : 'google/gemini-2.5-flash';
 
     const prompt = `Tu es un expert en éducation haïtienne. Génère ${questionCount} questions de quiz pour des élèves de niveau ${gradeLevel} en ${subject}.
 
@@ -83,30 +89,52 @@ IMPORTANT: correct_answer est l'INDEX (0-3) de la bonne réponse dans le tableau
       throw new Error('API key not configured');
     }
 
-    console.log(`Generating ${questionCount} questions for ${subject} (${gradeLevel}, ${difficulty})`);
+    console.log(`Generating ${questionCount} questions for ${subject} (${gradeLevel}, ${difficulty}) using ${model}`);
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          {
-            role: 'system',
-            content: 'Tu es un générateur de quiz éducatif. Réponds UNIQUEMENT avec du JSON valide, sans texte avant ou après.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 4000,
-      }),
-    });
+    // Add timeout to prevent hanging requests
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000); // 25 second timeout
+
+    let response: Response;
+    try {
+      response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: 'system',
+              content: 'Tu es un générateur de quiz éducatif. Réponds UNIQUEMENT avec du JSON valide, sans texte avant ou après.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 3000,
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        console.error('AI request timed out after 25 seconds');
+        return new Response(
+          JSON.stringify({ 
+            error: 'Génération trop longue, utilisation de questions par défaut',
+            questions: generateFallbackQuestions(subject, gradeLevel, questionCount)
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      throw error;
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
