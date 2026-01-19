@@ -2,7 +2,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
-  Trophy, 
   RefreshCw, 
   Home, 
   Zap,
@@ -97,11 +96,12 @@ export const MultiplayerResults = ({
       {/* Result header with Jude */}
       <Card className={cn("border-2 overflow-hidden relative", resultConfig.bg, resultConfig.borderColor)}>
         <CardContent className="py-8 text-center relative">
-          {/* Trophy icon for context */}
-          <Trophy className={cn(
-            "w-12 h-12 mx-auto mb-4",
-            isWinner ? "text-yellow-500" : "text-muted-foreground/50"
-          )} />
+          {/* Jude character image - centered as main icon */}
+          <img 
+            src={resultConfig.image} 
+            alt="Jude" 
+            className="w-20 h-24 mx-auto mb-4 object-contain"
+          />
           
           <h1 className={cn("text-3xl font-bold mb-2", resultConfig.color)}>
             {resultConfig.text}
@@ -110,16 +110,6 @@ export const MultiplayerResults = ({
           <p className="text-muted-foreground text-sm">
             {resultConfig.subtitle}
           </p>
-
-          {/* Jude character image - positioned in corner */}
-          <img 
-            src={resultConfig.image} 
-            alt="Jude" 
-            className={cn(
-              "absolute -right-2 -top-2 w-24 h-28 object-contain pointer-events-none",
-              isWinner && "animate-bounce"
-            )}
-          />
         </CardContent>
       </Card>
 
