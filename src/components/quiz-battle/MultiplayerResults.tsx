@@ -36,12 +36,18 @@ export const MultiplayerResults = ({
   onPlayAgain,
   onBackToMenu,
 }: MultiplayerResultsProps) => {
-  const myScore = myResult.score;
-  const opponentScore = opponentResult?.score || 0;
+  // For real-time multiplayer, use roundsWon if available
+  const myRoundsWon = myResult.roundsWon ?? myResult.correctAnswers;
+  const opponentRoundsWon = opponentResult?.correctAnswers || 0;
   
-  const isWinner = myScore > opponentScore;
-  const isDraw = myScore === opponentScore;
-  const isLoser = myScore < opponentScore;
+  // Determine winner based on rounds won (for synchronized mode) or score
+  const isWinner = myResult.roundsWon !== undefined 
+    ? myRoundsWon > opponentRoundsWon
+    : myResult.score > (opponentResult?.score || 0);
+  const isDraw = myResult.roundsWon !== undefined
+    ? myRoundsWon === opponentRoundsWon
+    : myResult.score === (opponentResult?.score || 0);
+  const isLoser = !isWinner && !isDraw;
 
   // XP bonus for multiplayer
   const multiplierBonus = isWinner ? 1.5 : (isDraw ? 1.2 : 1);
@@ -88,15 +94,19 @@ export const MultiplayerResults = ({
       <Card>
         <CardContent className="py-6">
           <div className="grid grid-cols-3 gap-4 items-center">
-            {/* My score */}
+            {/* My score - show rounds won for synchronized mode */}
             <div className={cn(
               "text-center p-4 rounded-xl",
               isWinner ? "bg-success/10 ring-2 ring-success" : "bg-muted"
             )}>
-              <div className="text-4xl font-bold text-foreground">{myScore}%</div>
-              <div className="text-sm text-muted-foreground mt-1">Toi</div>
+              <div className="text-4xl font-bold text-foreground">
+                {myResult.roundsWon !== undefined ? myRoundsWon : myResult.score + '%'}
+              </div>
+              <div className="text-sm text-muted-foreground mt-1">
+                {myResult.roundsWon !== undefined ? 'Manches gagnées' : 'Toi'}
+              </div>
               <div className="text-xs text-muted-foreground">
-                {myResult.correctAnswers}/{myResult.totalQuestions}
+                {myResult.correctAnswers}/{myResult.totalQuestions} correct
               </div>
             </div>
 
@@ -114,12 +124,14 @@ export const MultiplayerResults = ({
                 <AvatarImage src={opponent?.avatar_url || undefined} />
                 <AvatarFallback>{opponent?.nickname?.[0]?.toUpperCase() || '?'}</AvatarFallback>
               </Avatar>
-              <div className="text-4xl font-bold text-foreground">{opponentScore}%</div>
+              <div className="text-4xl font-bold text-foreground">
+                {myResult.roundsWon !== undefined ? opponentRoundsWon : (opponentResult?.score || 0) + '%'}
+              </div>
               <div className="text-sm text-muted-foreground mt-1 truncate max-w-[80px] mx-auto">
                 {opponent?.nickname || 'Adversaire'}
               </div>
               <div className="text-xs text-muted-foreground">
-                {opponentResult?.correctAnswers || 0}/{myResult.totalQuestions}
+                {opponentResult?.correctAnswers || 0}/{myResult.totalQuestions} correct
               </div>
             </div>
           </div>
