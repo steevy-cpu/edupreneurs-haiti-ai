@@ -82,12 +82,14 @@ const QuizBattleLobby = () => {
   // Get joinCode from URL params for auto-join
   const joinCodeFromUrl = searchParams.get('joinCode');
 
-  // Check auth
+  // Check auth - preserve current URL for redirect after login
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        navigate('/auth');
+        // Preserve the full URL including query params (joinCode, mode, etc.)
+        const currentUrl = window.location.pathname + window.location.search;
+        navigate('/auth', { state: { returnTo: currentUrl } });
         return;
       }
       setUserId(user.id);

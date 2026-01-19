@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,11 @@ import { useAuth } from "./AuthContext";
 
 export default function LoginForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  
+  // Get returnTo URL from location state (for redirecting after login)
+  const returnTo = (location.state as { returnTo?: string })?.returnTo;
   const {
     loginData,
     setLoginData,
@@ -183,7 +187,8 @@ export default function LoginForm() {
         description: "Bienvenue !",
       });
 
-      navigate("/dashboard");
+      // Navigate to returnTo URL if provided, otherwise dashboard
+      navigate(returnTo || "/dashboard");
     } catch (error: any) {
       toast({
         title: "Erreur de connexion",
