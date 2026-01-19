@@ -543,20 +543,28 @@ const QuizBattleLobby = () => {
                     <UserPlus className="w-8 h-8" />
                     <span>Rejoindre</span>
                   </Button>
-                  <div className="h-24 flex flex-col gap-2 items-center justify-center bg-primary/10 rounded-lg border-2 border-primary text-primary">
+                  <Button
+                    className="h-24 flex flex-col gap-2 bg-primary/10 hover:bg-primary/20 border-2 border-primary text-primary"
+                    variant="outline"
+                    onClick={() => {
+                      document.getElementById('create-battle-config')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                  >
                     <Swords className="w-8 h-8" />
                     <span className="font-medium">Créer ↓</span>
-                  </div>
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          <SubjectDifficultySelector
-            defaultGrade={userGrade}
-            onStart={handleStartSearch}
-            onBack={() => navigate('/quiz-battle')}
-          />
+          <div id="create-battle-config">
+            <SubjectDifficultySelector
+              defaultGrade={userGrade}
+              onStart={handleStartSearch}
+              onBack={() => navigate('/quiz-battle')}
+            />
+          </div>
         </div>
       );
     }
