@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Clock, CheckCircle2, XCircle, Zap } from 'lucide-react';
+import { Clock, CheckCircle2, XCircle, Zap, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useQuizBattleSounds } from '@/hooks/useQuizBattleSounds';
 import type { BattleQuestion, BattleResult } from '@/pages/QuizBattleSolo';
 
 interface BattleGameplayProps {
@@ -25,13 +26,40 @@ export const BattleGameplay = ({ questions, difficulty, onComplete }: BattleGame
   const [showFeedback, setShowFeedback] = useState(false);
   const [answers, setAnswers] = useState<BattleResult['answers']>([]);
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
+  const hasPlayedGameStart = useRef(false);
+
+  const {
+    playCorrect,
+    playIncorrect,
+    playQuestionStart,
+    playGameStart,
+    playGameComplete,
+    startTickingTimer,
+    stopTicking,
+    isMuted,
+    toggleMute,
+  } = useQuizBattleSounds();
 
   const currentQuestion = questions[currentIndex];
   const maxTime = DIFFICULTY_TIME[difficulty];
 
-  // Timer effect
+  // Play game start sound once
   useEffect(() => {
-    if (showFeedback) return;
+    if (!hasPlayedGameStart.current) {
+      playGameStart();
+      hasPlayedGameStart.current = true;
+    }
+  }, [playGameStart]);
+
+  // Timer effect with ticking sound
+  useEffect(() => {
+    if (showFeedback) {
+      stopTicking();
+      return;
+    }
+
+    // Start/update ticking based on time left
+    startTickingTimer(timeLeft, maxTime);
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -44,25 +72,42 @@ export const BattleGameplay = ({ questions, difficulty, onComplete }: BattleGame
       });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [currentIndex, showFeedback]);
+    return () => {
+      clearInterval(timer);
+    };
+  }, [currentIndex, showFeedback, timeLeft, maxTime, startTickingTimer, stopTicking]);
 
-  // Reset timer when question changes
+  // Reset timer and play question start sound when question changes
   useEffect(() => {
     setTimeLeft(maxTime);
     setQuestionStartTime(Date.now());
     setSelectedAnswer(null);
     setShowFeedback(false);
-  }, [currentIndex, maxTime]);
+    
+    // Play question start sound (skip for first question since game start plays)
+    if (currentIndex > 0) {
+      playQuestionStart();
+    }
+  }, [currentIndex, maxTime, playQuestionStart]);
 
   const handleAnswer = useCallback((answerIndex: number) => {
     if (showFeedback) return;
+
+    // Stop ticking immediately
+    stopTicking();
 
     const timeMs = Date.now() - questionStartTime;
     const isCorrect = answerIndex === currentQuestion.correct_answer;
 
     setSelectedAnswer(answerIndex);
     setShowFeedback(true);
+
+    // Play appropriate sound
+    if (isCorrect) {
+      playCorrect();
+    } else {
+      playIncorrect();
+    }
 
     const newAnswer = {
       questionIndex: currentIndex,
@@ -82,6 +127,9 @@ export const BattleGameplay = ({ questions, difficulty, onComplete }: BattleGame
         const allAnswers = [...answers, newAnswer];
         const correctCount = allAnswers.filter((a) => a.correct).length;
         const avgTime = allAnswers.reduce((sum, a) => sum + a.timeMs, 0) / allAnswers.length;
+        
+        // Play game complete sound
+        playGameComplete();
         
         // Calculate XP
         let xp = correctCount * 10; // Base XP per correct answer
@@ -108,7 +156,7 @@ export const BattleGameplay = ({ questions, difficulty, onComplete }: BattleGame
         });
       }
     }, 1500);
-  }, [currentIndex, currentQuestion, questions, answers, questionStartTime, showFeedback, onComplete]);
+  }, [currentIndex, currentQuestion, questions, answers, questionStartTime, showFeedback, onComplete, stopTicking, playCorrect, playIncorrect, playGameComplete]);
 
   const getOptionStyle = (index: number) => {
     if (!showFeedback) {
@@ -139,6 +187,21 @@ export const BattleGameplay = ({ questions, difficulty, onComplete }: BattleGame
           Question {currentIndex + 1}/{questions.length}
         </span>
         <Progress value={progressPercent} className="flex-1 h-2" />
+        
+        {/* Mute/Unmute Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleMute}
+          className="h-8 w-8"
+          title={isMuted ? "Activer le son" : "Couper le son"}
+        >
+          {isMuted ? (
+            <VolumeX className="w-4 h-4 text-muted-foreground" />
+          ) : (
+            <Volume2 className="w-4 h-4 text-muted-foreground" />
+          )}
+        </Button>
       </div>
 
       {/* Timer */}
