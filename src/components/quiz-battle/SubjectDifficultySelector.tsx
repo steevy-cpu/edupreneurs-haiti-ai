@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, ArrowRight, Sparkles, Zap, Flame, BookOpen } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Sparkles, Zap, Flame, BookOpen, GraduationCap } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { VALID_GRADES, gradeLevels } from '@/lib/matieresConstants';
+import { VALID_GRADES, gradeLevels, iconMap, colorMap } from '@/lib/matieresConstants';
 
 interface Subject {
   id: string;
@@ -31,17 +31,50 @@ export const SubjectDifficultySelector = ({
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const initialGrade = defaultGrade && VALID_GRADES.includes(defaultGrade as any) ? defaultGrade : '9AF';
   const [selectedGrade, setSelectedGrade] = useState<string>(initialGrade);
+  const [selectedSeries, setSelectedSeries] = useState<string | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   const [isLoading, setIsLoading] = useState(true);
 
+  // Series options for NS3/NS4
+  const seriesOptions = [
+    { id: 'LLA', label: 'LLA', fullName: 'Lettres, Langues et Arts' },
+    { id: 'SES', label: 'SES', fullName: 'Sciences Économiques et Sociales' },
+    { id: 'SMP', label: 'SMP', fullName: 'Sciences Mathématiques et Physiques' },
+    { id: 'SVT', label: 'SVT', fullName: 'Sciences de la Vie et de la Terre' },
+  ];
+
+  const isNS3orNS4 = selectedGrade === 'NS3' || selectedGrade === 'NS4';
+
+  // Helper to render subject icons
+  const renderSubjectIcon = (iconName: string | null) => {
+    const IconComponent = iconMap[iconName || 'BookOpen'] || BookOpen;
+    return <IconComponent className="w-6 h-6" />;
+  };
+
   useEffect(() => {
     const fetchSubjects = async () => {
-      // Fetch lessons to find subjects with content for the selected grade
-      const { data: lessons, error } = await supabase
+      setIsLoading(true);
+      
+      // For NS3/NS4, require series selection before fetching
+      if (isNS3orNS4 && !selectedSeries) {
+        setSubjects([]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Build query with optional series filter
+      let query = supabase
         .from('lessons')
-        .select('subject_id, subjects(id, name, slug, icon_name, color)')
+        .select('subject_id, subjects!inner(id, name, slug, icon_name, color, series)')
         .eq('grade_level', selectedGrade)
         .eq('is_published', true);
+
+      // Add series filter for NS3/NS4
+      if (selectedSeries) {
+        query = query.eq('subjects.series', selectedSeries);
+      }
+
+      const { data: lessons, error } = await query;
 
       if (!error && lessons) {
         // Get unique subjects from lessons
@@ -60,7 +93,7 @@ export const SubjectDifficultySelector = ({
     };
 
     fetchSubjects();
-  }, [selectedGrade]);
+  }, [selectedGrade, selectedSeries, isNS3orNS4]);
 
   // Use centralized grade levels from matieresConstants
 
@@ -107,6 +140,7 @@ export const SubjectDifficultySelector = ({
                 onClick={() => {
                   setSelectedGrade(grade.id);
                   setSelectedSubject(null);
+                  setSelectedSeries(null);
                 }}
                 title={grade.fullName}
               >
@@ -117,13 +151,47 @@ export const SubjectDifficultySelector = ({
         </CardContent>
       </Card>
 
+      {/* Series Selection - Only for NS3/NS4 */}
+      {isNS3orNS4 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <GraduationCap className="w-5 h-5 text-primary" />
+              Choisis ta série
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
+              {seriesOptions.map((series) => (
+                <Button
+                  key={series.id}
+                  variant={selectedSeries === series.id ? 'default' : 'outline'}
+                  className="h-auto py-3 flex flex-col"
+                  onClick={() => {
+                    setSelectedSeries(series.id);
+                    setSelectedSubject(null);
+                  }}
+                >
+                  <span className="font-medium">{series.label}</span>
+                  <span className="text-xs opacity-80">{series.fullName}</span>
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Subject Selection */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">Choisis ta matière</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {isNS3orNS4 && !selectedSeries ? (
+            <p className="text-muted-foreground text-center py-4">
+              Sélectionne d'abord ta série pour voir les matières
+            </p>
+          ) : isLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="h-20 bg-muted/50 rounded-lg animate-pulse" />
@@ -146,7 +214,12 @@ export const SubjectDifficultySelector = ({
                       : "border-transparent bg-muted/50 hover:bg-muted hover:border-muted-foreground/20"
                   )}
                 >
-                  <span className="text-2xl mb-1">{subject.icon || '📚'}</span>
+                  <span className={cn(
+                    "w-10 h-10 rounded-lg flex items-center justify-center mb-2",
+                    subject.color ? `bg-gradient-to-br ${colorMap[subject.color] || 'from-primary to-primary/80'} text-white` : 'bg-primary/10 text-primary'
+                  )}>
+                    {renderSubjectIcon(subject.icon)}
+                  </span>
                   <span className="text-sm font-medium text-center line-clamp-2">
                     {subject.name}
                   </span>
