@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText, MoreVertical, Trash2, Settings, AtSign, UserCheck, Loader2, Megaphone } from "lucide-react";
+import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText, MoreVertical, Trash2, Settings, AtSign, UserCheck, Loader2, Megaphone, Swords } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -42,7 +42,7 @@ interface Notification {
   user_id: string;
   actor_id: string;
   post_id: string | null;
-  type: "like" | "comment" | "share" | "follow_request" | "follow_accepted" | "new_post" | "group_invitation" | "group_deleted" | "lesson_comment" | "mention" | "announcement";
+  type: "like" | "comment" | "share" | "follow_request" | "follow_accepted" | "new_post" | "group_invitation" | "group_deleted" | "lesson_comment" | "mention" | "announcement" | "quiz_invite";
   content: string | null;
   read: boolean;
   created_at: string;
@@ -349,6 +349,8 @@ export default function Notifications() {
         return <AtSign size={16} className="text-primary" />;
       case "announcement":
         return <Megaphone size={16} className="text-orange-500" />;
+      case "quiz_invite":
+        return <Swords size={16} className="text-primary" />;
       default:
         return <MessageCircle size={16} className="text-muted-foreground" />;
     }
@@ -380,6 +382,8 @@ export default function Notifications() {
       case "announcement":
         // Announcements display content directly, not actor name
         return notification.content || "📢 Nouvelle annonce de la plateforme";
+      case "quiz_invite":
+        return `${actor} te défie en Quiz Battle!`;
       default:
         // Fallback: use content if available, otherwise show generic message
         return notification.content || `${actor} a interagi avec vous`;
@@ -497,6 +501,13 @@ export default function Notifications() {
     // Announcements just mark as read, no specific navigation
     if (notification.type === "announcement") {
       markAsRead(notification.id);
+      return;
+    }
+    
+    // Quiz invitations navigate to battle lobby with invitation ID
+    if (notification.type === "quiz_invite") {
+      markAsRead(notification.id);
+      navigate(`/quiz-battle/lobby?mode=friend&invitation=${notification.content}`);
       return;
     }
     
