@@ -10,6 +10,7 @@ import { SubjectDifficultySelector } from '@/components/quiz-battle/SubjectDiffi
 import { OnlinePlayersBrowser } from '@/components/quiz-battle/OnlinePlayersBrowser';
 import { SendInvitationDialog } from '@/components/quiz-battle/SendInvitationDialog';
 import { useMultiplayerBattle, LobbyPhase } from '@/hooks/useMultiplayerBattle';
+import { useQuizBattleSounds } from '@/hooks/useQuizBattleSounds';
 import { OnlinePlayer } from '@/hooks/useOnlinePlayers';
 import { toast } from 'sonner';
 import { 
@@ -20,7 +21,9 @@ import {
   Check, 
   Swords,
   Clock,
-  UserPlus
+  UserPlus,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -81,9 +84,26 @@ const QuizBattleLobby = () => {
     enabled: !!userId && !!selectedSubject && step === 'waiting',
   });
 
+  // Sounds hook for lobby music
+  const { startLobbyMusic, stopLobbyMusic, isLobbyMusicPlaying, isMuted, toggleMute } = useQuizBattleSounds();
+
+  // Start/stop lobby music based on waiting phase
+  useEffect(() => {
+    if (step === 'waiting' && (multiplayer.phase === 'waiting' || multiplayer.phase === 'matched')) {
+      startLobbyMusic();
+    } else {
+      stopLobbyMusic();
+    }
+    
+    return () => {
+      stopLobbyMusic();
+    };
+  }, [step, multiplayer.phase, startLobbyMusic, stopLobbyMusic]);
+
   // Navigate to game when starting
   useEffect(() => {
     if (multiplayer.phase === 'starting' && multiplayer.battleId) {
+      stopLobbyMusic();
       navigate(`/quiz-battle/multiplayer/${multiplayer.battleId}`);
     }
   }, [multiplayer.phase, multiplayer.battleId, navigate]);
@@ -237,22 +257,33 @@ const QuizBattleLobby = () => {
     if (step === 'waiting') {
       return (
         <div className="space-y-6">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={handleBack}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">
-                {mode === 'random' ? 'Recherche en cours' : 'En attente'}
-              </h1>
-              <p className="text-muted-foreground">
-                {multiplayer.phase === 'matched' || multiplayer.phase === 'ready'
-                  ? 'Adversaire trouvé!'
-                  : mode === 'random' 
-                    ? 'Recherche d\'un adversaire...'
-                    : 'Partage le code avec ton ami'}
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={handleBack}>
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold">
+                  {mode === 'random' ? 'Recherche en cours' : 'En attente'}
+                </h1>
+                <p className="text-muted-foreground">
+                  {multiplayer.phase === 'matched' || multiplayer.phase === 'ready'
+                    ? 'Adversaire trouvé!'
+                    : mode === 'random' 
+                      ? 'Recherche d\'un adversaire...'
+                      : 'Partage le code avec ton ami'}
+                </p>
+              </div>
             </div>
+            {/* Mute button for lobby music */}
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={toggleMute}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+            </Button>
           </div>
 
           {/* Invite code for friend mode */}
