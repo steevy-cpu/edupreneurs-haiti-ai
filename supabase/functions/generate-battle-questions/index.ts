@@ -23,9 +23,9 @@ serve(async (req) => {
     const { subject, gradeLevel, difficulty, lessonContext, questionCount = 10 }: QuestionRequest = await req.json();
 
     const difficultyGuide = {
-      easy: "Questions simples avec des concepts de base. Réponses évidentes pour qui a lu le cours.",
-      medium: "Questions qui demandent une bonne compréhension. Certaines réponses peuvent sembler similaires.",
-      hard: "Questions complexes nécessitant une maîtrise du sujet. Pièges subtils dans les options."
+      easy: "Questions simples et directes sur les concepts de base. La bonne réponse doit être évidente pour qui a étudié la leçon. Pas de pièges ni de formulations ambiguës.",
+      medium: "Questions qui nécessitent une bonne compréhension. Les options sont distinctes - pas de réponses qui prêtent à confusion. Formulation claire et directe.",
+      hard: "Questions approfondies qui testent la maîtrise du sujet. Les options restent distinctes et sans ambiguïté - la difficulté vient de la profondeur du concept, PAS de formulations confuses."
     };
 
     const lessonInfo = lessonContext && lessonContext.length > 0
@@ -50,6 +50,16 @@ RÈGLES IMPORTANTES:
 7. Adapter le vocabulaire au contexte haïtien quand pertinent
 8. Pour les maths: inclure des calculs adaptés au niveau
 9. Chaque question doit tester un concept spécifique
+
+RÈGLES DE CLARTÉ (TRÈS IMPORTANT):
+1. ÉVITER les doubles négations (ex: "Lequel n'est PAS incorrect?")
+2. ÉVITER les questions pièges ou trompeuses
+3. ÉVITER les formulations ambiguës ou qui prêtent à confusion
+4. Chaque question doit avoir UNE SEULE interprétation possible
+5. Les 4 options doivent être CLAIREMENT distinctes les unes des autres
+6. Utiliser un langage simple et direct adapté aux élèves haïtiens
+7. Si c'est un calcul, donner toutes les informations nécessaires
+8. La difficulté doit venir du CONTENU, pas de la formulation confuse
 
 GÉNÈRE EXACTEMENT ${questionCount} questions au format JSON suivant:
 {
