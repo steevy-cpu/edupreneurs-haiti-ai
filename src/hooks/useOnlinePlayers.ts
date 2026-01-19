@@ -22,28 +22,41 @@ export const useOnlinePlayers = ({ excludeUserId, searchQuery }: UseOnlinePlayer
   const [profiles, setProfiles] = useState<Map<string, OnlinePlayer>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
 
-  // Subscribe to online-users presence channel
+  // Subscribe to online-users presence channel with proper join/leave/sync events
   useEffect(() => {
-    const channel = supabase.channel('online-users');
+    // Use a listener channel to receive presence broadcasts from the main 'online-users' channel
+    const channel = supabase.channel('online-users-player-browser');
+    
+    const extractUserIds = (presences: any[]): string[] => {
+      return presences
+        .map((p: any) => p.user_id)
+        .filter((id: string) => id && id !== excludeUserId && id !== JUDE_USER_ID);
+    };
     
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        const userIds = Object.keys(state).filter(
-          id => id !== excludeUserId && id !== JUDE_USER_ID
-        );
+        const userIds = Object.values(state)
+          .flat()
+          .map((p: any) => p.user_id)
+          .filter((id: string) => id && id !== excludeUserId && id !== JUDE_USER_ID);
         setOnlineUserIds(userIds);
       })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          // Get initial state
-          const state = channel.presenceState();
-          const userIds = Object.keys(state).filter(
-            id => id !== excludeUserId && id !== JUDE_USER_ID
-          );
-          setOnlineUserIds(userIds);
+      .on('presence', { event: 'join' }, ({ newPresences }) => {
+        // Add new users immediately when they come online
+        const newUserIds = extractUserIds(newPresences);
+        if (newUserIds.length > 0) {
+          setOnlineUserIds(prev => [...new Set([...prev, ...newUserIds])]);
         }
-      });
+      })
+      .on('presence', { event: 'leave' }, ({ leftPresences }) => {
+        // Remove users immediately when they go offline
+        const leftUserIds = leftPresences.map((p: any) => p.user_id);
+        if (leftUserIds.length > 0) {
+          setOnlineUserIds(prev => prev.filter(id => !leftUserIds.includes(id)));
+        }
+      })
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
