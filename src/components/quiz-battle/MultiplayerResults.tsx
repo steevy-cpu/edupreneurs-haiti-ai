@@ -15,7 +15,7 @@ import { useEffect } from 'react';
 // Jude/Eric images for different result states
 import judeCelebrating from '@/assets/eric-celebrating.png';
 import judeThinking from '@/assets/eric-thinking-pose.png';
-import judePointing from '@/assets/eric-pointing-left.png';
+import judeSad from '@/assets/eric-404.png';
 
 interface OpponentProgress {
   score: number;
@@ -86,7 +86,7 @@ export const MultiplayerResults = ({
       color: 'text-muted-foreground', 
       bg: 'bg-gradient-to-br from-muted to-background',
       borderColor: 'border-muted',
-      image: judePointing,
+      image: judeSad,
       subtitle: 'La prochaine sera la bonne!'
     };
   };
