@@ -38,6 +38,31 @@ export const useQuizInvitations = ({ userId, enabled = true }: UseQuizInvitation
   const [isSending, setIsSending] = useState(false);
   const [isAccepting, setIsAccepting] = useState(false);
 
+  // Cleanup stale waiting battles (older than 5 minutes)
+  const cleanupStaleBattles = useCallback(async (): Promise<void> => {
+    if (!userId) return;
+    
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    
+    // Find battles where user is a participant with status 'waiting' and older than 5 minutes
+    const { data: staleBattles } = await supabase
+      .from('quiz_battle_players')
+      .select('battle_id, quiz_battles!inner(status, created_at)')
+      .eq('user_id', userId)
+      .eq('quiz_battles.status', 'waiting')
+      .lt('quiz_battles.created_at', fiveMinutesAgo);
+    
+    if (staleBattles && staleBattles.length > 0) {
+      const battleIds = staleBattles.map(b => b.battle_id);
+      await supabase
+        .from('quiz_battles')
+        .update({ status: 'cancelled', ended_at: new Date().toISOString() })
+        .in('id', battleIds);
+      
+      console.log('[QuizInvitations] Cleaned up stale battles:', battleIds);
+    }
+  }, [userId]);
+
   const fetchPendingInvitations = useCallback(async () => {
     if (!userId || !enabled) return;
 
@@ -112,8 +137,21 @@ export const useQuizInvitations = ({ userId, enabled = true }: UseQuizInvitation
       const { data: existing } = await invitationsTable().select('id').eq('sender_id', userId).eq('recipient_id', recipientId).eq('status', 'pending').maybeSingle();
       if (existing) { toast.error('Invitation déjà en attente'); setIsSending(false); return null; }
 
-      const { data: hasActive } = await supabase.rpc('user_has_active_battle', { p_user_id: userId });
-      if (hasActive) { toast.error('Vous êtes déjà en partie'); setIsSending(false); return null; }
+      // Check for active battle
+      let { data: hasActive } = await supabase.rpc('user_has_active_battle', { p_user_id: userId });
+      
+      if (hasActive) { 
+        // Try cleanup of stale battles first
+        await cleanupStaleBattles();
+        
+        // Re-check after cleanup
+        const { data: stillActive } = await supabase.rpc('user_has_active_battle', { p_user_id: userId });
+        if (stillActive) {
+          toast.error('Vous êtes déjà en partie'); 
+          setIsSending(false); 
+          return null; 
+        }
+      }
 
       const { data: invitation, error } = await invitationsTable().insert({ sender_id: userId, recipient_id: recipientId, subject_id: config.subjectId, grade_level: config.gradeLevel, difficulty: config.difficulty }).select().single();
       if (error) { toast.error('Erreur d\'envoi'); setIsSending(false); return null; }
@@ -157,5 +195,5 @@ export const useQuizInvitations = ({ userId, enabled = true }: UseQuizInvitation
     return true;
   }, [userId]);
 
-  return { pendingInvitations, sentInvitation, isSending, isAccepting, sendInvitation, acceptInvitation, declineInvitation, cancelInvitation, refreshInvitations: fetchPendingInvitations };
+  return { pendingInvitations, sentInvitation, isSending, isAccepting, sendInvitation, acceptInvitation, declineInvitation, cancelInvitation, refreshInvitations: fetchPendingInvitations, cleanupStaleBattles };
 };
