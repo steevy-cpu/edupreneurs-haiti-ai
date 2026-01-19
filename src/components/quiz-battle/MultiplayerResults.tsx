@@ -6,7 +6,8 @@ import {
   Home, 
   Zap,
   Target,
-  Star
+  Star,
+  ArrowLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BattleResult } from '@/pages/QuizBattleSolo';
@@ -95,6 +96,17 @@ export const MultiplayerResults = ({
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Back button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onBackToMenu}
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground -mb-2"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Retour au jeu
+      </Button>
+
       {/* Result header with Jude */}
       <Card className={cn("border-2 overflow-hidden relative", resultConfig.bg, resultConfig.borderColor)}>
         <CardContent className="py-8 text-center relative">
