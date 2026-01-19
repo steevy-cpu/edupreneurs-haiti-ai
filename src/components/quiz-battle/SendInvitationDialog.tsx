@@ -246,7 +246,7 @@ export const SendInvitationDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto px-4 sm:px-6">
         {/* Configure Step */}
         {step === 'configure' && (
           <>
@@ -260,31 +260,31 @@ export const SendInvitationDialog = ({
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-5 py-4">
-              {/* Player Card */}
-              <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
+            <div className="space-y-4 py-3">
+              {/* Player Card - Compact on mobile */}
+              <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg bg-muted/50">
                 <div className="relative">
-                  <Avatar className="h-14 w-14 border-2 border-success">
+                  <Avatar className="h-12 w-12 sm:h-14 sm:w-14 border-2 border-success">
                     <AvatarImage src={player.avatar_url ? getAvatarUrl(player.avatar_url) : undefined} />
                     <AvatarFallback>{player.nickname?.[0]?.toUpperCase()}</AvatarFallback>
                   </Avatar>
-                  <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-success rounded-full border-2 border-background" />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-success rounded-full border-2 border-background" />
                 </div>
                 <div>
-                  <p className="font-semibold text-lg">{player.nickname}</p>
+                  <p className="font-semibold text-base sm:text-lg">{player.nickname}</p>
                   {player.academic_grade && (
-                    <p className="text-sm text-muted-foreground">{player.academic_grade}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">{player.academic_grade}</p>
                   )}
                 </div>
               </div>
 
-              {/* Step 1: Grade Selection */}
+              {/* Step 1: Grade Selection - Responsive grid */}
               <div className="space-y-2">
-                <Label className="flex items-center gap-2">
+                <Label className="flex items-center gap-2 text-sm">
                   <BookOpen className="w-4 h-4 text-primary" />
                   Niveau
                 </Label>
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-4 xs:grid-cols-5 sm:grid-cols-7 gap-1.5">
                   {gradeLevels.map((grade) => (
                     <Button
                       key={grade.id}
@@ -296,7 +296,7 @@ export const SendInvitationDialog = ({
                         setSelectedSeries(null);
                       }}
                       title={grade.fullName}
-                      className="min-w-[50px]"
+                      className="min-w-0 px-1.5 sm:px-2 text-xs sm:text-sm h-8"
                     >
                       {grade.label}
                     </Button>
