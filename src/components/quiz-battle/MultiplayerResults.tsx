@@ -3,8 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Trophy, 
-  Crown, 
-  Minus,
   RefreshCw, 
   Home, 
   Zap,
@@ -14,6 +12,11 @@ import {
 import { cn } from '@/lib/utils';
 import type { BattleResult } from '@/pages/QuizBattleSolo';
 import { useEffect } from 'react';
+
+// Jude/Eric images for different result states
+import judeCelebrating from '@/assets/eric-celebrating.png';
+import judeThinking from '@/assets/eric-thinking-pose.png';
+import judePointing from '@/assets/eric-pointing-left.png';
 
 interface OpponentProgress {
   score: number;
@@ -56,37 +59,67 @@ export const MultiplayerResults = ({
   // Celebration animation for winner (simple CSS-based)
   useEffect(() => {
     if (isWinner) {
-      // Could add confetti library later, for now just log
       console.log('Winner celebration!');
     }
   }, [isWinner]);
 
-  const getResultMessage = () => {
-    if (isWinner) return { text: 'Victoire! 🏆', color: 'text-success', bg: 'bg-success/10' };
-    if (isDraw) return { text: 'Égalité! 🤝', color: 'text-accent', bg: 'bg-accent/10' };
-    return { text: 'Défaite 😔', color: 'text-muted-foreground', bg: 'bg-muted' };
+  const getResultConfig = () => {
+    if (isWinner) return { 
+      text: 'Victoire!', 
+      color: 'text-success', 
+      bg: 'bg-gradient-to-br from-success/20 to-success/5',
+      borderColor: 'border-success/50',
+      image: judeCelebrating,
+      subtitle: `Tu as battu ${opponent?.nickname || 'ton adversaire'}!`
+    };
+    if (isDraw) return { 
+      text: 'Égalité!', 
+      color: 'text-accent', 
+      bg: 'bg-gradient-to-br from-accent/20 to-accent/5',
+      borderColor: 'border-accent/50',
+      image: judeThinking,
+      subtitle: 'Match serré!'
+    };
+    return { 
+      text: 'Défaite', 
+      color: 'text-muted-foreground', 
+      bg: 'bg-gradient-to-br from-muted to-background',
+      borderColor: 'border-muted',
+      image: judePointing,
+      subtitle: 'La prochaine sera la bonne!'
+    };
   };
 
-  const resultMessage = getResultMessage();
+  const resultConfig = getResultConfig();
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Result header */}
-      <Card className={cn("border-2 overflow-hidden", resultMessage.bg)}>
-        <CardContent className="py-8 text-center">
-          {isWinner && <Crown className="w-16 h-16 text-yellow-500 mx-auto mb-4 animate-bounce" />}
-          {isDraw && <Minus className="w-16 h-16 text-accent mx-auto mb-4" />}
-          {isLoser && <Trophy className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />}
+      {/* Result header with Jude */}
+      <Card className={cn("border-2 overflow-hidden relative", resultConfig.bg, resultConfig.borderColor)}>
+        <CardContent className="py-8 text-center relative">
+          {/* Trophy icon for context */}
+          <Trophy className={cn(
+            "w-12 h-12 mx-auto mb-4",
+            isWinner ? "text-yellow-500" : "text-muted-foreground/50"
+          )} />
           
-          <h1 className={cn("text-3xl font-bold mb-2", resultMessage.color)}>
-            {resultMessage.text}
+          <h1 className={cn("text-3xl font-bold mb-2", resultConfig.color)}>
+            {resultConfig.text}
           </h1>
           
-          {isWinner && (
-            <p className="text-muted-foreground">
-              Tu as battu {opponent?.nickname || 'ton adversaire'}!
-            </p>
-          )}
+          <p className="text-muted-foreground text-sm">
+            {resultConfig.subtitle}
+          </p>
+
+          {/* Jude character image - positioned in corner */}
+          <img 
+            src={resultConfig.image} 
+            alt="Jude" 
+            className={cn(
+              "absolute -right-2 -top-2 w-24 h-28 object-contain pointer-events-none",
+              isWinner && "animate-bounce"
+            )}
+          />
         </CardContent>
       </Card>
 
