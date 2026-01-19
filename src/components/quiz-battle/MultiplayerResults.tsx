@@ -38,7 +38,7 @@ export const MultiplayerResults = ({
 }: MultiplayerResultsProps) => {
   // For real-time multiplayer, use roundsWon if available
   const myRoundsWon = myResult.roundsWon ?? myResult.correctAnswers;
-  const opponentRoundsWon = opponentResult?.correctAnswers || 0;
+  const opponentRoundsWon = myResult.opponentRoundsWon ?? (opponentResult?.correctAnswers || 0);
   
   // Determine winner based on rounds won (for synchronized mode) or score
   const isWinner = myResult.roundsWon !== undefined 
