@@ -2567,6 +2567,7 @@ export type Database = {
           time_per_question: number
           total_questions: number
           updated_at: string
+          winner_id: string | null
         }
         Insert: {
           created_at?: string
@@ -2586,6 +2587,7 @@ export type Database = {
           time_per_question?: number
           total_questions?: number
           updated_at?: string
+          winner_id?: string | null
         }
         Update: {
           created_at?: string
@@ -2605,6 +2607,7 @@ export type Database = {
           time_per_question?: number
           total_questions?: number
           updated_at?: string
+          winner_id?: string | null
         }
         Relationships: [
           {
