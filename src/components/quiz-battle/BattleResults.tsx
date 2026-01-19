@@ -28,6 +28,7 @@ export const BattleResults = ({ result, onPlayAgain, onBackToMenu }: BattleResul
   const [showDetails, setShowDetails] = useState(false);
 
   const getScoreMessage = () => {
+    if (result.wasAbandoned) return { text: 'Quiz interrompu', color: 'text-destructive' };
     if (result.score === 100) return { text: 'Parfait! 🎉', color: 'text-success' };
     if (result.score >= 80) return { text: 'Excellent! 🌟', color: 'text-primary' };
     if (result.score >= 60) return { text: 'Bien joué! 👍', color: 'text-accent' };
@@ -48,7 +49,19 @@ export const BattleResults = ({ result, onPlayAgain, onBackToMenu }: BattleResul
     .map(q => q.concept);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 sm:space-y-6 animate-fade-in">
+      {/* Abandoned Quiz Warning */}
+      {result.wasAbandoned && (
+        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 sm:p-4">
+          <p className="text-destructive font-medium text-center text-sm sm:text-base">
+            ⚠️ Quiz interrompu - Aucun XP ni crédit n'a été attribué
+          </p>
+          <p className="text-xs sm:text-sm text-muted-foreground text-center mt-1">
+            Termine un quiz pour gagner des récompenses!
+          </p>
+        </div>
+      )}
+
       {/* Main Score Card */}
       <Card className="border-2 overflow-hidden">
         <div className={cn(
