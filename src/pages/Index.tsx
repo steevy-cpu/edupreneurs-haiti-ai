@@ -21,7 +21,7 @@ const judeProfile = () => import("@/assets/jude-profile.jpeg").then(m => m.defau
 
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X, BookOpen, Trophy, MessageCircle, Newspaper, Users, GraduationCap, Heart, FileText, Mail, Phone, MapPin } from "lucide-react";
-import { VisitorTypeSelector } from "@/components/visitor/VisitorTypeSelector";
+import { VisitorTypeSelector, VisitorBanner } from "@/components/visitor";
 
 // Lazy load chatbot for better initial page load
 const HomeChatbot = lazy(() => import("@/components/HomeChatbot").then(module => ({ default: module.HomeChatbot })));
@@ -190,7 +190,9 @@ const Index = () => {
   ], []);
 
   return (
-    <div className="min-h-screen bg-background font-poppins">
+    <>
+      <VisitorBanner />
+      <div className="min-h-screen bg-background font-poppins">
       {/* SEO Meta Tags */}
       <Helmet>
         <title>EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA | Plateforme MENFP</title>
@@ -943,6 +945,7 @@ const Index = () => {
         onOpenChange={setShowVisitorSelector} 
       />
     </div>
+    </>
   );
 };
 

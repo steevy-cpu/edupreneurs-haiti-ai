@@ -5,7 +5,7 @@ import AuthHeader from "@/components/auth/AuthHeader";
 import AuthSidebar from "@/components/auth/AuthSidebar";
 import { Button } from "@/components/ui/button";
 import { Telescope } from "lucide-react";
-import { VisitorTypeSelector } from "@/components/visitor/VisitorTypeSelector";
+import { VisitorTypeSelector, VisitorBanner } from "@/components/visitor";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useVisitor } from "@/contexts/VisitorContext";
 
@@ -37,7 +37,9 @@ function AuthContent() {
   const { isVisitor } = useVisitor();
 
   return (
-    <div className="auth-page min-h-screen bg-background">
+    <>
+      <VisitorBanner />
+      <div className="auth-page min-h-screen bg-background">
       <AuthHeader />
 
       {/* Main Content */}
@@ -134,6 +136,7 @@ function AuthContent() {
         onOpenChange={setShowVisitorSelector} 
       />
     </div>
+    </>
   );
 }
 

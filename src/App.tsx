@@ -157,7 +157,7 @@ const App = () => (
                 <CookieConsent />
                 <GlobalMusicPlayer />
                 <VisitorMusicSync />
-                <VisitorBanner />
+                
                 <Suspense fallback={null}>
                   <VisitorTour />
                 </Suspense>
