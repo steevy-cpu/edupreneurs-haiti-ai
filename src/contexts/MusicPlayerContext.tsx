@@ -112,6 +112,9 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
       // Mixed Study Compilations
       { id: "jgpJVI3tDbY", title: "Mix Classique - 4h Concentration", thumbnail: "https://i.ytimg.com/vi/jgpJVI3tDbY/hqdefault.jpg" },
       { id: "4PUHBL1vMNY", title: "Meilleure Musique Classique Étude", thumbnail: "https://i.ytimg.com/vi/4PUHBL1vMNY/hqdefault.jpg" },
+      
+      // User Requested
+      { id: "pxrNYPc0GmQ", title: "Musique pour Étudier", thumbnail: "https://i.ytimg.com/vi/pxrNYPc0GmQ/hqdefault.jpg" },
     ];
     
     setTracks(curatedTracks);
