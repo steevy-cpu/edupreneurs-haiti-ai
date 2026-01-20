@@ -61,6 +61,14 @@ export const RATE_LIMITS = {
     keyPrefix: 'general'
   },
   
+  // Home page chatbot: More permissive for anonymous visitors
+  HOME_CHAT: {
+    windowMs: 60 * 1000,      // 1 minute
+    maxRequests: 60,          // Auth: 60 req/min
+    maxAnonRequests: 20,      // Anon: 20 req/min (doubled from AI_TUTOR)
+    keyPrefix: 'home_chat'
+  },
+  
   // TTS/Avatar generation: Resource-intensive, stricter limits
   RESOURCE_INTENSIVE: {
     windowMs: 60 * 1000,      // 1 minute
