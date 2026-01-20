@@ -266,49 +266,49 @@ const QuizBattleLeaderboard = () => {
           </Card>
         )}
 
-        {/* Top 3 podium */}
+        {/* Top 3 podium - optimized for mobile */}
         {!isLoading && entries.length >= 3 && (
-          <div className="flex justify-center items-end gap-2 py-4">
+          <div className="flex justify-center items-end gap-1 sm:gap-2 py-4">
             {/* 2nd place */}
             <div className="flex flex-col items-center">
-              <Avatar className="h-14 w-14 border-2 border-gray-400">
+              <Avatar className="h-10 w-10 sm:h-14 sm:w-14 border-2 border-gray-400">
                 <AvatarImage src={entries[1]?.avatar_url || undefined} />
-                <AvatarFallback>{entries[1]?.nickname?.[0]?.toUpperCase() || '?'}</AvatarFallback>
+                <AvatarFallback className="text-sm">{entries[1]?.nickname?.[0]?.toUpperCase() || '?'}</AvatarFallback>
               </Avatar>
-              <div className="bg-gray-400 text-white rounded-t-lg px-6 py-2 mt-2 text-center">
-                <Medal className="w-5 h-5 mx-auto mb-1" />
-                <p className="text-xs font-medium truncate max-w-[80px]">{entries[1]?.nickname}</p>
-                <p className="text-sm font-bold">{entries[1]?.total_xp} XP</p>
+              <div className="bg-gray-400 text-white rounded-t-lg px-3 sm:px-6 py-1.5 sm:py-2 mt-2 text-center">
+                <Medal className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-0.5 sm:mb-1" />
+                <p className="text-[10px] sm:text-xs font-medium truncate max-w-[60px] sm:max-w-[80px]">{entries[1]?.nickname}</p>
+                <p className="text-xs sm:text-sm font-bold">{entries[1]?.total_xp} XP</p>
               </div>
-              <div className="bg-gray-400/80 w-full h-16 rounded-b-lg"></div>
+              <div className="bg-gray-400/80 w-full h-12 sm:h-16 rounded-b-lg"></div>
             </div>
 
             {/* 1st place */}
             <div className="flex flex-col items-center -mt-4">
-              <Avatar className="h-16 w-16 border-2 border-yellow-500 ring-2 ring-yellow-300">
+              <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-yellow-500 ring-2 ring-yellow-300">
                 <AvatarImage src={entries[0]?.avatar_url || undefined} />
-                <AvatarFallback>{entries[0]?.nickname?.[0]?.toUpperCase() || '?'}</AvatarFallback>
+                <AvatarFallback className="text-sm sm:text-base">{entries[0]?.nickname?.[0]?.toUpperCase() || '?'}</AvatarFallback>
               </Avatar>
-              <div className="bg-yellow-500 text-white rounded-t-lg px-8 py-2 mt-2 text-center">
-                <Crown className="w-6 h-6 mx-auto mb-1" />
-                <p className="text-xs font-medium truncate max-w-[80px]">{entries[0]?.nickname}</p>
-                <p className="text-sm font-bold">{entries[0]?.total_xp} XP</p>
+              <div className="bg-yellow-500 text-white rounded-t-lg px-4 sm:px-8 py-1.5 sm:py-2 mt-2 text-center">
+                <Crown className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-0.5 sm:mb-1" />
+                <p className="text-[10px] sm:text-xs font-medium truncate max-w-[60px] sm:max-w-[80px]">{entries[0]?.nickname}</p>
+                <p className="text-xs sm:text-sm font-bold">{entries[0]?.total_xp} XP</p>
               </div>
-              <div className="bg-yellow-500/80 w-full h-24 rounded-b-lg"></div>
+              <div className="bg-yellow-500/80 w-full h-18 sm:h-24 rounded-b-lg"></div>
             </div>
 
             {/* 3rd place */}
             <div className="flex flex-col items-center">
-              <Avatar className="h-12 w-12 border-2 border-amber-600">
+              <Avatar className="h-9 w-9 sm:h-12 sm:w-12 border-2 border-amber-600">
                 <AvatarImage src={entries[2]?.avatar_url || undefined} />
-                <AvatarFallback>{entries[2]?.nickname?.[0]?.toUpperCase() || '?'}</AvatarFallback>
+                <AvatarFallback className="text-xs sm:text-sm">{entries[2]?.nickname?.[0]?.toUpperCase() || '?'}</AvatarFallback>
               </Avatar>
-              <div className="bg-amber-600 text-white rounded-t-lg px-5 py-2 mt-2 text-center">
-                <Medal className="w-4 h-4 mx-auto mb-1" />
-                <p className="text-xs font-medium truncate max-w-[70px]">{entries[2]?.nickname}</p>
-                <p className="text-sm font-bold">{entries[2]?.total_xp} XP</p>
+              <div className="bg-amber-600 text-white rounded-t-lg px-2.5 sm:px-5 py-1.5 sm:py-2 mt-2 text-center">
+                <Medal className="w-3.5 h-3.5 sm:w-4 sm:h-4 mx-auto mb-0.5 sm:mb-1" />
+                <p className="text-[10px] sm:text-xs font-medium truncate max-w-[55px] sm:max-w-[70px]">{entries[2]?.nickname}</p>
+                <p className="text-xs sm:text-sm font-bold">{entries[2]?.total_xp} XP</p>
               </div>
-              <div className="bg-amber-600/80 w-full h-12 rounded-b-lg"></div>
+              <div className="bg-amber-600/80 w-full h-10 sm:h-12 rounded-b-lg"></div>
             </div>
           </div>
         )}
