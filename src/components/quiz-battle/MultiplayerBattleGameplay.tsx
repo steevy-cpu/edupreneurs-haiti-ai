@@ -179,10 +179,39 @@ export const MultiplayerBattleGameplay = ({
     playQuestionStart();
   }, [maxTime, playQuestionStart]);
 
-  const finishGame = useCallback(() => {
+  const finishGame = useCallback(async () => {
     const correctCount = answers.filter((a) => a.correct).length;
     
     playGameComplete();
+    
+    // Fetch authoritative round_answers from database
+    const { data: battle } = await supabase
+      .from('quiz_battles')
+      .select('round_answers')
+      .eq('id', battleId)
+      .single();
+    
+    // Compute actual rounds won from server data
+    let serverMyRoundsWon = 0;
+    let serverOpponentRoundsWon = 0;
+    
+    if (battle?.round_answers && Array.isArray(battle.round_answers)) {
+      const roundAnswers = battle.round_answers as unknown as RoundAnswer[];
+      for (const round of roundAnswers) {
+        if (round && round.winner_id === userId) {
+          serverMyRoundsWon++;
+        } else if (round && round.winner_id === opponent.id) {
+          serverOpponentRoundsWon++;
+        }
+      }
+    }
+    
+    console.log('[MultiplayerGameplay] Final scores from server:', {
+      myRounds: serverMyRoundsWon,
+      opponentRounds: serverOpponentRoundsWon,
+      localMyRounds: myRoundsWon,
+      localOpponentRounds: opponentRoundsWon
+    });
     
     let xp = correctCount * 10;
     const timeBonus = Math.round(answers.filter(a => a.correct && a.timeMs < 5000).length * 5);
@@ -202,10 +231,10 @@ export const MultiplayerBattleGameplay = ({
       answers,
       questions,
       isPerfect: correctCount === questions.length,
-      roundsWon: myRoundsWon,
-      opponentRoundsWon: opponentRoundsWon,
+      roundsWon: serverMyRoundsWon,
+      opponentRoundsWon: serverOpponentRoundsWon,
     });
-  }, [answers, questions, myRoundsWon, onComplete, playGameComplete]);
+  }, [answers, questions, battleId, userId, opponent.id, myRoundsWon, opponentRoundsWon, onComplete, playGameComplete]);
 
   const handleAnswer = useCallback(async (answerIndex: number) => {
     if (showFeedback || waitingForOpponent || submitting) return;
