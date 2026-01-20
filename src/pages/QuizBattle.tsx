@@ -69,11 +69,11 @@ const QuizBattle = () => {
     navigate('/quiz-battle/lobby?mode=random');
   };
 
-  const handleJoinWithCode = async () => {
+  const handleJoinWithCode = () => {
     const code = joinCode.trim().toUpperCase();
     
-    if (!code || code.length < 4) {
-      toast.error('Entre un code d\'invitation valide');
+    if (!code || code.length !== 6) {
+      toast.error('Le code doit contenir 6 caractères');
       return;
     }
 
@@ -82,32 +82,8 @@ const QuizBattle = () => {
       return;
     }
 
-    setIsJoining(true);
-    
-    try {
-      // Verify the code exists and battle is still waiting
-      const { data: battle, error } = await supabase
-        .from('quiz_battles')
-        .select('id, status')
-        .eq('invite_code', code)
-        .eq('status', 'waiting')
-        .maybeSingle();
-
-      if (error) throw error;
-
-      if (!battle) {
-        toast.error('Code invalide ou partie expirée');
-        setIsJoining(false);
-        return;
-      }
-
-      // Navigate to lobby with the code
-      navigate(`/quiz-battle/lobby?mode=friend&joinCode=${code}`);
-    } catch (error) {
-      console.error('Error joining with code:', error);
-      toast.error('Erreur lors de la connexion');
-      setIsJoining(false);
-    }
+    // Navigate directly - let lobby handle validation (3G optimization)
+    navigate(`/quiz-battle/lobby?mode=friend&joinCode=${code}`);
   };
 
   if (isLoading) {
@@ -164,10 +140,10 @@ const QuizBattle = () => {
             <div className="space-y-3">
               <Input
                 value={joinCode}
-                onChange={(e) => setJoinCode(e.target.value.toUpperCase().slice(0, 8))}
+                onChange={(e) => setJoinCode(e.target.value.toUpperCase().slice(0, 6))}
                 placeholder="XXXXXX"
                 className="text-center text-xl font-mono tracking-widest h-14 uppercase"
-                maxLength={8}
+                maxLength={6}
                 disabled={isJoining}
               />
               <Button
