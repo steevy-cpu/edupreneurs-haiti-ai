@@ -123,7 +123,7 @@ const QuizBattleLobby = () => {
   });
 
   // Sounds hook for lobby music
-  const { startLobbyMusic, stopLobbyMusic, isLobbyMusicPlaying, isMuted, toggleMute } = useQuizBattleSounds();
+  const { startLobbyMusic, stopLobbyMusic, transitionToGame, isLobbyMusicPlaying, isMuted, toggleMute } = useQuizBattleSounds();
 
   // Start/stop lobby music based on waiting phase
   useEffect(() => {
@@ -251,13 +251,14 @@ const QuizBattleLobby = () => {
     return () => clearInterval(interval);
   }, [invitationExpiresAt, isWaitingForInvitation, navigate]);
 
-  // Navigate to game when starting
+  // Navigate to game when starting with smooth transition
   useEffect(() => {
     if (multiplayer.phase === 'starting' && multiplayer.battleId) {
-      stopLobbyMusic();
-      navigate(`/quiz-battle/multiplayer/${multiplayer.battleId}`);
+      transitionToGame().then(() => {
+        navigate(`/quiz-battle/multiplayer/${multiplayer.battleId}`);
+      });
     }
-  }, [multiplayer.phase, multiplayer.battleId, navigate]);
+  }, [multiplayer.phase, multiplayer.battleId, navigate, transitionToGame]);
 
   // Auto-join when user is authenticated and joinCode is in URL
   useEffect(() => {
