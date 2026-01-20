@@ -1,12 +1,6 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
-import { 
-  getPreloadedSound, 
-  preloadQuizBattleSounds, 
-  isSoundsPreloaded,
-  QuizSoundType 
-} from '@/utils/quizBattleSoundPreloader';
 
-// Kahoot-style melody notes for fallback (frequencies in Hz)
+// Kahoot-style melody notes for lobby music (frequencies in Hz)
 const LOBBY_MELODY = [
   { freq: 523.25, dur: 0.15 }, // C5
   { freq: 659.25, dur: 0.15 }, // E5
@@ -29,41 +23,20 @@ export const useQuizBattleSounds = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const tickIntervalRef = useRef<number | null>(null);
   const lobbyIntervalRef = useRef<number | null>(null);
-  const lobbyAudioRef = useRef<HTMLAudioElement | null>(null);
-  const fadeIntervalRef = useRef<number | null>(null);
   
   const [isMuted, setIsMuted] = useState(() => {
     return localStorage.getItem('quiz-sounds-muted') === 'true';
   });
   const [isLobbyMusicPlaying, setIsLobbyMusicPlaying] = useState(false);
-  const [soundsReady, setSoundsReady] = useState(false);
-
-  // Preload sounds on mount
-  useEffect(() => {
-    if (isSoundsPreloaded()) {
-      setSoundsReady(true);
-    } else {
-      preloadQuizBattleSounds().then(() => {
-        setSoundsReady(true);
-      });
-    }
-  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (fadeIntervalRef.current) {
-        clearInterval(fadeIntervalRef.current);
-      }
       if (tickIntervalRef.current) {
         clearInterval(tickIntervalRef.current);
       }
       if (lobbyIntervalRef.current) {
         clearInterval(lobbyIntervalRef.current);
-      }
-      if (lobbyAudioRef.current) {
-        lobbyAudioRef.current.pause();
-        lobbyAudioRef.current = null;
       }
       if (audioContextRef.current) {
         audioContextRef.current.close();
@@ -81,7 +54,7 @@ export const useQuizBattleSounds = () => {
     return audioContextRef.current;
   }, []);
 
-  // Web Audio synthesis for ticking and fallbacks
+  // Web Audio synthesis for ticking
   const playTone = useCallback((frequency: number, duration: number, type: OscillatorType = 'sine', volume = 0.3) => {
     if (isMuted) return;
     try {
@@ -105,27 +78,8 @@ export const useQuizBattleSounds = () => {
     }
   }, [isMuted, getAudioContext]);
 
-  // Play cached ElevenLabs sound with synthesized fallback
-  const playSound = useCallback((soundType: QuizSoundType, fallbackFn?: () => void) => {
-    if (isMuted) return;
-    
-    const audio = getPreloadedSound(soundType);
-    if (audio) {
-      // Clone the audio element for overlapping sounds
-      const audioClone = audio.cloneNode() as HTMLAudioElement;
-      audioClone.volume = soundType === 'lobby-music' ? 0.4 : 0.6;
-      audioClone.play().catch(() => {
-        // If play fails, try fallback
-        fallbackFn?.();
-      });
-    } else {
-      // Sounds not loaded yet, use fallback
-      fallbackFn?.();
-    }
-  }, [isMuted]);
-
-  // Synthesized fallback for correct sound
-  const playSynthesizedCorrect = useCallback(() => {
+  // Synthesized correct sound (ascending arpeggio)
+  const playCorrect = useCallback(() => {
     if (isMuted) return;
     try {
       const ctx = getAudioContext();
@@ -146,8 +100,8 @@ export const useQuizBattleSounds = () => {
     }
   }, [isMuted, getAudioContext]);
 
-  // Synthesized fallback for incorrect sound
-  const playSynthesizedIncorrect = useCallback(() => {
+  // Synthesized incorrect sound (descending buzz)
+  const playIncorrect = useCallback(() => {
     if (isMuted) return;
     try {
       const ctx = getAudioContext();
@@ -167,8 +121,8 @@ export const useQuizBattleSounds = () => {
     }
   }, [isMuted, getAudioContext]);
 
-  // Synthesized fallback for game start
-  const playSynthesizedGameStart = useCallback(() => {
+  // Synthesized game start (ascending scale)
+  const playGameStart = useCallback(() => {
     if (isMuted) return;
     try {
       const ctx = getAudioContext();
@@ -190,8 +144,8 @@ export const useQuizBattleSounds = () => {
     }
   }, [isMuted, getAudioContext]);
 
-  // Synthesized fallback for question start (whoosh)
-  const playSynthesizedQuestionStart = useCallback(() => {
+  // Synthesized question start (whoosh)
+  const playQuestionStart = useCallback(() => {
     if (isMuted) return;
     try {
       const ctx = getAudioContext();
@@ -211,8 +165,8 @@ export const useQuizBattleSounds = () => {
     }
   }, [isMuted, getAudioContext]);
 
-  // Synthesized fallback for game complete
-  const playSynthesizedGameComplete = useCallback(() => {
+  // Synthesized game complete (victory jingle)
+  const playGameComplete = useCallback(() => {
     if (isMuted) return;
     try {
       const ctx = getAudioContext();
@@ -234,53 +188,7 @@ export const useQuizBattleSounds = () => {
     }
   }, [isMuted, getAudioContext]);
 
-  // Fade out lobby music smoothly
-  const fadeOutLobbyMusic = useCallback((duration = 500): Promise<void> => {
-    return new Promise((resolve) => {
-      // Stop synthesized loop if running
-      if (lobbyIntervalRef.current) {
-        clearInterval(lobbyIntervalRef.current);
-        lobbyIntervalRef.current = null;
-      }
-      
-      const audio = lobbyAudioRef.current;
-      if (!audio) {
-        setIsLobbyMusicPlaying(false);
-        resolve();
-        return;
-      }
-      
-      // Clear any existing fade
-      if (fadeIntervalRef.current) {
-        clearInterval(fadeIntervalRef.current);
-      }
-      
-      const startVolume = audio.volume;
-      const steps = 20;
-      const stepTime = duration / steps;
-      let currentStep = 0;
-      
-      fadeIntervalRef.current = window.setInterval(() => {
-        currentStep++;
-        audio.volume = Math.max(0, startVolume * (1 - currentStep / steps));
-        
-        if (currentStep >= steps) {
-          if (fadeIntervalRef.current) {
-            clearInterval(fadeIntervalRef.current);
-            fadeIntervalRef.current = null;
-          }
-          audio.pause();
-          audio.currentTime = 0;
-          audio.volume = 0.4; // Reset for next play
-          lobbyAudioRef.current = null;
-          setIsLobbyMusicPlaying(false);
-          resolve();
-        }
-      }, stepTime);
-    });
-  }, []);
-
-  // Play melody note for synthesized fallback
+  // Play melody note for lobby music
   const playMelodyNote = useCallback((frequency: number, duration: number, delay: number = 0) => {
     if (isMuted) return;
     try {
@@ -301,7 +209,7 @@ export const useQuizBattleSounds = () => {
     }
   }, [isMuted, getAudioContext]);
 
-  // Play bass note for synthesized fallback
+  // Play bass note for lobby music
   const playBassNote = useCallback((frequency: number, duration: number, delay: number = 0) => {
     if (isMuted) return;
     try {
@@ -322,8 +230,8 @@ export const useQuizBattleSounds = () => {
     }
   }, [isMuted, getAudioContext]);
 
-  // Synthesized lobby music fallback
-  const startSynthesizedLobbyMusic = useCallback(() => {
+  // Start synthesized lobby music loop
+  const startLobbyMusic = useCallback(() => {
     if (isMuted || isLobbyMusicPlaying) return;
     
     setIsLobbyMusicPlaying(true);
@@ -347,76 +255,23 @@ export const useQuizBattleSounds = () => {
     lobbyIntervalRef.current = window.setInterval(playMelodyLoop, loopDuration);
   }, [isMuted, isLobbyMusicPlaying, playMelodyNote, playBassNote]);
 
-  // Start lobby music with loop (ElevenLabs or fallback)
-  const startLobbyMusic = useCallback(() => {
-    if (isMuted || isLobbyMusicPlaying) return;
-    
-    const audio = getPreloadedSound('lobby-music');
-    if (audio) {
-      const audioClone = audio.cloneNode() as HTMLAudioElement;
-      audioClone.loop = true;
-      audioClone.volume = 0.4;
-      audioClone.currentTime = 0;
-      audioClone.play()
-        .then(() => {
-          lobbyAudioRef.current = audioClone;
-          setIsLobbyMusicPlaying(true);
-        })
-        .catch(() => {
-          // Fallback to synthesized lobby music
-          startSynthesizedLobbyMusic();
-        });
-    } else {
-      // Fallback to synthesized lobby music
-      startSynthesizedLobbyMusic();
-    }
-  }, [isMuted, isLobbyMusicPlaying, startSynthesizedLobbyMusic]);
-
-  // Stop lobby music (with fade)
+  // Stop lobby music
   const stopLobbyMusic = useCallback(() => {
-    // Also stop synthesized loop if running
     if (lobbyIntervalRef.current) {
       clearInterval(lobbyIntervalRef.current);
       lobbyIntervalRef.current = null;
     }
-    fadeOutLobbyMusic(400);
-  }, [fadeOutLobbyMusic]);
+    setIsLobbyMusicPlaying(false);
+  }, []);
 
   // Smooth transition from lobby to game
   const transitionToGame = useCallback(async (): Promise<void> => {
-    // Stop synthesized loop if running
-    if (lobbyIntervalRef.current) {
-      clearInterval(lobbyIntervalRef.current);
-      lobbyIntervalRef.current = null;
-    }
-    
-    await fadeOutLobbyMusic(400);
+    stopLobbyMusic();
     // Small delay before game start sound
     await new Promise(resolve => setTimeout(resolve, 100));
-  }, [fadeOutLobbyMusic]);
+  }, [stopLobbyMusic]);
 
-  // Sound functions with ElevenLabs + fallbacks
-  const playCorrect = useCallback(() => {
-    playSound('correct', playSynthesizedCorrect);
-  }, [playSound, playSynthesizedCorrect]);
-
-  const playIncorrect = useCallback(() => {
-    playSound('incorrect', playSynthesizedIncorrect);
-  }, [playSound, playSynthesizedIncorrect]);
-
-  const playQuestionStart = useCallback(() => {
-    playSound('question-start', playSynthesizedQuestionStart);
-  }, [playSound, playSynthesizedQuestionStart]);
-
-  const playGameStart = useCallback(() => {
-    playSound('game-start', playSynthesizedGameStart);
-  }, [playSound, playSynthesizedGameStart]);
-
-  const playGameComplete = useCallback(() => {
-    playSound('game-complete', playSynthesizedGameComplete);
-  }, [playSound, playSynthesizedGameComplete]);
-
-  // Tick sound (keep as Web Audio for rapid playback)
+  // Tick sound for timer
   const playTick = useCallback((urgent = false) => {
     if (isMuted) return;
     const frequency = urgent ? 600 : 440;
@@ -487,6 +342,5 @@ export const useQuizBattleSounds = () => {
     isLobbyMusicPlaying,
     isMuted,
     toggleMute,
-    soundsReady,
   };
 };
