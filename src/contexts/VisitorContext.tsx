@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type VisitorType = "student" | "parent" | "investor" | "educator" | null;
 
@@ -54,6 +54,24 @@ export const VisitorProvider = ({ children }: VisitorProviderProps) => {
       console.error("[VisitorContext] Error loading visitor state:", error);
     }
   }, []);
+
+  // Auto-clear visitor mode when user signs in
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' && isVisitor) {
+        console.log("[VisitorContext] User signed in, clearing visitor mode");
+        setIsVisitor(false);
+        setVisitorTypeState(null);
+        setTourStep(0);
+        setTourCompleted(false);
+        setTourActive(false);
+        setShowWelcomePopup(false);
+        sessionStorage.removeItem(VISITOR_STORAGE_KEY);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [isVisitor]);
 
   // Persist visitor state to sessionStorage
   useEffect(() => {
