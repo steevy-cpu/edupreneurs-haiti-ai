@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { AuthProvider, useAuth } from "@/components/auth";
 import AuthHeader from "@/components/auth/AuthHeader";
@@ -36,6 +36,11 @@ function AuthContent() {
   const { activeTab, setActiveTab, showVisitorSelector, setShowVisitorSelector } = useAuth();
   const { isVisitor } = useVisitor();
 
+  // Debug: Track showVisitorSelector state changes
+  useEffect(() => {
+    console.log('[Auth] showVisitorSelector changed to:', showVisitorSelector);
+  }, [showVisitorSelector]);
+
   return (
     <>
       <VisitorBanner />
@@ -59,7 +64,12 @@ function AuthContent() {
                     className="w-full gap-2 py-5 border-2 border-dashed border-primary/40 text-primary font-medium
                                hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-lg
                                transition-all duration-300 group"
-                    onClick={() => setShowVisitorSelector(true)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('[Auth] Visitor button clicked, calling setShowVisitorSelector(true)');
+                      setShowVisitorSelector(true);
+                    }}
                   >
                     <Telescope className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     <span>Découvrir la plateforme sans inscription</span>
