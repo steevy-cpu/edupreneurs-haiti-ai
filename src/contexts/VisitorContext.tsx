@@ -62,7 +62,6 @@ export const VisitorProvider = ({ children }: VisitorProviderProps) => {
       const { data: { session } } = await supabase.auth.getSession();
       // Only clear visitor mode if there's an ACTUAL authenticated session
       if (session?.user && isVisitor) {
-        console.log("[VisitorContext] Found existing session, clearing visitor mode");
         setIsVisitor(false);
         setVisitorTypeState(null);
         setTourStep(0);
@@ -78,7 +77,6 @@ export const VisitorProvider = ({ children }: VisitorProviderProps) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       // Only clear visitor mode if user actually signed in (has a session with a user)
       if (event === 'SIGNED_IN' && session?.user && isVisitor) {
-        console.log("[VisitorContext] User signed in, clearing visitor mode");
         setIsVisitor(false);
         setVisitorTypeState(null);
         setTourStep(0);
