@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useRef, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { 
+import {
   CourseLayout, 
   CourseHeader, 
   LessonCard, 
@@ -14,83 +13,33 @@ import {
   MonthQuickNav,
   AIPracticeSection
 } from "@/components/course";
-import { groupLessonsByMonth, MONTH_ORDER, BaseLesson, BaseSubject } from "@/utils/courseHelpers";
+import { groupLessonsByMonth, MONTH_ORDER } from "@/utils/courseHelpers";
 import { JudeChatbot } from "@/components/JudeChatbot";
 import { useUserGrade, GRADE_LABELS } from "@/hooks/useUserGrade";
+import { useCourseData } from "@/hooks/useCourseData";
 import { Lock } from "lucide-react";
 
 export default function DynamicCoursePage() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const [subject, setSubject] = useState<BaseSubject | null>(null);
-  const [lessons, setLessons] = useState<BaseLesson[]>([]);
-  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeMonth, setActiveMonth] = useState<string | undefined>();
   const monthRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  // User grade access
-  const { userGrade, canAccessGrade, isLoading: gradeLoading, isAuthenticated } = useUserGrade();
 
   // Decode URL-encoded characters
   const subjectSlug = slug ? decodeURIComponent(slug) : '';
 
-  useEffect(() => {
-    loadSubjectAndLessons();
-  }, [subjectSlug]);
+  // Unified data fetching with React Query (single re-render)
+  const { data, isLoading } = useCourseData(subjectSlug);
 
-  const loadSubjectAndLessons = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Load subject using the slug
-      const { data: subjectData, error: subjectError } = await supabase
-        .from('subjects')
-        .select('*')
-        .eq('slug', subjectSlug)
-        .maybeSingle();
+  // Extract data with defaults
+  const subject = data?.subject ?? null;
+  const lessons = data?.lessons ?? [];
+  const completedLessons = data?.completedLessons ?? [];
 
-      if (subjectError) throw subjectError;
-      
-      // Check if subject was found
-      if (!subjectData) {
-        console.error('Subject not found for slug:', subjectSlug);
-        setSubject(null);
-        setIsLoading(false);
-        return;
-      }
-      
-      setSubject(subjectData);
+  // Active month state for navigation (for MonthQuickNav highlighting)
+  const [activeMonth, setActiveMonth] = useState<string | undefined>();
 
-      // Load published lessons for this subject (including unpublished for "coming soon")
-      const { data: lessonsData, error: lessonsError } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('subject_id', subjectData.id)
-        .order('order_index');
-
-      if (lessonsError) throw lessonsError;
-      setLessons(lessonsData || []);
-
-      // Load completed lessons for current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: completions } = await supabase
-          .from('lesson_completions')
-          .select('lesson_slug')
-          .eq('user_id', user.id);
-        
-        if (completions) {
-          setCompletedLessons(completions.map(c => c.lesson_slug));
-        }
-      }
-    } catch (error) {
-      console.error('Error loading subject:', error);
-      toast.error("Erreur lors du chargement du cours");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // User grade access
+  const { userGrade, canAccessGrade, isLoading: gradeLoading, isAuthenticated } = useUserGrade();
 
   // Filter to only published lessons for progress calculation
   const publishedLessons = lessons.filter(l => l.is_published);

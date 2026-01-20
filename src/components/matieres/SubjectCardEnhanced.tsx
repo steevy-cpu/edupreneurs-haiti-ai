@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { toast } from "sonner";
+import { prefetchCourseData } from "@/hooks/useCourseData";
 
 interface SubjectCardEnhancedProps {
   id: string;
@@ -59,8 +61,16 @@ export function SubjectCardEnhanced({
   disableNavigation = false
 }: SubjectCardEnhancedProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isHovered, setIsHovered] = useState(false);
   const hasContent = lessons > 0;
+
+  // Prefetch course data on hover/touch for instant navigation
+  const handlePrefetch = () => {
+    if (hasContent && !disableNavigation) {
+      prefetchCourseData(queryClient, id);
+    }
+  };
 
   const getDifficultyBadge = () => {
     const configs = {
@@ -79,8 +89,12 @@ export function SubjectCardEnhanced({
             ? 'hover:shadow-xl hover:-translate-y-1 cursor-pointer border-border hover:border-primary/30' 
             : 'opacity-70 border-dashed'
         }`}
-        onMouseEnter={() => setIsHovered(true)}
+        onMouseEnter={() => { 
+          setIsHovered(true); 
+          handlePrefetch(); 
+        }}
         onMouseLeave={() => setIsHovered(false)}
+        onTouchStart={handlePrefetch}
         onClick={() => {
           if (disableNavigation) return;
           if (hasContent) {
