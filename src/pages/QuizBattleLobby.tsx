@@ -454,13 +454,13 @@ const QuizBattleLobby = () => {
       return (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={handleBack}>
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <Button variant="ghost" size="icon" onClick={handleBack} className="shrink-0">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
-              <div>
-                <h1 className="text-2xl font-bold">Revanche envoyée</h1>
-                <p className="text-muted-foreground">En attente de réponse</p>
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-bold truncate">Revanche envoyée</h1>
+                <p className="text-sm text-muted-foreground">En attente de réponse</p>
               </div>
             </div>
           </div>
@@ -506,13 +506,13 @@ const QuizBattleLobby = () => {
     if (step === 'join-code') {
       return (
         <div className="space-y-6">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={handleBack}>
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            <Button variant="ghost" size="icon" onClick={handleBack} className="shrink-0">
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <div>
-              <h1 className="text-2xl font-bold">Rejoindre une partie</h1>
-              <p className="text-muted-foreground">Entre le code d'invitation</p>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold truncate">Rejoindre une partie</h1>
+              <p className="text-sm text-muted-foreground">Entre le code d'invitation</p>
             </div>
           </div>
 
@@ -545,13 +545,13 @@ const QuizBattleLobby = () => {
       return (
         <div className="space-y-6">
           {mode === 'friend' && (
-            <div className="flex items-center gap-4 mb-6">
-              <Button variant="ghost" size="icon" onClick={() => navigate('/quiz-battle')}>
+            <div className="flex items-center gap-3 sm:gap-4 mb-6 min-w-0">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/quiz-battle')} className="shrink-0">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
-              <div>
-                <h1 className="text-2xl font-bold">Mode Ami</h1>
-                <p className="text-muted-foreground">Créer ou rejoindre une partie</p>
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-bold truncate">Mode Ami</h1>
+                <p className="text-sm text-muted-foreground">Créer ou rejoindre une partie</p>
               </div>
             </div>
           )}
@@ -601,16 +601,16 @@ const QuizBattleLobby = () => {
     if (step === 'waiting') {
       return (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={handleBack}>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+              <Button variant="ghost" size="icon" onClick={handleBack} className="shrink-0">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
-              <div>
-                <h1 className="text-2xl font-bold">
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-2xl font-bold truncate">
                   {mode === 'random' ? 'Recherche en cours' : 'En attente'}
                 </h1>
-                <p className="text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">
                   {multiplayer.phase === 'matched' || multiplayer.phase === 'ready'
                     ? 'Adversaire trouvé!'
                     : mode === 'random' 
@@ -624,7 +624,7 @@ const QuizBattleLobby = () => {
               variant="ghost" 
               size="icon"
               onClick={toggleMute}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground shrink-0"
             >
               {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
             </Button>
@@ -805,13 +805,13 @@ const QuizBattleLobby = () => {
     if (step === 'browse-players') {
       return (
         <div className="space-y-6">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={handleBack}>
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            <Button variant="ghost" size="icon" onClick={handleBack} className="shrink-0">
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <div>
-              <h1 className="text-2xl font-bold">Joueur Aléatoire</h1>
-              <p className="text-muted-foreground">Choisis un adversaire en ligne</p>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold truncate">Joueur Aléatoire</h1>
+              <p className="text-sm text-muted-foreground">Choisis un adversaire en ligne</p>
             </div>
           </div>
 

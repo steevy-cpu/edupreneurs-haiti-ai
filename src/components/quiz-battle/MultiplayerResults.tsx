@@ -138,55 +138,55 @@ export const MultiplayerResults = ({
         </CardContent>
       </Card>
 
-      {/* Score comparison - Clean avatar-based design */}
+      {/* Score comparison - Clean avatar-based design, mobile-optimized */}
       <Card>
-        <CardContent className="py-6">
-          <div className="flex items-center justify-center gap-6">
+        <CardContent className="py-4 sm:py-6">
+          <div className="flex items-center justify-center gap-3 sm:gap-6">
             {/* My score */}
             <div className={cn(
-              "flex flex-col items-center p-4 rounded-xl flex-1 max-w-[140px]",
+              "flex flex-col items-center p-2 sm:p-4 rounded-xl flex-1 max-w-[120px] sm:max-w-[140px]",
               isWinner ? "bg-success/10 ring-2 ring-success" : "bg-muted/50"
             )}>
-              <Avatar className="h-14 w-14 mb-2 ring-2 ring-offset-2 ring-offset-background ring-primary">
+              <Avatar className="h-10 w-10 sm:h-14 sm:w-14 mb-1 sm:mb-2 ring-2 ring-offset-2 ring-offset-background ring-primary">
                 <AvatarImage src={myProfile?.avatar_url || undefined} />
-                <AvatarFallback className="text-lg font-bold">
+                <AvatarFallback className="text-sm sm:text-lg font-bold">
                   {myProfile?.nickname?.[0]?.toUpperCase() || 'T'}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-xs text-muted-foreground mb-1 font-medium truncate max-w-[100px]">
+              <span className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1 font-medium truncate max-w-[80px] sm:max-w-[100px]">
                 {myProfile?.nickname || 'Toi'}
               </span>
               <div className={cn(
-                "text-4xl font-bold",
+                "text-2xl sm:text-4xl font-bold",
                 isWinner ? "text-success" : "text-foreground"
               )}>
                 {myRoundsWon}
               </div>
-              <span className="text-xs text-muted-foreground">manches</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground">manches</span>
             </div>
 
             {/* VS divider */}
-            <div className="text-xl font-bold text-muted-foreground">VS</div>
+            <div className="text-base sm:text-xl font-bold text-muted-foreground">VS</div>
 
             {/* Opponent score */}
             <div className={cn(
-              "flex flex-col items-center p-4 rounded-xl flex-1 max-w-[140px]",
+              "flex flex-col items-center p-2 sm:p-4 rounded-xl flex-1 max-w-[120px] sm:max-w-[140px]",
               isLoser ? "bg-success/10 ring-2 ring-success" : "bg-muted/50"
             )}>
-              <Avatar className="h-14 w-14 mb-2 ring-2 ring-offset-2 ring-offset-background ring-muted-foreground">
+              <Avatar className="h-10 w-10 sm:h-14 sm:w-14 mb-1 sm:mb-2 ring-2 ring-offset-2 ring-offset-background ring-muted-foreground">
                 <AvatarImage src={opponent?.avatar_url || undefined} />
-                <AvatarFallback className="text-lg">{opponent?.nickname?.[0]?.toUpperCase() || '?'}</AvatarFallback>
+                <AvatarFallback className="text-sm sm:text-lg">{opponent?.nickname?.[0]?.toUpperCase() || '?'}</AvatarFallback>
               </Avatar>
-              <span className="text-xs text-muted-foreground mb-1 font-medium truncate max-w-[100px]">
+              <span className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1 font-medium truncate max-w-[80px] sm:max-w-[100px]">
                 {opponent?.nickname || 'Adversaire'}
               </span>
               <div className={cn(
-                "text-4xl font-bold",
+                "text-2xl sm:text-4xl font-bold",
                 isLoser ? "text-success" : "text-foreground"
               )}>
                 {opponentRoundsWon}
               </div>
-              <span className="text-xs text-muted-foreground">manches</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground">manches</span>
             </div>
           </div>
         </CardContent>
