@@ -44,6 +44,7 @@ export interface BattleResult {
   wasAbandoned?: boolean;
   roundsWon?: number; // For multiplayer: number of rounds won
   opponentRoundsWon?: number; // For multiplayer: opponent's rounds won
+  opponentAbandoned?: boolean; // For multiplayer: opponent quit the game
 }
 
 const QuizBattleSolo = () => {
