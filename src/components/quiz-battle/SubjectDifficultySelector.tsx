@@ -247,23 +247,23 @@ export const SubjectDifficultySelector = ({
           <RadioGroup
             value={selectedDifficulty}
             onValueChange={(v) => setSelectedDifficulty(v as 'easy' | 'medium' | 'hard')}
-            className="grid grid-cols-3 gap-3"
+            className="grid grid-cols-3 gap-2 sm:gap-3"
           >
             {difficultyOptions.map((option) => (
               <Label
                 key={option.value}
                 htmlFor={option.value}
                 className={cn(
-                  "flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all",
+                  "flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all min-h-[100px] sm:min-h-[110px]",
                   selectedDifficulty === option.value
-                    ? `border-current ${option.bg} ${option.color}`
+                    ? `border-current ${option.bg} ${option.color} shadow-sm`
                     : "border-transparent bg-muted/50 hover:bg-muted"
                 )}
               >
                 <RadioGroupItem value={option.value} id={option.value} className="sr-only" />
-                <option.icon className={cn("w-6 h-6 mb-1", option.color)} />
-                <span className="font-medium text-sm">{option.label}</span>
-                <span className="text-xs text-muted-foreground">{option.time}s / question</span>
+                <option.icon className={cn("w-7 h-7 sm:w-8 sm:h-8 mb-2", option.color)} />
+                <span className="font-semibold text-sm sm:text-base">{option.label}</span>
+                <span className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">{option.time}s / question</span>
               </Label>
             ))}
           </RadioGroup>
