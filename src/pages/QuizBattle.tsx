@@ -10,11 +10,16 @@ import { BattleBadgesDisplay } from '@/components/quiz-battle/BattleBadgesDispla
 import { BattleLeaderboardPreview } from '@/components/quiz-battle/BattleLeaderboardPreview';
 import { VisitorBattleOverlay } from '@/components/quiz-battle/VisitorBattleOverlay';
 import { useBattleStats } from '@/hooks/useBattleStats';
-import { Swords, Trophy, Target, Zap } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Swords, Trophy, Target, Zap, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const QuizBattle = () => {
   const navigate = useNavigate();
+  const [joinCode, setJoinCode] = useState('');
+  const [isJoining, setIsJoining] = useState(false);
   const { isVisitor } = useVisitor();
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,6 +69,47 @@ const QuizBattle = () => {
     navigate('/quiz-battle/lobby?mode=random');
   };
 
+  const handleJoinWithCode = async () => {
+    const code = joinCode.trim().toUpperCase();
+    
+    if (!code || code.length < 4) {
+      toast.error('Entre un code d\'invitation valide');
+      return;
+    }
+
+    if (isVisitor) {
+      toast.info('Créez un compte pour rejoindre une partie!');
+      return;
+    }
+
+    setIsJoining(true);
+    
+    try {
+      // Verify the code exists and battle is still waiting
+      const { data: battle, error } = await supabase
+        .from('quiz_battles')
+        .select('id, status')
+        .eq('invite_code', code)
+        .eq('status', 'waiting')
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (!battle) {
+        toast.error('Code invalide ou partie expirée');
+        setIsJoining(false);
+        return;
+      }
+
+      // Navigate to lobby with the code
+      navigate(`/quiz-battle/lobby?mode=friend&joinCode=${code}`);
+    } catch (error) {
+      console.error('Error joining with code:', error);
+      toast.error('Erreur lors de la connexion');
+      setIsJoining(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <Layout>
@@ -108,6 +154,39 @@ const QuizBattle = () => {
             <div className="text-xs text-muted-foreground">Niveau</div>
           </div>
         </div>
+
+        {/* Join with Code Section */}
+        <Card className="border-2 border-dashed border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardContent className="py-6">
+            <h2 className="text-xl font-bold text-foreground mb-1">Rejoindre une partie</h2>
+            <p className="text-sm text-muted-foreground mb-4">Entre le code d'invitation</p>
+            
+            <div className="space-y-3">
+              <Input
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value.toUpperCase().slice(0, 8))}
+                placeholder="XXXXXX"
+                className="text-center text-xl font-mono tracking-widest h-14 uppercase"
+                maxLength={8}
+                disabled={isJoining}
+              />
+              <Button
+                onClick={handleJoinWithCode}
+                disabled={!joinCode.trim() || isJoining}
+                className="w-full h-12 text-base"
+              >
+                {isJoining ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Connexion...
+                  </>
+                ) : (
+                  'Rejoindre'
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Mode Selector */}
         <BattleModeSelector
