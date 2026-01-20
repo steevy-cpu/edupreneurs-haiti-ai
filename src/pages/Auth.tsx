@@ -36,11 +36,6 @@ function AuthContent() {
   const { activeTab, setActiveTab, showVisitorSelector, setShowVisitorSelector } = useAuth();
   const { isVisitor } = useVisitor();
 
-  // Debug: Track showVisitorSelector state changes
-  useEffect(() => {
-    console.log('[Auth] showVisitorSelector changed to:', showVisitorSelector);
-  }, [showVisitorSelector]);
-
   return (
     <>
       <VisitorBanner />
@@ -67,7 +62,6 @@ function AuthContent() {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      console.log('[Auth] Visitor button clicked, calling setShowVisitorSelector(true)');
                       setShowVisitorSelector(true);
                     }}
                   >

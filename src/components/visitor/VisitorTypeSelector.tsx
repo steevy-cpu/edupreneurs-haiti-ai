@@ -43,9 +43,6 @@ export const VisitorTypeSelector = ({ open, onOpenChange }: VisitorTypeSelectorP
   const [selectedType, setSelectedType] = useState<VisitorType>(null);
   const [isStarting, setIsStarting] = useState(false);
 
-  // Debug: Log when component renders with open prop
-  console.log('[VisitorTypeSelector] Rendering with open:', open);
-
   const handleStart = async () => {
     if (!selectedType) return;
     
