@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useVisitor } from '@/contexts/VisitorContext';
@@ -10,16 +10,76 @@ import { BattleBadgesDisplay } from '@/components/quiz-battle/BattleBadgesDispla
 import { BattleLeaderboardPreview } from '@/components/quiz-battle/BattleLeaderboardPreview';
 import { VisitorBattleOverlay } from '@/components/quiz-battle/VisitorBattleOverlay';
 import { useBattleStats } from '@/hooks/useBattleStats';
-import { Swords, Trophy, Target, Zap } from 'lucide-react';
+import { Swords, Trophy, Target, Zap, Volume2, Loader2, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { generateAllQuizBattleSounds, GenerationResult, SOUND_PROMPTS } from '@/utils/generateQuizBattleSounds';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 const QuizBattle = () => {
   const navigate = useNavigate();
   const { isVisitor } = useVisitor();
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Admin sound generator state
+  const [showSoundAdmin, setShowSoundAdmin] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState({ current: 0, total: 0, currentSound: '' });
+  const [generationResults, setGenerationResults] = useState<GenerationResult[]>([]);
+  const tapCountRef = useRef(0);
+  const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { stats, badges, isLoading: statsLoading } = useBattleStats(userId);
+  
+  // Secret triple-tap handler to reveal admin panel
+  const handleIconTap = () => {
+    tapCountRef.current += 1;
+    
+    if (tapTimeoutRef.current) {
+      clearTimeout(tapTimeoutRef.current);
+    }
+    
+    if (tapCountRef.current >= 3) {
+      setShowSoundAdmin(prev => !prev);
+      tapCountRef.current = 0;
+      return;
+    }
+    
+    tapTimeoutRef.current = setTimeout(() => {
+      tapCountRef.current = 0;
+    }, 1000);
+  };
+  
+  // Generate sounds handler with protection against double-clicks
+  const handleGenerateSounds = async () => {
+    if (isGenerating) return;
+    
+    setIsGenerating(true);
+    setGenerationResults([]);
+    
+    try {
+      const results = await generateAllQuizBattleSounds(
+        (current, total, currentSound) => {
+          setGenerationProgress({ current, total, currentSound });
+        }
+      );
+      
+      setGenerationResults(results);
+      
+      const successCount = results.filter(r => r.success).length;
+      if (successCount === results.length) {
+        toast.success(`${successCount} sons générés avec succès!`);
+      } else {
+        toast.warning(`${successCount}/${results.length} sons générés`);
+      }
+    } catch (error) {
+      console.error('Sound generation error:', error);
+      toast.error('Erreur lors de la génération des sons');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -82,8 +142,64 @@ const QuizBattle = () => {
         <PageHeader
           title="Quiz Battle"
           subtitle="Teste tes connaissances et défie tes amis!"
-          icon={<Swords className="w-8 h-8 text-primary" />}
+          icon={<Swords className="w-8 h-8 text-primary cursor-pointer" onClick={handleIconTap} />}
         />
+        
+        {/* Admin: Sound Generator Panel - Hidden by default */}
+        {showSoundAdmin && (
+          <Card className="border-orange-500/50 bg-orange-500/5">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-orange-600 text-base">
+                <Volume2 className="w-5 h-5" />
+                Admin: Générateur de Sons
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Génère {SOUND_PROMPTS.length} effets sonores avec ElevenLabs. 
+                Cette action ne doit être exécutée qu'une seule fois.
+              </p>
+              
+              <Button 
+                onClick={handleGenerateSounds}
+                disabled={isGenerating}
+                className="w-full"
+                variant="outline"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Génération {generationProgress.current}/{generationProgress.total}: {generationProgress.currentSound}
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="w-4 h-4 mr-2" />
+                    Générer tous les sons
+                  </>
+                )}
+              </Button>
+              
+              {generationResults.length > 0 && (
+                <div className="space-y-2 pt-2 border-t">
+                  <p className="text-xs font-medium text-muted-foreground">Résultats:</p>
+                  {generationResults.map((result) => (
+                    <div key={result.type} className="flex items-center gap-2 text-sm">
+                      {result.success ? (
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      ) : (
+                        <X className="w-4 h-4 text-red-500 flex-shrink-0" />
+                      )}
+                      <span className="font-mono text-xs">{result.type}</span>
+                      {result.cached && <span className="text-xs text-muted-foreground">(déjà en cache)</span>}
+                      {result.size && <span className="text-xs text-muted-foreground">({Math.round(result.size / 1024)}KB)</span>}
+                      {result.error && <span className="text-xs text-red-500 truncate">{result.error}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Quick Stats Banner */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
