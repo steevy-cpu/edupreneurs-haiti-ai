@@ -29,8 +29,8 @@ serve(async (req) => {
     // Get client IP for rate limiting
     const clientIp = getClientIp(req);
 
-    // Check rate limit (AI_TUTOR limits)
-    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.AI_TUTOR, null, clientIp);
+    // Check rate limit (HOME_CHAT - more permissive for visitors)
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.HOME_CHAT, null, clientIp);
     if (!rateCheck.allowed) {
       console.warn(`Rate limit exceeded for home-eric-chat from IP ${clientIp}`);
       return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
@@ -48,11 +48,70 @@ serve(async (req) => {
     }
 
     const { message, chatHistory } = validation.data;
+    const lowerMessage = message.toLowerCase().trim();
 
     console.log('Home Eric chat request:', { message: message.substring(0, 100), historyLength: chatHistory?.length || 0 });
 
+    // FAQ exact-match responses for instant replies (from button clicks)
+    const FAQ_EXACT_RESPONSES: Record<string, string> = {
+      "comment puis-je m'inscrire ?": `S'inscrire sur EDUPRENEURS est très simple ! 📝
+
+👉 Voici les étapes :
+1. Cliquez sur "Commencer Maintenant" ou "Se Connecter" 🔑
+2. Choisissez "Créer un compte" 📧
+3. Entrez votre email et créez un mot de passe sécurisé 🔒
+4. Confirmez votre email avec le code reçu ✉️
+5. Complétez votre profil avec votre niveau scolaire 🎓
+
+C'est gratuit et prend moins de 2 minutes ! 🚀✨
+
+Avez-vous besoin d'aide pour une étape spécifique ? 😊`,
+
+      "quels cours sont disponibles ?": `EDUPRENEURS propose des cours adaptés au programme du MENFP ! 📚
+
+🎓 Nos matières disponibles :
+- Mathématiques 📐
+- Français 📖
+- Sciences Physiques ⚗️
+- SVT (Sciences de la Vie) 🌿
+- Anglais 🇬🇧
+- Espagnol 🇪🇸
+- Créole 🇭🇹
+- Philosophie 💭
+- Histoire-Géographie 🌍
+
+📊 Niveaux couverts :
+- 9ème Année Fondamentale
+- NS1 à NS4 (Secondaire)
+
+Chaque cours inclut des leçons interactives, exercices et quiz ! ✨🎯`,
+
+      "comment fonctionne la plateforme ?": `EDUPRENEURS utilise l'IA pour personnaliser votre apprentissage ! 🤖✨
+
+📱 Voici comment ça marche :
+
+1️⃣ Choisissez votre matière et niveau 📚
+2️⃣ Suivez des leçons interactives adaptées 🎯
+3️⃣ Pratiquez avec des exercices et quiz 📝
+4️⃣ Posez des questions à Jude, votre tuteur IA 🧠
+5️⃣ Suivez votre progression en temps réel 📊
+
+💡 Bonus : Gagnez des XP et des badges en apprenant ! 🏆
+
+Prêt à commencer votre aventure ? 🚀😊`
+    };
+
+    // Check for exact FAQ match (instant response)
+    const exactFaqResponse = FAQ_EXACT_RESPONSES[lowerMessage];
+    if (exactFaqResponse) {
+      console.log('FAQ exact match, returning cached response');
+      return new Response(
+        JSON.stringify({ response: exactFaqResponse }),
+        { headers: responseHeaders }
+      );
+    }
+
     // Check if the question is about EDUPRENEURS
-    const lowerMessage = message.toLowerCase();
     const isAboutEdupreneurs = 
       lowerMessage.includes("qu'est-ce qu'edupreneurs") ||
       lowerMessage.includes("qu'est ce qu'edupreneurs") ||
@@ -130,9 +189,11 @@ const systemPrompt = `Tu es Jude, l'assistant IA de la plateforme EDUPRENEURS, u
 
 Si on te pose des questions hors sujet, rappelle gentiment que tu es là pour parler d'EDUPRENEURS et de l'éducation.`;
 
+    // Limit chat history to last 6 messages for faster processing
+    const recentHistory = (chatHistory || []).slice(-6);
     const messages = [
       { role: 'system', content: systemPrompt },
-      ...(chatHistory || []),
+      ...recentHistory,
       { role: 'user', content: message }
     ];
 
@@ -147,8 +208,8 @@ Si on te pose des questions hors sujet, rappelle gentiment que tu es là pour pa
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
         messages: messages,
-        temperature: 0.8,
-        max_tokens: 500,
+        temperature: 0.7,
+        max_tokens: 350,
       }),
     });
 
