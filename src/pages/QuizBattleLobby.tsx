@@ -267,8 +267,12 @@ const QuizBattleLobby = () => {
       
       // Automatically attempt to join the battle
       const autoJoin = async () => {
-        const success = await multiplayer.joinWithCode(joinCodeFromUrl.toUpperCase());
-        if (success) {
+        const result = await multiplayer.joinWithCode(joinCodeFromUrl.toUpperCase());
+        if (result.success) {
+          // Set battle config so realtime subscription works properly
+          if (result.subjectId) setSelectedSubject(result.subjectId);
+          if (result.gradeLevel) setSelectedGrade(result.gradeLevel);
+          if (result.difficulty) setSelectedDifficulty(result.difficulty);
           setStep('waiting');
         } else {
           // If auto-join fails, show the join-code step so user can retry
@@ -330,8 +334,12 @@ const QuizBattleLobby = () => {
       return;
     }
 
-    const success = await multiplayer.joinWithCode(joinCodeInput);
-    if (success) {
+    const result = await multiplayer.joinWithCode(joinCodeInput);
+    if (result.success) {
+      // Set battle config so realtime subscription works properly
+      if (result.subjectId) setSelectedSubject(result.subjectId);
+      if (result.gradeLevel) setSelectedGrade(result.gradeLevel);
+      if (result.difficulty) setSelectedDifficulty(result.difficulty);
       setStep('waiting');
     }
   };

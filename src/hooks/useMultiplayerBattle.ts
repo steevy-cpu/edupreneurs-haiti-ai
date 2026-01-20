@@ -26,6 +26,13 @@ interface CreateBattleOptions {
   difficulty?: 'easy' | 'medium' | 'hard';
 }
 
+interface JoinWithCodeResult {
+  success: boolean;
+  subjectId?: string;
+  gradeLevel?: string;
+  difficulty?: 'easy' | 'medium' | 'hard';
+}
+
 interface UseMultiplayerBattleReturn {
   battleId: string | null;
   inviteCode: string | null;
@@ -36,7 +43,7 @@ interface UseMultiplayerBattleReturn {
   countdown: number;
   
   createPrivateBattle: (options?: CreateBattleOptions) => Promise<void>;
-  joinWithCode: (code: string) => Promise<boolean>;
+  joinWithCode: (code: string) => Promise<JoinWithCodeResult>;
   joinMatchmaking: (options?: CreateBattleOptions) => Promise<void>;
   leaveMatchmaking: () => void;
   setReady: () => Promise<void>;
@@ -119,9 +126,9 @@ export const useMultiplayerBattle = ({
     enabled: enabled && mode === 'random' && !!matchmakingIdRef.current,
   });
 
-  // Check if both players are ready
+  // Check if both players are ready - allow transition from 'waiting' or 'matched'
   useEffect(() => {
-    if (myReady && opponentReady && phase === 'matched') {
+    if (myReady && opponentReady && (phase === 'matched' || phase === 'waiting')) {
       setBothReady(true);
       setPhase('ready');
     }
@@ -147,7 +154,7 @@ export const useMultiplayerBattle = ({
     return () => clearInterval(interval);
   }, [phase]);
 
-  const fetchOpponentInfo = async (opponentId: string) => {
+  const fetchOpponentInfo = useCallback(async (opponentId: string) => {
     const { data: profile } = await supabase
       .from('profiles')
       .select('user_id, nickname, avatar_url')
@@ -161,7 +168,39 @@ export const useMultiplayerBattle = ({
         avatar_url: profile.avatar_url,
       });
     }
-  };
+  }, []);
+
+  // Sync player states from database - fallback for missed realtime events
+  const syncPlayerStates = useCallback(async () => {
+    if (!battleId || !userId) return;
+    
+    const { data: players } = await supabase
+      .from('quiz_battle_players')
+      .select('user_id, is_ready')
+      .eq('battle_id', battleId);
+    
+    if (players) {
+      for (const player of players) {
+        if (player.user_id === userId) {
+          setMyReady(player.is_ready);
+        } else {
+          setOpponentReady(player.is_ready);
+          // Also fetch opponent info if not already set
+          if (!opponent) {
+            await fetchOpponentInfo(player.user_id);
+            setPhase('matched');
+          }
+        }
+      }
+    }
+  }, [battleId, userId, opponent, fetchOpponentInfo]);
+
+  // Sync player states when battleId changes
+  useEffect(() => {
+    if (battleId) {
+      syncPlayerStates();
+    }
+  }, [battleId, syncPlayerStates]);
 
   const createPrivateBattle = useCallback(async (options?: { subjectId?: string; gradeLevel?: string; difficulty?: 'easy' | 'medium' | 'hard' }) => {
     const subj = options?.subjectId || subjectId;
@@ -214,8 +253,8 @@ export const useMultiplayerBattle = ({
     }
   }, [userId, subjectId, gradeLevel, difficulty]);
 
-  const joinWithCode = useCallback(async (code: string): Promise<boolean> => {
-    if (!userId) return false;
+  const joinWithCode = useCallback(async (code: string): Promise<JoinWithCodeResult> => {
+    if (!userId) return { success: false };
     
     try {
       // Find battle with this code
@@ -228,7 +267,7 @@ export const useMultiplayerBattle = ({
 
       if (error || !battle) {
         toast.error('Code invalide ou partie introuvable');
-        return false;
+        return { success: false };
       }
 
       // Check if already full
@@ -239,7 +278,7 @@ export const useMultiplayerBattle = ({
 
       if (players && players.length >= 2) {
         toast.error('Cette partie est déjà complète');
-        return false;
+        return { success: false };
       }
 
       // Join as second player
@@ -260,13 +299,18 @@ export const useMultiplayerBattle = ({
       setPhase('matched');
       
       console.log('[Multiplayer] Joined battle:', battle.id);
-      return true;
+      return {
+        success: true,
+        subjectId: battle.subject_id,
+        gradeLevel: battle.grade_level,
+        difficulty: battle.difficulty as 'easy' | 'medium' | 'hard',
+      };
     } catch (error) {
       console.error('Error joining with code:', error);
       toast.error('Erreur lors de la connexion à la partie');
-      return false;
+      return { success: false };
     }
-  }, [userId]);
+  }, [userId, fetchOpponentInfo]);
 
   const joinMatchmaking = useCallback(async (options?: CreateBattleOptions) => {
     const subj = options?.subjectId || subjectId;
