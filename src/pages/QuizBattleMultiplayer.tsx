@@ -288,6 +288,73 @@ const QuizBattleMultiplayer = () => {
     if (!userId || !battleId) return;
 
     try {
+      // Handle case where I abandoned - mark battle as cancelled and exit
+      if (result.wasAbandoned) {
+        console.log('[Multiplayer] User abandoned, cancelling battle');
+        
+        await supabase
+          .from('quiz_battles')
+          .update({
+            status: 'cancelled',
+            ended_at: new Date().toISOString(),
+          })
+          .eq('id', battleId);
+        
+        // Save my progress (but with 0 XP)
+        await supabase
+          .from('quiz_battle_players')
+          .update({
+            score: result.score,
+            correct_answers: result.correctAnswers,
+            answers: result.answers,
+            finished_at: new Date().toISOString(),
+          })
+          .eq('battle_id', battleId)
+          .eq('user_id', userId);
+        
+        toast.info('Bataille annulée');
+        navigate('/quiz-battle/lobby');
+        return;
+      }
+
+      // Handle case where opponent abandoned - go straight to results with victory
+      if (result.opponentAbandoned) {
+        console.log('[Multiplayer] Opponent abandoned, showing victory results');
+        setOpponentResult({
+          score: 0,
+          correctAnswers: 0,
+          finished: true,
+        });
+        
+        // Mark battle as completed with me as winner
+        await supabase
+          .from('quiz_battles')
+          .update({
+            status: 'completed',
+            ended_at: new Date().toISOString(),
+            winner_id: userId,
+          })
+          .eq('id', battleId);
+        
+        // Update my player record
+        await supabase
+          .from('quiz_battle_players')
+          .update({
+            score: result.score,
+            correct_answers: result.correctAnswers,
+            answers: result.answers,
+            finished_at: new Date().toISOString(),
+          })
+          .eq('battle_id', battleId)
+          .eq('user_id', userId);
+        
+        // Award XP and stats with win
+        await finishBattle(result, { user_id: opponent?.id, score: 0, correct_answers: 0 });
+        setPhase('results');
+        return;
+      }
+
+      // Normal completion flow
       // Update player record
       await supabase
         .from('quiz_battle_players')

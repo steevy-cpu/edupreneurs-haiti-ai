@@ -66,8 +66,20 @@ export const MultiplayerBattleGameplay = ({
   const [myRoundsWon, setMyRoundsWon] = useState(0);
   const [opponentRoundsWon, setOpponentRoundsWon] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [opponentAbandoned, setOpponentAbandoned] = useState(false);
   const hasPlayedGameStart = useRef(false);
   const processedRound = useRef<number>(-1);
+  const gameEnded = useRef(false);
+  
+  // Refs for fresh state access in realtime callbacks
+  const answersRef = useRef(answers);
+  const myRoundsWonRef = useRef(myRoundsWon);
+  const opponentRoundsWonRef = useRef(opponentRoundsWon);
+  
+  // Keep refs updated
+  useEffect(() => { answersRef.current = answers; }, [answers]);
+  useEffect(() => { myRoundsWonRef.current = myRoundsWon; }, [myRoundsWon]);
+  useEffect(() => { opponentRoundsWonRef.current = opponentRoundsWon; }, [opponentRoundsWon]);
 
   const {
     playCorrect,
@@ -84,13 +96,46 @@ export const MultiplayerBattleGameplay = ({
   const currentQuestion = questions[currentIndex];
   const maxTime = DIFFICULTY_TIME[difficulty];
 
-  // Subscribe to battle updates for synchronized question advancement
+  // Subscribe to battle updates for synchronized question advancement AND opponent abandonment
   useRealtimeSubscription({
     table: 'quiz_battles',
     event: 'UPDATE',
     filter: `id=eq.${battleId}`,
     callback: (payload) => {
       const battle = payload.new as any;
+      
+      // Check if battle was cancelled (opponent abandoned)
+      if (battle.status === 'cancelled' && !gameEnded.current) {
+        console.log('[MultiplayerGameplay] Battle cancelled - opponent abandoned');
+        gameEnded.current = true;
+        setOpponentAbandoned(true);
+        stopTicking();
+        
+        // Delay to show overlay, then complete game with current progress
+        setTimeout(() => {
+          const currentAnswers = answersRef.current;
+          const correctCount = currentAnswers.filter((a) => a.correct).length;
+          let xp = correctCount * 10;
+          xp += Math.round(currentAnswers.filter(a => a.correct && a.timeMs < 5000).length * 5);
+          xp += 5; // Participation bonus
+          
+          onComplete({
+            score: currentAnswers.length > 0 ? Math.round((correctCount / currentAnswers.length) * 100) : 0,
+            totalQuestions: questions.length,
+            correctAnswers: correctCount,
+            xpEarned: xp,
+            timeBonus: 0,
+            answers: currentAnswers,
+            questions,
+            isPerfect: false,
+            roundsWon: myRoundsWonRef.current,
+            opponentRoundsWon: opponentRoundsWonRef.current,
+            opponentAbandoned: true,
+          });
+        }, 2500);
+        return;
+      }
+      
       const newIndex = battle.current_question_index;
       
       // Only process if we haven't already and round advanced
@@ -568,6 +613,22 @@ export const MultiplayerBattleGameplay = ({
           )}
         </CardContent>
       </Card>
+
+      {/* Opponent Abandoned Overlay */}
+      {opponentAbandoned && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <Card className="max-w-sm mx-4 border-2 border-success">
+            <CardContent className="p-6 text-center">
+              <Trophy className="w-12 h-12 text-success mx-auto mb-4" />
+              <h3 className="text-xl font-bold mb-2">Victoire par abandon!</h3>
+              <p className="text-muted-foreground">
+                {opponent.nickname} a quitté la partie. Tu gagnes automatiquement!
+              </p>
+              <Loader2 className="w-6 h-6 animate-spin mx-auto mt-4 text-muted-foreground" />
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Stop Confirmation Dialog */}
       <AlertDialog open={showStopDialog} onOpenChange={setShowStopDialog}>

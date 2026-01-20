@@ -65,7 +65,18 @@ export const MultiplayerResults = ({
     }
   }, [isWinner]);
 
+  // Check if opponent abandoned
+  const wasOpponentAbandoned = myResult.opponentAbandoned === true;
+
   const getResultConfig = () => {
+    if (wasOpponentAbandoned) return {
+      text: 'Victoire!',
+      color: 'text-success',
+      bg: 'bg-gradient-to-br from-success/20 to-success/5',
+      borderColor: 'border-success/50',
+      image: judeCelebrating,
+      subtitle: `${opponent?.nickname || 'Ton adversaire'} a abandonné la partie`
+    };
     if (isWinner) return { 
       text: 'Victoire!', 
       color: 'text-success', 
