@@ -13,13 +13,12 @@ import { useBattleStats } from '@/hooks/useBattleStats';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Swords, Trophy, Target, Zap, Loader2 } from 'lucide-react';
+import { Swords, Trophy, Target, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
 const QuizBattle = () => {
   const navigate = useNavigate();
   const [joinCode, setJoinCode] = useState('');
-  const [isJoining, setIsJoining] = useState(false);
   const { isVisitor } = useVisitor();
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -144,21 +143,13 @@ const QuizBattle = () => {
                 placeholder="XXXXXX"
                 className="text-center text-xl font-mono tracking-widest h-14 uppercase"
                 maxLength={6}
-                disabled={isJoining}
               />
               <Button
                 onClick={handleJoinWithCode}
-                disabled={!joinCode.trim() || isJoining}
+                disabled={!joinCode.trim()}
                 className="w-full h-12 text-base"
               >
-                {isJoining ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Connexion...
-                  </>
-                ) : (
-                  'Rejoindre'
-                )}
+                Rejoindre
               </Button>
             </div>
           </CardContent>
