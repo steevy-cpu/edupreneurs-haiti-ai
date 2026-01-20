@@ -190,7 +190,7 @@ const Index = () => {
   ], []);
 
   return (
-    <div className={`min-h-screen bg-background font-poppins ${isVisitor ? 'pt-10' : ''}`}>
+    <div className="min-h-screen bg-background font-poppins">
       {/* SEO Meta Tags */}
       <Helmet>
         <title>EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA | Plateforme MENFP</title>

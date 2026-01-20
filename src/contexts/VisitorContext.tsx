@@ -55,11 +55,26 @@ export const VisitorProvider = ({ children }: VisitorProviderProps) => {
     }
   }, []);
 
-  // Auto-clear visitor mode when user signs in
+  // Auto-clear visitor mode when user signs in or has existing session
   useEffect(() => {
+    // Check for existing session on mount
+    const checkExistingSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && isVisitor) {
+        setIsVisitor(false);
+        setVisitorTypeState(null);
+        setTourStep(0);
+        setTourCompleted(false);
+        setTourActive(false);
+        setShowWelcomePopup(false);
+        sessionStorage.removeItem(VISITOR_STORAGE_KEY);
+      }
+    };
+    checkExistingSession();
+
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN' && isVisitor) {
-        console.log("[VisitorContext] User signed in, clearing visitor mode");
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && isVisitor) {
         setIsVisitor(false);
         setVisitorTypeState(null);
         setTourStep(0);
