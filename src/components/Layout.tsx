@@ -77,7 +77,7 @@ const useSidebarCollapsed = () => {
 export const Layout = ({ children }: LayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isVisitor, showWelcomePopup, completeWelcomePopup } = useVisitor();
+  const { isVisitor, showWelcomePopup, completeWelcomePopup, exitVisitorMode } = useVisitor();
   const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile overlay state
   const [sidebarCollapsed, setSidebarCollapsed] = useSidebarCollapsed(); // Desktop collapsed state
   const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
@@ -115,6 +115,12 @@ export const Layout = ({ children }: LayoutProps) => {
   const fetchUserAvatar = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+    
+    // Clear any stale visitor mode when authenticated user is detected
+    if (isVisitor) {
+      exitVisitorMode();
+      return;
+    }
     
     setUserId(user.id);
     
