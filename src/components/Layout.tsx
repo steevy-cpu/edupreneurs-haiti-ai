@@ -48,7 +48,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useVisitor } from "@/contexts/VisitorContext";
-import { JudeWelcomePopup } from "@/components/visitor";
+import { JudeWelcomePopup, VisitorBanner } from "@/components/visitor";
 import { GlobalSearch, QuickMessageFAB } from "@/components/shared";
 import { QuizInvitationHandler } from "@/components/quiz-battle/QuizInvitationHandler";
 
@@ -470,7 +470,9 @@ export const Layout = ({ children }: LayoutProps) => {
   const hideLayoutNav = isCommunityPage || isLessonPage || isFeedPage || isUserSearchPage || isChessPage;
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <VisitorBanner />
+      <div className="min-h-screen bg-background">
       {/* Menu Button - Mobile only (hidden on lg+) */}
       {!hideLayoutNav && (
         <button
@@ -805,5 +807,6 @@ export const Layout = ({ children }: LayoutProps) => {
       />
 
     </div>
+    </>
   );
 };

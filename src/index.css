@@ -1258,6 +1258,10 @@ All colors MUST be HSL.
     margin-bottom: max(1rem, env(safe-area-inset-bottom));
   }
   
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  
   /* Prevent zoom on input focus for mobile */
   @media screen and (max-width: 768px) {
     input[type="text"],
