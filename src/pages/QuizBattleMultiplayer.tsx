@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Layout } from '@/components/Layout';
@@ -29,6 +29,13 @@ const QuizBattleMultiplayer = () => {
   
   const [userId, setUserId] = useState<string | null>(null);
   const [phase, setPhase] = useState<GamePhase>('loading');
+  const phaseRef = useRef<GamePhase>('loading');
+
+  // Helper to update phase consistently (prevents stale closures in timeouts)
+  const updatePhase = useCallback((newPhase: GamePhase) => {
+    phaseRef.current = newPhase;
+    setPhase(newPhase);
+  }, []);
   const [questions, setQuestions] = useState<BattleQuestion[]>([]);
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   const [myResult, setMyResult] = useState<BattleResult | null>(null);
@@ -155,17 +162,17 @@ const QuizBattleMultiplayer = () => {
       if (battle.questions && Array.isArray(battle.questions) && battle.questions.length > 0) {
         console.log('[Multiplayer] Questions already exist, starting gameplay');
         setQuestions(battle.questions as unknown as BattleQuestion[]);
-        setPhase('playing');
+        updatePhase('playing');
       } else if (host) {
         // Host generates questions - use local 'host' variable, NOT state
         console.log('[Multiplayer] Host generating questions...');
-        setPhase('generating');
+        updatePhase('generating');
         setGenerationStartTime(Date.now());
         await generateQuestions(battle);
       } else {
         // Guest waits for questions
         console.log('[Multiplayer] Guest polling for questions...');
-        setPhase('loading');
+        updatePhase('loading');
         setGenerationStartTime(Date.now());
         pollForQuestions(battleId);
       }
@@ -228,7 +235,7 @@ const QuizBattleMultiplayer = () => {
         .eq('id', battle.id);
 
       setQuestions(parsedQuestions);
-      setPhase('playing');
+      updatePhase('playing');
     } catch (error) {
       console.error('Error generating questions:', error);
       toast.error('Erreur lors de la génération des questions');
@@ -265,7 +272,7 @@ const QuizBattleMultiplayer = () => {
         clearInterval(interval);
         console.log('[Multiplayer] Questions received:', battle.questions.length);
         setQuestions(battle.questions as unknown as BattleQuestion[]);
-        setPhase('playing');
+        updatePhase('playing');
       }
     }, 1000);
 
@@ -350,7 +357,7 @@ const QuizBattleMultiplayer = () => {
         
         // Award XP and stats with win
         await finishBattle(result, { user_id: opponent?.id, score: 0, correct_answers: 0 });
-        setPhase('results');
+        updatePhase('results');
         return;
       }
 
@@ -382,9 +389,9 @@ const QuizBattleMultiplayer = () => {
           finished: true,
         });
         await finishBattle(result, opponentPlayer);
-        setPhase('results');
+        updatePhase('results');
       } else {
-        setPhase('waiting-opponent');
+        updatePhase('waiting-opponent');
         // Poll for opponent completion
         pollForOpponentCompletion(result);
       }
@@ -394,6 +401,8 @@ const QuizBattleMultiplayer = () => {
   };
 
   const pollForOpponentCompletion = (myResult: BattleResult) => {
+    let timeoutId: NodeJS.Timeout | null = null;
+    
     const interval = setInterval(async () => {
       const { data: opponentPlayer } = await supabase
         .from('quiz_battle_players')
@@ -404,23 +413,26 @@ const QuizBattleMultiplayer = () => {
 
       if (opponentPlayer?.finished_at) {
         clearInterval(interval);
+        if (timeoutId) clearTimeout(timeoutId); // Clear timeout when opponent found
+        
         setOpponentResult({
           score: opponentPlayer.score,
           correctAnswers: opponentPlayer.correct_answers,
           finished: true,
         });
         await finishBattle(myResult, opponentPlayer);
-        setPhase('results');
+        updatePhase('results');
       }
     }, 2000);
 
     // Timeout after 2 minutes
-    setTimeout(() => {
+    timeoutId = setTimeout(() => {
       clearInterval(interval);
-      if (phase === 'waiting-opponent') {
+      // Use ref to check current phase, not stale closure value
+      if (phaseRef.current === 'waiting-opponent') {
         toast.info('Adversaire déconnecté - tu as gagné!');
         setOpponentResult({ score: 0, correctAnswers: 0, finished: true });
-        setPhase('results');
+        updatePhase('results');
       }
     }, 120000);
   };
@@ -526,9 +538,6 @@ const QuizBattleMultiplayer = () => {
     }
   };
 
-  const generateInviteCode = (): string => {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
-  };
 
   const handlePlayAgain = async () => {
     if (!opponent || !userId) {

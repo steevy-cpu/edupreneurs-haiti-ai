@@ -72,6 +72,7 @@ export const useMultiplayerBattle = ({
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [opponent, setOpponent] = useState<OpponentInfo | null>(null);
   const [phase, setPhase] = useState<LobbyPhase>('setup');
+  const phaseRef = useRef<LobbyPhase>('setup');
   const [isHost, setIsHost] = useState(false);
   const [bothReady, setBothReady] = useState(false);
   const [countdown, setCountdown] = useState(3);
@@ -79,7 +80,14 @@ export const useMultiplayerBattle = ({
   const [opponentReady, setOpponentReady] = useState(false);
   
   const matchmakingIdRef = useRef<string | null>(null);
+  const matchmakingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
+
+  // Helper to update phase consistently (prevents stale closures in timeouts)
+  const updatePhase = useCallback((newPhase: LobbyPhase) => {
+    phaseRef.current = newPhase;
+    setPhase(newPhase);
+  }, []);
 
   // Subscribe to battle player changes when we have a battle
   useRealtimeSubscription({
@@ -92,7 +100,7 @@ export const useMultiplayerBattle = ({
       if (payload.eventType === 'INSERT' && payload.new.user_id !== userId) {
         // Opponent joined
         await fetchOpponentInfo(payload.new.user_id);
-        setPhase('matched');
+        updatePhase('matched');
       }
       
       if (payload.eventType === 'UPDATE') {
@@ -119,7 +127,7 @@ export const useMultiplayerBattle = ({
       if (record.matched_with && record.battle_id) {
         setBattleId(record.battle_id);
         await fetchOpponentInfo(record.matched_with);
-        setPhase('matched');
+        updatePhase('matched');
         setIsHost(false);
       }
     },
@@ -130,9 +138,9 @@ export const useMultiplayerBattle = ({
   useEffect(() => {
     if (myReady && opponentReady && (phase === 'matched' || phase === 'waiting')) {
       setBothReady(true);
-      setPhase('ready');
+      updatePhase('ready');
     }
-  }, [myReady, opponentReady, phase]);
+  }, [myReady, opponentReady, phase, updatePhase]);
 
   // Countdown when both ready
   useEffect(() => {
@@ -147,7 +155,7 @@ export const useMultiplayerBattle = ({
       
       if (count === 0) {
         clearInterval(interval);
-        setPhase('starting');
+        updatePhase('starting');
       }
     }, 1000);
 
@@ -188,7 +196,7 @@ export const useMultiplayerBattle = ({
           // Also fetch opponent info if not already set
           if (!opponent) {
             await fetchOpponentInfo(player.user_id);
-            setPhase('matched');
+            updatePhase('matched');
           }
         }
       }
@@ -212,7 +220,7 @@ export const useMultiplayerBattle = ({
       return;
     }
     
-    setPhase('waiting');
+    updatePhase('waiting');
     setIsHost(true);
     
     try {
@@ -250,7 +258,7 @@ export const useMultiplayerBattle = ({
     } catch (error) {
       console.error('Error creating private battle:', error);
       toast.error('Erreur lors de la création de la partie');
-      setPhase('error');
+      updatePhase('error');
     }
   }, [userId, subjectId, gradeLevel, difficulty]);
 
@@ -297,7 +305,7 @@ export const useMultiplayerBattle = ({
       setBattleId(battle.id);
       setInviteCode(code);
       setIsHost(false);
-      setPhase('matched');
+      updatePhase('matched');
       
       console.log('[Multiplayer] Joined battle:', battle.id);
       return {
@@ -313,6 +321,15 @@ export const useMultiplayerBattle = ({
     }
   }, [userId, fetchOpponentInfo]);
 
+  const leaveMatchmaking = useCallback(() => {
+    if (cleanupRef.current) {
+      cleanupRef.current();
+      cleanupRef.current = null;
+    }
+    matchmakingIdRef.current = null;
+    updatePhase('setup');
+  }, [updatePhase]);
+
   const joinMatchmaking = useCallback(async (options?: CreateBattleOptions) => {
     const subj = options?.subjectId || subjectId;
     const grade = options?.gradeLevel || gradeLevel;
@@ -323,7 +340,7 @@ export const useMultiplayerBattle = ({
       return;
     }
     
-    setPhase('waiting');
+    updatePhase('waiting');
     
     try {
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
@@ -431,7 +448,7 @@ export const useMultiplayerBattle = ({
 
         setBattleId(battle.id);
         await fetchOpponentInfo(existingMatch.user_id);
-        setPhase('matched');
+        updatePhase('matched');
         setIsHost(false);
       } else {
         // No match found, add to queue
@@ -456,6 +473,10 @@ export const useMultiplayerBattle = ({
         
         // Set timeout for expiry
         cleanupRef.current = () => {
+          if (matchmakingTimeoutRef.current) {
+            clearTimeout(matchmakingTimeoutRef.current);
+            matchmakingTimeoutRef.current = null;
+          }
           if (matchmakingIdRef.current) {
             supabase
               .from('quiz_battle_matchmaking')
@@ -465,29 +486,22 @@ export const useMultiplayerBattle = ({
           }
         };
         
-        setTimeout(() => {
-          if (phase === 'waiting') {
+        matchmakingTimeoutRef.current = setTimeout(() => {
+          // Use ref to check current phase, not stale closure value
+          if (phaseRef.current === 'waiting') {
             toast.info('Aucun adversaire trouvé. Réessaye ou joue en solo!');
             leaveMatchmaking();
-            setPhase('setup');
+            updatePhase('setup');
           }
         }, 60000);
       }
     } catch (error) {
       console.error('Error joining matchmaking:', error);
       toast.error('Erreur lors de la recherche d\'adversaire');
-      setPhase('error');
+      updatePhase('error');
     }
-  }, [userId, subjectId, gradeLevel, difficulty, phase]);
+  }, [userId, subjectId, gradeLevel, difficulty, updatePhase, leaveMatchmaking, fetchOpponentInfo]);
 
-  const leaveMatchmaking = useCallback(() => {
-    if (cleanupRef.current) {
-      cleanupRef.current();
-      cleanupRef.current = null;
-    }
-    matchmakingIdRef.current = null;
-    setPhase('setup');
-  }, []);
 
   const setReady = useCallback(async () => {
     if (!battleId || !userId) return;
@@ -524,11 +538,11 @@ export const useMultiplayerBattle = ({
     setBattleId(null);
     setInviteCode(null);
     setOpponent(null);
-    setPhase('setup');
+    updatePhase('setup');
     setMyReady(false);
     setOpponentReady(false);
     matchmakingIdRef.current = null;
-  }, [battleId]);
+  }, [battleId, updatePhase]);
 
   // Cleanup on unmount
   useEffect(() => {
