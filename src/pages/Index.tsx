@@ -207,7 +207,7 @@ const Index = () => {
       
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-lg border-b border-border/50 shadow-sm transition-all duration-300">
-        <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 flex justify-between items-center">
+        <div className="container mx-auto px-4 sm:px-6 py-2 sm:py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-1.5 sm:gap-3">
             <img 
               src={edupreneursLogo} 
