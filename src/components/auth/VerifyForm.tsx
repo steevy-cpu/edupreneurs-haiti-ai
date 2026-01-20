@@ -215,7 +215,7 @@ export default function VerifyForm() {
                   otpInputRefs.current[focusIndex]?.focus();
                 });
               }}
-              className="w-12 h-14 text-center text-2xl font-bold border border-input rounded-lg bg-muted/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all auth-input"
+              className="w-12 h-14 text-center text-2xl font-bold border border-input rounded-lg bg-muted/50 focus:border-primary focus:ring-1 focus:ring-primary/15 outline-none transition-all auth-input"
             />
           ))}
         </div>

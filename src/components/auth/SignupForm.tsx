@@ -251,7 +251,6 @@ export default function SignupForm() {
               placeholder="ex: nom@domaine.com"
               value={signupData.email}
               onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
-              onFocus={handleInputFocus}
               autoComplete="email"
               autoCapitalize="none"
               spellCheck="false"
@@ -272,7 +271,6 @@ export default function SignupForm() {
               placeholder="Confirmez votre email"
               value={signupData.emailConfirm}
               onChange={(e) => setSignupData({ ...signupData, emailConfirm: e.target.value })}
-              onFocus={handleInputFocus}
               autoComplete="off"
               autoCapitalize="none"
               spellCheck="false"
@@ -298,7 +296,6 @@ export default function SignupForm() {
                 placeholder="Créez un mot de passe sécurisé"
                 value={signupData.password}
                 onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
-                onFocus={handleInputFocus}
                 autoComplete="new-password"
                 autoCapitalize="none"
                 enterKeyHint="next"
@@ -368,7 +365,6 @@ export default function SignupForm() {
                 placeholder="Votre nom complet"
                 value={signupData.fullName}
                 onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
-                onFocus={handleInputFocus}
                 autoComplete="name"
                 autoCapitalize="words"
                 enterKeyHint="next"
@@ -389,7 +385,6 @@ export default function SignupForm() {
                   setSignupData({ ...signupData, nickname: e.target.value });
                   checkNicknameAvailability(e.target.value);
                 }}
-                onFocus={handleInputFocus}
                 autoComplete="username"
                 autoCapitalize="none"
                 spellCheck="false"
@@ -480,7 +475,6 @@ export default function SignupForm() {
                 placeholder="ex: +509 3x xx xx xx"
                 value={signupData.phoneNumber}
                 onChange={(e) => setSignupData({ ...signupData, phoneNumber: e.target.value })}
-                onFocus={handleInputFocus}
                 autoComplete="tel"
                 inputMode="tel"
                 enterKeyHint="next"
@@ -510,7 +504,6 @@ export default function SignupForm() {
                 }
                 value={signupData.school}
                 onChange={(e) => setSignupData({ ...signupData, school: e.target.value })}
-                onFocus={handleInputFocus}
                 autoComplete="organization"
                 autoCapitalize="words"
                 enterKeyHint="next"

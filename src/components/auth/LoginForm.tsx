@@ -217,7 +217,6 @@ export default function LoginForm() {
           placeholder="ex: nom@domaine.com"
           value={loginData.email}
           onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-          onFocus={handleInputFocus}
           autoComplete="email"
           autoCapitalize="none"
           spellCheck="false"
@@ -238,7 +237,6 @@ export default function LoginForm() {
             placeholder="Votre mot de passe"
             value={loginData.password}
             onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-            onFocus={handleInputFocus}
             autoComplete="current-password"
             autoCapitalize="none"
             enterKeyHint="done"
