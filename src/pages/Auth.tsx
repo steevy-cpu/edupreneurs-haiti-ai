@@ -37,7 +37,7 @@ function AuthContent() {
   const { isVisitor } = useVisitor();
 
   return (
-    <div className={`auth-page min-h-screen bg-background ${isVisitor ? 'pt-10' : ''}`}>
+    <div className="auth-page min-h-screen bg-background">
       <AuthHeader />
 
       {/* Main Content */}
