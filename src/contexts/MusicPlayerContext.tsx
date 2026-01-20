@@ -66,6 +66,9 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     // Curated classical music for studying - all with valid thumbnails
     const curatedTracks: PlaylistTrack[] = [
+      // User Requested
+      { id: "pxrNYPc0GmQ", title: "Musique pour Étudier", thumbnail: "https://i.ytimg.com/vi/pxrNYPc0GmQ/hqdefault.jpg" },
+      
       // Special Relaxation Music
       { id: "45Siu4EtXzE", title: "Musique Relaxante pour Étudier - Concentration", thumbnail: "https://i.ytimg.com/vi/45Siu4EtXzE/hqdefault.jpg" },
       
@@ -112,9 +115,6 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
       // Mixed Study Compilations
       { id: "jgpJVI3tDbY", title: "Mix Classique - 4h Concentration", thumbnail: "https://i.ytimg.com/vi/jgpJVI3tDbY/hqdefault.jpg" },
       { id: "4PUHBL1vMNY", title: "Meilleure Musique Classique Étude", thumbnail: "https://i.ytimg.com/vi/4PUHBL1vMNY/hqdefault.jpg" },
-      
-      // User Requested
-      { id: "pxrNYPc0GmQ", title: "Musique pour Étudier", thumbnail: "https://i.ytimg.com/vi/pxrNYPc0GmQ/hqdefault.jpg" },
     ];
     
     setTracks(curatedTracks);
