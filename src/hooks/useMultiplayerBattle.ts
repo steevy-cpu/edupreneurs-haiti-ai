@@ -222,6 +222,7 @@ export const useMultiplayerBattle = ({
       const { data: battle, error } = await supabase
         .from('quiz_battles')
         .insert({
+          mode: 'friend',
           status: 'waiting',
           subject_id: subj,
           grade_level: grade,
@@ -399,6 +400,7 @@ export const useMultiplayerBattle = ({
         const { data: battle, error: battleError } = await supabase
           .from('quiz_battles')
           .insert({
+            mode: 'random',
             status: 'waiting',
             subject_id: subj,
             grade_level: grade,
