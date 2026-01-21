@@ -170,7 +170,7 @@ export const GlobalMusicPlayer = () => {
     };
   }, []);
 
-  if (!isAuthenticated || tracks.length === 0 || location.pathname === '/') return null;
+  if (!isAuthenticated || tracks.length === 0 || location.pathname === '/' || location.pathname === '/auth') return null;
 
   return (
     <>
