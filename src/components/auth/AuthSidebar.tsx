@@ -19,10 +19,10 @@ export default function AuthSidebar() {
           <TypewriterText 
             phrases={[
               "Prêt à apprendre?",
-              "Rejoins des milliers d'élèves",
               "Apprends à ton rythme",
               "Prépare tes examens officiels",
-              "Programme MENFP complet"
+              "Programme MENFP complet",
+              "Jude, ton tuteur IA"
             ]}
             typingSpeed={80}
             deletingSpeed={40}
