@@ -27,11 +27,17 @@ export default defineConfig(({ mode }) => ({
       includePublic: true,
       logStats: true,
       ansiColors: true,
-      // PNG - aggressive compression for 3G
+      // Exclude transparent character images from optimization to preserve alpha
+      exclude: [
+        '**/jude-profile-transparent.png',
+        '**/champion-transparent.png',
+        '**/jude-passion-discovery.png',
+      ],
+      // PNG - compression for 3G (palette disabled to preserve transparency)
       png: {
         quality: 65,
         compressionLevel: 9,
-        palette: true,
+        palette: false,
       },
       // JPEG - optimized for 3G bandwidth
       jpeg: {
@@ -70,9 +76,8 @@ export default defineConfig(({ mode }) => ({
           'cleanupIds',
         ],
       },
-      // Cache optimization results between builds
-      cache: true,
-      cacheLocation: 'node_modules/.cache/image-optimizer',
+      // Disable cache temporarily to force re-optimization with new settings
+      cache: false,
     }),
   ].filter(Boolean),
   resolve: {

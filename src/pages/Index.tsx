@@ -499,11 +499,11 @@ const Index = () => {
                 <Card className="relative z-10 h-full hover:scale-[1.02] transition-all duration-300 ease-out hover:shadow-xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 overflow-hidden">
                   <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${item.color}`}></div>
                   <CardHeader className="text-center pb-2">
-                  <div className="w-20 h-20 mx-auto flex items-center justify-center mb-3 group-hover:scale-105 transition-transform duration-300 ease-out">
+                    <div className="w-20 h-20 mx-auto flex items-center justify-center mb-3 group-hover:scale-105 transition-transform duration-300 ease-out bg-transparent">
                       <img 
                         src={item.image} 
                         alt={item.title} 
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-contain drop-shadow-md"
                         loading="lazy"
                         decoding="async"
                       />
@@ -654,11 +654,11 @@ const Index = () => {
               <p className="text-muted-foreground font-medium">Tout ce que vous devez savoir sur EDUPRENEURS</p>
             </div>
             <div className="flex-shrink-0">
-              <div className="w-40 sm:w-52 md:w-60 h-40 sm:h-52 md:h-60 flex items-center justify-center animate-float">
+              <div className="w-40 sm:w-52 md:w-60 h-40 sm:h-52 md:h-60 flex items-center justify-center animate-float bg-transparent">
                 <img
                   src="/images/jude-profile-transparent.png?v=1"
                   alt="Jude - Assistant FAQ"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain drop-shadow-lg"
                   loading="lazy"
                   decoding="async"
                 />
