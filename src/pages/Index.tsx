@@ -169,7 +169,7 @@ const Index = () => {
     { q: "Comment fonctionne l'assistant IA ?", a: "Votre assistant IA personnalisé vous aide dans toutes les matières, explique les leçons en créole ou français, et s'adapte à votre rythme d'apprentissage." },
     { q: "Qu'est-ce que le système Gold ?", a: "Gagnez des points Gold en réussissant les quiz, utilisez-les pour débloquer des fonctions premium, changer votre avatar ou même gagner de l'argent réel." },
     { q: "Le contenu suit-il le programme officiel ?", a: "Absolument ! Notre plateforme est entièrement basée sur le programme du Ministère de l'Éducation Nationale (MENFP) de la 7ème à la Terminale." },
-    { q: "Comment contacter l'équipe EDUPRENEURS ?", a: "Vous pouvez nous contacter par email à contact@edupreneurs.app ou via WhatsApp. Nous répondons généralement dans les 24 heures." }
+    { q: "Comment contacter l'équipe EDUPRENEURS ?", a: "Vous pouvez nous contacter par email à contact@edupreneurs.com ou via WhatsApp. Nous répondons généralement dans les 24 heures." }
   ], []);
 
   // Team members data
