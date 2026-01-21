@@ -38,9 +38,10 @@ const lessonContextSchema = z.object({
  */
 export const chatMessageSchema = z.object({
   message: z.string()
-    .min(1, "Message requis")
     .max(10000, "Message trop long (max 10000 caractères)")
-    .transform(s => s.trim()),
+    .optional()
+    .default('')
+    .transform(s => s?.trim() ?? ''),
   chatHistory: z.array(chatHistoryItemSchema).max(50).optional().default([]),
   userNickname: z.string().max(100).optional(),
   currentPage: z.union([z.string(), z.number()]).transform(v => String(v)).optional(),
@@ -67,7 +68,20 @@ export const chatMessageSchema = z.object({
   currentStep: z.string().max(100).optional(),
   studentText: z.string().max(50000).optional(),
   chosenSubjectIndex: z.number().int().min(0).max(10).optional(),
-}).passthrough();
+}).passthrough().refine(
+  (data) => {
+    // Allow empty message ONLY if isInitialGreeting is true
+    if (data.isInitialGreeting === true) {
+      return true;
+    }
+    // Otherwise, message must be non-empty
+    return data.message && data.message.length > 0;
+  },
+  {
+    message: "Message requis",
+    path: ["message"]
+  }
+);
 
 /**
  * Eric chat specific schema
