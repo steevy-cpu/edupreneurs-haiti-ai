@@ -654,17 +654,14 @@ const Index = () => {
               <p className="text-muted-foreground font-medium">Tout ce que vous devez savoir sur EDUPRENEURS</p>
             </div>
             <div className="flex-shrink-0">
-              <div className="w-40 sm:w-52 md:w-60 h-40 sm:h-52 md:h-60 rounded-xl overflow-hidden animate-float border border-primary/20 shadow-lg">
-                <picture>
-                  <source srcSet="/images/jude-profile.webp" type="image/webp" />
-                  <img
-                    src="/images/jude-profile.png"
-                    alt="Jude - Assistant FAQ"
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </picture>
+              <div className="w-40 sm:w-52 md:w-60 h-40 sm:h-52 md:h-60 flex items-center justify-center animate-float">
+                <img
+                  src="/images/jude-profile.webp"
+                  alt="Jude - Assistant FAQ"
+                  className="w-full h-full object-contain"
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
             </div>
           </div>
