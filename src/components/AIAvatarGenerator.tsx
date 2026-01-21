@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -74,6 +75,7 @@ const accessories = [
 ];
 
 export const AIAvatarGenerator = ({ open, onOpenChange, onAvatarGenerated, userId, isSuperUser = false }: AIAvatarGeneratorProps) => {
+  const queryClient = useQueryClient();
   const [gender, setGender] = useState<"male" | "female">("male");
   const [selectedStyle, setSelectedStyle] = useState("anime");
   const [selectedHairColor, setSelectedHairColor] = useState("black");
@@ -241,6 +243,8 @@ export const AIAvatarGenerator = ({ open, onOpenChange, onAvatarGenerated, userI
 
       if (updateError) throw updateError;
 
+      // Invalidate cached profile to update sidebar immediately
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       toast.success("Avatar enregistré!");
       onAvatarGenerated(publicUrl);
       onOpenChange(false);

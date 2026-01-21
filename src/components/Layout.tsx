@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useMessageSounds } from "@/hooks/useMessageSounds";
 import { useNotificationSound } from "@/hooks/useNotificationSound";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { useSidebarBadges } from "@/hooks/useSidebarBadges";
 import {
   Menu,
   X,
@@ -28,13 +30,11 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { isFounder } from "@/lib/founderConstants";
-import dashboardImage from "@/assets/dashboard00.png";
 
 // Use public paths for WebP optimization
 const edupreneursLogo = "/images/edupreneurs-new-logo.png";
 const edupreneursLogoWebP = "/images/edupreneurs-new-logo.webp";
 
-import { getAvatarUrl } from "@/lib/avatarMap";
 import { MobileBottomNav, useMobileSwipeNavigation } from "@/components/MobileBottomNav";
 import {
   AlertDialog,
@@ -81,90 +81,50 @@ export const Layout = ({ children }: LayoutProps) => {
   const { isVisitor, showWelcomePopup, completeWelcomePopup, exitVisitorMode } = useVisitor();
   const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile overlay state
   const [sidebarCollapsed, setSidebarCollapsed] = useSidebarCollapsed(); // Desktop collapsed state
-  const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
-  const [pendingFollowRequests, setPendingFollowRequests] = useState(0);
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
-  const [unreadFeedPosts, setUnreadFeedPosts] = useState(0);
-  const [userAvatar, setUserAvatar] = useState<string>(dashboardImage);
-  const [userNickname, setUserNickname] = useState<string>(isVisitor ? "Visiteur" : "Étudiant");
-  const [userId, setUserId] = useState<string | null>(null);
   const presenceChannelRef = useState<{ current: any | null }>({ current: null })[0];
   const { onTouchStart, onTouchMove, onTouchEnd } = useMobileSwipeNavigation();
   const { playReceiveSound } = useMessageSounds();
   const { playNotificationSound } = useNotificationSound();
-  // Note: Music stop on visitor exit is handled by VisitorMusicSync in App.tsx
+  
+  // Use cached profile and badges from React Query hooks
+  const { profile } = useUserProfile();
+  const { badges } = useSidebarBadges(profile.userId);
+  
+  // Derive values from cached data
+  const userAvatar = profile.avatarUrl;
+  const userNickname = profile.nickname;
+  const userId = profile.userId;
+  const totalUnreadMessages = badges.unreadMessages;
+  const pendingFollowRequests = badges.pendingFollowRequests;
+  const unreadNotifications = badges.unreadNotifications;
+  const unreadFeedPosts = badges.unreadFeedPosts;
 
   useEffect(() => {
     // Skip data fetching for visitors
     if (isVisitor) return;
     
     checkAuth();
-    fetchUnreadCount();
-    fetchPendingFollowRequests();
-    fetchUnreadNotifications();
-    fetchUnreadFeedPosts();
-    fetchUserAvatar();
     setupGlobalPresence();
+    
+    // Clear stale visitor mode when authenticated user is detected
+    if (profile.isAuthenticated && isVisitor) {
+      exitVisitorMode();
+    }
     
     return () => {
       if (presenceChannelRef.current) {
         supabase.removeChannel(presenceChannelRef.current);
       }
     };
-  }, [isVisitor]);
-  
-  const fetchUserAvatar = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    
-    // Clear any stale visitor mode when authenticated user is detected
-    if (isVisitor) {
-      exitVisitorMode();
-      return;
-    }
-    
-    setUserId(user.id);
-    
-    const { data: profile, error } = await supabase
-      .from("profiles")
-      .select("avatar_url, nickname")
-      .eq("user_id", user.id)
-      .single();
-    
-    if (error) {
-      console.error("Error fetching profile:", error);
-      return;
-    }
-    
-    if (profile?.avatar_url) {
-      // Use getAvatarUrl to properly map avatar IDs to image paths
-      const avatarUrl = getAvatarUrl(profile.avatar_url);
-      if (avatarUrl) {
-        setUserAvatar(avatarUrl);
-      }
-    }
-    if (profile?.nickname) {
-      setUserNickname(profile.nickname);
-    }
-  };
+  }, [isVisitor, profile.isAuthenticated]);
 
+  // Realtime subscriptions for toast notifications (separate from badge updates)
   useEffect(() => {
     // Skip for visitors
-    if (isVisitor) return;
-    
-    fetchUnreadCount();
-    fetchPendingFollowRequests();
-    fetchUnreadNotifications();
-    fetchUnreadFeedPosts();
-
-    // Listen for feed visited event to clear badge immediately
-    const handleFeedVisited = () => {
-      setUnreadFeedPosts(0);
-    };
-    window.addEventListener('feed-visited', handleFeedVisited);
+    if (isVisitor || !userId) return;
 
     const messagesChannel = supabase
-      .channel("message-notifications")
+      .channel("layout-message-notifications")
       .on(
         "postgres_changes",
         {
@@ -173,19 +133,14 @@ export const Layout = ({ children }: LayoutProps) => {
           table: "messages",
         },
         async (payload) => {
-          console.log("Message change detected:", payload);
-          
-          // Get current user to check if message is from someone else
-          const { data: { user } } = await supabase.auth.getUser();
-          
           // Only play sound if the message is from another user and not on community page
-          if (user && payload.new && (payload.new as any).sender_id !== user.id) {
+          if (payload.new && (payload.new as any).sender_id !== userId) {
             // Check if user is part of this conversation
             const { data: participation } = await supabase
               .from("conversation_participants")
               .select("user_id")
               .eq("conversation_id", (payload.new as any).conversation_id)
-              .eq("user_id", user.id)
+              .eq("user_id", userId)
               .maybeSingle();
             
             // Play sound only if not on community page (to avoid double sounds)
@@ -193,115 +148,75 @@ export const Layout = ({ children }: LayoutProps) => {
               playReceiveSound();
             }
           }
-          
-          await fetchUnreadCount();
-        }
-      )
-      .subscribe();
-
-    const followsChannel = supabase
-      .channel("follow-notifications")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "follows",
-        },
-        async (payload) => {
-          await fetchPendingFollowRequests();
         }
       )
       .subscribe();
 
     const notificationsChannel = supabase
-      .channel("notification-updates")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "notifications",
-        },
-        async (payload) => {
-          await fetchUnreadNotifications();
-          
-          // Show toast for new notifications
-          if (payload.eventType === "INSERT" && payload.new) {
-            const notification = payload.new as any;
-            
-            // Play notification sound (unless on notifications page)
-            if (location.pathname !== '/notifications') {
-              playNotificationSound();
-            }
-            
-            // Fetch actor profile
-            const { data: actorProfile } = await supabase
-              .from("profiles")
-              .select("nickname, full_name")
-              .eq("user_id", notification.actor_id)
-              .single();
-            
-            const actorName = actorProfile?.nickname || actorProfile?.full_name || "Quelqu'un";
-            
-            // Show different messages based on notification type
-            let message = "";
-            let actionPath = "/notifications";
-            
-            if (notification.type === "follow_request") {
-              message = `${actorName} a demandé à vous suivre`;
-            } else if (notification.type === "like") {
-              message = `${actorName} a aimé votre publication`;
-            } else if (notification.type === "comment") {
-              message = `${actorName} a commenté votre publication`;
-            } else if (notification.type === "share") {
-              message = `${actorName} a partagé votre publication`;
-            } else if (notification.type === "quiz_invite") {
-              message = `${actorName} te défie en Quiz Battle!`;
-              actionPath = `/quiz-battle/lobby?mode=friend&invitation=${notification.content}`;
-            } else if (notification.type === "group_invitation") {
-              message = `${actorName} t'a invité à rejoindre un groupe`;
-            } else if (notification.type === "announcement") {
-              message = notification.content || "Nouvelle annonce";
-            } else {
-              message = notification.content || "Nouvelle notification";
-            }
-            
-            toast.info(message, {
-              duration: 5000,
-              action: {
-                label: "Voir",
-                onClick: () => navigate(actionPath),
-              },
-            });
-          }
-        }
-      )
-      .subscribe();
-
-    const postsChannel = supabase
-      .channel("sidebar-posts-notifications")
+      .channel("layout-notification-toasts")
       .on(
         "postgres_changes",
         {
           event: "INSERT",
           schema: "public",
-          table: "posts",
+          table: "notifications",
         },
-        async () => {
-          await fetchUnreadFeedPosts();
+        async (payload) => {
+          const notification = payload.new as any;
+          
+          // Play notification sound (unless on notifications page)
+          if (location.pathname !== '/notifications') {
+            playNotificationSound();
+          }
+          
+          // Fetch actor profile
+          const { data: actorProfile } = await supabase
+            .from("profiles")
+            .select("nickname, full_name")
+            .eq("user_id", notification.actor_id)
+            .single();
+          
+          const actorName = actorProfile?.nickname || actorProfile?.full_name || "Quelqu'un";
+          
+          // Show different messages based on notification type
+          let message = "";
+          let actionPath = "/notifications";
+          
+          if (notification.type === "follow_request") {
+            message = `${actorName} a demandé à vous suivre`;
+          } else if (notification.type === "like") {
+            message = `${actorName} a aimé votre publication`;
+          } else if (notification.type === "comment") {
+            message = `${actorName} a commenté votre publication`;
+          } else if (notification.type === "share") {
+            message = `${actorName} a partagé votre publication`;
+          } else if (notification.type === "quiz_invite") {
+            message = `${actorName} te défie en Quiz Battle!`;
+            actionPath = `/quiz-battle/lobby?mode=friend&invitation=${notification.content}`;
+          } else if (notification.type === "group_invitation") {
+            message = `${actorName} t'a invité à rejoindre un groupe`;
+          } else if (notification.type === "announcement") {
+            message = notification.content || "Nouvelle annonce";
+          } else {
+            message = notification.content || "Nouvelle notification";
+          }
+          
+          toast.info(message, {
+            duration: 5000,
+            action: {
+              label: "Voir",
+              onClick: () => navigate(actionPath),
+            },
+          });
         }
       )
       .subscribe();
 
     return () => {
-      window.removeEventListener('feed-visited', handleFeedVisited);
       supabase.removeChannel(messagesChannel);
-      supabase.removeChannel(followsChannel);
       supabase.removeChannel(notificationsChannel);
-      supabase.removeChannel(postsChannel);
     };
-  }, []);
+  }, [userId, isVisitor, location.pathname, playReceiveSound, playNotificationSound, navigate]);
 
   const setupGlobalPresence = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -355,56 +270,6 @@ export const Layout = ({ children }: LayoutProps) => {
 
     // Store in ref for cleanup
     presenceChannelRef.current = channel;
-  };
-
-  const fetchUnreadCount = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: unreadMessages } = await supabase
-      .from("messages")
-      .select("id, conversation_id")
-      .eq("read", false)
-      .neq("sender_id", user.id);
-
-    if (unreadMessages) {
-      setTotalUnreadMessages(unreadMessages.length);
-    }
-  };
-
-  const fetchPendingFollowRequests = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: pendingRequests, count } = await supabase
-      .from("follows")
-      .select("id", { count: "exact", head: true })
-      .eq("following_id", user.id)
-      .eq("status", "pending");
-
-    setPendingFollowRequests(count || 0);
-  };
-
-  const fetchUnreadNotifications = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { count } = await supabase
-      .from("notifications")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("read", false);
-
-    setUnreadNotifications(count || 0);
-  };
-
-  const fetchUnreadFeedPosts = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: count } = await supabase.rpc('get_new_feed_posts_count', { p_user_id: user.id });
-
-    setUnreadFeedPosts(count || 0);
   };
 
   const checkAuth = async () => {
@@ -809,25 +674,19 @@ export const Layout = ({ children }: LayoutProps) => {
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
+      
+      {/* Quick Message FAB - Mobile only */}
+      <QuickMessageFAB />
+      
+      {/* Quiz Invitation Handler */}
+      {userId && <QuizInvitationHandler userId={userId} />}
+      
+      {/* Jude Welcome Popup */}
+      {showWelcomePopup && <JudeWelcomePopup isOpen={showWelcomePopup} onComplete={completeWelcomePopup} />}
 
-      {/* Quick Message FAB */}
-      {!hideLayoutNav && <QuickMessageFAB isVisitor={isVisitor} />}
-
-      {/* Quiz Invitation Handler - Global listener for incoming battle invitations */}
-      {userId && !isVisitor && <QuizInvitationHandler userId={userId} />}
-
-      {/* Jude Welcome Popup for Visitors */}
-      <JudeWelcomePopup 
-        isOpen={showWelcomePopup} 
-        onComplete={completeWelcomePopup} 
-      />
-
-      {/* Global Notification Permission Banner - single instance for all pages */}
-      {userId && !isVisitor && (
-        <NotificationPermissionBanner userId={userId} />
-      )}
-
-    </div>
+      {/* Notification Permission Banner */}
+      {userId && <NotificationPermissionBanner userId={userId} />}
+      </div>
     </>
   );
 };
