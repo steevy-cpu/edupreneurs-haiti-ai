@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSidebarBadges } from "@/hooks/useSidebarBadges";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useFirstTimeUser } from "@/contexts/FirstTimeUserContext";
 
 interface NavItem {
   icon: React.ElementType;
@@ -65,6 +66,10 @@ export const MobileBottomNav = () => {
   // Use cached profile and badges from React Query hooks
   const { profile } = useUserProfile();
   const { badges } = useSidebarBadges(profile.userId);
+  
+  // Tour highlight state for mobile navigation
+  const { tourActive, tourCompleted, currentTourNavPath } = useFirstTimeUser();
+  const tourHighlightPath = tourActive && !tourCompleted ? currentTourNavPath : null;
 
   // Track keyboard visibility using visualViewport
   useEffect(() => {
@@ -135,6 +140,7 @@ export const MobileBottomNav = () => {
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
+          const isHighlighted = tourHighlightPath === item.path;
           
           return (
             <button
@@ -146,7 +152,7 @@ export const MobileBottomNav = () => {
                 active 
                   ? "text-primary" 
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+              } ${isHighlighted ? 'z-[1005]' : ''}`}
             >
               <div className={`relative transition-transform duration-150 ${active ? '' : 'active:scale-90'}`}>
                 <Icon 
@@ -154,6 +160,12 @@ export const MobileBottomNav = () => {
                   strokeWidth={active ? 2.5 : 2}
                   className={active ? "scale-110" : ""}
                 />
+                
+                {/* Tour highlight ring - pulsing effect on mobile */}
+                {isHighlighted && (
+                  <div className="absolute inset-[-10px] rounded-full border-2 border-primary bg-primary/20 animate-pulse" />
+                )}
+                
                 {item.badge && item.badge > 0 && (
                   <span className="absolute -top-1.5 -right-2 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
                     {item.badge > 99 ? "99+" : item.badge}

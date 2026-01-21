@@ -2,6 +2,17 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef, Re
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
+// Map tour step index to nav icon path for mobile highlighting
+const TOUR_STEP_NAV_PATHS: Record<number, string | null> = {
+  0: '/dashboard',    // Home icon
+  1: '/matieres',     // BookOpen icon
+  2: '/feed',         // Rss icon
+  3: null,            // /leaderboard - no nav icon
+  4: null,            // /passion-discovery - no nav icon
+  5: '/community',    // MessageSquare icon
+  6: null,            // /settings - no nav icon
+};
+
 interface FirstTimeUserContextType {
   // Welcome popup state
   showWelcome: boolean;
@@ -15,6 +26,7 @@ interface FirstTimeUserContextType {
   tourActive: boolean;
   tourStep: number;
   tourCompleted: boolean;
+  currentTourNavPath: string | null; // Path to highlight in mobile nav
   
   // User info
   userNickname: string | null;
@@ -295,6 +307,11 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
     }
   }, [userId]);
 
+  // Compute which nav path should be highlighted during tour
+  const currentTourNavPath = tourActive && !tourCompleted 
+    ? TOUR_STEP_NAV_PATHS[tourStep] ?? null 
+    : null;
+
   return (
     <FirstTimeUserContext.Provider
       value={{
@@ -305,6 +322,7 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
         tourActive,
         tourStep,
         tourCompleted,
+        currentTourNavPath,
         userNickname,
         userGrade,
         userId,
