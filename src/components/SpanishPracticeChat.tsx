@@ -17,6 +17,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import judeChairDesk from "@/assets/eric-chair-desk.png";
 
+/**
+ * Strip HTML and truncate text for API payloads (3G optimization)
+ */
+const sanitizeObjective = (html: string): string => {
+  const text = html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return text.slice(0, 800); // Keep under 1000 limit with buffer
+};
+
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -209,7 +224,7 @@ export const SpanishPracticeChat = ({
           message: "",
           lessonContext: {
             title: lessonTitle,
-            objective: lessonObjective,
+            objective: sanitizeObjective(lessonObjective),
             slug: lessonSlug,
             gradeLevel: gradeLevel,
           },
@@ -250,11 +265,11 @@ export const SpanishPracticeChat = ({
           message: userMessage,
           lessonContext: {
             title: lessonTitle,
-            objective: lessonObjective,
+            objective: sanitizeObjective(lessonObjective),
             slug: lessonSlug,
             gradeLevel: gradeLevel,
           },
-          chatHistory: messages,
+          chatHistory: messages.slice(-20), // Limit to last 20 messages for 3G optimization
           userNickname: displayName,
           isInitialGreeting: false,
         },

@@ -23,12 +23,34 @@ const chatHistoryItemSchema = z.object({
 });
 
 /**
+ * Helper to strip HTML and normalize text for validation
+ */
+const sanitizeTextForValidation = (val: unknown): string => {
+  if (typeof val !== 'string') return '';
+  return val
+    .replace(/<[^>]*>/g, ' ')  // Strip HTML tags
+    .replace(/&nbsp;/g, ' ')   // Replace HTML entities
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, ' ')      // Normalize whitespace
+    .trim()
+    .slice(0, 1000);           // Truncate to max length
+};
+
+/**
  * Lesson context schema for language tutors
+ * - objective is preprocessed to strip HTML and truncate
  */
 const lessonContextSchema = z.object({
   title: z.string().max(500).optional(),
-  objective: z.string().max(1000).optional(),
+  objective: z.preprocess(
+    sanitizeTextForValidation,
+    z.string().max(1000).optional()
+  ),
   gradeLevel: z.string().max(50).optional(),
+  slug: z.string().max(200).optional(),
 }).optional();
 
 /**
