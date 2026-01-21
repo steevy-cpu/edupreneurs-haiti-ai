@@ -478,14 +478,14 @@ const Index = () => {
               },
               { 
                 step: 3, 
-                image: "/images/jude-profile-transparent.png?v=1",
+                icon: Bot,
                 title: "Rencontrez Jude", 
                 desc: "Votre assistant IA personnel vous accompagne 24h/7j en créole ou français.",
                 color: "from-primary to-accent"
               },
               { 
                 step: 4, 
-                image: "/images/champion-transparent.png?v=1",
+                icon: Trophy,
                 title: "Gagnez des Gold", 
                 desc: "Réussissez les quiz, gagnez des récompenses et débloquez des fonctions premium !",
                 color: "from-yellow-500 to-orange-500"
@@ -501,13 +501,17 @@ const Index = () => {
                   <CardHeader className="text-center pb-2">
                     <div className="w-20 h-20 mx-auto flex items-center justify-center mb-3 group-hover:scale-105 transition-transform duration-300 ease-out relative">
                       <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${item.color} opacity-20`}></div>
-                      <img 
-                        src={item.image} 
-                        alt={item.title} 
-                        className="w-full h-full object-contain drop-shadow-md relative z-10"
-                        loading="lazy"
-                        decoding="async"
-                      />
+                      {item.icon ? (
+                        <item.icon className="w-10 h-10 text-primary relative z-10" />
+                      ) : (
+                        <img 
+                          src={item.image} 
+                          alt={item.title} 
+                          className="w-full h-full object-contain drop-shadow-md relative z-10"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      )}
                     </div>
                     <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold mb-2">
                       {item.step}
@@ -655,15 +659,9 @@ const Index = () => {
               <p className="text-muted-foreground font-medium">Tout ce que vous devez savoir sur EDUPRENEURS</p>
             </div>
             <div className="flex-shrink-0">
-              <div className="w-40 sm:w-52 md:w-60 h-40 sm:h-52 md:h-60 flex items-center justify-center animate-float relative">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/15 to-accent/15"></div>
-                <img
-                  src="/images/jude-profile-transparent.png?v=1"
-                  alt="Jude - Assistant FAQ"
-                  className="w-full h-full object-contain drop-shadow-lg relative z-10"
-                  loading="lazy"
-                  decoding="async"
-                />
+              <div className="w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 flex items-center justify-center animate-float relative">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-accent/20"></div>
+                <HelpCircle className="w-16 sm:w-20 md:w-24 h-16 sm:h-20 md:h-24 text-primary relative z-10" />
               </div>
             </div>
           </div>
