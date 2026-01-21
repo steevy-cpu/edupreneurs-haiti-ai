@@ -13,6 +13,7 @@ import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import ericCelebrating from "@/assets/eric-celebrating.png";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import ericPointingRight from "@/assets/eric-right-pointing.png";
+import ericStudentDesk from "@/assets/eric-student-desk.png";
 
 // Lazy load non-critical images
 const ericMain01 = () => import("@/assets/eric-main01.png").then(m => m.default);
@@ -478,7 +479,7 @@ const Index = () => {
               },
               { 
                 step: 3, 
-                icon: Bot,
+                image: ericStudentDesk,
                 title: "Rencontrez Jude", 
                 desc: "Votre assistant IA personnel vous accompagne 24h/7j en créole ou français.",
                 color: "from-primary to-accent"
@@ -500,14 +501,14 @@ const Index = () => {
                   <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${item.color}`}></div>
                   <CardHeader className="text-center pb-2">
                     <div className="w-20 h-20 mx-auto flex items-center justify-center mb-3 group-hover:scale-105 transition-transform duration-300 ease-out relative">
-                      <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${item.color} opacity-20`}></div>
+                      {item.icon && <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${item.color} opacity-20`}></div>}
                       {item.icon ? (
                         <item.icon className="w-10 h-10 text-primary relative z-10" />
                       ) : (
                         <img 
                           src={item.image} 
                           alt={item.title} 
-                          className="w-full h-full object-contain drop-shadow-md relative z-10"
+                          className="w-full h-full object-contain relative z-10"
                           loading="lazy"
                           decoding="async"
                         />
