@@ -627,17 +627,14 @@ const Index = () => {
                 </Button>
               </Link>
               <div className="pt-4">
-                <div className="w-64 h-64 mx-auto rounded-xl overflow-hidden border border-primary/20 shadow-lg">
-                  <picture>
-                    <source srcSet="/images/jude-passion-discovery.webp" type="image/webp" />
-                    <img
-                      src="/images/jude-passion-discovery.png"
-                      alt="Jude - Assistant IA personnalisé"
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </picture>
+                <div className="w-64 h-64 mx-auto flex items-center justify-center">
+                  <img
+                    src="/images/jude-passion-discovery.png"
+                    alt="Jude - Assistant IA personnalisé"
+                    className="w-full h-full object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
                 </div>
               </div>
             </CardContent>
