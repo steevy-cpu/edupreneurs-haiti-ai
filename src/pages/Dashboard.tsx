@@ -68,8 +68,8 @@ const AchievementsBadges = lazy(() =>
 
 interface Note {
   id: string;
-  lesson_topic: string;
-  content: string;
+  lesson_id: string;
+  notes: string | null;
   updated_at: string;
   // Navigation fields for clickable notes
   lesson_slug?: string;
@@ -160,7 +160,7 @@ const Dashboard = () => {
         .eq("user_id", currentUserId)
         .single(),
       supabase
-        .from("notes")
+        .from("lesson_notes")
         .select("*")
         .eq("user_id", currentUserId)
         .order("updated_at", { ascending: false })
@@ -193,13 +193,13 @@ const Dashboard = () => {
 
     // Process notes - enrich with lesson/subject info for navigation
     if (notesResult.data && notesResult.data.length > 0) {
-      const lessonTopics = [...new Set(notesResult.data.map(n => n.lesson_topic))];
+      const lessonIds = [...new Set(notesResult.data.map(n => n.lesson_id))];
       
       // Fetch lessons with their subjects for navigation
       const { data: lessonsWithSubjects } = await supabase
         .from("lessons")
         .select("slug, title, subjects(slug, name, grade_level)")
-        .in("slug", lessonTopics);
+        .in("slug", lessonIds);
       
       const userGrade = profileResult.data?.academic_grade || '9AF';
       
@@ -225,7 +225,7 @@ const Dashboard = () => {
       // Enhance notes with navigation data
       const enhancedNotes: Note[] = notesResult.data.map(note => ({
         ...note,
-        ...lessonMap.get(note.lesson_topic)
+        ...lessonMap.get(note.lesson_id)
       }));
       
       setRecentNotes(enhancedNotes);
@@ -788,8 +788,8 @@ const Dashboard = () => {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <h4 className="font-semibold text-foreground mb-1 flex items-center gap-2">
-                              {topicInfo[note.lesson_topic]?.icon} 
-                              {note.lesson_title || topicInfo[note.lesson_topic]?.title || note.lesson_topic}
+                            {topicInfo[note.lesson_id]?.icon} 
+                              {note.lesson_title || topicInfo[note.lesson_id]?.title || note.lesson_id}
                               {isClickable && (
                                 <ArrowRight className="w-4 h-4 text-muted-foreground" />
                               )}
@@ -798,7 +798,7 @@ const Dashboard = () => {
                               <p className="text-xs text-primary mb-1">{note.subject_name}</p>
                             )}
                             <p className="text-sm text-muted-foreground line-clamp-2">
-                              {note.content}
+                              {note.notes || 'Note vide'}
                             </p>
                           </div>
                           <span className="text-xs text-muted-foreground ml-4">
