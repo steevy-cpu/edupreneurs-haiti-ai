@@ -312,9 +312,8 @@ const Index = () => {
             
             <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight">
               L'Éducation Haïtienne{" "}
-              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent relative animate-shimmer bg-[length:200%_auto]">
+              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-shimmer bg-[length:200%_auto]">
                 révolutionnée
-                <span className="absolute -right-4 xs:-right-6 sm:-right-8 -top-1 xs:-top-2 text-base xs:text-xl sm:text-2xl animate-pulse">✨</span>
               </span>{" "}
               par l'Intelligence Artificielle
             </h1>
@@ -349,13 +348,13 @@ const Index = () => {
 
             <div className="flex flex-col sm:flex-row flex-wrap gap-1.5 xs:gap-2 sm:gap-3 lg:gap-4">
               <Link to="/auth?tab=signup" className="w-full sm:w-auto group">
-                <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-primary via-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-2xl text-[11px] xs:text-xs sm:text-sm lg:text-base py-2 xs:py-2.5 font-bold transition-all duration-300 hover:scale-105">
-                  ✨ Créer un compte
+                <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-primary via-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl text-[11px] xs:text-xs sm:text-sm lg:text-base py-2 xs:py-2.5 font-bold transition-all duration-300 ease-out hover:scale-[1.02]">
+                  Créer un compte
                 </Button>
               </Link>
               <Link to="/auth?tab=login" className="w-full sm:w-auto group">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground text-[11px] xs:text-xs sm:text-sm lg:text-base py-2 xs:py-2.5 font-bold shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105">
-                  🔐 Se connecter
+                <Button size="lg" variant="outline" className="w-full sm:w-auto border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground text-[11px] xs:text-xs sm:text-sm lg:text-base py-2 xs:py-2.5 font-bold shadow-md hover:shadow-lg transition-all duration-300 ease-out hover:scale-[1.02]">
+                  Se connecter
                 </Button>
               </Link>
             </div>
@@ -364,17 +363,16 @@ const Index = () => {
             <div className="mt-2">
               <button 
                 onClick={() => setShowVisitorSelector(true)}
-                className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors ease-out cursor-pointer"
               >
-                <span>👀</span>
                 <span className="underline underline-offset-2">Explorer sans inscription</span>
               </button>
             </div>
             <div className="flex flex-wrap justify-center gap-2 sm:gap-3 lg:gap-4 pt-3 sm:pt-4 lg:pt-6">
               {heroStats.map((stat, idx) => (
-                <Card key={idx} className={`bg-gradient-to-br from-card to-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:scale-105 group ${!statsLoaded ? 'animate-pulse' : ''}`}>
+                <Card key={idx} className={`bg-gradient-to-br from-card to-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all duration-300 ease-out hover:shadow-lg hover:scale-[1.02] group ${!statsLoaded ? 'animate-pulse' : ''}`}>
                   <CardContent className="p-3 sm:p-4 lg:p-5 text-center min-w-[80px] sm:min-w-[100px] lg:min-w-[110px]">
-                    <div className={`text-base sm:text-xl lg:text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent group-hover:scale-110 transition-transform whitespace-nowrap ${!statsLoaded ? 'opacity-50' : ''}`}>{stat.number}</div>
+                    <div className={`text-base sm:text-xl lg:text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent group-hover:scale-105 transition-transform ease-out whitespace-nowrap ${!statsLoaded ? 'opacity-50' : ''}`}>{stat.number}</div>
                     <div className="text-[9px] sm:text-xs lg:text-sm text-muted-foreground font-bold uppercase leading-tight whitespace-nowrap">{stat.label}</div>
                   </CardContent>
                 </Card>
@@ -383,12 +381,12 @@ const Index = () => {
           </div>
           <div className="flex justify-center items-center relative order-first md:order-last mt-4 sm:mt-0">
             {shouldShowBlur && (
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full blur-3xl animate-pulse"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 rounded-full blur-2xl opacity-40"></div>
             )}
             <img 
               src={ericCelebrating} 
               alt="Jude - Assistant IA EDUPRENEURS" 
-              className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-md drop-shadow-2xl hover:scale-105 transition-transform duration-500 relative z-10"
+              className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-md drop-shadow-xl hover:scale-[1.02] transition-transform duration-500 ease-out relative z-10"
               loading="eager"
               fetchPriority="high"
               width={448}
@@ -405,7 +403,7 @@ const Index = () => {
           <div className="flex flex-col md:flex-row items-center gap-6 mb-8 sm:mb-12">
             <div className="flex-1 text-center md:text-left">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary mb-3 sm:mb-4">
-                🇭🇹 Projet Phare 2025 : Révolutionner l'Éducation Haïtienne
+                Projet Phare 2025 : Révolutionner l'Éducation Haïtienne
               </h2>
               <p className="text-sm sm:text-base text-muted-foreground max-w-3xl">
                 Système d'instruction entièrement basé sur le programme du MENFP avec des méthodes d'apprentissage technologiques innovantes
@@ -417,7 +415,7 @@ const Index = () => {
                 alt="Eric vous guide" 
                 width={160}
                 height={240}
-                className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
+                className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite] drop-shadow-xl"
                 loading="lazy"
                 decoding="async"
               />
@@ -425,10 +423,10 @@ const Index = () => {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {features.map((feature, idx) => (
-              <Card key={idx} className="group hover:scale-105 transition-all duration-300 bg-gradient-to-br from-card to-card/50 border-primary/20 hover:border-primary/40 hover:shadow-2xl relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <Card key={idx} className="group hover:scale-[1.02] transition-all duration-300 ease-out bg-gradient-to-br from-card to-card/50 border-primary/20 hover:border-primary/40 hover:shadow-xl relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"></div>
                 <CardHeader className="p-4 sm:p-6 relative z-10">
-                  <div className="text-4xl sm:text-5xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">{feature.icon}</div>
+                  <div className="text-4xl sm:text-5xl mb-3 sm:mb-4 group-hover:scale-105 transition-transform duration-300 ease-out">{feature.icon}</div>
                   <CardTitle className="text-lg sm:text-xl font-bold">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 sm:p-6 pt-0 relative z-10">
@@ -445,7 +443,7 @@ const Index = () => {
         <div className="container mx-auto">
           <div className="text-center mb-10 sm:mb-14">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary mb-3 sm:mb-4">
-              🎯 Comment ça marche ?
+              Comment ça marche
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
               En 4 étapes simples, commencez votre parcours d'apprentissage personnalisé
@@ -474,7 +472,7 @@ const Index = () => {
                 icon: lazyImages.judeProfile || "🤖", 
                 title: "Rencontrez Jude", 
                 desc: "Votre assistant IA personnel vous accompagne 24h/7j en créole ou français.",
-                color: "from-purple-500 to-violet-500",
+                color: "from-primary to-accent",
                 isImage: !!lazyImages.judeProfile
               },
               { 
@@ -490,10 +488,10 @@ const Index = () => {
                 {idx < 3 && (
                   <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gradient-to-r from-primary/30 to-transparent z-0"></div>
                 )}
-                <Card className="relative z-10 h-full hover:scale-105 transition-all duration-300 hover:shadow-2xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 overflow-hidden">
+                <Card className="relative z-10 h-full hover:scale-[1.02] transition-all duration-300 ease-out hover:shadow-xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 overflow-hidden">
                   <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${item.color}`}></div>
                   <CardHeader className="text-center pb-2">
-                  <div className={`w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform duration-300 overflow-hidden`}>
+                  <div className={`w-16 h-16 mx-auto rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center mb-3 shadow-lg group-hover:scale-105 transition-transform duration-300 ease-out overflow-hidden`}>
                       {item.isImage ? (
                         <img src={item.icon} alt={item.title} className="w-full h-full object-cover" />
                       ) : (
@@ -516,9 +514,9 @@ const Index = () => {
           {/* CTA */}
           <div className="text-center px-2">
             <Link to="/auth?tab=signup">
-              <Button size="lg" className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-2xl font-bold transition-all duration-300 hover:scale-105 text-xs sm:text-sm px-4 sm:px-6 md:px-8">
-                <span className="hidden sm:inline">✨ Créer un compte - C'est gratuit !</span>
-                <span className="sm:hidden">✨ Créer un compte</span>
+              <Button size="lg" className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-xl font-bold transition-all duration-300 ease-out hover:scale-[1.02] text-xs sm:text-sm px-4 sm:px-6 md:px-8">
+                <span className="hidden sm:inline">Créer un compte - C'est gratuit</span>
+                <span className="sm:hidden">Créer un compte</span>
               </Button>
             </Link>
           </div>
@@ -530,7 +528,7 @@ const Index = () => {
         <div className="container mx-auto">
           <div className="text-center mb-8 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary mb-3 sm:mb-4">
-              ✨ Fonctionnalités de la Plateforme
+              Fonctionnalités de la Plateforme
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground max-w-3xl mx-auto">
               Découvrez toutes les fonctionnalités qui font d'EDUPRENEURS la plateforme éducative la plus complète d'Haïti
@@ -540,10 +538,10 @@ const Index = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {platformFeatures.map((feature, idx) => (
               <Link key={idx} to={feature.link} className="group">
-                <Card className="h-full hover:scale-105 transition-all duration-300 hover:shadow-2xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 relative overflow-hidden">
+                <Card className="h-full hover:scale-[1.02] transition-all duration-300 ease-out hover:shadow-xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 relative overflow-hidden">
                   <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${feature.color}`}></div>
                   <CardHeader className="pb-2">
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                    <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${feature.color} flex items-center justify-center mb-3 group-hover:scale-105 transition-transform duration-300 ease-out shadow-lg`}>
                       <feature.icon className="w-6 h-6 text-white" />
                     </div>
                     <CardTitle className="text-lg font-bold text-primary group-hover:text-accent transition-colors">{feature.title}</CardTitle>
@@ -566,7 +564,7 @@ const Index = () => {
       <section id="courses" className="py-12 sm:py-16 md:py-20 px-4 bg-background">
         <div className="container mx-auto">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-center text-primary mb-3 sm:mb-4">
-            📚 Nos cours disponibles
+            Nos cours disponibles
           </h2>
           <p className="text-sm sm:text-base text-center text-muted-foreground mb-8 sm:mb-12 max-w-3xl mx-auto px-4">
             Programme complet du MENFP de la 7AF à NS4 (Terminale)
@@ -581,9 +579,9 @@ const Index = () => {
               { icon: "🇭🇹", title: "Créole", desc: "Langue maternelle haïtienne, orthographe créole, expression orale. Valorisez votre culture et votre identité.", levels: ["7AF - NS4", "Programme MENFP"] },
               { icon: "💻", title: "Informatique", desc: "Bureautique, navigation internet, sécurité numérique. Maîtrisez les outils numériques essentiels pour le 21ème siècle.", levels: ["7AF - NS4", "Compétences numériques"] }
             ].map((course, idx) => (
-              <Card key={idx} className="group hover:scale-105 transition-all duration-300 hover:shadow-2xl border-primary/20 hover:border-primary/40">
+              <Card key={idx} className="group hover:scale-[1.02] transition-all duration-300 ease-out hover:shadow-xl border-primary/20 hover:border-primary/40">
                 <CardHeader>
-                  <div className="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">{course.icon}</div>
+                  <div className="text-5xl mb-4 group-hover:scale-105 transition-transform duration-300 ease-out">{course.icon}</div>
                   <CardTitle className="font-bold text-primary">{course.title}</CardTitle>
                   <CardDescription className="font-medium">{course.desc}</CardDescription>
                 </CardHeader>
@@ -603,10 +601,10 @@ const Index = () => {
             ))}
           </div>
           
-          <Card className="relative mt-16 max-w-4xl mx-auto bg-gradient-to-br from-card via-card to-primary/5 border-2 border-primary/20 overflow-hidden group hover:shadow-2xl transition-all duration-300">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <Card className="relative mt-16 max-w-4xl mx-auto bg-gradient-to-br from-card via-card to-primary/5 border-2 border-primary/20 overflow-hidden group hover:shadow-xl transition-all duration-300 ease-out">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-out"></div>
             <CardHeader className="text-center relative z-10">
-              <CardTitle className="text-2xl md:text-3xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">🎯 Apprentissage personnalisé avec Jude</CardTitle>
+              <CardTitle className="text-2xl md:text-3xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Apprentissage personnalisé avec Jude</CardTitle>
               <CardDescription className="text-base font-medium">
                 Votre assistant IA vous guide dans chaque matière, explique en créole ou français, et s'adapte à votre rythme. 
                 Gagnez des Gold en réussissant les quiz et débloquez des fonctions premium !
@@ -614,9 +612,9 @@ const Index = () => {
             </CardHeader>
             <CardContent className="text-center space-y-6 relative z-10 px-3 xs:px-4 sm:px-6">
               <Link to="/auth">
-                <Button size="lg" className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-2xl font-bold transition-all duration-300 hover:scale-105 text-xs sm:text-sm px-4 sm:px-6 md:px-8">
-                  <span className="hidden sm:inline">🚀 Commencer l'apprentissage</span>
-                  <span className="sm:hidden">🚀 Commencer</span>
+                <Button size="lg" className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-xl font-bold transition-all duration-300 ease-out hover:scale-[1.02] text-xs sm:text-sm px-4 sm:px-6 md:px-8">
+                  <span className="hidden sm:inline">Commencer l'apprentissage</span>
+                  <span className="sm:hidden">Commencer</span>
                 </Button>
               </Link>
               <div className="pt-4">
@@ -669,13 +667,13 @@ const Index = () => {
 
       {/* About */}
       <section id="about" className="relative py-20 px-4 bg-gradient-to-br from-background to-accent/5 overflow-hidden">
-        <div className="absolute top-10 right-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 left-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-10 right-10 w-64 h-64 bg-primary/10 rounded-full blur-2xl opacity-40"></div>
+        <div className="absolute bottom-10 left-10 w-96 h-96 bg-accent/10 rounded-full blur-2xl opacity-40"></div>
         
         <div className="container mx-auto relative z-10">
           <h2 className="text-3xl md:text-4xl font-black text-center mb-12 animate-fade-in">
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              🇭🇹 À Propos d'EDUPRENEURS
+              À Propos d'EDUPRENEURS
             </span>
           </h2>
           <div className="grid md:grid-cols-2 gap-12">
@@ -690,7 +688,7 @@ const Index = () => {
                 se trouvant totalement désuet dans ce monde dirigé par la technologie.
               </p>
               
-              <h3 className="text-2xl font-black text-primary pt-4">Projet Phare 2025 🚀</h3>
+              <h3 className="text-2xl font-black text-primary pt-4">Projet Phare 2025</h3>
               <p className="text-muted-foreground leading-relaxed font-medium">
                 EDUPRENEURS est né d'une vision claire : <span className="font-black text-foreground bg-gradient-to-r from-primary/20 to-accent/20 px-2 py-1 rounded">révolutionner l'éducation haïtienne</span> en 
                 mettant en place un système d'instruction entièrement basé sur le programme du Ministère de l'Éducation Nationale 
@@ -703,9 +701,9 @@ const Index = () => {
                   { icon: "📱", title: "Accessible Partout", desc: "Accessible depuis n'importe quel smartphone, tablette ou PC - de la 7AF jusqu'à NS4 (Terminale)" },
                   { icon: "💰", title: "Prix Abordable", desc: "Seulement 200 gourdes par mois avec une semaine d'essai gratuite pour démocratiser l'éducation" }
                 ].map((point, idx) => (
-                  <Card key={idx} className="group hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-primary/20 hover:border-primary/40 bg-gradient-to-r from-card to-card/50">
+                  <Card key={idx} className="group hover:shadow-lg transition-all duration-300 ease-out hover:scale-[1.02] border-primary/20 hover:border-primary/40 bg-gradient-to-r from-card to-card/50">
                     <CardContent className="p-4 flex gap-4">
-                      <div className="text-3xl group-hover:scale-110 transition-transform duration-300">{point.icon}</div>
+                      <div className="text-3xl group-hover:scale-105 transition-transform duration-300 ease-out">{point.icon}</div>
                       <div>
                         <h4 className="font-black text-primary mb-1 text-base">{point.title}</h4>
                         <p className="text-sm text-muted-foreground font-medium leading-relaxed">{point.desc}</p>
@@ -716,10 +714,10 @@ const Index = () => {
               </div>
             </div>
             
-            <Card className="relative bg-gradient-to-br from-card via-primary/5 to-accent/10 shadow-2xl border-2 border-primary/20 overflow-hidden group hover:shadow-3xl transition-all duration-500">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <Card className="relative bg-gradient-to-br from-card via-primary/5 to-accent/10 shadow-xl border-2 border-primary/20 overflow-hidden group hover:shadow-2xl transition-all duration-500 ease-out">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-out"></div>
               <CardHeader className="relative z-10">
-                <CardTitle className="text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">🚀 Notre Vision pour Haïti</CardTitle>
+                <CardTitle className="text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Notre Vision pour Haïti</CardTitle>
                 <CardDescription className="text-base font-medium leading-relaxed">
                   Nous croyons fermement qu'avec les bonnes méthodes, le programme du MENFP qui est assez généraliste 
                   pour certains a encore l'occasion d'impacter positivement l'avenir de notre pays.
@@ -752,7 +750,7 @@ const Index = () => {
         <div className="container mx-auto">
           <div className="text-center mb-10 sm:mb-14">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary mb-3 sm:mb-4">
-              👥 L'équipe derrière EDUPRENEURS
+              L'équipe EDUPRENEURS
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
               Des passionnés dédiés à transformer l'éducation haïtienne
@@ -761,10 +759,10 @@ const Index = () => {
           
           <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 max-w-3xl mx-auto">
             {teamMembers.map((member, idx) => (
-              <Card key={idx} className="group hover:scale-[1.02] transition-all duration-300 hover:shadow-xl border-0 bg-card text-center overflow-hidden">
+              <Card key={idx} className="group hover:scale-[1.02] transition-all duration-300 ease-out hover:shadow-lg border-0 bg-card text-center overflow-hidden">
                 <CardHeader className="pb-3 pt-8">
                   {/* Stylized Initials Avatar */}
-                  <div className={`w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br ${member.color} flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg`}>
+                  <div className={`w-20 h-20 mx-auto rounded-lg bg-gradient-to-br ${member.color} flex items-center justify-center mb-4 group-hover:scale-105 group-hover:rotate-2 transition-all duration-300 ease-out shadow-lg`}>
                     <span className="text-2xl font-black text-white tracking-tight">{member.initials}</span>
                   </div>
                   <CardTitle className="text-xl font-bold text-foreground">{member.name}</CardTitle>
@@ -785,7 +783,7 @@ const Index = () => {
         <div className="container mx-auto">
           <div className="text-center mb-10 sm:mb-14">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary mb-3 sm:mb-4">
-              📞 Contactez-nous
+              Contactez-nous
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
               Une question ? Besoin d'aide ? Notre équipe est là pour vous
@@ -794,9 +792,9 @@ const Index = () => {
           
           <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 max-w-2xl mx-auto">
             {/* Email */}
-            <Card className="group hover:scale-105 transition-all duration-300 hover:shadow-2xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 text-center">
+            <Card className="group hover:scale-[1.02] transition-all duration-300 ease-out hover:shadow-xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 text-center">
               <CardHeader>
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <div className="w-16 h-16 mx-auto rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-300 ease-out shadow-lg">
                   <Mail className="w-8 h-8 text-white" />
                 </div>
                 <CardTitle className="text-lg font-bold text-primary">Email</CardTitle>
@@ -810,9 +808,9 @@ const Index = () => {
             </Card>
 
             {/* WhatsApp */}
-            <Card className="group hover:scale-105 transition-all duration-300 hover:shadow-2xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 text-center">
+            <Card className="group hover:scale-[1.02] transition-all duration-300 ease-out hover:shadow-xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 text-center">
               <CardHeader>
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <div className="w-16 h-16 mx-auto rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-300 ease-out shadow-lg">
                   <Phone className="w-8 h-8 text-white" />
                 </div>
                 <CardTitle className="text-lg font-bold text-primary">WhatsApp</CardTitle>
@@ -830,14 +828,14 @@ const Index = () => {
           <div className="text-center mt-10">
             <p className="text-sm text-muted-foreground mb-4 font-medium">Suivez-nous sur les réseaux sociaux</p>
             <div className="flex justify-center gap-4">
-              <a href="#" className="w-12 h-12 rounded-full bg-[#1877F2] flex items-center justify-center hover:scale-110 transition-all duration-300 cursor-pointer shadow-lg">
-                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              <a href="#" aria-label="Facebook (bientôt disponible)" className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center hover:scale-[1.02] transition-all duration-300 ease-out cursor-not-allowed opacity-50 shadow-md">
+                <svg className="w-6 h-6 text-muted-foreground" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
               </a>
-              <a href="#" className="w-12 h-12 rounded-full bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737] flex items-center justify-center hover:scale-110 transition-all duration-300 cursor-pointer shadow-lg">
-                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              <a href="#" aria-label="Instagram (bientôt disponible)" className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center hover:scale-[1.02] transition-all duration-300 ease-out cursor-not-allowed opacity-50 shadow-md">
+                <svg className="w-6 h-6 text-muted-foreground" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
               </a>
-              <a href="#" className="w-12 h-12 rounded-full bg-black flex items-center justify-center hover:scale-110 transition-all duration-300 cursor-pointer shadow-lg">
-                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
+              <a href="#" aria-label="TikTok (bientôt disponible)" className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center hover:scale-[1.02] transition-all duration-300 ease-out cursor-not-allowed opacity-50 shadow-md">
+                <svg className="w-6 h-6 text-muted-foreground" fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
               </a>
             </div>
           </div>
@@ -849,15 +847,15 @@ const Index = () => {
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20"></div>
         <div className="container mx-auto relative z-10">
           <h2 className="text-3xl md:text-4xl font-black mb-6 animate-fade-in">
-            Rejoignez la révolution de l'éducation haïtienne 🚀
+            Rejoignez la révolution de l'éducation haïtienne
           </h2>
           <p className="text-lg mb-8 opacity-90 max-w-2xl mx-auto font-medium leading-relaxed">
             Transformez votre façon d'apprendre avec la technologie. Apprentissage personnalisé, assistant IA, et récompenses réelles vous attendent.
           </p>
           <Link to="/auth?tab=signup">
-            <Button size="lg" className="bg-white text-primary hover:bg-white/90 shadow-2xl font-bold text-xs sm:text-sm md:text-base px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 hover:scale-105 transition-all duration-300">
-              <span className="hidden sm:inline">Créer un compte gratuitement ✨</span>
-              <span className="sm:hidden">Créer un compte ✨</span>
+            <Button size="lg" className="bg-white text-primary hover:bg-white/90 shadow-xl font-bold text-xs sm:text-sm md:text-base px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 hover:scale-[1.02] transition-all duration-300 ease-out">
+              <span className="hidden sm:inline">Créer un compte gratuitement</span>
+              <span className="sm:hidden">Créer un compte</span>
             </Button>
           </Link>
         </div>

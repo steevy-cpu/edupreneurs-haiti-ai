@@ -18,11 +18,11 @@ export default function AuthSidebar() {
         <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground min-h-[2.5rem] md:min-h-[3rem]">
           <TypewriterText 
             phrases={[
-              "Prêt à apprendre? 🚀",
-              "Ton aventure commence ici! ✨",
-              "Apprends à ton rythme 📚",
-              "Réussis avec nous! 🎯",
-              "L'éducation sans limites 🌟"
+              "Prêt à apprendre?",
+              "Rejoins des milliers d'élèves",
+              "Apprends à ton rythme",
+              "Prépare tes examens officiels",
+              "Programme MENFP complet"
             ]}
             typingSpeed={80}
             deletingSpeed={40}
@@ -39,10 +39,10 @@ export default function AuthSidebar() {
         <div className="flex flex-wrap justify-center gap-2 animate-fade-in" 
              style={{ animationDelay: '0.4s' }}>
           <span className="px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs md:text-sm font-medium">
-            ✨ 7 jours gratuits
+            7 jours gratuits
           </span>
           <span className="px-3 py-1.5 bg-accent/20 text-foreground rounded-full text-xs md:text-sm font-medium">
-            🤖 IA personnalisée
+            IA personnalisée
           </span>
         </div>
       </div>
