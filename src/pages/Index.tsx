@@ -20,7 +20,7 @@ const ericThinkingPose = () => import("@/assets/eric-thinking-pose.png").then(m 
 const judeProfile = () => import("@/assets/jude-profile.jpeg").then(m => m.default);
 
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Menu, X, BookOpen, Trophy, MessageCircle, Newspaper, Users, GraduationCap, Heart, FileText, Mail, Phone, MapPin } from "lucide-react";
+import { Menu, X, BookOpen, Trophy, MessageCircle, Newspaper, Users, GraduationCap, Heart, FileText, Mail, Phone, MapPin, PenLine, Bot, Calculator, Languages, FlaskConical, Globe, Laptop, Target, Smartphone, Coins, HelpCircle, CheckCircle, RefreshCw } from "lucide-react";
 import { VisitorTypeSelector, VisitorBanner } from "@/components/visitor";
 
 // Lazy load chatbot for better initial page load
@@ -106,10 +106,10 @@ const Index = () => {
   ], [stats]);
 
   const features = useMemo(() => [
-    { icon: "🎯", title: "Apprentissage 100% Personnalisé", desc: "L'agent IA s'adapte à votre niveau, de la 7AF à NS4 (programme MENFP complet)" },
-    { icon: "💰", title: "Prix Dérisoire - 200 Gdes/mois", desc: "Accessible à tous avec une semaine d'essai gratuite" },
-    { icon: "🏆", title: "Système Gold Révolutionnaire", desc: "Gagnez des points, débloquez des fonctions premium, et même de l'argent réel" },
-    { icon: "🌐", title: "Multilingue Intelligent", desc: "Créole, Français, Anglais, Espagnol - Votre IA parle votre langue" }
+    { icon: <Target className="w-10 h-10 text-primary" />, title: "Apprentissage 100% Personnalisé", desc: "L'agent IA s'adapte à votre niveau, de la 7AF à NS4 (programme MENFP complet)" },
+    { icon: <Coins className="w-10 h-10 text-primary" />, title: "Prix Dérisoire - 200 Gdes/mois", desc: "Accessible à tous avec une semaine d'essai gratuite" },
+    { icon: <Trophy className="w-10 h-10 text-primary" />, title: "Système Gold Révolutionnaire", desc: "Gagnez des points, débloquez des fonctions premium, et même de l'argent réel" },
+    { icon: <Languages className="w-10 h-10 text-primary" />, title: "Multilingue Intelligent", desc: "Créole, Français, Anglais, Espagnol - Votre IA parle votre langue" }
   ], []);
 
   const platformFeatures = useMemo(() => [
@@ -370,10 +370,19 @@ const Index = () => {
             </div>
             <div className="flex flex-wrap justify-center gap-2 sm:gap-3 lg:gap-4 pt-3 sm:pt-4 lg:pt-6">
               {heroStats.map((stat, idx) => (
-                <Card key={idx} className={`bg-gradient-to-br from-card to-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all duration-300 ease-out hover:shadow-lg hover:scale-[1.02] group ${!statsLoaded ? 'animate-pulse' : ''}`}>
+                <Card key={idx} className="bg-gradient-to-br from-card to-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all duration-300 ease-out hover:shadow-lg hover:scale-[1.02] group">
                   <CardContent className="p-3 sm:p-4 lg:p-5 text-center min-w-[80px] sm:min-w-[100px] lg:min-w-[110px]">
-                    <div className={`text-base sm:text-xl lg:text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent group-hover:scale-105 transition-transform ease-out whitespace-nowrap ${!statsLoaded ? 'opacity-50' : ''}`}>{stat.number}</div>
-                    <div className="text-[9px] sm:text-xs lg:text-sm text-muted-foreground font-bold uppercase leading-tight whitespace-nowrap">{stat.label}</div>
+                    {!statsLoaded ? (
+                      <div className="space-y-2">
+                        <div className="h-6 sm:h-7 lg:h-8 bg-muted/50 rounded animate-pulse mx-auto w-12 sm:w-14 lg:w-16" />
+                        <div className="h-3 sm:h-3.5 bg-muted/30 rounded animate-pulse mx-auto w-10 sm:w-12" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="text-base sm:text-xl lg:text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent group-hover:scale-105 transition-transform ease-out whitespace-nowrap">{stat.number}</div>
+                        <div className="text-[9px] sm:text-xs lg:text-sm text-muted-foreground font-bold uppercase leading-tight whitespace-nowrap">{stat.label}</div>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               ))}
@@ -426,7 +435,7 @@ const Index = () => {
               <Card key={idx} className="group hover:scale-[1.02] transition-all duration-300 ease-out bg-gradient-to-br from-card to-card/50 border-primary/20 hover:border-primary/40 hover:shadow-xl relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"></div>
                 <CardHeader className="p-4 sm:p-6 relative z-10">
-                  <div className="text-4xl sm:text-5xl mb-3 sm:mb-4 group-hover:scale-105 transition-transform duration-300 ease-out">{feature.icon}</div>
+                  <div className="mb-3 sm:mb-4 group-hover:scale-105 transition-transform duration-300 ease-out">{feature.icon}</div>
                   <CardTitle className="text-lg sm:text-xl font-bold">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 sm:p-6 pt-0 relative z-10">
@@ -455,29 +464,29 @@ const Index = () => {
             {[
               { 
                 step: 1, 
-                icon: "📝", 
+                icon: <PenLine className="w-8 h-8 text-white" />, 
                 title: "Créez votre compte", 
                 desc: "Inscription gratuite en 2 minutes. Essai gratuit de 7 jours sans engagement.",
                 color: "from-blue-500 to-cyan-500"
               },
               { 
                 step: 2, 
-                icon: "🎓", 
+                icon: <GraduationCap className="w-8 h-8 text-white" />, 
                 title: "Choisissez votre niveau", 
                 desc: "De la 7AF à NS4 - Sélectionnez votre classe pour un contenu adapté au programme MENFP.",
                 color: "from-green-500 to-emerald-500"
               },
               { 
                 step: 3, 
-                icon: lazyImages.judeProfile || "🤖", 
+                icon: lazyImages.judeProfile ? null : <Bot className="w-8 h-8 text-white" />,
+                image: lazyImages.judeProfile,
                 title: "Rencontrez Jude", 
                 desc: "Votre assistant IA personnel vous accompagne 24h/7j en créole ou français.",
-                color: "from-primary to-accent",
-                isImage: !!lazyImages.judeProfile
+                color: "from-primary to-accent"
               },
               { 
                 step: 4, 
-                icon: "🏆", 
+                icon: <Trophy className="w-8 h-8 text-white" />, 
                 title: "Gagnez des Gold", 
                 desc: "Réussissez les quiz, gagnez des récompenses et débloquez des fonctions premium !",
                 color: "from-yellow-500 to-orange-500"
@@ -492,10 +501,10 @@ const Index = () => {
                   <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${item.color}`}></div>
                   <CardHeader className="text-center pb-2">
                   <div className={`w-16 h-16 mx-auto rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center mb-3 shadow-lg group-hover:scale-105 transition-transform duration-300 ease-out overflow-hidden`}>
-                      {item.isImage ? (
-                        <img src={item.icon} alt={item.title} className="w-full h-full object-cover" />
+                      {item.image ? (
+                        <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-3xl">{item.icon}</span>
+                        item.icon
                       )}
                     </div>
                     <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold mb-2">
@@ -571,17 +580,17 @@ const Index = () => {
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[
-              { icon: "🔢", title: "Mathématiques", desc: "Algèbre, géométrie, statistiques, probabilités. Tous les chapitres du programme MENFP avec explications simples et quiz amusants.", levels: ["7AF - NS4", "Programme MENFP"] },
-              { icon: "📝", title: "Français", desc: "Grammaire, conjugaison, expression écrite et orale. Maîtrisez la langue française avec votre assistant IA personnalisé.", levels: ["7AF - NS4", "Programme MENFP"] },
-              { icon: "🔬", title: "Sciences", desc: "Physique, chimie, biologie, sciences de la terre. Expériences virtuelles et schémas explicatifs pour comprendre la nature.", levels: ["7AF - NS4", "Programme MENFP"] },
-              { icon: "🌍", title: "Sciences Sociales", desc: "Histoire d'Haïti, géographie, éducation civique. Découvrez votre pays et le monde avec des cartes interactives.", levels: ["7AF - NS4", "Programme MENFP"] },
-              { icon: "🇺🇸", title: "Anglais", desc: "Grammaire anglaise, vocabulaire, conversation. Apprenez l'anglais avec des méthodes modernes et interactives.", levels: ["7AF - NS4", "Programme MENFP"] },
-              { icon: "🇭🇹", title: "Créole", desc: "Langue maternelle haïtienne, orthographe créole, expression orale. Valorisez votre culture et votre identité.", levels: ["7AF - NS4", "Programme MENFP"] },
-              { icon: "💻", title: "Informatique", desc: "Bureautique, navigation internet, sécurité numérique. Maîtrisez les outils numériques essentiels pour le 21ème siècle.", levels: ["7AF - NS4", "Compétences numériques"] }
+              { icon: <Calculator className="w-12 h-12 text-primary" />, title: "Mathématiques", desc: "Algèbre, géométrie, statistiques, probabilités. Tous les chapitres du programme MENFP avec explications simples et quiz amusants.", levels: ["7AF - NS4", "Programme MENFP"] },
+              { icon: <PenLine className="w-12 h-12 text-primary" />, title: "Français", desc: "Grammaire, conjugaison, expression écrite et orale. Maîtrisez la langue française avec votre assistant IA personnalisé.", levels: ["7AF - NS4", "Programme MENFP"] },
+              { icon: <FlaskConical className="w-12 h-12 text-primary" />, title: "Sciences", desc: "Physique, chimie, biologie, sciences de la terre. Expériences virtuelles et schémas explicatifs pour comprendre la nature.", levels: ["7AF - NS4", "Programme MENFP"] },
+              { icon: <Globe className="w-12 h-12 text-primary" />, title: "Sciences Sociales", desc: "Histoire d'Haïti, géographie, éducation civique. Découvrez votre pays et le monde avec des cartes interactives.", levels: ["7AF - NS4", "Programme MENFP"] },
+              { icon: <Languages className="w-12 h-12 text-primary" />, title: "Anglais", desc: "Grammaire anglaise, vocabulaire, conversation. Apprenez l'anglais avec des méthodes modernes et interactives.", levels: ["7AF - NS4", "Programme MENFP"] },
+              { icon: <BookOpen className="w-12 h-12 text-primary" />, title: "Créole", desc: "Langue maternelle haïtienne, orthographe créole, expression orale. Valorisez votre culture et votre identité.", levels: ["7AF - NS4", "Programme MENFP"] },
+              { icon: <Laptop className="w-12 h-12 text-primary" />, title: "Informatique", desc: "Bureautique, navigation internet, sécurité numérique. Maîtrisez les outils numériques essentiels pour le 21ème siècle.", levels: ["7AF - NS4", "Compétences numériques"] }
             ].map((course, idx) => (
               <Card key={idx} className="group hover:scale-[1.02] transition-all duration-300 ease-out hover:shadow-xl border-primary/20 hover:border-primary/40">
                 <CardHeader>
-                  <div className="text-5xl mb-4 group-hover:scale-105 transition-transform duration-300 ease-out">{course.icon}</div>
+                  <div className="mb-4 group-hover:scale-105 transition-transform duration-300 ease-out">{course.icon}</div>
                   <CardTitle className="font-bold text-primary">{course.title}</CardTitle>
                   <CardDescription className="font-medium">{course.desc}</CardDescription>
                 </CardHeader>
@@ -618,8 +627,8 @@ const Index = () => {
                 </Button>
               </Link>
               <div className="pt-4">
-                <div className="w-64 h-64 mx-auto bg-muted/20 rounded-xl flex items-center justify-center">
-                  <span className="text-6xl">🎓</span>
+                <div className="w-64 h-64 mx-auto bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl flex items-center justify-center border border-primary/20">
+                  <GraduationCap className="w-24 h-24 text-primary/60" />
                 </div>
               </div>
             </CardContent>
@@ -638,8 +647,8 @@ const Index = () => {
               <p className="text-muted-foreground font-medium">Tout ce que vous devez savoir sur EDUPRENEURS</p>
             </div>
             <div className="flex-shrink-0">
-              <div className="w-40 sm:w-52 md:w-60 h-40 sm:h-52 md:h-60 bg-muted/20 rounded-xl flex items-center justify-center animate-float">
-                <span className="text-6xl">🤔</span>
+              <div className="w-40 sm:w-52 md:w-60 h-40 sm:h-52 md:h-60 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl flex items-center justify-center animate-float border border-primary/20">
+                <HelpCircle className="w-16 sm:w-20 md:w-24 h-16 sm:h-20 md:h-24 text-primary/60" />
               </div>
             </div>
           </div>
@@ -697,13 +706,13 @@ const Index = () => {
               
               <div className="space-y-4 pt-4">
                 {[
-                  { icon: "🎯", title: "Apprentissage Personnalisé", desc: "Un système d'apprentissage entièrement personnalisé qui s'adapte au rythme de chaque élève" },
-                  { icon: "📱", title: "Accessible Partout", desc: "Accessible depuis n'importe quel smartphone, tablette ou PC - de la 7AF jusqu'à NS4 (Terminale)" },
-                  { icon: "💰", title: "Prix Abordable", desc: "Seulement 200 gourdes par mois avec une semaine d'essai gratuite pour démocratiser l'éducation" }
+                  { icon: <Target className="w-8 h-8 text-primary" />, title: "Apprentissage Personnalisé", desc: "Un système d'apprentissage entièrement personnalisé qui s'adapte au rythme de chaque élève" },
+                  { icon: <Smartphone className="w-8 h-8 text-primary" />, title: "Accessible Partout", desc: "Accessible depuis n'importe quel smartphone, tablette ou PC - de la 7AF jusqu'à NS4 (Terminale)" },
+                  { icon: <Coins className="w-8 h-8 text-primary" />, title: "Prix Abordable", desc: "Seulement 200 gourdes par mois avec une semaine d'essai gratuite pour démocratiser l'éducation" }
                 ].map((point, idx) => (
                   <Card key={idx} className="group hover:shadow-lg transition-all duration-300 ease-out hover:scale-[1.02] border-primary/20 hover:border-primary/40 bg-gradient-to-r from-card to-card/50">
                     <CardContent className="p-4 flex gap-4">
-                      <div className="text-3xl group-hover:scale-105 transition-transform duration-300 ease-out">{point.icon}</div>
+                      <div className="group-hover:scale-105 transition-transform duration-300 ease-out flex-shrink-0">{point.icon}</div>
                       <div>
                         <h4 className="font-black text-primary mb-1 text-base">{point.title}</h4>
                         <p className="text-sm text-muted-foreground font-medium leading-relaxed">{point.desc}</p>
@@ -725,13 +734,13 @@ const Index = () => {
               </CardHeader>
               <CardContent className="space-y-4 relative z-10">
                 {[
-                  { title: "Conformité MENFP", desc: "100% aligné sur le programme officiel du Ministère de l'Éducation", icon: "✓" },
-                  { title: "Formation Continue", desc: "Mises à jour trimestrielles pour optimiser l'expérience utilisateur", icon: "↻" },
-                  { title: "Communauté", desc: "Panels de chat entre élèves utilisant le système Gold pour créer une véritable communauté d'apprentissage", icon: "👥" }
+                  { title: "Conformité MENFP", desc: "100% aligné sur le programme officiel du Ministère de l'Éducation", icon: <CheckCircle className="w-6 h-6 text-primary" /> },
+                  { title: "Formation Continue", desc: "Mises à jour trimestrielles pour optimiser l'expérience utilisateur", icon: <RefreshCw className="w-6 h-6 text-primary" /> },
+                  { title: "Communauté", desc: "Panels de chat entre élèves utilisant le système Gold pour créer une véritable communauté d'apprentissage", icon: <Users className="w-6 h-6 text-primary" /> }
                 ].map((item, idx) => (
                   <div key={idx} className="group/item p-4 bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 rounded-xl border-l-4 border-accent hover:border-primary transition-all duration-300 hover:shadow-lg hover:translate-x-2">
                     <div className="flex items-start gap-3">
-                      <span className="text-2xl">{item.icon}</span>
+                      <div className="flex-shrink-0">{item.icon}</div>
                       <div>
                         <h4 className="font-black text-primary mb-2 text-base">{item.title}</h4>
                         <p className="text-sm text-muted-foreground font-medium leading-relaxed">{item.desc}</p>
