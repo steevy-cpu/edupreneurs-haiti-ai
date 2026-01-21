@@ -91,9 +91,9 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
       return false;
     };
 
-    // Delay showing notification dialog after cookie consent
+    // Delay showing notification dialog after cookie consent (8s to avoid dialog fatigue)
     if (shouldShowDialog()) {
-      const timer = setTimeout(() => setShowDialog(true), 3000);
+      const timer = setTimeout(() => setShowDialog(true), 8000);
       return () => clearTimeout(timer);
     }
   }, [hasDecided, hasAccepted]);
@@ -104,7 +104,7 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
       if (accepted && Notification.permission === 'default') {
         setTimeout(() => {
           setShowDialog(true);
-        }, 5000);
+        }, 8000); // 8s delay to avoid dialog fatigue
       }
     });
     return () => { unsubscribe(); };
@@ -219,11 +219,15 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
         <DialogFooter className="flex-col gap-2 mt-2 sm:mt-4">
           <Button
             onClick={handleAllow}
-            disabled={isRequesting || !!error}
+            disabled={isRequesting || !!error || (isIOS && !isPWA)}
             className="w-full bg-primary hover:bg-primary/90"
             size="default"
           >
-            {isRequesting ? 'Activation...' : 'Autoriser les notifications'}
+            {isIOS && !isPWA 
+              ? 'Installez l\'app d\'abord' 
+              : isRequesting 
+                ? 'Activation...' 
+                : 'Autoriser les notifications'}
           </Button>
           <Button
             onClick={handleDeny}

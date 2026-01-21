@@ -22,34 +22,34 @@ const DEFAULT_PREFERENCES: CookiePreferences = {
 };
 
 export const useCookieConsent = () => {
-  const [state, setState] = useState<CookieConsentState>({
-    hasDecided: false,
-    hasAccepted: false,
-    preferences: DEFAULT_PREFERENCES,
-  });
-
-  // Load consent state from localStorage on mount
-  useEffect(() => {
-    const consent = localStorage.getItem(STORAGE_KEY);
-    const preferencesStr = localStorage.getItem(PREFERENCES_KEY);
-    
-    let preferences = DEFAULT_PREFERENCES;
-    if (preferencesStr) {
-      try {
-        preferences = JSON.parse(preferencesStr);
-        // Ensure essential is always true
-        preferences.essential = true;
-      } catch {
-        preferences = DEFAULT_PREFERENCES;
+  // Synchronous initialization prevents banner flash on returning users
+  const [state, setState] = useState<CookieConsentState>(() => {
+    if (typeof window !== 'undefined') {
+      const consent = localStorage.getItem(STORAGE_KEY);
+      const preferencesStr = localStorage.getItem(PREFERENCES_KEY);
+      
+      let preferences = DEFAULT_PREFERENCES;
+      if (preferencesStr) {
+        try {
+          preferences = JSON.parse(preferencesStr);
+          preferences.essential = true;
+        } catch {
+          preferences = DEFAULT_PREFERENCES;
+        }
       }
+      
+      return {
+        hasDecided: consent !== null,
+        hasAccepted: consent === 'accepted' || consent === 'essential',
+        preferences,
+      };
     }
-    
-    setState({
-      hasDecided: consent !== null,
-      hasAccepted: consent === 'accepted' || consent === 'essential',
-      preferences,
-    });
-  }, []);
+    return {
+      hasDecided: false,
+      hasAccepted: false,
+      preferences: DEFAULT_PREFERENCES,
+    };
+  });
 
   // Accept all cookies
   const acceptAll = useCallback(() => {

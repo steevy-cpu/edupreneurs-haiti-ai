@@ -24,8 +24,6 @@ const AlertDialogFooter = lazy(() => import("@/components/ui/alert-dialog").then
 const AlertDialogHeader = lazy(() => import("@/components/ui/alert-dialog").then(m => ({ default: m.AlertDialogHeader })));
 const AlertDialogTitle = lazy(() => import("@/components/ui/alert-dialog").then(m => ({ default: m.AlertDialogTitle })));
 
-// Lazy load notification permission banner
-const NotificationPermissionBanner = lazy(() => import("@/components/NotificationPermissionBanner").then(m => ({ default: m.NotificationPermissionBanner })));
 
 interface Profile {
   id: string;
@@ -585,11 +583,6 @@ export default function Notifications() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-background/80 px-3 py-4 sm:p-6 pb-24 sm:pb-6">
-      {/* Notification Permission Banner - Lazy loaded */}
-      <Suspense fallback={null}>
-        {currentUserId && <NotificationPermissionBanner userId={currentUserId} />}
-      </Suspense>
-      
       <div className="max-w-2xl mx-auto">
         {/* Header using PageHeader component */}
         <PageHeader

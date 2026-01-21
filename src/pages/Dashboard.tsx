@@ -29,7 +29,7 @@ import { useBannerPriority } from "@/hooks/useBannerPriority";
 import { QuickActionsCard } from "@/components/dashboard/QuickActionsCard";
 import { CollapsibleSection } from "@/components/dashboard/CollapsibleSection";
 import { Progress } from "@/components/ui/progress";
-import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
+
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -474,8 +474,7 @@ const Dashboard = () => {
           {(() => {
             const activeBanner = getActiveBanner([
               { id: 'pwa', priority: 1, show: showPrompt },
-              { id: 'notification', priority: 2, show: !!userId },
-              { id: 'passion', priority: 3, show: !isBannerDismissed('passion') },
+              { id: 'passion', priority: 2, show: !isBannerDismissed('passion') },
             ]);
 
             return (
@@ -486,9 +485,6 @@ const Dashboard = () => {
                     onInstall={installApp}
                     onDismiss={dismissPrompt}
                   />
-                )}
-                {activeBanner === 'notification' && userId && (
-                  <NotificationPermissionBanner userId={userId} />
                 )}
                 {activeBanner === 'passion' && (
                   <div className="relative">

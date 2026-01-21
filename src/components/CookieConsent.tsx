@@ -50,7 +50,7 @@ export const CookieConsent = () => {
   if (!showBanner || hasDecided) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[60] bg-background/95 backdrop-blur-sm border-t border-border shadow-lg animate-in slide-in-from-bottom-5 duration-300">
+    <div className="fixed bottom-0 left-0 right-0 z-[1002] bg-background/95 backdrop-blur-sm border-t border-border shadow-lg animate-in slide-in-from-bottom-5 duration-300">
       <div className="container mx-auto px-4 py-4 md:py-5">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           <div className="flex-1 text-sm text-foreground">
