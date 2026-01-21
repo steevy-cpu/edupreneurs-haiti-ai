@@ -292,7 +292,7 @@ export const JudeChatbot = () => {
   const getContainerStyles = (): React.CSSProperties => {
     const baseStyles: React.CSSProperties = {
       position: 'fixed',
-      zIndex: 1000,
+      zIndex: 1001, // Above MobileBottomNav (1000) during transition
       transition: 'all 0.2s ease-out', // Smooth transition for keyboard
     };
 
@@ -301,7 +301,7 @@ export const JudeChatbot = () => {
         // Keyboard open: position from bottom, above keyboard
         return {
           ...baseStyles,
-          bottom: `${keyboardHeight + 8}px`,
+          bottom: `${keyboardHeight + 16}px`, // Better visual buffer
           right: '0.75rem',
           left: 'auto',
           top: 'auto',

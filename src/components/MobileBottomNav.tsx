@@ -169,10 +169,11 @@ export const MobileBottomNav = () => {
   // Hide on certain pages or when keyboard is open on community
   const hiddenPaths = ["/auth", "/onboarding", "/chess-game", "/quiz-battle/solo"];
   const isLessonPage = location.pathname.includes("-lesson/");
-  const isCommunityPage = location.pathname === "/community";
   const isQuizBattlePage = location.pathname.startsWith("/quiz-battle");
   
-  if (hiddenPaths.includes(location.pathname) || isLessonPage || (isCommunityPage && keyboardOpen)) {
+  // Hide on certain pages, during lessons, OR when ANY keyboard is open
+  // This prevents overlap with JudeChatbot and provides more screen space for input
+  if (hiddenPaths.includes(location.pathname) || isLessonPage || keyboardOpen) {
     return null;
   }
 
