@@ -464,29 +464,29 @@ const Index = () => {
             {[
               { 
                 step: 1, 
-                icon: <PenLine className="w-8 h-8 text-white" />, 
+                image: "/images/writing-logo.webp",
                 title: "Créez votre compte", 
                 desc: "Inscription gratuite en 2 minutes. Essai gratuit de 7 jours sans engagement.",
                 color: "from-blue-500 to-cyan-500"
               },
               { 
                 step: 2, 
-                icon: <GraduationCap className="w-8 h-8 text-white" />, 
+                image: "/images/graduation.webp",
                 title: "Choisissez votre niveau", 
                 desc: "De la 7AF à NS4 - Sélectionnez votre classe pour un contenu adapté au programme MENFP.",
                 color: "from-green-500 to-emerald-500"
               },
               { 
                 step: 3, 
-                icon: lazyImages.judeProfile ? null : <Bot className="w-8 h-8 text-white" />,
                 image: lazyImages.judeProfile,
+                fallbackIcon: <Bot className="w-8 h-8 text-white" />,
                 title: "Rencontrez Jude", 
                 desc: "Votre assistant IA personnel vous accompagne 24h/7j en créole ou français.",
                 color: "from-primary to-accent"
               },
               { 
                 step: 4, 
-                icon: <Trophy className="w-8 h-8 text-white" />, 
+                image: "/images/champion.webp",
                 title: "Gagnez des Gold", 
                 desc: "Réussissez les quiz, gagnez des récompenses et débloquez des fonctions premium !",
                 color: "from-yellow-500 to-orange-500"
@@ -500,12 +500,20 @@ const Index = () => {
                 <Card className="relative z-10 h-full hover:scale-[1.02] transition-all duration-300 ease-out hover:shadow-xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 overflow-hidden">
                   <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${item.color}`}></div>
                   <CardHeader className="text-center pb-2">
-                  <div className={`w-16 h-16 mx-auto rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center mb-3 shadow-lg group-hover:scale-105 transition-transform duration-300 ease-out overflow-hidden`}>
+                  <div className="w-20 h-20 mx-auto flex items-center justify-center mb-3 group-hover:scale-105 transition-transform duration-300 ease-out">
                       {item.image ? (
-                        <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                      ) : (
-                        item.icon
-                      )}
+                        <img 
+                          src={item.image} 
+                          alt={item.title} 
+                          className="w-full h-full object-contain"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : item.fallbackIcon ? (
+                        <div className={`w-full h-full rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center shadow-lg`}>
+                          {item.fallbackIcon}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold mb-2">
                       {item.step}
