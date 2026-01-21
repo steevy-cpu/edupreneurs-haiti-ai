@@ -522,6 +522,17 @@ export const Layout = ({ children }: LayoutProps) => {
           )}
         </div>
 
+        {/* Expand button - Only visible when collapsed (desktop) */}
+        {sidebarCollapsed && (
+          <button
+            onClick={() => setSidebarCollapsed(false)}
+            className="hidden lg:flex items-center justify-center w-10 h-10 mx-auto mt-2 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 group"
+            title="Agrandir la barre latérale"
+          >
+            <ChevronRight size={20} className="group-hover:translate-x-0.5 transition-transform" />
+          </button>
+        )}
+
         {/* User Profile Section */}
         <div className={`text-center border-b border-border bg-gradient-to-br from-muted/30 to-muted/10 ${sidebarCollapsed ? 'p-2 lg:p-3' : 'p-3 sm:p-4 lg:p-6'}`}>
           <div className={`mx-auto rounded-full overflow-hidden bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] shadow-md animate-[gentle-bob_8s_ease-in-out_infinite] ${sidebarCollapsed ? 'w-10 h-10 lg:mb-0 mb-2' : 'w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mb-2 sm:mb-3 lg:mb-4'}`}>
@@ -730,7 +741,11 @@ export const Layout = ({ children }: LayoutProps) => {
           {/* Collapse Toggle - Desktop only */}
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className={`hidden lg:flex items-center gap-2 px-3 py-2.5 mx-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-300 ${sidebarCollapsed ? 'justify-center' : ''}`}
+            className={`hidden lg:flex items-center gap-2 px-3 py-2.5 mx-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+              sidebarCollapsed 
+                ? 'justify-center bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground' 
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            }`}
             title={sidebarCollapsed ? "Agrandir la barre latérale" : "Réduire la barre latérale"}
           >
             {sidebarCollapsed ? (
