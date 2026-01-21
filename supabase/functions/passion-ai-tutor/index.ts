@@ -137,10 +137,10 @@ Inspire le leadership éthique, utilise des exemples de leaders haïtiens, encou
         role: msg.role,
         content: msg.content
       })),
-      { role: 'user', content: message }
+      { role: 'user', content: message || '' }
     ];
 
-    console.log(`Processing ${category} query:`, message.substring(0, 100));
+    console.log(`Processing ${category} query:`, (message || '').substring(0, 100));
 
     // Call Lovable AI Gateway
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {

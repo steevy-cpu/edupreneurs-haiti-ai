@@ -297,11 +297,13 @@ Sois encourageant, patient et utilise des exemples adaptés à la culture haïti
       });
     }
 
-    // Add current message
-    messages.push({
-      role: "user",
-      content: message
-    });
+    // Add current message (use empty string fallback for TypeScript)
+    if (message) {
+      messages.push({
+        role: "user",
+        content: message
+      });
+    }
 
     const response = await fetch(
       'https://ai.gateway.lovable.dev/v1/chat/completions',
