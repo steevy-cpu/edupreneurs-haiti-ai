@@ -117,7 +117,7 @@ const Dashboard = () => {
   const [totalLessonsCompleted, setTotalLessonsCompleted] = useState(isVisitor ? visitorDashboardData.lessonsCompleted : 0);
   const [recentSubjects, setRecentSubjects] = useState<RecentSubjectProgress[]>([]);
   
-  const { showPrompt, isIOS, installApp, dismissPrompt } = usePWAInstall();
+  const { showPrompt, isIOS, isPromptAvailable, installApp, dismissPrompt } = usePWAInstall();
   const { analytics, isLoading: analyticsLoading } = useDashboardAnalytics(isVisitor ? null : userId || null);
   const { dismissBanner, isBannerDismissed, getActiveBanner } = useBannerPriority();
 
@@ -482,6 +482,7 @@ const Dashboard = () => {
                 {activeBanner === 'pwa' && (
                   <PWAInstallPrompt
                     isIOS={isIOS}
+                    isPromptAvailable={isPromptAvailable}
                     onInstall={installApp}
                     onDismiss={dismissPrompt}
                   />

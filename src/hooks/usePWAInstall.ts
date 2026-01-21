@@ -9,6 +9,7 @@ interface PWAInstallState {
   isInstallable: boolean;
   isInstalled: boolean;
   isIOS: boolean;
+  isPromptAvailable: boolean;
   showPrompt: boolean;
   installApp: () => Promise<void>;
   dismissPrompt: () => void;
@@ -16,12 +17,13 @@ interface PWAInstallState {
 
 const DISMISS_KEY = 'pwa-install-dismissed';
 const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-const SHOW_DELAY = 2000; // 2 seconds for immediate visibility
+const SHOW_DELAY = 5000; // 5 seconds - more time for browser engagement
 
 export const usePWAInstall = (): PWAInstallState => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
+  const [isPromptAvailable, setIsPromptAvailable] = useState(false);
 
   // Check if running on iOS
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
@@ -37,10 +39,16 @@ export const usePWAInstall = (): PWAInstallState => {
   useEffect(() => {
     console.log('PWA Install Hook:', { isInStandaloneMode, isMobile, isIOS });
     
-    // Don't show if already installed or not on mobile
-    if (isInStandaloneMode || !isMobile) {
-      console.log('Banner hidden - Already installed or not mobile');
+    // Don't show if already installed
+    if (isInStandaloneMode) {
+      console.log('Banner hidden - Already installed');
       setIsInstalled(true);
+      return;
+    }
+
+    // Don't show on non-mobile devices
+    if (!isMobile) {
+      console.log('Banner hidden - Not on mobile device');
       return;
     }
 
@@ -61,6 +69,7 @@ export const usePWAInstall = (): PWAInstallState => {
       e.preventDefault();
       console.log('beforeinstallprompt event captured');
       setDeferredPrompt(e as BeforeInstallPromptEvent);
+      setIsPromptAvailable(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -108,6 +117,7 @@ export const usePWAInstall = (): PWAInstallState => {
     isInstallable: !!deferredPrompt || isIOS,
     isInstalled: isInStandaloneMode,
     isIOS,
+    isPromptAvailable,
     showPrompt: showPrompt && !isInstalled,
     installApp,
     dismissPrompt
