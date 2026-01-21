@@ -627,8 +627,17 @@ const Index = () => {
                 </Button>
               </Link>
               <div className="pt-4">
-                <div className="w-64 h-64 mx-auto bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl flex items-center justify-center border border-primary/20">
-                  <GraduationCap className="w-24 h-24 text-primary/60" />
+                <div className="w-64 h-64 mx-auto rounded-xl overflow-hidden border border-primary/20 shadow-lg">
+                  <picture>
+                    <source srcSet="/images/jude-passion-discovery.webp" type="image/webp" />
+                    <img
+                      src="/images/jude-passion-discovery.png"
+                      alt="Jude - Assistant IA personnalisé"
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </picture>
                 </div>
               </div>
             </CardContent>
@@ -647,8 +656,17 @@ const Index = () => {
               <p className="text-muted-foreground font-medium">Tout ce que vous devez savoir sur EDUPRENEURS</p>
             </div>
             <div className="flex-shrink-0">
-              <div className="w-40 sm:w-52 md:w-60 h-40 sm:h-52 md:h-60 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl flex items-center justify-center animate-float border border-primary/20">
-                <HelpCircle className="w-16 sm:w-20 md:w-24 h-16 sm:h-20 md:h-24 text-primary/60" />
+              <div className="w-40 sm:w-52 md:w-60 h-40 sm:h-52 md:h-60 rounded-xl overflow-hidden animate-float border border-primary/20 shadow-lg">
+                <picture>
+                  <source srcSet="/images/jude-profile.webp" type="image/webp" />
+                  <img
+                    src="/images/jude-profile.png"
+                    alt="Jude - Assistant FAQ"
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </picture>
               </div>
             </div>
           </div>
