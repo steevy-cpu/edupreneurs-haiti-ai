@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -75,6 +76,7 @@ const DEFAULT_NOTIFICATION_CATEGORIES: Omit<NotificationCategory, 'enabled'>[] =
 
 const Settings = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { isSlowConnection, shouldShowAnimations } = useNetworkAwareLoading();
   const [activeTab, setActiveTab] = useState("profile");
   const [loading, setLoading] = useState(false);
@@ -193,6 +195,8 @@ const Settings = () => {
 
       if (error) throw error;
       
+      // Invalidate cached profile to update sidebar immediately
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       toast.success("Avatar mis à jour!");
     } catch (error: any) {
       toast.error("Erreur lors de la mise à jour de l'avatar");
@@ -246,6 +250,8 @@ const Settings = () => {
 
       if (error) throw error;
 
+      // Invalidate cached profile to update sidebar immediately
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       toast.success("Profil mis à jour avec succès!");
       fetchUserData();
     } catch (error: any) {

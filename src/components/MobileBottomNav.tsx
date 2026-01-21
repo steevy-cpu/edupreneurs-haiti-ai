@@ -1,8 +1,9 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { Home, BookOpen, Rss, Bell, MessageSquare, Gamepad2 } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSidebarBadges } from "@/hooks/useSidebarBadges";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 interface NavItem {
   icon: React.ElementType;
@@ -59,10 +60,11 @@ export const MobileBottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const [unreadMessages, setUnreadMessages] = useState(0);
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
-  const [unreadFeedPosts, setUnreadFeedPosts] = useState(0);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+  
+  // Use cached profile and badges from React Query hooks
+  const { profile } = useUserProfile();
+  const { badges } = useSidebarBadges(profile.userId);
 
   // Track keyboard visibility using visualViewport
   useEffect(() => {
@@ -94,67 +96,11 @@ export const MobileBottomNav = () => {
   const navItems: NavItem[] = [
     { icon: Home, path: "/dashboard" },
     { icon: BookOpen, path: "/matieres" },
-    { icon: Rss, path: "/feed", badge: unreadFeedPosts > 0 ? unreadFeedPosts : undefined, prefetchKey: ["feed-posts"] },
-    { icon: MessageSquare, path: "/community", badge: unreadMessages > 0 ? unreadMessages : undefined, prefetchKey: ["conversations"] },
-    { icon: Bell, path: "/notifications", badge: unreadNotifications > 0 ? unreadNotifications : undefined, prefetchKey: ["notifications"] },
+    { icon: Rss, path: "/feed", badge: badges.unreadFeedPosts > 0 ? badges.unreadFeedPosts : undefined, prefetchKey: ["feed-posts"] },
+    { icon: MessageSquare, path: "/community", badge: badges.unreadMessages > 0 ? badges.unreadMessages : undefined, prefetchKey: ["conversations"] },
+    { icon: Bell, path: "/notifications", badge: badges.unreadNotifications > 0 ? badges.unreadNotifications : undefined, prefetchKey: ["notifications"] },
     { icon: Gamepad2, path: "/games" },
   ];
-
-  useEffect(() => {
-    fetchCounts();
-    
-    // Listen for feed visited event to clear badge immediately
-    const handleFeedVisited = () => {
-      setUnreadFeedPosts(0);
-    };
-    window.addEventListener('feed-visited', handleFeedVisited);
-    
-    const messagesChannel = supabase
-      .channel("mobile-nav-messages")
-      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, fetchCounts)
-      .subscribe();
-
-    const notificationsChannel = supabase
-      .channel("mobile-nav-notifications")
-      .on("postgres_changes", { event: "*", schema: "public", table: "notifications" }, fetchCounts)
-      .subscribe();
-
-    const postsChannel = supabase
-      .channel("mobile-nav-posts")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts" }, fetchCounts)
-      .subscribe();
-
-    return () => {
-      window.removeEventListener('feed-visited', handleFeedVisited);
-      supabase.removeChannel(messagesChannel);
-      supabase.removeChannel(notificationsChannel);
-      supabase.removeChannel(postsChannel);
-    };
-  }, []);
-
-  const fetchCounts = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    // Fetch all counts in parallel for efficiency
-    const [messagesResult, notifResult, feedResult] = await Promise.all([
-      supabase
-        .from("messages")
-        .select("id")
-        .eq("read", false)
-        .neq("sender_id", user.id),
-      supabase
-        .from("notifications")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .eq("read", false),
-      supabase.rpc('get_new_feed_posts_count', { p_user_id: user.id })
-    ]);
-
-    setUnreadMessages(messagesResult.data?.length || 0);
-    setUnreadNotifications(notifResult.count || 0);
-    setUnreadFeedPosts(feedResult.data || 0);
-  };
 
   const isActive = (path: string) => location.pathname === path;
 
