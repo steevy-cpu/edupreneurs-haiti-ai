@@ -39,7 +39,7 @@ import {
 import { LazyEmojiPicker } from "@/components/LazyEmojiPicker";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
-import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
+
 import { useFeedData } from "@/hooks/useFeedData";
 import { formatTimeAgo } from "@/utils/dateUtils";
 import { Profile, Post, Comment } from "@/types/feed";
@@ -984,9 +984,6 @@ const Feed = () => {
     <div className="relative min-h-screen bg-background pb-20 sm:pb-6">
       {/* Visitor Overlay */}
       {isVisitor && <VisitorFeedOverlay />}
-      
-      {/* Notification Permission Banner - only for logged in users */}
-      {currentUser && !isVisitor && <NotificationPermissionBanner userId={currentUser.id} />}
       
       {/* Header */}
       <div className="sticky top-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 safe-area-top">

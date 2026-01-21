@@ -51,6 +51,7 @@ import { useVisitor } from "@/contexts/VisitorContext";
 import { JudeWelcomePopup, VisitorBanner } from "@/components/visitor";
 import { GlobalSearch, QuickMessageFAB } from "@/components/shared";
 import { QuizInvitationHandler } from "@/components/quiz-battle/QuizInvitationHandler";
+import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 
 interface LayoutProps {
   children: ReactNode;
@@ -805,6 +806,11 @@ export const Layout = ({ children }: LayoutProps) => {
         isOpen={showWelcomePopup} 
         onComplete={completeWelcomePopup} 
       />
+
+      {/* Global Notification Permission Banner - single instance for all pages */}
+      {userId && !isVisitor && (
+        <NotificationPermissionBanner userId={userId} />
+      )}
 
     </div>
     </>
