@@ -112,6 +112,47 @@ export const JudeChatbot = () => {
     (chatRef as any).current = node;
   }, [floatingRef, chatRef]);
 
+  // ===== KEYBOARD TRACKING FOR MOBILE =====
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [visualViewportHeight, setVisualViewportHeight] = useState(
+    typeof window !== 'undefined' ? window.innerHeight : 800
+  );
+
+  // Track keyboard visibility using visualViewport API
+  useEffect(() => {
+    const handleViewportChange = () => {
+      const vv = window.visualViewport;
+      if (!vv) return;
+      
+      // Calculate keyboard height (iOS includes offsetTop)
+      const kbHeight = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
+      setKeyboardHeight(kbHeight);
+      setIsKeyboardOpen(kbHeight > 80);
+      setVisualViewportHeight(vv.height);
+    };
+    
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleViewportChange);
+      window.visualViewport.addEventListener('scroll', handleViewportChange);
+      handleViewportChange();
+    }
+    
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleViewportChange);
+        window.visualViewport.removeEventListener('scroll', handleViewportChange);
+      }
+    };
+  }, []);
+
+  // Reset drag position when keyboard opens to avoid positioning conflicts
+  useEffect(() => {
+    if (isKeyboardOpen && hasMoved) {
+      resetPosition();
+    }
+  }, [isKeyboardOpen, hasMoved, resetPosition]);
+
   // Fetch user profile on mount - MUST be before early return (React Hooks Rule)
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -165,11 +206,16 @@ export const JudeChatbot = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
-  // MUST be before early return to respect React's hooks rules
+  // Improved mobile scroll behavior - MUST be before early return
   const handleInputFocus = useCallback((e: FocusEvent<HTMLTextAreaElement>) => {
     setTimeout(() => {
-      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 300);
+      e.target.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'nearest', // Changed from 'center' for better mobile reliability
+      });
+      // Also scroll messages to bottom
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 350); // Increased delay for keyboard animation
   }, []);
 
   useEffect(() => {
@@ -242,25 +288,60 @@ export const JudeChatbot = () => {
     }
   };
 
+  // Calculate container positioning based on keyboard state
+  const getContainerStyles = (): React.CSSProperties => {
+    const baseStyles: React.CSSProperties = {
+      position: 'fixed',
+      zIndex: 1000,
+      transition: 'all 0.2s ease-out', // Smooth transition for keyboard
+    };
+
+    if (isOpen) {
+      if (isKeyboardOpen) {
+        // Keyboard open: position from bottom, above keyboard
+        return {
+          ...baseStyles,
+          bottom: `${keyboardHeight + 8}px`,
+          right: '0.75rem',
+          left: 'auto',
+          top: 'auto',
+        };
+      } else {
+        // Keyboard closed: use original top positioning
+        return {
+          ...baseStyles,
+          top: '4.5rem',
+          right: '0.75rem',
+        };
+      }
+    } else {
+      // Closed state: use drag positioning
+      return {
+        ...baseStyles,
+        ...getPositionStyles(false, {
+          closedTop: '5rem',
+          closedRight: '0.75rem',
+          openTop: '5rem',
+          openRight: '0.75rem',
+        }),
+      };
+    }
+  };
+
+  // Calculate messages area max height based on keyboard state
+  const getMessagesMaxHeight = (): string => {
+    if (isKeyboardOpen) {
+      // Dynamic height when keyboard open, minimum 100px
+      return `${Math.max(100, visualViewportHeight - 180)}px`;
+    }
+    // Default responsive heights when keyboard closed
+    return undefined as any; // Let CSS classes handle it
+  };
+
   return (
     <div 
       ref={setRootRef}
-      style={{
-        position: 'fixed',
-        zIndex: 1000,
-        ...(isOpen 
-          ? { 
-              top: '4.5rem',
-              right: '0.75rem',
-            }
-          : getPositionStyles(false, {
-              closedTop: '5rem',
-              closedRight: '0.75rem',
-              openTop: '5rem',
-              openRight: '0.75rem',
-            })
-        ),
-      }}
+      style={getContainerStyles()}
       onMouseDown={!isOpen ? handleMouseDown : undefined}
       onTouchStart={!isOpen ? handleTouchStart : undefined}
     >
@@ -316,8 +397,11 @@ export const JudeChatbot = () => {
             </div>
           )}
           
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto space-y-3 max-h-[40vh] sm:max-h-[45vh] md:max-h-[50vh]">
+          {/* Messages - with keyboard-aware height */}
+          <div 
+            className={`flex-1 overflow-y-auto space-y-3 ${!isKeyboardOpen ? 'max-h-[40vh] sm:max-h-[45vh] md:max-h-[50vh]' : ''}`}
+            style={isKeyboardOpen ? { maxHeight: getMessagesMaxHeight() } : undefined}
+          >
             {messages.map((message, index) => (
               <div 
                 key={index} 
@@ -369,8 +453,15 @@ export const JudeChatbot = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Area */}
-          <div className="pt-2 sm:pt-3">
+          {/* Input Area - with safe area padding */}
+          <div 
+            className="pt-2 sm:pt-3"
+            style={{
+              paddingBottom: isKeyboardOpen 
+                ? '0.5rem' 
+                : 'calc(0.5rem + env(safe-area-inset-bottom, 0px))',
+            }}
+          >
             <div className={`flex items-center gap-2 ${shouldShowBlur ? 'bg-background/95 backdrop-blur-sm' : 'bg-background'} rounded-full shadow-md p-1.5 pl-4`}>
               <Textarea
                 value={input}
