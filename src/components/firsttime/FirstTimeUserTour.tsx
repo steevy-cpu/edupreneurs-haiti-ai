@@ -128,8 +128,14 @@ const FirstTimeUserTour = () => {
 
   return (
     <>
-      {/* Tour dialog - bottom right card */}
-      <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:bottom-4 sm:w-96 z-[1004] animate-slide-up">
+      {/* Mobile overlay - dims content area while keeping bottom nav visible */}
+      <div 
+        className="fixed inset-0 bg-black/30 z-[1003] pointer-events-none lg:hidden"
+        style={{ bottom: '72px' }}
+      />
+      
+      {/* Tour dialog - positioned above bottom nav on mobile */}
+      <div className="fixed bottom-20 left-4 right-4 sm:left-auto sm:right-4 sm:bottom-4 sm:w-96 z-[1004] animate-slide-up">
         <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
           {/* Progress bar */}
           <div className="px-4 pt-3">
