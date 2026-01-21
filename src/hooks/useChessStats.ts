@@ -68,7 +68,7 @@ export const useChessStats = (userId: string | null) => {
           .from('chess_player_stats')
           .select('*')
           .eq('user_id', userId)
-          .single(),
+          .maybeSingle(),
         supabase
           .from('chess_achievements')
           .select('*')
@@ -107,7 +107,7 @@ export const useChessStats = (userId: string | null) => {
         .from('chess_player_stats')
         .select('id')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (existing) return existing;
 
