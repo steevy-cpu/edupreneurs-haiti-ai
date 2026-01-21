@@ -5,11 +5,12 @@ import ericPointingUp from '@/assets/eric-pointing-up.png';
 
 interface PWAInstallPromptProps {
   isIOS: boolean;
+  isPromptAvailable?: boolean;
   onInstall: () => Promise<void>;
   onDismiss: () => void;
 }
 
-export const PWAInstallPrompt = ({ isIOS, onInstall, onDismiss }: PWAInstallPromptProps) => {
+export const PWAInstallPrompt = ({ isIOS, isPromptAvailable, onInstall, onDismiss }: PWAInstallPromptProps) => {
   return (
     <div className="mb-6">
       <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 via-background to-primary/10">
@@ -61,18 +62,35 @@ export const PWAInstallPrompt = ({ isIOS, onInstall, onDismiss }: PWAInstallProm
               </div>
             ) : (
               // Android/Chrome
-              <div className="flex items-center gap-3">
-                <p className="text-sm text-muted-foreground flex-1">
-                  Accédez rapidement à l'application depuis votre écran d'accueil
-                </p>
-                <Button 
-                  onClick={onInstall}
-                  size="sm"
-                  className="shrink-0"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Ajouter
-                </Button>
+              <div className="space-y-2">
+                {isPromptAvailable ? (
+                  // Native install available - show button
+                  <div className="flex items-center gap-3">
+                    <p className="text-sm text-muted-foreground flex-1">
+                      Accédez rapidement à l'application depuis votre écran d'accueil
+                    </p>
+                    <Button 
+                      onClick={onInstall}
+                      size="sm"
+                      className="shrink-0"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Ajouter
+                    </Button>
+                  </div>
+                ) : (
+                  // Fallback: Manual instructions for Android
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      Pour installer, ouvrez le menu de votre navigateur :
+                    </p>
+                    <div className="flex items-center gap-2 text-sm bg-background/50 rounded-lg p-3 border border-primary/10">
+                      <span className="text-primary font-medium">⋮ Menu</span>
+                      <span className="text-muted-foreground">→</span>
+                      <span className="text-primary font-medium">Installer l'application</span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
