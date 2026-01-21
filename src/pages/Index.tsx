@@ -478,8 +478,7 @@ const Index = () => {
               },
               { 
                 step: 3, 
-                image: lazyImages.judeProfile,
-                fallbackIcon: <Bot className="w-8 h-8 text-white" />,
+                image: "/images/jude-profile.webp",
                 title: "Rencontrez Jude", 
                 desc: "Votre assistant IA personnel vous accompagne 24h/7j en créole ou français.",
                 color: "from-primary to-accent"
@@ -501,19 +500,13 @@ const Index = () => {
                   <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${item.color}`}></div>
                   <CardHeader className="text-center pb-2">
                   <div className="w-20 h-20 mx-auto flex items-center justify-center mb-3 group-hover:scale-105 transition-transform duration-300 ease-out">
-                      {item.image ? (
-                        <img 
-                          src={item.image} 
-                          alt={item.title} 
-                          className="w-full h-full object-contain"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      ) : item.fallbackIcon ? (
-                        <div className={`w-full h-full rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center shadow-lg`}>
-                          {item.fallbackIcon}
-                        </div>
-                      ) : null}
+                      <img 
+                        src={item.image} 
+                        alt={item.title} 
+                        className="w-full h-full object-contain"
+                        loading="lazy"
+                        decoding="async"
+                      />
                     </div>
                     <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold mb-2">
                       {item.step}
