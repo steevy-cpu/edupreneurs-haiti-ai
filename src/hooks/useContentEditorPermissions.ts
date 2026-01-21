@@ -26,7 +26,7 @@ export const useContentEditorPermissions = () => {
         .from('content_editor_roles')
         .select('role')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (editorRole && ['admin', 'editor', 'viewer'].includes(editorRole.role)) {
         setRole(editorRole.role as ContentEditorRole);

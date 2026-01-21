@@ -219,84 +219,94 @@ export const Layout = ({ children }: LayoutProps) => {
   }, [userId, isVisitor, location.pathname, playReceiveSound, playNotificationSound, navigate]);
 
   const setupGlobalPresence = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    console.log('🌐 [Layout] Setting up global presence for user:', user.id);
-    
-    // Update last_seen in database when user comes online
-    await supabase
-      .from('profiles')
-      .update({ last_seen: new Date().toISOString() })
-      .eq('user_id', user.id);
-    
-    const channel = supabase.channel('online-users', {
-      config: {
-        presence: {
-          key: user.id,
+      console.log('🌐 [Layout] Setting up global presence for user:', user.id);
+      
+      // Update last_seen in database when user comes online
+      await supabase
+        .from('profiles')
+        .update({ last_seen: new Date().toISOString() })
+        .eq('user_id', user.id);
+      
+      const channel = supabase.channel('online-users', {
+        config: {
+          presence: {
+            key: user.id,
+          },
         },
-      },
-    });
-
-    // Add event listeners first
-    channel
-      .on('presence', { event: 'sync' }, () => {
-        console.log('🔄 [Layout] Presence synced');
-      })
-      .on('presence', { event: 'join' }, ({ key }) => {
-        console.log('👋 [Layout] User joined global presence:', key);
-      })
-      .on('presence', { event: 'leave' }, async ({ key }) => {
-        console.log('👋 [Layout] User left global presence:', key);
-        // Update last_seen when user leaves
-        await supabase
-          .from('profiles')
-          .update({ last_seen: new Date().toISOString() })
-          .eq('user_id', key);
       });
 
-    // Then subscribe and track
-    channel.subscribe(async (status) => {
-      console.log('📡 [Layout] Channel status:', status);
-      if (status === 'SUBSCRIBED') {
-        console.log('✅ [Layout] Broadcasting presence for user:', user.id);
-        const trackStatus = await channel.track({
-          user_id: user.id,
-          online_at: new Date().toISOString(),
+      // Add event listeners first
+      channel
+        .on('presence', { event: 'sync' }, () => {
+          console.log('🔄 [Layout] Presence synced');
+        })
+        .on('presence', { event: 'join' }, ({ key }) => {
+          console.log('👋 [Layout] User joined global presence:', key);
+        })
+        .on('presence', { event: 'leave' }, async ({ key }) => {
+          console.log('👋 [Layout] User left global presence:', key);
+          // Update last_seen when user leaves
+          await supabase
+            .from('profiles')
+            .update({ last_seen: new Date().toISOString() })
+            .eq('user_id', key);
         });
-        console.log('📡 [Layout] Track status:', trackStatus);
-      }
-    });
 
-    // Store in ref for cleanup
-    presenceChannelRef.current = channel;
+      // Then subscribe and track
+      channel.subscribe(async (status) => {
+        console.log('📡 [Layout] Channel status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ [Layout] Broadcasting presence for user:', user.id);
+          const trackStatus = await channel.track({
+            user_id: user.id,
+            online_at: new Date().toISOString(),
+          });
+          console.log('📡 [Layout] Track status:', trackStatus);
+        }
+      });
+
+      // Store in ref for cleanup
+      presenceChannelRef.current = channel;
+    } catch (error) {
+      console.error('[Layout] Error setting up presence:', error);
+      // Don't crash - presence is not critical
+    }
   };
 
   const checkAuth = async () => {
-    // Skip auth check for visitors - they're allowed to browse
-    if (isVisitor) return;
-    
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session && location.pathname !== "/auth") {
-      navigate("/auth");
-      return;
-    }
-    
-    // If user has a session, check if email is verified
-    if (session?.user) {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('email_confirmed')
-        .eq('user_id', session.user.id)
-        .single();
+    try {
+      // Skip auth check for visitors - they're allowed to browse
+      if (isVisitor) return;
       
-      if (!error && profile && !profile.email_confirmed) {
-        // User is logged in but email not verified - sign them out and redirect to auth
-        await supabase.auth.signOut();
-        toast.error("Veuillez vérifier votre email avant d'accéder à votre compte");
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session && location.pathname !== "/auth") {
         navigate("/auth");
+        return;
       }
+      
+      // If user has a session, check if email is verified
+      if (session?.user) {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('email_confirmed')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+        
+        if (!error && profile && !profile.email_confirmed) {
+          // User is logged in but email not verified - sign them out and redirect to auth
+          await supabase.auth.signOut();
+          toast.error("Veuillez vérifier votre email avant d'accéder à votre compte");
+          navigate("/auth");
+        }
+      }
+    } catch (error) {
+      console.error('[Layout] Error checking auth:', error);
+      navigate("/auth");
     }
   };
 

@@ -103,7 +103,7 @@ export const useDashboardAnalytics = (userId: string | null) => {
         .from("profiles")
         .select("academic_grade")
         .eq("user_id", userId)
-        .single();
+        .maybeSingle();
 
       const userGradeLevel = userProfile?.academic_grade || "7AF";
 

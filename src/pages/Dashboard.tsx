@@ -158,7 +158,7 @@ const Dashboard = () => {
         .from("profiles")
         .select("nickname, gold_earned, academic_grade")
         .eq("user_id", currentUserId)
-        .single(),
+        .maybeSingle(),
       supabase
         .from("lesson_notes")
         .select("*")

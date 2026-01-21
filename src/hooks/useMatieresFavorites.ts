@@ -53,7 +53,13 @@ export function useMatieresFavorites() {
       
       if (event === 'SIGNED_IN' && newUserId) {
         // User just signed in - sync localStorage favorites to database
-        const localFavorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+        let localFavorites: string[] = [];
+        try {
+          localFavorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+        } catch {
+          console.error('[useMatieresFavorites] Error parsing localStorage');
+          localFavorites = [];
+        }
         
         if (localFavorites.length > 0) {
           // Insert local favorites to database (ignore conflicts)

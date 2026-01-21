@@ -564,7 +564,7 @@ export const useChessGame = (
         .from('chess_player_stats')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (existingStats) {
         const updates: Record<string, number> = {
