@@ -478,14 +478,14 @@ const Index = () => {
               },
               { 
                 step: 3, 
-                image: "/images/jude-profile-transparent.png",
+                image: "/images/jude-profile-transparent.png?v=1",
                 title: "Rencontrez Jude", 
                 desc: "Votre assistant IA personnel vous accompagne 24h/7j en créole ou français.",
                 color: "from-primary to-accent"
               },
               { 
                 step: 4, 
-                image: "/images/champion-transparent.png",
+                image: "/images/champion-transparent.png?v=1",
                 title: "Gagnez des Gold", 
                 desc: "Réussissez les quiz, gagnez des récompenses et débloquez des fonctions premium !",
                 color: "from-yellow-500 to-orange-500"
@@ -656,7 +656,7 @@ const Index = () => {
             <div className="flex-shrink-0">
               <div className="w-40 sm:w-52 md:w-60 h-40 sm:h-52 md:h-60 flex items-center justify-center animate-float">
                 <img
-                  src="/images/jude-profile-transparent.png"
+                  src="/images/jude-profile-transparent.png?v=1"
                   alt="Jude - Assistant FAQ"
                   className="w-full h-full object-contain"
                   loading="lazy"
