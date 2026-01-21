@@ -1,5 +1,5 @@
 // Service Worker for Push Notifications and Asset Caching - Optimized for 3G
-const SW_VERSION = '1.3.0';
+const SW_VERSION = '1.4.0';
 const CACHE_NAME = `edupreneurs-v${SW_VERSION}`;
 const STATIC_CACHE_NAME = `edupreneurs-static-v${SW_VERSION}`;
 
