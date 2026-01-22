@@ -32,18 +32,20 @@ export const QuickMessageFAB = ({ isVisitor = false }: QuickMessageFABProps) => 
   const navigate = useNavigate();
   const location = useLocation();
 
+  // useEffect MUST be called before any conditional returns to comply with Rules of Hooks
+  // This prevents React error #310 when navigating between pages
+  useEffect(() => {
+    if (!isVisitor) {
+      fetchRecentConversations();
+    }
+  }, [isVisitor]);
+
   // Hide on community page, passion-discovery page, and all quiz battle pages
   if (
     location.pathname === "/community" || 
     location.pathname === "/passion-discovery" ||
     location.pathname.startsWith("/quiz-battle")
   ) return null;
-
-  useEffect(() => {
-    if (!isVisitor) {
-      fetchRecentConversations();
-    }
-  }, [isVisitor]);
 
   const fetchRecentConversations = async () => {
     const { data: { user } } = await supabase.auth.getUser();
