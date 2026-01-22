@@ -372,7 +372,7 @@ if (pageLoading) {
   }
 
   return (
-    <div className="pt-20 px-4 sm:px-6 lg:px-8 pb-24 max-w-7xl mx-auto">
+    <div className="pt-20 px-4 sm:px-6 lg:px-8 pb-24 max-w-7xl mx-auto" data-tour="settings-content">
 {/* Header using PageHeader component - skip image on slow connections to save data */}
         {isSlowConnection ? (
           <PageHeader
