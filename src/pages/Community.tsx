@@ -2261,13 +2261,16 @@ const Community = () => {
         </ScrollArea>
       </div>
 
-      {/* Messages View - 100dvh for mobile keyboard handling (browser auto-resizes viewport) */}
+      {/* Messages View - fixed positioning with bottom offset for mobile nav */}
       <div
         className={`${
           selectedConversation
-            ? "fixed inset-x-0 top-0 md:relative md:inset-auto md:w-auto"
-            : "hidden md:block"
-        } md:flex-1 bg-background md:ml-80 lg:ml-96 relative h-dvh`}
+            ? "fixed inset-x-0 top-0 md:relative md:inset-auto md:w-auto md:h-dvh"
+            : "hidden md:block md:h-dvh"
+        } md:flex-1 bg-background md:ml-80 lg:ml-96 relative`}
+        style={{
+          bottom: selectedConversation ? 'calc(3.5rem + env(safe-area-inset-bottom, 0px))' : undefined
+        }}
       >
         {/* Persistent background layer - always mounted to prevent reloading */}
         <div 
