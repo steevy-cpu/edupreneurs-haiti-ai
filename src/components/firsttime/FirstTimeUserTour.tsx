@@ -92,12 +92,18 @@ const FirstTimeUserTour = () => {
   useEffect(() => {
     if (!tourActive || tourCompleted || !currentStep) return;
 
-    if (location.pathname !== currentStep.path) {
+    // Safety check: ensure we're in a stable state before navigating
+    if (!isNavigating && location.pathname !== currentStep.path) {
       setIsNavigating(true);
-      navigate(currentStep.path);
-      setTimeout(() => setIsNavigating(false), 500);
+      
+      // Use requestAnimationFrame to defer navigation to next frame
+      // This allows React to complete current render cycle and prevents error #310
+      requestAnimationFrame(() => {
+        navigate(currentStep.path);
+        setTimeout(() => setIsNavigating(false), 500);
+      });
     }
-  }, [tourStep, tourActive, tourCompleted, currentStep, location.pathname, navigate]);
+  }, [tourStep, tourActive, tourCompleted, currentStep, location.pathname, navigate, isNavigating]);
 
   // Reset typewriter when step changes
   useEffect(() => {
