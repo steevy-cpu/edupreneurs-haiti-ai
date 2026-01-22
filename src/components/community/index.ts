@@ -1,5 +1,4 @@
 export { ConversationListItem } from './ConversationListItem';
-export { ChatHeader } from './ChatHeader';
 export { ChatViewHeader } from './ChatViewHeader';
 export { MessageInput } from './MessageInput';
 export { ChatComposer } from './ChatComposer';
