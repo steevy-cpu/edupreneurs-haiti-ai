@@ -32,12 +32,15 @@ import { visitorConversationPreview } from "@/data/visitorDemoData";
 import { 
   ConversationListItem, 
   ChatHeader, 
+  ChatViewHeader,
   TypingIndicator,
   ConversationSkeleton,
   MessageBubble,
   SystemMessage,
   VisitorCommunityOverlay,
-  ChatComposer
+  ChatComposer,
+  ChatLayout,
+  JudeBanner
 } from "@/components/community";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { 
@@ -2265,284 +2268,132 @@ const Community = () => {
       <div
         className={`${
           selectedConversation
-            ? "fixed inset-x-0 top-0 md:relative md:inset-auto md:w-auto md:h-dvh"
-            : "hidden md:block md:h-dvh"
-        } md:flex-1 bg-background md:ml-80 lg:ml-96 relative`}
+            ? "fixed inset-x-0 top-0 md:relative md:inset-auto md:w-auto"
+            : "hidden md:block"
+        } md:flex-1 bg-background md:ml-80 lg:ml-96 h-dvh`}
         style={{
+          // On mobile, account for bottom nav (56px) + safe area
           bottom: selectedConversation ? 'calc(3.5rem + env(safe-area-inset-bottom, 0px))' : undefined
         }}
       >
-        {/* Persistent background layer - always mounted to prevent reloading */}
-        <div 
-          className="absolute inset-0 pointer-events-none z-0"
-          style={chatBackgroundStyle}
-        />
         {selectedConversation ? (
-          <div className="h-full flex flex-col relative">
-            {/* Fixed Header - chat scrolls under it */}
-            <div className="fixed top-0 left-0 right-0 md:left-80 lg:left-96 z-20 border-b border-border/50 bg-background/95 backdrop-blur-md p-4 flex items-center gap-3 h-[72px]">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="shrink-0 md:hidden"
-                onClick={() => setSelectedConversation(null)}
-              >
-                <ArrowLeft size={20} />
-              </Button>
-              {(() => {
-                // Use persisted details first (prevents flicker during list refresh)
-                const currentConv = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
-                const isGroup = currentConv?.is_group;
-                
-                return (
-                  <>
-                    <Avatar 
-                      className={`h-10 w-10 shrink-0 cursor-pointer hover:opacity-80 transition-opacity`}
-                      onClick={() => {
-                        if (isGroup && currentConv?.group) {
-                          setSelectedGroupId(currentConv.group.id);
-                          setShowGroupInfo(true);
-                        } else if (!isGroup && currentConv?.otherUser) {
-                          navigate(`/profile/${currentConv.otherUser.user_id}`);
-                        }
-                      }}
-                    >
-                      {isGroup ? (
-                        <>
-                          <AvatarImage src={currentConv.group?.avatar_url || undefined} />
-                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20">
-                            <Users className="h-5 w-5" />
-                          </AvatarFallback>
-                        </>
-                      ) : (
-                        <>
-                          <AvatarImage src={getAvatarUrl(currentConv?.otherUser?.avatar_url)} />
-                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20">
-                            {(currentConv?.otherUser?.nickname || currentConv?.otherUser?.full_name)?.[0] || "?"}
-                          </AvatarFallback>
-                        </>
-                      )}
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <p 
-                          className="font-semibold text-base truncate cursor-pointer hover:opacity-80 transition-opacity hover:underline"
-                          onClick={() => {
-                            if (isGroup && currentConv?.group) {
-                              setSelectedGroupId(currentConv.group.id);
-                              setShowGroupInfo(true);
-                            } else if (!isGroup && currentConv?.otherUser) {
-                              navigate(`/profile/${currentConv.otherUser.user_id}`);
-                            }
-                          }}
-                        >
-                          {isGroup 
-                            ? currentConv.group?.name 
-                            : (currentConv?.otherUser?.nickname || currentConv?.otherUser?.full_name || "Utilisateur")
-                          }
-                        </p>
-                        {isGroup && (
-                          <span className="text-xs text-muted-foreground shrink-0 whitespace-nowrap">
-                            ({currentConv.group?.member_count})
-                          </span>
-                        )}
-                        {!isGroup && currentConv?.otherUser?.verified && (
-                          <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
-                        )}
-                      </div>
-                      {!isGroup && (() => {
-                        const otherUserId = currentConv?.otherUser?.user_id;
-                        if (!otherUserId) return null;
-                        
-                        if (onlineUsers.has(otherUserId)) {
-                          return (
-                            <div className="flex items-center gap-1.5">
-                              <div className={`w-2 h-2 bg-green-500 rounded-full ${shouldShowRipples ? 'presence-indicator' : ''}`} />
-                              <p className="text-xs text-green-500 font-medium">En ligne</p>
-                            </div>
-                          );
-                        } else if (lastSeenTimes[otherUserId]) {
-                          return (
-                            <p className="text-xs text-muted-foreground">
-                              {formatLastSeen(lastSeenTimes[otherUserId])}
-                            </p>
-                          );
-                        }
-                        return null;
-                      })()}
-                      {isGroup && currentConv.group?.description && (
-                        <p className="text-xs text-muted-foreground truncate">
-                          {currentConv.group.description}
-                        </p>
-                      )}
-                    </div>
-                  </>
-                );
-              })()}
-              
-              {/* Three-dot menu in header */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
-                    <MoreVertical className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    className="text-destructive focus:text-destructive"
-                    onClick={() => {
-                      console.log('🔴 [HEADER] Delete clicked for conversation:', selectedConversation);
-                      setDeleteConversationId(selectedConversation);
+          (() => {
+            const currentConv = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
+            const isGroup = currentConv?.is_group;
+            const otherUserId = currentConv?.otherUser?.user_id;
+            
+            return (
+              <ChatLayout
+                ref={messagesContainerRef}
+                backgroundStyle={chatBackgroundStyle}
+                header={
+                  <ChatViewHeader
+                    conversation={currentConv}
+                    isOnline={otherUserId ? onlineUsers.has(otherUserId) : false}
+                    lastSeen={otherUserId ? lastSeenTimes[otherUserId] : undefined}
+                    onBack={() => setSelectedConversation(null)}
+                    onDelete={() => setDeleteConversationId(selectedConversation)}
+                    onGroupInfoClick={(groupId) => {
+                      setSelectedGroupId(groupId);
+                      setShowGroupInfo(true);
                     }}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Supprimer la conversation
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            {/* Jude Banner for Group Chats - fixed below header */}
-            {(() => {
-              const currentConv = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
-              const isGroup = currentConv?.is_group;
-              
-              if (!isGroup) return null;
-              
-              return (
-                <div className="fixed top-[72px] left-0 right-0 md:left-80 lg:left-96 px-2 sm:px-4 py-2 z-[15] bg-background/80 backdrop-blur-sm">
-                  <div className="px-3 py-2.5 bg-gradient-to-r from-primary/10 via-primary/5 to-success/10 border border-primary/20 rounded-xl backdrop-blur-md shadow-lg">
-                    <div className="flex items-center gap-2.5 sm:gap-3">
-                      <div className="relative">
-                        <img 
-                          src={ericAiHelper} 
-                          alt="Jude AI Assistant" 
-                          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover shrink-0 ring-2 ring-primary/20" 
-                          loading="lazy" 
-                          decoding="async" 
-                        />
-                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs sm:text-sm text-foreground font-semibold">
-                          Jude, votre assistant IA est dans ce groupe !
-                        </p>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
-                          Tapez <span className="font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">"Hey Jude"</span> pour lui parler
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* Scrollable Messages Area - paddingTop accounts for fixed header (and Jude banner if group) */}
-            <div 
-              ref={messagesContainerRef}
-              className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
-              style={{ 
-                paddingTop: (() => {
-                  const currentConv = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
-                  return currentConv?.is_group ? '132px' : '72px'; // 72px header + 60px banner for groups
-                })()
-              }}
-            >
-
-              {/* Messages */}
-              <div className="p-4">
-                <div className="space-y-4 pb-4 max-w-full">
-                {messages.map((message, index) => {
-                  const isOwn = message.sender_id === user?.id;
-                  const isSystemMsg = message.content.includes('a rejoint le groupe') || 
-                    message.content.includes('a quitté le groupe') ||
-                    message.content.includes('Bienvenue dans');
-                  
-                  // System message rendering (centered)
-                  if (isSystemMsg) {
-                    return <SystemMessage key={message.id} content={message.content} />;
-                  }
-                  
-                  // Regular message rendering with staggered animation
-                  return (
-                    <MessageBubble
-                      key={message.id}
-                      message={message}
-                      isOwn={isOwn}
-                      userId={user?.id}
-                      reactions={reactions[message.id] || []}
-                      editingMessageId={editingMessageId}
-                      editedContent={editedContent}
-                      showReactionPicker={showReactionPicker}
-                      onSetReplyingTo={setReplyingTo}
-                      onEditMessage={handleEditMessage}
-                      onCancelEdit={handleCancelEdit}
-                      onSaveEdit={handleSaveEdit}
-                      onSetEditedContent={setEditedContent}
-                      onDeleteMessage={handleDeleteMessage}
-                      onToggleReaction={toggleReaction}
-                      onSetShowReactionPicker={setShowReactionPicker}
-                      onDownloadMedia={handleDownloadMedia}
-                      onSetFullSizeImage={setFullSizeImage}
-                      formatTime={formatTime}
-                      messageIndex={index}
-                      shouldAnimate={shouldStaggerMessages}
-                      shouldShowFloatingReactions={shouldShowFloatingReactions}
-                    />
-                  );
-                })}
-                
-                {/* Typing Indicator */}
-                {(() => {
-                  if (!selectedConversation) return null;
-                  
-                  const conversationTypingUsers = typingUsers[selectedConversation] || {};
-                  
-                  return Object.entries(conversationTypingUsers).map(([key, value]) => {
-                    const presence = Array.isArray(value) ? value[0] : value;
-                    if (presence?.typing && presence?.user_id !== user?.id) {
-                      const conversation = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
+                    formatLastSeen={formatLastSeen}
+                    showRipple={shouldShowRipples}
+                  />
+                }
+                banner={isGroup ? <JudeBanner isVisible={true} /> : undefined}
+                footer={
+                  <ChatComposer
+                    newMessage={newMessage}
+                    isSending={isSending}
+                    showEmojiPicker={showEmojiPicker}
+                    mediaPreview={mediaPreview}
+                    mediaType={mediaType}
+                    replyingTo={replyingTo}
+                    isJudeConversation={isJudeConversation}
+                    hasMediaFile={!!selectedMediaFile}
+                    onSend={sendMessage}
+                    onEmojiPickerChange={setShowEmojiPicker}
+                    onEmojiSelect={(emoji) => setNewMessage((prev) => prev + emoji)}
+                    onMediaSelect={handleMediaSelect}
+                    onClearMedia={clearMedia}
+                    onCancelReply={() => setReplyingTo(null)}
+                    onTyping={handleTyping}
+                  />
+                }
+              >
+                {/* Messages - natural scroll, no paddingTop hack needed */}
+                <div className="p-4">
+                  <div className="space-y-4 pb-4 max-w-full">
+                    {messages.map((message, index) => {
+                      const isOwn = message.sender_id === user?.id;
+                      const isSystemMsg = message.content.includes('a rejoint le groupe') || 
+                        message.content.includes('a quitté le groupe') ||
+                        message.content.includes('Bienvenue dans');
                       
-                      // Find the actual user profile for group chats
-                      let typingUserProfile = conversation?.otherUser;
-                      if (conversation?.is_group) {
-                        // For group chats, find the user from messages or participants
-                        const userMessage = messages.find(m => m.profile?.user_id === presence?.user_id);
-                        typingUserProfile = userMessage?.profile;
+                      if (isSystemMsg) {
+                        return <SystemMessage key={message.id} content={message.content} />;
                       }
                       
                       return (
-                        <TypingIndicator key={key} profile={typingUserProfile} />
+                        <MessageBubble
+                          key={message.id}
+                          message={message}
+                          isOwn={isOwn}
+                          userId={user?.id}
+                          reactions={reactions[message.id] || []}
+                          editingMessageId={editingMessageId}
+                          editedContent={editedContent}
+                          showReactionPicker={showReactionPicker}
+                          onSetReplyingTo={setReplyingTo}
+                          onEditMessage={handleEditMessage}
+                          onCancelEdit={handleCancelEdit}
+                          onSaveEdit={handleSaveEdit}
+                          onSetEditedContent={setEditedContent}
+                          onDeleteMessage={handleDeleteMessage}
+                          onToggleReaction={toggleReaction}
+                          onSetShowReactionPicker={setShowReactionPicker}
+                          onDownloadMedia={handleDownloadMedia}
+                          onSetFullSizeImage={setFullSizeImage}
+                          formatTime={formatTime}
+                          messageIndex={index}
+                          shouldAnimate={shouldStaggerMessages}
+                          shouldShowFloatingReactions={shouldShowFloatingReactions}
+                        />
                       );
-                    }
-                    return null;
-                  });
-                })()}
-                
-                <div ref={messagesEndRef} />
-              </div>
-            </div>
-            </div>
-
-            {/* Composer - extracted to separate component */}
-            <ChatComposer
-              newMessage={newMessage}
-              isSending={isSending}
-              showEmojiPicker={showEmojiPicker}
-              mediaPreview={mediaPreview}
-              mediaType={mediaType}
-              replyingTo={replyingTo}
-              isJudeConversation={isJudeConversation}
-              hasMediaFile={!!selectedMediaFile}
-              onSend={sendMessage}
-              onEmojiPickerChange={setShowEmojiPicker}
-              onEmojiSelect={(emoji) => setNewMessage((prev) => prev + emoji)}
-              onMediaSelect={handleMediaSelect}
-              onClearMedia={clearMedia}
-              onCancelReply={() => setReplyingTo(null)}
-              onTyping={handleTyping}
-            />
-          </div>
+                    })}
+                    
+                    {/* Typing Indicator */}
+                    {(() => {
+                      if (!selectedConversation) return null;
+                      
+                      const conversationTypingUsers = typingUsers[selectedConversation] || {};
+                      
+                      return Object.entries(conversationTypingUsers).map(([key, value]) => {
+                        const presence = Array.isArray(value) ? value[0] : value;
+                        if (presence?.typing && presence?.user_id !== user?.id) {
+                          const conversation = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
+                          
+                          let typingUserProfile = conversation?.otherUser;
+                          if (conversation?.is_group) {
+                            const userMessage = messages.find(m => m.profile?.user_id === presence?.user_id);
+                            typingUserProfile = userMessage?.profile;
+                          }
+                          
+                          return (
+                            <TypingIndicator key={key} profile={typingUserProfile} />
+                          );
+                        }
+                        return null;
+                      });
+                    })()}
+                    
+                    <div ref={messagesEndRef} />
+                  </div>
+                </div>
+              </ChatLayout>
+            );
+          })()
         ) : (
           <div className="hidden md:flex items-center justify-center h-full">
             <p className="text-foreground/70 font-medium bg-background/80 px-4 py-2 rounded-lg backdrop-blur-sm">
