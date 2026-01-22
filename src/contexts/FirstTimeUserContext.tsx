@@ -51,11 +51,41 @@ interface FirstTimeUserContextType {
 
 const FirstTimeUserContext = createContext<FirstTimeUserContextType | null>(null);
 
-export function useFirstTimeUser() {
+// Safe defaults when context is unavailable (prevents React error #310)
+const SAFE_DEFAULTS: FirstTimeUserContextType = {
+  showWelcome: false,
+  welcomeComplete: true,
+  showAvatarGeneration: false,
+  avatarGenerationComplete: true,
+  tourActive: false,
+  tourStep: 0,
+  tourCompleted: true,
+  currentTourNavPath: null,
+  userNickname: null,
+  userGrade: null,
+  userId: null,
+  isSuperUser: false,
+  isLoading: false,
+  completeWelcome: () => {},
+  completeAvatarGeneration: () => {},
+  skipAvatarGeneration: () => {},
+  startTour: () => {},
+  nextTourStep: () => {},
+  previousTourStep: () => {},
+  skipTour: () => {},
+  completeTour: async () => {},
+  restartTour: () => {},
+};
+
+export function useFirstTimeUser(): FirstTimeUserContextType {
   const context = useContext(FirstTimeUserContext);
+  
+  // Return safe defaults instead of throwing when context is unavailable
+  // This prevents React error #310 during navigation transitions
   if (!context) {
-    throw new Error('useFirstTimeUser must be used within a FirstTimeUserProvider');
+    return SAFE_DEFAULTS;
   }
+  
   return context;
 }
 
