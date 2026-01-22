@@ -45,7 +45,7 @@ export const ChatComposer = ({
 }: ChatComposerProps) => {
   return (
     <div 
-      className="shrink-0 border-t border-border/50 bg-background/95 backdrop-blur-md z-10 pb-16 md:pb-0"
+      className="shrink-0 border-t border-border/50 bg-background/95 backdrop-blur-md z-10"
     >
       <div className="p-3 pt-2 md:p-4 md:pt-2">
         {/* Reply Preview */}
