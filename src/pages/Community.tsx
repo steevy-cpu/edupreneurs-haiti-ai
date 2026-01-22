@@ -2263,16 +2263,17 @@ const Community = () => {
         </ScrollArea>
       </div>
 
-      {/* Messages View - fixed positioning with bottom offset for mobile nav */}
+      {/* Messages View - fixed positioning with proper height for mobile nav */}
       <div
         className={`${
           selectedConversation
-            ? "fixed inset-x-0 top-0 md:relative md:inset-auto md:w-auto"
-            : "hidden md:block"
-        } md:flex-1 bg-background md:ml-80 lg:ml-96 h-dvh`}
+            ? "fixed inset-x-0 top-0 md:relative md:inset-auto md:w-auto md:h-dvh"
+            : "hidden md:block md:h-dvh"
+        } md:flex-1 bg-background md:ml-80 lg:ml-96`}
         style={{
-          // On mobile, account for bottom nav (56px) + safe area
-          bottom: selectedConversation ? 'calc(3.5rem + env(safe-area-inset-bottom, 0px))' : undefined
+          // On mobile, set explicit height to account for bottom nav (56px) + safe area
+          // Instead of setting bottom offset, we constrain the height so the footer stays visible
+          height: selectedConversation ? 'calc(100dvh - 3.5rem - env(safe-area-inset-bottom, 0px))' : undefined
         }}
       >
         {selectedConversation ? (
