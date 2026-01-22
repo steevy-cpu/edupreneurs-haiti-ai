@@ -1,19 +1,15 @@
-import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Send, ArrowLeft, Search, Smile, Check, CheckCheck, BadgeCheck, Edit2, Trash2, X, MoreVertical, ImageIcon, Download, Users, FileText, Paperclip } from "lucide-react";
+import { ArrowLeft, Search, Check, CheckCheck, BadgeCheck, Trash2, MoreVertical, Download, Users } from "lucide-react";
 import { useMessageSounds } from "@/hooks/useMessageSounds";
-// Lazy load EmojiPicker (~200KB) - only loaded when user opens emoji picker
-const EmojiPicker = lazy(() => import("emoji-picker-react"));
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogTitle, DialogHeader } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
@@ -40,7 +36,8 @@ import {
   ConversationSkeleton,
   MessageBubble,
   SystemMessage,
-  VisitorCommunityOverlay
+  VisitorCommunityOverlay,
+  ChatComposer
 } from "@/components/community";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { 
@@ -100,6 +97,7 @@ const Community = () => {
   const [deleteConversationId, setDeleteConversationId] = useState<string | null>(null);
   const previousMessagesCount = useRef<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messageChannelRef = useRef<any>(null);
   const reactionChannelRef = useRef<any>(null);
   const presenceChannelsRef = useRef<Record<string, any>>({});
@@ -462,9 +460,25 @@ const Community = () => {
     previousMessagesCount.current = messages.length;
   }, [messages]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollToBottom = useCallback((force = false) => {
+    const container = messagesContainerRef.current;
+    if (!container) {
+      // Fallback to the old method if container ref not available
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+    
+    // Check if user is near bottom (within 150px) before auto-scrolling
+    // This prevents interrupting users who are reading older messages
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
+    
+    if (force || isNearBottom) {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
 
   const setupGlobalPresenceListener = () => {
     if (!user) return;
@@ -1418,6 +1432,9 @@ const Community = () => {
     setReplyingTo(null);
     clearMedia();
     playSendSound();
+    
+    // Force scroll to bottom when sending a message
+    setTimeout(() => scrollToBottom(true), 50);
     
     // Clear typing indicator
     sendTypingStatus(false);
@@ -2419,6 +2436,7 @@ const Community = () => {
 
             {/* Scrollable Messages Area - paddingTop accounts for fixed header (and Jude banner if group) */}
             <div 
+              ref={messagesContainerRef}
               className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
               style={{ 
                 paddingTop: (() => {
@@ -2503,156 +2521,25 @@ const Community = () => {
             </div>
             </div>
 
-            {/* Composer - part of flex layout, naturally sits at bottom */}
-            <div 
-              className="shrink-0 border-t border-border/50 bg-background/95 backdrop-blur-md z-10"
-              style={{
-                // Safe area padding for devices with home indicator
-                paddingBottom: 'env(safe-area-inset-bottom, 0px)'
-              }}
-            >
-              <div className="p-3 pt-2 md:p-4 md:pt-2">
-              {replyingTo && (
-                <div className="mb-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/30 flex items-start justify-between max-w-full overflow-hidden">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-semibold text-primary mb-0.5">
-                      Répondre à {replyingTo.profile?.nickname || replyingTo.profile?.full_name}
-                    </div>
-                    <div className="text-xs text-muted-foreground truncate">
-                      {replyingTo.content}
-                    </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 shrink-0"
-                    onClick={() => setReplyingTo(null)}
-                  >
-                    ✕
-                  </Button>
-                </div>
-              )}
-              
-              {/* Media Preview */}
-              {mediaPreview && (
-                <div className="mb-2 relative">
-                  {mediaType === 'image' ? (
-                    <img src={mediaPreview} alt="Preview" className="max-h-48 rounded-lg object-contain bg-muted/20" loading="lazy" decoding="async" />
-                  ) : mediaType === 'video' ? (
-                    <video src={mediaPreview} controls className="max-h-48 rounded-lg bg-muted/20" />
-                  ) : mediaType === 'document' ? (
-                    <div className="flex items-center gap-3 px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
-                      <FileText size={24} className="text-primary shrink-0" />
-                      <span className="text-sm font-medium truncate">{mediaPreview}</span>
-                    </div>
-                  ) : null}
-                  <Button
-                    size="icon"
-                    variant="destructive"
-                    className="absolute top-2 right-2 h-6 w-6"
-                    onClick={clearMedia}
-                  >
-                    ×
-                  </Button>
-                </div>
-              )}
-
-              <div className="flex gap-2 items-end">
-                <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0 h-10 w-10"
-                    >
-                      <Smile size={20} />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0 border-0" align="start">
-                    <Suspense fallback={
-                      <div className="w-full h-[400px] flex items-center justify-center bg-background">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                      </div>
-                    }>
-                      <EmojiPicker
-                        onEmojiClick={(emojiData) => {
-                          setNewMessage((prev) => prev + emojiData.emoji);
-                          setShowEmojiPicker(false);
-                        }}
-                        width="100%"
-                        height="400px"
-                      />
-                    </Suspense>
-                  </PopoverContent>
-                </Popover>
-
-                {/* Media Upload Button - Hidden for Jude conversations */}
-                {!isJudeConversation && (
-                  <>
-                    <input
-                      type="file"
-                      accept="image/*,video/*,.pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
-                      onChange={handleMediaSelect}
-                      className="hidden"
-                      id="media-upload"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0 h-10 w-10"
-                      onClick={() => document.getElementById('media-upload')?.click()}
-                      title="Joindre une image, vidéo ou document"
-                    >
-                      <Paperclip size={20} />
-                    </Button>
-                  </>
-                )}
-
-                <Textarea
-                  placeholder="Écrivez un message..."
-                  value={newMessage}
-                  onChange={(e) => handleTyping(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      sendMessage();
-                    }
-                  }}
-                  onFocus={(e) => {
-                    setTimeout(() => {
-                      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 300);
-                  }}
-                  className="text-base resize-none min-h-[40px] max-h-[120px] overflow-y-auto mobile-input tap-highlight-none"
-                  autoCapitalize="sentences"
-                  autoCorrect="on"
-                  spellCheck={false}
-                  enterKeyHint="send"
-                  rows={1}
-                  style={{
-                    height: 'auto',
-                    minHeight: '40px',
-                  }}
-                  onInput={(e) => {
-                    const target = e.target as HTMLTextAreaElement;
-                    target.style.height = 'auto';
-                    target.style.height = Math.min(target.scrollHeight, 120) + 'px';
-                  }}
-                />
-                <Button
-                  size="icon"
-                  onClick={sendMessage}
-                  disabled={(!newMessage.trim() && !selectedMediaFile) || isSending}
-                  className={`shrink-0 h-10 w-10 ${isSending ? 'animate-send-bounce' : ''}`}
-                >
-                  <Send size={20} />
-                </Button>
-              </div>
-            </div>
-          </div>
+            {/* Composer - extracted to separate component */}
+            <ChatComposer
+              newMessage={newMessage}
+              isSending={isSending}
+              showEmojiPicker={showEmojiPicker}
+              mediaPreview={mediaPreview}
+              mediaType={mediaType}
+              replyingTo={replyingTo}
+              isJudeConversation={isJudeConversation}
+              hasMediaFile={!!selectedMediaFile}
+              onMessageChange={setNewMessage}
+              onSend={sendMessage}
+              onEmojiPickerChange={setShowEmojiPicker}
+              onEmojiSelect={(emoji) => setNewMessage((prev) => prev + emoji)}
+              onMediaSelect={handleMediaSelect}
+              onClearMedia={clearMedia}
+              onCancelReply={() => setReplyingTo(null)}
+              onTyping={handleTyping}
+            />
           </div>
         ) : (
           <div className="hidden md:flex items-center justify-center h-full">
