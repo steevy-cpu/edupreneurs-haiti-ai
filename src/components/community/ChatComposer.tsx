@@ -17,7 +17,6 @@ export interface ChatComposerProps {
   replyingTo: Message | null;
   isJudeConversation: boolean;
   hasMediaFile: boolean;
-  onMessageChange: (value: string) => void;
   onSend: () => void;
   onEmojiPickerChange: (open: boolean) => void;
   onEmojiSelect: (emoji: string) => void;
@@ -36,7 +35,6 @@ export const ChatComposer = ({
   replyingTo,
   isJudeConversation,
   hasMediaFile,
-  onMessageChange,
   onSend,
   onEmojiPickerChange,
   onEmojiSelect,
@@ -48,10 +46,6 @@ export const ChatComposer = ({
   return (
     <div 
       className="shrink-0 border-t border-border/50 bg-background/95 backdrop-blur-md z-10 pb-16 md:pb-0"
-      style={{
-        // Safe area padding for devices with home indicator + bottom nav offset
-        paddingBottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))'
-      }}
     >
       <div className="p-3 pt-2 md:p-4 md:pt-2">
         {/* Reply Preview */}

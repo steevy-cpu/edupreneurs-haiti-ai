@@ -2531,7 +2531,6 @@ const Community = () => {
               replyingTo={replyingTo}
               isJudeConversation={isJudeConversation}
               hasMediaFile={!!selectedMediaFile}
-              onMessageChange={setNewMessage}
               onSend={sendMessage}
               onEmojiPickerChange={setShowEmojiPicker}
               onEmojiSelect={(emoji) => setNewMessage((prev) => prev + emoji)}
