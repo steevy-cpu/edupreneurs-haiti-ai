@@ -96,11 +96,14 @@ const FirstTimeUserTour = () => {
     if (!isNavigating && location.pathname !== currentStep.path) {
       setIsNavigating(true);
       
-      // Use requestAnimationFrame to defer navigation to next frame
+      // Use double RAF to ensure we're in a completely stable frame
       // This allows React to complete current render cycle and prevents error #310
       requestAnimationFrame(() => {
-        navigate(currentStep.path);
-        setTimeout(() => setIsNavigating(false), 500);
+        requestAnimationFrame(() => {
+          navigate(currentStep.path);
+          // Increase delay to 800ms to allow pages with async loading to stabilize
+          setTimeout(() => setIsNavigating(false), 800);
+        });
       });
     }
   }, [tourStep, tourActive, tourCompleted, currentStep, location.pathname, navigate, isNavigating]);

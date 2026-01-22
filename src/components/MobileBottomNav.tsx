@@ -68,8 +68,9 @@ export const MobileBottomNav = () => {
   const { badges } = useSidebarBadges(profile.userId);
   
   // Tour highlight state for mobile navigation
-  const { tourActive, tourCompleted, currentTourNavPath } = useFirstTimeUser();
-  const tourHighlightPath = tourActive && !tourCompleted ? currentTourNavPath : null;
+  const { tourActive, tourCompleted, currentTourNavPath, isLoading: tourLoading } = useFirstTimeUser();
+  // Guard against loading state to prevent hook mismatches during navigation transitions
+  const tourHighlightPath = !tourLoading && tourActive && !tourCompleted ? currentTourNavPath : null;
 
   // Track keyboard visibility using visualViewport
   useEffect(() => {
