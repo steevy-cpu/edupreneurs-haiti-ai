@@ -10,3 +10,4 @@ export { MessageBubble } from './MessageBubble';
 export { SystemMessage } from './SystemMessage';
 export { FloatingReaction, FloatingReactionsContainer } from './FloatingReaction';
 export { VisitorCommunityOverlay } from './VisitorCommunityOverlay';
+export { ConversationSidebar } from './ConversationSidebar';

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -32,22 +32,8 @@ export const QuickMessageFAB = ({ isVisitor = false }: QuickMessageFABProps) => 
   const navigate = useNavigate();
   const location = useLocation();
 
-  // useEffect MUST be called before any conditional returns to comply with Rules of Hooks
-  // This prevents React error #310 when navigating between pages
-  useEffect(() => {
-    if (!isVisitor) {
-      fetchRecentConversations();
-    }
-  }, [isVisitor]);
-
-  // Hide on community page, passion-discovery page, and all quiz battle pages
-  if (
-    location.pathname === "/community" || 
-    location.pathname === "/passion-discovery" ||
-    location.pathname.startsWith("/quiz-battle")
-  ) return null;
-
-  const fetchRecentConversations = async () => {
+  // Function MUST be defined before useEffect to avoid ReferenceError
+  const fetchRecentConversations = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -124,7 +110,22 @@ export const QuickMessageFAB = ({ isVisitor = false }: QuickMessageFABProps) => 
     const validConversations = conversationsWithDetails.filter(Boolean) as RecentConversation[];
     setRecentConversations(validConversations);
     setUnreadTotal(validConversations.reduce((acc, c) => acc + c.unreadCount, 0));
-  };
+  }, []);
+
+  // useEffect MUST be called before any conditional returns to comply with Rules of Hooks
+  // This prevents React error #310 when navigating between pages
+  useEffect(() => {
+    if (!isVisitor) {
+      fetchRecentConversations();
+    }
+  }, [isVisitor, fetchRecentConversations]);
+
+  // Hide on community page, passion-discovery page, and all quiz battle pages
+  if (
+    location.pathname === "/community" || 
+    location.pathname === "/passion-discovery" ||
+    location.pathname.startsWith("/quiz-battle")
+  ) return null;
 
   const handleConversationClick = (conversationId: string) => {
     navigate(`/community?conversation=${conversationId}`);
