@@ -31,7 +31,6 @@ import { LockedOverlay } from "@/components/visitor";
 import { visitorConversationPreview } from "@/data/visitorDemoData";
 import { 
   ConversationListItem, 
-  ChatHeader, 
   ChatViewHeader,
   TypingIndicator,
   ConversationSkeleton,

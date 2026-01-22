@@ -54,8 +54,11 @@ export const ChatLayout = forwardRef<HTMLDivElement, ChatLayoutProps>(({
         {children}
       </main>
       
-      {/* Input Bar - flex-shrink: 0, safe area handled by parent */}
-      <footer className="shrink-0 z-10 relative">
+      {/* Input Bar - flex-shrink: 0, safe area padding */}
+      <footer 
+        className="shrink-0 z-10 relative"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
         {footer}
       </footer>
     </div>
