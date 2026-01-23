@@ -497,73 +497,77 @@ const Community = () => {
     // Create a unique channel name for Community's listener
     const channel = supabase.channel(`community-presence-${user.id}`);
 
+    // Helper function to get online users from presence state
+    const getOnlineUsersFromPresence = () => {
+      const allChannels = supabase.getChannels();
+      const onlineChannel = allChannels.find(ch => ch.topic === 'realtime:online-users');
+      
+      if (onlineChannel) {
+        const state = onlineChannel.presenceState();
+        const userIds = new Set<string>([JUDE_USER_ID]); // Jude is always online
+        Object.values(state).forEach((presences: any) => {
+          presences.forEach((p: any) => {
+            if (p.user_id) userIds.add(p.user_id);
+          });
+        });
+        return userIds;
+      }
+      return new Set<string>([JUDE_USER_ID]);
+    };
+
+    // Immediately fetch online users on mount (don't wait for sync event)
+    const initialOnlineUsers = getOnlineUsersFromPresence();
+    if (initialOnlineUsers.size > 1) {
+      setOnlineUsers(initialOnlineUsers);
+    }
+
     channel
       .on('presence', { event: 'sync' }, () => {
-        // Get presence from the shared online-users channel via Layout
-        const allChannels = supabase.getChannels();
-        const onlineChannel = allChannels.find(ch => ch.topic === 'realtime:online-users');
-        
-        if (onlineChannel) {
-          const state = onlineChannel.presenceState();
-          const userIds = new Set<string>([JUDE_USER_ID]); // Jude is always online
-          Object.values(state).forEach((presences: any) => {
-            presences.forEach((p: any) => {
-              if (p.user_id) userIds.add(p.user_id);
-            });
-          });
-          setOnlineUsers(userIds);
-        }
+        const userIds = getOnlineUsersFromPresence();
+        setOnlineUsers(userIds);
       })
       .subscribe((status) => {
-        
-      // Poll for presence updates every 15 seconds (optimized for 200+ users)
+        // Poll for presence updates every 5 seconds (faster feedback for online status)
         if (status === 'SUBSCRIBED') {
+          // Immediately get current state on subscribe
+          const currentOnlineUsers = getOnlineUsersFromPresence();
+          setOnlineUsers(currentOnlineUsers);
+          
           const pollInterval = setInterval(async () => {
-            const allChannels = supabase.getChannels();
-            const onlineChannel = allChannels.find(ch => ch.topic === 'realtime:online-users');
+            const userIds = getOnlineUsersFromPresence();
             
-            if (onlineChannel) {
-              const state = onlineChannel.presenceState();
-              const userIds = new Set<string>([JUDE_USER_ID]); // Jude is always online
-              Object.values(state).forEach((presences: any) => {
-                presences.forEach((p: any) => {
-                  if (p.user_id) userIds.add(p.user_id);
-                });
-              });
-              
-              setOnlineUsers(prev => {
-                const prevArray = Array.from(prev).sort();
-                const newArray = Array.from(userIds).sort();
-                if (JSON.stringify(prevArray) !== JSON.stringify(newArray)) {
-                  // Track who went offline and update their last_seen in database
-                  prev.forEach(async (userId) => {
-                    if (!userIds.has(userId) && userId !== JUDE_USER_ID) {
-                      const now = new Date().toISOString();
-                      
-                      // Update last_seen in database
-                      try {
-                        await supabase
-                          .from('profiles')
-                          .update({ last_seen: now })
-                          .eq('user_id', userId);
-                      } catch (error) {
-                        logger.error('Error updating last_seen:', error);
-                      }
-                      
-                      // Update local state
-                      setLastSeenTimes(prevTimes => ({
-                        ...prevTimes,
-                        [userId]: now
-                      }));
+            setOnlineUsers(prev => {
+              const prevArray = Array.from(prev).sort();
+              const newArray = Array.from(userIds).sort();
+              if (JSON.stringify(prevArray) !== JSON.stringify(newArray)) {
+                // Track who went offline and update their last_seen in database
+                prev.forEach(async (userId) => {
+                  if (!userIds.has(userId) && userId !== JUDE_USER_ID) {
+                    const now = new Date().toISOString();
+                    
+                    // Update last_seen in database
+                    try {
+                      await supabase
+                        .from('profiles')
+                        .update({ last_seen: now })
+                        .eq('user_id', userId);
+                    } catch (error) {
+                      logger.error('Error updating last_seen:', error);
                     }
-                  });
-                  
-                  return userIds;
-                }
-                return prev;
-              });
-            }
-          }, isSlowConnection ? 30000 : 15000); // 30s on slow connections, 15s otherwise
+                    
+                    // Update local state
+                    setLastSeenTimes(prevTimes => ({
+                      ...prevTimes,
+                      [userId]: now
+                    }));
+                  }
+                });
+                
+                return userIds;
+              }
+              return prev;
+            });
+          }, isSlowConnection ? 10000 : 5000); // 10s on slow connections, 5s otherwise (faster updates)
           
           // Store interval for cleanup
           (channel as any).pollInterval = pollInterval;
