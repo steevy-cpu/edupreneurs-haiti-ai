@@ -45,7 +45,7 @@ export const ConversationSidebar = ({
   formatTime,
 }: ConversationSidebarProps) => {
   return (
-    <aside className={`${selectedConversation ? "hidden md:flex" : "flex"} flex-col w-full border-r border-border/50 bg-background pb-20 md:pb-0 h-full overflow-hidden`}>
+    <aside className={`${selectedConversation ? "hidden md:flex" : "flex"} flex-col w-full border-r border-border/50 bg-background pb-20 lg:pb-0 h-full overflow-hidden`}>
       {/* Header */}
       <div className="shrink-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur-md p-3 sm:p-4 safe-area-top">
         <div className="flex items-center gap-2 sm:gap-3">
