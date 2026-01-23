@@ -215,6 +215,19 @@ export const useMultiplayerBattle = ({
     }
   }, [battleId, syncPlayerStates]);
 
+  // Polling fallback for ready state - catches missed realtime events on slow 3G connections
+  useEffect(() => {
+    if (!battleId || phase === 'setup' || phase === 'starting' || phase === 'error') return;
+    
+    // Poll every 3 seconds as fallback for missed realtime events
+    const pollInterval = setInterval(() => {
+      console.log('[Multiplayer] Polling player states (fallback)...');
+      syncPlayerStates();
+    }, 3000);
+    
+    return () => clearInterval(pollInterval);
+  }, [battleId, phase, syncPlayerStates]);
+
   const createPrivateBattle = useCallback(async (options?: { subjectId?: string; gradeLevel?: string; difficulty?: 'easy' | 'medium' | 'hard' }) => {
     const subj = options?.subjectId || subjectId;
     const grade = options?.gradeLevel || gradeLevel;
@@ -295,14 +308,16 @@ export const useMultiplayerBattle = ({
         return { success: false };
       }
 
-      // Join as second player
-      const { error: insertError } = await supabase
+      // Join as second player - use .select() to confirm insertion immediately
+      const { data: insertedPlayer, error: insertError } = await supabase
         .from('quiz_battle_players')
         .insert({
           battle_id: battle.id,
           user_id: userId,
           is_ready: false,
-        });
+        })
+        .select('id')
+        .single();
 
       if (insertError) {
         // Handle duplicate key error (user already in battle) - this is OK, just proceed
@@ -316,13 +331,34 @@ export const useMultiplayerBattle = ({
         }
       }
 
+      // Check if INSERT actually returned data (3G safety net)
+      if (!insertError && !insertedPlayer) {
+        console.error('[Multiplayer] INSERT returned no data - silent failure, retrying...');
+        // Retry insertion once
+        const { data: retryPlayer, error: retryError } = await supabase
+          .from('quiz_battle_players')
+          .insert({
+            battle_id: battle.id,
+            user_id: userId,
+            is_ready: false,
+          })
+          .select('id')
+          .single();
+          
+        if (retryError && retryError.code !== '23505') {
+          console.error('[Multiplayer] Retry INSERT also failed:', retryError);
+          toast.error('Erreur de connexion. Réessaye.');
+          return { success: false };
+        }
+      }
+
       // Verify the player exists in the battle (either just inserted or already there)
       const { data: verifyPlayer, error: verifyError } = await supabase
         .from('quiz_battle_players')
         .select('id')
         .eq('battle_id', battle.id)
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (verifyError || !verifyPlayer) {
         console.error('[Multiplayer] Player verification failed:', verifyError);
@@ -330,7 +366,7 @@ export const useMultiplayerBattle = ({
         return { success: false };
       }
 
-      console.log('[Multiplayer] Successfully joined/verified in battle');
+      console.log('[Multiplayer] Successfully joined/verified in battle, player id:', verifyPlayer.id);
 
       // Fetch host info
       await fetchOpponentInfo(battle.created_by);
@@ -341,6 +377,11 @@ export const useMultiplayerBattle = ({
       updatePhase('matched');
       
       console.log('[Multiplayer] Joined battle:', battle.id);
+      
+      // Force sync after a short delay to catch any missed realtime events
+      setTimeout(() => {
+        syncPlayerStates();
+      }, 1000);
       return {
         success: true,
         subjectId: battle.subject_id,
