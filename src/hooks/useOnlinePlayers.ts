@@ -137,14 +137,9 @@ export const useOnlinePlayers = ({ excludeUserId, searchQuery }: UseOnlinePlayer
   }, [profiles, searchQuery]);
 
   const refreshPlayers = useCallback(() => {
-    // Trigger a re-fetch by getting current presence state
-    const channel = supabase.channel('online-users');
-    const state = channel.presenceState();
-    const userIds = Object.keys(state).filter(
-      id => id !== excludeUserId && id !== JUDE_USER_ID
-    );
-    setOnlineUserIds(userIds);
-  }, [excludeUserId]);
+    // Simply re-run getOnlineUsers which properly finds the existing channel
+    getOnlineUsers();
+  }, [getOnlineUsers]);
 
   return {
     players: filteredPlayers,
