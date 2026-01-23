@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
-import { ArrowLeft, BookOpen, Rss } from "lucide-react";
+import { ArrowLeft, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BlogCard } from "@/components/blog/BlogCard";
 import { usePublishedBlogPosts } from "@/hooks/useBlogPosts";
+import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 
 export default function Blog() {
   const { data: posts, isLoading, error } = usePublishedBlogPosts();
@@ -25,35 +26,40 @@ export default function Blog() {
       </Helmet>
 
       <div className="min-h-screen bg-background">
-        {/* Header */}
+        {/* Header - Clean, professional design */}
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container flex h-14 max-w-screen-xl items-center px-4">
+          <div className="container flex h-14 max-w-screen-xl items-center px-4 sm:px-6">
             <Link to="/">
-              <Button variant="ghost" size="icon" className="mr-3">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="mr-3 hover:scale-[1.02] transition-transform duration-300 ease-out"
+              >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             </Link>
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary to-amber-500">
-                <Rss className="h-5 w-5 text-white" />
-              </div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-amber-500 bg-clip-text text-transparent">
-                Blog EDUPRENEURS
-              </h1>
-            </div>
+            <Link to="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity duration-300 ease-out">
+              <img 
+                src={edupreneursLogo} 
+                alt="EDUPRENEURS" 
+                className="h-8 w-auto"
+              />
+              <span className="text-lg font-bold text-foreground">
+                Blog
+              </span>
+            </Link>
           </div>
         </header>
 
-        {/* Hero */}
-        <section className="py-12 md:py-20 px-4 bg-gradient-to-b from-muted/50 to-background">
+        {/* Hero - Clean gradient, no excessive effects */}
+        <section className="py-12 md:py-16 px-4 bg-gradient-to-b from-muted/30 to-background">
           <div className="container max-w-screen-xl mx-auto text-center">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-amber-500 to-primary bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-foreground">
               Notre Blog
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
               Conseils d'apprentissage, guides pratiques et actualités sur
-              l'éducation en Haïti. Découvrez comment tirer le meilleur parti
-              d'EDUPRENEURS.
+              l'éducation en Haïti.
             </p>
           </div>
         </section>
@@ -77,12 +83,12 @@ export default function Blog() {
             </div>
           ) : error ? (
             <div className="text-center py-12">
-              <p className="text-destructive">
+              <p className="text-destructive font-medium">
                 Une erreur s'est produite lors du chargement des articles.
               </p>
               <Button
                 variant="outline"
-                className="mt-4"
+                className="mt-4 hover:scale-[1.02] transition-transform duration-300 ease-out"
                 onClick={() => window.location.reload()}
               >
                 Réessayer
@@ -100,17 +106,21 @@ export default function Blog() {
             </div>
           ) : (
             <div className="text-center py-16">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted mb-6">
-                <BookOpen className="h-10 w-10 text-muted-foreground" />
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted/50 mb-6">
+                <BookOpen className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h2 className="text-2xl font-semibold mb-3">Bientôt disponible</h2>
-              <p className="text-muted-foreground max-w-md mx-auto mb-6">
+              <h2 className="text-xl font-semibold mb-3 text-foreground">
+                Bientôt disponible
+              </h2>
+              <p className="text-muted-foreground max-w-sm mx-auto mb-6 leading-relaxed">
                 Notre blog est en cours de préparation. Revenez bientôt pour
-                découvrir nos articles sur l'éducation et des conseils
-                d'apprentissage.
+                découvrir nos articles sur l'éducation.
               </p>
               <Link to="/">
-                <Button variant="outline">
+                <Button 
+                  variant="outline"
+                  className="hover:scale-[1.02] transition-transform duration-300 ease-out"
+                >
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Retour à l'accueil
                 </Button>
@@ -119,19 +129,22 @@ export default function Blog() {
           )}
         </main>
 
-        {/* Footer CTA */}
+        {/* Footer CTA - Clean, no excessive gradients */}
         {posts && posts.length > 0 && (
-          <section className="py-12 px-4 bg-muted/30 border-t">
+          <section className="py-12 px-4 bg-muted/20 border-t border-border/40">
             <div className="container max-w-screen-xl mx-auto text-center">
-              <h2 className="text-2xl font-bold mb-4">
-                Prêt à commencer votre voyage éducatif ?
+              <h2 className="text-xl font-bold mb-3 text-foreground">
+                Prêt à commencer ?
               </h2>
-              <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
-                Rejoignez des milliers d'étudiants haïtiens qui utilisent
-                EDUPRENEURS pour réussir leurs études.
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                Rejoignez les étudiants haïtiens qui utilisent EDUPRENEURS
+                pour réussir leurs études.
               </p>
               <Link to="/auth">
-                <Button size="lg" className="gap-2">
+                <Button 
+                  size="lg" 
+                  className="hover:scale-[1.02] transition-transform duration-300 ease-out"
+                >
                   Créer un compte gratuit
                 </Button>
               </Link>

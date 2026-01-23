@@ -1,6 +1,6 @@
 import { Link, useParams, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
-import { ArrowLeft, Calendar, User, Share2, Clock } from "lucide-react";
+import { ArrowLeft, Calendar, Share2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,6 +11,7 @@ import { createSanitizedMarkup } from "@/lib/sanitize";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 
 // Estimate reading time (words per minute)
 function estimateReadingTime(content: string): number {
@@ -134,18 +135,34 @@ export default function BlogPost() {
       <div className="min-h-screen bg-background">
         {/* Header */}
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container flex h-14 max-w-screen-xl items-center justify-between px-4">
+          <div className="container flex h-14 max-w-screen-xl items-center justify-between px-4 sm:px-6">
             <div className="flex items-center">
               <Link to="/blog">
-                <Button variant="ghost" size="icon" className="mr-3">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="mr-3 hover:scale-[1.02] transition-transform duration-300 ease-out"
+                >
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
               </Link>
-              <span className="text-sm text-muted-foreground hidden sm:inline">
-                Retour au blog
-              </span>
+              <Link to="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity duration-300 ease-out">
+                <img 
+                  src={edupreneursLogo} 
+                  alt="EDUPRENEURS" 
+                  className="h-7 w-auto"
+                />
+                <span className="text-sm font-medium text-muted-foreground hidden sm:inline">
+                  Blog
+                </span>
+              </Link>
             </div>
-            <Button variant="ghost" size="icon" onClick={handleShare}>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleShare}
+              className="hover:scale-[1.02] transition-transform duration-300 ease-out"
+            >
               <Share2 className="h-5 w-5" />
             </Button>
           </div>
