@@ -584,7 +584,7 @@ export default function Notifications() {
   return (
     <main className="h-dvh bg-gradient-to-br from-background to-background/80 flex flex-col overflow-hidden">
       {/* Header - Fixed, non-scrolling */}
-      <header className="shrink-0 px-3 py-4 sm:px-6 sm:pt-6">
+      <header className="shrink-0 px-3 py-4 sm:px-6 sm:pt-6 bg-background">
         <div className="max-w-2xl mx-auto">
           {/* Header using PageHeader component */}
           <PageHeader
