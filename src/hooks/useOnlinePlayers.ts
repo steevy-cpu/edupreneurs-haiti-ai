@@ -26,18 +26,32 @@ export const useOnlinePlayers = ({ excludeUserId, searchQuery }: UseOnlinePlayer
   // Get online users from the shared channel (same pattern as Community.tsx)
   const getOnlineUsers = useCallback(() => {
     const allChannels = supabase.getChannels();
-    const onlineChannel = allChannels.find(ch => ch.topic === 'realtime:online-users');
+    // Look for the shared 'online-users' presence channel by name or topic
+    const onlineChannel = allChannels.find(ch => 
+      ch.topic === 'realtime:online-users' || 
+      (ch as any).name === 'online-users'
+    );
     
     if (onlineChannel) {
       const state = onlineChannel.presenceState();
       const userIds: string[] = [];
       
-      Object.values(state).forEach((presences: any) => {
-        presences.forEach((p: any) => {
-          if (p.user_id && p.user_id !== excludeUserId && p.user_id !== JUDE_USER_ID) {
-            userIds.push(p.user_id);
-          }
-        });
+      // Iterate through all presence keys - the key itself is the user_id
+      Object.entries(state).forEach(([key, presences]: [string, any]) => {
+        // The key is the user_id (from Layout's presence config)
+        if (key && key !== excludeUserId && key !== JUDE_USER_ID) {
+          userIds.push(key);
+        }
+        // Also check inside presence data for user_id field
+        if (Array.isArray(presences)) {
+          presences.forEach((p: any) => {
+            if (p.user_id && p.user_id !== excludeUserId && p.user_id !== JUDE_USER_ID) {
+              if (!userIds.includes(p.user_id)) {
+                userIds.push(p.user_id);
+              }
+            }
+          });
+        }
       });
       
       setOnlineUserIds(prev => {
