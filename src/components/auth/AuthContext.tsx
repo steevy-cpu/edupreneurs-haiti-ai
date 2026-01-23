@@ -67,6 +67,8 @@ export interface AuthContextType {
   promoNetworkError: boolean;
   setPromoNetworkError: (error: boolean) => void;
   setPromoGrantsFreeAccess: (grants: boolean) => void;
+  promoValidationAttempted: boolean;
+  setPromoValidationAttempted: (attempted: boolean) => void;
   
   // Verification state
   verificationCode: string;
@@ -156,6 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isValidatingPromo, setIsValidatingPromo] = useState(false);
   const [promoGrantsFreeAccess, setPromoGrantsFreeAccess] = useState(false);
   const [promoNetworkError, setPromoNetworkError] = useState(false);
+  const [promoValidationAttempted, setPromoValidationAttempted] = useState(false);
   
   // Verification state
   const [verificationCode, setVerificationCode] = useState("");
@@ -240,6 +243,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   // Manual promo code validation handler (called on button click)
   const handlePromoCodeValidation = useCallback(async () => {
+    setPromoValidationAttempted(true);
     const result = await validatePromoCode(promoCode);
     
     setPromoCodeValid(result.valid);
@@ -421,6 +425,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPromoGrantsFreeAccess,
     promoNetworkError,
     setPromoNetworkError,
+    promoValidationAttempted,
+    setPromoValidationAttempted,
     verificationCode,
     setVerificationCode,
     pendingUserId,
