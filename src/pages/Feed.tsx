@@ -881,7 +881,7 @@ const Feed = () => {
         className="h-8 w-8 flex-shrink-0 ring-1 ring-border cursor-pointer hover:opacity-80 transition-opacity"
         onClick={() => navigate(`/profile/${comment.user_id}`)}
       >
-        <AvatarImage src={getAvatarUrl(comment.profile?.avatar_url)} />
+        <AvatarImage src={getAvatarUrl(comment.profile?.avatar_url)} loading="lazy" decoding="async" />
         <AvatarFallback className="text-xs font-medium">
           {comment.profile?.nickname?.[0] || "?"}
         </AvatarFallback>
@@ -981,12 +981,12 @@ const Feed = () => {
   );
 
   return (
-    <div className="relative min-h-screen bg-background pb-20 sm:pb-6">
+    <main className="relative h-dvh bg-background flex flex-col overflow-hidden">
       {/* Visitor Overlay */}
       {isVisitor && <VisitorFeedOverlay />}
       
       {/* Header */}
-      <div className="sticky top-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 safe-area-top">
+      <header className="shrink-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 safe-area-top">
         <div className="max-w-2xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
             <Button
@@ -1015,10 +1015,10 @@ const Feed = () => {
             {!isVisitor && <CreatePostDialog currentUser={currentUser} onPostCreated={refreshFeed} />}
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Feed */}
-      <ScrollArea className="h-[calc(100dvh-56px)]">
+      <section className="flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-6">
         <div className="max-w-2xl mx-auto">
           {isLoading ? (
             // Loading skeleton - show while data is being fetched
@@ -1067,7 +1067,7 @@ const Feed = () => {
                     className="h-11 w-11 ring-2 ring-background shadow-sm cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => navigate(`/profile/${post.user_id}`)}
                   >
-                    <AvatarImage src={getAvatarUrl(post.profile?.avatar_url)} />
+                    <AvatarImage src={getAvatarUrl(post.profile?.avatar_url)} loading="lazy" decoding="async" />
                     <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground font-medium">
                       {post.profile?.full_name?.[0] || "?"}
                     </AvatarFallback>
@@ -1289,7 +1289,7 @@ const Feed = () => {
             </div>
           )}
         </div>
-      </ScrollArea>
+      </section>
 
       {/* Delete Post Dialog */}
       <AlertDialog open={!!deletePostId} onOpenChange={() => setDeletePostId(null)}>
@@ -1390,7 +1390,7 @@ const Feed = () => {
           }}
         />
       )}
-    </div>
+    </main>
   );
 };
 
