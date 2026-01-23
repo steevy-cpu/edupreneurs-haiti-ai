@@ -582,51 +582,58 @@ export default function Notifications() {
   const avatarSize = isSlowConnection ? "h-8 w-8 sm:h-10 sm:w-10" : "h-9 w-9 sm:h-11 sm:w-11";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-background/80 px-3 py-4 sm:p-6 pb-24 sm:pb-6">
-      <div className="max-w-2xl mx-auto">
-        {/* Header using PageHeader component */}
-        <PageHeader
-          title="Notifications"
-          subtitle={unreadCount > 0 ? `${unreadCount} non lue${unreadCount > 1 ? 's' : ''}` : undefined}
-          variant="simple"
-          showThemeToggle={true}
-          actions={
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/notification-settings')}
-              className="h-8 w-8 sm:h-9 sm:w-9"
-              title="Paramètres de notification"
-            >
-              <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
-            </Button>
-          }
-        />
-
-        {/* Action buttons row */}
-        {(unreadCount > 0 || notifications.length > 0) && (
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
-            {unreadCount > 0 && (
-              <Button onClick={markAllAsRead} variant="outline" size="sm" className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0">
-                <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                Marquer comme lu
-              </Button>
-            )}
-            {notifications.length > 0 && (
-              <Button 
-                onClick={() => setDeleteAllDialogOpen(true)} 
-                variant="outline" 
-                size="sm"
-                className="text-destructive hover:text-destructive text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
+    <main className="h-dvh bg-gradient-to-br from-background to-background/80 flex flex-col overflow-hidden">
+      {/* Header - Fixed, non-scrolling */}
+      <header className="shrink-0 px-3 py-4 sm:px-6 sm:pt-6">
+        <div className="max-w-2xl mx-auto">
+          {/* Header using PageHeader component */}
+          <PageHeader
+            title="Notifications"
+            subtitle={unreadCount > 0 ? `${unreadCount} non lue${unreadCount > 1 ? 's' : ''}` : undefined}
+            variant="simple"
+            showThemeToggle={true}
+            actions={
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/notification-settings')}
+                className="h-8 w-8 sm:h-9 sm:w-9"
+                title="Paramètres de notification"
               >
-                <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                Tout supprimer
+                <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
-            )}
-          </div>
-        )}
+            }
+          />
 
-        {isLoading ? (
+          {/* Action buttons row */}
+          {(unreadCount > 0 || notifications.length > 0) && (
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {unreadCount > 0 && (
+                <Button onClick={markAllAsRead} variant="outline" size="sm" className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0">
+                  <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  Marquer comme lu
+                </Button>
+              )}
+              {notifications.length > 0 && (
+                <Button 
+                  onClick={() => setDeleteAllDialogOpen(true)} 
+                  variant="outline" 
+                  size="sm"
+                  className="text-destructive hover:text-destructive text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
+                >
+                  <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  Tout supprimer
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* Scrollable content section */}
+      <section className="flex-1 overflow-y-auto overscroll-contain px-3 sm:px-6 pb-24 lg:pb-6">
+        <div className="max-w-2xl mx-auto">
+          {isLoading ? (
           <NotificationSkeleton count={isSlowConnection ? 3 : 5} />
         ) : notifications.length === 0 ? (
           <EmptyState
@@ -766,7 +773,8 @@ export default function Notifications() {
             </div>
           </div>
         )}
-      </div>
+        </div>
+      </section>
       
       {/* Delete Notification Confirmation Dialog - Lazy loaded */}
       <Suspense fallback={null}>
@@ -817,6 +825,6 @@ export default function Notifications() {
           </AlertDialog>
         )}
       </Suspense>
-    </div>
+    </main>
   );
 }
