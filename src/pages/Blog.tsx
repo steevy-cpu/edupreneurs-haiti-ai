@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BlogCard } from "@/components/blog/BlogCard";
 import { usePublishedBlogPosts } from "@/hooks/useBlogPosts";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 
 export default function Blog() {
@@ -28,26 +29,29 @@ export default function Blog() {
       <div className="min-h-screen bg-background">
         {/* Header - Clean, professional design */}
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container flex h-14 max-w-screen-xl items-center px-4 sm:px-6">
-            <Link to="/">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="mr-3 hover:scale-[1.02] transition-transform duration-300 ease-out"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <Link to="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity duration-300 ease-out">
-              <img 
-                src={edupreneursLogo} 
-                alt="EDUPRENEURS" 
-                className="h-8 w-auto"
-              />
-              <span className="text-lg font-bold text-foreground">
-                Blog
-              </span>
-            </Link>
+          <div className="container flex h-14 max-w-screen-xl items-center justify-between px-4 sm:px-6">
+            <div className="flex items-center">
+              <Link to="/">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="mr-3 hover:scale-[1.02] transition-transform duration-300 ease-out"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+              </Link>
+              <Link to="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity duration-300 ease-out">
+                <img 
+                  src={edupreneursLogo} 
+                  alt="EDUPRENEURS" 
+                  className="h-8 w-auto"
+                />
+                <span className="text-lg font-bold text-foreground">
+                  Blog
+                </span>
+              </Link>
+            </div>
+            <ThemeToggle />
           </div>
         </header>
 
