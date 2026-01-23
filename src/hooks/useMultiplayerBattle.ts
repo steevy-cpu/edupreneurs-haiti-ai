@@ -297,6 +297,13 @@ export const useMultiplayerBattle = ({
         return { success: false };
       }
 
+      // Prevent user from joining their own battle
+      if (battle.created_by === userId) {
+        toast.error('Tu ne peux pas rejoindre ta propre partie. Utilise un autre compte.');
+        console.log('[Multiplayer] Blocked self-join attempt - user is the host');
+        return { success: false };
+      }
+
       // Check if already full
       const { data: players } = await supabase
         .from('quiz_battle_players')
@@ -320,10 +327,14 @@ export const useMultiplayerBattle = ({
         .single();
 
       if (insertError) {
-        // Handle duplicate key error (user already in battle) - this is OK, just proceed
+        // Handle duplicate key error - user might have already joined this battle
         if (insertError.code === '23505') {
-          console.log('[Multiplayer] User already in battle, proceeding with existing record');
-          // User is already in this battle - this is fine, just continue
+          // Double-check if this is the host trying to join (shouldn't happen with above check)
+          if (battle.created_by === userId) {
+            toast.error('Tu ne peux pas rejoindre ta propre partie');
+            return { success: false };
+          }
+          console.log('[Multiplayer] User already joined this battle, continuing...');
         } else {
           console.error('[Multiplayer] Failed to join battle:', insertError);
           toast.error('Erreur de connexion. Réessaye.');
