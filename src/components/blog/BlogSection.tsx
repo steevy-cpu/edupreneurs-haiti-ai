@@ -26,7 +26,7 @@ export function BlogSection({ limit = 3 }: BlogSectionProps) {
             <Skeleton className="h-6 w-full" />
             <Skeleton className="h-4 w-full" />
             <div className="flex items-center gap-2">
-              <Skeleton className="h-8 w-8 rounded-full" />
+              <Skeleton className="h-7 w-7 rounded-full" />
               <Skeleton className="h-4 w-24" />
             </div>
           </div>
@@ -37,13 +37,13 @@ export function BlogSection({ limit = 3 }: BlogSectionProps) {
 
   if (!posts || posts.length === 0) {
     return (
-      <div className="text-center py-12 px-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
-          <BookOpen className="h-8 w-8 text-muted-foreground" />
+      <div className="text-center py-10 px-4">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-muted/50 mb-4">
+          <BookOpen className="h-7 w-7 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-semibold mb-2">Bientôt disponible</h3>
-        <p className="text-muted-foreground max-w-md mx-auto">
-          Notre blog est en cours de préparation. Revenez bientôt pour découvrir nos articles sur l'éducation et la technologie.
+        <h3 className="text-base font-semibold mb-2 text-foreground">Bientôt disponible</h3>
+        <p className="text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
+          Notre blog est en cours de préparation. Revenez bientôt pour découvrir nos articles.
         </p>
       </div>
     );
@@ -60,7 +60,11 @@ export function BlogSection({ limit = 3 }: BlogSectionProps) {
       {posts.length >= limit && (
         <div className="text-center">
           <Link to="/blog">
-            <Button variant="outline" size="lg" className="gap-2">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="gap-2 hover:scale-[1.02] transition-transform duration-300 ease-out"
+            >
               Voir tous les articles
               <ArrowRight className="h-4 w-4" />
             </Button>
