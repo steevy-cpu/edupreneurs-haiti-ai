@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { isFounder } from "@/lib/founderConstants";
+import { Footer } from "@/components/Footer";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 
 // Estimate reading time (words per minute)
@@ -266,28 +267,8 @@ export default function BlogPost() {
           )}
         </article>
 
-        {/* CTA */}
-        <section className="py-12 px-4 bg-muted/30 border-t mt-12">
-          <div className="container max-w-screen-lg mx-auto text-center">
-            <h2 className="text-2xl font-bold mb-4">
-              Envie d'en apprendre plus ?
-            </h2>
-            <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
-              Rejoignez EDUPRENEURS et accédez à des cours, examens officiels
-              et ressources éducatives de qualité.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/auth">
-                <Button size="lg">Créer un compte gratuit</Button>
-              </Link>
-              <Link to="/blog">
-                <Button variant="outline" size="lg">
-                  Voir plus d'articles
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
+        {/* Footer */}
+        <Footer />
       </div>
     </>
   );
