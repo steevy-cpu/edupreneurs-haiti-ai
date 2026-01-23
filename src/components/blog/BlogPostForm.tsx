@@ -257,12 +257,18 @@ export function BlogPostForm({ post, onSubmit, isSubmitting }: BlogPostFormProps
                     <SelectValue placeholder="Sélectionner un auteur" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent className="bg-background border border-border shadow-lg z-50">
-                  {authors?.map((author) => (
-                    <SelectItem key={author.id} value={author.id}>
-                      {author.display_name} - {author.role}
-                    </SelectItem>
-                  ))}
+                <SelectContent position="popper" className="z-[1200] bg-popover border border-border shadow-lg">
+                  {!authors ? (
+                    <SelectItem value="loading" disabled>Chargement...</SelectItem>
+                  ) : authors.length === 0 ? (
+                    <SelectItem value="none" disabled>Aucun auteur trouvé</SelectItem>
+                  ) : (
+                    authors.map((author) => (
+                      <SelectItem key={author.id} value={author.id}>
+                        {author.display_name} - {author.role}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
               <FormMessage />
