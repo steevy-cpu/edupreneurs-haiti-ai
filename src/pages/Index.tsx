@@ -315,10 +315,21 @@ const Index = () => {
         
         <div className="container mx-auto grid md:grid-cols-2 gap-4 xs:gap-6 sm:gap-8 lg:gap-10 items-center">
           <div className="space-y-2 xs:space-y-3 sm:space-y-4 lg:space-y-6 z-10 px-2 xs:px-0 animate-fade-in">
-            {/* Target Audience Badge */}
-            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold text-primary">
-              <GraduationCap className="w-4 h-4" />
-              <span>Pour les élèves de 7AF à NS4</span>
+            {/* Badges Row */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Target Audience Badge */}
+              <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold text-primary">
+                <GraduationCap className="w-4 h-4" />
+                <span>Pour les élèves de 7AF à NS4</span>
+              </div>
+              {/* Blog Badge */}
+              <Link 
+                to="/blog" 
+                className="inline-flex items-center gap-1.5 bg-accent/10 border border-accent/20 rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold text-accent hover:bg-accent/20 transition-colors duration-300 ease-out"
+              >
+                <Rss className="w-3.5 h-3.5" />
+                <span>Nouveau: Blog</span>
+              </Link>
             </div>
             
             <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight">
