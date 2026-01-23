@@ -226,7 +226,7 @@ export default function UsersModule() {
                         </AvatarFallback>
                       </Avatar>
                       {isOnline(user.user_id) && (
-                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-success rounded-full border-2 border-background" />
                       )}
                     </div>
                   </TableCell>
