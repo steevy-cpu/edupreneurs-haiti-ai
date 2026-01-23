@@ -101,12 +101,24 @@ export const MultiplayerBattleGameplay = ({
     table: 'quiz_battles',
     event: 'UPDATE',
     filter: `id=eq.${battleId}`,
-    callback: (payload) => {
+    callback: async (payload) => {
       const battle = payload.new as any;
       
       // Check if battle was cancelled (opponent abandoned)
       if (battle.status === 'cancelled' && !gameEnded.current) {
-        console.log('[MultiplayerGameplay] Battle cancelled - opponent abandoned');
+        // Verify this isn't a false positive by checking the database directly
+        const { data: verifyBattle } = await supabase
+          .from('quiz_battles')
+          .select('status')
+          .eq('id', battleId)
+          .single();
+        
+        if (verifyBattle?.status !== 'cancelled') {
+          console.log('[MultiplayerGameplay] False positive cancelled event, ignoring');
+          return;
+        }
+        
+        console.log('[MultiplayerGameplay] Battle cancelled verified - opponent abandoned');
         gameEnded.current = true;
         setOpponentAbandoned(true);
         stopTicking();

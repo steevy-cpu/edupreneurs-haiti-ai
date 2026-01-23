@@ -181,6 +181,38 @@ const QuizBattleMultiplayer = () => {
     init();
   }, [battleId, navigate]);
 
+  // Retry fetching opponent profile if missing when playing (race condition recovery)
+  useEffect(() => {
+    if (phase === 'playing' && !opponent && battleId && userId) {
+      console.log('[Multiplayer] Opponent missing in playing phase, retrying fetch...');
+      const fetchOpponent = async () => {
+        const { data: players } = await supabase
+          .from('quiz_battle_players')
+          .select('user_id')
+          .eq('battle_id', battleId)
+          .neq('user_id', userId);
+        
+        if (players && players.length > 0) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('user_id, nickname, avatar_url')
+            .eq('user_id', players[0].user_id)
+            .single();
+          
+          if (profile) {
+            console.log('[Multiplayer] Opponent fetched on retry:', profile.nickname);
+            setOpponent({
+              id: profile.user_id,
+              nickname: profile.nickname,
+              avatar_url: profile.avatar_url,
+            });
+          }
+        }
+      };
+      fetchOpponent();
+    }
+  }, [phase, opponent, battleId, userId]);
+
   const generateQuestions = async (battle: any) => {
     try {
       // Fetch subject info
@@ -355,8 +387,12 @@ const QuizBattleMultiplayer = () => {
           .eq('battle_id', battleId)
           .eq('user_id', userId);
         
-        // Award XP and stats with win
-        await finishBattle(result, { user_id: opponent?.id, score: 0, correct_answers: 0 });
+        // Award XP and stats with win (only if opponent id is known)
+        if (opponent?.id) {
+          await finishBattle(result, { user_id: opponent.id, score: 0, correct_answers: 0 });
+        } else {
+          console.warn('[Multiplayer] Cannot finish battle properly - opponent unknown');
+        }
         updatePhase('results');
         return;
       }
@@ -606,6 +642,22 @@ const QuizBattleMultiplayer = () => {
       <Layout>
         <div className="container max-w-4xl mx-auto px-4 py-6">
           <QuizLoadingState startTime={generationStartTime || Date.now()} />
+        </div>
+      </Layout>
+    );
+  }
+
+  // Guard: Show loading if playing but opponent not yet loaded (race condition fix)
+  if (phase === 'playing' && questions.length > 0 && !opponent) {
+    return (
+      <Layout>
+        <div className="container max-w-4xl mx-auto px-4 py-6">
+          <Card>
+            <CardContent className="py-8 text-center">
+              <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+              <p className="text-muted-foreground">Chargement de l'adversaire...</p>
+            </CardContent>
+          </Card>
         </div>
       </Layout>
     );
