@@ -78,29 +78,22 @@ function AuthContent() {
               <div className="auth-tabs p-3 flex justify-center">
                 {activeTab !== "verify" && activeTab !== "forgot-password" && (
                   <div className="relative flex bg-muted/50 rounded-xl p-1 w-fit">
-                    {/* Sliding Background Indicator */}
-                    <div 
-                      className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-background rounded-lg shadow-sm transition-all duration-300 ease-out ${
-                        activeTab === "login" ? "left-1" : "left-[calc(50%+2px)]"
-                      }`}
-                    />
-                    
                     {/* Tab Buttons */}
                     <button
-                      className={`relative z-10 flex-1 text-center py-2.5 px-4 rounded-lg font-semibold text-sm transition-colors duration-200 ${
+                      className={`relative z-10 flex-1 text-center py-2.5 px-5 rounded-lg font-semibold text-sm transition-all duration-300 ease-out ${
                         activeTab === "login" 
-                          ? "text-foreground" 
-                          : "text-muted-foreground hover:text-foreground/80"
+                          ? "bg-primary text-primary-foreground shadow-md" 
+                          : "text-muted-foreground hover:text-foreground/80 hover:bg-muted"
                       }`}
                       onClick={() => setActiveTab("login")}
                     >
                       Se connecter
                     </button>
                     <button
-                      className={`relative z-10 flex-1 text-center py-2.5 px-4 rounded-lg font-semibold text-sm transition-colors duration-200 ${
+                      className={`relative z-10 flex-1 text-center py-2.5 px-5 rounded-lg font-semibold text-sm transition-all duration-300 ease-out ${
                         activeTab === "signup" 
-                          ? "text-foreground" 
-                          : "text-muted-foreground hover:text-foreground/80"
+                          ? "bg-primary text-primary-foreground shadow-md" 
+                          : "text-muted-foreground hover:text-foreground/80 hover:bg-muted"
                       }`}
                       onClick={() => setActiveTab("signup")}
                     >
