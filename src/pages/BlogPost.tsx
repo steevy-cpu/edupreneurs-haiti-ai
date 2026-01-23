@@ -11,6 +11,7 @@ import { createSanitizedMarkup } from "@/lib/sanitize";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { isFounder } from "@/lib/founderConstants";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 
 // Estimate reading time (words per minute)
@@ -235,7 +236,7 @@ export default function BlogPost() {
           />
 
           {/* Author Bio */}
-          {post.author?.bio && (
+          {post.author && (
             <>
               <Separator className="my-12" />
               <div className="flex items-start gap-4 p-6 rounded-xl bg-muted/50">
@@ -251,11 +252,14 @@ export default function BlogPost() {
                 <div>
                   <div className="font-bold text-lg">{authorName}</div>
                   {post.author.role && (
-                    <Badge variant="secondary" className="mb-2">
+                    <Badge className="mb-2 bg-primary/90 hover:bg-primary text-primary-foreground">
                       {post.author.role}
                     </Badge>
                   )}
-                  <p className="text-muted-foreground">{post.author.bio}</p>
+                  {/* Hide bio for founders - only show role badge */}
+                  {post.author.bio && !isFounder(post.author.user_id) && (
+                    <p className="text-muted-foreground">{post.author.bio}</p>
+                  )}
                 </div>
               </div>
             </>
