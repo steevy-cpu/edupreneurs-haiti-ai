@@ -2056,7 +2056,7 @@ const Community = () => {
 
   return (
     <div 
-      className="relative h-[100dvh] bg-background flex overflow-hidden"
+      className="relative h-dvh bg-background overflow-hidden grid grid-cols-1 md:grid-cols-[320px_1fr] lg:grid-cols-[384px_1fr]"
       style={{ '--time-accent': accentColor } as React.CSSProperties}
     >
       {/* Visitor Overlay */}
@@ -2085,15 +2085,14 @@ const Community = () => {
       />
 
       {/* Messages View - fixed positioning with proper height for mobile nav */}
-      <div
+      <section
         className={`${
           selectedConversation
-            ? "fixed inset-x-0 top-0 md:relative md:inset-auto md:w-auto md:h-dvh"
-            : "hidden md:block md:h-dvh"
-        } md:flex-1 bg-background md:ml-80 lg:ml-96`}
+            ? "fixed inset-x-0 top-0 md:relative md:inset-auto"
+            : "hidden md:flex"
+        } flex-col bg-background h-full overflow-hidden`}
         style={{
           // On mobile, set explicit height to account for bottom nav (56px) + safe area
-          // Instead of setting bottom offset, we constrain the height so the footer stays visible
           height: selectedConversation ? 'calc(100dvh - 3.5rem - env(safe-area-inset-bottom, 0px))' : undefined
         }}
       >
@@ -2222,7 +2221,7 @@ const Community = () => {
             </p>
           </div>
         )}
-      </div>
+      </section>
       
       {/* Create Group Dialog - only for non-visitors */}
       {!isVisitor && (

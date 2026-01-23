@@ -45,7 +45,7 @@ export const ConversationSidebar = ({
   formatTime,
 }: ConversationSidebarProps) => {
   return (
-    <div className={`${selectedConversation ? "hidden md:flex" : "flex"} flex-col w-full md:w-80 lg:w-96 border-r border-border/50 md:fixed md:left-0 md:top-0 md:bottom-0 md:z-[40] bg-background pb-20 lg:pb-0`}>
+    <aside className={`${selectedConversation ? "hidden md:flex" : "flex"} flex-col w-full border-r border-border/50 bg-background pb-20 md:pb-0 h-full overflow-hidden`}>
       {/* Header */}
       <div className="shrink-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur-md p-3 sm:p-4 safe-area-top">
         <div className="flex items-center gap-2 sm:gap-3">
@@ -124,14 +124,14 @@ export const ConversationSidebar = ({
                       <Avatar className={`h-11 w-11 sm:h-12 sm:w-12 shrink-0 ring-2 ring-background shadow-sm avatar-interactive ${hasUnread ? 'ring-primary/30' : ''}`}>
                         {conv.is_group ? (
                           <>
-                            <AvatarImage src={conv.group?.avatar_url || undefined} />
+                            <AvatarImage src={conv.group?.avatar_url || undefined} loading="lazy" decoding="async" />
                             <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base font-medium">
                               <Users className="h-5 w-5" />
                             </AvatarFallback>
                           </>
                         ) : (
                           <>
-                            <AvatarImage src={getAvatarUrl(conv.otherUser?.avatar_url)} />
+                            <AvatarImage src={getAvatarUrl(conv.otherUser?.avatar_url)} loading="lazy" decoding="async" />
                             <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base font-medium">
                               {(conv.otherUser?.nickname || conv.otherUser?.full_name)?.[0] || "?"}
                             </AvatarFallback>
@@ -244,7 +244,7 @@ export const ConversationSidebar = ({
           </div>
         )}
       </ScrollArea>
-    </div>
+    </aside>
   );
 };
 
