@@ -27,16 +27,16 @@ export default function SignupForm() {
     promoCode,
     setPromoCode,
     promoCodeValid,
+    setPromoCodeValid,
     isValidatingPromo,
     promoGrantsFreeAccess,
+    setPromoGrantsFreeAccess,
     promoNetworkError,
-    promoRateLimitSeconds,
     handleInputFocus,
     isValidNicknameFormat,
     passwordValidation,
     checkNicknameAvailability,
-    debouncedValidatePromoCode,
-    retryPromoValidation,
+    handlePromoCodeValidation,
     referralCode,
     setActiveTab,
     setPendingUserId,
@@ -609,36 +609,40 @@ export default function SignupForm() {
               <strong className="text-sm">Code promotionnel *</strong>
               <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-full">Requis</span>
             </div>
-            <Input
-              type="text"
-              placeholder="Entrez votre code promotionnel"
-              value={promoCode}
-              onChange={(e) => {
-                const code = e.target.value;
-                setPromoCode(code);
-                debouncedValidatePromoCode(code);
-              }}
-              onFocus={handleInputFocus}
-              autoCapitalize="characters"
-              spellCheck="false"
-              enterKeyHint="done"
-              className="auth-input"
-            />
-            {isValidatingPromo && (
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                Vérification du code...
-              </p>
-            )}
-            {promoRateLimitSeconds > 0 && (
-              <div className="flex items-center gap-2 p-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md">
-                <span className="text-amber-600 dark:text-amber-400">⏳</span>
-                <p className="text-xs text-amber-700 dark:text-amber-300">
-                  Trop de tentatives. Patientez {promoRateLimitSeconds}s avant de réessayer.
-                </p>
-              </div>
-            )}
-            {promoCode && promoCode.trim().length >= 3 && !isValidatingPromo && promoRateLimitSeconds === 0 && (
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="Entrez votre code promotionnel"
+                value={promoCode}
+                onChange={(e) => {
+                  const code = e.target.value;
+                  setPromoCode(code);
+                  // Reset validation state when user types
+                  if (promoCodeValid) {
+                    setPromoCodeValid(false);
+                    setPromoGrantsFreeAccess(false);
+                  }
+                }}
+                onFocus={handleInputFocus}
+                autoCapitalize="characters"
+                spellCheck="false"
+                enterKeyHint="done"
+                className="auth-input flex-1"
+              />
+              <Button
+                type="button"
+                onClick={handlePromoCodeValidation}
+                disabled={isValidatingPromo || promoCode.trim().length < 3}
+                className="shrink-0 px-4"
+              >
+                {isValidatingPromo ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Vérifier"
+                )}
+              </Button>
+            </div>
+            {promoCode && promoCode.trim().length >= 3 && !isValidatingPromo && (
               <>
                 {promoNetworkError ? (
                   <div className="flex items-center gap-2 flex-wrap">
@@ -647,20 +651,20 @@ export default function SignupForm() {
                     </p>
                     <button
                       type="button"
-                      onClick={retryPromoValidation}
+                      onClick={handlePromoCodeValidation}
                       className="text-xs text-primary underline hover:text-primary/80 transition-colors"
                     >
                       Réessayer
                     </button>
                   </div>
-                ) : (
-                  <p className={`text-xs ${promoCodeValid ? 'text-success' : 'text-destructive'}`}>
-                    {promoCodeValid ? '✓ Code valide ! Vous pouvez créer votre compte.' : '✗ Code invalide'}
+                ) : promoCodeValid ? (
+                  <p className="text-xs text-success">
+                    ✓ Code valide ! Vous pouvez créer votre compte.
                   </p>
-                )}
+                ) : null}
               </>
             )}
-            {!promoCode && promoRateLimitSeconds === 0 && (
+            {!promoCode && (
               <p className="text-xs text-muted-foreground">
                 Contactez-nous pour obtenir un code d'accès.
               </p>
