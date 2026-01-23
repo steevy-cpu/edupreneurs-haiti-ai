@@ -305,18 +305,18 @@ export const useMultiplayerBattle = ({
         });
 
       if (insertError) {
-        console.error('[Multiplayer] Failed to join battle:', insertError);
-        
-        // Handle duplicate key error (user already in battle)
+        // Handle duplicate key error (user already in battle) - this is OK, just proceed
         if (insertError.code === '23505') {
-          toast.error('Tu fais déjà partie de cette partie');
+          console.log('[Multiplayer] User already in battle, proceeding with existing record');
+          // User is already in this battle - this is fine, just continue
         } else {
+          console.error('[Multiplayer] Failed to join battle:', insertError);
           toast.error('Erreur de connexion. Réessaye.');
+          return { success: false };
         }
-        return { success: false };
       }
 
-      // Verify the INSERT actually worked (3G safety net)
+      // Verify the player exists in the battle (either just inserted or already there)
       const { data: verifyPlayer, error: verifyError } = await supabase
         .from('quiz_battle_players')
         .select('id')
@@ -325,12 +325,12 @@ export const useMultiplayerBattle = ({
         .single();
 
       if (verifyError || !verifyPlayer) {
-        console.error('[Multiplayer] Player insert verification failed:', verifyError);
+        console.error('[Multiplayer] Player verification failed:', verifyError);
         toast.error('Erreur de connexion. Réessaye.');
         return { success: false };
       }
 
-      console.log('[Multiplayer] Successfully joined battle, verified in DB');
+      console.log('[Multiplayer] Successfully joined/verified in battle');
 
       // Fetch host info
       await fetchOpponentInfo(battle.created_by);
