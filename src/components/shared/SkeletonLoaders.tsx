@@ -357,8 +357,53 @@ export const AnalyticsWidgetSkeleton = () => (
           <Skeleton className="h-8 w-32" />
         </div>
       </div>
+  </CardContent>
+</Card>
+);
+
+// Game Card Skeleton for Games Hub
+export const GameCardSkeleton = () => (
+  <Card className="overflow-hidden border-2 border-transparent">
+    <CardContent className="p-0">
+      <div className="bg-muted/10 p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <Skeleton className="w-[72px] h-[72px] rounded-2xl self-start flex-shrink-0" />
+          <div className="flex-1 space-y-3">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-4 w-full max-w-md" />
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-6 w-20 rounded-full" />
+              <Skeleton className="h-6 w-24 rounded-full" />
+              <Skeleton className="h-6 w-20 rounded-full" />
+            </div>
+            <Skeleton className="h-10 w-24" />
+          </div>
+        </div>
+      </div>
     </CardContent>
   </Card>
+);
+
+// Games Hub Full Page Skeleton
+export const GamesHubSkeleton = () => (
+  <div className="space-y-4 md:space-y-6">
+    <GameCardSkeleton />
+    <GameCardSkeleton />
+    {/* Stats skeleton */}
+    <Card className="bg-muted/30">
+      <CardContent className="p-4">
+        <div className="grid grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="text-center">
+              <Skeleton className="w-6 h-6 mx-auto mb-1 rounded" />
+              <Skeleton className="h-5 w-8 mx-auto mb-1" />
+              <Skeleton className="h-3 w-16 mx-auto" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  </div>
 );
 
 export default {
@@ -385,4 +430,6 @@ export default {
   MatieresGridSkeleton,
   DashboardFullSkeleton,
   AnalyticsWidgetSkeleton,
+  GameCardSkeleton,
+  GamesHubSkeleton,
 };
