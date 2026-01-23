@@ -67,7 +67,7 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
     // Curated classical music for studying - all with valid thumbnails
     const curatedTracks: PlaylistTrack[] = [
       // User Requested
-      { id: "pxrNYPc0GmQ", title: "Musique pour Étudier", thumbnail: "https://i.ytimg.com/vi/pxrNYPc0GmQ/hqdefault.jpg" },
+      { id: "ViKbB7vbK7Q", title: "Lofi Hip Hop Radio", thumbnail: "https://i.ytimg.com/vi/ViKbB7vbK7Q/hqdefault.jpg" },
       
       // Special Relaxation Music
       { id: "45Siu4EtXzE", title: "Musique Relaxante pour Étudier - Concentration", thumbnail: "https://i.ytimg.com/vi/45Siu4EtXzE/hqdefault.jpg" },
