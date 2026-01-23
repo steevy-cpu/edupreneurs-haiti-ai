@@ -32,6 +32,8 @@ export default function SignupForm() {
     promoGrantsFreeAccess,
     setPromoGrantsFreeAccess,
     promoNetworkError,
+    promoValidationAttempted,
+    setPromoValidationAttempted,
     handleInputFocus,
     isValidNicknameFormat,
     passwordValidation,
@@ -618,9 +620,10 @@ export default function SignupForm() {
                   const code = e.target.value;
                   setPromoCode(code);
                   // Reset validation state when user types
-                  if (promoCodeValid) {
+                  if (promoCodeValid || promoValidationAttempted) {
                     setPromoCodeValid(false);
                     setPromoGrantsFreeAccess(false);
+                    setPromoValidationAttempted(false);
                   }
                 }}
                 onFocus={handleInputFocus}
@@ -642,7 +645,7 @@ export default function SignupForm() {
                 )}
               </Button>
             </div>
-            {promoCode && promoCode.trim().length >= 3 && !isValidatingPromo && (
+            {promoCode && promoCode.trim().length >= 3 && !isValidatingPromo && promoValidationAttempted && (
               <>
                 {promoNetworkError ? (
                   <div className="flex items-center gap-2 flex-wrap">
@@ -661,7 +664,11 @@ export default function SignupForm() {
                   <p className="text-xs text-success">
                     ✓ Code valide ! Vous pouvez créer votre compte.
                   </p>
-                ) : null}
+                ) : (
+                  <p className="text-xs text-destructive">
+                    ✗ Code invalide ou expiré
+                  </p>
+                )}
               </>
             )}
             {!promoCode && (
