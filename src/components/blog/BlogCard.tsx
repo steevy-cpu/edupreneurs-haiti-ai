@@ -1,9 +1,7 @@
 import { Link } from "react-router-dom";
-import { Calendar, ArrowRight } from "lucide-react";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ArrowRight, Clock } from "lucide-react";
 import { BlogPost } from "@/hooks/useBlogPosts";
-import { formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 interface BlogCardProps {
@@ -12,76 +10,73 @@ interface BlogCardProps {
 }
 
 export function BlogCard({ post, featured = false }: BlogCardProps) {
-  const authorName = post.author?.display_name || "Équipe EDUPRENEURS";
-  const authorInitials = authorName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-
+  // Format date as "23 janvier 2026"
   const formattedDate = post.published_at
-    ? formatDistanceToNow(new Date(post.published_at), { addSuffix: true, locale: fr })
-    : formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: fr });
+    ? format(new Date(post.published_at), "d MMMM yyyy", { locale: fr })
+    : format(new Date(post.created_at), "d MMMM yyyy", { locale: fr });
+
+  // Estimate reading time (2-5 min based on excerpt length, or default 3)
+  const readingTime = post.excerpt 
+    ? Math.max(2, Math.min(5, Math.ceil(post.excerpt.length / 150))) 
+    : 3;
+
+  // Fallback gradient for posts without cover image
+  const hasCoverImage = !!post.cover_image_url;
 
   return (
-    <Link to={`/blog/${post.slug}`} className="group block h-full">
-      <Card className={`h-full overflow-hidden border-border/60 hover:border-border hover:shadow-md transition-all duration-300 ease-out hover:scale-[1.01] ${featured ? "md:flex" : ""}`}>
-        {/* Cover Image */}
-        {post.cover_image_url && (
-          <div className={`relative overflow-hidden ${featured ? "md:w-2/5 md:flex-shrink-0" : "aspect-video"}`}>
-            <img
-              src={post.cover_image_url}
-              alt={post.title}
-              className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02]"
-              loading="lazy"
-            />
-          </div>
+    <Link to={`/blog/${post.slug}`} className="group block">
+      <article 
+        className={`relative overflow-hidden rounded-2xl ${
+          featured ? "aspect-[16/10]" : "aspect-[4/3]"
+        }`}
+      >
+        {/* Background Image or Gradient Fallback */}
+        {hasCoverImage ? (
+          <img
+            src={post.cover_image_url}
+            alt={post.title}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02]"
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-accent/60" />
         )}
 
-        <div className={`flex flex-col ${featured ? "md:w-3/5" : ""}`}>
-          <CardContent className="flex-1 p-4 md:p-5">
-            {/* Meta Info */}
-            <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground">
-              <Calendar className="h-3.5 w-3.5" />
-              <span>{formattedDate}</span>
-            </div>
+        {/* Gradient Overlay for Text Readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-            {/* Title */}
-            <h3 className={`font-semibold text-foreground group-hover:text-primary transition-colors duration-300 ease-out line-clamp-2 ${featured ? "text-xl mb-3" : "text-base mb-2"}`}>
+        {/* Content Overlay */}
+        <div className="absolute inset-0 p-5 md:p-6 flex flex-col justify-between">
+          {/* Top: Meta Info */}
+          <div className="flex items-center gap-3 text-white/80 text-sm">
+            <span className="px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-sm text-xs font-medium">
+              Blog
+            </span>
+            <span>{formattedDate}</span>
+            <span className="flex items-center gap-1">
+              <Clock className="h-3.5 w-3.5" />
+              {readingTime} min
+            </span>
+          </div>
+
+          {/* Bottom: Title + CTA */}
+          <div className="space-y-4">
+            <h3 className={`font-bold text-white line-clamp-3 leading-tight ${
+              featured ? "text-2xl md:text-3xl" : "text-xl md:text-2xl"
+            }`}>
               {post.title}
             </h3>
-
-            {/* Excerpt */}
-            {post.excerpt && (
-              <p className={`text-muted-foreground line-clamp-2 leading-relaxed ${featured ? "text-sm" : "text-sm"}`}>
-                {post.excerpt}
-              </p>
-            )}
-          </CardContent>
-
-          <CardFooter className="px-4 md:px-5 pb-4 md:pb-5 pt-0">
-            <div className="flex items-center justify-between w-full">
-              {/* Author */}
-              <div className="flex items-center gap-2">
-                <Avatar className="h-7 w-7">
-                  <AvatarImage src={post.author?.avatar_url || undefined} alt={authorName} />
-                  <AvatarFallback className="text-xs bg-muted text-muted-foreground">
-                    {authorInitials}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm text-muted-foreground">{authorName}</span>
-              </div>
-
-              {/* Read More */}
-              <div className="flex items-center gap-1 text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out">
-                <span>Lire</span>
-                <ArrowRight className="h-4 w-4" />
-              </div>
+            
+            <div 
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-foreground font-medium rounded-full text-sm transition-transform duration-300 ease-out group-hover:scale-[1.02]"
+            >
+              Lire l'article
+              <ArrowRight className="h-4 w-4" />
             </div>
-          </CardFooter>
+          </div>
         </div>
-      </Card>
+      </article>
     </Link>
   );
 }

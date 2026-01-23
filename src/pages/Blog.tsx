@@ -71,16 +71,14 @@ export default function Blog() {
         {/* Blog Posts Grid */}
         <main className="container max-w-screen-xl mx-auto px-4 py-8 md:py-12">
           {isLoading ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="space-y-3">
-                  <Skeleton className="aspect-video w-full rounded-lg" />
-                  <Skeleton className="h-4 w-2/3" />
-                  <Skeleton className="h-6 w-full" />
-                  <Skeleton className="h-4 w-full" />
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="h-8 w-8 rounded-full" />
-                    <Skeleton className="h-4 w-24" />
+            <div className="grid gap-6 md:grid-cols-2">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="relative aspect-[4/3] rounded-2xl bg-muted animate-pulse overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <div className="absolute bottom-6 left-6 right-6 space-y-3">
+                    <Skeleton className="h-4 w-24 bg-white/20" />
+                    <Skeleton className="h-8 w-3/4 bg-white/20" />
+                    <Skeleton className="h-10 w-32 rounded-full bg-white/20" />
                   </div>
                 </div>
               ))}
@@ -99,12 +97,12 @@ export default function Blog() {
               </Button>
             </div>
           ) : posts && posts.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2">
               {posts.map((post, index) => (
                 <BlogCard
                   key={post.id}
                   post={post}
-                  featured={index === 0 && posts.length > 2}
+                  featured={index === 0}
                 />
               ))}
             </div>
