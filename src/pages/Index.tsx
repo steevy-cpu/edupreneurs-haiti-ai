@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { supabase } from "@/integrations/supabase/client";
 import { ProgressiveImage } from "@/components/ProgressiveImage";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
+import { BlogSection } from "@/components/blog/BlogSection";
 
 // Static imports for critical above-the-fold images
 // Using original PNG files which have proper transparency
@@ -21,7 +22,7 @@ const ericThinkingPose = () => import("@/assets/eric-thinking-pose.png").then(m 
 const judeProfile = () => import("@/assets/jude-profile.jpeg").then(m => m.default);
 
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Menu, X, BookOpen, Trophy, MessageCircle, Newspaper, Users, GraduationCap, Heart, FileText, Mail, Phone, MapPin, PenLine, Bot, Calculator, Languages, FlaskConical, Globe, Laptop, Target, Smartphone, Coins, HelpCircle, CheckCircle, RefreshCw } from "lucide-react";
+import { Menu, X, BookOpen, Trophy, MessageCircle, Newspaper, Users, GraduationCap, Heart, FileText, Mail, Phone, MapPin, PenLine, Bot, Calculator, Languages, FlaskConical, Globe, Laptop, Target, Smartphone, Coins, HelpCircle, CheckCircle, RefreshCw, Rss } from "lucide-react";
 import { VisitorTypeSelector, VisitorBanner } from "@/components/visitor";
 
 // Lazy load chatbot for better initial page load
@@ -247,6 +248,11 @@ const Index = () => {
               Contact
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
             </a>
+            <Link to="/blog" className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group text-sm flex items-center gap-1">
+              <Rss className="h-3.5 w-3.5" />
+              Blog
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+            </Link>
           </nav>
 
           <div className="flex items-center gap-1 sm:gap-2 lg:gap-3">
@@ -280,6 +286,10 @@ const Index = () => {
               <a href="#about" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>À propos</a>
               <a href="#faq" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
               <a href="#contact" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Contact</a>
+              <Link to="/blog" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                <Rss className="h-4 w-4" />
+                Blog
+              </Link>
               <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-border">
                 <Link to="/auth?tab=login" onClick={() => setMobileMenuOpen(false)}>
                   <Button size="sm" variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground text-sm">
@@ -865,6 +875,27 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Blog Section */}
+      <section id="blog" className="py-12 md:py-20 px-4 bg-gradient-to-b from-background to-muted/30">
+        <div className="container mx-auto">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-sm font-semibold text-primary mb-4">
+              <Rss className="w-4 h-4" />
+              <span>Actualités & Conseils</span>
+            </div>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-black mb-4">
+              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                Notre Blog
+              </span>
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Découvrez nos articles sur l'éducation, des conseils d'apprentissage et les dernières nouvelles d'EDUPRENEURS.
+            </p>
+          </div>
+          <BlogSection limit={3} />
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="relative py-20 px-4 bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground text-center overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20"></div>
@@ -907,7 +938,7 @@ const Index = () => {
                 <li><a href="#accueil" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Accueil</a></li>
                 <li><a href="#comment-ca-marche" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Comment ça marche</a></li>
                 <li><a href="#courses" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Nos Cours</a></li>
-                <li><Link to="/dashboard" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Dashboard</Link></li>
+                <li><Link to="/blog" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Blog</Link></li>
               </ul>
             </div>
             

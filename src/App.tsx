@@ -77,6 +77,8 @@ const AdminPaymentsDemo = lazy(() => import("./pages/AdminPaymentsDemo"));
 const BaccExamsHub = lazy(() => import("./pages/BaccExamsHub"));
 const Library = lazy(() => import("./pages/Library"));
 const EbookReader = lazy(() => import("./pages/EbookReader"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
 
 // Loading component for suspense fallback
 const PageLoader = () => (
@@ -266,6 +268,8 @@ const App = () => (
             <Route path="/baccalaureat/:series/:subject" element={<BaccExamsHub />} />
             <Route path="/lecture" element={<Layout><Library /></Layout>} />
             <Route path="/lecture/:ebookId" element={<EbookReader />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
                 {/* Dynamic routes for content editor generated subjects - MUST be before catch-all */}
                 <Route path="/course/:slug" element={<DynamicCoursePage />} />
                 <Route path="/course/:slug/:lessonSlug" element={<DynamicLessonPage />} />

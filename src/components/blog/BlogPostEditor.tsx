@@ -1,5 +1,4 @@
 import { useEditor, EditorContent } from "@tiptap/react";
-import { BubbleMenu } from "@tiptap/extension-bubble-menu";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
@@ -278,35 +277,6 @@ export function BlogPostEditor({
         </Button>
       </div>
 
-      {/* Bubble Menu for selected text */}
-      {editor && (
-        <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
-          <div className="flex items-center gap-1 p-1 bg-popover border rounded-lg shadow-lg">
-            <Toggle
-              size="sm"
-              pressed={editor.isActive("bold")}
-              onPressedChange={() => editor.chain().focus().toggleBold().run()}
-            >
-              <Bold className="h-3 w-3" />
-            </Toggle>
-            <Toggle
-              size="sm"
-              pressed={editor.isActive("italic")}
-              onPressedChange={() => editor.chain().focus().toggleItalic().run()}
-            >
-              <Italic className="h-3 w-3" />
-            </Toggle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setLinkDialogOpen(true)}
-              className="h-7 px-2"
-            >
-              <LinkIcon className="h-3 w-3" />
-            </Button>
-          </div>
-        </BubbleMenu>
-      )}
 
       {/* Editor Content */}
       <EditorContent editor={editor} />
