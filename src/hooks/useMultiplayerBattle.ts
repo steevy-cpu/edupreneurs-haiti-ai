@@ -109,6 +109,11 @@ export const useMultiplayerBattle = ({
           setMyReady(player.is_ready);
         } else {
           setOpponentReady(player.is_ready);
+          // Handle missed INSERT: if we get UPDATE but don't have opponent info, fetch it
+          if (!opponent) {
+            await fetchOpponentInfo(player.user_id);
+            updatePhase('matched');
+          }
         }
       }
     },
@@ -291,13 +296,41 @@ export const useMultiplayerBattle = ({
       }
 
       // Join as second player
-      await supabase
+      const { error: insertError } = await supabase
         .from('quiz_battle_players')
         .insert({
           battle_id: battle.id,
           user_id: userId,
           is_ready: false,
         });
+
+      if (insertError) {
+        console.error('[Multiplayer] Failed to join battle:', insertError);
+        
+        // Handle duplicate key error (user already in battle)
+        if (insertError.code === '23505') {
+          toast.error('Tu fais déjà partie de cette partie');
+        } else {
+          toast.error('Erreur de connexion. Réessaye.');
+        }
+        return { success: false };
+      }
+
+      // Verify the INSERT actually worked (3G safety net)
+      const { data: verifyPlayer, error: verifyError } = await supabase
+        .from('quiz_battle_players')
+        .select('id')
+        .eq('battle_id', battle.id)
+        .eq('user_id', userId)
+        .single();
+
+      if (verifyError || !verifyPlayer) {
+        console.error('[Multiplayer] Player insert verification failed:', verifyError);
+        toast.error('Erreur de connexion. Réessaye.');
+        return { success: false };
+      }
+
+      console.log('[Multiplayer] Successfully joined battle, verified in DB');
 
       // Fetch host info
       await fetchOpponentInfo(battle.created_by);
@@ -507,16 +540,37 @@ export const useMultiplayerBattle = ({
     if (!battleId || !userId) return;
     
     try {
-      await supabase
+      const { error } = await supabase
         .from('quiz_battle_players')
         .update({ is_ready: true })
         .eq('battle_id', battleId)
         .eq('user_id', userId);
       
+      if (error) {
+        console.error('[Multiplayer] Error setting ready:', error);
+        toast.error('Erreur de connexion. Réessaye.');
+        return;
+      }
+      
+      // Verify the update worked (3G safety net)
+      const { data: verifyReady, error: verifyError } = await supabase
+        .from('quiz_battle_players')
+        .select('is_ready')
+        .eq('battle_id', battleId)
+        .eq('user_id', userId)
+        .single();
+      
+      if (verifyError || !verifyReady?.is_ready) {
+        console.error('[Multiplayer] Ready verification failed');
+        toast.error('Erreur de connexion. Réessaye.');
+        return;
+      }
+      
       setMyReady(true);
-      console.log('[Multiplayer] Set ready');
+      console.log('[Multiplayer] Set ready and verified');
     } catch (error) {
       console.error('Error setting ready:', error);
+      toast.error('Erreur de connexion. Réessaye.');
     }
   }, [battleId, userId]);
 
