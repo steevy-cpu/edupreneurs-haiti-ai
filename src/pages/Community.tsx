@@ -500,15 +500,31 @@ const Community = () => {
     // Helper function to get online users from presence state
     const getOnlineUsersFromPresence = () => {
       const allChannels = supabase.getChannels();
-      const onlineChannel = allChannels.find(ch => ch.topic === 'realtime:online-users');
+      // Look for the shared 'online-users' presence channel by name or topic
+      // Supabase topics are prefixed with 'realtime:' so check both formats
+      const onlineChannel = allChannels.find(ch => 
+        ch.topic === 'realtime:online-users' || 
+        (ch as any).name === 'online-users'
+      );
       
       if (onlineChannel) {
         const state = onlineChannel.presenceState();
         const userIds = new Set<string>([JUDE_USER_ID]); // Jude is always online
-        Object.values(state).forEach((presences: any) => {
-          presences.forEach((p: any) => {
-            if (p.user_id) userIds.add(p.user_id);
-          });
+        
+        // Iterate through all presence keys and extract user_ids
+        Object.entries(state).forEach(([key, presences]: [string, any]) => {
+          // The key itself is the user_id (from Layout's presence key config)
+          if (key && key !== JUDE_USER_ID) {
+            userIds.add(key);
+          }
+          // Also check inside presence data for user_id field
+          if (Array.isArray(presences)) {
+            presences.forEach((p: any) => {
+              if (p.user_id && p.user_id !== JUDE_USER_ID) {
+                userIds.add(p.user_id);
+              }
+            });
+          }
         });
         return userIds;
       }
