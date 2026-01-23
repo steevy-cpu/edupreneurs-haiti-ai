@@ -159,11 +159,11 @@ export function BlogPostForm({ post, onSubmit, isSubmitting }: BlogPostFormProps
         <div className="space-y-2">
           <label className="text-sm font-medium">Image de couverture</label>
           {coverImage ? (
-            <div className="relative aspect-video max-w-2xl rounded-lg overflow-hidden border">
+            <div className="relative max-w-2xl rounded-lg overflow-hidden border bg-muted/30">
               <img
                 src={coverImage}
                 alt="Cover"
-                className="w-full h-full object-cover"
+                className="w-full h-auto object-contain max-h-80"
               />
               <Button
                 type="button"
