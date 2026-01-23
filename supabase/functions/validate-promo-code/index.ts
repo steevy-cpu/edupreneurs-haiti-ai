@@ -1,26 +1,17 @@
 /**
- * Security-Hardened: Validate Promo Code
+ * Validate Promo Code
  * 
- * Server-side promo code validation to replace hardcoded frontend values.
+ * Server-side promo code validation for signup flow.
  * 
  * Features:
- * - Rate limiting (relaxed for signup flow)
  * - Input validation
- * - Database lookup with usage tracking
+ * - Database lookup (without incrementing usage - that happens at signup)
+ * - No rate limiting (single call per validation)
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { checkRateLimit, getClientIp, rateLimitResponse } from "../_shared/rateLimiter.ts";
 import { validateInput, promoCodeSchema, validationErrorResponse } from "../_shared/validation.ts";
 import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
-
-// Custom rate limit for promo code validation - more lenient for signup UX
-const PROMO_CODE_RATE_LIMIT = {
-  windowMs: 60 * 1000,      // 1 minute
-  maxRequests: 30,          // Auth users: 30 req/min
-  maxAnonRequests: 25,      // Anon: 25 req/min (allows typing without blocking)
-  keyPrefix: 'promo_code'
-};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -34,16 +25,6 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
-
-    // Get client IP for rate limiting
-    const clientIp = getClientIp(req);
-
-    // Check rate limit with relaxed promo code limits
-    const rateCheck = await checkRateLimit(supabase, PROMO_CODE_RATE_LIMIT, null, clientIp);
-    if (!rateCheck.allowed) {
-      console.warn(`Rate limit exceeded for promo code validation from IP: ${clientIp}`);
-      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
-    }
 
     // Parse and validate input
     const rawBody = await req.json();
@@ -97,12 +78,8 @@ serve(async (req) => {
       );
     }
 
-    // Valid promo code - increment usage counter
-    await supabase
-      .from('promo_codes')
-      .update({ current_uses: promoCode.current_uses + 1 })
-      .eq('id', promoCode.id);
-
+    // Valid promo code - DO NOT increment usage here
+    // Usage is tracked in profiles.promo_code_used during signup
     console.log('Promo code validated:', code, 'Gold reward:', promoCode.gold_reward);
 
     return new Response(

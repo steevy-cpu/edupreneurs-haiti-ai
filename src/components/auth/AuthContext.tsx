@@ -66,7 +66,6 @@ export interface AuthContextType {
   promoGrantsFreeAccess: boolean;
   promoNetworkError: boolean;
   setPromoNetworkError: (error: boolean) => void;
-  promoRateLimitSeconds: number;
   setPromoGrantsFreeAccess: (grants: boolean) => void;
   
   // Verification state
@@ -99,7 +98,6 @@ export interface AuthContextType {
   
   // Helper refs
   nicknameCheckTimer: React.MutableRefObject<NodeJS.Timeout | undefined>;
-  promoCodeCheckTimer: React.MutableRefObject<NodeJS.Timeout | undefined>;
   otpInputRefs: React.MutableRefObject<(HTMLInputElement | null)[]>;
   
   // Utility functions
@@ -112,8 +110,7 @@ export interface AuthContextType {
   };
   validatePromoCode: (code: string) => Promise<{ valid: boolean; goldReward?: number; grantsFreeAccess?: boolean; networkError?: boolean }>;
   checkNicknameAvailability: (nickname: string) => void;
-  debouncedValidatePromoCode: (code: string) => void;
-  retryPromoValidation: () => void;
+  handlePromoCodeValidation: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -152,15 +149,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(null);
   const [checkingNickname, setCheckingNickname] = useState(false);
   
-  // Promo code state
+  // Promo code state (simplified - no rate limiting)
   const [promoCode, setPromoCode] = useState("");
   const [promoCodeValid, setPromoCodeValid] = useState(false);
   const [showPromoInput, setShowPromoInput] = useState(false);
   const [isValidatingPromo, setIsValidatingPromo] = useState(false);
   const [promoGrantsFreeAccess, setPromoGrantsFreeAccess] = useState(false);
   const [promoNetworkError, setPromoNetworkError] = useState(false);
-  const [promoRateLimitSeconds, setPromoRateLimitSeconds] = useState(0);
-  const rateLimitTimerRef = useRef<NodeJS.Timeout>();
   
   // Verification state
   const [verificationCode, setVerificationCode] = useState("");
@@ -182,7 +177,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   // Refs
   const nicknameCheckTimer = useRef<NodeJS.Timeout>();
-  const promoCodeCheckTimer = useRef<NodeJS.Timeout>();
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   
   // Helper function to validate nickname format
@@ -206,96 +200,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     }, 100);
   }, []);
-  
-  // Start rate limit countdown
-  const startRateLimitCountdown = useCallback((seconds: number) => {
-    setPromoRateLimitSeconds(seconds);
-    if (rateLimitTimerRef.current) {
-      clearInterval(rateLimitTimerRef.current);
-    }
-    rateLimitTimerRef.current = setInterval(() => {
-      setPromoRateLimitSeconds(prev => {
-        if (prev <= 1) {
-          clearInterval(rateLimitTimerRef.current);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }, []);
 
-  // Validate promo code with server (with retry logic for network errors)
-  const validatePromoCode = async (code: string, retries = 1): Promise<{ valid: boolean; goldReward?: number; grantsFreeAccess?: boolean; networkError?: boolean; rateLimited?: boolean }> => {
-    if (!code.trim()) return { valid: false, networkError: false };
-    
-    // Don't make requests while rate limited
-    if (promoRateLimitSeconds > 0) {
-      return { valid: false, networkError: false, rateLimited: true };
+  // Validate promo code with server (simplified - no rate limiting)
+  const validatePromoCode = useCallback(async (code: string): Promise<{ valid: boolean; goldReward?: number; grantsFreeAccess?: boolean; networkError?: boolean }> => {
+    if (!code.trim() || code.trim().length < 3) {
+      return { valid: false, networkError: false };
     }
     
     setIsValidatingPromo(true);
+    setPromoNetworkError(false);
     
-    for (let attempt = 0; attempt <= retries; attempt++) {
-      try {
-        const { data, error } = await supabase.functions.invoke('validate-promo-code', {
-          body: { code: code.trim() }
-        });
-        
-        if (error) {
-          console.error(`Promo code validation error (attempt ${attempt + 1}):`, error);
-          
-          // Check for rate limit error (429)
-          if (error.message?.includes('429') || error.message?.includes('rate') || error.message?.includes('Limite')) {
-            const retryAfter = 60; // Default to 60 seconds
-            startRateLimitCountdown(retryAfter);
-            return { valid: false, networkError: false, rateLimited: true };
-          }
-          
-          // Check if it's a network error
-          if (error.message?.includes('fetch') || error.message?.includes('network') || error.message?.includes('Failed')) {
-            if (attempt < retries) {
-              await new Promise(resolve => setTimeout(resolve, 500));
-              continue;
-            }
-            return { valid: false, networkError: true };
-          }
-          return { valid: false, networkError: false };
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-promo-code', {
+        body: { code: code.trim() }
+      });
+      
+      if (error) {
+        console.error('Promo code validation error:', error);
+        // Check if it's a network error
+        if (error.message?.includes('fetch') || error.message?.includes('network') || error.message?.includes('Failed')) {
+          return { valid: false, networkError: true };
         }
-        
-        // Check if response indicates rate limit
-        if (data?.error?.includes('Limite') || data?.retryAfter) {
-          const retryAfter = data.retryAfter || 60;
-          startRateLimitCountdown(retryAfter);
-          return { valid: false, networkError: false, rateLimited: true };
-        }
-        
-        return { 
-          valid: data.valid, 
-          goldReward: data.goldReward, 
-          grantsFreeAccess: data.grantsFreeAccess,
-          networkError: false,
-          rateLimited: false
-        };
-      } catch (error: any) {
-        console.error(`Promo code validation failed (attempt ${attempt + 1}):`, error);
-        
-        // Check for 429 in catch block
-        if (error?.status === 429 || error?.message?.includes('429')) {
-          startRateLimitCountdown(60);
-          return { valid: false, networkError: false, rateLimited: true };
-        }
-        
-        if (attempt < retries) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-          continue;
-        }
-        return { valid: false, networkError: true };
+        return { valid: false, networkError: false };
       }
+      
+      return { 
+        valid: data.valid, 
+        goldReward: data.goldReward, 
+        grantsFreeAccess: data.grantsFreeAccess,
+        networkError: false
+      };
+    } catch (error: any) {
+      console.error('Promo code validation failed:', error);
+      return { valid: false, networkError: true };
+    } finally {
+      setIsValidatingPromo(false);
     }
+  }, []);
+  
+  // Manual promo code validation handler (called on button click)
+  const handlePromoCodeValidation = useCallback(async () => {
+    const result = await validatePromoCode(promoCode);
     
-    setIsValidatingPromo(false);
-    return { valid: false, networkError: true };
-  };
+    setPromoCodeValid(result.valid);
+    setPromoGrantsFreeAccess(result.grantsFreeAccess || false);
+    setPromoNetworkError(result.networkError || false);
+    
+    if (result.valid) {
+      setSignupData(prev => ({ ...prev, payment: 'promo_code' }));
+    } else {
+      setSignupData(prev => prev.payment === 'promo_code' ? { ...prev, payment: '' } : prev);
+    }
+  }, [promoCode, validatePromoCode]);
   
   // Check nickname availability
   const checkNicknameAvailability = (nickname: string) => {
@@ -334,78 +290,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }, 500);
   };
-  
-  // Debounced promo code validation
-  const debouncedValidatePromoCode = useCallback((code: string) => {
-    if (promoCodeCheckTimer.current) {
-      clearTimeout(promoCodeCheckTimer.current);
-    }
-
-    // Reset network error on new input
-    setPromoNetworkError(false);
-
-    // Don't validate while rate limited
-    if (promoRateLimitSeconds > 0) {
-      return;
-    }
-
-    if (!code.trim() || code.trim().length < 3) {
-      setPromoCodeValid(false);
-      setPromoGrantsFreeAccess(false);
-      setSignupData(prev => prev.payment === 'promo_code' ? { ...prev, payment: '' } : prev);
-      return;
-    }
-
-    setIsValidatingPromo(true);
-
-    // Increase debounce to 800ms to reduce rate limit hits
-    promoCodeCheckTimer.current = setTimeout(async () => {
-      const result = await validatePromoCode(code);
-      
-      // Don't update state if rate limited (will retry automatically when countdown ends)
-      if (result.rateLimited) {
-        setIsValidatingPromo(false);
-        return;
-      }
-      
-      setPromoCodeValid(result.valid);
-      setPromoGrantsFreeAccess(result.grantsFreeAccess || false);
-      setPromoNetworkError(result.networkError || false);
-      if (result.valid) {
-        setSignupData(prev => ({ ...prev, payment: 'promo_code' }));
-      } else {
-        setSignupData(prev => prev.payment === 'promo_code' ? { ...prev, payment: '' } : prev);
-      }
-      setIsValidatingPromo(false);
-    }, 800); // Increased to 800ms to reduce rate limit hits
-  }, [promoRateLimitSeconds]);
-
-  // Retry promo validation (for manual retry button)
-  const retryPromoValidation = useCallback(() => {
-    if (promoCode.trim().length >= 3 && promoRateLimitSeconds === 0) {
-      setPromoNetworkError(false);
-      debouncedValidatePromoCode(promoCode);
-    }
-  }, [promoCode, promoRateLimitSeconds, debouncedValidatePromoCode]);
-
-  // Auto-retry promo validation when rate limit expires
-  const prevRateLimitRef = useRef(promoRateLimitSeconds);
-  useEffect(() => {
-    // If rate limit just expired (was > 0, now is 0) and there's a pending code
-    if (prevRateLimitRef.current > 0 && promoRateLimitSeconds === 0 && promoCode.trim().length >= 3) {
-      debouncedValidatePromoCode(promoCode);
-    }
-    prevRateLimitRef.current = promoRateLimitSeconds;
-  }, [promoRateLimitSeconds, promoCode, debouncedValidatePromoCode]);
-
-  // Cleanup rate limit timer on unmount
-  useEffect(() => {
-    return () => {
-      if (rateLimitTimerRef.current) {
-        clearInterval(rateLimitTimerRef.current);
-      }
-    };
-  }, []);
   
   // Countdown timer for resend cooldown
   useEffect(() => {
@@ -537,7 +421,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPromoGrantsFreeAccess,
     promoNetworkError,
     setPromoNetworkError,
-    promoRateLimitSeconds,
     verificationCode,
     setVerificationCode,
     pendingUserId,
@@ -559,15 +442,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     showVisitorSelector,
     setShowVisitorSelector,
     nicknameCheckTimer,
-    promoCodeCheckTimer,
     otpInputRefs,
     handleInputFocus,
     isValidNicknameFormat,
     passwordValidation,
     validatePromoCode,
     checkNicknameAvailability,
-    debouncedValidatePromoCode,
-    retryPromoValidation,
+    handlePromoCodeValidation,
   };
   
   return (
