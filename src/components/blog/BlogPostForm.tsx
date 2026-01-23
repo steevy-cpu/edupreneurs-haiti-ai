@@ -251,13 +251,13 @@ export function BlogPostForm({ post, onSubmit, isSubmitting }: BlogPostFormProps
           render={({ field }) => (
             <FormItem>
               <FormLabel>Auteur</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value || ""}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Sélectionner un auteur" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
+                <SelectContent className="bg-background border border-border shadow-lg z-50">
                   {authors?.map((author) => (
                     <SelectItem key={author.id} value={author.id}>
                       {author.display_name} - {author.role}
