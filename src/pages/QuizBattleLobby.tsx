@@ -112,14 +112,14 @@ const QuizBattleLobby = () => {
     checkAuth();
   }, [navigate]);
 
-  // Multiplayer hook
+  // Multiplayer hook - enable subscription earlier for join-code step to catch INSERT events
   const multiplayer = useMultiplayerBattle({
     mode,
     userId: userId || '',
     gradeLevel: selectedGrade || '',
     subjectId: selectedSubject || '',
     difficulty: selectedDifficulty,
-    enabled: !!userId && !!selectedSubject && step === 'waiting',
+    enabled: !!userId && (step === 'waiting' || step === 'join-code'),
   });
 
   // Sounds hook for lobby music
