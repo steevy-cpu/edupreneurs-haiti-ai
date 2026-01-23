@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { Users, AlertTriangle, BarChart3, CreditCard, Megaphone, BookOpen } from "lucide-react";
+import { Users, AlertTriangle, BarChart3, CreditCard, Megaphone, BookOpen, Newspaper } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ControlCenterModule } from "./types";
 
@@ -76,5 +76,18 @@ export const CONTROL_CENTER_MODULES: ControlCenterModule[] = [
       return count || 0;
     },
   },
-  // 🔥 ADD NEW MODULES HERE - Just add to this array!
+  {
+    id: "blog",
+    label: "Blog",
+    shortLabel: "Blog",
+    icon: Newspaper,
+    component: lazy(() => import("./modules/BlogModule")),
+    badge: async () => {
+      const { count } = await supabase
+        .from("blog_posts")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "draft");
+      return count || 0;
+    },
+  },
 ];
