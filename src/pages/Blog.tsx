@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BlogCard } from "@/components/blog/BlogCard";
 import { usePublishedBlogPosts } from "@/hooks/useBlogPosts";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Footer } from "@/components/Footer";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 
 export default function Blog() {
@@ -131,28 +132,8 @@ export default function Blog() {
           )}
         </main>
 
-        {/* Footer CTA - Clean, no excessive gradients */}
-        {posts && posts.length > 0 && (
-          <section className="py-12 px-4 bg-muted/20 border-t border-border/40">
-            <div className="container max-w-screen-xl mx-auto text-center">
-              <h2 className="text-xl font-bold mb-3 text-foreground">
-                Prêt à commencer ?
-              </h2>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                Rejoignez les étudiants haïtiens qui utilisent EDUPRENEURS
-                pour réussir leurs études.
-              </p>
-              <Link to="/auth">
-                <Button 
-                  size="lg" 
-                  className="hover:scale-[1.02] transition-transform duration-300 ease-out"
-                >
-                  Créer un compte gratuit
-                </Button>
-              </Link>
-            </div>
-          </section>
-        )}
+        {/* Footer */}
+        <Footer />
       </div>
     </>
   );
