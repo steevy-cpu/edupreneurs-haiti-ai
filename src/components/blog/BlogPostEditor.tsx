@@ -30,6 +30,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -331,6 +332,7 @@ export function BlogPostEditor({
         <DialogContent className="z-[1200]">
           <DialogHeader>
             <DialogTitle>Ajouter un lien</DialogTitle>
+            <DialogDescription>Entrez l'URL du lien à insérer dans l'article.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -357,6 +359,7 @@ export function BlogPostEditor({
         <DialogContent className="z-[1200]">
           <DialogHeader>
             <DialogTitle>Ajouter une image</DialogTitle>
+            <DialogDescription>Entrez l'URL de l'image et optionnellement ses dimensions.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -413,6 +416,7 @@ export function BlogPostEditor({
         <DialogContent className="z-[1200]">
           <DialogHeader>
             <DialogTitle>Ajouter une vidéo YouTube</DialogTitle>
+            <DialogDescription>Collez le lien YouTube de la vidéo à intégrer.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
