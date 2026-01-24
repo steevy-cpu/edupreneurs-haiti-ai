@@ -340,10 +340,13 @@ export type Database = {
           good_moves: number | null
           id: string
           inaccuracies: number | null
+          is_multiplayer: boolean | null
+          match_id: string | null
           mistakes: number | null
           move_history: Json | null
           moves_count: number
           opening_name: string | null
+          opponent_id: string | null
           opponent_type: string
           result: string
           started_at: string
@@ -363,10 +366,13 @@ export type Database = {
           good_moves?: number | null
           id?: string
           inaccuracies?: number | null
+          is_multiplayer?: boolean | null
+          match_id?: string | null
           mistakes?: number | null
           move_history?: Json | null
           moves_count?: number
           opening_name?: string | null
+          opponent_id?: string | null
           opponent_type?: string
           result: string
           started_at?: string
@@ -386,16 +392,137 @@ export type Database = {
           good_moves?: number | null
           id?: string
           inaccuracies?: number | null
+          is_multiplayer?: boolean | null
+          match_id?: string | null
           mistakes?: number | null
           move_history?: Json | null
           moves_count?: number
           opening_name?: string | null
+          opponent_id?: string | null
           opponent_type?: string
           result?: string
           started_at?: string
           time_control?: string | null
           total_time_seconds?: number | null
           user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chess_games_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "chess_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chess_match_chat: {
+        Row: {
+          created_at: string
+          id: string
+          match_id: string
+          message: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_id: string
+          message: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_id?: string
+          message?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chess_match_chat_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "chess_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chess_matches: {
+        Row: {
+          black_player_id: string | null
+          black_time_remaining: number | null
+          created_at: string
+          created_by: string
+          current_fen: string
+          current_turn: string
+          difficulty: string | null
+          ended_at: string | null
+          id: string
+          invite_code: string | null
+          is_public: boolean
+          last_move_at: string | null
+          move_history: Json
+          result: string | null
+          result_reason: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["chess_match_status"]
+          time_control: string
+          time_per_player: number | null
+          updated_at: string
+          white_player_id: string
+          white_time_remaining: number | null
+          winner_id: string | null
+        }
+        Insert: {
+          black_player_id?: string | null
+          black_time_remaining?: number | null
+          created_at?: string
+          created_by: string
+          current_fen?: string
+          current_turn?: string
+          difficulty?: string | null
+          ended_at?: string | null
+          id?: string
+          invite_code?: string | null
+          is_public?: boolean
+          last_move_at?: string | null
+          move_history?: Json
+          result?: string | null
+          result_reason?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["chess_match_status"]
+          time_control?: string
+          time_per_player?: number | null
+          updated_at?: string
+          white_player_id: string
+          white_time_remaining?: number | null
+          winner_id?: string | null
+        }
+        Update: {
+          black_player_id?: string | null
+          black_time_remaining?: number | null
+          created_at?: string
+          created_by?: string
+          current_fen?: string
+          current_turn?: string
+          difficulty?: string | null
+          ended_at?: string | null
+          id?: string
+          invite_code?: string | null
+          is_public?: boolean
+          last_move_at?: string | null
+          move_history?: Json
+          result?: string | null
+          result_reason?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["chess_match_status"]
+          time_control?: string
+          time_per_player?: number | null
+          updated_at?: string
+          white_player_id?: string
+          white_time_remaining?: number | null
+          winner_id?: string | null
         }
         Relationships: []
       }
@@ -3512,7 +3639,17 @@ export type Database = {
         Args: { p_avatar_url?: string; p_description?: string; p_name: string }
         Returns: string
       }
+      end_chess_match: {
+        Args: {
+          p_match_id: string
+          p_result: string
+          p_result_reason: string
+          p_winner_id: string
+        }
+        Returns: Json
+      }
       generate_blog_slug: { Args: { title: string }; Returns: string }
+      generate_chess_invite_code: { Args: never; Returns: string }
       generate_invite_code: { Args: never; Returns: string }
       generate_password_reset_token: {
         Args: { user_email: string }
@@ -3561,6 +3698,10 @@ export type Database = {
         Args: { battle_uuid: string; user_uuid: string }
         Returns: boolean
       }
+      is_chess_match_participant: {
+        Args: { match_uuid: string; user_uuid: string }
+        Returns: boolean
+      }
       is_content_editor: {
         Args: {
           _min_role?: Database["public"]["Enums"]["content_editor_role"]
@@ -3584,6 +3725,10 @@ export type Database = {
         Returns: boolean
       }
       is_jude_post: { Args: { _user_id: string }; Returns: boolean }
+      join_chess_match: {
+        Args: { p_match_id: string; p_user_id: string }
+        Returns: Json
+      }
       level_from_xp: { Args: { xp: number }; Returns: number }
       notify_group_deletion: {
         Args: {
@@ -3606,6 +3751,17 @@ export type Database = {
       start_direct_conversation: {
         Args: { other_user_id: string }
         Returns: string
+      }
+      submit_chess_move: {
+        Args: {
+          p_from_square: string
+          p_match_id: string
+          p_new_fen: string
+          p_promotion?: string
+          p_to_square: string
+          p_user_id: string
+        }
+        Returns: Json
       }
       submit_multiplayer_answer: {
         Args: {
@@ -3633,6 +3789,12 @@ export type Database = {
       xp_for_level: { Args: { lvl: number }; Returns: number }
     }
     Enums: {
+      chess_match_status:
+        | "waiting"
+        | "playing"
+        | "completed"
+        | "cancelled"
+        | "abandoned"
       content_editor_role: "admin" | "editor" | "viewer"
       follow_status: "pending" | "accepted" | "rejected"
       quiz_battle_mode: "solo" | "friend" | "random"
@@ -3771,6 +3933,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      chess_match_status: [
+        "waiting",
+        "playing",
+        "completed",
+        "cancelled",
+        "abandoned",
+      ],
       content_editor_role: ["admin", "editor", "viewer"],
       follow_status: ["pending", "accepted", "rejected"],
       quiz_battle_mode: ["solo", "friend", "random"],
