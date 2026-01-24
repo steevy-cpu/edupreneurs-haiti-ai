@@ -52,6 +52,10 @@ const ChessMultiplayerGame = () => {
   const [showChat, setShowChat] = useState(false);
   const [showResignDialog, setShowResignDialog] = useState(false);
   const [gameEnded, setGameEnded] = useState(false);
+  
+  // Timer state - local countdown for smooth display
+  const [localWhiteTime, setLocalWhiteTime] = useState<number | null>(null);
+  const [localBlackTime, setLocalBlackTime] = useState<number | null>(null);
 
   // Multiplayer hook
   const {
@@ -178,6 +182,58 @@ const ChessMultiplayerGame = () => {
       playSound('gameEnd');
     }
   }, [match?.status, gameEnded, playSound]);
+
+  // Sync local timers with server state
+  useEffect(() => {
+    if (match?.white_time_remaining !== undefined && match?.white_time_remaining !== null) {
+      setLocalWhiteTime(match.white_time_remaining);
+    }
+    if (match?.black_time_remaining !== undefined && match?.black_time_remaining !== null) {
+      setLocalBlackTime(match.black_time_remaining);
+    }
+  }, [match?.white_time_remaining, match?.black_time_remaining]);
+
+  // Timer countdown effect - decrements every second for the active player
+  useEffect(() => {
+    if (match?.status !== 'playing' || !match?.time_per_player || match?.time_control === 'untimed') return;
+    if (gameEnded) return;
+
+    const interval = setInterval(() => {
+      if (match.current_turn === 'w') {
+        setLocalWhiteTime(prev => prev !== null ? Math.max(0, prev - 1) : null);
+      } else {
+        setLocalBlackTime(prev => prev !== null ? Math.max(0, prev - 1) : null);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [match?.status, match?.current_turn, match?.time_per_player, match?.time_control, gameEnded]);
+
+  // Check for timeout - only the player whose time expired triggers the end
+  useEffect(() => {
+    if (gameEnded || match?.status !== 'playing') return;
+    
+    // If my time ran out, I lose
+    if (myColor === 'w' && localWhiteTime === 0) {
+      setGameEnded(true);
+      playSound('gameEnd');
+      endMatch(match?.black_player_id || null, 'black_wins', 'timeout');
+      toast({
+        title: 'Temps écoulé!',
+        description: 'Vous avez perdu au temps.',
+        variant: 'destructive',
+      });
+    } else if (myColor === 'b' && localBlackTime === 0) {
+      setGameEnded(true);
+      playSound('gameEnd');
+      endMatch(match?.white_player_id || null, 'white_wins', 'timeout');
+      toast({
+        title: 'Temps écoulé!',
+        description: 'Vous avez perdu au temps.',
+        variant: 'destructive',
+      });
+    }
+  }, [localWhiteTime, localBlackTime, myColor, gameEnded, match, endMatch, playSound, toast]);
 
   // Board orientation
   const boardOrientation = useMemo(() => {
@@ -410,10 +466,14 @@ const ChessMultiplayerGame = () => {
                   
                   {match.time_control !== 'untimed' && (
                     <div className={cn(
-                      "px-3 py-1 rounded-lg font-mono text-lg",
-                      match.current_turn !== myColor ? "bg-primary text-primary-foreground" : "bg-muted"
+                      "px-3 py-1 rounded-lg font-mono text-lg transition-colors",
+                      match.current_turn !== myColor ? "bg-primary text-primary-foreground" : "bg-muted",
+                      // Low time warning for opponent
+                      (myColor === 'w' ? localBlackTime : localWhiteTime) !== null &&
+                      (myColor === 'w' ? localBlackTime : localWhiteTime)! <= 30 && 
+                      match.current_turn !== myColor && "bg-destructive text-destructive-foreground animate-pulse"
                     )}>
-                      {formatTime(myColor === 'w' ? match.black_time_remaining : match.white_time_remaining)}
+                      {formatTime(myColor === 'w' ? localBlackTime : localWhiteTime)}
                     </div>
                   )}
                 </div>
@@ -494,10 +554,14 @@ const ChessMultiplayerGame = () => {
                   
                   {match.time_control !== 'untimed' && (
                     <div className={cn(
-                      "px-3 py-1 rounded-lg font-mono text-lg",
-                      match.current_turn === myColor ? "bg-primary text-primary-foreground" : "bg-muted"
+                      "px-3 py-1 rounded-lg font-mono text-lg transition-colors",
+                      match.current_turn === myColor ? "bg-primary text-primary-foreground" : "bg-muted",
+                      // Low time warning for me
+                      (myColor === 'w' ? localWhiteTime : localBlackTime) !== null &&
+                      (myColor === 'w' ? localWhiteTime : localBlackTime)! <= 30 && 
+                      match.current_turn === myColor && "bg-destructive text-destructive-foreground animate-pulse"
                     )}>
-                      {formatTime(myColor === 'w' ? match.white_time_remaining : match.black_time_remaining)}
+                      {formatTime(myColor === 'w' ? localWhiteTime : localBlackTime)}
                     </div>
                   )}
                 </div>

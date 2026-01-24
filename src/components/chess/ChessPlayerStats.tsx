@@ -21,7 +21,8 @@ import {
   XCircle,
   Minus,
   Lock,
-  UserPlus
+  UserPlus,
+  Users
 } from 'lucide-react';
 import { getEloLevel } from './ChessEloWidget';
 import type { PlayerStats, GameHistory, Achievement } from '@/hooks/useChessStats';
@@ -209,10 +210,22 @@ const ChessPlayerStats: React.FC<ChessPlayerStatsProps> = ({
                           {getResultIcon(game.result)}
                           <span className="font-medium">{getResultText(game.result)}</span>
                           <span className="text-muted-foreground text-xs">
-                            {getDifficultyEmoji(game.difficulty)} {game.moves_count} coups
+                            {game.is_multiplayer ? (
+                              <span className="flex items-center gap-1">
+                                <Users className="w-3 h-3" />
+                                vs {game.opponent_nickname || 'Joueur'}
+                              </span>
+                            ) : (
+                              <>{getDifficultyEmoji(game.difficulty)} {game.moves_count} coups</>
+                            )}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
+                          {game.is_multiplayer && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                              PvP
+                            </Badge>
+                          )}
                           <span className={`text-xs font-medium ${game.elo_change > 0 ? 'text-green-500' : game.elo_change < 0 ? 'text-red-500' : 'text-muted-foreground'}`}>
                             {game.elo_change > 0 ? '+' : ''}{game.elo_change}
                           </span>
