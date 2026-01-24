@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { isFounder } from "@/lib/founderConstants";
 import { Footer } from "@/components/Footer";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 // Estimate reading time (words per minute)
 function estimateReadingTime(content: string): number {
@@ -159,14 +160,17 @@ export default function BlogPost() {
                 </span>
               </Link>
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={handleShare}
-              className="hover:scale-[1.02] transition-transform duration-300 ease-out"
-            >
-              <Share2 className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleShare}
+                className="hover:scale-[1.02] transition-transform duration-300 ease-out"
+              >
+                <Share2 className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
         </header>
 
