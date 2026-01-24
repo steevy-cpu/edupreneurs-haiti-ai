@@ -12,8 +12,8 @@ const FOUNDER_USER_IDS = [
   '7580cd10-e18c-4b2f-ac50-def28d046c9d', // Djood
 ];
 
-// Sarah voice - clear French pronunciation
-const VOICE_ID = 'EXAVITQu4vr4xnSDxMaL';
+// Laura voice - better multilingual pronunciation including French
+const VOICE_ID = 'FGY2WhTYpPnrIDTdsKH5';
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
