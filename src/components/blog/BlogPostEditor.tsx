@@ -172,6 +172,7 @@ export function BlogPostEditor({
       <div className="flex flex-wrap items-center gap-1 p-2 border-b bg-muted/30">
         {/* Undo/Redo */}
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           onClick={() => editor.chain().focus().undo().run()}
@@ -181,6 +182,7 @@ export function BlogPostEditor({
           <Undo className="h-4 w-4" />
         </Button>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           onClick={() => editor.chain().focus().redo().run()}
@@ -282,6 +284,7 @@ export function BlogPostEditor({
 
         {/* Link */}
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           onClick={() => setLinkDialogOpen(true)}
@@ -292,6 +295,7 @@ export function BlogPostEditor({
 
         {/* Image */}
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           onClick={() => setImageDialogOpen(true)}
@@ -302,6 +306,7 @@ export function BlogPostEditor({
 
         {/* YouTube */}
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           onClick={() => setYoutubeDialogOpen(true)}
@@ -314,6 +319,7 @@ export function BlogPostEditor({
 
         {/* Horizontal Rule */}
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
