@@ -174,7 +174,7 @@ export default function BlogPost() {
         <article className="container max-w-screen-lg mx-auto px-4 py-8">
           {/* Cover Image */}
           {post.cover_image_url && (
-            <div className="aspect-video w-full rounded-xl overflow-hidden mb-8">
+            <div className="aspect-[4/3] md:aspect-[16/10] w-full rounded-xl overflow-hidden mb-8">
               <img
                 src={post.cover_image_url}
                 alt={post.title}
