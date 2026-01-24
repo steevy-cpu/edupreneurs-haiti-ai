@@ -14,13 +14,15 @@ import {
   Loader2,
   Crown,
   Trophy,
-  X
+  X,
+  RotateCcw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useChessMultiplayer, TimeControl } from '@/hooks/useChessMultiplayer';
 import { ChessMatchChat } from '@/components/chess/ChessMatchChat';
 import { useChessSounds } from '@/hooks/useChessSounds';
+import { PromotionDialog, PromotionPiece } from '@/components/chess/PromotionDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,6 +55,13 @@ const ChessMultiplayerGame = () => {
   const [showResignDialog, setShowResignDialog] = useState(false);
   const [gameEnded, setGameEnded] = useState(false);
   
+  // Promotion state
+  const [pendingPromotion, setPendingPromotion] = useState<{
+    from: Square;
+    to: Square;
+    gameCopy: Chess;
+  } | null>(null);
+  
   // Timer state - local countdown for smooth display
   const [localWhiteTime, setLocalWhiteTime] = useState<number | null>(null);
   const [localBlackTime, setLocalBlackTime] = useState<number | null>(null);
@@ -63,11 +72,14 @@ const ChessMultiplayerGame = () => {
     opponent,
     chatMessages,
     isLoading,
+    eloChanges,
     joinMatch,
     submitMove,
     endMatch,
     resignMatch,
     sendMessage,
+    requestRematch,
+    acceptRematch,
     isMyTurn,
     myColor,
     refreshMatch,
@@ -290,26 +302,51 @@ const ChessMultiplayerGame = () => {
     return true;
   }, [game, isMyTurn]);
 
+  // Check if a move is a pawn promotion
+  const isPromotionMove = useCallback((from: Square, to: Square): boolean => {
+    const piece = game.get(from);
+    if (!piece || piece.type !== 'p') return false;
+    
+    const targetRank = to[1];
+    return (piece.color === 'w' && targetRank === '8') || 
+           (piece.color === 'b' && targetRank === '1');
+  }, [game]);
+
   // Handle square click
   const onSquareClick = useCallback((square: Square) => {
     if (!isMyTurn) return;
 
     // If we already have a piece selected
     if (moveFrom) {
-      // Try to make the move
+      // Check if this is a promotion move
+      if (isPromotionMove(moveFrom, square)) {
+        const gameCopy = new Chess(game.fen());
+        // Validate move is legal (try with queen)
+        try {
+          const testMove = gameCopy.move({ from: moveFrom, to: square, promotion: 'q' });
+          if (testMove) {
+            // Valid promotion move - show dialog
+            setPendingPromotion({ from: moveFrom, to: square, gameCopy: new Chess(game.fen()) });
+            return;
+          }
+        } catch {
+          // Invalid move
+        }
+      }
+      
+      // Try to make the move (non-promotion)
       const gameCopy = new Chess(game.fen());
       
       try {
         const move = gameCopy.move({
           from: moveFrom,
           to: square,
-          promotion: 'q', // Always promote to queen for simplicity
         });
 
         if (move) {
           // Submit move to server with remaining time
           const myTimeRemaining = myColor === 'w' ? localWhiteTime : localBlackTime;
-          submitMove(moveFrom, square, gameCopy.fen(), move.promotion, myTimeRemaining ?? undefined);
+          submitMove(moveFrom, square, gameCopy.fen(), undefined, myTimeRemaining ?? undefined);
           
           // Play sound
           if (move.captured) {
@@ -337,11 +374,26 @@ const ChessMultiplayerGame = () => {
     if (getMoveOptions(square)) {
       setMoveFrom(square);
     }
-  }, [game, moveFrom, isMyTurn, getMoveOptions, submitMove, playSound, myColor, localWhiteTime, localBlackTime]);
+  }, [game, moveFrom, isMyTurn, getMoveOptions, submitMove, playSound, myColor, localWhiteTime, localBlackTime, isPromotionMove]);
 
   // Handle piece drop (drag and drop)
   const onPieceDrop = useCallback((sourceSquare: Square, targetSquare: Square): boolean => {
     if (!isMyTurn) return false;
+
+    // Check if this is a promotion move
+    if (isPromotionMove(sourceSquare, targetSquare)) {
+      const gameCopy = new Chess(game.fen());
+      // Validate move is legal
+      try {
+        const testMove = gameCopy.move({ from: sourceSquare, to: targetSquare, promotion: 'q' });
+        if (testMove) {
+          setPendingPromotion({ from: sourceSquare, to: targetSquare, gameCopy: new Chess(game.fen()) });
+          return true; // Accept the drop, will complete after selection
+        }
+      } catch {
+        return false;
+      }
+    }
 
     const gameCopy = new Chess(game.fen());
     
@@ -349,12 +401,11 @@ const ChessMultiplayerGame = () => {
       const move = gameCopy.move({
         from: sourceSquare,
         to: targetSquare,
-        promotion: 'q',
       });
 
       if (move) {
         const myTimeRemaining = myColor === 'w' ? localWhiteTime : localBlackTime;
-        submitMove(sourceSquare, targetSquare, gameCopy.fen(), move.promotion, myTimeRemaining ?? undefined);
+        submitMove(sourceSquare, targetSquare, gameCopy.fen(), undefined, myTimeRemaining ?? undefined);
         
         if (move.captured) {
           playSound('capture');
@@ -372,7 +423,44 @@ const ChessMultiplayerGame = () => {
     }
 
     return false;
-  }, [game, isMyTurn, submitMove, playSound, myColor, localWhiteTime, localBlackTime]);
+  }, [game, isMyTurn, submitMove, playSound, myColor, localWhiteTime, localBlackTime, isPromotionMove]);
+
+  // Handle promotion piece selection
+  const handlePromotionSelect = useCallback((piece: PromotionPiece) => {
+    if (!pendingPromotion) return;
+    
+    const { from, to, gameCopy } = pendingPromotion;
+    
+    try {
+      const move = gameCopy.move({ from, to, promotion: piece });
+      
+      if (move) {
+        const myTimeRemaining = myColor === 'w' ? localWhiteTime : localBlackTime;
+        submitMove(from, to, gameCopy.fen(), piece, myTimeRemaining ?? undefined);
+        
+        if (move.captured) {
+          playSound('capture');
+        } else {
+          playSound('move');
+        }
+        
+        setLastMove({ from, to });
+      }
+    } catch (err) {
+      console.error('Promotion move failed:', err);
+    }
+    
+    setPendingPromotion(null);
+    setMoveFrom(null);
+    setOptionSquares({});
+  }, [pendingPromotion, myColor, localWhiteTime, localBlackTime, submitMove, playSound]);
+
+  // Handle promotion cancel
+  const handlePromotionCancel = useCallback(() => {
+    setPendingPromotion(null);
+    setMoveFrom(null);
+    setOptionSquares({});
+  }, []);
 
   // Custom square styles
   const customSquareStyles = useMemo(() => {
@@ -523,7 +611,7 @@ const ChessMultiplayerGame = () => {
                 {/* Game Over Overlay */}
                 {isGameOver && (
                   <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center rounded-lg">
-                    <div className="text-center space-y-4 p-6">
+                    <div className="text-center space-y-4 p-6 max-w-sm">
                       {isDraw ? (
                         <>
                           <div className="w-16 h-16 mx-auto rounded-full bg-muted flex items-center justify-center">
@@ -546,15 +634,87 @@ const ChessMultiplayerGame = () => {
                           <h2 className="text-2xl font-bold text-destructive">Défaite</h2>
                         </>
                       )}
+                      
                       <p className="text-muted-foreground">
                         {match.result_reason === 'checkmate' && 'Échec et mat'}
                         {match.result_reason === 'resignation' && 'Abandon'}
                         {match.result_reason === 'timeout' && 'Temps écoulé'}
                         {match.result_reason === 'stalemate' && 'Pat'}
                       </p>
-                      <Button onClick={handleBack} className="mt-4">
-                        Retour au lobby
-                      </Button>
+                      
+                      {/* ELO Changes */}
+                      {eloChanges && (
+                        <div className="flex justify-center">
+                          <span className={cn(
+                            "font-mono text-lg font-semibold px-3 py-1 rounded-lg",
+                            (myColor === 'w' ? eloChanges.white : eloChanges.black) >= 0
+                              ? "text-success bg-success/10"
+                              : "text-destructive bg-destructive/10"
+                          )}>
+                            {(myColor === 'w' ? eloChanges.white : eloChanges.black) >= 0 ? '+' : ''}
+                            {myColor === 'w' ? eloChanges.white : eloChanges.black} ELO
+                          </span>
+                        </div>
+                      )}
+                      
+                      {/* Rematch Section */}
+                      <div className="flex flex-col gap-2 pt-2">
+                        {/* If no rematch yet and no request */}
+                        {!match.rematch_match_id && !match.rematch_requested_by && (
+                          <Button 
+                            onClick={async () => {
+                              const result = await requestRematch();
+                              if (result.rematch_id) {
+                                navigate(`/chess-multiplayer/match/${result.rematch_id}`);
+                              }
+                            }}
+                            variant="outline"
+                            className="w-full"
+                          >
+                            <RotateCcw className="w-4 h-4 mr-2" />
+                            Proposer revanche
+                          </Button>
+                        )}
+                        
+                        {/* If I requested, waiting for opponent */}
+                        {!match.rematch_match_id && match.rematch_requested_by === userId && (
+                          <Button variant="outline" disabled className="w-full">
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Revanche proposée...
+                          </Button>
+                        )}
+                        
+                        {/* If opponent requested, show accept button */}
+                        {!match.rematch_match_id && match.rematch_requested_by && match.rematch_requested_by !== userId && (
+                          <Button 
+                            onClick={async () => {
+                              const result = await acceptRematch();
+                              if (result.rematch_id) {
+                                navigate(`/chess-multiplayer/match/${result.rematch_id}`);
+                              }
+                            }}
+                            className="w-full"
+                          >
+                            <RotateCcw className="w-4 h-4 mr-2" />
+                            Accepter la revanche
+                          </Button>
+                        )}
+                        
+                        {/* If rematch exists, go to it */}
+                        {match.rematch_match_id && (
+                          <Button 
+                            onClick={() => navigate(`/chess-multiplayer/match/${match.rematch_match_id}`)}
+                            className="w-full"
+                          >
+                            <RotateCcw className="w-4 h-4 mr-2" />
+                            Aller à la revanche
+                          </Button>
+                        )}
+                        
+                        <Button onClick={handleBack} variant="ghost" className="w-full">
+                          Retour au lobby
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -636,6 +796,14 @@ const ChessMultiplayerGame = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Promotion Dialog */}
+      <PromotionDialog
+        isOpen={pendingPromotion !== null}
+        color={myColor || 'w'}
+        onSelect={handlePromotionSelect}
+        onCancel={handlePromotionCancel}
+      />
     </Layout>
   );
 };

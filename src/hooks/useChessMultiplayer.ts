@@ -31,6 +31,15 @@ export interface ChessMatch {
   ended_at: string | null;
   created_at: string;
   updated_at: string;
+  // Rematch fields
+  rematch_from_id: string | null;
+  rematch_requested_by: string | null;
+  rematch_match_id: string | null;
+}
+
+export interface EloChanges {
+  white: number;
+  black: number;
 }
 
 export interface MoveRecord {
@@ -103,6 +112,7 @@ interface UseChessMultiplayerReturn {
   chatMessages: ChatMessage[];
   isLoading: boolean;
   error: string | null;
+  eloChanges: EloChanges | null;
   
   // Match actions
   createMatch: (options: CreateMatchOptions) => Promise<string | null>;
@@ -114,6 +124,10 @@ interface UseChessMultiplayerReturn {
   // Game actions
   submitMove: (from: string, to: string, newFen: string, promotion?: string, timeRemaining?: number) => Promise<boolean>;
   endMatch: (winnerId: string | null, result: string, reason: string) => Promise<void>;
+  
+  // Rematch actions
+  requestRematch: () => Promise<{ status: string; rematch_id?: string }>;
+  acceptRematch: () => Promise<{ status: string; rematch_id?: string }>;
   
   // Chat actions
   sendMessage: (message: string) => Promise<void>;
@@ -142,6 +156,7 @@ export const useChessMultiplayer = ({
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [eloChanges, setEloChanges] = useState<EloChanges | null>(null);
   
   // Refs for stable callbacks
   const matchRef = useRef(match);
@@ -485,12 +500,21 @@ export const useChessMultiplayer = ({
     if (!match?.id) return;
 
     try {
-      await supabase.rpc('end_chess_match', {
+      const { data } = await supabase.rpc('end_chess_match', {
         p_match_id: match.id,
         p_winner_id: winnerId,
         p_result: result,
         p_result_reason: reason,
       });
+      
+      // Store ELO changes if returned
+      const typedData = data as { status: string; white_elo_change?: number; black_elo_change?: number } | null;
+      if (typedData?.white_elo_change !== undefined && typedData?.black_elo_change !== undefined) {
+        setEloChanges({
+          white: typedData.white_elo_change,
+          black: typedData.black_elo_change,
+        });
+      }
     } catch (err) {
       console.error('Failed to end match:', err);
     }
@@ -559,12 +583,89 @@ export const useChessMultiplayer = ({
     }
   }, [match?.id, userId, toast]);
 
+  // Request rematch
+  const requestRematch = useCallback(async (): Promise<{ status: string; rematch_id?: string }> => {
+    if (!match?.id || !userId) {
+      return { status: 'error' };
+    }
+
+    try {
+      const { data, error: rpcError } = await supabase.rpc('request_chess_rematch', {
+        p_match_id: match.id,
+        p_user_id: userId,
+      });
+
+      if (rpcError) throw rpcError;
+
+      const result = data as { status: string; rematch_id?: string; requested_by?: string };
+      
+      if (result.status === 'requested') {
+        toast({
+          title: 'Revanche proposée',
+          description: "En attente de la réponse de l'adversaire...",
+        });
+        // Refresh match to get updated rematch_requested_by
+        await refreshMatch();
+      } else if (result.status === 'exists') {
+        return { status: 'exists', rematch_id: result.rematch_id };
+      }
+
+      return result;
+    } catch (err: any) {
+      console.error('Failed to request rematch:', err);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de proposer une revanche',
+        variant: 'destructive',
+      });
+      return { status: 'error' };
+    }
+  }, [match?.id, userId, toast, refreshMatch]);
+
+  // Accept rematch
+  const acceptRematch = useCallback(async (): Promise<{ status: string; rematch_id?: string }> => {
+    if (!match?.id || !userId) {
+      return { status: 'error' };
+    }
+
+    try {
+      const { data, error: rpcError } = await supabase.rpc('accept_chess_rematch', {
+        p_match_id: match.id,
+        p_user_id: userId,
+      });
+
+      if (rpcError) throw rpcError;
+
+      const result = data as { status: string; rematch_id?: string; message?: string };
+      
+      if (result.status === 'success' && result.rematch_id) {
+        toast({
+          title: 'Revanche acceptée!',
+          description: 'La nouvelle partie commence...',
+        });
+      } else if (result.status === 'exists') {
+        return { status: 'exists', rematch_id: result.rematch_id };
+      }
+
+      return result;
+    } catch (err: any) {
+      console.error('Failed to accept rematch:', err);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible d\'accepter la revanche',
+        variant: 'destructive',
+      });
+      return { status: 'error' };
+    }
+  }, [match?.id, userId, toast]);
+
   return {
     match,
     opponent,
     chatMessages,
     isLoading,
     error,
+    eloChanges,
     createMatch,
     joinMatch,
     joinWithCode,
@@ -572,6 +673,8 @@ export const useChessMultiplayer = ({
     resignMatch,
     submitMove,
     endMatch,
+    requestRematch,
+    acceptRematch,
     sendMessage,
     isMyTurn,
     myColor,
