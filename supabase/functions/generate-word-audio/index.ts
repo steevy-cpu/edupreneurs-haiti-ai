@@ -110,12 +110,14 @@ Deno.serve(async (req) => {
       return secureErrorResponse(`Storage upload failed: ${uploadError.message}`, 500);
     }
 
-    // Get public URL
+    // Get public URL with cache-busting timestamp
     const { data: publicUrlData } = supabase.storage
       .from('lesson-audio')
       .getPublicUrl(filePath);
 
-    const audioUrl = publicUrlData.publicUrl;
+    // Add cache-busting timestamp to force browser to fetch new audio
+    const cacheBuster = `?t=${Date.now()}`;
+    const audioUrl = publicUrlData.publicUrl + cacheBuster;
     console.log(`Audio uploaded to: ${audioUrl}`);
 
     // Update the daily_words table with the audio URL
