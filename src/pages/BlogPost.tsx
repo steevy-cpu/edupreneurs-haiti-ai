@@ -233,11 +233,11 @@ export default function BlogPost() {
         <article className="container max-w-screen-lg mx-auto px-4 py-8">
           {/* Cover Image */}
           {post.cover_image_url && (
-            <div className="w-full max-h-[240px] md:max-h-[320px] rounded-xl overflow-hidden mb-8 bg-muted/30">
+            <div className="w-full h-[200px] md:h-[280px] rounded-xl overflow-hidden mb-8">
               <img
                 src={post.cover_image_url}
                 alt={post.title}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
             </div>
           )}
