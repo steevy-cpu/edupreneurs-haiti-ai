@@ -75,6 +75,14 @@ export const RATE_LIMITS = {
     maxRequests: 15,          // Auth: 15 req/min
     maxAnonRequests: 3,       // Anon: 3 req/min
     keyPrefix: 'resource'
+  },
+  
+  // Contact form submissions: Strict to prevent spam
+  CONTACT_FORM: {
+    windowMs: 60 * 1000,      // 1 minute
+    maxRequests: 5,           // Auth: 5 req/min
+    maxAnonRequests: 3,       // Anon: 3 req/min (strict to prevent spam)
+    keyPrefix: 'contact_form'
   }
 } as const;
 
