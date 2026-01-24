@@ -50,6 +50,8 @@ export function BlogPostEditor({
   const [linkUrl, setLinkUrl] = useState("");
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
+  const [imageWidth, setImageWidth] = useState("");
+  const [imageHeight, setImageHeight] = useState("");
   const [youtubeDialogOpen, setYoutubeDialogOpen] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState("");
 
@@ -64,6 +66,20 @@ export function BlogPostEditor({
         allowBase64: false,
         HTMLAttributes: {
           class: "rounded-lg max-w-full h-auto",
+        },
+      }).extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            style: {
+              default: null,
+              parseHTML: element => element.getAttribute('style'),
+              renderHTML: attributes => {
+                if (!attributes.style) return {};
+                return { style: attributes.style };
+              },
+            },
+          };
         },
       }),
       Link.configure({
@@ -102,11 +118,40 @@ export function BlogPostEditor({
 
   const addImage = useCallback(() => {
     if (imageUrl && editor) {
-      editor.chain().focus().setImage({ src: imageUrl }).run();
+      // Build width/height style string
+      let styleStr = "";
+      if (imageWidth) {
+        const w = imageWidth.includes('%') || imageWidth.includes('px') 
+          ? imageWidth 
+          : `${imageWidth}px`;
+        styleStr += `width: ${w};`;
+      }
+      if (imageHeight) {
+        const h = imageHeight.includes('%') || imageHeight.includes('px') 
+          ? imageHeight 
+          : `${imageHeight}px`;
+        styleStr += `height: ${h};`;
+      }
+      
+      // Insert image with inline style if dimensions specified
+      if (styleStr) {
+        editor.chain().focus().insertContent({
+          type: 'image',
+          attrs: { 
+            src: imageUrl,
+            style: styleStr
+          }
+        }).run();
+      } else {
+        editor.chain().focus().setImage({ src: imageUrl }).run();
+      }
+      
       setImageUrl("");
+      setImageWidth("");
+      setImageHeight("");
       setImageDialogOpen(false);
     }
-  }, [editor, imageUrl]);
+  }, [editor, imageUrl, imageWidth, imageHeight]);
 
   const addYoutube = useCallback(() => {
     if (youtubeUrl && editor) {
@@ -283,7 +328,7 @@ export function BlogPostEditor({
 
       {/* Link Dialog */}
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
-        <DialogContent>
+        <DialogContent className="z-[1200]">
           <DialogHeader>
             <DialogTitle>Ajouter un lien</DialogTitle>
           </DialogHeader>
@@ -309,7 +354,7 @@ export function BlogPostEditor({
 
       {/* Image Dialog */}
       <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
-        <DialogContent>
+        <DialogContent className="z-[1200]">
           <DialogHeader>
             <DialogTitle>Ajouter une image</DialogTitle>
           </DialogHeader>
@@ -323,9 +368,39 @@ export function BlogPostEditor({
                 onChange={(e) => setImageUrl(e.target.value)}
               />
             </div>
+            
+            {/* Size controls */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="image-width">Largeur (optionnel)</Label>
+                <Input
+                  id="image-width"
+                  placeholder="ex: 400px ou 50%"
+                  value={imageWidth}
+                  onChange={(e) => setImageWidth(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="image-height">Hauteur (optionnel)</Label>
+                <Input
+                  id="image-height"
+                  placeholder="ex: 300px ou auto"
+                  value={imageHeight}
+                  onChange={(e) => setImageHeight(e.target.value)}
+                />
+              </div>
+            </div>
+            
+            <p className="text-xs text-muted-foreground">
+              Laissez vide pour la taille originale. Utilisez "px" ou "%" (ex: 400px, 50%).
+            </p>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setImageDialogOpen(false)}>
+            <Button variant="outline" onClick={() => {
+              setImageDialogOpen(false);
+              setImageWidth("");
+              setImageHeight("");
+            }}>
               Annuler
             </Button>
             <Button onClick={addImage}>Ajouter</Button>
@@ -335,7 +410,7 @@ export function BlogPostEditor({
 
       {/* YouTube Dialog */}
       <Dialog open={youtubeDialogOpen} onOpenChange={setYoutubeDialogOpen}>
-        <DialogContent>
+        <DialogContent className="z-[1200]">
           <DialogHeader>
             <DialogTitle>Ajouter une vidéo YouTube</DialogTitle>
           </DialogHeader>
