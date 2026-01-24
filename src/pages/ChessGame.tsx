@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Gamepad2, Target, Lock, Loader2 } from 'lucide-react';
+import { ArrowLeft, Gamepad2, Target, Lock, Loader2, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useChessSounds } from '@/hooks/useChessSounds';
 import { useChessStats } from '@/hooks/useChessStats';
@@ -475,14 +475,35 @@ const ChessGame: React.FC = () => {
                 });
                 return;
               }
+              if (v === 'multiplayer') {
+                if (isVisitor) {
+                  toast({ 
+                    title: "Multijoueur réservé aux membres", 
+                    description: "Créez un compte gratuit pour défier vos amis!" 
+                  });
+                  return;
+                }
+                navigate('/chess-multiplayer');
+                return;
+              }
               setActiveTab(v as 'play' | 'puzzles');
             }} 
             className="mb-4"
           >
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-3">
               <TabsTrigger value="play" className="gap-2">
                 <Gamepad2 className="w-4 h-4" />
-                Jouer
+                <span className="hidden sm:inline">Jouer</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="multiplayer" 
+                className="gap-2"
+                disabled={isVisitor}
+                title={isVisitor ? "Créez un compte pour jouer en multijoueur" : undefined}
+              >
+                <Users className="w-4 h-4" />
+                <span className="hidden sm:inline">Multi</span>
+                {isVisitor && <Lock className="w-3 h-3 ml-1 text-muted-foreground" />}
               </TabsTrigger>
               <TabsTrigger 
                 value="puzzles" 
@@ -491,7 +512,7 @@ const ChessGame: React.FC = () => {
                 title={isVisitor ? "Créez un compte pour accéder aux puzzles" : undefined}
               >
                 <Target className="w-4 h-4" />
-                Puzzles
+                <span className="hidden sm:inline">Puzzles</span>
                 {isVisitor && <Lock className="w-3 h-3 ml-1 text-muted-foreground" />}
               </TabsTrigger>
             </TabsList>

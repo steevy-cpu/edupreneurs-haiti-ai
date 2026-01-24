@@ -59,6 +59,8 @@ const UploadEmailAssets = lazy(() => import("./pages/UploadEmailAssets"));
 const CustomizeAI = lazy(() => import("./pages/CustomizeAI"));
 const PassionDiscovery = lazy(() => import("./pages/PassionDiscovery"));
 const ChessGame = lazy(() => import("./pages/ChessGame"));
+const ChessMultiplayerLobby = lazy(() => import("./pages/ChessMultiplayerLobby"));
+const ChessMultiplayerGame = lazy(() => import("./pages/ChessMultiplayerGame"));
 const GamesHub = lazy(() => import("./pages/GamesHub"));
 const QuizBattle = lazy(() => import("./pages/QuizBattle"));
 const QuizBattleSolo = lazy(() => import("./pages/QuizBattleSolo"));
@@ -100,6 +102,7 @@ const EricChatbotWrapper = () => {
     '/community',
     '/feed',
     '/chess-game',
+    '/chess-multiplayer',
     '/privacy-policy',
     '/passion-discovery',
     '/quiz-battle/lobby',
@@ -107,13 +110,14 @@ const EricChatbotWrapper = () => {
     '/blog',
   ];
   
-  // Also hide on quiz battle multiplayer game pages and blog posts
+  // Also hide on quiz battle multiplayer game pages, blog posts, and chess multiplayer
   const isQuizBattleGame = location.pathname.startsWith('/quiz-battle/multiplayer/');
+  const isChessMultiplayerGame = location.pathname.startsWith('/chess-multiplayer/game/');
   const isBlogPost = location.pathname.startsWith('/blog/');
   
   const isLessonPage = location.pathname.startsWith('/course/') && location.pathname.split('/').length > 2;
   const isLecturePage = location.pathname.startsWith('/lecture/');
-  const isHidden = hiddenRoutes.includes(location.pathname) || isLessonPage || isLecturePage || isQuizBattleGame || isBlogPost;
+  const isHidden = hiddenRoutes.includes(location.pathname) || isLessonPage || isLecturePage || isQuizBattleGame || isChessMultiplayerGame || isBlogPost;
   
   if (isHidden) return null;
   
@@ -251,6 +255,8 @@ const App = () => (
             <Route path="/passion-discovery" element={<PassionDiscovery />} />
             <Route path="/games" element={<GamesHub />} />
             <Route path="/chess-game" element={<Layout><ChessGame /></Layout>} />
+            <Route path="/chess-multiplayer" element={<ChessMultiplayerLobby />} />
+            <Route path="/chess-multiplayer/game/:matchId" element={<ChessMultiplayerGame />} />
             <Route path="/quiz-battle" element={<QuizBattle />} />
             <Route path="/quiz-battle/solo" element={<QuizBattleSolo />} />
             <Route path="/quiz-battle/lobby" element={<QuizBattleLobby />} />
