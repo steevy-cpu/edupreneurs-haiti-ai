@@ -1,6 +1,6 @@
 import { Link, useParams, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
-import { ArrowLeft, Calendar, Share2, Clock, MessageCircle, Link as LinkIcon } from "lucide-react";
+import { ArrowLeft, Calendar, Share2, Clock, MessageCircle, Link as LinkIcon, BadgeCheck } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -260,7 +260,12 @@ export default function BlogPost() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <div className="font-medium text-foreground">{authorName}</div>
+                <div className="font-medium text-foreground flex items-center gap-1">
+                  {authorName}
+                  {isFounder(post.author?.user_id) && (
+                    <BadgeCheck className="h-4 w-4 text-primary fill-primary/20" />
+                  )}
+                </div>
                 {post.author?.role && (
                   <div className="text-xs">{post.author.role}</div>
                 )}
@@ -310,7 +315,12 @@ export default function BlogPost() {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <div className="font-bold text-lg">{authorName}</div>
+                  <div className="font-bold text-lg flex items-center gap-1.5">
+                    {authorName}
+                    {isFounder(post.author.user_id) && (
+                      <BadgeCheck className="h-5 w-5 text-primary fill-primary/20" />
+                    )}
+                  </div>
                   {post.author.role && (
                     <Badge className="mb-2 bg-primary/90 hover:bg-primary text-primary-foreground">
                       {post.author.role}
