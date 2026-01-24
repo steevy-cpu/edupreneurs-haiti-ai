@@ -33,15 +33,15 @@ export const GAMES_CONFIG: Game[] = [
   {
     id: 'chess',
     title: 'Échecs',
-    description: "Joue aux échecs contre l'IA et améliore tes compétences stratégiques.",
+    description: "Joue aux échecs contre l'IA ou défie tes amis en temps réel!",
     icon: Crown,
     color: 'from-secondary to-accent',
-    features: ['Contre l\'IA', 'Puzzles', 'Classement ELO'],
+    features: ['Contre l\'IA', 'Multijoueur', 'Puzzles', 'Classement ELO'],
     path: '/chess-game',
     isNew: false,
     isLocked: false,
     xpReward: 30,
-    modes: ['solo'],
+    modes: ['solo', 'multiplayer'],
   },
 ];
 
