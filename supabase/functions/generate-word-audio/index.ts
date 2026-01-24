@@ -73,6 +73,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           text: word,
           model_id: 'eleven_multilingual_v2',
+          language_code: 'fr', // Force French pronunciation for Haitian education platform
           voice_settings: {
             stability: 0.75,
             similarity_boost: 0.85,
