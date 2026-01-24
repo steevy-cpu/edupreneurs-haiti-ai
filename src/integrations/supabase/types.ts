@@ -463,6 +463,9 @@ export type Database = {
           is_public: boolean
           last_move_at: string | null
           move_history: Json
+          rematch_from_id: string | null
+          rematch_match_id: string | null
+          rematch_requested_by: string | null
           result: string | null
           result_reason: string | null
           started_at: string | null
@@ -488,6 +491,9 @@ export type Database = {
           is_public?: boolean
           last_move_at?: string | null
           move_history?: Json
+          rematch_from_id?: string | null
+          rematch_match_id?: string | null
+          rematch_requested_by?: string | null
           result?: string | null
           result_reason?: string | null
           started_at?: string | null
@@ -513,6 +519,9 @@ export type Database = {
           is_public?: boolean
           last_move_at?: string | null
           move_history?: Json
+          rematch_from_id?: string | null
+          rematch_match_id?: string | null
+          rematch_requested_by?: string | null
           result?: string | null
           result_reason?: string | null
           started_at?: string | null
@@ -524,7 +533,22 @@ export type Database = {
           white_time_remaining?: number | null
           winner_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "chess_matches_rematch_from_id_fkey"
+            columns: ["rematch_from_id"]
+            isOneToOne: false
+            referencedRelation: "chess_matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chess_matches_rematch_match_id_fkey"
+            columns: ["rematch_match_id"]
+            isOneToOne: false
+            referencedRelation: "chess_matches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       chess_player_stats: {
         Row: {
@@ -3590,6 +3614,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_chess_rematch: {
+        Args: { p_match_id: string; p_user_id: string }
+        Returns: Json
+      }
       accept_quiz_invitation: {
         Args: { p_invitation_id: string }
         Returns: string
@@ -3746,6 +3774,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: undefined
+      }
+      request_chess_rematch: {
+        Args: { p_match_id: string; p_user_id: string }
+        Returns: Json
       }
       resend_verification_code: { Args: { p_user_id: string }; Returns: Json }
       start_direct_conversation: {
