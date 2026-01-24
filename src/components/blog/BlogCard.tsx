@@ -69,7 +69,7 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
             </h3>
             
             <div 
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-foreground font-medium rounded-full text-sm transition-transform duration-300 ease-out group-hover:scale-[1.02]"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-gray-900 font-medium rounded-full text-sm transition-transform duration-300 ease-out group-hover:scale-[1.02]"
             >
               Lire l'article
               <ArrowRight className="h-4 w-4" />
