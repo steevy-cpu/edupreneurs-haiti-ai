@@ -21,6 +21,9 @@ interface GameHistory {
   moves_count: number;
   elo_change: number;
   created_at: string;
+  is_multiplayer?: boolean;
+  opponent_id?: string | null;
+  opponent_nickname?: string | null;
 }
 
 interface Achievement {
@@ -76,7 +79,7 @@ export const useChessStats = (userId: string | null) => {
           .order('earned_at', { ascending: false }),
         supabase
           .from('chess_games')
-          .select('id, result, difficulty, moves_count, elo_change, created_at')
+          .select('id, result, difficulty, moves_count, elo_change, created_at, is_multiplayer, opponent_id')
           .eq('user_id', userId)
           .order('created_at', { ascending: false })
           .limit(5)
@@ -84,7 +87,28 @@ export const useChessStats = (userId: string | null) => {
 
       setStats(statsResult.data);
       setAchievements(achievementsResult.data || []);
-      setRecentGames((gamesResult.data || []) as GameHistory[]);
+      
+      // Fetch opponent nicknames for multiplayer games
+      let gamesWithOpponents = (gamesResult.data || []) as GameHistory[];
+      const multiplayerGames = gamesWithOpponents.filter(g => g.is_multiplayer && g.opponent_id);
+      
+      if (multiplayerGames.length > 0) {
+        const opponentIds = multiplayerGames.map(g => g.opponent_id!);
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, nickname')
+          .in('user_id', opponentIds);
+        
+        if (profiles) {
+          const nicknameMap = new Map(profiles.map(p => [p.user_id, p.nickname]));
+          gamesWithOpponents = gamesWithOpponents.map(game => ({
+            ...game,
+            opponent_nickname: game.opponent_id ? nicknameMap.get(game.opponent_id) || null : null
+          }));
+        }
+      }
+      
+      setRecentGames(gamesWithOpponents);
 
       // Calculate recent ELO change (from last game)
       if (gamesResult.data && gamesResult.data.length > 0) {
