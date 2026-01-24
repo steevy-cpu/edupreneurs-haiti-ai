@@ -346,6 +346,24 @@ export const youtubeSearchSchema = z.object({
   maxResults: z.number().int().min(1).max(50).optional().default(10),
 }).strict();
 
+/**
+ * Contact form submission validation
+ */
+export const contactFormSchema = z.object({
+  name: z.string()
+    .min(2, "Le nom doit contenir au moins 2 caractères")
+    .max(100, "Le nom ne peut pas dépasser 100 caractères")
+    .transform(s => s.trim()),
+  email: z.string()
+    .email("Veuillez entrer une adresse email valide")
+    .max(255, "L'email ne peut pas dépasser 255 caractères")
+    .transform(s => s.toLowerCase().trim()),
+  message: z.string()
+    .min(10, "Le message doit contenir au moins 10 caractères")
+    .max(2000, "Le message ne peut pas dépasser 2000 caractères")
+    .transform(s => s.trim()),
+}).strict();
+
 // ============================================
 // Validation Helper Functions
 // ============================================

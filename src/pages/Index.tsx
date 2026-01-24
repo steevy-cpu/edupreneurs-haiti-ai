@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ProgressiveImage } from "@/components/ProgressiveImage";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import { BlogSection } from "@/components/blog/BlogSection";
-
+import { ContactForm } from "@/components/home/ContactForm";
 // Static imports for critical above-the-fold images
 // Using original PNG files which have proper transparency
 import ericCelebrating from "@/assets/eric-celebrating.png";
@@ -866,6 +866,16 @@ const Index = () => {
                 <p className="text-xs text-muted-foreground mt-2">Support en temps réel</p>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Contact Form */}
+          <div className="mt-10 sm:mt-14">
+            <div className="text-center mb-6">
+              <p className="text-sm sm:text-base text-muted-foreground font-medium">
+                Ou envoyez-nous un message directement
+              </p>
+            </div>
+            <ContactForm />
           </div>
 
           {/* Social Media */}

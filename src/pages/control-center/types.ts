@@ -87,3 +87,25 @@ export const REPORT_STATUS = [
   { value: 'resolved', label: 'Résolu', color: 'bg-green-500' },
   { value: 'dismissed', label: 'Rejeté', color: 'bg-muted' },
 ] as const;
+
+export interface ContactSubmission {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  status: 'new' | 'in_progress' | 'resolved' | 'spam';
+  created_at: string;
+  updated_at: string;
+  admin_notes: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  ip_address: string | null;
+  user_agent: string | null;
+}
+
+export const CONTACT_STATUS = [
+  { value: 'new', label: 'Nouveau', color: 'bg-blue-500' },
+  { value: 'in_progress', label: 'En cours', color: 'bg-amber-500' },
+  { value: 'resolved', label: 'Résolu', color: 'bg-green-500' },
+  { value: 'spam', label: 'Spam', color: 'bg-red-500' },
+] as const;

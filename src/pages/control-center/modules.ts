@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { Users, AlertTriangle, BarChart3, CreditCard, Megaphone, BookOpen, Newspaper } from "lucide-react";
+import { Users, AlertTriangle, BarChart3, CreditCard, Megaphone, BookOpen, Newspaper, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ControlCenterModule } from "./types";
 
@@ -87,6 +87,20 @@ export const CONTROL_CENTER_MODULES: ControlCenterModule[] = [
         .from("blog_posts")
         .select("id", { count: "exact", head: true })
         .eq("status", "draft");
+      return count || 0;
+    },
+  },
+  {
+    id: "contact",
+    label: "Messages de contact",
+    shortLabel: "Contact",
+    icon: MessageSquare,
+    component: lazy(() => import("./modules/ContactModule")),
+    badge: async () => {
+      const { count } = await supabase
+        .from("contact_submissions")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "new");
       return count || 0;
     },
   },
