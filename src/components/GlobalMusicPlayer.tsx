@@ -170,7 +170,12 @@ export const GlobalMusicPlayer = () => {
     };
   }, []);
 
-  if (!isAuthenticated || tracks.length === 0 || location.pathname === '/' || location.pathname === '/auth') return null;
+  // Hide on public pages - only show for authenticated users on internal routes
+  const isPublicPage = location.pathname === '/' || 
+                       location.pathname === '/auth' || 
+                       location.pathname.startsWith('/blog');
+  
+  if (!isAuthenticated || tracks.length === 0 || isPublicPage) return null;
 
   return (
     <>
