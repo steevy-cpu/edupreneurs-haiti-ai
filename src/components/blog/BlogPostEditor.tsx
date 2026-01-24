@@ -21,7 +21,15 @@ import {
   Image as ImageIcon,
   Youtube as YoutubeIcon,
   Minus,
+  Upload,
+  Video,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { compressImage, validateAndPrepareVideo } from "@/utils/mediaOptimization";
+import { uploadWithProgress } from "@/utils/uploadWithProgress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { Separator } from "@/components/ui/separator";
@@ -55,6 +63,17 @@ export function BlogPostEditor({
   const [imageHeight, setImageHeight] = useState("");
   const [youtubeDialogOpen, setYoutubeDialogOpen] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState("");
+  
+  // File upload state
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [videoDialogOpen, setVideoDialogOpen] = useState(false);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [videoUploadProgress, setVideoUploadProgress] = useState(0);
+  
+  const { toast } = useToast();
 
   const editor = useEditor({
     extensions: [
@@ -161,6 +180,149 @@ export function BlogPostEditor({
       setYoutubeDialogOpen(false);
     }
   }, [editor, youtubeUrl]);
+
+  const resetImageDialog = useCallback(() => {
+    setImageDialogOpen(false);
+    setImageUrl("");
+    setImageWidth("");
+    setImageHeight("");
+    setImageFile(null);
+    setUploadProgress(0);
+  }, []);
+
+  const handleImageFileUpload = useCallback(async () => {
+    if (!imageFile || !editor) return;
+    
+    setIsUploadingImage(true);
+    setUploadProgress(0);
+    
+    try {
+      // Compress image before upload
+      const compressedFile = await compressImage(imageFile);
+      
+      // Generate unique filename
+      const filename = `content/${Date.now()}-${imageFile.name.replace(/\s/g, "-")}`;
+      
+      // Upload with progress tracking
+      const { error } = await uploadWithProgress(
+        'blog-images',
+        filename,
+        compressedFile,
+        (progress) => setUploadProgress(progress.progress)
+      );
+      
+      if (error) throw error;
+      
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('blog-images')
+        .getPublicUrl(filename);
+      
+      // Insert image into editor with optional dimensions
+      let styleStr = "";
+      if (imageWidth) {
+        const w = imageWidth.includes('%') || imageWidth.includes('px') 
+          ? imageWidth : `${imageWidth}px`;
+        styleStr += `width: ${w};`;
+      }
+      if (imageHeight) {
+        const h = imageHeight.includes('%') || imageHeight.includes('px') 
+          ? imageHeight : `${imageHeight}px`;
+        styleStr += `height: ${h};`;
+      }
+      
+      if (styleStr) {
+        editor.chain().focus().insertContent({
+          type: 'image',
+          attrs: { src: publicUrl, style: styleStr }
+        }).run();
+      } else {
+        editor.chain().focus().setImage({ src: publicUrl }).run();
+      }
+      
+      toast({
+        title: "Image ajoutée",
+        description: "L'image a été uploadée et insérée avec succès.",
+      });
+      
+      resetImageDialog();
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'uploader l'image.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingImage(false);
+      setUploadProgress(0);
+    }
+  }, [editor, imageFile, imageWidth, imageHeight, toast, resetImageDialog]);
+
+  const resetVideoDialog = useCallback(() => {
+    setVideoDialogOpen(false);
+    setVideoFile(null);
+    setVideoUploadProgress(0);
+  }, []);
+
+  const handleVideoFileUpload = useCallback(async () => {
+    if (!videoFile || !editor) return;
+    
+    setIsUploadingVideo(true);
+    setVideoUploadProgress(0);
+    
+    try {
+      // Validate video size (max 50MB)
+      const { file: validatedFile, needsWarning } = await validateAndPrepareVideo(videoFile);
+      
+      if (needsWarning) {
+        toast({
+          title: "Fichier volumineux",
+          description: "Cette vidéo est volumineuse et peut prendre du temps à charger sur les connexions lentes.",
+        });
+      }
+      
+      // Generate unique filename
+      const filename = `videos/${Date.now()}-${videoFile.name.replace(/\s/g, "-")}`;
+      
+      // Upload with progress tracking
+      const { error } = await uploadWithProgress(
+        'blog-images',
+        filename,
+        validatedFile,
+        (progress) => setVideoUploadProgress(progress.progress)
+      );
+      
+      if (error) throw error;
+      
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('blog-images')
+        .getPublicUrl(filename);
+      
+      // Insert video as HTML5 video element
+      editor.chain().focus().insertContent(
+        `<video controls class="w-full rounded-lg my-4" src="${publicUrl}"></video>`
+      ).run();
+      
+      toast({
+        title: "Vidéo ajoutée",
+        description: "La vidéo a été uploadée et insérée avec succès.",
+      });
+      
+      resetVideoDialog();
+    } catch (error: any) {
+      console.error("Error uploading video:", error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible d'uploader la vidéo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingVideo(false);
+      setVideoUploadProgress(0);
+    }
+  }, [editor, videoFile, toast, resetVideoDialog]);
 
   if (!editor) {
     return null;
@@ -311,8 +473,21 @@ export function BlogPostEditor({
           size="icon"
           onClick={() => setYoutubeDialogOpen(true)}
           className="h-8 w-8"
+          title="Vidéo YouTube"
         >
           <YoutubeIcon className="h-4 w-4" />
+        </Button>
+
+        {/* Video Upload */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => setVideoDialogOpen(true)}
+          className="h-8 w-8"
+          title="Uploader une vidéo"
+        >
+          <Video className="h-4 w-4" />
         </Button>
 
         <Separator orientation="vertical" className="h-6 mx-1" />
@@ -361,58 +536,179 @@ export function BlogPostEditor({
       </Dialog>
 
       {/* Image Dialog */}
-      <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
+      <Dialog open={imageDialogOpen} onOpenChange={(open) => !open && resetImageDialog()}>
         <DialogContent className="z-[1200]">
           <DialogHeader>
             <DialogTitle>Ajouter une image</DialogTitle>
-            <DialogDescription>Entrez l'URL de l'image et optionnellement ses dimensions.</DialogDescription>
+            <DialogDescription>
+              Uploadez une image depuis votre appareil ou entrez une URL.
+            </DialogDescription>
           </DialogHeader>
+          
+          <Tabs defaultValue="upload" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="upload">
+                <Upload className="h-4 w-4 mr-2" />
+                Uploader
+              </TabsTrigger>
+              <TabsTrigger value="url">URL</TabsTrigger>
+            </TabsList>
+            
+            {/* Upload Tab */}
+            <TabsContent value="upload" className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label>Sélectionner une image</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                  disabled={isUploadingImage}
+                />
+                {imageFile && (
+                  <p className="text-sm text-muted-foreground">
+                    Fichier: {imageFile.name} ({(imageFile.size / 1024).toFixed(1)} KB)
+                  </p>
+                )}
+              </div>
+              
+              {isUploadingImage && (
+                <div className="space-y-2">
+                  <Progress value={uploadProgress} />
+                  <p className="text-xs text-center text-muted-foreground">
+                    Upload en cours... {uploadProgress}%
+                  </p>
+                </div>
+              )}
+              
+              {/* Dimension controls */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Largeur (optionnel)</Label>
+                  <Input
+                    placeholder="ex: 400px ou 50%"
+                    value={imageWidth}
+                    onChange={(e) => setImageWidth(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Hauteur (optionnel)</Label>
+                  <Input
+                    placeholder="ex: 300px ou auto"
+                    value={imageHeight}
+                    onChange={(e) => setImageHeight(e.target.value)}
+                  />
+                </div>
+              </div>
+              
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={resetImageDialog} disabled={isUploadingImage}>
+                  Annuler
+                </Button>
+                <Button 
+                  type="button"
+                  onClick={handleImageFileUpload} 
+                  disabled={!imageFile || isUploadingImage}
+                >
+                  {isUploadingImage ? "Upload..." : "Ajouter"}
+                </Button>
+              </DialogFooter>
+            </TabsContent>
+            
+            {/* URL Tab */}
+            <TabsContent value="url" className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label>URL de l'image</Label>
+                <Input
+                  placeholder="https://..."
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                />
+              </div>
+              
+              {/* Dimension controls */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Largeur (optionnel)</Label>
+                  <Input
+                    placeholder="ex: 400px ou 50%"
+                    value={imageWidth}
+                    onChange={(e) => setImageWidth(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Hauteur (optionnel)</Label>
+                  <Input
+                    placeholder="ex: 300px ou auto"
+                    value={imageHeight}
+                    onChange={(e) => setImageHeight(e.target.value)}
+                  />
+                </div>
+              </div>
+              
+              <p className="text-xs text-muted-foreground">
+                Laissez vide pour la taille originale. Utilisez "px" ou "%" (ex: 400px, 50%).
+              </p>
+              
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={resetImageDialog}>Annuler</Button>
+                <Button type="button" onClick={addImage} disabled={!imageUrl}>Ajouter</Button>
+              </DialogFooter>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      {/* Video Upload Dialog */}
+      <Dialog open={videoDialogOpen} onOpenChange={(open) => !open && resetVideoDialog()}>
+        <DialogContent className="z-[1200]">
+          <DialogHeader>
+            <DialogTitle>Ajouter une vidéo</DialogTitle>
+            <DialogDescription>
+              Uploadez une vidéo depuis votre appareil (max 50MB).
+            </DialogDescription>
+          </DialogHeader>
+          
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="image-url">URL de l'image</Label>
+              <Label>Sélectionner une vidéo</Label>
               <Input
-                id="image-url"
-                placeholder="https://..."
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
+                type="file"
+                accept="video/*"
+                onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
+                disabled={isUploadingVideo}
               />
+              {videoFile && (
+                <p className="text-sm text-muted-foreground">
+                  Fichier: {videoFile.name} ({(videoFile.size / 1024 / 1024).toFixed(1)} MB)
+                </p>
+              )}
             </div>
             
-            {/* Size controls */}
-            <div className="grid grid-cols-2 gap-4">
+            {isUploadingVideo && (
               <div className="space-y-2">
-                <Label htmlFor="image-width">Largeur (optionnel)</Label>
-                <Input
-                  id="image-width"
-                  placeholder="ex: 400px ou 50%"
-                  value={imageWidth}
-                  onChange={(e) => setImageWidth(e.target.value)}
-                />
+                <Progress value={videoUploadProgress} />
+                <p className="text-xs text-center text-muted-foreground">
+                  Upload en cours... {videoUploadProgress}%
+                </p>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="image-height">Hauteur (optionnel)</Label>
-                <Input
-                  id="image-height"
-                  placeholder="ex: 300px ou auto"
-                  value={imageHeight}
-                  onChange={(e) => setImageHeight(e.target.value)}
-                />
-              </div>
-            </div>
+            )}
             
             <p className="text-xs text-muted-foreground">
-              Laissez vide pour la taille originale. Utilisez "px" ou "%" (ex: 400px, 50%).
+              Pour les vidéos YouTube, utilisez le bouton YouTube à la place.
             </p>
           </div>
+          
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setImageDialogOpen(false);
-              setImageWidth("");
-              setImageHeight("");
-            }}>
+            <Button type="button" variant="outline" onClick={resetVideoDialog} disabled={isUploadingVideo}>
               Annuler
             </Button>
-            <Button onClick={addImage}>Ajouter</Button>
+            <Button 
+              type="button"
+              onClick={handleVideoFileUpload} 
+              disabled={!videoFile || isUploadingVideo}
+            >
+              {isUploadingVideo ? "Upload..." : "Ajouter"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
