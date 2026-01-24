@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Chess, Square } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
@@ -121,7 +121,10 @@ const ChessMultiplayerGame = () => {
     loadMatch();
   }, [matchId, userId, isAuthLoading, searchParams, joinMatch, refreshMatch, navigate]);
 
-  // Sync game state with match
+  // Ref to track previous move count for opponent sound detection
+  const prevMoveCountRef = useRef<number>(0);
+
+  // Sync game state with match and play sound on opponent move
   useEffect(() => {
     if (!match?.current_fen) return;
 
@@ -132,8 +135,29 @@ const ChessMultiplayerGame = () => {
     if (match.move_history && match.move_history.length > 0) {
       const lastMoveRecord = match.move_history[match.move_history.length - 1];
       setLastMove({ from: lastMoveRecord.from, to: lastMoveRecord.to });
+      
+      // Play sound if this is a new move from opponent
+      const currentMoveCount = match.move_history.length;
+      if (currentMoveCount > prevMoveCountRef.current && lastMoveRecord.player_id !== userId) {
+        // Determine if it was a capture by checking the previous position
+        const prevFen = currentMoveCount > 1 
+          ? match.move_history[currentMoveCount - 2]?.fen 
+          : 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+        try {
+          const prevGame = new Chess(prevFen);
+          const targetPiece = prevGame.get(lastMoveRecord.to as Square);
+          if (targetPiece) {
+            playSound('capture');
+          } else {
+            playSound('move');
+          }
+        } catch {
+          playSound('move');
+        }
+      }
+      prevMoveCountRef.current = currentMoveCount;
     }
-  }, [match?.current_fen, match?.move_history]);
+  }, [match?.current_fen, match?.move_history, userId, playSound]);
 
   // Handle game end conditions
   useEffect(() => {
@@ -283,8 +307,9 @@ const ChessMultiplayerGame = () => {
         });
 
         if (move) {
-          // Submit move to server
-          submitMove(moveFrom, square, gameCopy.fen(), move.promotion);
+          // Submit move to server with remaining time
+          const myTimeRemaining = myColor === 'w' ? localWhiteTime : localBlackTime;
+          submitMove(moveFrom, square, gameCopy.fen(), move.promotion, myTimeRemaining ?? undefined);
           
           // Play sound
           if (move.captured) {
@@ -312,7 +337,7 @@ const ChessMultiplayerGame = () => {
     if (getMoveOptions(square)) {
       setMoveFrom(square);
     }
-  }, [game, moveFrom, isMyTurn, getMoveOptions, submitMove, playSound]);
+  }, [game, moveFrom, isMyTurn, getMoveOptions, submitMove, playSound, myColor, localWhiteTime, localBlackTime]);
 
   // Handle piece drop (drag and drop)
   const onPieceDrop = useCallback((sourceSquare: Square, targetSquare: Square): boolean => {
@@ -328,7 +353,8 @@ const ChessMultiplayerGame = () => {
       });
 
       if (move) {
-        submitMove(sourceSquare, targetSquare, gameCopy.fen(), move.promotion);
+        const myTimeRemaining = myColor === 'w' ? localWhiteTime : localBlackTime;
+        submitMove(sourceSquare, targetSquare, gameCopy.fen(), move.promotion, myTimeRemaining ?? undefined);
         
         if (move.captured) {
           playSound('capture');
@@ -346,7 +372,7 @@ const ChessMultiplayerGame = () => {
     }
 
     return false;
-  }, [game, isMyTurn, submitMove, playSound]);
+  }, [game, isMyTurn, submitMove, playSound, myColor, localWhiteTime, localBlackTime]);
 
   // Custom square styles
   const customSquareStyles = useMemo(() => {

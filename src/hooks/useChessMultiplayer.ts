@@ -112,7 +112,7 @@ interface UseChessMultiplayerReturn {
   resignMatch: () => Promise<void>;
   
   // Game actions
-  submitMove: (from: string, to: string, newFen: string, promotion?: string) => Promise<boolean>;
+  submitMove: (from: string, to: string, newFen: string, promotion?: string, timeRemaining?: number) => Promise<boolean>;
   endMatch: (winnerId: string | null, result: string, reason: string) => Promise<void>;
   
   // Chat actions
@@ -435,7 +435,8 @@ export const useChessMultiplayer = ({
     from: string, 
     to: string, 
     newFen: string, 
-    promotion?: string
+    promotion?: string,
+    timeRemaining?: number
   ): Promise<boolean> => {
     if (!match?.id || !userId) return false;
 
@@ -447,6 +448,7 @@ export const useChessMultiplayer = ({
         p_to_square: to,
         p_new_fen: newFen,
         p_promotion: promotion || null,
+        p_time_remaining: timeRemaining ?? null,
       });
 
       if (rpcError) throw rpcError;

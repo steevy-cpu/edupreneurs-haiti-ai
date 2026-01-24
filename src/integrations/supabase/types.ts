@@ -3752,17 +3752,30 @@ export type Database = {
         Args: { other_user_id: string }
         Returns: string
       }
-      submit_chess_move: {
-        Args: {
-          p_from_square: string
-          p_match_id: string
-          p_new_fen: string
-          p_promotion?: string
-          p_to_square: string
-          p_user_id: string
-        }
-        Returns: Json
-      }
+      submit_chess_move:
+        | {
+            Args: {
+              p_from_square: string
+              p_match_id: string
+              p_new_fen: string
+              p_promotion?: string
+              p_to_square: string
+              p_user_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_from_square: string
+              p_match_id: string
+              p_new_fen: string
+              p_promotion?: string
+              p_time_remaining?: number
+              p_to_square: string
+              p_user_id: string
+            }
+            Returns: Json
+          }
       submit_multiplayer_answer: {
         Args: {
           p_answer: number
