@@ -1,7 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders, corsPreflightResponse, secureJsonResponse, secureErrorResponse } from '../_shared/securityHeaders.ts';
 
-const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
+const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
@@ -11,9 +11,6 @@ const FOUNDER_USER_IDS = [
   '0de08330-4183-48f9-b169-19b92f4d114f', // Steevy
   '7580cd10-e18c-4b2f-ac50-def28d046c9d', // Djood
 ];
-
-// Laura voice - better multilingual pronunciation including French
-const VOICE_ID = 'FGY2WhTYpPnrIDTdsKH5';
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
@@ -46,8 +43,8 @@ Deno.serve(async (req) => {
     console.log(`Founder ${user.id} authorized to generate audio`);
 
     // Check for API key
-    if (!ELEVENLABS_API_KEY) {
-      return secureErrorResponse('ElevenLabs API key not configured', 500);
+    if (!OPENAI_API_KEY) {
+      return secureErrorResponse('OpenAI API key not configured', 500);
     }
 
     const { wordId, word } = await req.json();
@@ -61,33 +58,28 @@ Deno.serve(async (req) => {
     // Initialize Supabase client with service role for storage access
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Generate audio from ElevenLabs
+    // Generate audio from OpenAI TTS (better French pronunciation)
     const ttsResponse = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}?output_format=mp3_44100_128`,
+      'https://api.openai.com/v1/audio/speech',
       {
         method: 'POST',
         headers: {
-          'xi-api-key': ELEVENLABS_API_KEY,
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          text: word,
-          model_id: 'eleven_multilingual_v2',
-          language_code: 'fr', // Force French pronunciation for Haitian education platform
-          voice_settings: {
-            stability: 0.75,
-            similarity_boost: 0.85,
-            style: 0.3,
-            use_speaker_boost: true,
-          },
+          model: 'tts-1-hd',  // High quality model
+          voice: 'nova',      // Good for educational French content
+          input: word,        // Auto-detects French from text
+          response_format: 'mp3',
         }),
       }
     );
 
     if (!ttsResponse.ok) {
       const errorText = await ttsResponse.text();
-      console.error('ElevenLabs error:', errorText);
-      return secureErrorResponse(`ElevenLabs API error: ${ttsResponse.status}`, 500);
+      console.error('OpenAI TTS error:', errorText);
+      return secureErrorResponse(`OpenAI TTS API error: ${ttsResponse.status}`, 500);
     }
 
     const audioBuffer = await ttsResponse.arrayBuffer();
