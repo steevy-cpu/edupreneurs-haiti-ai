@@ -1,12 +1,16 @@
 import { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { features, getIcon } from "@/data/homePageData";
+import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 
 /**
  * Features grid section.
  * Static content with CSS-only hover effects.
+ * Animations disabled on 3G connections.
  */
 export const FeaturesSection = memo(function FeaturesSection() {
+  const { shouldShowAnimations } = useNetworkAwareLoading();
+  
   return (
     <section className="py-12 sm:py-16 md:py-20 px-4 bg-gradient-to-b from-background to-muted/30">
       <div className="container mx-auto">
@@ -23,10 +27,12 @@ export const FeaturesSection = memo(function FeaturesSection() {
           {features.map((feature, idx) => (
             <Card 
               key={idx} 
-              className="group hover:scale-[1.02] transition-all duration-300 ease-out hover:shadow-xl border-primary/20 hover:border-primary/40 text-center"
+              className={`group transition-all duration-300 ease-out border-primary/20 hover:border-primary/40 text-center ${
+                shouldShowAnimations ? 'hover:scale-[1.02] hover:shadow-xl' : 'hover:shadow-lg'
+              }`}
             >
               <CardHeader>
-                <div className="mx-auto mb-4 group-hover:scale-105 transition-transform duration-300 ease-out">
+                <div className={`mx-auto mb-4 ${shouldShowAnimations ? 'group-hover:scale-105 transition-transform duration-300 ease-out' : ''}`}>
                   {getIcon(feature.iconName, "w-10 h-10 text-primary")}
                 </div>
                 <CardTitle className="text-lg font-bold text-primary">

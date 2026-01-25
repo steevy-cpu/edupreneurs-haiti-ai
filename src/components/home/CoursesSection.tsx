@@ -3,12 +3,16 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { courses, getIcon } from "@/data/homePageData";
+import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 
 /**
  * Courses grid section with Jude CTA card.
  * Static content with lazy-loaded Jude image.
+ * Animations disabled on 3G connections.
  */
 export const CoursesSection = memo(function CoursesSection() {
+  const { shouldShowAnimations } = useNetworkAwareLoading();
+  
   return (
     <section id="courses" className="py-12 sm:py-16 md:py-20 px-4 bg-background">
       <div className="container mx-auto">
@@ -23,10 +27,12 @@ export const CoursesSection = memo(function CoursesSection() {
           {courses.map((course, idx) => (
             <Card 
               key={idx} 
-              className="group hover:scale-[1.02] transition-all duration-300 ease-out hover:shadow-xl border-primary/20 hover:border-primary/40"
+              className={`group transition-all duration-300 ease-out border-primary/20 hover:border-primary/40 ${
+                shouldShowAnimations ? 'hover:scale-[1.02] hover:shadow-xl' : 'hover:shadow-lg'
+              }`}
             >
               <CardHeader>
-                <div className="mb-4 group-hover:scale-105 transition-transform duration-300 ease-out">
+                <div className={`mb-4 ${shouldShowAnimations ? 'group-hover:scale-105 transition-transform duration-300 ease-out' : ''}`}>
                   {getIcon(course.iconName, "w-12 h-12 text-primary")}
                 </div>
                 <CardTitle className="font-bold text-primary">

@@ -2,14 +2,17 @@ import { memo, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HelpCircle } from "lucide-react";
 import { faqItems } from "@/data/homePageData";
+import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 
 /**
  * FAQ accordion section.
  * Local state only - no global state pollution.
  * Uses CSS max-height for smooth animations.
+ * Animations disabled on 3G connections.
  */
 export const FAQSection = memo(function FAQSection() {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+  const { shouldShowAnimations } = useNetworkAwareLoading();
 
   const toggleFaq = useCallback((index: number) => {
     setExpandedFaq(prev => prev === index ? null : index);
@@ -30,7 +33,7 @@ export const FAQSection = memo(function FAQSection() {
             </p>
           </div>
           <div className="flex-shrink-0">
-            <div className="w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 flex items-center justify-center animate-float relative">
+            <div className={`w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 flex items-center justify-center relative ${shouldShowAnimations ? 'animate-float' : ''}`}>
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-accent/20" />
               <HelpCircle className="w-16 sm:w-20 md:w-24 h-16 sm:h-20 md:h-24 text-primary relative z-10" />
             </div>
@@ -41,7 +44,9 @@ export const FAQSection = memo(function FAQSection() {
           {faqItems.map((faq, idx) => (
             <Card 
               key={idx} 
-              className="group cursor-pointer hover:shadow-xl transition-all duration-300 border-primary/20 hover:border-primary/40 hover:scale-[1.02] bg-gradient-to-r from-card to-card/50" 
+              className={`group cursor-pointer transition-all duration-300 border-primary/20 hover:border-primary/40 bg-gradient-to-r from-card to-card/50 ${
+                shouldShowAnimations ? 'hover:shadow-xl hover:scale-[1.02]' : 'hover:shadow-lg'
+              }`}
               onClick={() => toggleFaq(idx)}
             >
               <CardHeader>

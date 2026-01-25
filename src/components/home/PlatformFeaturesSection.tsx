@@ -2,6 +2,7 @@ import { memo } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { platformFeatures, iconMap } from "@/data/homePageData";
+import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 
 interface PlatformFeaturesSectionProps {
   examsCount: number;
@@ -10,10 +11,13 @@ interface PlatformFeaturesSectionProps {
 /**
  * Platform features grid with dynamic exam count.
  * Static content with links that prefetch on hover.
+ * Animations disabled on 3G connections.
  */
 export const PlatformFeaturesSection = memo(function PlatformFeaturesSection({
   examsCount
 }: PlatformFeaturesSectionProps) {
+  const { shouldShowAnimations } = useNetworkAwareLoading();
+  
   return (
     <section className="py-12 sm:py-16 md:py-20 px-4 bg-background">
       <div className="container mx-auto">
@@ -33,10 +37,14 @@ export const PlatformFeaturesSection = memo(function PlatformFeaturesSection({
             
             return (
               <Link key={idx} to={feature.link} className="group">
-                <Card className="h-full hover:scale-[1.02] transition-all duration-300 ease-out hover:shadow-xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 relative overflow-hidden">
+                <Card className={`h-full transition-all duration-300 ease-out border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 relative overflow-hidden ${
+                  shouldShowAnimations ? 'hover:scale-[1.02] hover:shadow-xl' : 'hover:shadow-lg'
+                }`}>
                   <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${feature.color}`} />
                   <CardHeader className="pb-2">
-                    <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${feature.color} flex items-center justify-center mb-3 group-hover:scale-105 transition-transform duration-300 ease-out shadow-lg`}>
+                    <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${feature.color} flex items-center justify-center mb-3 shadow-lg ${
+                      shouldShowAnimations ? 'group-hover:scale-105 transition-transform duration-300 ease-out' : ''
+                    }`}>
                       <IconComponent className="w-6 h-6 text-white" />
                     </div>
                     <CardTitle className="text-lg font-bold text-primary group-hover:text-accent transition-colors">

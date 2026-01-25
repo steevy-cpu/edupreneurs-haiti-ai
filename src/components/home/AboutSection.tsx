@@ -1,12 +1,16 @@
 import { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { aboutPoints, visionPoints, getIcon } from "@/data/homePageData";
+import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 
 /**
  * About section with mission and vision cards.
  * Static markdown-like content.
+ * Animations disabled on 3G connections.
  */
 export const AboutSection = memo(function AboutSection() {
+  const { shouldShowAnimations } = useNetworkAwareLoading();
+  
   return (
     <section id="about" className="relative py-20 px-4 bg-gradient-to-br from-background to-accent/5 overflow-hidden">
       {/* Decorative blurs */}
@@ -44,10 +48,12 @@ export const AboutSection = memo(function AboutSection() {
               {aboutPoints.map((point, idx) => (
                 <Card 
                   key={idx} 
-                  className="group hover:shadow-lg transition-all duration-300 ease-out hover:scale-[1.02] border-primary/20 hover:border-primary/40 bg-gradient-to-r from-card to-card/50"
+                  className={`group transition-all duration-300 ease-out border-primary/20 hover:border-primary/40 bg-gradient-to-r from-card to-card/50 ${
+                    shouldShowAnimations ? 'hover:shadow-lg hover:scale-[1.02]' : 'hover:shadow-md'
+                  }`}
                 >
                   <CardContent className="p-4 flex gap-4">
-                    <div className="group-hover:scale-105 transition-transform duration-300 ease-out flex-shrink-0">
+                    <div className={`flex-shrink-0 ${shouldShowAnimations ? 'group-hover:scale-105 transition-transform duration-300 ease-out' : ''}`}>
                       {getIcon(point.iconName, "w-8 h-8 text-primary")}
                     </div>
                     <div>
@@ -61,8 +67,12 @@ export const AboutSection = memo(function AboutSection() {
           </div>
           
           {/* Right Column - Vision */}
-          <Card className="relative bg-gradient-to-br from-card via-primary/5 to-accent/10 shadow-xl border-2 border-primary/20 overflow-hidden group hover:shadow-2xl transition-all duration-500 ease-out">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-out" />
+          <Card className={`relative bg-gradient-to-br from-card via-primary/5 to-accent/10 shadow-xl border-2 border-primary/20 overflow-hidden group transition-all duration-500 ease-out ${
+            shouldShowAnimations ? 'hover:shadow-2xl' : 'hover:shadow-xl'
+          }`}>
+            <div className={`absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 transition-opacity duration-500 ease-out ${
+              shouldShowAnimations ? 'opacity-0 group-hover:opacity-100' : 'opacity-0'
+            }`} />
             <CardHeader className="relative z-10">
               <CardTitle className="text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 Notre Vision pour Haïti
@@ -76,7 +86,9 @@ export const AboutSection = memo(function AboutSection() {
               {visionPoints.map((item, idx) => (
                 <div 
                   key={idx} 
-                  className="group/item p-4 bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 rounded-xl border-l-4 border-accent hover:border-primary transition-all duration-300 hover:shadow-lg hover:translate-x-2"
+                  className={`group/item p-4 bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 rounded-xl border-l-4 border-accent hover:border-primary transition-all duration-300 ${
+                    shouldShowAnimations ? 'hover:shadow-lg hover:translate-x-2' : 'hover:shadow-md'
+                  }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
