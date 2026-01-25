@@ -121,16 +121,9 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('@tanstack/')) {
             return 'query';
           }
-          // Note: Removed aggressive chunking for radix-ui, framer-motion, and recharts
+          // Note: Removed aggressive chunking for radix-ui, framer-motion, recharts, chess, and three.js
           // These libraries have internal circular dependencies that cause TDZ errors when manually split
-          // Chess - only needed on chess page
-          if (id.includes('chess') || id.includes('react-chessboard')) {
-            return 'chess';
-          }
-          // 3D/Three.js - only needed for 3D features
-          if (id.includes('three') || id.includes('@react-three/')) {
-            return 'three';
-          }
+          // Let Vite handle chunking automatically for these libraries
         },
       },
     },
