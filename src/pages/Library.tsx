@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, BookOpen, Sparkles } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -8,7 +8,7 @@ import { EbookCard } from "@/components/ebook/EbookCard";
 import { EbookFilters as Filters } from "@/components/ebook/EbookFilters";
 import { VisitorLibraryOverlay } from "@/components/ebook/VisitorLibraryOverlay";
 import { useVisitor } from "@/contexts/VisitorContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,26 +17,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function Library() {
   const navigate = useNavigate();
   const { isVisitor } = useVisitor();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const { isAuthenticated } = useSessionAuth();
   const [filters, setFilters] = useState<EbookFilters>({});
   
   const { data: ebooks, isLoading: ebooksLoading } = useEbooks(filters);
   const { data: progressList } = useAllReadingProgress();
-
-  // Check auth state
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setIsAuthenticated(!!user);
-    };
-    checkAuth();
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setIsAuthenticated(!!session?.user);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   // Create a map of ebook_id to progress for quick lookup
   const progressMap = new Map(

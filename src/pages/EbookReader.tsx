@@ -7,7 +7,7 @@ import { useReadingProgress, useAutoSaveProgress } from "@/hooks/useReadingProgr
 import { EbookComments } from "@/components/ebook/EbookComments";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { VisitorLibraryOverlay } from "@/components/ebook/VisitorLibraryOverlay";
-import { supabase } from "@/integrations/supabase/client";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import {
   Collapsible,
   CollapsibleContent,
@@ -27,7 +27,7 @@ export default function EbookReader() {
   const { ebookId } = useParams<{ ebookId: string }>();
   const navigate = useNavigate();
   const { isVisitor } = useVisitor();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const { isAuthenticated } = useSessionAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [commentsOpen, setCommentsOpen] = useState(false);
   
@@ -37,15 +37,6 @@ export default function EbookReader() {
   const { data: ebook, isLoading: ebookLoading, error } = useEbook(ebookId);
   const { data: progress, isLoading: progressLoading } = useReadingProgress(ebookId);
   const { saveProgress, saveProgressNow } = useAutoSaveProgress(ebookId, ebook?.page_count || null);
-
-  // Check auth
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setIsAuthenticated(!!user);
-    };
-    checkAuth();
-  }, []);
 
   // Track if we've restored position to prevent overwriting user navigation
   const hasRestoredPosition = useRef(false);

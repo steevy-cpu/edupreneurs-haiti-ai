@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { isFounder } from "@/lib/founderConstants";
 import ComingSoonOverlay from "@/components/ComingSoonOverlay";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 
 import {
   Copy,
@@ -46,6 +47,9 @@ interface Referral {
 
 const Affiliations = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated, isLoading: authLoading } = useSessionAuth();
+  const userId = user?.id ?? null;
+  
   const [copied, setCopied] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [referrals, setReferrals] = useState<Referral[]>([]);
@@ -55,34 +59,30 @@ const Affiliations = () => {
     pending: 0,
     totalPoints: 0,
   });
-  const [isUserFounder, setIsUserFounder] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
 
+  // Redirect if not authenticated
   useEffect(() => {
-    checkAuth();
-    fetchAffiliationData();
-  }, []);
-
-  const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    if (!authLoading && !isAuthenticated) {
       navigate("/auth");
-      return;
     }
-    // Check if user is a founder
-    setUserId(session.user.id);
-    setIsUserFounder(isFounder(session.user.id));
-  };
+  }, [authLoading, isAuthenticated, navigate]);
 
-  const fetchAffiliationData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+  // Check if user is a founder
+  const isUserFounder = userId ? isFounder(userId) : false;
+
+  // Fetch affiliation data when userId is available
+  useEffect(() => {
+    if (!userId) return;
+    fetchAffiliationData(userId);
+  }, [userId]);
+
+  const fetchAffiliationData = async (uid: string) => {
 
     // Fetch user profile
     const { data: profileData, error: profileError } = await supabase
       .from("profiles")
       .select("id, referral_code, affiliation_points, full_name")
-      .eq("user_id", user.id)
+      .eq("user_id", uid)
       .single();
 
     if (profileError) {

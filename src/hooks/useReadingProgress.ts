@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCallback, useRef, useEffect } from "react";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 
 export interface ReadingProgress {
   id: string;
@@ -13,63 +14,67 @@ export interface ReadingProgress {
 
 // Fetch reading progress for a specific ebook
 export function useReadingProgress(ebookId: string | undefined) {
+  const { user } = useSessionAuth();
+  const userId = user?.id;
+
   return useQuery({
     queryKey: ['reading-progress', ebookId],
     queryFn: async () => {
-      if (!ebookId) return null;
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+      if (!ebookId || !userId) return null;
 
       const { data, error } = await supabase
         .from('ebook_reading_progress')
         .select('*')
         .eq('ebook_id', ebookId)
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .maybeSingle();
       
       if (error) throw error;
       return data as ReadingProgress | null;
     },
-    enabled: !!ebookId,
+    enabled: !!ebookId && !!userId,
   });
 }
 
 // Fetch all reading progress for current user
 export function useAllReadingProgress() {
+  const { user } = useSessionAuth();
+  const userId = user?.id;
+
   return useQuery({
-    queryKey: ['all-reading-progress'],
+    queryKey: ['all-reading-progress', userId],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
+      if (!userId) return [];
 
       const { data, error } = await supabase
         .from('ebook_reading_progress')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
       
       if (error) throw error;
       return data as ReadingProgress[];
     },
+    enabled: !!userId,
   });
 }
 
 // Hook for auto-saving reading progress with debounce
 export function useAutoSaveProgress(ebookId: string | undefined, totalPages: number | null) {
+  const { user } = useSessionAuth();
+  const userId = user?.id;
   const queryClient = useQueryClient();
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSavedPageRef = useRef<number | null>(null);
 
   const saveMutation = useMutation({
     mutationFn: async ({ currentPage, isCompleted }: { currentPage: number; isCompleted: boolean }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user || !ebookId) throw new Error('Not authenticated or no ebook');
+      if (!userId || !ebookId) throw new Error('Not authenticated or no ebook');
 
       const { data, error } = await supabase
         .from('ebook_reading_progress')
         .upsert({
           ebook_id: ebookId,
-          user_id: user.id,
+          user_id: userId,
           current_page: currentPage,
           is_completed: isCompleted,
           last_read_at: new Date().toISOString(),
@@ -84,7 +89,7 @@ export function useAutoSaveProgress(ebookId: string | undefined, totalPages: num
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reading-progress', ebookId] });
-      queryClient.invalidateQueries({ queryKey: ['all-reading-progress'] });
+      queryClient.invalidateQueries({ queryKey: ['all-reading-progress', userId] });
     },
   });
 

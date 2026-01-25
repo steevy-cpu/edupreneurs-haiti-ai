@@ -1,27 +1,29 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useSessionAuth } from '@/contexts/SessionAuthContext';
 
 const FAVORITES_KEY = 'matieres_favorites';
 
 export function useMatieresFavorites() {
+  const { user, isLoading: authLoading } = useSessionAuth();
+  const userId = user?.id ?? null;
+  
   const [favorites, setFavorites] = useState<string[]>([]);
-  const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check auth state and load favorites
+  // Load favorites when auth state changes
   useEffect(() => {
+    if (authLoading) return;
+
     const loadFavorites = async () => {
       setIsLoading(true);
       
-      const { data: { user } } = await supabase.auth.getUser();
-      setUserId(user?.id || null);
-      
-      if (user) {
+      if (userId) {
         // Load from database for authenticated users
         const { data, error } = await supabase
           .from('user_favorites')
           .select('subject_slug')
-          .eq('user_id', user.id);
+          .eq('user_id', userId);
         
         if (!error && data) {
           const dbFavorites = data.map(f => f.subject_slug);
@@ -45,57 +47,43 @@ export function useMatieresFavorites() {
     };
 
     loadFavorites();
+  }, [userId, authLoading]);
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      const newUserId = session?.user?.id || null;
-      setUserId(newUserId);
-      
-      if (event === 'SIGNED_IN' && newUserId) {
-        // User just signed in - sync localStorage favorites to database
-        let localFavorites: string[] = [];
-        try {
-          localFavorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
-        } catch {
-          console.error('[useMatieresFavorites] Error parsing localStorage');
-          localFavorites = [];
-        }
+  // Sync localStorage favorites to database on sign in (handled separately)
+  useEffect(() => {
+    if (!userId || authLoading) return;
+
+    const syncLocalFavorites = async () => {
+      try {
+        const localFavorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
         
         if (localFavorites.length > 0) {
           // Insert local favorites to database (ignore conflicts)
           for (const slug of localFavorites) {
             await supabase
               .from('user_favorites')
-              .upsert({ user_id: newUserId, subject_slug: slug }, { onConflict: 'user_id,subject_slug' });
+              .upsert({ user_id: userId, subject_slug: slug }, { onConflict: 'user_id,subject_slug' });
+          }
+          
+          // Reload from database to get merged list
+          const { data } = await supabase
+            .from('user_favorites')
+            .select('subject_slug')
+            .eq('user_id', userId);
+          
+          if (data) {
+            const dbFavorites = data.map(f => f.subject_slug);
+            setFavorites(dbFavorites);
+            localStorage.setItem(FAVORITES_KEY, JSON.stringify(dbFavorites));
           }
         }
-        
-        // Load all favorites from database
-        const { data } = await supabase
-          .from('user_favorites')
-          .select('subject_slug')
-          .eq('user_id', newUserId);
-        
-        if (data) {
-          const dbFavorites = data.map(f => f.subject_slug);
-          setFavorites(dbFavorites);
-          localStorage.setItem(FAVORITES_KEY, JSON.stringify(dbFavorites));
-        }
-      } else if (event === 'SIGNED_OUT') {
-        // Keep localStorage favorites but clear state to reload from localStorage
-        try {
-          const stored = localStorage.getItem(FAVORITES_KEY);
-          if (stored) {
-            setFavorites(JSON.parse(stored));
-          }
-        } catch {
-          setFavorites([]);
-        }
+      } catch (error) {
+        console.error('[useMatieresFavorites] Error syncing local favorites:', error);
       }
-    });
+    };
 
-    return () => subscription.unsubscribe();
-  }, []);
+    syncLocalFavorites();
+  }, [userId, authLoading]);
 
   // Save to localStorage (for cache and anonymous users)
   const saveToLocalStorage = useCallback((newFavorites: string[]) => {

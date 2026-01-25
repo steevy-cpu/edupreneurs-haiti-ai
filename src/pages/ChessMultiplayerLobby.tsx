@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { supabase } from '@/integrations/supabase/client';
+import { useSessionAuth } from '@/contexts/SessionAuthContext';
 import { 
   Crown, 
   Users, 
@@ -36,9 +36,9 @@ const ChessMultiplayerLobby = () => {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   
-  // Auth state
-  const [userId, setUserId] = useState<string | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  // Auth state from context
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useSessionAuth();
+  const userId = user?.id ?? null;
   
   // Form state
   const [activeTab, setActiveTab] = useState<'create' | 'join'>('create');
@@ -55,19 +55,12 @@ const ChessMultiplayerLobby = () => {
     cancelMatch,
   } = useChessMultiplayer({ userId, enabled: true });
 
-  // Check auth
+  // Redirect if not authenticated
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/auth?redirect=/chess-multiplayer');
-        return;
-      }
-      setUserId(user.id);
-      setIsAuthLoading(false);
-    };
-    checkAuth();
-  }, [navigate]);
+    if (!isAuthLoading && !isAuthenticated) {
+      navigate('/auth?redirect=/chess-multiplayer');
+    }
+  }, [isAuthLoading, isAuthenticated, navigate]);
 
   // Handle join code from URL
   useEffect(() => {

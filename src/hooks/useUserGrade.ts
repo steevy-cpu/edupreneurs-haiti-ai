@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 
 // Super users who can access ALL grades (Steevy & Djood only)
 const SUPER_USER_IDS = [
@@ -72,33 +73,27 @@ interface UseUserGradeResult {
 }
 
 export function useUserGrade(): UseUserGradeResult {
+  const { user, isLoading: authLoading, isAuthenticated } = useSessionAuth();
+  const userId = user?.id ?? null;
+  
   const [userGrade, setUserGrade] = useState<AllGradeTypes | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const fetchUserGrade = async () => {
+      if (!userId) {
+        setUserGrade(null);
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) {
-          setIsAuthenticated(false);
-          setUserGrade(null);
-          setUserId(null);
-          setIsLoading(false);
-          return;
-        }
-
-        setUserId(user.id);
-        setIsAuthenticated(true);
-
         // Fetch user's profile to get academic_grade
         const { data: profile, error } = await supabase
           .from('profiles')
           .select('academic_grade')
-          .eq('user_id', user.id)
-          .single();
+          .eq('user_id', userId)
+          .maybeSingle();
 
         if (error) {
           console.error('Error fetching user grade:', error);
@@ -121,21 +116,10 @@ export function useUserGrade(): UseUserGradeResult {
       }
     };
 
-    fetchUserGrade();
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
-        setIsAuthenticated(false);
-        setUserGrade(null);
-        setUserId(null);
-      } else if (session?.user) {
-        fetchUserGrade();
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+    if (!authLoading) {
+      fetchUserGrade();
+    }
+  }, [userId, authLoading]);
 
   // Check if current user is a super user
   const isSuperUser = userId ? SUPER_USER_IDS.includes(userId) : false;
