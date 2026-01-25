@@ -66,6 +66,8 @@ export function SessionAuthProvider({ children }: SessionAuthProviderProps) {
     isLoading,
   };
 
+  // CRITICAL: Always render children immediately for non-blocking auth
+  // Auth-gated pages handle their own loading states with skeletons
   return (
     <SessionAuthContext.Provider value={value}>
       {children}

@@ -111,7 +111,7 @@ const Settings = () => {
     return localStorage.getItem("lessonLanguage") || "fr";
   });
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated (handled after all hooks)
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate("/auth");
@@ -372,7 +372,8 @@ const Settings = () => {
     }
   };
 
-if (pageLoading) {
+  // Show skeleton while auth is loading OR page data is loading (non-blocking)
+  if (authLoading || pageLoading) {
     return <SettingsPageSkeleton simplified={isSlowConnection} />;
   }
 
