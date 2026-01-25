@@ -10,13 +10,12 @@ import { MusicPlayerProvider } from "@/contexts/MusicPlayerContext";
 import { VisitorProvider } from "@/contexts/VisitorContext";
 import { FirstTimeUserProvider } from "@/contexts/FirstTimeUserContext";
 import { NetworkProvider } from "@/contexts/NetworkContext";
+import { SessionAuthProvider } from "@/contexts/SessionAuthContext";
 import { GlobalMusicPlayer } from "@/components/GlobalMusicPlayer";
 import { ScrollToTop } from "@/components/ScrollToTop";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense } from "react";
 import { LegacyRedirect } from "@/components/LegacyRedirect";
 import { JudeChatbot } from "@/components/JudeChatbot";
-import { supabase } from "@/integrations/supabase/client";
-import { clearAllPersistedCache } from "@/utils/queryPersistence";
 import { VisitorBanner } from "@/components/visitor";
 const VisitorTour = lazy(() => import("@/components/visitor/VisitorTour").then(m => ({ default: m.VisitorTour })));
 import { VisitorMusicSync } from "@/components/visitor/VisitorMusicSync";
@@ -140,33 +139,20 @@ const queryClient = new QueryClient({
   },
 });
 
-// Listen for auth changes to clear cache on logout/login
-supabase.auth.onAuthStateChange((event) => {
-  if (event === 'SIGNED_OUT') {
-    // Clear all persisted cache on logout for security
-    clearAllPersistedCache();
-    queryClient.clear();
-    console.log('User signed out - cleared all caches');
-  }
-  if (event === 'SIGNED_IN') {
-    // Clear stale profile cache to ensure fresh data for new user
-    queryClient.removeQueries({ queryKey: ['user-profile'] });
-    queryClient.removeQueries({ queryKey: ['sidebar-badges'] });
-    console.log('User signed in - cleared profile caches for fresh data');
-  }
-});
+// Auth state change listener moved to SessionAuthContext for centralized management
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} forcedTheme={undefined}>
-      <NetworkProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <MusicPlayerProvider>
-            <VisitorProvider>
-              <BrowserRouter>
-                <FirstTimeUserProvider>
+    <SessionAuthProvider>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} forcedTheme={undefined}>
+        <NetworkProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <MusicPlayerProvider>
+              <VisitorProvider>
+                <BrowserRouter>
+                  <FirstTimeUserProvider>
                 <ScrollToTop />
                 <CookieConsent />
                 <GlobalMusicPlayer />
@@ -290,8 +276,9 @@ const App = () => (
             </VisitorProvider>
           </MusicPlayerProvider>
         </TooltipProvider>
-      </NetworkProvider>
-    </ThemeProvider>
+        </NetworkProvider>
+      </ThemeProvider>
+    </SessionAuthProvider>
   </QueryClientProvider>
 );
 

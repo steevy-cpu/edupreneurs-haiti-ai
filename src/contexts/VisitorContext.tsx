@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 
 export type VisitorType = "student" | "parent" | "investor" | "educator" | null;
 
@@ -30,6 +30,9 @@ interface VisitorProviderProps {
 }
 
 export const VisitorProvider = ({ children }: VisitorProviderProps) => {
+  // Use centralized session auth - eliminates duplicate getSession() call
+  const { isAuthenticated, user } = useSessionAuth();
+  
   const [isVisitor, setIsVisitor] = useState(false);
   const [visitorType, setVisitorTypeState] = useState<VisitorType>(null);
   const [tourStep, setTourStep] = useState(0);
@@ -55,40 +58,19 @@ export const VisitorProvider = ({ children }: VisitorProviderProps) => {
     }
   }, []);
 
-  // Auto-clear visitor mode when user signs in (has an actual session)
+  // Auto-clear visitor mode when user signs in (reactive to centralized auth)
   useEffect(() => {
-    // Check for existing session on mount
-    const checkExistingSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      // Only clear visitor mode if there's an ACTUAL authenticated session
-      if (session?.user && isVisitor) {
-        setIsVisitor(false);
-        setVisitorTypeState(null);
-        setTourStep(0);
-        setTourCompleted(false);
-        setTourActive(false);
-        setShowWelcomePopup(false);
-        sessionStorage.removeItem(VISITOR_STORAGE_KEY);
-      }
-    };
-    checkExistingSession();
-
-    // Listen for auth state changes - only clear on ACTUAL sign in with a session
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // Only clear visitor mode if user actually signed in (has a session with a user)
-      if (event === 'SIGNED_IN' && session?.user && isVisitor) {
-        setIsVisitor(false);
-        setVisitorTypeState(null);
-        setTourStep(0);
-        setTourCompleted(false);
-        setTourActive(false);
-        setShowWelcomePopup(false);
-        sessionStorage.removeItem(VISITOR_STORAGE_KEY);
-      }
-    });
-    
-    return () => subscription.unsubscribe();
-  }, [isVisitor]);
+    // Only clear visitor mode if there's an ACTUAL authenticated session
+    if (isAuthenticated && user && isVisitor) {
+      setIsVisitor(false);
+      setVisitorTypeState(null);
+      setTourStep(0);
+      setTourCompleted(false);
+      setTourActive(false);
+      setShowWelcomePopup(false);
+      sessionStorage.removeItem(VISITOR_STORAGE_KEY);
+    }
+  }, [isAuthenticated, user, isVisitor]);
 
   // Persist visitor state to sessionStorage
   useEffect(() => {

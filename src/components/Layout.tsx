@@ -1,6 +1,7 @@
 import { useState, useEffect, ReactNode } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { toast } from "sonner";
 import { useMessageSounds } from "@/hooks/useMessageSounds";
 import { useNotificationSound } from "@/hooks/useNotificationSound";
@@ -79,6 +80,10 @@ export const Layout = ({ children }: LayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isVisitor, showWelcomePopup, completeWelcomePopup, exitVisitorMode } = useVisitor();
+  
+  // Use centralized session auth - eliminates duplicate getSession()/getUser() calls
+  const { session, user: authUser, isAuthenticated: isSessionAuthenticated } = useSessionAuth();
+  
   const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile overlay state
   const [sidebarCollapsed, setSidebarCollapsed] = useSidebarCollapsed(); // Desktop collapsed state
   const presenceChannelRef = useState<{ current: any | null }>({ current: null })[0];
@@ -106,8 +111,8 @@ export const Layout = ({ children }: LayoutProps) => {
     checkAuth();
     setupGlobalPresence();
     
-    // Clear stale visitor mode when authenticated user is detected
-    if (profile.isAuthenticated && isVisitor) {
+    // Clear stale visitor mode when authenticated user is detected (using centralized auth)
+    if (isSessionAuthenticated && isVisitor) {
       exitVisitorMode();
     }
     
@@ -116,7 +121,7 @@ export const Layout = ({ children }: LayoutProps) => {
         supabase.removeChannel(presenceChannelRef.current);
       }
     };
-  }, [isVisitor, profile.isAuthenticated]);
+  }, [isVisitor, isSessionAuthenticated]);
 
   // Realtime subscriptions for toast notifications (separate from badge updates)
   useEffect(() => {
@@ -220,21 +225,21 @@ export const Layout = ({ children }: LayoutProps) => {
 
   const setupGlobalPresence = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      // Use user from centralized auth context instead of separate getUser() call
+      if (!authUser) return;
 
-      console.log('🌐 [Layout] Setting up global presence for user:', user.id);
+      console.log('🌐 [Layout] Setting up global presence for user:', authUser.id);
       
       // Update last_seen in database when user comes online
       await supabase
         .from('profiles')
         .update({ last_seen: new Date().toISOString() })
-        .eq('user_id', user.id);
+        .eq('user_id', authUser.id);
       
       const channel = supabase.channel('online-users', {
         config: {
           presence: {
-            key: user.id,
+            key: authUser.id,
           },
         },
       });
@@ -260,9 +265,9 @@ export const Layout = ({ children }: LayoutProps) => {
       channel.subscribe(async (status) => {
         console.log('📡 [Layout] Channel status:', status);
         if (status === 'SUBSCRIBED') {
-          console.log('✅ [Layout] Broadcasting presence for user:', user.id);
+          console.log('✅ [Layout] Broadcasting presence for user:', authUser.id);
           const trackStatus = await channel.track({
-            user_id: user.id,
+            user_id: authUser.id,
             online_at: new Date().toISOString(),
           });
           console.log('📡 [Layout] Track status:', trackStatus);
@@ -282,8 +287,7 @@ export const Layout = ({ children }: LayoutProps) => {
       // Skip auth check for visitors - they're allowed to browse
       if (isVisitor) return;
       
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      // Use session from centralized auth context instead of separate getSession() call
       if (!session && location.pathname !== "/auth") {
         navigate("/auth");
         return;

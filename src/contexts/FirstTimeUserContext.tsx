@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useSessionAuth } from '@/contexts/SessionAuthContext';
 
 // Map tour step index to nav icon path for mobile highlighting
 const TOUR_STEP_NAV_PATHS: Record<number, string | null> = {
@@ -121,9 +122,11 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
     '6698f395-7f46-48b9-b7d3-d1151d9cec8c'  // vibemusical02@gmail.com (Test01)
   ];
 
-  // Get current location to check if user is on dashboard
   const location = useLocation();
   const isOnDashboard = location.pathname === '/dashboard';
+  
+  // Use centralized session auth - eliminates duplicate getUser() call
+  const { user: authUser, isAuthenticated } = useSessionAuth();
 
   // Check tour completion status when user is on dashboard
   useEffect(() => {
@@ -146,21 +149,20 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
         return;
       }
 
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) {
-          setIsLoading(false);
-          return;
-        }
+      // Use user from centralized auth context instead of separate getUser() call
+      if (!authUser) {
+        setIsLoading(false);
+        return;
+      }
 
-        setUserId(user.id);
-        setIsSuperUser(SUPER_USER_IDS.includes(user.id));
+      try {
+        setUserId(authUser.id);
+        setIsSuperUser(SUPER_USER_IDS.includes(authUser.id));
         // Fetch profile data including tour completion status
         const { data: profile, error } = await supabase
           .from('profiles')
           .select('nickname, academic_grade, onboarding_tour_completed')
-          .eq('user_id', user.id)
+          .eq('user_id', authUser.id)
           .single();
 
         if (error) {
@@ -173,14 +175,14 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
         setUserGrade(profile?.academic_grade || null);
 
         // Check if this is a test account - always show tour for testing
-        const isTestAccount = TEST_ACCOUNT_IDS.includes(user.id);
+        const isTestAccount = TEST_ACCOUNT_IDS.includes(authUser.id);
 
         if (isTestAccount) {
           // Test accounts: only show if not already started in this session
-          const sessionKey = `tour_session_started_${user.id}`;
+          const sessionKey = `tour_session_started_${authUser.id}`;
           if (!sessionStorage.getItem(sessionKey)) {
             console.log('Test account detected - showing tour for testing');
-            localStorage.removeItem(`first_time_tour_completed_${user.id}`);
+            localStorage.removeItem(`first_time_tour_completed_${authUser.id}`);
             sessionStorage.setItem(sessionKey, 'true');
             setShowWelcome(true);
             setTourCompleted(false);
@@ -188,7 +190,7 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
         } else {
           // Check if tour was already completed
           const dbCompleted = profile?.onboarding_tour_completed === true;
-          const localCompleted = localStorage.getItem(`first_time_tour_completed_${user.id}`) === 'true';
+          const localCompleted = localStorage.getItem(`first_time_tour_completed_${authUser.id}`) === 'true';
           
           if (dbCompleted || localCompleted) {
             setTourCompleted(true);
@@ -210,35 +212,30 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
 
     checkTourStatus();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session?.user && isOnDashboard) {
-        // Only check if not already initialized and tour not active
-        if (!hasInitialized.current && !tourActive && !showWelcome) {
-          checkTourStatus();
-        }
-      } else if (event === 'SIGNED_OUT') {
-        // Reset everything on sign out
-        hasInitialized.current = false;
-        setShowWelcome(false);
-        setWelcomeComplete(false);
-        setShowAvatarGeneration(false);
-        setAvatarGenerationComplete(false);
-        setTourActive(false);
-        setTourStep(0);
-        setTourCompleted(false);
-        setUserNickname(null);
-        setUserGrade(null);
-        setUserId(null);
-        // Clear session storage for this user
-        if (session?.user?.id) {
-          sessionStorage.removeItem(`tour_session_started_${session.user.id}`);
-        }
-      }
-    });
+    // React to auth state changes via centralized SessionAuth
+    // The auth listener is now in SessionAuthContext, so we just need to react to user changes
+  }, [isOnDashboard, tourActive, showWelcome, showAvatarGeneration, authUser]);
 
-    return () => subscription.unsubscribe();
-  }, [isOnDashboard, tourActive, showWelcome, showAvatarGeneration]);
+  // Handle sign out state reset
+  useEffect(() => {
+    if (!isAuthenticated && userId) {
+      // User signed out - reset everything
+      hasInitialized.current = false;
+      setShowWelcome(false);
+      setWelcomeComplete(false);
+      setShowAvatarGeneration(false);
+      setAvatarGenerationComplete(false);
+      setTourActive(false);
+      setTourStep(0);
+      setTourCompleted(false);
+      setUserNickname(null);
+      setUserGrade(null);
+      if (userId) {
+        sessionStorage.removeItem(`tour_session_started_${userId}`);
+      }
+      setUserId(null);
+    }
+  }, [isAuthenticated, userId]);
 
   const completeWelcome = useCallback(() => {
     setWelcomeComplete(true);
