@@ -1,3 +1,15 @@
+/**
+ * @deprecated This component is deprecated and will be removed in a future version.
+ * Use the new AppShell architecture from '@/shell' instead.
+ * 
+ * The new shell system provides:
+ * - Centralized visibility control (no scattered route checks)
+ * - Data-driven sidebar navigation
+ * - Layout modes for different page types
+ * - Optimized provider stacking via AppProviders
+ * 
+ * Migration: All authenticated routes now use <AppShell /> in App.tsx
+ */
 import { useState, useEffect, ReactNode } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
