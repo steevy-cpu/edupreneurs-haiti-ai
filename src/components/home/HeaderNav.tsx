@@ -64,7 +64,7 @@ export const HeaderNav = memo(function HeaderNav() {
         {/* Actions */}
         <div className="flex items-center gap-1 sm:gap-2 lg:gap-3">
           <ThemeToggle />
-          <Link to="/auth?tab=login" className="hidden lg:inline-block">
+          <Link to="/auth/login" className="hidden lg:inline-block">
             <Button 
               size="sm" 
               variant="outline" 
@@ -73,7 +73,7 @@ export const HeaderNav = memo(function HeaderNav() {
               Se connecter
             </Button>
           </Link>
-          <Link to="/auth?tab=signup" className="hidden lg:inline-block">
+          <Link to="/auth/signup/step-1" className="hidden lg:inline-block">
             <Button 
               size="sm" 
               className="bg-gradient-to-r from-accent to-yellow-500 hover:from-accent/90 hover:to-yellow-400 text-xs sm:text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
@@ -122,7 +122,7 @@ export const HeaderNav = memo(function HeaderNav() {
             Blog
           </Link>
           <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-border">
-            <Link to="/auth?tab=login" onClick={closeMobileMenu}>
+            <Link to="/auth/login" onClick={closeMobileMenu}>
               <Button 
                 size="sm" 
                 variant="outline" 
@@ -131,7 +131,7 @@ export const HeaderNav = memo(function HeaderNav() {
                 Se connecter
               </Button>
             </Link>
-            <Link to="/auth?tab=signup" onClick={closeMobileMenu}>
+            <Link to="/auth/signup/step-1" onClick={closeMobileMenu}>
               <Button 
                 size="sm" 
                 className="w-full bg-gradient-to-r from-accent to-yellow-500 hover:opacity-90 text-sm"

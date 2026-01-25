@@ -35,7 +35,7 @@ export default function ExamPreparation() {
     try {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) {
-        navigate('/auth');
+        navigate('/auth/login');
         return;
       }
 
