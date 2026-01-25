@@ -108,11 +108,16 @@ export const ChatViewHeader = ({
             return (
               <div className="flex items-center gap-1.5">
                 <div className="relative">
-                  <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <div 
+                    className="w-2 h-2 bg-green-500 rounded-full"
+                    aria-label="En ligne"
+                    role="status"
+                  />
                   {showRipple && (
                     <div 
                       className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-presence-ripple"
                       style={{ contain: 'layout style paint' }}
+                      aria-hidden="true"
                     />
                   )}
                 </div>

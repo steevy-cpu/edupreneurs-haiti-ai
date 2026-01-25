@@ -10,6 +10,7 @@ import { VisitorProvider } from "@/contexts/VisitorContext";
 import { FirstTimeUserProvider } from "@/contexts/FirstTimeUserContext";
 import { NetworkProvider } from "@/contexts/NetworkContext";
 import { SessionAuthProvider } from "@/contexts/SessionAuthContext";
+import { PresenceProvider } from "@/contexts/PresenceContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { lazy, Suspense } from "react";
 import { LegacyRedirect } from "@/components/LegacyRedirect";
@@ -154,15 +155,16 @@ const queryClient = new QueryClient({
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <SessionAuthProvider>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} forcedTheme={undefined}>
-        <NetworkProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <MusicPlayerProvider>
-              <VisitorProvider>
-                <BrowserRouter>
-                  <FirstTimeUserProvider>
+      <PresenceProvider>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} forcedTheme={undefined}>
+          <NetworkProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <MusicPlayerProvider>
+                <VisitorProvider>
+                  <BrowserRouter>
+                    <FirstTimeUserProvider>
                 <ScrollToTop />
                 
                 {/* CRITICAL: Non-blocking UI components - lazy loaded with null fallback */}
@@ -359,9 +361,10 @@ const App = () => (
               </BrowserRouter>
             </VisitorProvider>
           </MusicPlayerProvider>
-        </TooltipProvider>
-        </NetworkProvider>
-      </ThemeProvider>
+          </TooltipProvider>
+          </NetworkProvider>
+        </ThemeProvider>
+      </PresenceProvider>
     </SessionAuthProvider>
   </QueryClientProvider>
 );
