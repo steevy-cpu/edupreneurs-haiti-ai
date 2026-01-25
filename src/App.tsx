@@ -5,22 +5,35 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Layout } from "@/components/Layout";
-import { CookieConsent } from "@/components/CookieConsent";
 import { MusicPlayerProvider } from "@/contexts/MusicPlayerContext";
 import { VisitorProvider } from "@/contexts/VisitorContext";
 import { FirstTimeUserProvider } from "@/contexts/FirstTimeUserContext";
 import { NetworkProvider } from "@/contexts/NetworkContext";
 import { SessionAuthProvider } from "@/contexts/SessionAuthContext";
-import { GlobalMusicPlayer } from "@/components/GlobalMusicPlayer";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { lazy, Suspense } from "react";
 import { LegacyRedirect } from "@/components/LegacyRedirect";
 import { HeroSkeleton } from "@/components/shared/HeroSkeleton";
 import { DashboardFullSkeleton } from "@/components/shared/SkeletonLoaders";
-import { JudeChatbot } from "@/components/JudeChatbot";
-import { VisitorBanner } from "@/components/visitor";
+import { 
+  AuthSkeleton, 
+  CommunitySkeleton, 
+  FeedSkeleton, 
+  ProfileSkeleton, 
+  MatieresSkeleton,
+  NotificationsSkeleton,
+  CourseSkeleton,
+  GenericPageSkeleton 
+} from "@/components/shared/PageSkeletons";
+
+// CRITICAL: Lazy load non-critical UI components to reduce initial bundle (~100-150KB deferred)
+// These components are not needed for first paint and can load after hydration
+const CookieConsent = lazy(() => import("@/components/CookieConsent").then(m => ({ default: m.CookieConsent })));
+const GlobalMusicPlayer = lazy(() => import("@/components/GlobalMusicPlayer").then(m => ({ default: m.GlobalMusicPlayer })));
+const JudeChatbot = lazy(() => import("@/components/JudeChatbot").then(m => ({ default: m.JudeChatbot })));
+const VisitorBanner = lazy(() => import("@/components/visitor").then(m => ({ default: m.VisitorBanner })));
+const VisitorMusicSync = lazy(() => import("@/components/visitor/VisitorMusicSync").then(m => ({ default: m.VisitorMusicSync })));
 const VisitorTour = lazy(() => import("@/components/visitor/VisitorTour").then(m => ({ default: m.VisitorTour })));
-import { VisitorMusicSync } from "@/components/visitor/VisitorMusicSync";
 
 // Lazy load first-time user components for better 3G performance (~100KB deferred)
 const FirstTimeUserWelcome = lazy(() => import("@/components/firsttime/FirstTimeUserWelcome"));
@@ -83,14 +96,7 @@ const EbookReader = lazy(() => import("./pages/EbookReader"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 
-// Loading component for suspense fallback
-const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-  </div>
-);
-
-// Eric Chatbot wrapper with route-based visibility
+// Eric Chatbot wrapper with route-based visibility - LAZY LOADED
 const EricChatbotWrapper = () => {
   const location = useLocation();
   
@@ -124,7 +130,9 @@ const EricChatbotWrapper = () => {
   
   return (
     <div data-tour="jude-chatbot">
-      <JudeChatbot />
+      <Suspense fallback={null}>
+        <JudeChatbot />
+      </Suspense>
     </div>
   );
 };
@@ -156,10 +164,17 @@ const App = () => (
                 <BrowserRouter>
                   <FirstTimeUserProvider>
                 <ScrollToTop />
-                <CookieConsent />
-                <GlobalMusicPlayer />
-                <VisitorMusicSync />
                 
+                {/* CRITICAL: Non-blocking UI components - lazy loaded with null fallback */}
+                <Suspense fallback={null}>
+                  <CookieConsent />
+                </Suspense>
+                <Suspense fallback={null}>
+                  <GlobalMusicPlayer />
+                </Suspense>
+                <Suspense fallback={null}>
+                  <VisitorMusicSync />
+                </Suspense>
                 <Suspense fallback={null}>
                   <VisitorTour />
                 </Suspense>
@@ -168,8 +183,10 @@ const App = () => (
                   <AvatarGenerationStep />
                   <FirstTimeUserTour />
                 </Suspense>
+                
                 <EricChatbotWrapper />
-              {/* Route-specific Suspense boundaries for faster TTFC */}
+                
+              {/* Route-specific Suspense boundaries with page-specific skeletons */}
               <Routes>
                 {/* Critical routes - specialized skeletons for perceived performance */}
                 <Route path="/" element={
@@ -178,12 +195,12 @@ const App = () => (
                   </Suspense>
                 } />
                 <Route path="/auth" element={
-                  <Suspense fallback={<PageLoader />}>
+                  <Suspense fallback={<AuthSkeleton />}>
                     <Auth />
                   </Suspense>
                 } />
                 <Route path="/reset-password" element={
-                  <Suspense fallback={<PageLoader />}>
+                  <Suspense fallback={<AuthSkeleton />}>
                     <ResetPassword />
                   </Suspense>
                 } />
@@ -194,16 +211,62 @@ const App = () => (
                     </Suspense>
                   </Layout>
                 } />
-                {/* Other auth-gated routes - wrapped in global Suspense */}
-                <Route path="/customize-ai" element={<Suspense fallback={<PageLoader />}><CustomizeAI /></Suspense>} />
-                <Route path="/onboarding" element={<Suspense fallback={<PageLoader />}><Onboarding /></Suspense>} />
-                <Route path="/matieres" element={<Layout><Suspense fallback={<PageLoader />}><Matieres /></Suspense></Layout>} />
-                <Route path="/community" element={<Layout><Suspense fallback={<PageLoader />}><Community /></Suspense></Layout>} />
-                <Route path="/feed" element={<Layout><Suspense fallback={<PageLoader />}><Feed /></Suspense></Layout>} />
-                <Route path="/user-search" element={<Layout><Suspense fallback={<PageLoader />}><UserSearch /></Suspense></Layout>} />
-                <Route path="/profile/:userId" element={<Layout><Suspense fallback={<PageLoader />}><Profile /></Suspense></Layout>} />
-                <Route path="/follow-requests" element={<Layout><Suspense fallback={<PageLoader />}><FollowRequests /></Suspense></Layout>} />
-                <Route path="/notifications" element={<Layout><Suspense fallback={<PageLoader />}><Notifications /></Suspense></Layout>} />
+                
+                {/* Social pages with feature-specific skeletons */}
+                <Route path="/community" element={
+                  <Layout>
+                    <Suspense fallback={<CommunitySkeleton />}>
+                      <Community />
+                    </Suspense>
+                  </Layout>
+                } />
+                <Route path="/feed" element={
+                  <Layout>
+                    <Suspense fallback={<FeedSkeleton />}>
+                      <Feed />
+                    </Suspense>
+                  </Layout>
+                } />
+                <Route path="/profile/:userId" element={
+                  <Layout>
+                    <Suspense fallback={<ProfileSkeleton />}>
+                      <Profile />
+                    </Suspense>
+                  </Layout>
+                } />
+                <Route path="/notifications" element={
+                  <Layout>
+                    <Suspense fallback={<NotificationsSkeleton />}>
+                      <Notifications />
+                    </Suspense>
+                  </Layout>
+                } />
+                
+                {/* Learning pages with feature-specific skeletons */}
+                <Route path="/matieres" element={
+                  <Layout>
+                    <Suspense fallback={<MatieresSkeleton />}>
+                      <Matieres />
+                    </Suspense>
+                  </Layout>
+                } />
+                <Route path="/course/:slug" element={
+                  <Suspense fallback={<CourseSkeleton />}>
+                    <DynamicCoursePage />
+                  </Suspense>
+                } />
+                <Route path="/course/:slug/:lessonSlug" element={
+                  <Suspense fallback={<GenericPageSkeleton />}>
+                    <DynamicLessonPage />
+                  </Suspense>
+                } />
+                
+                {/* Other auth-gated routes with generic skeleton */}
+                <Route path="/customize-ai" element={<Suspense fallback={<GenericPageSkeleton />}><CustomizeAI /></Suspense>} />
+                <Route path="/onboarding" element={<Suspense fallback={<GenericPageSkeleton />}><Onboarding /></Suspense>} />
+                <Route path="/user-search" element={<Layout><Suspense fallback={<GenericPageSkeleton />}><UserSearch /></Suspense></Layout>} />
+                <Route path="/follow-requests" element={<Layout><Suspense fallback={<GenericPageSkeleton />}><FollowRequests /></Suspense></Layout>} />
+                
                 {/* Legacy route redirects - keep old bookmarks working */}
                 <Route path="/math-course" element={<LegacyRedirect to="/course/mathematiques" />} />
                 <Route path="/math-lesson/:topicId" element={<LegacyRedirect to="/course/mathematiques/:topicId" preserveParams />} />
@@ -248,48 +311,49 @@ const App = () => (
                 <Route path="/arts-lesson/:topicId" element={<LegacyRedirect to="/course/arts/:topicId" preserveParams />} />
                 <Route path="/education-physique-course" element={<LegacyRedirect to="/course/education-physique" />} />
                 <Route path="/education-physique-lesson/:topicId" element={<LegacyRedirect to="/course/education-physique/:topicId" preserveParams />} />
+                
+                {/* Static pages */}
                 <Route path="/affiliations" element={<Layout><Affiliations /></Layout>} />
                 <Route path="/leaderboard" element={<Layout><Leaderboard /></Layout>} />
                 <Route path="/settings" element={<Layout><Settings /></Layout>} />
                 <Route path="/exam-preparation/:examId" element={<ExamPreparation />} />
-              <Route path="/examens-officiels" element={<ExamsHub />} />
-              <Route path="/resources" element={<Layout><Resources /></Layout>} />
+                <Route path="/examens-officiels" element={<ExamsHub />} />
+                <Route path="/resources" element={<Layout><Resources /></Layout>} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/cookie-settings" element={<CookieSettings />} />
                 <Route path="/email-test" element={<EmailTest />} />
                 <Route path="/upload-email-assets" element={<UploadEmailAssets />} />
-            <Route path="/dev/push" element={<DevPush />} />
+                <Route path="/dev/push" element={<DevPush />} />
                 <Route path="/notification-settings" element={<NotificationSettings />} />
-            <Route path="/passion-discovery" element={<PassionDiscovery />} />
-            <Route path="/games" element={<GamesHub />} />
-            <Route path="/chess-game" element={<Layout><ChessGame /></Layout>} />
-            <Route path="/chess-multiplayer" element={<ChessMultiplayerLobby />} />
-            <Route path="/chess-multiplayer/game/:matchId" element={<ChessMultiplayerGame />} />
-            <Route path="/quiz-battle" element={<QuizBattle />} />
-            <Route path="/quiz-battle/solo" element={<QuizBattleSolo />} />
-            <Route path="/quiz-battle/lobby" element={<QuizBattleLobby />} />
-            <Route path="/quiz-battle/multiplayer/:battleId" element={<QuizBattleMultiplayer />} />
-            <Route path="/quiz-battle/leaderboard" element={<QuizBattleLeaderboard />} />
-            <Route path="/control-center" element={<ControlCenter />} />
-            <Route path="/content-editor" element={<Layout><ContentEditor /></Layout>} />
-            <Route path="/ai-analytics" element={<Layout><AIGenerationAnalytics /></Layout>} />
-            <Route path="/data-migration" element={<Layout><DataMigration /></Layout>} />
-            <Route path="/migrate-pdfs" element={<MigratePDFs />} />
-            <Route path="/payment-demo" element={<PaymentDemo />} />
-            <Route path="/natcash-demo" element={<NatCashDemo />} />
-            <Route path="/admin/payments" element={<Layout><AdminPayments /></Layout>} />
-            <Route path="/admin/payments-demo" element={<AdminPaymentsDemo />} />
-            <Route path="/baccalaureat" element={<BaccExamsHub />} />
-            <Route path="/baccalaureat/:series" element={<BaccExamsHub />} />
-            <Route path="/baccalaureat/:series/:subject" element={<BaccExamsHub />} />
-            <Route path="/lecture" element={<Layout><Library /></Layout>} />
-            <Route path="/lecture/:ebookId" element={<EbookReader />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
-                <Route path="/course/:slug" element={<Suspense fallback={<PageLoader />}><DynamicCoursePage /></Suspense>} />
-                <Route path="/course/:slug/:lessonSlug" element={<Suspense fallback={<PageLoader />}><DynamicLessonPage /></Suspense>} />
+                <Route path="/passion-discovery" element={<PassionDiscovery />} />
+                <Route path="/games" element={<GamesHub />} />
+                <Route path="/chess-game" element={<Layout><ChessGame /></Layout>} />
+                <Route path="/chess-multiplayer" element={<ChessMultiplayerLobby />} />
+                <Route path="/chess-multiplayer/game/:matchId" element={<ChessMultiplayerGame />} />
+                <Route path="/quiz-battle" element={<QuizBattle />} />
+                <Route path="/quiz-battle/solo" element={<QuizBattleSolo />} />
+                <Route path="/quiz-battle/lobby" element={<QuizBattleLobby />} />
+                <Route path="/quiz-battle/multiplayer/:battleId" element={<QuizBattleMultiplayer />} />
+                <Route path="/quiz-battle/leaderboard" element={<QuizBattleLeaderboard />} />
+                <Route path="/control-center" element={<ControlCenter />} />
+                <Route path="/content-editor" element={<Layout><ContentEditor /></Layout>} />
+                <Route path="/ai-analytics" element={<Layout><AIGenerationAnalytics /></Layout>} />
+                <Route path="/data-migration" element={<Layout><DataMigration /></Layout>} />
+                <Route path="/migrate-pdfs" element={<MigratePDFs />} />
+                <Route path="/payment-demo" element={<PaymentDemo />} />
+                <Route path="/natcash-demo" element={<NatCashDemo />} />
+                <Route path="/admin/payments" element={<Layout><AdminPayments /></Layout>} />
+                <Route path="/admin/payments-demo" element={<AdminPaymentsDemo />} />
+                <Route path="/baccalaureat" element={<BaccExamsHub />} />
+                <Route path="/baccalaureat/:series" element={<BaccExamsHub />} />
+                <Route path="/baccalaureat/:series/:subject" element={<BaccExamsHub />} />
+                <Route path="/lecture" element={<Layout><Library /></Layout>} />
+                <Route path="/lecture/:ebookId" element={<EbookReader />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:slug" element={<BlogPost />} />
+                
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
+                <Route path="*" element={<Suspense fallback={<GenericPageSkeleton />}><NotFound /></Suspense>} />
               </Routes>
                 </FirstTimeUserProvider>
               </BrowserRouter>
