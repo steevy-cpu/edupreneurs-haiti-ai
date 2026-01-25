@@ -1,5 +1,11 @@
-// Shell module exports - components that exist
+// Shell module exports - main components
+export { AppShell } from './AppShell';
 export { FloatingLayer } from './FloatingLayer';
+
+// Shell component exports
+export { AppSidebar } from './components/AppSidebar';
+export { ShellMobileBottomNav } from './components/ShellMobileBottomNav';
+export { SidebarNavLink } from './components/SidebarNavLink';
 
 // Config exports
 export { 
