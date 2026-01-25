@@ -58,7 +58,7 @@ const ChessMultiplayerLobby = () => {
   // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthLoading && !isAuthenticated) {
-      navigate('/auth?redirect=/chess-multiplayer');
+      navigate('/auth/login', { state: { returnTo: '/chess-multiplayer' } });
     }
   }, [isAuthLoading, isAuthenticated, navigate]);
 

@@ -114,7 +114,7 @@ const Settings = () => {
   // Redirect if not authenticated (handled after all hooks)
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      navigate("/auth");
+      navigate("/auth/login");
     }
   }, [authLoading, isAuthenticated, navigate]);
 
@@ -180,7 +180,7 @@ const Settings = () => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     toast.success("Déconnexion réussie");
-    navigate("/auth");
+    navigate("/auth/login");
   };
 
   const handleAvatarSelect = async (avatarUrl: string) => {
@@ -363,7 +363,7 @@ const Settings = () => {
       await supabase.auth.signOut();
       
       toast.success("Compte supprimé avec succès");
-      navigate("/auth");
+      navigate("/auth/login");
     } catch (error: any) {
       console.error("Delete account error:", error);
       toast.error("Erreur lors de la suppression: " + error.message);

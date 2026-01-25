@@ -120,7 +120,7 @@ export function EbookComments({ ebookId }: EbookCommentsProps) {
             Connectez-vous pour laisser un commentaire
           </p>
           <Button variant="link" size="sm" asChild className="mt-1">
-            <Link to="/auth">Se connecter</Link>
+            <Link to="/auth/login">Se connecter</Link>
           </Button>
         </div>
       )}

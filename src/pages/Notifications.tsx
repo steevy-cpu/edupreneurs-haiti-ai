@@ -133,7 +133,7 @@ export default function Notifications() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      navigate("/auth");
+      navigate("/auth/login");
     } else {
       setCurrentUserId(user.id);
     }
@@ -154,7 +154,7 @@ export default function Notifications() {
       
       if (!user) {
         console.log("❌ No user found - redirecting to auth");
-        navigate("/auth");
+        navigate("/auth/login");
         setIsLoading(false);
         return;
       }

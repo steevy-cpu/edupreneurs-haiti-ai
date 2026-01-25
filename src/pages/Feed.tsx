@@ -263,7 +263,7 @@ const Feed = () => {
     }
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      navigate("/auth");
+      navigate("/auth/login");
       return;
     }
     setCurrentUser(user);

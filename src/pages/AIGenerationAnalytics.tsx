@@ -30,7 +30,7 @@ export default function AIGenerationAnalytics() {
       
       if (!user) {
         toast.error("Vous devez être connecté");
-        navigate("/auth");
+        navigate("/auth/login");
         return;
       }
 

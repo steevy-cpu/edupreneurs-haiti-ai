@@ -20,7 +20,7 @@ export const VisitorChessOverlay: React.FC<VisitorChessOverlayProps> = ({
 
   const handleSignup = () => {
     exitVisitorMode();
-    navigate('/auth');
+    navigate('/auth/signup/step-1');
   };
 
   if (variant === 'widget') {
