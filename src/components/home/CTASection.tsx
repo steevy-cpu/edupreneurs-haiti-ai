@@ -24,7 +24,7 @@ export const CTASection = memo(function CTASection() {
         <p className="text-lg mb-8 opacity-90 max-w-2xl mx-auto font-medium leading-relaxed">
           Transformez votre façon d'apprendre avec la technologie. Apprentissage personnalisé, assistant IA, et récompenses réelles vous attendent.
         </p>
-        <Link to="/auth?tab=signup">
+        <Link to="/auth/signup/step-1">
           <Button 
             size="lg" 
             className="bg-white text-primary hover:bg-white/90 shadow-xl font-bold text-xs sm:text-sm md:text-base px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 hover:scale-[1.02] transition-all duration-300 ease-out"

@@ -69,7 +69,7 @@ export const HowItWorksSection = memo(function HowItWorksSection() {
 
         {/* CTA */}
         <div className="text-center mt-8 px-2">
-          <Link to="/auth?tab=signup">
+          <Link to="/auth/signup/step-1">
             <Button 
               size="lg" 
               className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-xl font-bold transition-all duration-300 ease-out hover:scale-[1.02] text-xs sm:text-sm px-4 sm:px-6 md:px-8"

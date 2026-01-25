@@ -20,12 +20,12 @@ export const VisitorBanner = () => {
 
   const handleSignUp = () => {
     exitVisitorMode();
-    navigate("/auth");
+    navigate("/auth/signup/step-1");
   };
 
   const handleExit = () => {
     exitVisitorMode();
-    navigate("/auth");
+    navigate("/auth/login");
   };
 
   return (

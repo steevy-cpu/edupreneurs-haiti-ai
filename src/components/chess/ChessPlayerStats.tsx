@@ -84,7 +84,7 @@ const ChessPlayerStats: React.FC<ChessPlayerStatsProps> = ({
   const handleSignup = () => {
     onClose();
     exitVisitorMode();
-    navigate('/auth');
+    navigate('/auth/signup/step-1');
   };
 
   return (

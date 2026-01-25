@@ -71,7 +71,7 @@ export const CoursesSection = memo(function CoursesSection() {
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-6 relative z-10 px-3 xs:px-4 sm:px-6">
-            <Link to="/auth">
+            <Link to="/auth/signup/step-1">
               <Button 
                 size="lg" 
                 className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-xl font-bold transition-all duration-300 ease-out hover:scale-[1.02] text-xs sm:text-sm px-4 sm:px-6 md:px-8"

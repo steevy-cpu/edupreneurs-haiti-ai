@@ -138,7 +138,7 @@ export const QuickMessageFAB = ({ isVisitor = false }: QuickMessageFABProps) => 
   if (isVisitor) {
     return (
       <Button
-        onClick={() => navigate("/auth")}
+        onClick={() => navigate("/auth/login")}
         className="fixed bottom-[84px] right-4 lg:bottom-6 z-40 h-14 w-14 rounded-full shadow-lg bg-gradient-to-br from-primary to-success hover:opacity-90 transition-all"
         size="icon"
       >

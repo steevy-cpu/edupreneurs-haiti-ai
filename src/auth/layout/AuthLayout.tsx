@@ -7,7 +7,7 @@
  * - No business logic
  */
 
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { lazy, Suspense } from "react";
 import { AuthRouteGuard } from "../guards/AuthRouteGuard";
@@ -44,6 +44,8 @@ interface AuthLayoutProps {
 }
 
 export function AuthLayout({ showVisitorSelector = false, onVisitorSelectorChange }: AuthLayoutProps) {
+  const location = useLocation();
+  
   return (
     <>
       <Helmet>
@@ -53,7 +55,7 @@ export function AuthLayout({ showVisitorSelector = false, onVisitorSelectorChang
         <meta property="og:title" content="Connexion & Inscription - EDUPRENEURS" />
         <meta property="og:description" content="Rejoignez la plateforme éducative haïtienne avec assistance IA personnalisée." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href={`${window.location.origin}/auth`} />
+        <link rel="canonical" href={`${window.location.origin}${location.pathname}`} />
       </Helmet>
       
       <AuthRouteGuard>

@@ -23,7 +23,7 @@ export const LockedOverlay = ({
 
   const handleUnlock = () => {
     exitVisitorMode();
-    navigate("/auth");
+    navigate("/auth/signup/step-1");
   };
 
   if (variant === "inline") {
