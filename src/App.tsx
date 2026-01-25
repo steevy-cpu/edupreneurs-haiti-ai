@@ -43,7 +43,16 @@ const AvatarGenerationStep = lazy(() => import("@/components/firsttime/AvatarGen
 
 // Lazy load all pages for better 3G performance
 const Index = lazy(() => import("./pages/Index"));
-const Auth = lazy(() => import("./pages/Auth"));
+
+// Auth routes - Route-based architecture for persistent flow state
+const AuthLayout = lazy(() => import("./auth/layout/AuthLayout").then(m => ({ default: m.AuthLayout })));
+const LoginPage = lazy(() => import("./auth/routes/LoginPage"));
+const SignupLayout = lazy(() => import("./auth/routes/signup/SignupLayout"));
+const SignupStep1 = lazy(() => import("./auth/routes/signup/Step1"));
+const SignupStep2 = lazy(() => import("./auth/routes/signup/Step2"));
+const SignupStep3 = lazy(() => import("./auth/routes/signup/Step3"));
+const VerifyEmailPage = lazy(() => import("./auth/routes/VerifyEmailPage"));
+const ForgotPasswordPage = lazy(() => import("./auth/routes/ForgotPasswordPage"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 
 // Lazy load non-critical pages for better performance
@@ -105,6 +114,13 @@ const EricChatbotWrapper = () => {
   const hiddenRoutes = [
     '/',
     '/auth',
+    '/auth/login',
+    '/auth/signup',
+    '/auth/signup/step-1',
+    '/auth/signup/step-2',
+    '/auth/signup/step-3',
+    '/auth/verify-email',
+    '/auth/forgot-password',
     '/reset-password',
     '/onboarding',
     '/community',
@@ -196,11 +212,23 @@ const App = () => (
                     <Index />
                   </Suspense>
                 } />
+                {/* Auth routes - Route-based architecture */}
                 <Route path="/auth" element={
                   <Suspense fallback={<AuthSkeleton />}>
-                    <Auth />
+                    <AuthLayout />
                   </Suspense>
-                } />
+                }>
+                  <Route index element={<LoginPage />} />
+                  <Route path="login" element={<LoginPage />} />
+                  <Route path="signup" element={<SignupLayout />}>
+                    <Route index element={<SignupStep1 />} />
+                    <Route path="step-1" element={<SignupStep1 />} />
+                    <Route path="step-2" element={<SignupStep2 />} />
+                    <Route path="step-3" element={<SignupStep3 />} />
+                  </Route>
+                  <Route path="verify-email" element={<VerifyEmailPage />} />
+                  <Route path="forgot-password" element={<ForgotPasswordPage />} />
+                </Route>
                 <Route path="/reset-password" element={
                   <Suspense fallback={<AuthSkeleton />}>
                     <ResetPassword />

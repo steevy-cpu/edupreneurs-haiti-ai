@@ -1,2 +1,5 @@
-export { AuthProvider, useAuth } from './AuthContext';
-export type { AuthContextType, AuthTab, LoginData, SignupData } from './AuthContext';
+// Legacy auth exports - module redirects to new architecture
+// New auth architecture is in src/auth/
+
+// Re-export from new location for backward compatibility
+export * from '@/auth';
