@@ -68,9 +68,9 @@ const Index = () => {
 
   // Defer stats fetching for faster LCP - wait until after initial paint
   useEffect(() => {
-    // On slow connections, defer stats loading by 3 seconds
+    // On slow connections, defer stats loading by 3 seconds (prioritize rendering)
     // On fast connections, load after 500ms (after LCP)
-    const delay = shouldDeferResources ? 1000 : 100;
+    const delay = shouldDeferResources ? 3000 : 500;
     
     const timer = setTimeout(() => {
       fetchStats();

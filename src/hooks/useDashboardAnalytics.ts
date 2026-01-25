@@ -34,13 +34,20 @@ export const useDashboardAnalytics = (userId: string | null) => {
   });
   const [isLoading, setIsLoading] = useState(true);
 
+  // Defer analytics loading to prioritize initial render
+  // Analytics is non-critical and can load 2 seconds after user sees the dashboard
   useEffect(() => {
     if (!userId) {
       setIsLoading(false);
       return;
     }
 
-    loadAnalytics();
+    // Defer analytics to reduce initial load contention
+    const deferTimer = setTimeout(() => {
+      loadAnalytics();
+    }, 2000);
+
+    return () => clearTimeout(deferTimer);
   }, [userId]);
 
   const loadAnalytics = async () => {
