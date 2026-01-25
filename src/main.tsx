@@ -21,10 +21,16 @@ const MOUNT_TIMEOUT_MS = 10000;
 const rootElement = document.getElementById("root");
 
 if (rootElement) {
+  // CRITICAL: Clear HTML loading placeholder IMMEDIATELY when React starts
+  // This ensures users see React content instantly, not blocked by auth
+  const placeholder = rootElement.querySelector('.loading-placeholder');
+  if (placeholder) {
+    placeholder.remove();
+  }
+
   const mountWatchdog = setTimeout(() => {
-    // Check if the loading placeholder is still visible
-    const placeholder = rootElement.querySelector('.loading-placeholder');
-    if (placeholder) {
+    // Check if root is still empty (React failed to mount)
+    if (rootElement.children.length === 0) {
       // React failed to mount - show error message
       rootElement.innerHTML = `
         <div style="
@@ -66,21 +72,17 @@ if (rootElement) {
     }
   }, MOUNT_TIMEOUT_MS);
 
-  // Clear the watchdog once React mounts successfully
-  const originalRender = createRoot(rootElement);
-  
-  // Render the app with ErrorBoundary
-  originalRender.render(
+  // Render the app immediately - no blocking on auth
+  const root = createRoot(rootElement);
+  root.render(
     <ErrorBoundary>
       <App />
     </ErrorBoundary>
   );
 
-  // Use MutationObserver to detect when React actually replaces the placeholder
+  // Clear watchdog once React has rendered something
   const observer = new MutationObserver(() => {
-    const placeholder = rootElement.querySelector('.loading-placeholder');
-    if (!placeholder) {
-      // Placeholder is gone - React mounted successfully
+    if (rootElement.children.length > 0) {
       clearTimeout(mountWatchdog);
       observer.disconnect();
     }

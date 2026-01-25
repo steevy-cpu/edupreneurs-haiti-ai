@@ -136,10 +136,10 @@ const Dashboard = () => {
       return;
     }
     
-    // Wait for auth to complete
+    // Wait for auth to complete before doing anything
     if (isAuthLoading) return;
     
-    // Redirect if not authenticated
+    // Redirect if not authenticated (after auth check completes)
     if (!isAuthenticated || !authUser) {
       navigate("/auth", { replace: true });
       return;
@@ -408,13 +408,9 @@ const Dashboard = () => {
     return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
   }, []);
 
-  // Show loading state while checking auth
-  if (isAuthLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+  // Show full skeleton while auth is loading (non-blocking, page-specific)
+  if (isAuthLoading && !isVisitor) {
+    return <DashboardFullSkeleton />;
   }
 
   return (
