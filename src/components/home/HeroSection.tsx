@@ -123,7 +123,7 @@ export const HeroSection = memo(function HeroSection({
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-primary text-primary hover:bg-primary/5 font-semibold text-xs sm:text-sm px-4 sm:px-6 md:px-8 transition-all duration-300 ease-out hover:scale-[1.02]"
+                className="border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold text-xs sm:text-sm px-4 sm:px-6 md:px-8 transition-all duration-300 ease-out hover:scale-[1.02]"
               >
                 Se connecter
               </Button>
