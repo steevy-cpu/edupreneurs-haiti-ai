@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useRealtimeSubscription, usePresenceSubscription } from './useRealtimeSubscription';
 import { toast } from 'sonner';
@@ -49,8 +49,8 @@ export const useContentEditorRealtime = (userId: string | undefined, lessonId?: 
     },
   });
 
-  // Track editor presence
-  const { updatePresence, getPresenceState } = usePresenceSubscription(
+  // Track editor presence with reactive state updates (no polling!)
+  const { updatePresence, presenceState, isReady } = usePresenceSubscription(
     'content-editor',
     userId || '',
     !!userId
@@ -66,31 +66,30 @@ export const useContentEditorRealtime = (userId: string | undefined, lessonId?: 
     }
   }, [userId, lessonId, updatePresence]);
 
-  // Update active editors list from presence
+  // Update active editors reactively from presence state (event-driven, not polling)
   useEffect(() => {
-    const interval = setInterval(() => {
-      const presenceState = getPresenceState();
-      const editors: EditorPresence[] = [];
+    if (!isReady) return;
+    
+    const editors: EditorPresence[] = [];
 
-      Object.values(presenceState).forEach((presences: any) => {
+    Object.values(presenceState).forEach((presences: any) => {
+      if (Array.isArray(presences)) {
         presences.forEach((presence: any) => {
           if (presence.user_id !== userId) {
             editors.push(presence);
           }
         });
-      });
+      }
+    });
 
-      setActiveEditors(editors);
+    setActiveEditors(editors);
 
-      // Check if anyone else is editing the same lesson
-      const editingConflict = editors.some(
-        (editor) => editor.editing_lesson_id === lessonId
-      );
-      setHasConflict(editingConflict);
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [getPresenceState, userId, lessonId]);
+    // Check if anyone else is editing the same lesson
+    const editingConflict = editors.some(
+      (editor) => editor.editing_lesson_id === lessonId
+    );
+    setHasConflict(editingConflict);
+  }, [presenceState, userId, lessonId, isReady]);
 
   const getEditorsForLesson = useCallback(
     (targetLessonId: string) => {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -92,7 +92,8 @@ export function useRealtimeSubscription({
 }
 
 /**
- * Hook for managing presence subscriptions
+ * Hook for managing presence subscriptions with reactive state updates.
+ * Returns presenceState that updates on sync/join/leave events (no polling needed).
  */
 export function usePresenceSubscription(
   channelName: string,
@@ -100,6 +101,8 @@ export function usePresenceSubscription(
   enabled: boolean = true
 ) {
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const [presenceState, setPresenceState] = useState<Record<string, any[]>>({});
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     if (!enabled || !userId) {
@@ -107,6 +110,8 @@ export function usePresenceSubscription(
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
+      setPresenceState({});
+      setIsReady(false);
       return;
     }
 
@@ -123,12 +128,18 @@ export function usePresenceSubscription(
     channel
       .on('presence', { event: 'sync' }, () => {
         console.log(`🔄 Presence synced: ${channelName}`);
+        // Update reactive state - triggers re-render only when state changes
+        setPresenceState({ ...channel.presenceState() });
       })
       .on('presence', { event: 'join' }, ({ key }: any) => {
         console.log(`👋 User joined: ${key}`);
+        // Update state on join
+        setPresenceState({ ...channel.presenceState() });
       })
       .on('presence', { event: 'leave' }, ({ key }: any) => {
         console.log(`👋 User left: ${key}`);
+        // Update state on leave
+        setPresenceState({ ...channel.presenceState() });
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
@@ -136,6 +147,9 @@ export function usePresenceSubscription(
             user_id: userId,
             online_at: new Date().toISOString(),
           });
+          setIsReady(true);
+          // Get initial state after subscribe
+          setPresenceState({ ...channel.presenceState() });
         }
       });
 
@@ -147,6 +161,8 @@ export function usePresenceSubscription(
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
+      setPresenceState({});
+      setIsReady(false);
     };
   }, [channelName, userId, enabled]);
 
@@ -159,13 +175,16 @@ export function usePresenceSubscription(
     }
   }, [userId]);
 
+  // Deprecated: use presenceState directly for reactive updates
   const getPresenceState = useCallback(() => {
     return channelRef.current?.presenceState() || {};
   }, []);
 
   return {
     updatePresence,
-    getPresenceState,
+    getPresenceState, // Kept for backward compatibility
+    presenceState,    // NEW: Reactive state that updates on events
+    isReady,          // NEW: Whether channel is subscribed and ready
     unsubscribe: useCallback(() => {
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);

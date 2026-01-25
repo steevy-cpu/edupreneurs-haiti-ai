@@ -257,6 +257,8 @@ export const Layout = ({ children }: LayoutProps) => {
         setTimeout(updateLastSeen, 100);
       }
       
+      // Create presence channel - ONLY tracks this user's presence
+      // Presence event listening is handled centrally by PresenceContext
       const channel = supabase.channel('online-users', {
         config: {
           presence: {
@@ -265,24 +267,8 @@ export const Layout = ({ children }: LayoutProps) => {
         },
       });
 
-      // Add event listeners first
-      channel
-        .on('presence', { event: 'sync' }, () => {
-          console.log('🔄 [Layout] Presence synced');
-        })
-        .on('presence', { event: 'join' }, ({ key }) => {
-          console.log('👋 [Layout] User joined global presence:', key);
-        })
-        .on('presence', { event: 'leave' }, async ({ key }) => {
-          console.log('👋 [Layout] User left global presence:', key);
-          // Update last_seen when user leaves
-          await supabase
-            .from('profiles')
-            .update({ last_seen: new Date().toISOString() })
-            .eq('user_id', key);
-        });
-
-      // Then subscribe and track
+      // Subscribe and track this user's presence (no event listeners needed here)
+      // PresenceContext handles sync/join/leave events centrally
       channel.subscribe(async (status) => {
         console.log('📡 [Layout] Channel status:', status);
         if (status === 'SUBSCRIBED') {
