@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Helmet } from "react-helmet";
 import { useVisitor } from "@/contexts/VisitorContext";
 
@@ -43,6 +43,39 @@ const Index = () => {
   const { isVisitor } = useVisitor();
   const { stats, isLoaded } = useDeferredStats();
   const [showVisitorSelector, setShowVisitorSelector] = useState(false);
+  const [chatbotReady, setChatbotReady] = useState(false);
+
+  // Defer chatbot loading until scroll or idle
+  useEffect(() => {
+    if (chatbotReady) return;
+
+    const onScroll = () => {
+      if (window.scrollY > 400) {
+        setChatbotReady(true);
+      }
+    };
+
+    let idleId: number | ReturnType<typeof setTimeout>;
+    if ('requestIdleCallback' in window) {
+      idleId = window.requestIdleCallback(
+        () => setChatbotReady(true),
+        { timeout: 5000 }
+      );
+    } else {
+      idleId = setTimeout(() => setChatbotReady(true), 2000);
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if ('requestIdleCallback' in window) {
+        window.cancelIdleCallback(idleId as number);
+      } else {
+        clearTimeout(idleId as ReturnType<typeof setTimeout>);
+      }
+    };
+  }, [chatbotReady]);
 
   return (
     <>
@@ -85,10 +118,12 @@ const Index = () => {
         <HomeFooter />
       </div>
       
-      {/* Floating Layer */}
-      <Suspense fallback={null}>
-        <HomeChatbot />
-      </Suspense>
+      {/* Floating Layer - deferred until scroll or idle */}
+      {chatbotReady && (
+        <Suspense fallback={null}>
+          <HomeChatbot />
+        </Suspense>
+      )}
       
       <VisitorTypeSelector 
         open={showVisitorSelector} 
