@@ -112,7 +112,11 @@ export const OnlinePlayersBrowser = ({
                     </AvatarFallback>
                   </Avatar>
                   {/* Green online indicator */}
-                  <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-sm animate-pulse" />
+                  <span 
+                    className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-sm" 
+                    aria-label="En ligne"
+                    role="status"
+                  />
                 </div>
 
                 {/* Player Info */}
