@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Rss, Bot } from "lucide-react";
+import { GraduationCap, Rss } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import ericCelebrating from "@/assets/eric-celebrating.png";
 
@@ -70,55 +70,73 @@ export const HeroSection = memo(function HeroSection({
           </div>
           
           <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight">
-            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-[size:200%_100%]">
-              L'Éducation Haïtienne
-            </span>
+            <span className="text-foreground">L'Éducation Haïtienne</span>
             <br />
-            <span className="text-foreground">
-              Révolutionnée par l'IA
+            <span className="bg-gradient-to-r from-accent via-primary to-accent bg-clip-text text-transparent">
+              révolutionnée
             </span>
+            <span className="text-foreground"> par</span>
+            <br />
+            <span className="text-foreground">l'Intelligence Artificielle</span>
           </h1>
           
-          <p className="text-xs xs:text-sm sm:text-base text-muted-foreground max-w-lg font-medium leading-relaxed">
-            Programme MENFP complet de la 7AF à NS4. Assistant IA personnel 24h/7j. 
-            Seulement 200 gourdes par mois avec 1 semaine d'essai gratuite.
+          {/* Accent Subtitle */}
+          <p className="text-sm sm:text-base md:text-lg text-accent font-semibold max-w-lg leading-relaxed">
+            Plateforme d'éducation interactive en Haïti avec IA pour apprendre et réussir
           </p>
+          
+          {/* Description */}
+          <p className="text-xs xs:text-sm sm:text-base text-muted-foreground max-w-lg font-medium leading-relaxed">
+            Programme complet du MENFP avec assistant IA personnalisé. Apprenez à votre rythme, 
+            gagnez des récompenses, et préparez-vous aux examens officiels.
+          </p>
+          
+          {/* Step Indicators */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium">
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs">1</span>
+              <span className="text-foreground">Inscrivez-vous</span>
+            </div>
+            <span className="text-muted-foreground">→</span>
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs">2</span>
+              <span className="text-foreground">Choisissez votre niveau</span>
+            </div>
+            <span className="text-muted-foreground">→</span>
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs">3</span>
+              <span className="text-foreground">Apprenez avec Jude</span>
+            </div>
+          </div>
           
           {/* CTAs */}
           <div className="flex flex-wrap gap-2 sm:gap-4 pt-1">
             <Link to="/auth?tab=signup">
               <Button 
                 size="lg" 
-                className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-xl font-bold transition-all duration-300 ease-out hover:scale-[1.02] text-xs sm:text-sm px-3 sm:px-4 md:px-6"
+                className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-xl font-bold transition-all duration-300 ease-out hover:scale-[1.02] text-xs sm:text-sm px-4 sm:px-6 md:px-8"
               >
-                <span className="hidden sm:inline">Essai gratuit 7 jours</span>
-                <span className="sm:hidden">Essai gratuit</span>
+                Créer un compte
               </Button>
             </Link>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="border-primary text-primary hover:bg-primary/5 font-semibold text-xs sm:text-sm px-3 sm:px-4 md:px-6 transition-all duration-300 ease-out hover:scale-[1.02]"
-              onClick={onVisitorClick}
-            >
-              <span className="hidden sm:inline">Explorer sans inscription</span>
-              <span className="sm:hidden">Explorer</span>
-            </Button>
+            <Link to="/auth">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-primary text-primary hover:bg-primary/5 font-semibold text-xs sm:text-sm px-4 sm:px-6 md:px-8 transition-all duration-300 ease-out hover:scale-[1.02]"
+              >
+                Se connecter
+              </Button>
+            </Link>
           </div>
           
-          {/* Feature Pills */}
-          <div className="flex flex-wrap gap-2 pt-2 text-xs">
-            <span className="px-3 py-1 bg-muted rounded-full font-medium flex items-center gap-1.5">
-              <Bot className="w-3.5 h-3.5 text-primary" />
-              Assistant IA Jude
-            </span>
-            <span className="px-3 py-1 bg-muted rounded-full font-medium">
-              Programme MENFP
-            </span>
-            <span className="px-3 py-1 bg-muted rounded-full font-medium">
-              Quiz interactifs
-            </span>
-          </div>
+          {/* Explorer Link */}
+          <button 
+            onClick={onVisitorClick}
+            className="text-sm text-muted-foreground hover:text-primary underline underline-offset-4 transition-colors font-medium"
+          >
+            Explorer sans inscription
+          </button>
         </div>
 
         {/* Right - Hero Image */}
