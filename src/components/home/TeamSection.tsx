@@ -32,13 +32,17 @@ export const TeamSection = memo(function TeamSection() {
               }`}
             >
               <CardHeader className="pb-3 pt-8">
-                {/* Stylized Initials Avatar */}
-                <div className={`w-20 h-20 mx-auto rounded-lg bg-gradient-to-br ${member.color} flex items-center justify-center mb-4 shadow-lg ${
+                {/* Profile Picture Avatar */}
+                <div className={`w-20 h-20 mx-auto rounded-lg overflow-hidden mb-4 shadow-lg ${
                   shouldShowAnimations ? 'group-hover:scale-105 group-hover:rotate-2 transition-all duration-300 ease-out' : ''
                 }`}>
-                  <span className="text-2xl font-black text-white tracking-tight">
-                    {member.initials}
-                  </span>
+                  <img 
+                    src={member.image} 
+                    alt={member.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
                 </div>
                 <CardTitle className="text-xl font-bold text-foreground">
                   {member.name}

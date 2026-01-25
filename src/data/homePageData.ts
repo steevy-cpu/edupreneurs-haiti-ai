@@ -135,14 +135,16 @@ export const teamMembers = [
     initials: "DF",
     role: "Fondateur & CEO",
     bio: "Passionné par l'éducation et la technologie, dédié à transformer l'éducation haïtienne.",
-    color: "from-primary to-accent"
+    color: "from-primary to-accent",
+    image: "/blog-authors/djoodoodson.jpg"
   },
   {
     name: "Steeve Andolf Celestin",
     initials: "SC",
     role: "CTO & Innovation",
     bio: "Expert en technologie et innovation, architecte des solutions numériques d'EDUPRENEURS.",
-    color: "from-accent to-primary"
+    color: "from-accent to-primary",
+    image: "/blog-authors/steeve.jpeg"
   }
 ] as const;
 
