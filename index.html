@@ -208,28 +208,53 @@
 
   <body>
     <div id="root">
-      <!-- Loading placeholder for fast first paint -->
-      <div class="loading-placeholder">
-        <div class="hero-skeleton" style="width: 120px; height: 120px; border-radius: 12px;"></div>
-        <p id="loading-status" style="margin-top: 16px; color: #666; font-size: 14px; font-family: system-ui, sans-serif;">
-          Connexion...
-        </p>
-      </div>
+      <!-- Static HTML shell - visible immediately (0ms) before React hydrates -->
+      <header style="position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,0,0,0.05);">
+        <div style="max-width:1280px;margin:0 auto;padding:0.5rem 1rem;display:flex;justify-content:space-between;align-items:center;">
+          <a href="/" style="display:flex;align-items:center;gap:0.5rem;text-decoration:none;">
+            <img src="/images/edupreneurs-new-logo.webp" alt="Edupreneurs" height="32" width="48" style="height:2rem;width:auto;" fetchpriority="high" />
+          </a>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <div class="hero-skeleton" style="width:2rem;height:2rem;border-radius:9999px;"></div>
+            <div class="hero-skeleton" style="width:5rem;height:2.25rem;border-radius:0.375rem;"></div>
+            <div style="width:6rem;height:2.25rem;background:#0EA5E9;border-radius:0.375rem;"></div>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Hero skeleton - shows structure before React hydrates -->
+      <main style="padding:1.5rem 1rem;">
+        <div style="max-width:1280px;margin:0 auto;display:grid;gap:2rem;align-items:center;" class="hero-grid">
+          <!-- Left content skeleton -->
+          <div>
+            <div class="hero-skeleton" style="width:12rem;height:2rem;border-radius:9999px;margin-bottom:1rem;"></div>
+            <div class="hero-skeleton" style="width:100%;max-width:28rem;height:2.5rem;border-radius:0.5rem;margin-bottom:0.5rem;"></div>
+            <div class="hero-skeleton" style="width:75%;height:2.5rem;border-radius:0.5rem;margin-bottom:1rem;"></div>
+            <div class="hero-skeleton" style="width:100%;max-width:24rem;height:1.25rem;border-radius:0.25rem;margin-bottom:0.5rem;"></div>
+            <div class="hero-skeleton" style="width:80%;height:1.25rem;border-radius:0.25rem;margin-bottom:1.5rem;"></div>
+            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+              <div class="hero-skeleton" style="width:12rem;height:3rem;border-radius:0.5rem;"></div>
+              <div class="hero-skeleton" style="width:10rem;height:3rem;border-radius:0.5rem;"></div>
+            </div>
+          </div>
+          <!-- Right image skeleton (hidden on mobile) -->
+          <div class="hero-image-skeleton" style="display:none;justify-content:center;">
+            <div class="hero-skeleton" style="width:16rem;height:16rem;border-radius:9999px;"></div>
+          </div>
+        </div>
+      </main>
     </div>
-    <script>
-      // Progressive loading messages for 3G users
-      const messages = ['Connexion...', 'Chargement...', 'Préparation...'];
-      let msgIndex = 0;
-      const updateMsg = () => {
-        const el = document.getElementById('loading-status');
-        if (el && msgIndex < messages.length - 1) {
-          msgIndex++;
-          el.textContent = messages[msgIndex];
-        }
-      };
-      setTimeout(updateMsg, 2000);
-      setTimeout(updateMsg, 5000);
-    </script>
+    <style>
+      /* Grid layout for hero skeleton */
+      @media (min-width: 768px) {
+        .hero-grid { grid-template-columns: 1fr 1fr; }
+        .hero-image-skeleton { display: flex !important; }
+      }
+      /* Dark mode for static shell */
+      @media (prefers-color-scheme: dark) {
+        #root > header { background: rgba(10,10,10,0.95); border-bottom-color: rgba(255,255,255,0.05); }
+      }
+    </style>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

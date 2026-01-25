@@ -39,6 +39,7 @@ import { LockedOverlay } from "@/components/visitor";
 import { visitorDashboardData } from "@/data/visitorDemoData";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ErrorState } from "@/components/shared/ErrorState";
 import { 
   DashboardKPISkeleton, 
   LeaderboardSkeleton,
@@ -49,6 +50,13 @@ import {
 } from "@/components/shared/SkeletonLoaders";
 import { ChartErrorBoundary } from "@/components/dashboard/ChartErrorBoundary";
 import { WordOfTheDayCard } from "@/components/dashboard/WordOfTheDayCard";
+
+// Feature-level state interface for independent loading/error states
+interface FeatureState<T> {
+  data: T;
+  loading: boolean;
+  error: Error | null;
+}
 
 // Lazy-load heavy chart and widget components for 3G optimization
 const WeeklyActivityChart = lazy(() => 
@@ -105,17 +113,33 @@ const Dashboard = () => {
   const { isVisitor } = useVisitor();
   const { user: authUser, isLoading: isAuthLoading, isAuthenticated } = useSessionAuth();
   const { shouldAnimate, animationLevel } = useNetworkAwareAnimations();
-  const [userData, setUserData] = useState({
-    name: isVisitor ? "Visiteur" : "Utilisateur",
+  // Feature-level state architecture - each feature loads independently
+  const [profileFeature, setProfileFeature] = useState<FeatureState<{ name: string; gold: number }>>({
+    data: { name: isVisitor ? "Visiteur" : "Utilisateur", gold: isVisitor ? visitorDashboardData.goldEarned : 0 },
+    loading: !isVisitor,
+    error: null
   });
-  const [recentNotes, setRecentNotes] = useState<Note[]>([]);
-  const [goldEarned, setGoldEarned] = useState<number>(isVisitor ? visitorDashboardData.goldEarned : 0);
+  
+  const [notesFeature, setNotesFeature] = useState<FeatureState<Note[]>>({
+    data: [],
+    loading: true,
+    error: null
+  });
+  
+  const [leaderboardFeature, setLeaderboardFeature] = useState<FeatureState<LeaderboardUser[]>>({
+    data: [],
+    loading: true,
+    error: null
+  });
+  
+  const [recentSubjectsFeature, setRecentSubjectsFeature] = useState<FeatureState<RecentSubjectProgress[]>>({
+    data: [],
+    loading: true,
+    error: null
+  });
+  
   const [isContentEditor, setIsContentEditor] = useState(false);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
-  const [leaderboardLoading, setLeaderboardLoading] = useState(true);
-  const [isUserDataLoading, setIsUserDataLoading] = useState(!isVisitor);
   const [totalLessonsCompleted, setTotalLessonsCompleted] = useState(isVisitor ? visitorDashboardData.lessonsCompleted : 0);
-  const [recentSubjects, setRecentSubjects] = useState<RecentSubjectProgress[]>([]);
   
   // Derived userId from centralized auth context
   const userId = authUser?.id || "";
@@ -131,7 +155,7 @@ const Dashboard = () => {
   useEffect(() => {
     // Skip for visitors
     if (isVisitor) {
-      setIsUserDataLoading(false);
+      setProfileFeature(prev => ({ ...prev, loading: false }));
       fetchLeaderboard(); // Still fetch leaderboard for visitors
       return;
     }
@@ -159,72 +183,94 @@ const Dashboard = () => {
 
   // Phase A: Critical data - renders immediately
   const fetchCriticalUserData = async (currentUserId: string) => {
-    setIsUserDataLoading(true);
+    setProfileFeature(prev => ({ ...prev, loading: true, error: null }));
+    setRecentSubjectsFeature(prev => ({ ...prev, loading: true, error: null }));
     
-    // Only fetch profile and recent activity - what user sees first
-    const [profileResult, recentActivityResult] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("nickname, gold_earned, academic_grade")
-        .eq("user_id", currentUserId)
-        .maybeSingle(),
-      supabase
-        .from("lesson_completions")
-        .select("subject, lesson_slug, completed_at")
-        .eq("user_id", currentUserId)
-        .order("completed_at", { ascending: false })
-        .limit(20),
-    ]);
+    try {
+      // Only fetch profile and recent activity - what user sees first
+      const [profileResult, recentActivityResult] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("nickname, gold_earned, academic_grade")
+          .eq("user_id", currentUserId)
+          .maybeSingle(),
+        supabase
+          .from("lesson_completions")
+          .select("subject, lesson_slug, completed_at")
+          .eq("user_id", currentUserId)
+          .order("completed_at", { ascending: false })
+          .limit(20),
+      ]);
 
-    // Process profile data - render immediately
-    if (profileResult.data) {
-      setUserData({ name: profileResult.data.nickname || "Utilisateur" });
-      setGoldEarned(profileResult.data.gold_earned || 0);
+      // Process profile data - render immediately
+      if (profileResult.data) {
+        setProfileFeature({
+          data: { 
+            name: profileResult.data.nickname || "Utilisateur",
+            gold: profileResult.data.gold_earned || 0
+          },
+          loading: false,
+          error: null
+        });
+      } else {
+        setProfileFeature(prev => ({ ...prev, loading: false }));
+      }
+      
+      // Process recent activity for "Continue Learning" section
+      if (recentActivityResult.data && !recentActivityResult.error) {
+        await processRecentActivity(recentActivityResult.data, profileResult.data?.academic_grade);
+      } else {
+        setRecentSubjectsFeature(prev => ({ ...prev, loading: false }));
+      }
+    } catch (error) {
+      setProfileFeature(prev => ({ ...prev, loading: false, error: error as Error }));
+      setRecentSubjectsFeature(prev => ({ ...prev, loading: false, error: error as Error }));
     }
-    
-    // Process recent activity for "Continue Learning" section
-    if (recentActivityResult.data && !recentActivityResult.error) {
-      processRecentActivity(recentActivityResult.data, profileResult.data?.academic_grade);
-    }
-    
-    setIsUserDataLoading(false); // CRITICAL: Mark as loaded for render
   };
 
   // Phase B: Non-critical data - loaded after initial render
   const fetchNonCriticalUserData = async (currentUserId: string) => {
-    const [notesResult, editorResult, completionsResult, subjectsResult] = await Promise.all([
-      supabase
-        .from("lesson_notes")
-        .select("*")
-        .eq("user_id", currentUserId)
-        .order("updated_at", { ascending: false })
-        .limit(5),
-      supabase
-        .from("content_editor_roles")
-        .select("role")
-        .eq("user_id", currentUserId)
-        .maybeSingle(),
-      supabase
-        .from("lesson_completions")
-        .select("id", { count: "exact" })
-        .eq("user_id", currentUserId),
-      supabase
-        .from("subjects")
-        .select("id, slug, name, grade_level"),
-    ]);
-
-    // Process notes - enrich with lesson/subject info for navigation
-    if (notesResult.data && notesResult.data.length > 0) {
-      await enrichNotesWithNavigation(notesResult.data, currentUserId);
-    } else if (notesResult.data) {
-      setRecentNotes(notesResult.data);
-    }
-
-    // Process editor access
-    setIsContentEditor(!!editorResult.data);
+    setNotesFeature(prev => ({ ...prev, loading: true, error: null }));
     
-    // Process lesson completions count
-    setTotalLessonsCompleted(completionsResult.count || 0);
+    try {
+      const [notesResult, editorResult, completionsResult, subjectsResult] = await Promise.all([
+        supabase
+          .from("lesson_notes")
+          .select("*")
+          .eq("user_id", currentUserId)
+          .order("updated_at", { ascending: false })
+          .limit(5),
+        supabase
+          .from("content_editor_roles")
+          .select("role")
+          .eq("user_id", currentUserId)
+          .maybeSingle(),
+        supabase
+          .from("lesson_completions")
+          .select("id", { count: "exact" })
+          .eq("user_id", currentUserId),
+        supabase
+          .from("subjects")
+          .select("id, slug, name, grade_level"),
+      ]);
+
+      // Process notes - enrich with lesson/subject info for navigation
+      if (notesResult.data && notesResult.data.length > 0) {
+        await enrichNotesWithNavigation(notesResult.data, currentUserId);
+      } else if (notesResult.data) {
+        setNotesFeature({ data: notesResult.data, loading: false, error: null });
+      } else {
+        setNotesFeature(prev => ({ ...prev, loading: false }));
+      }
+
+      // Process editor access
+      setIsContentEditor(!!editorResult.data);
+      
+      // Process lesson completions count
+      setTotalLessonsCompleted(completionsResult.count || 0);
+    } catch (error) {
+      setNotesFeature(prev => ({ ...prev, loading: false, error: error as Error }));
+    }
   };
 
   // Helper: Process recent activity data
@@ -301,7 +347,7 @@ const Dashboard = () => {
         lastActivity: item.lastActivity
       }));
     
-    setRecentSubjects(recentSubjectsData);
+    setRecentSubjectsFeature({ data: recentSubjectsData, loading: false, error: null });
   };
 
   // Helper: Enrich notes with navigation data
@@ -343,31 +389,34 @@ const Dashboard = () => {
       ...lessonMap.get(note.lesson_id)
     }));
     
-    setRecentNotes(enhancedNotes);
+    setNotesFeature({ data: enhancedNotes, loading: false, error: null });
   };
 
-  const fetchLeaderboard = async () => {
-    setLeaderboardLoading(true);
+  const fetchLeaderboard = useCallback(async () => {
+    setLeaderboardFeature(prev => ({ ...prev, loading: true, error: null }));
     
-    // Use RPC function to bypass RLS complexity
-    const { data: topUsers, error } = await supabase
-      .rpc('get_leaderboard_profiles', { limit_count: 5 });
+    try {
+      // Use RPC function to bypass RLS complexity
+      const { data: topUsers, error } = await supabase
+        .rpc('get_leaderboard_profiles', { limit_count: 5 });
 
-    if (error) {
-      console.error("Leaderboard fetch error:", error);
-      setLeaderboardLoading(false);
-      return;
+      if (error) {
+        console.error("Leaderboard fetch error:", error);
+        setLeaderboardFeature(prev => ({ ...prev, loading: false, error: error as unknown as Error }));
+        return;
+      }
+
+      const rankedUsers = topUsers?.map((user: any, index: number) => ({
+        ...user,
+        full_name: user.nickname || "Étudiant",
+        rank: index + 1,
+      })) || [];
+
+      setLeaderboardFeature({ data: rankedUsers, loading: false, error: null });
+    } catch (error) {
+      setLeaderboardFeature(prev => ({ ...prev, loading: false, error: error as Error }));
     }
-
-    const rankedUsers = topUsers?.map((user: any, index: number) => ({
-      ...user,
-      full_name: user.nickname || "Étudiant",
-      rank: index + 1,
-    })) || [];
-
-    setLeaderboard(rankedUsers);
-    setLeaderboardLoading(false);
-  };
+  }, []);
 
   const getRankIcon = useCallback((rank: number) => {
     switch (rank) {
@@ -426,7 +475,7 @@ const Dashboard = () => {
           {/* Welcome Header using PageHeader component */}
           <div data-tour="welcome-header">
             <PageHeader
-              title={isUserDataLoading ? "Bienvenue..." : `Bienvenue, ${userData.name}!`}
+              title={profileFeature.loading ? "Bienvenue..." : `Bienvenue, ${profileFeature.data.name}!`}
               subtitle="Continuez votre apprentissage personnalisé avec Jude, votre assistant IA"
               variant="gradient"
               showThemeToggle={true}
@@ -440,7 +489,28 @@ const Dashboard = () => {
           <QuickActionsCard />
 
           {/* Continue Learning Section - Shows recent subjects with progress */}
-          {recentSubjects.length > 0 && (
+          {recentSubjectsFeature.loading ? (
+            <Card className="border-none rounded-[20px] shadow-md bg-gradient-to-br from-primary/5 to-success/5">
+              <CardHeader className="pb-3 px-4 sm:px-6">
+                <Skeleton className="h-6 w-48" />
+              </CardHeader>
+              <CardContent className="px-4 sm:px-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                  {[1, 2, 3].map((i) => <Skeleton key={i} className="h-32 rounded-xl" />)}
+                </div>
+              </CardContent>
+            </Card>
+          ) : recentSubjectsFeature.error ? (
+            <Card className="border-none rounded-[20px] shadow-md">
+              <CardContent>
+                <ErrorState 
+                  message="Impossible de charger vos matières récentes" 
+                  onRetry={() => authUser && fetchCriticalUserData(authUser.id)}
+                  compact
+                />
+              </CardContent>
+            </Card>
+          ) : recentSubjectsFeature.data.length > 0 && (
             <Card className="border-none rounded-[20px] shadow-md bg-gradient-to-br from-primary/5 to-success/5">
               <CardHeader className="pb-3 px-4 sm:px-6">
                 <CardTitle className="font-semibold tracking-tight text-lg sm:text-xl flex items-center gap-2">
@@ -453,7 +523,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="px-4 sm:px-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                  {recentSubjects.map((subject, index) => (
+                  {recentSubjectsFeature.data.map((subject, index) => (
                     <div
                       key={subject.subjectSlug}
                       onClick={() => navigate(`/course/${subject.subjectSlug}`)}
@@ -588,7 +658,7 @@ const Dashboard = () => {
                   <Trophy className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div className="text-xl sm:text-2xl md:text-3xl font-extrabold bg-gradient-to-br from-yellow-500 to-orange-600 bg-clip-text text-transparent mb-1">
-                  {isUserDataLoading ? <Skeleton className="h-6 sm:h-8 w-10 sm:w-12 mx-auto" /> : goldEarned}
+                  {profileFeature.loading ? <Skeleton className="h-6 sm:h-8 w-10 sm:w-12 mx-auto" /> : profileFeature.data.gold}
                 </div>
                 <div className="text-[10px] sm:text-xs font-semibold text-muted-foreground mb-0.5 sm:mb-1">Golds gagnés</div>
                 <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">Total cumulé</p>
@@ -723,15 +793,21 @@ const Dashboard = () => {
               </button>
             </CardHeader>
             <CardContent>
-              {leaderboardLoading ? (
+              {leaderboardFeature.loading ? (
                 <LeaderboardSkeleton count={5} />
-              ) : leaderboard.length === 0 ? (
+              ) : leaderboardFeature.error ? (
+                <ErrorState 
+                  message="Impossible de charger le classement" 
+                  onRetry={fetchLeaderboard}
+                  compact
+                />
+              ) : leaderboardFeature.data.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   Aucun utilisateur dans le classement pour le moment
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {leaderboard.map((user) => (
+                  {leaderboardFeature.data.map((user) => (
                     <div
                       key={user.id}
                       className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg bg-gradient-to-br ${getRankBgColor(user.rank)} border tap-highlight-none ${
@@ -774,9 +850,15 @@ const Dashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {isUserDataLoading ? (
+              {notesFeature.loading ? (
                 <NotesListSkeleton count={3} />
-              ) : recentNotes.length === 0 ? (
+              ) : notesFeature.error ? (
+                <ErrorState 
+                  message="Impossible de charger vos notes" 
+                  onRetry={() => authUser && fetchNonCriticalUserData(authUser.id)}
+                  compact
+                />
+              ) : notesFeature.data.length === 0 ? (
                 <EmptyState
                   illustration="no-notes"
                   title="Aucune note"
@@ -787,11 +869,11 @@ const Dashboard = () => {
                 />
               ) : (
                 <div className="space-y-3">
-                  {recentNotes.map((note) => {
+                  {notesFeature.data.map((note) => {
                     const isClickable = !!(note.subject_slug && note.lesson_slug);
                     return (
                       <div 
-                        key={note.id} 
+                        key={note.id}
                         onClick={() => {
                           if (isClickable) {
                             navigate(`/course/${note.subject_slug}/${note.lesson_slug}`);
