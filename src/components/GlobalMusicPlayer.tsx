@@ -162,7 +162,7 @@ export const GlobalMusicPlayer = () => {
 
   // Hide on public pages - only show for authenticated users on internal routes
   const isPublicPage = location.pathname === '/' || 
-                       location.pathname === '/auth' || 
+                       location.pathname.startsWith('/auth') || 
                        location.pathname.startsWith('/blog');
   
   if (!isAuthenticated || tracks.length === 0 || isPublicPage) return null;

@@ -239,7 +239,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Sending login notification to:", email);
 
     // Generate password reset token for the "change password" button
-    let resetUrl = 'https://mon-edupreneur.com/auth';
+    let resetUrl = 'https://mon-edupreneur.com/auth/login';
     
     try {
       const { data: tokenData, error: tokenError } = await supabase.rpc(

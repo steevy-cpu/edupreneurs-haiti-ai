@@ -69,7 +69,7 @@ const EmailTest = () => {
       const { data, error } = await supabase.functions.invoke('send-password-reset-email', {
         body: {
           email,
-          resetUrl: `${window.location.origin}/auth?reset=true`
+          resetUrl: `${window.location.origin}/auth/forgot-password`
         }
       });
 

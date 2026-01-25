@@ -63,7 +63,7 @@ const Affiliations = () => {
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      navigate("/auth");
+      navigate("/auth/login");
     }
   }, [authLoading, isAuthenticated, navigate]);
 
@@ -148,7 +148,7 @@ const Affiliations = () => {
   const copyReferralLink = () => {
     if (!profile?.referral_code) return;
     
-    const referralUrl = `${window.location.origin}/auth?ref=${profile.referral_code}`;
+    const referralUrl = `${window.location.origin}/auth/signup/step-1?ref=${profile.referral_code}`;
     navigator.clipboard.writeText(referralUrl);
     setCopied(true);
     toast.success("Lien copié dans le presse-papiers!");
@@ -159,7 +159,7 @@ const Affiliations = () => {
   const shareReferralLink = async () => {
     if (!profile?.referral_code) return;
     
-    const referralUrl = `${window.location.origin}/auth?ref=${profile.referral_code}`;
+    const referralUrl = `${window.location.origin}/auth/signup/step-1?ref=${profile.referral_code}`;
     const text = `Rejoignez EDUPRENEURS avec mon lien de parrainage et commencez votre parcours d'apprentissage!`;
 
     if (navigator.share) {
@@ -271,7 +271,7 @@ const Affiliations = () => {
             <div className="flex flex-col sm:flex-row gap-3">
               <Input
                 readOnly
-                value={profile?.referral_code ? `${window.location.origin}/auth?ref=${profile.referral_code}` : "Chargement..."}
+                value={profile?.referral_code ? `${window.location.origin}/auth/signup/step-1?ref=${profile.referral_code}` : "Chargement..."}
                 className="flex-1 bg-muted"
               />
               <Button
