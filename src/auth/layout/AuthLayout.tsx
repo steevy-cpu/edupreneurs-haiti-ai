@@ -43,7 +43,7 @@ interface AuthLayoutProps {
   onVisitorSelectorChange?: (open: boolean) => void;
 }
 
-export default function AuthLayout({ showVisitorSelector = false, onVisitorSelectorChange }: AuthLayoutProps) {
+export function AuthLayout({ showVisitorSelector = false, onVisitorSelectorChange }: AuthLayoutProps) {
   return (
     <>
       <Helmet>
@@ -90,4 +90,5 @@ export default function AuthLayout({ showVisitorSelector = false, onVisitorSelec
   );
 }
 
+export default AuthLayout;
 export { AuthFormSkeleton };
