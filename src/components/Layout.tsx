@@ -299,46 +299,21 @@ export const Layout = ({ children }: LayoutProps) => {
       if (isVisitor) return;
       
       // Use session from centralized auth context instead of separate getSession() call
-      if (!session && location.pathname !== "/auth") {
-        navigate("/auth");
+      // Note: Email verification is now handled by AuthRouteGuard in the auth flow
+      if (!session && !location.pathname.startsWith("/auth")) {
+        navigate("/auth/login");
         return;
-      }
-      
-      // If user has a session, check if email is verified (non-blocking check)
-      if (session?.user) {
-        // Use requestIdleCallback for non-critical profile check
-        const checkEmailVerification = async () => {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('email_confirmed')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-          
-          if (!error && profile && !profile.email_confirmed) {
-            // User is logged in but email not verified - sign them out and redirect to auth
-            await supabase.auth.signOut();
-            toast.error("Veuillez vérifier votre email avant d'accéder à votre compte");
-            navigate("/auth");
-          }
-        };
-        
-        // Run email check after render, not blocking
-        if ('requestIdleCallback' in window) {
-          (window as any).requestIdleCallback(checkEmailVerification);
-        } else {
-          setTimeout(checkEmailVerification, 100);
-        }
       }
     } catch (error) {
       console.error('[Layout] Error checking auth:', error);
-      navigate("/auth");
+      navigate("/auth/login");
     }
   };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     toast.success("Déconnexion réussie");
-    navigate("/auth");
+    navigate("/auth/login");
   };
 
   const handleMessagesClick = (e: React.MouseEvent) => {

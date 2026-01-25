@@ -82,7 +82,7 @@ export default function Profile() {
     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      navigate('/auth');
+      navigate('/auth/signup/step-1');
       return;
     }
     setCurrentUser(user);
@@ -158,7 +158,7 @@ export default function Profile() {
           label: "S'inscrire",
           onClick: () => {
             exitVisitorMode();
-            navigate("/auth");
+            navigate("/auth/signup/step-1");
           }
         }
       });
@@ -242,7 +242,7 @@ export default function Profile() {
           label: "S'inscrire",
           onClick: () => {
             exitVisitorMode();
-            navigate("/auth");
+            navigate("/auth/signup/step-1");
           }
         }
       });

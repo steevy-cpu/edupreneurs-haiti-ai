@@ -38,7 +38,7 @@ export default function ResetPassword() {
         });
         
         setTimeout(() => {
-          navigate("/auth");
+          navigate("/auth/login");
         }, 3000);
         return;
       }
@@ -57,7 +57,7 @@ export default function ResetPassword() {
         });
         
         setTimeout(() => {
-          navigate("/auth");
+          navigate("/auth/login");
         }, 3000);
         return;
       }
@@ -75,7 +75,7 @@ export default function ResetPassword() {
         });
         
         setTimeout(() => {
-          navigate("/auth");
+          navigate("/auth/login");
         }, 3000);
       }
     };
@@ -163,7 +163,7 @@ export default function ResetPassword() {
 
       // Redirect to login
       setTimeout(() => {
-        navigate("/auth");
+        navigate("/auth/login");
       }, 2000);
     } catch (error: any) {
       console.error("Error resetting password:", error);
@@ -354,7 +354,7 @@ export default function ResetPassword() {
             <div className="text-center">
               <button
                 type="button"
-                onClick={() => navigate("/auth")}
+                onClick={() => navigate("/auth/login")}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Retour à la connexion
