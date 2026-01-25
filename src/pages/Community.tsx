@@ -51,6 +51,7 @@ import {
   Reaction, 
   JUDE_USER_ID 
 } from "@/types/community";
+import { useOnlineUserIds } from "@/contexts/PresenceContext";
 
 const Community = () => {
   const navigate = useNavigate();
@@ -107,7 +108,8 @@ const Community = () => {
   const profileCacheRef = useRef<Map<string, Profile>>(new Map());
   const typingTimeoutRef = useRef<any>(null);
   const [typingUsers, setTypingUsers] = useState<Record<string, Record<string, any>>>({});
-  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(() => new Set([JUDE_USER_ID]));
+  // Use centralized presence from PresenceContext (event-driven, not polling)
+  const onlineUsers = useOnlineUserIds();
   const [lastSeenTimes, setLastSeenTimes] = useState<Record<string, string>>(() => {
     // Initialize from localStorage
     try {
@@ -117,7 +119,6 @@ const Community = () => {
       return {};
     }
   });
-  const globalPresenceChannelRef = useRef<any>(null);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [followers, setFollowers] = useState<Profile[]>([]);
   const [showGroupInfo, setShowGroupInfo] = useState(false);
@@ -237,19 +238,11 @@ const Community = () => {
       fetchConversations();
       fetchFollowers();
       subscribeToMessages();
-      setupGlobalPresenceListener();
+      // No longer need setupGlobalPresenceListener - using centralized PresenceContext
     }
     
     return () => {
-      // Clean up the presence listener and polling interval
-      if (globalPresenceChannelRef.current) {
-        const channel = globalPresenceChannelRef.current;
-        if ((channel as any).pollInterval) {
-          clearInterval((channel as any).pollInterval);
-        }
-        supabase.removeChannel(channel);
-        globalPresenceChannelRef.current = null;
-      }
+      // Presence cleanup handled by PresenceContext
     };
   }, [user?.id]);
 
@@ -483,115 +476,7 @@ const Community = () => {
     }
   }, []);
 
-  const setupGlobalPresenceListener = () => {
-    if (!user) return;
-
-    // Check if we already have an active listener
-    if (globalPresenceChannelRef.current) {
-      const state = globalPresenceChannelRef.current.state;
-      if (state === 'joined') {
-        return;
-      }
-    }
-    
-    // Create a unique channel name for Community's listener
-    const channel = supabase.channel(`community-presence-${user.id}`);
-
-    // Helper function to get online users from presence state
-    const getOnlineUsersFromPresence = () => {
-      const allChannels = supabase.getChannels();
-      // Look for the shared 'online-users' presence channel by name or topic
-      // Supabase topics are prefixed with 'realtime:' so check both formats
-      const onlineChannel = allChannels.find(ch => 
-        ch.topic === 'realtime:online-users' || 
-        (ch as any).name === 'online-users'
-      );
-      
-      if (onlineChannel) {
-        const state = onlineChannel.presenceState();
-        const userIds = new Set<string>([JUDE_USER_ID]); // Jude is always online
-        
-        // Iterate through all presence keys and extract user_ids
-        Object.entries(state).forEach(([key, presences]: [string, any]) => {
-          // The key itself is the user_id (from Layout's presence key config)
-          if (key && key !== JUDE_USER_ID) {
-            userIds.add(key);
-          }
-          // Also check inside presence data for user_id field
-          if (Array.isArray(presences)) {
-            presences.forEach((p: any) => {
-              if (p.user_id && p.user_id !== JUDE_USER_ID) {
-                userIds.add(p.user_id);
-              }
-            });
-          }
-        });
-        return userIds;
-      }
-      return new Set<string>([JUDE_USER_ID]);
-    };
-
-    // Immediately fetch online users on mount (don't wait for sync event)
-    const initialOnlineUsers = getOnlineUsersFromPresence();
-    if (initialOnlineUsers.size > 1) {
-      setOnlineUsers(initialOnlineUsers);
-    }
-
-    channel
-      .on('presence', { event: 'sync' }, () => {
-        const userIds = getOnlineUsersFromPresence();
-        setOnlineUsers(userIds);
-      })
-      .subscribe((status) => {
-        // Poll for presence updates every 5 seconds (faster feedback for online status)
-        if (status === 'SUBSCRIBED') {
-          // Immediately get current state on subscribe
-          const currentOnlineUsers = getOnlineUsersFromPresence();
-          setOnlineUsers(currentOnlineUsers);
-          
-          const pollInterval = setInterval(async () => {
-            const userIds = getOnlineUsersFromPresence();
-            
-            setOnlineUsers(prev => {
-              const prevArray = Array.from(prev).sort();
-              const newArray = Array.from(userIds).sort();
-              if (JSON.stringify(prevArray) !== JSON.stringify(newArray)) {
-                // Track who went offline and update their last_seen in database
-                prev.forEach(async (userId) => {
-                  if (!userIds.has(userId) && userId !== JUDE_USER_ID) {
-                    const now = new Date().toISOString();
-                    
-                    // Update last_seen in database
-                    try {
-                      await supabase
-                        .from('profiles')
-                        .update({ last_seen: now })
-                        .eq('user_id', userId);
-                    } catch (error) {
-                      logger.error('Error updating last_seen:', error);
-                    }
-                    
-                    // Update local state
-                    setLastSeenTimes(prevTimes => ({
-                      ...prevTimes,
-                      [userId]: now
-                    }));
-                  }
-                });
-                
-                return userIds;
-              }
-              return prev;
-            });
-          }, isSlowConnection ? 10000 : 5000); // 10s on slow connections, 5s otherwise (faster updates)
-          
-          // Store interval for cleanup
-          (channel as any).pollInterval = pollInterval;
-        }
-      });
-
-    globalPresenceChannelRef.current = channel;
-  };
+  // setupGlobalPresenceListener removed - using centralized PresenceContext
 
   const checkUser = async () => {
     // Allow visitors to stay on page and see demo content

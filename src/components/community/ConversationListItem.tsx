@@ -68,7 +68,11 @@ export const ConversationListItem = ({
             )}
           </Avatar>
           {!conv.is_group && conv.otherUser?.user_id && isOnline && (
-            <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-background shadow-sm presence-indicator" />
+            <div 
+              className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-background shadow-sm presence-indicator"
+              aria-label="En ligne"
+              role="status"
+            />
           )}
         </div>
         <div 
