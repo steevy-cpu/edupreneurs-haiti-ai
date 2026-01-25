@@ -1,0 +1,209 @@
+/**
+ * LoginPage - Route-based login form
+ */
+
+import { useState } from "react";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, Eye, EyeOff, KeyRound, Telescope } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { loginWithEmail, handleDeviceTracking, validateLoginCredentials } from "../services/login.service";
+import { VisitorTypeSelector } from "@/components/visitor";
+
+export default function LoginPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
+  
+  // Form state (local - no context needed)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showVisitorSelector, setShowVisitorSelector] = useState(false);
+  
+  // Get returnTo URL from location state OR sessionStorage
+  const returnTo = (location.state as { returnTo?: string })?.returnTo 
+    || sessionStorage.getItem('quiz_battle_return_url');
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const validation = validateLoginCredentials({ email, password });
+    if (!validation.valid) {
+      toast({
+        title: "Données invalides",
+        description: validation.error,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await loginWithEmail({ email, password });
+      
+      if (result.requiresVerification) {
+        // AuthRouteGuard will handle redirect to verify page
+        toast({
+          title: "Email non vérifié",
+          description: "Un nouveau code de vérification a été envoyé à votre adresse email.",
+          variant: "destructive",
+        });
+        navigate('/auth/verify-email');
+        return;
+      }
+      
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      // Handle device tracking (non-blocking)
+      if (result.profile) {
+        handleDeviceTracking(
+          result.profile.full_name || '', 
+          email, 
+          result.profile.full_name || 'Utilisateur'
+        );
+      }
+
+      toast({
+        title: "Connexion réussie",
+        description: "Bienvenue !",
+      });
+
+      // Clear sessionStorage and navigate
+      sessionStorage.removeItem('quiz_battle_return_url');
+      navigate(returnTo || "/dashboard");
+    } catch (error: any) {
+      toast({
+        title: "Erreur de connexion",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <>
+      {/* Visitor Mode Button */}
+      <div className="px-5 pt-5 pb-2">
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full gap-2 py-5 border-2 border-dashed border-primary/40 text-primary font-medium
+                     hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-lg
+                     transition-all duration-300 group"
+          onClick={() => setShowVisitorSelector(true)}
+        >
+          <Telescope className="w-5 h-5 group-hover:scale-110 transition-transform" />
+          <span>Découvrir la plateforme sans inscription</span>
+        </Button>
+        <p className="text-center text-xs text-muted-foreground mt-2">
+          Explorez en mode visiteur, inscrivez-vous plus tard
+        </p>
+      </div>
+
+      {/* Tabs */}
+      <div className="auth-tabs p-3 flex justify-center">
+        <div className="relative flex bg-muted/50 rounded-xl p-1 w-fit">
+          <button
+            className="relative z-10 flex-1 text-center py-2.5 px-5 rounded-lg font-semibold text-sm bg-primary text-primary-foreground shadow-md transition-all duration-300 ease-out"
+          >
+            Se connecter
+          </button>
+          <button
+            className="relative z-10 flex-1 text-center py-2.5 px-5 rounded-lg font-semibold text-sm text-muted-foreground hover:text-foreground/80 hover:bg-muted transition-all duration-300 ease-out"
+            onClick={() => navigate('/auth/signup/step-1')}
+          >
+            Créer un compte
+          </button>
+        </div>
+      </div>
+
+      {/* Login Form */}
+      <div className="auth-content p-5">
+        <form onSubmit={handleLogin} className="space-y-4" name="login-form" autoComplete="on">
+          <div className="space-y-2">
+            <Label htmlFor="login-email" className="text-sm text-muted-foreground">
+              Adresse e-mail
+            </Label>
+            <Input
+              id="login-email"
+              type="email"
+              required
+              placeholder="ex: nom@domaine.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              autoCapitalize="none"
+              spellCheck="false"
+              enterKeyHint="next"
+              inputMode="email"
+              className="auth-input"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="login-password" className="text-sm text-muted-foreground">
+              Mot de passe
+            </Label>
+            <div className="relative">
+              <Input
+                id="login-password"
+                type={showPassword ? "text" : "password"}
+                required
+                placeholder="Votre mot de passe"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                autoCapitalize="none"
+                enterKeyHint="done"
+                className="auth-input pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+          <Button 
+            type="submit" 
+            disabled={isLoading} 
+            className="auth-btn-submit w-full mt-6 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Connexion en cours...
+              </>
+            ) : (
+              "Se connecter"
+            )}
+          </Button>
+          
+          <button
+            type="button"
+            onClick={() => navigate('/auth/forgot-password')}
+            className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mt-4 w-full"
+          >
+            <KeyRound className="h-3.5 w-3.5" />
+            Mot de passe oublié ?
+          </button>
+        </form>
+      </div>
+
+      {/* Visitor Type Selector Modal */}
+      <VisitorTypeSelector 
+        open={showVisitorSelector} 
+        onOpenChange={setShowVisitorSelector} 
+      />
+    </>
+  );
+}
