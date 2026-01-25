@@ -1,12 +1,16 @@
 import { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { teamMembers } from "@/data/homePageData";
+import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 
 /**
  * Team section with member cards.
  * Static content - memoized for performance.
+ * Animations disabled on 3G connections.
  */
 export const TeamSection = memo(function TeamSection() {
+  const { shouldShowAnimations } = useNetworkAwareLoading();
+  
   return (
     <section id="team" className="py-12 sm:py-16 md:py-20 px-4 bg-background">
       <div className="container mx-auto">
@@ -23,11 +27,15 @@ export const TeamSection = memo(function TeamSection() {
           {teamMembers.map((member, idx) => (
             <Card 
               key={idx} 
-              className="group hover:scale-[1.02] transition-all duration-300 ease-out hover:shadow-lg border-0 bg-card text-center overflow-hidden"
+              className={`group transition-all duration-300 ease-out border-0 bg-card text-center overflow-hidden ${
+                shouldShowAnimations ? 'hover:scale-[1.02] hover:shadow-lg' : 'hover:shadow-md'
+              }`}
             >
               <CardHeader className="pb-3 pt-8">
                 {/* Stylized Initials Avatar */}
-                <div className={`w-20 h-20 mx-auto rounded-lg bg-gradient-to-br ${member.color} flex items-center justify-center mb-4 group-hover:scale-105 group-hover:rotate-2 transition-all duration-300 ease-out shadow-lg`}>
+                <div className={`w-20 h-20 mx-auto rounded-lg bg-gradient-to-br ${member.color} flex items-center justify-center mb-4 shadow-lg ${
+                  shouldShowAnimations ? 'group-hover:scale-105 group-hover:rotate-2 transition-all duration-300 ease-out' : ''
+                }`}>
                   <span className="text-2xl font-black text-white tracking-tight">
                     {member.initials}
                   </span>
