@@ -10,7 +10,7 @@ import { getAvatarUrl } from "@/lib/avatarMap";
 import { useEricDraggable } from "@/hooks/useEricDraggable";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
-
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 // Get human-readable page name from path
 const getPageName = (path: string): string => {
   const pageNames: Record<string, string> = {
@@ -81,6 +81,7 @@ const TypewriterText = ({
 
 export const JudeChatbot = () => {
   const { isVisitor } = useVisitor();
+  const { user } = useSessionAuth(); // CRITICAL: Use cached auth instead of getUser()
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -153,43 +154,40 @@ export const JudeChatbot = () => {
     }
   }, [isKeyboardOpen, hasMoved, resetPosition]);
 
-  // Fetch user profile on mount - MUST be before early return (React Hooks Rule)
+  // Fetch user profile on mount - uses cached auth from useSessionAuth (no redundant getUser call)
   useEffect(() => {
     const fetchUserProfile = async () => {
-      // Skip fetch if visitor or hidden route
-      if (isVisitor || HIDDEN_ROUTES.includes(location.pathname)) return;
+      // Skip fetch if visitor, hidden route, or no user
+      if (isVisitor || HIDDEN_ROUTES.includes(location.pathname) || !user) return;
       
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('nickname, avatar_url')
-            .eq('user_id', user.id)
-            .single();
-          
-          const nickname = profile?.nickname || "l'élève";
-          setUserNickname(nickname);
-          setUserAvatarUrl(profile?.avatar_url || "");
-          
-          // Set initial greeting with nickname
-          const now = new Date();
-          const haitiOffset = -5;
-          const haitiTime = new Date(now.getTime() + (haitiOffset * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));
-          const currentHour = haitiTime.getHours();
-          
-          let greeting = "Bonjour";
-          if (currentHour >= 18 || currentHour < 5) {
-            greeting = "Bonsoir";
-          } else if (currentHour >= 12 && currentHour < 18) {
-            greeting = "Bon après-midi";
-          }
-          
-          setMessages([{
-            content: `${greeting} ${nickname} ! Je suis Jude, votre assistant. Comment puis-je vous aider ? 😊`,
-            sender: "jude"
-          }]);
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('nickname, avatar_url')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        const nickname = profile?.nickname || "l'élève";
+        setUserNickname(nickname);
+        setUserAvatarUrl(profile?.avatar_url || "");
+        
+        // Set initial greeting with nickname
+        const now = new Date();
+        const haitiOffset = -5;
+        const haitiTime = new Date(now.getTime() + (haitiOffset * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));
+        const currentHour = haitiTime.getHours();
+        
+        let greeting = "Bonjour";
+        if (currentHour >= 18 || currentHour < 5) {
+          greeting = "Bonsoir";
+        } else if (currentHour >= 12 && currentHour < 18) {
+          greeting = "Bon après-midi";
         }
+        
+        setMessages([{
+          content: `${greeting} ${nickname} ! Je suis Jude, votre assistant. Comment puis-je vous aider ? 😊`,
+          sender: "jude"
+        }]);
       } catch (error) {
         console.error('Error fetching user profile:', error);
         setMessages([{
@@ -200,7 +198,7 @@ export const JudeChatbot = () => {
     };
 
     fetchUserProfile();
-  }, [isVisitor, location.pathname]);
+  }, [isVisitor, location.pathname, user]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
