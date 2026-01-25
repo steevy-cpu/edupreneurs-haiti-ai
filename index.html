@@ -211,8 +211,25 @@
       <!-- Loading placeholder for fast first paint -->
       <div class="loading-placeholder">
         <div class="hero-skeleton" style="width: 120px; height: 120px; border-radius: 12px;"></div>
+        <p id="loading-status" style="margin-top: 16px; color: #666; font-size: 14px; font-family: system-ui, sans-serif;">
+          Connexion...
+        </p>
       </div>
     </div>
+    <script>
+      // Progressive loading messages for 3G users
+      const messages = ['Connexion...', 'Chargement...', 'Préparation...'];
+      let msgIndex = 0;
+      const updateMsg = () => {
+        const el = document.getElementById('loading-status');
+        if (el && msgIndex < messages.length - 1) {
+          msgIndex++;
+          el.textContent = messages[msgIndex];
+        }
+      };
+      setTimeout(updateMsg, 2000);
+      setTimeout(updateMsg, 5000);
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

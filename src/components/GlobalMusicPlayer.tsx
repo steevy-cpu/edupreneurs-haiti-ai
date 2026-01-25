@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Music, Play, Pause, SkipForward, Loader2, Volume2, X } from "lucide-react";
 import { useMusicPlayer } from "@/contexts/MusicPlayerContext";
 import { useState, useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { useLocation } from "react-router-dom";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import { cn } from "@/lib/utils";
@@ -23,10 +23,12 @@ export const GlobalMusicPlayer = () => {
   } = useMusicPlayer();
   
   const { isSlowConnection, shouldShowAnimations, shouldShowBlur } = useNetworkAwareLoading();
+  
+  // Use centralized session auth - eliminates duplicate getSession() call
+  const { isAuthenticated } = useSessionAuth();
 
   const [playlistOpen, setPlaylistOpen] = useState(false);
   const [minimized, setMinimized] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -36,18 +38,6 @@ export const GlobalMusicPlayer = () => {
   const playerRef = useRef<HTMLDivElement>(null);
   
   const DRAG_THRESHOLD = 8; // pixels before drag starts
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsAuthenticated(!!session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   // Unified Pointer Events handler for drag
   useEffect(() => {
