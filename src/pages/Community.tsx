@@ -110,7 +110,13 @@ const Community = () => {
   const [typingUsers, setTypingUsers] = useState<Record<string, Record<string, any>>>({});
   // Use centralized presence from PresenceContext (event-driven, not polling)
   const onlineUsers = useOnlineUserIds();
-  const [lastSeenTimes, setLastSeenTimes] = useState<Record<string, string>>(() => {
+  
+  /**
+   * Fallback timestamps for OFFLINE users only.
+   * Shows "last seen X minutes ago" when user is not currently online.
+   * Real-time online status comes from PresenceContext (not this state).
+   */
+  const [offlineLastSeenTimes, setOfflineLastSeenTimes] = useState<Record<string, string>>(() => {
     // Initialize from localStorage
     try {
       const stored = localStorage.getItem('lastSeenTimes');
@@ -161,14 +167,14 @@ const Community = () => {
   }, []);
 
 
-  // Save lastSeenTimes to localStorage whenever it changes
+  // Save offlineLastSeenTimes to localStorage whenever it changes
   useEffect(() => {
     try {
-      localStorage.setItem('lastSeenTimes', JSON.stringify(lastSeenTimes));
+      localStorage.setItem('lastSeenTimes', JSON.stringify(offlineLastSeenTimes));
     } catch (error) {
       logger.error('Failed to save lastSeenTimes:', error);
     }
-  }, [lastSeenTimes]);
+  }, [offlineLastSeenTimes]);
 
   useEffect(() => {
     checkUser();
@@ -564,7 +570,7 @@ const Community = () => {
           newLastSeenTimes[profile.user_id] = profile.last_seen;
         }
       });
-      setLastSeenTimes(prev => ({ ...prev, ...newLastSeenTimes }));
+      setOfflineLastSeenTimes(prev => ({ ...prev, ...newLastSeenTimes }));
     }
 
     let groupDetails: any[] = [];
@@ -1789,7 +1795,7 @@ const Community = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       // Force a re-render to update the relative time display
-      setLastSeenTimes(prev => ({ ...prev }));
+      setOfflineLastSeenTimes(prev => ({ ...prev }));
     }, 30000); // Update every 30 seconds
     
     return () => clearInterval(interval);
@@ -2015,7 +2021,7 @@ const Community = () => {
                   <ChatViewHeader
                     conversation={currentConv}
                     isOnline={otherUserId ? onlineUsers.has(otherUserId) : false}
-                    lastSeen={otherUserId ? lastSeenTimes[otherUserId] : undefined}
+                    lastSeen={otherUserId ? offlineLastSeenTimes[otherUserId] : undefined}
                     onBack={() => setSelectedConversation(null)}
                     onDelete={() => setDeleteConversationId(selectedConversation)}
                     onGroupInfoClick={(groupId) => {
