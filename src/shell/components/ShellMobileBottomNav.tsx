@@ -1,0 +1,102 @@
+/**
+ * ShellMobileBottomNav - Mobile bottom navigation using centralized config.
+ * 
+ * Uses the shell visibility system and navigation config.
+ */
+
+import { memo } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { useVisibility } from '../hooks/useVisibility';
+import { useKeyboardOpen } from '@/hooks/useKeyboardOpen';
+import { useSidebarBadges } from '@/hooks/useSidebarBadges';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { MOBILE_NAVIGATION, type BadgeKey } from '../config/navigation';
+
+/**
+ * Mobile bottom navigation bar with badge support.
+ * Visibility controlled by centralized visibility system.
+ */
+export const ShellMobileBottomNav = memo(function ShellMobileBottomNav() {
+  const location = useLocation();
+  const keyboardOpen = useKeyboardOpen();
+  const { showBottomNav } = useVisibility({ keyboardOpen });
+  
+  // Badge data
+  const { profile } = useUserProfile();
+  const { badges } = useSidebarBadges(profile.userId);
+  
+  // Don't render if hidden by visibility rules or keyboard is open
+  if (!showBottomNav) {
+    return null;
+  }
+  
+  const getBadgeCount = (badgeKey?: BadgeKey): number => {
+    if (!badgeKey) return 0;
+    return badges[badgeKey] || 0;
+  };
+  
+  const isActive = (path: string) => location.pathname === path;
+  
+  return (
+    <nav 
+      className={cn(
+        'fixed bottom-0 left-0 right-0 z-50 lg:hidden',
+        'bg-card/95 backdrop-blur-lg border-t border-border shadow-lg',
+        'pb-[env(safe-area-inset-bottom)]'
+      )}
+    >
+      <div className="flex items-center justify-around h-14">
+        {MOBILE_NAVIGATION.map((item) => {
+          const active = isActive(item.to);
+          const badgeCount = getBadgeCount(item.badgeKey);
+          
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={cn(
+                'flex flex-col items-center justify-center flex-1 h-full relative',
+                'transition-colors duration-200',
+                active 
+                  ? 'text-primary' 
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {/* Icon with badge */}
+              <div className="relative">
+                <item.icon 
+                  size={22} 
+                  className={cn(
+                    'transition-transform duration-200',
+                    active && 'scale-110'
+                  )} 
+                />
+                {badgeCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
+                    {badgeCount > 99 ? '99+' : badgeCount}
+                  </span>
+                )}
+              </div>
+              
+              {/* Label */}
+              <span className={cn(
+                'text-[10px] mt-0.5 font-medium',
+                active && 'font-semibold'
+              )}>
+                {item.label}
+              </span>
+              
+              {/* Active indicator */}
+              {active && (
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />
+              )}
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+});
+
+export default ShellMobileBottomNav;
