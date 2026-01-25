@@ -3,6 +3,7 @@ import { Chess, Move } from 'chess.js';
 import { supabase } from '@/integrations/supabase/client';
 import { useChessSounds } from './useChessSounds';
 import { useToast } from './use-toast';
+import { useSessionAuth } from '@/contexts/SessionAuthContext';
 
 export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 export type TimeControl = 'bullet' | 'blitz' | 'rapid' | 'classic' | 'untimed';
@@ -56,6 +57,7 @@ export const useChessGame = (
 ) => {
   const { toast } = useToast();
   const { playSound } = useChessSounds();
+  const { user } = useSessionAuth();
   
   const [state, setState] = useState<GameState>({
     game: new Chess(),
@@ -80,24 +82,23 @@ export const useChessGame = (
   const [currentDifficulty, setCurrentDifficulty] = useState(difficulty);
   const [currentTimeControl, setCurrentTimeControl] = useState(timeControl);
 
-  // Fetch user profile
+  // Sync userId from centralized auth context (no redundant API call)
   useEffect(() => {
-    const fetchProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('nickname')
-          .eq('user_id', user.id)
-          .single();
-        if (profile) {
-          setUserNickname(profile.nickname);
-        }
-      }
-    };
-    fetchProfile();
-  }, []);
+    if (user?.id) {
+      setUserId(user.id);
+      // Fetch nickname only when user is available
+      supabase
+        .from('profiles')
+        .select('nickname')
+        .eq('user_id', user.id)
+        .maybeSingle()
+        .then(({ data: profile }) => {
+          if (profile?.nickname) {
+            setUserNickname(profile.nickname);
+          }
+        });
+    }
+  }, [user?.id]);
 
   // Update game status
   useEffect(() => {
