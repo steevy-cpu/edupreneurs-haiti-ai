@@ -98,7 +98,7 @@ const ExamsHub = () => {
 
   const handlePractice = (examId: string) => {
     if (!isAuthenticated) {
-      navigate('/auth', { state: { returnTo: `/exam-preparation/${examId}` } });
+      navigate('/auth/login', { state: { returnTo: `/exam-preparation/${examId}` } });
       return;
     }
     navigate(`/exam-preparation/${examId}`);

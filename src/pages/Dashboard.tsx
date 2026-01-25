@@ -165,7 +165,7 @@ const Dashboard = () => {
     
     // Redirect if not authenticated (after auth check completes)
     if (!isAuthenticated || !authUser) {
-      navigate("/auth", { replace: true });
+      navigate("/auth/login", { replace: true });
       return;
     }
     

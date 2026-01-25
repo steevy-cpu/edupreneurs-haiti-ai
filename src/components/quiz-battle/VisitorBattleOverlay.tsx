@@ -21,7 +21,7 @@ export const VisitorBattleOverlay = () => {
           </p>
         </div>
         <Button 
-          onClick={() => navigate('/auth')}
+          onClick={() => navigate('/auth/signup/step-1')}
           className="bg-primary hover:bg-primary/90 whitespace-nowrap"
         >
           Créer un compte

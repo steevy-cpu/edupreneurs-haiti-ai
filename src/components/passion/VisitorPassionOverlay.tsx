@@ -9,12 +9,12 @@ export const VisitorPassionOverlay = () => {
 
   const handleSignup = () => {
     exitVisitorMode();
-    navigate('/auth');
+    navigate('/auth/signup/step-1');
   };
 
   const handleLogin = () => {
     exitVisitorMode();
-    navigate('/auth?mode=login');
+    navigate('/auth/login');
   };
 
   return (

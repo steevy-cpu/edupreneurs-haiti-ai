@@ -292,7 +292,7 @@ export const footerLinks = {
   legal: [
     { to: "/privacy-policy", label: "Confidentialité" },
     { to: "/cookie-settings", label: "Paramètres Cookies" },
-    { to: "/auth", label: "Se connecter" }
+    { to: "/auth/login", label: "Se connecter" }
   ]
 } as const;
 

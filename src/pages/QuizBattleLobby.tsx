@@ -92,7 +92,7 @@ const QuizBattleLobby = () => {
         const currentUrl = window.location.pathname + window.location.search;
         // Save to sessionStorage to survive page refresh during auth flow
         sessionStorage.setItem('quiz_battle_return_url', currentUrl);
-        navigate('/auth', { state: { returnTo: currentUrl } });
+        navigate('/auth/login', { state: { returnTo: currentUrl } });
         return;
       }
       setUserId(user.id);

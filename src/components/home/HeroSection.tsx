@@ -111,7 +111,7 @@ export const HeroSection = memo(function HeroSection({
           
           {/* CTAs */}
           <div className="flex flex-wrap gap-2 sm:gap-4 pt-1">
-            <Link to="/auth?tab=signup">
+            <Link to="/auth/signup/step-1">
               <Button 
                 size="lg" 
                 className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-xl font-bold transition-all duration-300 ease-out hover:scale-[1.02] text-xs sm:text-sm px-4 sm:px-6 md:px-8"
@@ -119,7 +119,7 @@ export const HeroSection = memo(function HeroSection({
                 Créer un compte
               </Button>
             </Link>
-            <Link to="/auth">
+            <Link to="/auth/login">
               <Button 
                 size="lg" 
                 variant="outline" 
