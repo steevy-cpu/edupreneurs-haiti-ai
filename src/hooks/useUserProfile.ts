@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useVisitor } from "@/contexts/VisitorContext";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import dashboardImage from "@/assets/dashboard00.png";
 
@@ -20,24 +21,21 @@ const FALLBACK_PROFILE: CachedUserProfile = {
   isAuthenticated: false,
 };
 
-async function fetchUserProfile(): Promise<CachedUserProfile> {
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    return FALLBACK_PROFILE;
-  }
-
+/**
+ * Fetch profile data using provided userId (eliminates redundant getUser() call)
+ */
+async function fetchUserProfile(userId: string): Promise<CachedUserProfile> {
   const { data: profile, error } = await supabase
     .from("profiles")
     .select("avatar_url, nickname, academic_grade")
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", userId)
+    .maybeSingle();
 
   if (error) {
     console.error("Error fetching user profile:", error);
     return {
       ...FALLBACK_PROFILE,
-      userId: user.id,
+      userId,
       isAuthenticated: true,
     };
   }
@@ -52,7 +50,7 @@ async function fetchUserProfile(): Promise<CachedUserProfile> {
   }
 
   return {
-    userId: user.id,
+    userId,
     nickname: profile?.nickname || "Étudiant",
     avatarUrl,
     academicGrade: profile?.academic_grade || null,
@@ -60,17 +58,24 @@ async function fetchUserProfile(): Promise<CachedUserProfile> {
   };
 }
 
+/**
+ * Hook to get cached user profile data.
+ * Uses SessionAuthContext to get userId, eliminating redundant auth calls.
+ */
 export function useUserProfile() {
   const { isVisitor } = useVisitor();
+  const { user, isLoading: isAuthLoading } = useSessionAuth();
+  
+  const userId = user?.id || null;
   
   const { data: profile, isLoading, refetch } = useQuery({
-    queryKey: ['user-profile'],
-    queryFn: fetchUserProfile,
+    queryKey: ['user-profile', userId],
+    queryFn: () => fetchUserProfile(userId!),
     staleTime: 10 * 60 * 1000, // 10 minutes - won't refetch during normal browsing
     gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
     refetchOnWindowFocus: false,
     refetchOnMount: false, // Critical: don't refetch on navigation
-    enabled: !isVisitor, // Skip fetching for visitors
+    enabled: !!userId && !isVisitor, // Only fetch when we have a userId and not in visitor mode
   });
 
   // Return visitor fallback when in visitor mode
@@ -78,6 +83,15 @@ export function useUserProfile() {
     return {
       profile: FALLBACK_PROFILE,
       isLoading: false,
+      refetch,
+    };
+  }
+
+  // Still loading auth - return fallback to avoid flash
+  if (isAuthLoading) {
+    return {
+      profile: FALLBACK_PROFILE,
+      isLoading: true,
       refetch,
     };
   }

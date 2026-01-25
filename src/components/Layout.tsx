@@ -104,12 +104,18 @@ export const Layout = ({ children }: LayoutProps) => {
   const unreadNotifications = badges.unreadNotifications;
   const unreadFeedPosts = badges.unreadFeedPosts;
 
+  // Non-blocking initialization - render children immediately
   useEffect(() => {
     // Skip data fetching for visitors
     if (isVisitor) return;
     
+    // Non-blocking auth check - runs in background, doesn't block render
     checkAuth();
-    setupGlobalPresence();
+    
+    // Defer presence setup to after initial render (reduces blocking time by ~200ms)
+    const presenceTimer = setTimeout(() => {
+      setupGlobalPresence();
+    }, 2000);
     
     // Clear stale visitor mode when authenticated user is detected (using centralized auth)
     if (isSessionAuthenticated && isVisitor) {
@@ -117,6 +123,7 @@ export const Layout = ({ children }: LayoutProps) => {
     }
     
     return () => {
+      clearTimeout(presenceTimer);
       if (presenceChannelRef.current) {
         supabase.removeChannel(presenceChannelRef.current);
       }
@@ -223,18 +230,32 @@ export const Layout = ({ children }: LayoutProps) => {
     };
   }, [userId, isVisitor, location.pathname, playReceiveSound, playNotificationSound, navigate]);
 
+  /**
+   * Global presence setup - runs deferred to not block initial render.
+   * Updates last_seen in DB and sets up realtime presence channel.
+   */
   const setupGlobalPresence = async () => {
     try {
       // Use user from centralized auth context instead of separate getUser() call
       if (!authUser) return;
 
-      console.log('🌐 [Layout] Setting up global presence for user:', authUser.id);
+      // Use requestIdleCallback for non-critical DB write (or setTimeout fallback)
+      const updateLastSeen = async () => {
+        try {
+          await supabase
+            .from('profiles')
+            .update({ last_seen: new Date().toISOString() })
+            .eq('user_id', authUser.id);
+        } catch (err) {
+          console.error('[Layout] Error updating last_seen:', err);
+        }
+      };
       
-      // Update last_seen in database when user comes online
-      await supabase
-        .from('profiles')
-        .update({ last_seen: new Date().toISOString() })
-        .eq('user_id', authUser.id);
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(updateLastSeen);
+      } else {
+        setTimeout(updateLastSeen, 100);
+      }
       
       const channel = supabase.channel('online-users', {
         config: {
@@ -282,6 +303,10 @@ export const Layout = ({ children }: LayoutProps) => {
     }
   };
 
+  /**
+   * Non-blocking auth check - verifies session and email confirmation.
+   * Redirects if needed, but doesn't block initial render.
+   */
   const checkAuth = async () => {
     try {
       // Skip auth check for visitors - they're allowed to browse
@@ -293,19 +318,29 @@ export const Layout = ({ children }: LayoutProps) => {
         return;
       }
       
-      // If user has a session, check if email is verified
+      // If user has a session, check if email is verified (non-blocking check)
       if (session?.user) {
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('email_confirmed')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
+        // Use requestIdleCallback for non-critical profile check
+        const checkEmailVerification = async () => {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('email_confirmed')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+          
+          if (!error && profile && !profile.email_confirmed) {
+            // User is logged in but email not verified - sign them out and redirect to auth
+            await supabase.auth.signOut();
+            toast.error("Veuillez vérifier votre email avant d'accéder à votre compte");
+            navigate("/auth");
+          }
+        };
         
-        if (!error && profile && !profile.email_confirmed) {
-          // User is logged in but email not verified - sign them out and redirect to auth
-          await supabase.auth.signOut();
-          toast.error("Veuillez vérifier votre email avant d'accéder à votre compte");
-          navigate("/auth");
+        // Run email check after render, not blocking
+        if ('requestIdleCallback' in window) {
+          (window as any).requestIdleCallback(checkEmailVerification);
+        } else {
+          setTimeout(checkEmailVerification, 100);
         }
       }
     } catch (error) {

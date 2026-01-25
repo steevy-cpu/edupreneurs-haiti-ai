@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react
 import { useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { supabase } from "@/integrations/supabase/client";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -102,63 +103,96 @@ const Dashboard = () => {
   const { restartTour } = useFirstTimeUser();
   const navigate = useNavigate();
   const { isVisitor } = useVisitor();
+  const { user: authUser, isLoading: isAuthLoading, isAuthenticated } = useSessionAuth();
   const { shouldAnimate, animationLevel } = useNetworkAwareAnimations();
   const [userData, setUserData] = useState({
     name: isVisitor ? "Visiteur" : "Utilisateur",
   });
   const [recentNotes, setRecentNotes] = useState<Note[]>([]);
   const [goldEarned, setGoldEarned] = useState<number>(isVisitor ? visitorDashboardData.goldEarned : 0);
-  const [userId, setUserId] = useState<string>("");
   const [isContentEditor, setIsContentEditor] = useState(false);
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
-  const [isAuthChecking, setIsAuthChecking] = useState(!isVisitor);
   const [isUserDataLoading, setIsUserDataLoading] = useState(!isVisitor);
   const [totalLessonsCompleted, setTotalLessonsCompleted] = useState(isVisitor ? visitorDashboardData.lessonsCompleted : 0);
   const [recentSubjects, setRecentSubjects] = useState<RecentSubjectProgress[]>([]);
   
+  // Derived userId from centralized auth context
+  const userId = authUser?.id || "";
+  
   const { showPrompt, isIOS, isPromptAvailable, installApp, dismissPrompt } = usePWAInstall();
-  const { analytics, isLoading: analyticsLoading } = useDashboardAnalytics(isVisitor ? null : userId || null);
+  // Defer analytics until after critical data loads
+  const { analytics, isLoading: analyticsLoading } = useDashboardAnalytics(
+    isVisitor || !userId ? null : userId
+  );
   const { dismissBanner, isBannerDismissed, getActiveBanner } = useBannerPriority();
 
-  // Auth guard - redirect unauthenticated users (skip for visitors)
+  // Two-phase loading: use centralized auth, no redundant getUser() call
   useEffect(() => {
-    // Skip auth check for visitors
+    // Skip for visitors
     if (isVisitor) {
-      setIsAuthChecking(false);
       setIsUserDataLoading(false);
       fetchLeaderboard(); // Still fetch leaderboard for visitors
       return;
     }
     
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/auth", { replace: true });
-        return;
-      }
-      setUserId(user.id);
-      setIsAuthChecking(false);
-      
-      // Fetch all user-related data with single user object
-      fetchAllUserData(user.id);
-      fetchLeaderboard();
-    };
+    // Wait for auth to complete
+    if (isAuthLoading) return;
     
-    checkAuth();
-  }, [navigate, isVisitor]);
+    // Redirect if not authenticated
+    if (!isAuthenticated || !authUser) {
+      navigate("/auth", { replace: true });
+      return;
+    }
+    
+    // Phase A: Fetch critical data immediately (profile, gold)
+    fetchCriticalUserData(authUser.id);
+    fetchLeaderboard();
+    
+    // Phase B: Fetch non-critical data after a short delay
+    const deferTimer = setTimeout(() => {
+      fetchNonCriticalUserData(authUser.id);
+    }, 500);
+    
+    return () => clearTimeout(deferTimer);
+  }, [navigate, isVisitor, isAuthLoading, isAuthenticated, authUser]);
 
-  // Consolidated data fetching with single user id
-  const fetchAllUserData = async (currentUserId: string) => {
+  // Phase A: Critical data - renders immediately
+  const fetchCriticalUserData = async (currentUserId: string) => {
     setIsUserDataLoading(true);
     
-    // Parallel fetch for efficiency - now includes academic_grade and subjects
-    const [profileResult, notesResult, editorResult, completionsResult, recentActivityResult, subjectsResult] = await Promise.all([
+    // Only fetch profile and recent activity - what user sees first
+    const [profileResult, recentActivityResult] = await Promise.all([
       supabase
         .from("profiles")
         .select("nickname, gold_earned, academic_grade")
         .eq("user_id", currentUserId)
         .maybeSingle(),
+      supabase
+        .from("lesson_completions")
+        .select("subject, lesson_slug, completed_at")
+        .eq("user_id", currentUserId)
+        .order("completed_at", { ascending: false })
+        .limit(20),
+    ]);
+
+    // Process profile data - render immediately
+    if (profileResult.data) {
+      setUserData({ name: profileResult.data.nickname || "Utilisateur" });
+      setGoldEarned(profileResult.data.gold_earned || 0);
+    }
+    
+    // Process recent activity for "Continue Learning" section
+    if (recentActivityResult.data && !recentActivityResult.error) {
+      processRecentActivity(recentActivityResult.data, profileResult.data?.academic_grade);
+    }
+    
+    setIsUserDataLoading(false); // CRITICAL: Mark as loaded for render
+  };
+
+  // Phase B: Non-critical data - loaded after initial render
+  const fetchNonCriticalUserData = async (currentUserId: string) => {
+    const [notesResult, editorResult, completionsResult, subjectsResult] = await Promise.all([
       supabase
         .from("lesson_notes")
         .select("*")
@@ -175,60 +209,13 @@ const Dashboard = () => {
         .select("id", { count: "exact" })
         .eq("user_id", currentUserId),
       supabase
-        .from("lesson_completions")
-        .select("subject, lesson_slug, completed_at")
-        .eq("user_id", currentUserId)
-        .order("completed_at", { ascending: false })
-        .limit(20),
-      supabase
         .from("subjects")
-        .select("id, slug, name, grade_level")
+        .select("id, slug, name, grade_level"),
     ]);
-
-    // Process profile data
-    if (profileResult.data) {
-      setUserData({ name: profileResult.data.nickname || "Utilisateur" });
-      setGoldEarned(profileResult.data.gold_earned || 0);
-    }
 
     // Process notes - enrich with lesson/subject info for navigation
     if (notesResult.data && notesResult.data.length > 0) {
-      const lessonIds = [...new Set(notesResult.data.map(n => n.lesson_id))];
-      
-      // Fetch lessons with their subjects for navigation
-      const { data: lessonsWithSubjects } = await supabase
-        .from("lessons")
-        .select("slug, title, subjects(slug, name, grade_level)")
-        .in("slug", lessonIds);
-      
-      const userGrade = profileResult.data?.academic_grade || '9AF';
-      
-      // Create lookup map - prioritize user's grade level for duplicates
-      const lessonMap = new Map<string, { lesson_slug: string; lesson_title: string; subject_slug: string; subject_name: string }>();
-      
-      lessonsWithSubjects?.forEach(lesson => {
-        const existing = lessonMap.get(lesson.slug);
-        const subjectData = lesson.subjects as { slug: string; name: string; grade_level: string } | null;
-        const subjectGrade = subjectData?.grade_level;
-        
-        // If no existing entry, or new entry matches user's grade (prioritize)
-        if (!existing || subjectGrade === userGrade) {
-          lessonMap.set(lesson.slug, {
-            lesson_slug: lesson.slug,
-            lesson_title: lesson.title,
-            subject_slug: subjectData?.slug || '',
-            subject_name: subjectData?.name || ''
-          });
-        }
-      });
-      
-      // Enhance notes with navigation data
-      const enhancedNotes: Note[] = notesResult.data.map(note => ({
-        ...note,
-        ...lessonMap.get(note.lesson_id)
-      }));
-      
-      setRecentNotes(enhancedNotes);
+      await enrichNotesWithNavigation(notesResult.data, currentUserId);
     } else if (notesResult.data) {
       setRecentNotes(notesResult.data);
     }
@@ -238,90 +225,125 @@ const Dashboard = () => {
     
     // Process lesson completions count
     setTotalLessonsCompleted(completionsResult.count || 0);
+  };
+
+  // Helper: Process recent activity data
+  const processRecentActivity = async (activityData: any[], userGrade?: string) => {
+    const subjectMap = new Map<string, { subject: string; lastLessonSlug: string; lastActivity: string; count: number }>();
     
-    // Process recent activity for "Continue Learning" section
-    if (recentActivityResult.data && !recentActivityResult.error) {
-      const subjectMap = new Map<string, { subject: string; lastLessonSlug: string; lastActivity: string; count: number }>();
-      
-      for (const completion of recentActivityResult.data) {
-        if (!subjectMap.has(completion.subject)) {
-          subjectMap.set(completion.subject, {
-            subject: completion.subject,
-            lastLessonSlug: completion.lesson_slug,
-            lastActivity: completion.completed_at,
-            count: 1
-          });
-        } else {
-          const existing = subjectMap.get(completion.subject)!;
-          existing.count++;
-        }
-      }
-      
-      // Get user's grade and available subjects for proper slug mapping
-      const userGrade = profileResult.data?.academic_grade || '9AF';
-      const availableSubjects = subjectsResult.data || [];
-      
-      // Helper function to find the best matching subject slug
-      const findSubjectSlug = (subjectName: string): string => {
-        const normalizedName = subjectName.toLowerCase().replace('é', 'e');
-        const normalizedGrade = userGrade.toLowerCase();
-        
-        // Try exact match with grade suffix (e.g., "anglais-af9" for grade "9AF")
-        const gradeSlugVariants = [
-          `${normalizedName}-${normalizedGrade}`,
-          `${normalizedName}-af${normalizedGrade.replace(/\D/g, '')}`,
-          `${normalizedName}-${normalizedGrade.replace(/(\d+)(\w+)/i, '$2$1').toLowerCase()}`
-        ];
-        
-        for (const variant of gradeSlugVariants) {
-          const match = availableSubjects.find(s => s.slug === variant);
-          if (match) return match.slug;
-        }
-        
-        // Try matching by subject name and user's grade_level
-        const gradeMatch = availableSubjects.find(s => 
-          s.slug.startsWith(normalizedName) && s.grade_level === userGrade
-        );
-        if (gradeMatch) return gradeMatch.slug;
-        
-        // Try any subject that starts with the name
-        const partialMatch = availableSubjects.find(s => s.slug.startsWith(normalizedName));
-        if (partialMatch) return partialMatch.slug;
-        
-        // Fallback to original name
-        return subjectName;
-      };
-      
-      // Convert to array and get top 3 most recent
-      const recentSubjectsData: RecentSubjectProgress[] = Array.from(subjectMap.values())
-        .slice(0, 3)
-        .map(item => {
-          // Create proper subject display name
-          const subjectDisplayNames: Record<string, string> = {
-            'mathematiques': 'Mathématiques',
-            'mathématiques': 'Mathématiques',
-            'francais': 'Français',
-            'sciences': 'Sciences',
-            'sciences-sociales': 'Sciences Sociales',
-            'espagnol': 'Espagnol',
-            'anglais': 'Anglais',
-            'creole': 'Créole'
-          };
-          
-          return {
-            subject: subjectDisplayNames[item.subject] || item.subject,
-            subjectSlug: findSubjectSlug(item.subject),
-            lastLessonSlug: item.lastLessonSlug,
-            lastLessonTitle: item.lastLessonSlug.replace(/-/g, ' '),
-            progress: Math.min(item.count * 10, 100), // Rough progress estimate
-            lastActivity: item.lastActivity
-          };
+    for (const completion of activityData) {
+      if (!subjectMap.has(completion.subject)) {
+        subjectMap.set(completion.subject, {
+          subject: completion.subject,
+          lastLessonSlug: completion.lesson_slug,
+          lastActivity: completion.completed_at,
+          count: 1
         });
-      
-      setRecentSubjects(recentSubjectsData);
+      } else {
+        const existing = subjectMap.get(completion.subject)!;
+        existing.count++;
+      }
     }
     
-    setIsUserDataLoading(false);
+    // Get subjects for slug mapping (deferred if needed)
+    const { data: availableSubjects } = await supabase
+      .from("subjects")
+      .select("id, slug, name, grade_level");
+    
+    const gradeToUse = userGrade || '9AF';
+    
+    // Helper function to find the best matching subject slug
+    const findSubjectSlug = (subjectName: string): string => {
+      const normalizedName = subjectName.toLowerCase().replace('é', 'e');
+      const normalizedGrade = gradeToUse.toLowerCase();
+      
+      const gradeSlugVariants = [
+        `${normalizedName}-${normalizedGrade}`,
+        `${normalizedName}-af${normalizedGrade.replace(/\D/g, '')}`,
+        `${normalizedName}-${normalizedGrade.replace(/(\d+)(\w+)/i, '$2$1').toLowerCase()}`
+      ];
+      
+      for (const variant of gradeSlugVariants) {
+        const match = availableSubjects?.find(s => s.slug === variant);
+        if (match) return match.slug;
+      }
+      
+      const gradeMatch = availableSubjects?.find(s => 
+        s.slug.startsWith(normalizedName) && s.grade_level === gradeToUse
+      );
+      if (gradeMatch) return gradeMatch.slug;
+      
+      const partialMatch = availableSubjects?.find(s => s.slug.startsWith(normalizedName));
+      if (partialMatch) return partialMatch.slug;
+      
+      return subjectName;
+    };
+    
+    const subjectDisplayNames: Record<string, string> = {
+      'mathematiques': 'Mathématiques',
+      'mathématiques': 'Mathématiques',
+      'francais': 'Français',
+      'sciences': 'Sciences',
+      'sciences-sociales': 'Sciences Sociales',
+      'espagnol': 'Espagnol',
+      'anglais': 'Anglais',
+      'creole': 'Créole'
+    };
+    
+    const recentSubjectsData: RecentSubjectProgress[] = Array.from(subjectMap.values())
+      .slice(0, 3)
+      .map(item => ({
+        subject: subjectDisplayNames[item.subject] || item.subject,
+        subjectSlug: findSubjectSlug(item.subject),
+        lastLessonSlug: item.lastLessonSlug,
+        lastLessonTitle: item.lastLessonSlug.replace(/-/g, ' '),
+        progress: Math.min(item.count * 10, 100),
+        lastActivity: item.lastActivity
+      }));
+    
+    setRecentSubjects(recentSubjectsData);
+  };
+
+  // Helper: Enrich notes with navigation data
+  const enrichNotesWithNavigation = async (notes: Note[], currentUserId: string) => {
+    const lessonIds = [...new Set(notes.map(n => n.lesson_id))];
+    
+    const { data: lessonsWithSubjects } = await supabase
+      .from("lessons")
+      .select("slug, title, subjects(slug, name, grade_level)")
+      .in("slug", lessonIds);
+    
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("academic_grade")
+      .eq("user_id", currentUserId)
+      .maybeSingle();
+    
+    const userGrade = profile?.academic_grade || '9AF';
+    
+    const lessonMap = new Map<string, { lesson_slug: string; lesson_title: string; subject_slug: string; subject_name: string }>();
+    
+    lessonsWithSubjects?.forEach(lesson => {
+      const existing = lessonMap.get(lesson.slug);
+      const subjectData = lesson.subjects as { slug: string; name: string; grade_level: string } | null;
+      const subjectGrade = subjectData?.grade_level;
+      
+      if (!existing || subjectGrade === userGrade) {
+        lessonMap.set(lesson.slug, {
+          lesson_slug: lesson.slug,
+          lesson_title: lesson.title,
+          subject_slug: subjectData?.slug || '',
+          subject_name: subjectData?.name || ''
+        });
+      }
+    });
+    
+    const enhancedNotes: Note[] = notes.map(note => ({
+      ...note,
+      ...lessonMap.get(note.lesson_id)
+    }));
+    
+    setRecentNotes(enhancedNotes);
   };
 
   const fetchLeaderboard = async () => {
@@ -386,9 +408,8 @@ const Dashboard = () => {
     return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
   }, []);
 
-
   // Show loading state while checking auth
-  if (isAuthChecking) {
+  if (isAuthLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>

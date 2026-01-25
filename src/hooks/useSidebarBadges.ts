@@ -60,11 +60,12 @@ export function useSidebarBadges(userId?: string | null) {
     enabled: !!userId && !isVisitor, // Only fetch when we have a userId and not in visitor mode
   });
 
-  // Set up realtime subscriptions for badge updates
+  // Set up realtime subscriptions for badge updates - DEFERRED by 3 seconds
+  // to reduce initial load contention on 3G connections
   useEffect(() => {
     if (!userId || isVisitor) return;
 
-    // Listen for feed visited event to clear badge immediately
+    // Listen for feed visited event to clear badge immediately (no delay needed)
     const handleFeedVisited = () => {
       queryClient.setQueryData(['sidebar-badges', userId], (old: SidebarBadges | undefined) => {
         if (!old) return EMPTY_BADGES;
@@ -73,48 +74,66 @@ export function useSidebarBadges(userId?: string | null) {
     };
     window.addEventListener('feed-visited', handleFeedVisited);
 
-    const messagesChannel = supabase
-      .channel("sidebar-badges-messages")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "messages" },
-        () => refetch()
-      )
-      .subscribe();
+    // Delay realtime subscriptions to prioritize initial render
+    const subscriptionDelay = setTimeout(() => {
+      const messagesChannel = supabase
+        .channel("sidebar-badges-messages")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "messages" },
+          () => refetch()
+        )
+        .subscribe();
 
-    const followsChannel = supabase
-      .channel("sidebar-badges-follows")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "follows" },
-        () => refetch()
-      )
-      .subscribe();
+      const followsChannel = supabase
+        .channel("sidebar-badges-follows")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "follows" },
+          () => refetch()
+        )
+        .subscribe();
 
-    const notificationsChannel = supabase
-      .channel("sidebar-badges-notifications")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "notifications" },
-        () => refetch()
-      )
-      .subscribe();
+      const notificationsChannel = supabase
+        .channel("sidebar-badges-notifications")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "notifications" },
+          () => refetch()
+        )
+        .subscribe();
 
-    const postsChannel = supabase
-      .channel("sidebar-badges-posts")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "posts" },
-        () => refetch()
-      )
-      .subscribe();
+      const postsChannel = supabase
+        .channel("sidebar-badges-posts")
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "posts" },
+          () => refetch()
+        )
+        .subscribe();
+
+      // Store channels for cleanup
+      (window as any).__sidebarBadgeChannels = {
+        messagesChannel,
+        followsChannel,
+        notificationsChannel,
+        postsChannel
+      };
+    }, 3000); // 3 second delay - user won't notice badge updates during initial load
 
     return () => {
       window.removeEventListener('feed-visited', handleFeedVisited);
-      supabase.removeChannel(messagesChannel);
-      supabase.removeChannel(followsChannel);
-      supabase.removeChannel(notificationsChannel);
-      supabase.removeChannel(postsChannel);
+      clearTimeout(subscriptionDelay);
+      
+      // Clean up channels if they were created
+      const channels = (window as any).__sidebarBadgeChannels;
+      if (channels) {
+        supabase.removeChannel(channels.messagesChannel);
+        supabase.removeChannel(channels.followsChannel);
+        supabase.removeChannel(channels.notificationsChannel);
+        supabase.removeChannel(channels.postsChannel);
+        delete (window as any).__sidebarBadgeChannels;
+      }
     };
   }, [userId, isVisitor, refetch, queryClient]);
 

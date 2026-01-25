@@ -15,6 +15,8 @@ import { GlobalMusicPlayer } from "@/components/GlobalMusicPlayer";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { lazy, Suspense } from "react";
 import { LegacyRedirect } from "@/components/LegacyRedirect";
+import { HeroSkeleton } from "@/components/shared/HeroSkeleton";
+import { DashboardFullSkeleton } from "@/components/shared/SkeletonLoaders";
 import { JudeChatbot } from "@/components/JudeChatbot";
 import { VisitorBanner } from "@/components/visitor";
 const VisitorTour = lazy(() => import("@/components/visitor/VisitorTour").then(m => ({ default: m.VisitorTour })));
@@ -167,21 +169,41 @@ const App = () => (
                   <FirstTimeUserTour />
                 </Suspense>
                 <EricChatbotWrapper />
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/customize-ai" element={<CustomizeAI />} />
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-                <Route path="/matieres" element={<Layout><Matieres /></Layout>} />
-                <Route path="/community" element={<Layout><Community /></Layout>} />
-                <Route path="/feed" element={<Layout><Feed /></Layout>} />
-                <Route path="/user-search" element={<Layout><UserSearch /></Layout>} />
-                <Route path="/profile/:userId" element={<Layout><Profile /></Layout>} />
-                <Route path="/follow-requests" element={<Layout><FollowRequests /></Layout>} />
-                <Route path="/notifications" element={<Layout><Notifications /></Layout>} />
+              {/* Route-specific Suspense boundaries for faster TTFC */}
+              <Routes>
+                {/* Critical routes - specialized skeletons for perceived performance */}
+                <Route path="/" element={
+                  <Suspense fallback={<HeroSkeleton />}>
+                    <Index />
+                  </Suspense>
+                } />
+                <Route path="/auth" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <Auth />
+                  </Suspense>
+                } />
+                <Route path="/reset-password" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <ResetPassword />
+                  </Suspense>
+                } />
+                <Route path="/dashboard" element={
+                  <Layout>
+                    <Suspense fallback={<DashboardFullSkeleton />}>
+                      <Dashboard />
+                    </Suspense>
+                  </Layout>
+                } />
+                {/* Other auth-gated routes - wrapped in global Suspense */}
+                <Route path="/customize-ai" element={<Suspense fallback={<PageLoader />}><CustomizeAI /></Suspense>} />
+                <Route path="/onboarding" element={<Suspense fallback={<PageLoader />}><Onboarding /></Suspense>} />
+                <Route path="/matieres" element={<Layout><Suspense fallback={<PageLoader />}><Matieres /></Suspense></Layout>} />
+                <Route path="/community" element={<Layout><Suspense fallback={<PageLoader />}><Community /></Suspense></Layout>} />
+                <Route path="/feed" element={<Layout><Suspense fallback={<PageLoader />}><Feed /></Suspense></Layout>} />
+                <Route path="/user-search" element={<Layout><Suspense fallback={<PageLoader />}><UserSearch /></Suspense></Layout>} />
+                <Route path="/profile/:userId" element={<Layout><Suspense fallback={<PageLoader />}><Profile /></Suspense></Layout>} />
+                <Route path="/follow-requests" element={<Layout><Suspense fallback={<PageLoader />}><FollowRequests /></Suspense></Layout>} />
+                <Route path="/notifications" element={<Layout><Suspense fallback={<PageLoader />}><Notifications /></Suspense></Layout>} />
                 {/* Legacy route redirects - keep old bookmarks working */}
                 <Route path="/math-course" element={<LegacyRedirect to="/course/mathematiques" />} />
                 <Route path="/math-lesson/:topicId" element={<LegacyRedirect to="/course/mathematiques/:topicId" preserveParams />} />
@@ -264,13 +286,11 @@ const App = () => (
             <Route path="/lecture/:ebookId" element={<EbookReader />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
-                {/* Dynamic routes for content editor generated subjects - MUST be before catch-all */}
-                <Route path="/course/:slug" element={<DynamicCoursePage />} />
-                <Route path="/course/:slug/:lessonSlug" element={<DynamicLessonPage />} />
+                <Route path="/course/:slug" element={<Suspense fallback={<PageLoader />}><DynamicCoursePage /></Suspense>} />
+                <Route path="/course/:slug/:lessonSlug" element={<Suspense fallback={<PageLoader />}><DynamicLessonPage /></Suspense>} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
+                <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
+              </Routes>
                 </FirstTimeUserProvider>
               </BrowserRouter>
             </VisitorProvider>
