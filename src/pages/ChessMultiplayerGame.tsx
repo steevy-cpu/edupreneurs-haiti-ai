@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
+import { useSessionAuth } from '@/contexts/SessionAuthContext';
 import { 
   ArrowLeft, 
   Flag, 
@@ -41,10 +42,12 @@ const ChessMultiplayerGame = () => {
   const { toast } = useToast();
   const { playSound } = useChessSounds();
 
-  // Auth state
-  const [userId, setUserId] = useState<string | null>(null);
+  // Auth state from context
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useSessionAuth();
+  const userId = user?.id ?? null;
+  
+  // Profile state (still need to fetch separately for nickname/avatar)
   const [userProfile, setUserProfile] = useState<{ nickname: string; avatar_url: string | null } | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   // Game state
   const [game, setGame] = useState(new Chess());
@@ -85,31 +88,31 @@ const ChessMultiplayerGame = () => {
     refreshMatch,
   } = useChessMultiplayer({ userId, enabled: true });
 
-  // Check auth and load profile
+  // Redirect if not authenticated
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/auth?redirect=/chess-multiplayer');
-        return;
-      }
-      setUserId(user.id);
+    if (!isAuthLoading && !isAuthenticated) {
+      navigate('/auth?redirect=/chess-multiplayer');
+    }
+  }, [isAuthLoading, isAuthenticated, navigate]);
 
-      // Fetch user profile
+  // Fetch user profile when userId is available
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchProfile = async () => {
       const { data: profile } = await supabase
         .from('profiles')
         .select('nickname, avatar_url')
-        .eq('user_id', user.id)
-        .single();
+        .eq('user_id', userId)
+        .maybeSingle();
 
       if (profile) {
         setUserProfile(profile);
       }
-
-      setIsAuthLoading(false);
     };
-    checkAuth();
-  }, [navigate]);
+
+    fetchProfile();
+  }, [userId]);
 
   // Load match and handle joining
   useEffect(() => {

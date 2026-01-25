@@ -44,6 +44,7 @@ import { getAvatarUrl } from "@/lib/avatarMap";
 import { PageHeader, SettingsPageSkeleton } from "@/components/shared";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import { debounce } from "@/utils/performanceOptimization";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 
 // Lazy load heavy components
 const AvatarSelector = lazy(() => import('@/components/AvatarSelector').then(m => ({ default: m.AvatarSelector })));
@@ -77,14 +78,17 @@ const DEFAULT_NOTIFICATION_CATEGORIES: Omit<NotificationCategory, 'enabled'>[] =
 const Settings = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { session, user, isAuthenticated, isLoading: authLoading } = useSessionAuth();
   const { isSlowConnection, shouldShowAnimations } = useNetworkAwareLoading();
+  
+  const userId = user?.id ?? null;
+  const userEmail = user?.email ?? "";
+  
   const [activeTab, setActiveTab] = useState("profile");
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
-  const [userEmail, setUserEmail] = useState("");
-  const [userId, setUserId] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
@@ -107,25 +111,25 @@ const Settings = () => {
     return localStorage.getItem("lessonLanguage") || "fr";
   });
 
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate("/auth");
+    }
+  }, [authLoading, isAuthenticated, navigate]);
+
   // Fetch all data in parallel
   const fetchUserData = useCallback(async () => {
+    if (!userId) return;
+    
     setPageLoading(true);
-    
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/auth");
-      return;
-    }
-    
-    setUserEmail(session.user.email || "");
-    setUserId(session.user.id);
 
     // Fetch all data in parallel
     const [profileResult, followersResult, followingResult, notificationPrefsResult] = await Promise.all([
-      supabase.from("profiles").select("*").eq("user_id", session.user.id).single(),
-      supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", session.user.id).eq("status", "accepted"),
-      supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", session.user.id).eq("status", "accepted"),
-      supabase.from("notification_preferences").select("*").eq("user_id", session.user.id),
+      supabase.from("profiles").select("*").eq("user_id", userId).single(),
+      supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", userId).eq("status", "accepted"),
+      supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", userId).eq("status", "accepted"),
+      supabase.from("notification_preferences").select("*").eq("user_id", userId),
     ]);
 
     if (profileResult.error) {
@@ -161,11 +165,13 @@ const Settings = () => {
     setNotificationCategories(mergedCategories);
 
     setPageLoading(false);
-  }, [navigate]);
+  }, [userId]);
 
   useEffect(() => {
-    fetchUserData();
-  }, [fetchUserData]);
+    if (userId && !authLoading) {
+      fetchUserData();
+    }
+  }, [userId, authLoading, fetchUserData]);
 
   useEffect(() => {
     localStorage.setItem("lessonLanguage", language);
@@ -341,7 +347,6 @@ const Settings = () => {
   const handleDeleteAccount = async () => {
     setLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast.error("Non authentifié");
         return;
