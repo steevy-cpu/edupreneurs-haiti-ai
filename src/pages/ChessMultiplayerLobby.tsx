@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Crown, 
   Users, 
@@ -18,7 +19,8 @@ import {
   Share2,
   Globe,
   Lock,
-  Sparkles
+  Sparkles,
+  PlayCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -29,6 +31,7 @@ import {
   TIME_CONTROL_SECONDS 
 } from '@/hooks/useChessMultiplayer';
 import { ChessPublicMatches } from '@/components/chess/ChessPublicMatches';
+import { getChessSession, clearChessSession } from '@/chess/store/chessSession.store';
 
 const ChessMultiplayerLobby = () => {
   const navigate = useNavigate();
@@ -60,6 +63,46 @@ const ChessMultiplayerLobby = () => {
       navigate('/auth/login', { state: { returnTo: '/chess-multiplayer' } });
     }
   }, [isAuthLoading, isAuthenticated, navigate]);
+
+  // Check for active session and prompt rejoin
+  useEffect(() => {
+    if (!userId) return;
+    
+    const session = getChessSession();
+    if (session) {
+      // Verify match still exists and is active
+      const checkMatch = async () => {
+        const { data } = await supabase
+          .from('chess_matches')
+          .select('id, status')
+          .eq('id', session.matchId)
+          .maybeSingle();
+        
+        if (data && (data.status === 'waiting' || data.status === 'playing')) {
+          // Show rejoin toast
+          toast({
+            title: 'Partie en cours',
+            description: 'Vous avez une partie non terminée',
+            action: (
+              <Button 
+                size="sm" 
+                onClick={() => navigate(`/chess-multiplayer/game/${session.matchId}`)}
+                className="gap-1"
+              >
+                <PlayCircle className="w-4 h-4" />
+                Rejoindre
+              </Button>
+            ),
+            duration: 10000,
+          });
+        } else {
+          // Match no longer active, clear session
+          clearChessSession();
+        }
+      };
+      checkMatch();
+    }
+  }, [userId, navigate, toast]);
 
   // Handle join code from URL
   useEffect(() => {

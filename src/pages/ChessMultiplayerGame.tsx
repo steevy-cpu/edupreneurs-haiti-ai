@@ -9,7 +9,6 @@ import { useSessionAuth } from '@/contexts/SessionAuthContext';
 import { 
   ArrowLeft, 
   Flag, 
-  MessageCircle, 
   Loader2,
   Crown,
   Trophy,
@@ -19,10 +18,12 @@ import {
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useChessMultiplayer, TimeControl } from '@/hooks/useChessMultiplayer';
-import { ChessMatchChat } from '@/components/chess/ChessMatchChat';
 import { useChessSounds } from '@/hooks/useChessSounds';
+import { useMessageSounds } from '@/hooks/useMessageSounds';
 import { PromotionDialog, PromotionPiece } from '@/components/chess/PromotionDialog';
 import { ChessBoardSkeleton } from '@/components/chess/ChessBoardSkeleton';
+import FloatingMatchChat from '@/components/chess/FloatingMatchChat';
+import { saveChessSession, clearChessSession } from '@/chess/store/chessSession.store';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +46,7 @@ const ChessMultiplayerGame = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { playSound } = useChessSounds();
+  const { playReceiveSound } = useMessageSounds();
 
   // Auth state from context
   const { user, isAuthenticated, isLoading: isAuthLoading } = useSessionAuth();
@@ -62,6 +64,7 @@ const ChessMultiplayerGame = () => {
   const [showResignDialog, setShowResignDialog] = useState(false);
   const [gameEnded, setGameEnded] = useState(false);
   const [isMatchLoading, setIsMatchLoading] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
   
   // Promotion state
   const [pendingPromotion, setPendingPromotion] = useState<{
@@ -74,7 +77,7 @@ const ChessMultiplayerGame = () => {
   const [localWhiteTime, setLocalWhiteTime] = useState<number | null>(null);
   const [localBlackTime, setLocalBlackTime] = useState<number | null>(null);
 
-  // Multiplayer hook
+  // Multiplayer hook with new message callback
   const {
     match,
     opponent,
@@ -91,7 +94,25 @@ const ChessMultiplayerGame = () => {
     isMyTurn,
     myColor,
     refreshMatch,
-  } = useChessMultiplayer({ userId, enabled: true });
+  } = useChessMultiplayer({ 
+    userId, 
+    enabled: true,
+    onNewMessage: (msg) => {
+      playReceiveSound();
+      if (!showChat) {
+        setUnreadCount(prev => prev + 1);
+        toast({ 
+          title: opponent?.nickname || 'Adversaire', 
+          description: msg.message.slice(0, 50) + (msg.message.length > 50 ? '...' : ''),
+        });
+      }
+    }
+  });
+
+  // Reset unread count when chat opens
+  useEffect(() => {
+    if (showChat) setUnreadCount(0);
+  }, [showChat]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -146,6 +167,20 @@ const ChessMultiplayerGame = () => {
 
     loadMatch();
   }, [matchId, userId, isAuthLoading, searchParams, joinMatch, refreshMatch, navigate]);
+
+  // Save session when match is active
+  useEffect(() => {
+    if (match && (match.status === 'waiting' || match.status === 'playing')) {
+      saveChessSession(match.id);
+    }
+  }, [match?.id, match?.status]);
+
+  // Clear session when game ends
+  useEffect(() => {
+    if (match?.status === 'completed' || match?.status === 'cancelled' || match?.status === 'abandoned') {
+      clearChessSession();
+    }
+  }, [match?.status]);
 
   // Ref to track previous move count for opponent sound detection
   const prevMoveCountRef = useRef<number>(0);
@@ -502,6 +537,7 @@ const ChessMultiplayerGame = () => {
 
   const handleResign = async () => {
     setShowResignDialog(false);
+    clearChessSession(); // Clear session on explicit resign
     await resignMatch();
   };
 
@@ -531,57 +567,43 @@ const ChessMultiplayerGame = () => {
   const isDraw = isGameOver && !match.winner_id;
 
   return (
-    <main className="min-h-screen bg-background pb-24 lg:pb-8">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-4">
+    <main className="min-h-screen bg-background pb-20 sm:pb-24 lg:pb-8">
+        <div className="mx-auto max-w-4xl px-2 sm:px-4 lg:px-8 py-2 sm:py-4">
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
-            <Button variant="ghost" size="sm" onClick={handleBack}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Quitter
+          <div className="flex items-center justify-between mb-2 sm:mb-4">
+            <Button variant="ghost" size="sm" onClick={handleBack} className="gap-1 sm:gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Quitter</span>
             </Button>
             
-            <div className="flex items-center gap-2">
+            {!isGameOver && (
               <Button
-                variant="outline"
+                variant="destructive"
                 size="sm"
-                onClick={() => setShowChat(!showChat)}
-                className="relative"
+                onClick={() => setShowResignDialog(true)}
               >
-                <MessageCircle className="w-4 h-4" />
-                {chatMessages.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
-                )}
+                <Flag className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Abandonner</span>
               </Button>
-              
-              {!isGameOver && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setShowResignDialog(true)}
-                >
-                  <Flag className="w-4 h-4 mr-2" />
-                  Abandonner
-                </Button>
-              )}
-            </div>
+            )}
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
-            {/* Main Game Area */}
-            <div className="space-y-4">
+          {/* Main Game Area - Single column with floating chat */}
+          <div className="relative">
+            <div className="space-y-2 sm:space-y-4">
               {/* Opponent Info */}
-              <Card className="p-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Avatar>
+              <Card className="p-2 sm:p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <Avatar className="w-8 h-8 sm:w-10 sm:h-10 shrink-0">
                       <AvatarImage src={getAvatarUrl(opponent?.avatar_url || null)} />
-                      <AvatarFallback>
+                      <AvatarFallback className="text-sm">
                         {opponent?.nickname?.[0]?.toUpperCase() || '?'}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p className="font-medium">{opponent?.nickname || 'Adversaire'}</p>
-                      <p className="text-xs text-muted-foreground">
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm sm:text-base truncate">{opponent?.nickname || 'Adversaire'}</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">
                         {myColor === 'w' ? 'Noirs' : 'Blancs'}
                       </p>
                     </div>
@@ -589,7 +611,7 @@ const ChessMultiplayerGame = () => {
                   
                   {match.time_control !== 'untimed' && (
                     <div className={cn(
-                      "px-3 py-1 rounded-lg font-mono text-lg transition-colors",
+                      "px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg font-mono text-base sm:text-lg transition-colors shrink-0",
                       match.current_turn !== myColor ? "bg-primary text-primary-foreground" : "bg-muted",
                       // Low time warning for opponent
                       (myColor === 'w' ? localBlackTime : localWhiteTime) !== null &&
@@ -602,8 +624,8 @@ const ChessMultiplayerGame = () => {
                 </div>
               </Card>
 
-              {/* Chess Board */}
-              <div className="relative aspect-square max-w-[600px] mx-auto">
+              {/* Chess Board - Responsive sizing */}
+              <div className="relative aspect-square w-full max-w-[min(600px,calc(100vw-1rem))] mx-auto">
                 <Suspense fallback={<ChessBoardSkeleton />}>
                   <Chessboard
                     position={game.fen()}
@@ -732,18 +754,18 @@ const ChessMultiplayerGame = () => {
               </div>
 
               {/* Player Info */}
-              <Card className="p-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Avatar>
+              <Card className="p-2 sm:p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <Avatar className="w-8 h-8 sm:w-10 sm:h-10 shrink-0">
                       <AvatarImage src={getAvatarUrl(userProfile?.avatar_url || null)} />
-                      <AvatarFallback>
+                      <AvatarFallback className="text-sm">
                         {userProfile?.nickname?.[0]?.toUpperCase() || '?'}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p className="font-medium">{userProfile?.nickname || 'Vous'}</p>
-                      <p className="text-xs text-muted-foreground">
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm sm:text-base truncate">{userProfile?.nickname || 'Vous'}</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">
                         {myColor === 'w' ? 'Blancs' : 'Noirs'}
                       </p>
                     </div>
@@ -751,7 +773,7 @@ const ChessMultiplayerGame = () => {
                   
                   {match.time_control !== 'untimed' && (
                     <div className={cn(
-                      "px-3 py-1 rounded-lg font-mono text-lg transition-colors",
+                      "px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg font-mono text-base sm:text-lg transition-colors shrink-0",
                       match.current_turn === myColor ? "bg-primary text-primary-foreground" : "bg-muted",
                       // Low time warning for me
                       (myColor === 'w' ? localWhiteTime : localBlackTime) !== null &&
@@ -767,25 +789,25 @@ const ChessMultiplayerGame = () => {
               {/* Turn Indicator */}
               {!isGameOver && (
                 <div className={cn(
-                  "text-center py-2 rounded-lg",
+                  "text-center py-1.5 sm:py-2 rounded-lg text-sm sm:text-base",
                   isMyTurn ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
                 )}>
                   {isMyTurn ? "C'est votre tour" : "Tour de l'adversaire"}
                 </div>
               )}
             </div>
-
-            {/* Chat Panel */}
-            {showChat && (
-              <ChessMatchChat
-                messages={chatMessages}
-                userId={userId}
-                opponent={opponent}
-                userProfile={userProfile}
-                onSendMessage={sendMessage}
-                onClose={() => setShowChat(false)}
-              />
-            )}
+            
+            {/* Floating Chat */}
+            <FloatingMatchChat
+              messages={chatMessages}
+              userId={userId}
+              opponent={opponent}
+              userProfile={userProfile}
+              onSendMessage={sendMessage}
+              isOpen={showChat}
+              onToggle={() => setShowChat(!showChat)}
+              unreadCount={unreadCount}
+            />
           </div>
         </div>
 
