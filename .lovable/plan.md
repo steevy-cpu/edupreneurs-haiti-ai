@@ -1,88 +1,91 @@
 
 
-# Fix: Music Player Auto-Play and Double-Click Issues
+# Fix: Next Track Button Not Working
 
-## Problems Identified
+## Problem Identified
 
-### Issue 1: Auto-Play Next Song Not Working
-
-**Root Cause: Stale Closure**
-
-When `initPlayer` creates the YouTube player, the `onStateChange` callback captures the `nextTrack` function with the `currentTrackIndex` value **at initialization time**. When the song ends, it calls `nextTrack()` with the old index.
+The "Next Track" button (skip forward icon) doesn't work properly. Looking at the console logs:
 
 ```text
-Track 0 starts → nextTrack captured with currentTrackIndex = 0
-User manually switches to Track 5 via loadVideoById()
-Track 5 ends → ENDED event fires
-nextTrack() uses stale currentTrackIndex = 0
-Next track = (0 + 1) % length = 1 ← WRONG, should be 6
+⏭️ Moving to next track: 1 from 0
+▶️ Playing track: 1 Musique Relaxante pour Étudier - Concentration
+⏳ Player not ready, reinitializing...
 ```
 
-**Solution:** Use a ref to track the current index so the callback always has the latest value.
+The `nextTrack` function calculates the correct index, but when it calls `playTrack`, the player goes into "not ready" mode and tries to reinitialize instead of using the existing player.
 
----
+## Root Cause: Stale Function Reference
 
-### Issue 2: Double-Click Required for Play/Pause
-
-**Root Cause: Early Return Without Action**
+The `nextTrack` function is wrapped in `useCallback` with only `[tracks.length]` as a dependency:
 
 ```typescript
-const playPause = () => {
-  if (!playerRef.current || !playerReady) {
-    initPlayer();  // Starts async initialization
-    return;        // Returns immediately - no playback triggered!
-  }
-  // ... toggle logic never reached on first click
-};
+const nextTrack = useCallback(() => {
+  const currentIndex = currentTrackIndexRef.current;
+  const nextIndex = (currentIndex + 1) % tracks.length;
+  playTrack(nextIndex);  // ← Captures stale playTrack reference!
+}, [tracks.length]);  // ← playTrack NOT in dependencies
 ```
 
-The first click initializes the player but doesn't wait for it or schedule a play action. The second click works because now `playerReady` is true.
+Since `playTrack` is a regular function (not memoized), every render creates a new `playTrack`. But `nextTrack` holds onto the old one because `tracks.length` hasn't changed.
 
-**Solution:** When initializing from `playPause()`, the `initPlayer` already has `autoplay: 1` which will auto-play. But we need to ensure `isPlaying` state is set optimistically so the UI updates immediately.
+The stale `playTrack` reference may have outdated values for:
+- `playerRef.current`
+- `playerReady`
+- `tracks` array
 
----
+## Solution
 
-## Implementation Plan
+Wrap `playTrack` in `useCallback` and add it to `nextTrack`'s dependency array.
 
 ### File: `src/contexts/MusicPlayerContext.tsx`
 
-### Fix 1: Add a Ref to Track Current Index (Line 33)
-
-Add a ref that always holds the current track index:
-
-```typescript
-const playerRef = useRef<any>(null);
-const currentTrackIndexRef = useRef(currentTrackIndex);  // ADD THIS
-```
-
-### Fix 2: Keep Ref in Sync (After Line 29)
-
-Update the ref whenever `currentTrackIndex` changes:
-
-```typescript
-// Keep ref in sync for use in callbacks
-useEffect(() => {
-  currentTrackIndexRef.current = currentTrackIndex;
-}, [currentTrackIndex]);
-```
-
-### Fix 3: Fix nextTrack to Use Ref (Lines 259-263)
-
-Change `nextTrack` to use the ref instead of state:
+### Change 1: Wrap `playTrack` in `useCallback` (Lines 212-240)
 
 **Current:**
 ```typescript
-const nextTrack = () => {
-  const nextIndex = (currentTrackIndex + 1) % tracks.length;
-  console.log('⏭️ Moving to next track:', nextIndex);
-  playTrack(nextIndex);
+const playTrack = (index: number) => {
+  console.log('▶️ Playing track:', index, tracks[index]?.title);
+  // ... rest of function
 };
 ```
 
 **Fixed:**
 ```typescript
+const playTrack = useCallback((index: number) => {
+  console.log('▶️ Playing track:', index, tracks[index]?.title);
+  setCurrentTrackIndex(index);
+  
+  // Ensure YouTube API is loaded on first play
+  if (!youtubeApiLoaded) {
+    loadYouTubeAPI();
+  }
+  
+  if (playerRef.current && playerReady && typeof playerRef.current.loadVideoById === 'function') {
+    try {
+      console.log('🎵 Loading video:', tracks[index].id);
+      playerRef.current.loadVideoById(tracks[index].id);
+      playerRef.current.playVideo();
+      setIsPlaying(true);
+    } catch (error) {
+      console.error('❌ Error playing track:', error);
+      setPlayerReady(false);
+      playerRef.current = null;
+      initPlayer(index);
+    }
+  } else {
+    console.log('⏳ Player not ready, reinitializing...');
+    setPlayerReady(false);
+    playerRef.current = null;
+    initPlayer(index);
+  }
+}, [tracks, youtubeApiLoaded, loadYouTubeAPI, playerReady, initPlayer]);
+```
+
+### Change 2: Add `playTrack` to `nextTrack` dependencies (Lines 267-273)
+
+**Current:**
+```typescript
 const nextTrack = useCallback(() => {
-  // Use ref to always get the latest index (avoids stale closure in onStateChange)
   const currentIndex = currentTrackIndexRef.current;
   const nextIndex = (currentIndex + 1) % tracks.length;
   console.log('⏭️ Moving to next track:', nextIndex, 'from', currentIndex);
@@ -90,96 +93,62 @@ const nextTrack = useCallback(() => {
 }, [tracks.length]);
 ```
 
-### Fix 4: Fix playPause Double-Click (Lines 236-241)
-
-Set `isPlaying` optimistically when initializing:
-
-**Current:**
-```typescript
-const playPause = () => {
-  if (!playerRef.current || !playerReady || typeof playerRef.current.pauseVideo !== 'function') {
-    console.log('⏳ Player not ready, initializing...');
-    initPlayer();
-    return;
-  }
-  // ...
-};
-```
-
 **Fixed:**
 ```typescript
-const playPause = () => {
-  if (!playerRef.current || !playerReady || typeof playerRef.current.pauseVideo !== 'function') {
-    console.log('⏳ Player not ready, initializing...');
-    // Set playing state optimistically - initPlayer has autoplay: 1
-    setIsPlaying(true);
-    initPlayer();
-    return;
-  }
-  // ...
-};
+const nextTrack = useCallback(() => {
+  const currentIndex = currentTrackIndexRef.current;
+  const nextIndex = (currentIndex + 1) % tracks.length;
+  console.log('⏭️ Moving to next track:', nextIndex, 'from', currentIndex);
+  playTrack(nextIndex);
+}, [tracks.length, playTrack]);
 ```
 
-This ensures:
-- The play button immediately shows the "pause" icon (UI feedback)
-- The player auto-plays when ready (already configured with `autoplay: 1`)
-- No second click needed
+## Order of Changes
 
----
+Since `playTrack` depends on `initPlayer` and `loadYouTubeAPI`, and these are already defined before `playTrack` in the code, the dependency chain is:
+
+```text
+loadYouTubeAPI (already useCallback) 
+    ↓
+initPlayer (regular function - should be useCallback)
+    ↓
+playTrack (needs useCallback)
+    ↓
+nextTrack (already useCallback, needs playTrack in deps)
+```
+
+### Additional Change: Wrap `initPlayer` in `useCallback` (Lines 127-208)
+
+Since `playTrack` calls `initPlayer`, we need to stabilize it too:
+
+```typescript
+const initPlayer = useCallback((trackIndex?: number) => {
+  // ... existing implementation
+}, [tracks, currentTrackIndex]);
+```
 
 ## Summary of Changes
 
 | Location | Change |
 |----------|--------|
-| Line 33 | Add `currentTrackIndexRef = useRef(currentTrackIndex)` |
-| After line 29 | Add `useEffect` to sync ref with state |
-| Lines 259-263 | Use `currentTrackIndexRef.current` in `nextTrack` and wrap in `useCallback` |
-| Lines 238-240 | Add `setIsPlaying(true)` before `initPlayer()` call |
-
----
+| Lines 127-208 | Wrap `initPlayer` in `useCallback` |
+| Lines 212-240 | Wrap `playTrack` in `useCallback` |
+| Line 273 | Add `playTrack` to `nextTrack` dependencies |
 
 ## Why This Works
 
-### Auto-Play Fix
-- The `onStateChange` callback calls `nextTrack()`
-- `nextTrack` reads from `currentTrackIndexRef.current` (always latest)
-- Even if `loadVideoById` was used to switch tracks, the ref has the correct index
-
-### Double-Click Fix
-- First click sets `isPlaying = true` and calls `initPlayer()`
-- UI immediately shows pause button (feedback)
-- Player initializes with `autoplay: 1`, starts playing automatically
-- When `onReady` fires, it confirms `isPlaying = true` (already set)
-- No second click needed
-
----
+1. `initPlayer` is now stable (same reference between renders unless dependencies change)
+2. `playTrack` is now stable and always has current values for `playerReady`, `playerRef`, etc.
+3. `nextTrack` now gets the fresh `playTrack` when it changes
+4. When user clicks next, `playTrack` sees the actual current player state
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No - enhances existing logic |
+| Breaks existing functionality? | No - same logic, just stabilized references |
 | Works with existing data? | Yes - no data changes |
 | 3G optimized? | Yes - no additional network calls |
 | Backward compatible? | Yes |
-| Edge cases handled? | Yes - empty tracks array check preserved |
-
----
-
-## Visual Flow After Fix
-
-```text
-Auto-Play Flow:
-Track 5 playing → currentTrackIndexRef.current = 5
-Song ends → onStateChange(ENDED)
-nextTrack() → reads ref = 5
-Next = (5 + 1) % length = 6 ✓
-
-Play/Pause Flow (First Click):
-User clicks play
-playPause() → player not ready
-setIsPlaying(true) → UI updates to pause icon
-initPlayer() → creates player with autoplay
-Player ready → plays automatically
-```
+| Circular dependency risk? | No - clear dependency chain |
 
