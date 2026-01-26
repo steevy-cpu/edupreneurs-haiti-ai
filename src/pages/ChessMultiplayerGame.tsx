@@ -591,6 +591,18 @@ const ChessMultiplayerGame = () => {
           {/* Main Game Area - Single column with floating chat */}
           <div className="relative">
             <div className="space-y-2 sm:space-y-4">
+              {/* Floating Chat - Above opponent card */}
+              <FloatingMatchChat
+                messages={chatMessages}
+                userId={userId}
+                opponent={opponent}
+                userProfile={userProfile}
+                onSendMessage={sendMessage}
+                isOpen={showChat}
+                onToggle={() => setShowChat(!showChat)}
+                unreadCount={unreadCount}
+              />
+              
               {/* Opponent Info */}
               <Card className="p-2 sm:p-3">
                 <div className="flex items-center justify-between gap-2">
@@ -751,18 +763,6 @@ const ChessMultiplayerGame = () => {
                     </div>
                   </div>
                 )}
-                
-                {/* Floating Chat - On top of board */}
-                <FloatingMatchChat
-                  messages={chatMessages}
-                  userId={userId}
-                  opponent={opponent}
-                  userProfile={userProfile}
-                  onSendMessage={sendMessage}
-                  isOpen={showChat}
-                  onToggle={() => setShowChat(!showChat)}
-                  unreadCount={unreadCount}
-                />
               </div>
 
               {/* Player Info */}
