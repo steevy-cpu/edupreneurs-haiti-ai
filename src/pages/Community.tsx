@@ -107,6 +107,10 @@ const Community = () => {
   const presenceChannelsRef = useRef<Record<string, any>>({});
   const profileCacheRef = useRef<Map<string, Profile>>(new Map());
   const typingTimeoutRef = useRef<any>(null);
+  // Refs for race condition prevention and stale closure fixes
+  const currentConversationRef = useRef<string | null>(null);
+  const selectedConversationRef = useRef<string | null>(null);
+  const prevConversationIdsRef = useRef<string>('');
   const [typingUsers, setTypingUsers] = useState<Record<string, Record<string, any>>>({});
   // Use centralized presence from PresenceContext (event-driven, not polling)
   const onlineUsers = useOnlineUserIds();
@@ -243,13 +247,14 @@ const Community = () => {
     if (user) {
       fetchConversations();
       fetchFollowers();
-      subscribeToMessages();
+      const unsubscribeMessages = subscribeToMessages();
       // No longer need setupGlobalPresenceListener - using centralized PresenceContext
+      
+      return () => {
+        // Fix 1: Properly cleanup message subscription to prevent memory leak
+        if (unsubscribeMessages) unsubscribeMessages();
+      };
     }
-    
-    return () => {
-      // Presence cleanup handled by PresenceContext
-    };
   }, [user?.id]);
 
   // Refresh conversations when page becomes visible
@@ -264,25 +269,31 @@ const Community = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user]);
 
-  // Subscribe to typing presence for all conversations - only when conversation IDs change
+  // Fix 6: Subscribe to typing presence - optimized dependency comparison
   useEffect(() => {
-    if (user && conversations.length > 0) {
-      // Only set up channels for new conversations
-      conversations.forEach(conv => {
-        if (!presenceChannelsRef.current[conv.id]) {
-          subscribeToTypingPresence(conv.id);
-        }
-      });
-      
-      // Clean up channels for conversations that no longer exist
-      const currentConvIds = new Set(conversations.map(c => c.id));
-      Object.keys(presenceChannelsRef.current).forEach(convId => {
-        if (!currentConvIds.has(convId)) {
-          supabase.removeChannel(presenceChannelsRef.current[convId]);
-          delete presenceChannelsRef.current[convId];
-        }
-      });
-    }
+    if (!user || conversations.length === 0) return;
+    
+    const currentIds = conversations.map(c => c.id).sort().join(',');
+    
+    // Skip if conversation IDs haven't changed
+    if (currentIds === prevConversationIdsRef.current) return;
+    prevConversationIdsRef.current = currentIds;
+    
+    // Only set up channels for new conversations
+    conversations.forEach(conv => {
+      if (!presenceChannelsRef.current[conv.id]) {
+        subscribeToTypingPresence(conv.id);
+      }
+    });
+    
+    // Clean up channels for conversations that no longer exist
+    const currentConvIds = new Set(conversations.map(c => c.id));
+    Object.keys(presenceChannelsRef.current).forEach(convId => {
+      if (!currentConvIds.has(convId)) {
+        supabase.removeChannel(presenceChannelsRef.current[convId]);
+        delete presenceChannelsRef.current[convId];
+      }
+    });
     
     return () => {
       // Cleanup all presence channels on unmount
@@ -291,7 +302,7 @@ const Community = () => {
       });
       presenceChannelsRef.current = {};
     };
-  }, [conversations.map(c => c.id).join(','), user?.id]);
+  }, [conversations, user?.id]);
 
   // Fetch single conversation data when navigating via URL (for new/empty conversations)
   const fetchSingleConversation = async (convId: string): Promise<Conversation | null> => {
@@ -368,6 +379,9 @@ const Community = () => {
 
   useEffect(() => {
     if (selectedConversation && user) {
+      // Fix 2: Track current conversation FIRST to prevent race conditions
+      currentConversationRef.current = selectedConversation;
+      
       const loadConversation = async () => {
         // Check if conversation exists in list
         let convDetails = conversations.find(c => c.id === selectedConversation);
@@ -397,6 +411,7 @@ const Community = () => {
     } else {
       // Clear details when no conversation is selected
       setSelectedConversationDetails(null);
+      currentConversationRef.current = null;
     }
     return () => {
       if (messageChannelRef.current) {
@@ -407,6 +422,17 @@ const Community = () => {
       }
     };
   }, [selectedConversation, user]);
+  
+  // Fix 3: Keep selectedConversationRef in sync and clear typing on switch
+  useEffect(() => {
+    selectedConversationRef.current = selectedConversation;
+    
+    // Clear any pending typing timeout when switching conversations
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+  }, [selectedConversation]);
 
   // Keep selectedConversationDetails in sync with conversations list updates
   // This ensures lastMessage, unreadCount, etc. stay current without losing otherUser data
@@ -883,9 +909,18 @@ const Community = () => {
       };
     });
 
+    // Fix 2: Guard against race condition - verify this is still the active conversation
+    if (conversationId !== currentConversationRef.current) {
+      console.log('[fetchMessages] Discarding stale fetch for:', conversationId);
+      return;
+    }
+
     setMessages(enrichedMessages);
   };
 
+  // Fix 4: Profile cache with LRU eviction to prevent memory leak
+  const MAX_PROFILE_CACHE_SIZE = 100;
+  
   // Helper to get cached profile or fetch if not cached
   const getCachedProfile = async (userId: string): Promise<Profile | null> => {
     if (profileCacheRef.current.has(userId)) {
@@ -899,6 +934,13 @@ const Community = () => {
       .single();
       
     if (profile) {
+      // Evict oldest entry if cache is full (LRU)
+      if (profileCacheRef.current.size >= MAX_PROFILE_CACHE_SIZE) {
+        const oldestKey = profileCacheRef.current.keys().next().value;
+        if (oldestKey) {
+          profileCacheRef.current.delete(oldestKey);
+        }
+      }
       profileCacheRef.current.set(userId, profile as Profile);
     }
     return profile as Profile | null;
@@ -1800,6 +1842,7 @@ const Community = () => {
     }
   };
 
+  // Fix 3: handleTyping with stale closure prevention
   const handleTyping = (value: string) => {
     setNewMessage(value);
 
@@ -1812,14 +1855,29 @@ const Community = () => {
     if (value.trim()) {
       sendTypingStatus(true);
 
+      // Capture current conversation for timeout callback
+      const conversationAtCall = selectedConversationRef.current;
+
       // Auto-clear typing status after 3 seconds of inactivity
       typingTimeoutRef.current = setTimeout(() => {
-        sendTypingStatus(false);
+        // Only send if still in the same conversation
+        if (selectedConversationRef.current === conversationAtCall) {
+          sendTypingStatus(false);
+        }
       }, 3000);
     } else {
       sendTypingStatus(false);
     }
   };
+  
+  // Fix 5: Cleanup typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Periodically refresh to update "last seen" times
   useEffect(() => {
