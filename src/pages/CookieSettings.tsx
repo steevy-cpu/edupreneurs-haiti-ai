@@ -36,12 +36,12 @@ export default function CookieSettings() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background">
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
       </div>
       
-      <div className="max-w-2xl mx-auto">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-24 lg:pb-8">
         <Button 
           variant="ghost" 
           onClick={() => navigate(-1)}

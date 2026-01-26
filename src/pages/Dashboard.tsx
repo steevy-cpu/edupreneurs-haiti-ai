@@ -471,7 +471,7 @@ const Dashboard = () => {
         <meta property="og:description" content="Suivez votre progression d'apprentissage avec Edupreneurs." />
       </Helmet>
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-6 space-y-8 pb-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-24 lg:pb-8 space-y-8">
           {/* Welcome Header using PageHeader component */}
           <div data-tour="welcome-header">
             <PageHeader

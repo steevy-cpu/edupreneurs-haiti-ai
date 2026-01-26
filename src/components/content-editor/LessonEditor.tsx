@@ -254,7 +254,7 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
               <div className="flex -space-x-2">
                 {activeEditors.slice(0, 3).map((editor) => (
                   <Avatar key={editor.user_id} className="h-5 w-5 md:h-6 md:w-6 border-2 border-background">
-                    <AvatarImage src={editor.avatar_url} />
+                    <AvatarImage src={editor.avatar_url} loading="lazy" decoding="async" />
                     <AvatarFallback className="text-xs">
                       {editor.nickname?.charAt(0).toUpperCase()}
                     </AvatarFallback>

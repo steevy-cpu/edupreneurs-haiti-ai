@@ -10,7 +10,7 @@ export const TypingIndicator = ({ profile }: TypingIndicatorProps) => {
   return (
     <div className="flex items-center gap-2 px-2 py-1">
       <Avatar className="h-6 w-6 shrink-0 avatar-interactive">
-        <AvatarImage src={getAvatarUrl(profile?.avatar_url)} />
+        <AvatarImage src={getAvatarUrl(profile?.avatar_url)} loading="lazy" decoding="async" />
         <AvatarFallback className="text-xs">
           {profile?.nickname?.[0] || profile?.full_name?.[0] || "?"}
         </AvatarFallback>

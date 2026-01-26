@@ -1,13 +1,17 @@
 // Service Worker for Push Notifications and Asset Caching - Optimized for 3G
-const SW_VERSION = '1.4.1';
+const SW_VERSION = '1.5.0';
 const CACHE_NAME = `edupreneurs-v${SW_VERSION}`;
 const STATIC_CACHE_NAME = `edupreneurs-static-v${SW_VERSION}`;
+const API_CACHE_NAME = `edupreneurs-api-v${SW_VERSION}`;
+const MAX_CACHE_ITEMS = 50;
 
 // Critical assets to precache for offline/slow network support
 const PRECACHE_ASSETS = [
   '/logo.png',
   '/pwa-icon.jpeg',
-  '/manifest.webmanifest'
+  '/manifest.webmanifest',
+  '/favicon.ico',
+  '/characters/eric-ai-helper.png'
 ];
 
 // BroadcastChannel for cross-tab sync
@@ -63,15 +67,37 @@ self.addEventListener('activate', (event) => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames
-          .filter(name => name.startsWith('edupreneurs-') && name !== CACHE_NAME && name !== STATIC_CACHE_NAME)
+          .filter(name => name.startsWith('edupreneurs-') && 
+            name !== CACHE_NAME && 
+            name !== STATIC_CACHE_NAME && 
+            name !== API_CACHE_NAME)
           .map(name => {
             console.log(`🗑️ Deleting old cache: ${name}`);
             return caches.delete(name);
           })
       );
-    }).then(() => clients.claim())
+    })
+    .then(() => trimCache(STATIC_CACHE_NAME, MAX_CACHE_ITEMS))
+    .then(() => trimCache(API_CACHE_NAME, MAX_CACHE_ITEMS))
+    .then(() => clients.claim())
   );
 });
+
+// Trim cache to prevent unbounded growth
+async function trimCache(cacheName, maxItems) {
+  try {
+    const cache = await caches.open(cacheName);
+    const keys = await cache.keys();
+    if (keys.length > maxItems) {
+      console.log(`✂️ Trimming ${cacheName}: ${keys.length} → ${maxItems}`);
+      await Promise.all(
+        keys.slice(0, keys.length - maxItems).map(key => cache.delete(key))
+      );
+    }
+  } catch (err) {
+    console.warn('⚠️ Cache trim failed:', err);
+  }
+}
 
 // Fetch handler with stale-while-revalidate for images
 self.addEventListener('fetch', (event) => {

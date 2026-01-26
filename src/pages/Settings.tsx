@@ -378,7 +378,7 @@ const Settings = () => {
   }
 
   return (
-    <div className="pt-20 px-4 sm:px-6 lg:px-8 pb-24 max-w-7xl mx-auto" data-tour="settings-content">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-24 lg:pb-8" data-tour="settings-content">
 {/* Header using PageHeader component - skip image on slow connections to save data */}
         {isSlowConnection ? (
           <PageHeader
