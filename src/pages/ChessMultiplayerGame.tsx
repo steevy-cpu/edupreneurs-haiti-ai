@@ -22,7 +22,8 @@ import { useChessSounds } from '@/hooks/useChessSounds';
 import { useMessageSounds } from '@/hooks/useMessageSounds';
 import { PromotionDialog, PromotionPiece } from '@/components/chess/PromotionDialog';
 import { ChessBoardSkeleton } from '@/components/chess/ChessBoardSkeleton';
-import FloatingMatchChat from '@/components/chess/FloatingMatchChat';
+import MatchChatPanel from '@/components/chess/MatchChatPanel';
+import { MessageCircle } from 'lucide-react';
 import { saveChessSession, clearChessSession } from '@/chess/store/chessSession.store';
 import {
   AlertDialog,
@@ -588,23 +589,14 @@ const ChessMultiplayerGame = () => {
             )}
           </div>
 
-          {/* Main Game Area - Single column with floating chat */}
+          {/* Main Game Area - Single column with integrated chat */}
           <div className="relative">
             <div className="space-y-2 sm:space-y-4">
-              {/* Floating Chat - Above opponent card */}
-              <FloatingMatchChat
-                messages={chatMessages}
-                userId={userId}
-                opponent={opponent}
-                userProfile={userProfile}
-                onSendMessage={sendMessage}
-                isOpen={showChat}
-                onToggle={() => setShowChat(!showChat)}
-                unreadCount={unreadCount}
-              />
-              
-              {/* Opponent Info */}
-              <Card className="p-2 sm:p-3">
+              {/* Opponent Info - Clickable to open chat */}
+              <Card 
+                className="p-2 sm:p-3 cursor-pointer hover:bg-accent/50 transition-colors"
+                onClick={() => setShowChat(true)}
+              >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <Avatar className="w-8 h-8 sm:w-10 sm:h-10 shrink-0">
@@ -614,7 +606,18 @@ const ChessMultiplayerGame = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
-                      <p className="font-medium text-sm sm:text-base truncate">{opponent?.nickname || 'Adversaire'}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-medium text-sm sm:text-base truncate">{opponent?.nickname || 'Adversaire'}</p>
+                        {/* Chat icon with unread badge */}
+                        <div className="relative shrink-0">
+                          <MessageCircle className="w-4 h-4 text-muted-foreground" />
+                          {unreadCount > 0 && (
+                            <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] flex items-center justify-center bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full px-0.5">
+                              {unreadCount > 9 ? '9+' : unreadCount}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                       <p className="text-[10px] sm:text-xs text-muted-foreground">
                         {myColor === 'w' ? 'Noirs' : 'Blancs'}
                       </p>
@@ -634,6 +637,15 @@ const ChessMultiplayerGame = () => {
                     </div>
                   )}
                 </div>
+                
+                {/* Last message preview - appears when there are unread messages */}
+                {unreadCount > 0 && chatMessages.filter(m => m.sender_id !== userId).length > 0 && (
+                  <div className="mt-2 pt-2 border-t">
+                    <p className="text-sm text-muted-foreground line-clamp-1">
+                      {chatMessages.filter(m => m.sender_id !== userId).slice(-1)[0]?.message}
+                    </p>
+                  </div>
+                )}
               </Card>
 
               {/* Chess Board - Responsive sizing */}
@@ -837,6 +849,18 @@ const ChessMultiplayerGame = () => {
           onSelect={handlePromotionSelect}
           onCancel={handlePromotionCancel}
         />
+        
+        {/* Chat Panel Overlay */}
+        {showChat && (
+          <MatchChatPanel
+            messages={chatMessages}
+            userId={userId}
+            opponent={opponent}
+            userProfile={userProfile}
+            onSendMessage={sendMessage}
+            onClose={() => setShowChat(false)}
+          />
+        )}
       </main>
   );
 };
