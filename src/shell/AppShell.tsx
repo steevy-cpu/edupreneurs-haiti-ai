@@ -37,6 +37,7 @@ import { FloatingLayer } from './FloatingLayer';
 import { VisitorBanner, JudeWelcomePopup } from '@/components/visitor';
 import { QuizInvitationHandler } from '@/components/quiz-battle/QuizInvitationHandler';
 import { ScrollToTop } from '@/components/ScrollToTop';
+import { NavigationProgress } from './components/NavigationProgress';
 
 interface AppShellProps {
   /** Optional children - if not provided, uses <Outlet /> */
@@ -195,6 +196,9 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
   
   return (
     <>
+      {/* Navigation progress bar for slow connections */}
+      <NavigationProgress />
+      
       {/* Scroll restoration */}
       <ScrollToTop />
       

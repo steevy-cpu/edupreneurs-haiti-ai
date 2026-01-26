@@ -6,6 +6,7 @@ export { FloatingLayer } from './FloatingLayer';
 export { AppSidebar } from './components/AppSidebar';
 export { ShellMobileBottomNav } from './components/ShellMobileBottomNav';
 export { SidebarNavLink } from './components/SidebarNavLink';
+export { NavigationProgress } from './components/NavigationProgress';
 
 // Config exports
 export { 

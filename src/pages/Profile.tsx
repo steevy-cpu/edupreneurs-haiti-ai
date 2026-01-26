@@ -305,8 +305,8 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="max-w-2xl mx-auto p-3 sm:p-4 space-y-4 sm:space-y-6">
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-24 lg:pb-8 space-y-4 sm:space-y-6">
         <PageHeader
           title={profile.nickname}
           subtitle={profile.full_name}
