@@ -852,7 +852,7 @@ const QuizBattleLobby = () => {
   }
 
   return (
-    <div className="container max-w-2xl mx-auto px-4 py-6">
+    <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-8">
       {renderContent()}
 
       {/* Send Invitation Dialog for random mode */}

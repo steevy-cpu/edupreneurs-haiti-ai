@@ -26,7 +26,7 @@ const Resources = () => {
   const canNS4 = canAccessGrade('NS4');
 
   return (
-    <div className="min-h-screen bg-background pb-16 sm:pb-20 pt-14 sm:pt-16">
+    <div className="min-h-screen bg-background pb-24 lg:pb-8 pt-14 sm:pt-16">
       {/* Theme Toggle */}
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
@@ -49,7 +49,7 @@ const Resources = () => {
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-3 sm:px-4 pt-6 sm:pt-8 space-y-4 sm:space-y-6">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 space-y-4 sm:space-y-6">
         
         {/* Examens Officiels 9ème AF */}
         <Card 

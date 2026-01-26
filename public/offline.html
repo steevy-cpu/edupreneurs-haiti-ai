@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hors ligne - Edupreneurs Haiti</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #1a1a1a;
+      --muted: #6b7280;
+      --primary: #8b5cf6;
+      --primary-light: #a78bfa;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0a0a0a;
+        --text: #fafafa;
+        --muted: #9ca3af;
+        --primary: #a78bfa;
+        --primary-light: #c4b5fd;
+      }
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .container {
+      max-width: 400px;
+      width: 100%;
+    }
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1.5rem;
+      color: var(--muted);
+      opacity: 0.6;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    p {
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+      font-size: 0.95rem;
+    }
+    button {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      border: none;
+      padding: 0.875rem 2rem;
+      border-radius: 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.2s;
+      width: 100%;
+      max-width: 280px;
+    }
+    button:hover {
+      transform: scale(1.02);
+      opacity: 0.95;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    .tip {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: rgba(139, 92, 246, 0.1);
+      border-radius: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .tip strong {
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="/logo.png" alt="Edupreneurs Haiti" class="logo" onerror="this.style.display='none'">
+    
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="1" y1="1" x2="23" y2="23"></line>
+      <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+      <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+      <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+      <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+      <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+      <line x1="12" y1="20" x2="12.01" y2="20"></line>
+    </svg>
+    
+    <h1>Vous êtes hors ligne</h1>
+    <p>Vérifiez votre connexion internet et réessayez. Certaines fonctionnalités sont disponibles hors ligne.</p>
+    
+    <button onclick="location.reload()">
+      🔄 Réessayer
+    </button>
+    
+    <div class="tip">
+      <strong>💡 Astuce:</strong> Installez l'application sur votre téléphone pour un accès plus rapide, même avec une connexion lente!
+    </div>
+  </div>
+</body>
+</html>

@@ -111,10 +111,10 @@ const ExamsHub = () => {
   }));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 pb-24 lg:pb-8">
       {/* Non-Academic User Locked State */}
       {isNonAcademic && (
-        <div className="container mx-auto px-4 pt-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20">
           <div className="flex justify-between items-center mb-6">
             <Button variant="ghost" onClick={() => navigate("/matieres")}>
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -135,7 +135,7 @@ const ExamsHub = () => {
         <>
       {/* Header */}
       <div className="relative overflow-hidden bg-gradient-to-r from-primary/10 via-primary/5 to-background border-b">
-        <div className="container mx-auto px-4 py-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex justify-between items-center mb-6">
             <Button
               variant="ghost"
@@ -179,7 +179,7 @@ const ExamsHub = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button - Show when subject is selected */}
         {selectedSubject && (
           <div className="mb-6">
