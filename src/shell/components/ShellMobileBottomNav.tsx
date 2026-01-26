@@ -2,6 +2,7 @@
  * ShellMobileBottomNav - Mobile bottom navigation using centralized config.
  * 
  * Uses the shell visibility system and navigation config.
+ * Includes route preloading for faster 3G navigation.
  */
 
 import { memo } from 'react';
@@ -11,16 +12,18 @@ import { useVisibility } from '../hooks/useVisibility';
 import { useKeyboardOpen } from '@/hooks/useKeyboardOpen';
 import { useSidebarBadges } from '@/hooks/useSidebarBadges';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useRoutePreloader } from '../hooks/useRoutePreloader';
 import { MOBILE_NAVIGATION, type BadgeKey } from '../config/navigation';
 
 /**
- * Mobile bottom navigation bar with badge support.
+ * Mobile bottom navigation bar with badge support and route preloading.
  * Visibility controlled by centralized visibility system.
  */
 export const ShellMobileBottomNav = memo(function ShellMobileBottomNav() {
   const location = useLocation();
   const keyboardOpen = useKeyboardOpen();
   const { showBottomNav } = useVisibility({ keyboardOpen });
+  const { preloadRoute } = useRoutePreloader();
   
   // Badge data
   const { profile } = useUserProfile();
@@ -55,6 +58,8 @@ export const ShellMobileBottomNav = memo(function ShellMobileBottomNav() {
             <Link
               key={item.to}
               to={item.to}
+              onMouseEnter={() => preloadRoute(item.to)}
+              onTouchStart={() => preloadRoute(item.to)}
               className={cn(
                 'flex flex-col items-center justify-center flex-1 h-full relative',
                 'transition-colors duration-200',

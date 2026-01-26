@@ -39,6 +39,10 @@ export {
 // Hook exports
 export { useLayoutMode, type UseLayoutModeResult } from './hooks/useLayoutMode';
 export { useVisibility, useKeyboardAwareVisibility, type UseVisibilityResult } from './hooks/useVisibility';
+export { useRoutePreloader, type UseRoutePreloaderResult } from './hooks/useRoutePreloader';
+
+// Layout component exports
+export { PageContainer, type PageContainerProps, type PageContainerVariant } from './components/PageContainer';
 
 // Wrapper exports
 export { NotificationBannerWrapper } from './wrappers/NotificationBannerWrapper';
