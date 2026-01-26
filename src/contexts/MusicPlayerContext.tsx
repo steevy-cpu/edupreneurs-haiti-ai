@@ -32,11 +32,13 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   const [youtubeApiLoaded, setYoutubeApiLoaded] = useState(false);
   const playerRef = useRef<any>(null);
   const currentTrackIndexRef = useRef(currentTrackIndex);
+  const nextTrackRef = useRef<() => void>(() => {});
 
   // Keep ref in sync for use in callbacks (avoids stale closure)
   useEffect(() => {
     currentTrackIndexRef.current = currentTrackIndex;
   }, [currentTrackIndex]);
+
 
   // Check if on slow connection
   const isSlowConnection = useCallback(() => {
@@ -170,8 +172,8 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
               },
               onStateChange: (event: any) => {
                 console.log('🎵 Player state changed:', event.data);
-                if (event.data === window.YT.PlayerState.ENDED) {
-                  nextTrack();
+              if (event.data === window.YT.PlayerState.ENDED) {
+                  nextTrackRef.current();
                 }
                 if (event.data === window.YT.PlayerState.PLAYING) {
                   setIsPlaying(true);
@@ -186,7 +188,7 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
                 setPlayerReady(false);
                 playerRef.current = null;
                 setTimeout(() => {
-                  nextTrack();
+                  nextTrackRef.current();
                 }, 1000);
               },
             },
@@ -266,6 +268,11 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
     console.log('⏭️ Moving to next track:', nextIndex, 'from', currentIndex);
     playTrack(nextIndex);
   }, [tracks.length, playTrack]);
+
+  // Keep nextTrackRef in sync to avoid stale closure in YouTube callbacks
+  useEffect(() => {
+    nextTrackRef.current = nextTrack;
+  }, [nextTrack]);
 
   const stopMusic = () => {
     console.log('🛑 stopMusic called, playerRef:', !!playerRef.current);
