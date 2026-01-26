@@ -103,6 +103,7 @@ const generateInviteCode = (): string => {
 interface UseChessMultiplayerOptions {
   userId: string | null;
   enabled?: boolean;
+  onNewMessage?: (message: ChatMessage) => void;
 }
 
 interface UseChessMultiplayerReturn {
@@ -147,6 +148,7 @@ interface CreateMatchOptions {
 export const useChessMultiplayer = ({
   userId,
   enabled = true,
+  onNewMessage,
 }: UseChessMultiplayerOptions): UseChessMultiplayerReturn => {
   const { toast } = useToast();
   
@@ -285,6 +287,11 @@ export const useChessMultiplayer = ({
         (payload) => {
           const newMessage = payload.new as ChatMessage;
           setChatMessages(prev => [...prev, newMessage]);
+          
+          // Trigger callback for new messages from opponent
+          if (newMessage.sender_id !== userId && onNewMessage) {
+            onNewMessage(newMessage);
+          }
         }
       )
       .subscribe();
