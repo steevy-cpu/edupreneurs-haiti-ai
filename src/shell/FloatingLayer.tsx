@@ -20,6 +20,7 @@ const CookieConsent = lazy(() => import('@/components/CookieConsent').then(m => 
 // Visitor-specific components
 const VisitorMusicSync = lazy(() => import('@/components/visitor/VisitorMusicSync').then(m => ({ default: m.VisitorMusicSync })));
 const VisitorTour = lazy(() => import('@/components/visitor/VisitorTour').then(m => ({ default: m.VisitorTour })));
+const AuthMusicSync = lazy(() => import('@/components/auth/AuthMusicSync').then(m => ({ default: m.AuthMusicSync })));
 
 // First-time user overlays
 const FirstTimeUserWelcome = lazy(() => import('@/components/firsttime/FirstTimeUserWelcome'));
@@ -78,6 +79,11 @@ export function FloatingLayer() {
       </Suspense>
       <Suspense fallback={null}>
         <VisitorTour />
+      </Suspense>
+      
+      {/* Auth state music sync - stops music on logout */}
+      <Suspense fallback={null}>
+        <AuthMusicSync />
       </Suspense>
       
       {/* First-time user onboarding sequence */}
