@@ -1012,7 +1012,9 @@ const Feed = () => {
               <RefreshCw size={18} className={`sm:w-5 sm:h-5 ${isRefreshing ? "animate-spin" : ""}`} />
             </Button>
             <ThemeToggle />
-            {!isVisitor && <CreatePostDialog currentUser={currentUser} onPostCreated={refreshFeed} />}
+            {!isVisitor && currentUser && (
+              <CreatePostDialog currentUser={currentUser} onPostCreated={refreshFeed} />
+            )}
           </div>
         </div>
       </header>
@@ -1367,16 +1369,18 @@ const Feed = () => {
       </Dialog>
 
       {/* Report Post Dialog */}
-      <ReportDialog
-        isOpen={reportDialogOpen}
-        onClose={() => {
-          setReportDialogOpen(false);
-          setPostToReport(null);
-        }}
-        postId={postToReport?.id || ""}
-        reportedUserId={postToReport?.user_id || ""}
-        reportedUserName={postToReport?.profile?.full_name || postToReport?.profile?.nickname}
-      />
+      {reportDialogOpen && postToReport && (
+        <ReportDialog
+          isOpen={reportDialogOpen}
+          onClose={() => {
+            setReportDialogOpen(false);
+            setPostToReport(null);
+          }}
+          postId={postToReport.id}
+          reportedUserId={postToReport.user_id}
+          reportedUserName={postToReport.profile?.full_name || postToReport.profile?.nickname}
+        />
+      )}
 
       {/* Edit Post Dialog */}
       {editingPost && (
