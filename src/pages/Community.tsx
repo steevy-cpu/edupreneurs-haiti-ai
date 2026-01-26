@@ -2113,7 +2113,7 @@ const Community = () => {
       <section
         className={`${
           selectedConversation
-            ? "fixed inset-x-0 top-0 md:relative md:inset-auto md:h-full"
+            ? "fixed inset-x-0 top-0 flex md:relative md:inset-auto md:h-full"
             : "hidden md:flex h-full"
         } flex-col bg-background overflow-hidden`}
         style={selectedConversation ? {
