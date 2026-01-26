@@ -9,33 +9,21 @@ import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { toast } from "sonner";
-import { FOUNDER_USER_IDS } from "@/lib/founderConstants";
-
-interface LeaderboardUser {
-  id: string;
-  user_id: string;
-  full_name: string;
-  nickname: string;
-  avatar_url: string | null;
-  gold_earned: number;
-  academic_grade: string;
-  rank: number;
-}
+import { useLeaderboardData } from "@/hooks/useLeaderboardData";
 
 const Leaderboard = () => {
   const navigate = useNavigate();
   const { isVisitor } = useVisitor();
-  const [loading, setLoading] = useState(true);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
-  const [currentUserRank, setCurrentUserRank] = useState<number | null>(null);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Use the optimized hook with caching
+  const { leaderboard, currentUserRank, isLoading } = useLeaderboardData(currentUserId);
 
   useEffect(() => {
     // Skip auth check for visitors but still fetch leaderboard
     if (!isVisitor) {
       checkAuth();
     }
-    fetchLeaderboard();
   }, [isVisitor]);
 
   const checkAuth = async () => {
@@ -44,47 +32,7 @@ const Leaderboard = () => {
       navigate("/auth/login");
       return;
     }
-    setCurrentUser(user);
-  };
-
-  const fetchLeaderboard = async () => {
-    setLoading(true);
-    
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    // Use RPC function to bypass RLS complexity
-    const { data: topUsers, error } = await supabase
-      .rpc('get_leaderboard_profiles', { limit_count: 20 });
-
-    if (error) {
-      console.error("Error fetching leaderboard:", error);
-      setLoading(false);
-      return;
-    }
-
-    // Filter out founders and add rank to each user
-    const rankedUsers = topUsers
-      ?.filter((u: any) => !FOUNDER_USER_IDS.includes(u.user_id))
-      .slice(0, 10)
-      .map((u: any, index: number) => ({
-        ...u,
-        full_name: u.nickname || "Étudiant",
-        rank: index + 1,
-      })) || [];
-
-    setLeaderboard(rankedUsers);
-
-    // Find current user's rank
-    if (user) {
-      const allRanked = topUsers
-        ?.filter((u: any) => !FOUNDER_USER_IDS.includes(u.user_id)) || [];
-      const userRank = allRanked.findIndex((u: any) => u.user_id === user.id);
-      if (userRank !== -1) {
-        setCurrentUserRank(userRank + 1);
-      }
-    }
-
-    setLoading(false);
+    setCurrentUserId(user.id);
   };
 
   const getRankIcon = (rank: number) => {
@@ -169,7 +117,7 @@ const Leaderboard = () => {
 
       {/* Leaderboard */}
       <div className="max-w-4xl mx-auto px-3 sm:px-4 pt-4 sm:pt-6">
-        {loading ? (
+        {isLoading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
               <Card key={i} className="border-none rounded-xl shadow-md">
@@ -190,7 +138,7 @@ const Leaderboard = () => {
         ) : (
           <div className="space-y-2 sm:space-y-3">
             {leaderboard.map((user) => {
-              const isCurrentUser = user.user_id === currentUser?.id;
+              const isCurrentUser = user.user_id === currentUserId;
               
               return (
                 <Card
@@ -217,7 +165,7 @@ const Leaderboard = () => {
 
                       {/* Avatar */}
                       <Avatar className="h-10 w-10 sm:h-12 sm:w-12 ring-2 ring-background">
-                        <AvatarImage src={getAvatarUrl(user.avatar_url)} />
+                        <AvatarImage src={getAvatarUrl(user.avatar_url)} loading="lazy" />
                         <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 font-semibold text-xs sm:text-base">
                           {user.nickname?.[0] || user.full_name?.[0] || "?"}
                         </AvatarFallback>
@@ -258,7 +206,7 @@ const Leaderboard = () => {
           </div>
         )}
 
-        {!loading && leaderboard.length === 0 && (
+        {!isLoading && leaderboard.length === 0 && (
           <Card className="border-none rounded-xl shadow-md">
             <CardContent className="p-8 sm:p-12 text-center">
               <Trophy size={48} className="mx-auto mb-4 text-muted-foreground" />

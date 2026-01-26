@@ -123,8 +123,13 @@ export function clearExpiredCache(expiryMs: number = DEFAULT_CACHE_EXPIRY): void
   }
 }
 
-// Cache keys
+// Cache keys - centralized for all persistent data
 export const CACHE_KEYS = {
   FEED_POSTS: 'feed_posts',
   CONVERSATIONS: 'conversations',
+  USER_PROFILE: 'user_profile',
+  LEADERBOARD: 'leaderboard',
+  BATTLE_STATS: 'battle_stats',
+  NOTIFICATIONS: 'notifications_list',
+  SIDEBAR_BADGES: 'sidebar_badges',
 } as const;

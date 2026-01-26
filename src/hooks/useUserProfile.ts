@@ -4,6 +4,12 @@ import { useVisitor } from "@/contexts/VisitorContext";
 import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import dashboardImage from "@/assets/dashboard00.png";
+import { 
+  persistQueryData, 
+  getPersistedQueryData, 
+  getPersistedCacheTimestamp,
+  CACHE_KEYS 
+} from "@/utils/queryPersistence";
 
 export interface CachedUserProfile {
   userId: string | null;
@@ -49,13 +55,18 @@ async function fetchUserProfile(userId: string): Promise<CachedUserProfile> {
     }
   }
 
-  return {
+  const profileData: CachedUserProfile = {
     userId,
     nickname: profile?.nickname || "Étudiant",
     avatarUrl,
     academicGrade: profile?.academic_grade || null,
     isAuthenticated: true,
   };
+  
+  // Persist to localStorage for instant loading on next visit
+  persistQueryData(CACHE_KEYS.USER_PROFILE, profileData);
+  
+  return profileData;
 }
 
 /**
@@ -76,16 +87,17 @@ export function useUserProfile() {
     refetchOnWindowFocus: false,
     refetchOnMount: false, // Critical: don't refetch on navigation
     enabled: !!userId && !isVisitor, // Only fetch when we have a userId and not in visitor mode
+    // Initialize with persisted data for instant loading
+    initialData: () => {
+      const cached = getPersistedQueryData<CachedUserProfile>(CACHE_KEYS.USER_PROFILE);
+      // Only use cache if it's for the same user
+      if (cached && cached.userId === userId) {
+        return cached;
+      }
+      return undefined;
+    },
+    initialDataUpdatedAt: () => getPersistedCacheTimestamp(CACHE_KEYS.USER_PROFILE),
   });
-
-  // Return visitor fallback when in visitor mode
-  if (isVisitor) {
-    return {
-      profile: FALLBACK_PROFILE,
-      isLoading: false,
-      refetch,
-    };
-  }
 
   // Still loading auth - return fallback to avoid flash
   if (isAuthLoading) {
