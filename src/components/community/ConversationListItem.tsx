@@ -69,7 +69,7 @@ export const ConversationListItem = ({
           </Avatar>
           {!conv.is_group && conv.otherUser?.user_id && isOnline && (
             <div 
-              className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-background shadow-sm presence-indicator"
+              className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-success rounded-full border-2 border-background shadow-sm"
               aria-label="En ligne"
               role="status"
             />
@@ -105,7 +105,7 @@ export const ConversationListItem = ({
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             {!conv.is_group && conv.otherUser?.user_id && isOnline && (
-              <span className="text-[10px] sm:text-xs text-green-500 font-medium shrink-0 whitespace-nowrap">En ligne</span>
+              <span className="text-[10px] sm:text-xs text-success font-medium shrink-0 whitespace-nowrap">En ligne</span>
             )}
             {!conv.is_group && isTyping ? (
               <div className="flex items-center gap-1 text-primary text-xs italic font-medium">

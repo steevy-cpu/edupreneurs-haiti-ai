@@ -139,7 +139,7 @@ export const ConversationSidebar = ({
                         )}
                       </Avatar>
                       {isOnline && (
-                        <div className={`absolute bottom-0 right-0 w-3.5 h-3.5 bg-success rounded-full border-2 border-background shadow-sm ${shouldShowRipples ? 'presence-indicator' : ''}`} />
+                        <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-success rounded-full border-2 border-background shadow-sm" />
                       )}
                     </div>
                     <div 
