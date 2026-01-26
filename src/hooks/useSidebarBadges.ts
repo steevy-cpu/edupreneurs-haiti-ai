@@ -1,7 +1,15 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useVisitor } from "@/contexts/VisitorContext";
+import { 
+  persistQueryData, 
+  getPersistedQueryData, 
+  getPersistedCacheTimestamp,
+  CACHE_KEYS 
+} from "@/utils/queryPersistence";
+import { getStaleTimeFor } from "@/utils/networkAwareCache";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 export interface SidebarBadges {
   unreadMessages: number;
@@ -38,27 +46,53 @@ async function fetchSidebarBadges(userId: string): Promise<SidebarBadges> {
     supabase.rpc('get_new_feed_posts_count', { p_user_id: userId }),
   ]);
 
-  return {
+  const result: SidebarBadges = {
     unreadMessages: messagesResult.data?.length || 0,
     pendingFollowRequests: followsResult.count || 0,
     unreadNotifications: notifsResult.count || 0,
     unreadFeedPosts: feedResult.data || 0,
   };
+
+  // Persist to localStorage for instant rendering on next load
+  persistQueryData(CACHE_KEYS.SIDEBAR_BADGES, result);
+
+  return result;
 }
 
 export function useSidebarBadges(userId?: string | null) {
   const { isVisitor } = useVisitor();
   const queryClient = useQueryClient();
+  
+  // Use useRef instead of global window object for channel storage
+  const channelsRef = useRef<{
+    messagesChannel?: RealtimeChannel;
+    followsChannel?: RealtimeChannel;
+    notificationsChannel?: RealtimeChannel;
+    postsChannel?: RealtimeChannel;
+  } | null>(null);
 
   const { data: badges, isLoading, refetch } = useQuery({
     queryKey: ['sidebar-badges', userId],
     queryFn: () => fetchSidebarBadges(userId!),
-    staleTime: 2 * 60 * 1000, // 2 minutes - badges update more frequently
+    staleTime: getStaleTimeFor('notifications'), // Network-aware caching
     gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
     refetchOnWindowFocus: false,
     refetchOnMount: false,
-    enabled: !!userId && !isVisitor, // Only fetch when we have a userId and not in visitor mode
+    enabled: !!userId && !isVisitor,
+    // Initialize from localStorage for instant badge rendering
+    initialData: () => getPersistedQueryData<SidebarBadges>(CACHE_KEYS.SIDEBAR_BADGES) || undefined,
+    initialDataUpdatedAt: () => getPersistedCacheTimestamp(CACHE_KEYS.SIDEBAR_BADGES),
   });
+
+  // Optimistic update helper with persistence
+  const updateBadge = useCallback((key: keyof SidebarBadges, delta: number) => {
+    queryClient.setQueryData(['sidebar-badges', userId], (old: SidebarBadges | undefined) => {
+      if (!old) return EMPTY_BADGES;
+      const updated = { ...old, [key]: Math.max(0, old[key] + delta) };
+      persistQueryData(CACHE_KEYS.SIDEBAR_BADGES, updated);
+      return updated;
+    });
+  }, [queryClient, userId]);
 
   // Set up realtime subscriptions for badge updates - DEFERRED by 3 seconds
   // to reduce initial load contention on 3G connections
@@ -69,7 +103,9 @@ export function useSidebarBadges(userId?: string | null) {
     const handleFeedVisited = () => {
       queryClient.setQueryData(['sidebar-badges', userId], (old: SidebarBadges | undefined) => {
         if (!old) return EMPTY_BADGES;
-        return { ...old, unreadFeedPosts: 0 };
+        const updated = { ...old, unreadFeedPosts: 0 };
+        persistQueryData(CACHE_KEYS.SIDEBAR_BADGES, updated);
+        return updated;
       });
     };
     window.addEventListener('feed-visited', handleFeedVisited);
@@ -112,8 +148,8 @@ export function useSidebarBadges(userId?: string | null) {
         )
         .subscribe();
 
-      // Store channels for cleanup
-      (window as any).__sidebarBadgeChannels = {
+      // Store channels in ref for cleanup
+      channelsRef.current = {
         messagesChannel,
         followsChannel,
         notificationsChannel,
@@ -126,13 +162,12 @@ export function useSidebarBadges(userId?: string | null) {
       clearTimeout(subscriptionDelay);
       
       // Clean up channels if they were created
-      const channels = (window as any).__sidebarBadgeChannels;
-      if (channels) {
-        supabase.removeChannel(channels.messagesChannel);
-        supabase.removeChannel(channels.followsChannel);
-        supabase.removeChannel(channels.notificationsChannel);
-        supabase.removeChannel(channels.postsChannel);
-        delete (window as any).__sidebarBadgeChannels;
+      if (channelsRef.current) {
+        supabase.removeChannel(channelsRef.current.messagesChannel!);
+        supabase.removeChannel(channelsRef.current.followsChannel!);
+        supabase.removeChannel(channelsRef.current.notificationsChannel!);
+        supabase.removeChannel(channelsRef.current.postsChannel!);
+        channelsRef.current = null;
       }
     };
   }, [userId, isVisitor, refetch, queryClient]);
@@ -143,6 +178,13 @@ export function useSidebarBadges(userId?: string | null) {
       badges: EMPTY_BADGES,
       isLoading: false,
       refetch,
+      incrementMessages: () => {},
+      decrementMessages: () => {},
+      incrementNotifications: () => {},
+      decrementNotifications: () => {},
+      incrementFollowRequests: () => {},
+      decrementFollowRequests: () => {},
+      clearFeedBadge: () => {},
     };
   }
 
@@ -150,5 +192,13 @@ export function useSidebarBadges(userId?: string | null) {
     badges: badges || EMPTY_BADGES,
     isLoading,
     refetch,
+    // Optimistic update functions
+    incrementMessages: () => updateBadge('unreadMessages', 1),
+    decrementMessages: () => updateBadge('unreadMessages', -1),
+    incrementNotifications: () => updateBadge('unreadNotifications', 1),
+    decrementNotifications: () => updateBadge('unreadNotifications', -1),
+    incrementFollowRequests: () => updateBadge('pendingFollowRequests', 1),
+    decrementFollowRequests: () => updateBadge('pendingFollowRequests', -1),
+    clearFeedBadge: () => updateBadge('unreadFeedPosts', -(badges?.unreadFeedPosts || 0)),
   };
 }
