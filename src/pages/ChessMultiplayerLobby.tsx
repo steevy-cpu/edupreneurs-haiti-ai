@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,9 +27,10 @@ import {
   useChessMultiplayer, 
   TimeControl, 
   TIME_CONTROL_LABELS,
-  TIME_CONTROL_SECONDS 
 } from '@/hooks/useChessMultiplayer';
 import { ChessPublicMatches } from '@/components/chess/ChessPublicMatches';
+import { TimeControlSelector } from '@/components/chess/TimeControlSelector';
+import { MatchVisibilityToggle } from '@/components/chess/MatchVisibilityToggle';
 import { getChessSession, clearChessSession } from '@/chess/store/chessSession.store';
 
 const ChessMultiplayerLobby = () => {
@@ -226,9 +226,9 @@ const ChessMultiplayerLobby = () => {
                   <Crown className="w-8 h-8 text-primary" />
                 </div>
                 <CardTitle className="text-2xl">En attente d'un adversaire</CardTitle>
-                <CardDescription>
+                <p className="text-sm text-muted-foreground">
                   Partagez le code ci-dessous avec votre ami
-                </CardDescription>
+                </p>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Invite Code Display */}
@@ -295,158 +295,140 @@ const ChessMultiplayerLobby = () => {
 
   return (
     <main className="min-h-screen bg-background">
-        <div className="container max-w-4xl mx-auto px-4 py-8">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/chess-game')}
-            className="mb-6"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Retour
-          </Button>
+      <div className="container max-w-4xl mx-auto px-4 py-6 pb-24 lg:pb-8">
+        {/* Back button */}
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate('/chess-game')}
+          className="mb-4 -ml-2"
+          size="sm"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Retour
+        </Button>
 
+        {/* Header */}
+        <div className="mb-6">
           <PageHeader
             title="Échecs Multijoueur"
             subtitle="Défiez vos amis ou trouvez un adversaire!"
             icon={<Users className="w-8 h-8 text-primary" />}
           />
+        </div>
 
-          <div className="mt-8 grid gap-6 lg:grid-cols-2">
-            {/* Create/Join Card */}
-            <Card>
-              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'create' | 'join')}>
-                <CardHeader>
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="create" className="active:bg-primary/20 transition-colors">
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Créer
-                    </TabsTrigger>
-                    <TabsTrigger value="join" className="active:bg-primary/20 transition-colors">
-                      <Users className="w-4 h-4 mr-2" />
-                      Rejoindre
-                    </TabsTrigger>
-                  </TabsList>
-                </CardHeader>
+        {/* Main Content Grid */}
+        <div className="grid gap-4 lg:grid-cols-2">
+          {/* Create/Join Card */}
+          <Card className="overflow-hidden">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'create' | 'join')}>
+              <CardHeader className="pb-3">
+                <TabsList className="grid w-full grid-cols-2 h-11">
+                  <TabsTrigger 
+                    value="create" 
+                    className="gap-2 active:bg-primary/20 transition-colors data-[state=active]:shadow-sm"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span className="hidden xs:inline">Créer</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="join"
+                    className="gap-2 active:bg-primary/20 transition-colors data-[state=active]:shadow-sm"
+                  >
+                    <Users className="w-4 h-4" />
+                    <span className="hidden xs:inline">Rejoindre</span>
+                  </TabsTrigger>
+                </TabsList>
+              </CardHeader>
 
-                <CardContent>
-                  <TabsContent value="create" className="space-y-6 mt-0">
-                    {/* Time Control Selection */}
-                    <div className="space-y-3">
-                      <Label>Contrôle du temps</Label>
-                      <RadioGroup 
-                        value={timeControl} 
-                        onValueChange={(v) => setTimeControl(v as TimeControl)}
-                        className="grid grid-cols-2 gap-2"
+              <CardContent className="pt-0">
+                <TabsContent value="create" className="space-y-4 mt-0">
+                  {/* Time Control Selection */}
+                  <TimeControlSelector 
+                    value={timeControl} 
+                    onChange={setTimeControl} 
+                  />
+
+                  {/* Visibility Toggle */}
+                  <MatchVisibilityToggle 
+                    isPublic={isPublic} 
+                    onChange={setIsPublic} 
+                  />
+
+                  {/* Create Button */}
+                  <Button 
+                    className="w-full h-12 text-base" 
+                    size="lg"
+                    onClick={handleCreateMatch}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    ) : (
+                      <Crown className="w-5 h-5 mr-2" />
+                    )}
+                    Créer la partie
+                  </Button>
+                </TabsContent>
+
+                <TabsContent value="join" className="space-y-4 mt-0">
+                  {/* Join Code Input */}
+                  <div className="space-y-2">
+                    <Label htmlFor="join-code" className="text-sm font-medium">
+                      Code d'invitation
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="join-code"
+                        placeholder="ABCD12"
+                        value={joinCode}
+                        onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                        maxLength={6}
+                        className="font-mono text-lg tracking-widest uppercase h-12 text-center"
+                      />
+                      <Button 
+                        onClick={() => handleJoinWithCode()}
+                        disabled={isLoading || joinCode.length !== 6}
+                        className="h-12 px-6"
                       >
-                        {(Object.keys(TIME_CONTROL_LABELS) as TimeControl[]).map((tc) => (
-                          <div key={tc}>
-                            <RadioGroupItem
-                              value={tc}
-                              id={tc}
-                              className="peer sr-only"
-                            />
-                            <Label
-                              htmlFor={tc}
-                              className={cn(
-                                "flex items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all",
-                                "peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10"
-                              )}
-                            >
-                              <Clock className="w-4 h-4 mr-2" />
-                              <span className="text-sm font-medium">
-                                {TIME_CONTROL_LABELS[tc]}
-                              </span>
-                            </Label>
-                          </div>
-                        ))}
-                      </RadioGroup>
-                    </div>
-
-                    {/* Visibility Toggle */}
-                    <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-                      <div className="flex items-center gap-3">
-                        {isPublic ? (
-                          <Globe className="w-5 h-5 text-primary" />
+                        {isLoading ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
                         ) : (
-                          <Lock className="w-5 h-5 text-muted-foreground" />
+                          'Rejoindre'
                         )}
-                        <div>
-                          <p className="font-medium">
-                            {isPublic ? 'Partie publique' : 'Partie privée'}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {isPublic 
-                              ? 'Visible par tous les joueurs' 
-                              : 'Accessible uniquement par code'}
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setIsPublic(!isPublic)}
-                      >
-                        {isPublic ? 'Rendre privée' : 'Rendre publique'}
                       </Button>
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                      Entrez le code à 6 caractères partagé par votre ami
+                    </p>
+                  </div>
 
-                    {/* Create Button */}
-                    <Button 
-                      className="w-full" 
-                      size="lg"
-                      onClick={handleCreateMatch}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      ) : (
-                        <Crown className="w-4 h-4 mr-2" />
-                      )}
-                      Créer la partie
-                    </Button>
-                  </TabsContent>
-
-                  <TabsContent value="join" className="space-y-6 mt-0">
-                    {/* Join Code Input */}
-                    <div className="space-y-3">
-                      <Label htmlFor="join-code">Code d'invitation</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          id="join-code"
-                          placeholder="ABCD12"
-                          value={joinCode}
-                          onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                          maxLength={6}
-                          className="font-mono text-lg tracking-widest uppercase"
-                        />
-                        <Button 
-                          onClick={() => handleJoinWithCode()}
-                          disabled={isLoading || joinCode.length !== 6}
-                        >
-                          {isLoading ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            'Rejoindre'
-                          )}
-                        </Button>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Entrez le code à 6 caractères partagé par votre ami
-                      </p>
+                  {/* Visual separator */}
+                  <div className="relative py-4">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
                     </div>
-                  </TabsContent>
-                </CardContent>
-              </Tabs>
-            </Card>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">ou</span>
+                    </div>
+                  </div>
 
-            {/* Public Matches */}
-            <ChessPublicMatches 
-              userId={userId} 
-              onJoinMatch={handleJoinPublicMatch}
-            />
-          </div>
+                  {/* Hint to check public matches */}
+                  <p className="text-sm text-center text-muted-foreground">
+                    Consultez les parties publiques disponibles ci-dessous
+                  </p>
+                </TabsContent>
+              </CardContent>
+            </Tabs>
+          </Card>
+
+          {/* Public Matches */}
+          <ChessPublicMatches 
+            userId={userId} 
+            onJoinMatch={handleJoinPublicMatch}
+          />
         </div>
-      </main>
+      </div>
+    </main>
   );
 };
 
