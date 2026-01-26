@@ -317,11 +317,11 @@ const ChessMultiplayerLobby = () => {
               <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'create' | 'join')}>
                 <CardHeader>
                   <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="create">
+                    <TabsTrigger value="create" className="active:bg-primary/20 transition-colors">
                       <Sparkles className="w-4 h-4 mr-2" />
                       Créer
                     </TabsTrigger>
-                    <TabsTrigger value="join">
+                    <TabsTrigger value="join" className="active:bg-primary/20 transition-colors">
                       <Users className="w-4 h-4 mr-2" />
                       Rejoindre
                     </TabsTrigger>
