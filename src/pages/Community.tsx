@@ -404,6 +404,11 @@ const Community = () => {
         await fetchMessages(selectedConversation);
         await markMessagesAsRead(selectedConversation);
         await fetchReactions(selectedConversation);
+        
+        // Force scroll to bottom when loading a new conversation
+        requestAnimationFrame(() => {
+          scrollToBottom(true);
+        });
       };
       loadConversation();
       subscribeToConversationMessages(selectedConversation);
