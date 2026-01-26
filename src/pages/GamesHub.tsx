@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { useUserGrade } from '@/hooks/useUserGrade';
 import { GAMES_CONFIG, computeGamesStats, canAccessGame, Game } from '@/lib/gamesConfig';
 import { GamesHubSkeleton } from '@/components/shared/SkeletonLoaders';
+import ChessModeSelector from '@/components/chess/ChessModeSelector';
 
 const GamesHub = () => {
   const navigate = useNavigate();
@@ -22,9 +23,16 @@ const GamesHub = () => {
     [user]
   );
 
-  // Centralized navigation handler
-  const handlePlay = useCallback((path: string) => {
-    navigate(path);
+  // Chess mode dialog state
+  const [showChessModeDialog, setShowChessModeDialog] = useState(false);
+
+  // Centralized navigation handler - intercepts chess for mode selection
+  const handlePlay = useCallback((game: Game) => {
+    if (game.id === 'chess' && game.modes.length > 1) {
+      setShowChessModeDialog(true);
+      return;
+    }
+    navigate(game.path);
   }, [navigate]);
 
   return (
@@ -60,7 +68,7 @@ const GamesHub = () => {
                             ? "border-muted cursor-not-allowed"
                             : "border-transparent hover:border-primary/20 cursor-pointer"
                         )}
-                        onClick={() => !isLocked && handlePlay(game.path)}
+                        onClick={() => !isLocked && handlePlay(game)}
                       >
                         <CardContent className="p-0">
                           <div className={cn(
@@ -184,6 +192,20 @@ const GamesHub = () => {
             )}
           </div>
         </section>
+
+        {/* Chess Mode Selection Dialog */}
+        <ChessModeSelector
+          isOpen={showChessModeDialog}
+          onClose={() => setShowChessModeDialog(false)}
+          onSelectSolo={() => {
+            setShowChessModeDialog(false);
+            navigate('/chess-game');
+          }}
+          onSelectMultiplayer={() => {
+            setShowChessModeDialog(false);
+            navigate('/chess-multiplayer');
+          }}
+        />
       </main>
   );
 };
