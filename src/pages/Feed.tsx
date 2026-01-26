@@ -1057,7 +1057,7 @@ const Feed = () => {
               />
             </div>
           ) : (
-            <div className="space-y-3 px-3 sm:px-4 pt-3 sm:pt-4">
+            <div className="space-y-3 px-3 sm:px-4 pt-3 sm:pt-4" data-tour="feed-content">
             {displayPosts.map((post) => (
               <div
                 key={post.id}
