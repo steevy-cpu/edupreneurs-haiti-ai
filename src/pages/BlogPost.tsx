@@ -346,7 +346,7 @@ export default function BlogPost() {
               Prêt à transformer ton apprentissage?
             </h2>
             <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              Rejoins des milliers d'étudiants haïtiens et accède à Jude, ton assistant IA personnel.
+              Accède à Jude, ton tuteur IA personnel, et au programme MENFP complet de la 7AF à NS4.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-3">
               <Link to="/auth/signup/step-1">
