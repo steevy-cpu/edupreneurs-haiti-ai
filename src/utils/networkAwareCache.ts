@@ -107,25 +107,28 @@ export function shouldSkipPreloading(): boolean {
 /**
  * Get a throttled stale time for specific data types
  */
-export function getStaleTimeFor(dataType: 'profile' | 'feed' | 'leaderboard' | 'notifications' | 'static'): number {
+export function getStaleTimeFor(dataType: 'profile' | 'feed' | 'leaderboard' | 'notifications' | 'static' | 'default'): number {
   const { connectionType } = getCacheSettings();
   
   const staleTimeMap = {
     fast: {
+      default: 1000 * 60 * 5, // 5 min
       profile: 1000 * 60 * 10, // 10 min
       feed: 1000 * 60 * 2, // 2 min
       leaderboard: 1000 * 60 * 5, // 5 min
-      notifications: 1000 * 60 * 1, // 1 min
+      notifications: 1000 * 60 * 1, // 1 min - needs to be fresh
       static: 1000 * 60 * 60, // 1 hour
     },
     slow: {
+      default: 1000 * 60 * 10, // 10 min
       profile: 1000 * 60 * 30, // 30 min
       feed: 1000 * 60 * 10, // 10 min
       leaderboard: 1000 * 60 * 15, // 15 min
-      notifications: 1000 * 60 * 5, // 5 min
+      notifications: 1000 * 60 * 3, // 3 min - balance freshness vs bandwidth
       static: 1000 * 60 * 60 * 2, // 2 hours
     },
     offline: {
+      default: Infinity,
       profile: Infinity,
       feed: Infinity,
       leaderboard: Infinity,
