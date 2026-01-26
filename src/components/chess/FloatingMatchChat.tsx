@@ -70,11 +70,11 @@ const FloatingMatchChat: React.FC<FloatingMatchChatProps> = ({
   const lastOpponentMessage = messages.filter(m => m.sender_id !== userId).slice(-1)[0];
 
   return (
-    <>
-      {/* Floating toggle button with opponent avatar */}
+    <div className="relative">
+      {/* Toggle button with opponent avatar - inline flow */}
       <button
         onClick={onToggle}
-        className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 z-20 flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-3 py-2 shadow-lg hover:scale-105 transition-transform"
+        className="flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-3 py-2 shadow-lg hover:scale-105 transition-transform"
       >
         <Avatar className="w-8 h-8">
           <AvatarImage src={getAvatarUrl(opponent?.avatar_url || null)} />
@@ -82,11 +82,9 @@ const FloatingMatchChat: React.FC<FloatingMatchChatProps> = ({
             {opponent?.nickname?.[0]?.toUpperCase() || '?'}
           </AvatarFallback>
         </Avatar>
-        {!isOpen && (
-          <span className="text-sm font-medium max-w-[100px] truncate hidden sm:inline">
-            {opponent?.nickname || 'Chat'}
-          </span>
-        )}
+        <span className="text-sm font-medium max-w-[100px] truncate">
+          {opponent?.nickname || 'Chat'}
+        </span>
         {isOpen ? (
           <X className="w-4 h-4" />
         ) : (
@@ -101,31 +99,23 @@ const FloatingMatchChat: React.FC<FloatingMatchChatProps> = ({
         )}
       </button>
 
-      {/* Last message floating bubble (when chat is closed) */}
+      {/* Last message bubble (when chat is closed) */}
       {!isOpen && lastOpponentMessage && unreadCount > 0 && (
         <div 
-          className="absolute bottom-16 right-2 left-2 sm:right-4 sm:left-auto z-10 animate-fade-in cursor-pointer"
+          className="mt-2 animate-fade-in cursor-pointer"
           onClick={onToggle}
         >
-          <div className="bg-card/95 backdrop-blur-sm border rounded-2xl rounded-br-md p-3 shadow-lg max-w-[280px] ml-auto">
-            <div className="flex items-start gap-2">
-              <Avatar className="w-6 h-6 shrink-0">
-                <AvatarImage src={getAvatarUrl(opponent?.avatar_url || null)} />
-                <AvatarFallback className="text-[10px]">
-                  {opponent?.nickname?.[0]?.toUpperCase() || '?'}
-                </AvatarFallback>
-              </Avatar>
-              <p className="text-sm text-foreground line-clamp-2">
-                {lastOpponentMessage.message}
-              </p>
-            </div>
+          <div className="bg-card/95 backdrop-blur-sm border rounded-2xl rounded-tl-md p-3 shadow-lg max-w-[280px]">
+            <p className="text-sm text-foreground line-clamp-2">
+              {lastOpponentMessage.message}
+            </p>
           </div>
         </div>
       )}
 
       {/* Expanded chat panel */}
       {isOpen && (
-        <div className="absolute inset-2 sm:inset-4 z-20 bg-card/95 backdrop-blur-md border rounded-2xl shadow-xl flex flex-col animate-scale-in overflow-hidden">
+        <div className="fixed inset-4 sm:inset-8 z-50 bg-card/95 backdrop-blur-md border rounded-2xl shadow-xl flex flex-col animate-scale-in overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between p-3 border-b bg-muted/50">
             <div className="flex items-center gap-2">
@@ -250,7 +240,7 @@ const FloatingMatchChat: React.FC<FloatingMatchChatProps> = ({
           </form>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
