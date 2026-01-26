@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
@@ -215,22 +214,19 @@ export default function NotificationSettings() {
 
   if (loading) {
     return (
-      <Layout>
-        <div className="container max-w-2xl py-8">
-          <div className={`space-y-4 ${isSlowConnection ? '' : 'animate-pulse'}`}>
-            <div className="h-8 bg-muted rounded w-1/3" />
-            {Array.from({ length: skeletonCount }).map((_, i) => (
-              <div key={i} className="h-20 bg-muted rounded" />
-            ))}
-          </div>
+      <div className="container max-w-2xl py-8">
+        <div className={`space-y-4 ${isSlowConnection ? '' : 'animate-pulse'}`}>
+          <div className="h-8 bg-muted rounded w-1/3" />
+          {Array.from({ length: skeletonCount }).map((_, i) => (
+            <div key={i} className="h-20 bg-muted rounded" />
+          ))}
         </div>
-      </Layout>
+      </div>
     );
   }
 
   return (
-    <Layout>
-      <div className="container max-w-2xl py-8 space-y-6">
+    <div className="container max-w-2xl py-8 space-y-6">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -348,6 +344,5 @@ export default function NotificationSettings() {
           </Card>
         )}
       </div>
-    </Layout>
   );
 }

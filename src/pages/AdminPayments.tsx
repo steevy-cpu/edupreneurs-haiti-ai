@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -106,8 +105,7 @@ const AdminPayments = () => {
   ).length || 0;
 
   return (
-    <Layout>
-      <div className="container mx-auto py-6 px-4 max-w-6xl">
+    <div className="container mx-auto py-6 px-4 max-w-6xl">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold">Gestion des Paiements NatCash</h1>
@@ -297,7 +295,6 @@ const AdminPayments = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </Layout>
   );
 };
 

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Layout } from '@/components/Layout';
 import { SubjectDifficultySelector } from '@/components/quiz-battle/SubjectDifficultySelector';
 import { BattleGameplay } from '@/components/quiz-battle/BattleGameplay';
 import { BattleResults } from '@/components/quiz-battle/BattleResults';
@@ -560,35 +559,33 @@ const QuizBattleSolo = () => {
   };
 
   return (
-    <Layout>
-      <div className="container max-w-4xl mx-auto px-4 py-4 sm:py-6">
-        {phase === 'setup' && (
-          <SubjectDifficultySelector
-            defaultGrade={selectedGrade}
-            onStart={handleStartBattle}
-            onBack={handleBackToMenu}
-          />
-        )}
+    <div className="container max-w-4xl mx-auto px-4 py-4 sm:py-6">
+      {phase === 'setup' && (
+        <SubjectDifficultySelector
+          defaultGrade={selectedGrade}
+          onStart={handleStartBattle}
+          onBack={handleBackToMenu}
+        />
+      )}
 
-        {phase === 'loading' && <QuizLoadingState startTime={loadingStartTime || Date.now()} />}
+      {phase === 'loading' && <QuizLoadingState startTime={loadingStartTime || Date.now()} />}
 
-        {phase === 'playing' && questions.length > 0 && (
-          <BattleGameplay
-            questions={questions}
-            difficulty={selectedDifficulty}
-            onComplete={handleGameComplete}
-          />
-        )}
+      {phase === 'playing' && questions.length > 0 && (
+        <BattleGameplay
+          questions={questions}
+          difficulty={selectedDifficulty}
+          onComplete={handleGameComplete}
+        />
+      )}
 
-        {phase === 'results' && result && (
-          <BattleResults
-            result={result}
-            onPlayAgain={handlePlayAgain}
-            onBackToMenu={handleBackToMenu}
-          />
-        )}
-      </div>
-    </Layout>
+      {phase === 'results' && result && (
+        <BattleResults
+          result={result}
+          onPlayAgain={handlePlayAgain}
+          onBackToMenu={handleBackToMenu}
+        />
+      )}
+    </div>
   );
 };
 

@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Chess, Square } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
-import { Layout } from '@/components/Layout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -500,22 +499,18 @@ const ChessMultiplayerGame = () => {
 
   if (isAuthLoading || isLoading) {
     return (
-      <Layout>
-        <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </Layout>
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
     );
   }
 
   if (!match) {
     return (
-      <Layout>
-        <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-          <p className="text-muted-foreground">Partie non trouvée</p>
-          <Button onClick={handleBack}>Retour au lobby</Button>
-        </div>
-      </Layout>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="text-muted-foreground">Partie non trouvée</p>
+        <Button onClick={handleBack}>Retour au lobby</Button>
+      </div>
     );
   }
 
@@ -524,8 +519,7 @@ const ChessMultiplayerGame = () => {
   const isDraw = isGameOver && !match.winner_id;
 
   return (
-    <Layout>
-      <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background">
         <div className="container max-w-6xl mx-auto px-4 py-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
@@ -780,34 +774,33 @@ const ChessMultiplayerGame = () => {
             )}
           </div>
         </div>
-      </main>
 
-      {/* Resign Confirmation Dialog */}
-      <AlertDialog open={showResignDialog} onOpenChange={setShowResignDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Abandonner la partie?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Vous perdrez cette partie si vous abandonnez. Cette action est irréversible.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleResign} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Abandonner
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      
-      {/* Promotion Dialog */}
-      <PromotionDialog
-        isOpen={pendingPromotion !== null}
-        color={myColor || 'w'}
-        onSelect={handlePromotionSelect}
-        onCancel={handlePromotionCancel}
-      />
-    </Layout>
+        {/* Resign Confirmation Dialog */}
+        <AlertDialog open={showResignDialog} onOpenChange={setShowResignDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Abandonner la partie?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Vous perdrez cette partie si vous abandonnez. Cette action est irréversible.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Annuler</AlertDialogCancel>
+              <AlertDialogAction onClick={handleResign} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Abandonner
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        
+        {/* Promotion Dialog */}
+        <PromotionDialog
+          isOpen={pendingPromotion !== null}
+          color={myColor || 'w'}
+          onSelect={handlePromotionSelect}
+          onCancel={handlePromotionCancel}
+        />
+      </main>
   );
 };
 

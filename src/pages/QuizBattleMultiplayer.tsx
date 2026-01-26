@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Layout } from '@/components/Layout';
 import { BattleGameplay } from '@/components/quiz-battle/BattleGameplay';
 import { MultiplayerBattleGameplay } from '@/components/quiz-battle/MultiplayerBattleGameplay';
 import { MultiplayerResults } from '@/components/quiz-battle/MultiplayerResults';
@@ -639,54 +638,48 @@ const QuizBattleMultiplayer = () => {
   // Loading state
   if (phase === 'loading' || phase === 'generating') {
     return (
-      <Layout>
-        <div className="container max-w-4xl mx-auto px-4 py-6">
-          <QuizLoadingState startTime={generationStartTime || Date.now()} />
-        </div>
-      </Layout>
+      <div className="container max-w-4xl mx-auto px-4 py-6">
+        <QuizLoadingState startTime={generationStartTime || Date.now()} />
+      </div>
     );
   }
 
   // Guard: Show loading if playing but opponent not yet loaded (race condition fix)
   if (phase === 'playing' && questions.length > 0 && !opponent) {
     return (
-      <Layout>
-        <div className="container max-w-4xl mx-auto px-4 py-6">
-          <Card>
-            <CardContent className="py-8 text-center">
-              <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-              <p className="text-muted-foreground">Chargement de l'adversaire...</p>
-            </CardContent>
-          </Card>
-        </div>
-      </Layout>
+      <div className="container max-w-4xl mx-auto px-4 py-6">
+        <Card>
+          <CardContent className="py-8 text-center">
+            <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-muted-foreground">Chargement de l'adversaire...</p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   // Waiting for opponent
   if (phase === 'waiting-opponent') {
     return (
-      <Layout>
-        <div className="container max-w-4xl mx-auto px-4 py-6">
-          <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-            <Card className="w-full max-w-md">
-              <CardContent className="py-8 text-center">
-                <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-                <h2 className="text-xl font-bold mb-2">En attente de l'adversaire</h2>
-                <p className="text-muted-foreground">
-                  {opponent?.nickname || 'Adversaire'} termine son quiz...
-                </p>
-                {myResult && (
-                  <div className="mt-4 p-4 bg-muted rounded-lg">
-                    <p className="text-sm text-muted-foreground">Ton score</p>
-                    <p className="text-2xl font-bold text-primary">{myResult.score}%</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+      <div className="container max-w-4xl mx-auto px-4 py-6">
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+          <Card className="w-full max-w-md">
+            <CardContent className="py-8 text-center">
+              <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+              <h2 className="text-xl font-bold mb-2">En attente de l'adversaire</h2>
+              <p className="text-muted-foreground">
+                {opponent?.nickname || 'Adversaire'} termine son quiz...
+              </p>
+              {myResult && (
+                <div className="mt-4 p-4 bg-muted rounded-lg">
+                  <p className="text-sm text-muted-foreground">Ton score</p>
+                  <p className="text-2xl font-bold text-primary">{myResult.score}%</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
-      </Layout>
+      </div>
     );
   }
 
@@ -696,74 +689,70 @@ const QuizBattleMultiplayer = () => {
     const useMultiplayerMode = (battleMode === 'random' || battleMode === 'friend') && opponent && userId;
     
     return (
-      <Layout>
-        <div className="container max-w-4xl mx-auto px-4 py-6">
-          {useMultiplayerMode ? (
-            // Real-time synchronized multiplayer gameplay
-            <MultiplayerBattleGameplay
-              battleId={battleId!}
+      <div className="container max-w-4xl mx-auto px-4 py-6">
+        {useMultiplayerMode ? (
+          // Real-time synchronized multiplayer gameplay
+          <MultiplayerBattleGameplay
+            battleId={battleId!}
+            questions={questions}
+            difficulty={difficulty}
+            userId={userId}
+            opponent={opponent}
+            onComplete={handleGameComplete}
+          />
+        ) : (
+          // Fallback to independent play (shouldn't happen in multiplayer)
+          <>
+            {opponent && (
+              <Card className="mb-4">
+                <CardContent className="py-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Swords className="w-5 h-5 text-accent" />
+                      <span className="text-sm text-muted-foreground">VS</span>
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={opponent.avatar_url || undefined} />
+                        <AvatarFallback>{opponent.nickname?.[0]?.toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium">{opponent.nickname}</span>
+                    </div>
+                    {opponentResult && (
+                      <div className="text-sm text-muted-foreground">
+                        {opponentResult.finished ? (
+                          <span className="text-success">Terminé!</span>
+                        ) : (
+                          <span>{opponentResult.correctAnswers} bonnes réponses</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            <BattleGameplay
               questions={questions}
               difficulty={difficulty}
-              userId={userId}
-              opponent={opponent}
               onComplete={handleGameComplete}
             />
-          ) : (
-            // Fallback to independent play (shouldn't happen in multiplayer)
-            <>
-              {opponent && (
-                <Card className="mb-4">
-                  <CardContent className="py-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Swords className="w-5 h-5 text-accent" />
-                        <span className="text-sm text-muted-foreground">VS</span>
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={opponent.avatar_url || undefined} />
-                          <AvatarFallback>{opponent.nickname?.[0]?.toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <span className="font-medium">{opponent.nickname}</span>
-                      </div>
-                      {opponentResult && (
-                        <div className="text-sm text-muted-foreground">
-                          {opponentResult.finished ? (
-                            <span className="text-success">Terminé!</span>
-                          ) : (
-                            <span>{opponentResult.correctAnswers} bonnes réponses</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              <BattleGameplay
-                questions={questions}
-                difficulty={difficulty}
-                onComplete={handleGameComplete}
-              />
-            </>
-          )}
-        </div>
-      </Layout>
+          </>
+        )}
+      </div>
     );
   }
 
   // Results
   if (phase === 'results' && myResult) {
     return (
-      <Layout>
-        <div className="container max-w-4xl mx-auto px-4 py-6">
-          <MultiplayerResults
-            myResult={myResult}
-            opponentResult={opponentResult}
-            opponent={opponent}
-            myProfile={myProfile}
-            onPlayAgain={handlePlayAgain}
-            onBackToMenu={handleBackToMenu}
-          />
-        </div>
-      </Layout>
+      <div className="container max-w-4xl mx-auto px-4 py-6">
+        <MultiplayerResults
+          myResult={myResult}
+          opponentResult={opponentResult}
+          opponent={opponent}
+          myProfile={myProfile}
+          onPlayAgain={handlePlayAgain}
+          onBackToMenu={handleBackToMenu}
+        />
+      </div>
     );
   }
 

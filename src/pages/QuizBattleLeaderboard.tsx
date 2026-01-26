@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Layout } from '@/components/Layout';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -222,8 +221,7 @@ const QuizBattleLeaderboard = () => {
   ];
 
   return (
-    <Layout>
-      <div className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
+    <div className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -400,7 +398,6 @@ const QuizBattleLeaderboard = () => {
           </CardContent>
         </Card>
       </div>
-    </Layout>
   );
 };
 

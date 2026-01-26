@@ -1,7 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { AppProviders } from "@/providers/AppProviders";
-import { ScrollToTop } from "@/components/ScrollToTop";
 import { LegacyRedirect } from "@/components/LegacyRedirect";
 import { HeroSkeleton } from "@/components/shared/HeroSkeleton";
 import { DashboardFullSkeleton } from "@/components/shared/SkeletonLoaders";
@@ -16,9 +15,6 @@ import {
   GenericPageSkeleton 
 } from "@/components/shared/PageSkeletons";
 import { AppShell } from "@/shell";
-
-// CRITICAL: Lazy load non-critical UI components to reduce initial bundle
-const CookieConsent = lazy(() => import("@/components/CookieConsent").then(m => ({ default: m.CookieConsent })));
 
 // Lazy load all pages for better 3G performance
 const Index = lazy(() => import("./pages/Index"));
@@ -93,13 +89,6 @@ const BlogPost = lazy(() => import("./pages/BlogPost"));
  */
 const App = () => (
   <AppProviders>
-    <ScrollToTop />
-    
-    {/* Global cookie consent - lazy loaded */}
-    <Suspense fallback={null}>
-      <CookieConsent />
-    </Suspense>
-    
     <Routes>
                         {/* PUBLIC ROUTES - No shell */}
                         <Route path="/" element={

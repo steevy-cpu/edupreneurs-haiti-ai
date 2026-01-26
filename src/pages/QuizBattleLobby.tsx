@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -846,19 +845,15 @@ const QuizBattleLobby = () => {
 
   if (!userId) {
     return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
     );
   }
 
   return (
-    <Layout>
-      <div className="container max-w-2xl mx-auto px-4 py-6">
-        {renderContent()}
-      </div>
+    <div className="container max-w-2xl mx-auto px-4 py-6">
+      {renderContent()}
 
       {/* Send Invitation Dialog for random mode */}
       {userId && userGrade && (
@@ -870,7 +865,7 @@ const QuizBattleLobby = () => {
           userGrade={userGrade}
         />
       )}
-    </Layout>
+    </div>
   );
 };
 
