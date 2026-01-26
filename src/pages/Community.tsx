@@ -1155,15 +1155,25 @@ const Community = () => {
           
           setConversations(prev => {
             // Find and update the conversation with the new message time
-            const updated = prev.map(conv => 
-              conv.id === conversationId 
-                ? { 
-                    ...conv, 
-                    lastMessage: payload.new.content,
-                    lastMessageTime: newMessageTime,
-                  }
-                : conv
-            );
+            const updated = prev.map(conv => {
+              if (conv.id !== conversationId) return conv;
+              
+              // Increment unread count only if:
+              // 1. Message is from another user
+              // 2. This is NOT the currently selected conversation
+              const shouldIncrementUnread = 
+                payload.new.sender_id !== user?.id && 
+                conversationId !== selectedConversation;
+              
+              return { 
+                ...conv, 
+                lastMessage: payload.new.content,
+                lastMessageTime: newMessageTime,
+                unreadCount: shouldIncrementUnread 
+                  ? (conv.unreadCount || 0) + 1 
+                  : conv.unreadCount,
+              };
+            });
             
             // Re-sort immediately
             return updated.sort((a, b) => 
