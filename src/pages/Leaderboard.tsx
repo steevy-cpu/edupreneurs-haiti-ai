@@ -122,7 +122,7 @@ const Leaderboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24 pt-14 sm:pt-16">
+    <div className="min-h-screen bg-background pb-24 lg:pb-8 pt-14 sm:pt-16">
       {/* Theme Toggle */}
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />

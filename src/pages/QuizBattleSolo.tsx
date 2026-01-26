@@ -559,7 +559,7 @@ const QuizBattleSolo = () => {
   };
 
   return (
-    <div className="container max-w-4xl mx-auto px-4 py-4 sm:py-6">
+    <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 lg:pb-8">
       {phase === 'setup' && (
         <SubjectDifficultySelector
           defaultGrade={selectedGrade}

@@ -35,14 +35,14 @@ export default function Library() {
   const booksCompleted = progressList?.filter(p => p.is_completed).length || 0;
 
   return (
-    <div className="relative min-h-screen pb-24 md:pb-6">
+    <div className="relative min-h-screen pb-24 lg:pb-8">
       {/* Decorative Background */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -left-20 top-20 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute -right-20 bottom-40 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl" />
       </div>
 
-      <div className="container relative mx-auto px-4 py-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 relative">
         {/* Back Button */}
         <Button
           variant="ghost"

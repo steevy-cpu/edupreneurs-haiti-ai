@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Chess, Square } from 'chess.js';
-import { Chessboard } from 'react-chessboard';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -23,6 +22,7 @@ import { useChessMultiplayer, TimeControl } from '@/hooks/useChessMultiplayer';
 import { ChessMatchChat } from '@/components/chess/ChessMatchChat';
 import { useChessSounds } from '@/hooks/useChessSounds';
 import { PromotionDialog, PromotionPiece } from '@/components/chess/PromotionDialog';
+import { ChessBoardSkeleton } from '@/components/chess/ChessBoardSkeleton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +33,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+
+// Lazy load heavy chessboard component for 3G optimization
+const Chessboard = lazy(() => 
+  import('react-chessboard').then(m => ({ default: m.Chessboard }))
+);
 
 const ChessMultiplayerGame = () => {
   const { matchId } = useParams<{ matchId: string }>();
@@ -519,8 +524,8 @@ const ChessMultiplayerGame = () => {
   const isDraw = isGameOver && !match.winner_id;
 
   return (
-    <main className="min-h-screen bg-background">
-        <div className="container max-w-6xl mx-auto px-4 py-4">
+    <main className="min-h-screen bg-background pb-24 lg:pb-8">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <Button variant="ghost" size="sm" onClick={handleBack}>
@@ -592,18 +597,20 @@ const ChessMultiplayerGame = () => {
 
               {/* Chess Board */}
               <div className="relative aspect-square max-w-[600px] mx-auto">
-                <Chessboard
-                  position={game.fen()}
-                  onSquareClick={onSquareClick}
-                  onPieceDrop={onPieceDrop}
-                  boardOrientation={boardOrientation}
-                  customSquareStyles={customSquareStyles}
-                  arePiecesDraggable={isMyTurn && !isGameOver}
-                  customBoardStyle={{
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-                  }}
-                />
+                <Suspense fallback={<ChessBoardSkeleton />}>
+                  <Chessboard
+                    position={game.fen()}
+                    onSquareClick={onSquareClick}
+                    onPieceDrop={onPieceDrop}
+                    boardOrientation={boardOrientation}
+                    customSquareStyles={customSquareStyles}
+                    arePiecesDraggable={isMyTurn && !isGameOver}
+                    customBoardStyle={{
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+                    }}
+                  />
+                </Suspense>
                 
                 {/* Game Over Overlay */}
                 {isGameOver && (

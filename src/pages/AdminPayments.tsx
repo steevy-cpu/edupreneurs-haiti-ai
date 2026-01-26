@@ -105,7 +105,7 @@ const AdminPayments = () => {
   ).length || 0;
 
   return (
-    <div className="container mx-auto py-6 px-4 max-w-6xl">
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold">Gestion des Paiements NatCash</h1>

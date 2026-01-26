@@ -1,5 +1,5 @@
 // Service Worker for Push Notifications and Asset Caching - Optimized for 3G
-const SW_VERSION = '1.5.0';
+const SW_VERSION = '1.6.0';
 const CACHE_NAME = `edupreneurs-v${SW_VERSION}`;
 const STATIC_CACHE_NAME = `edupreneurs-static-v${SW_VERSION}`;
 const API_CACHE_NAME = `edupreneurs-api-v${SW_VERSION}`;
@@ -11,7 +11,8 @@ const PRECACHE_ASSETS = [
   '/pwa-icon.jpeg',
   '/manifest.webmanifest',
   '/favicon.ico',
-  '/characters/eric-ai-helper.png'
+  '/characters/eric-ai-helper.png',
+  '/offline.html'
 ];
 
 // BroadcastChannel for cross-tab sync
@@ -106,6 +107,16 @@ self.addEventListener('fetch', (event) => {
   
   // Skip non-GET requests
   if (request.method !== 'GET') return;
+  
+  // Handle navigation requests with offline fallback
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).catch(() => {
+        return caches.match('/offline.html');
+      })
+    );
+    return;
+  }
   
   // Skip cross-origin requests except for fonts and CDN assets
   if (url.origin !== location.origin && 
