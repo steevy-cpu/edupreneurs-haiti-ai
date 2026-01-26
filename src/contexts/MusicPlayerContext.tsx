@@ -127,7 +127,7 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(false);
   };
 
-  const initPlayer = (trackIndex?: number) => {
+  const initPlayer = useCallback((trackIndex?: number) => {
     if (tracks.length === 0) return;
 
     // Use provided index or fall back to currentTrackIndex
@@ -207,9 +207,9 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
     };
 
     initialize();
-  };
+  }, [tracks, currentTrackIndex]);
 
-  const playTrack = (index: number) => {
+  const playTrack = useCallback((index: number) => {
     console.log('▶️ Playing track:', index, tracks[index]?.title);
     setCurrentTrackIndex(index);
     
@@ -237,7 +237,7 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
       playerRef.current = null;
       initPlayer(index);
     }
-  };
+  }, [tracks, youtubeApiLoaded, loadYouTubeAPI, playerReady, initPlayer]);
 
   const playPause = () => {
     if (!playerRef.current || !playerReady || typeof playerRef.current.pauseVideo !== 'function') {
@@ -270,7 +270,7 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
     const nextIndex = (currentIndex + 1) % tracks.length;
     console.log('⏭️ Moving to next track:', nextIndex, 'from', currentIndex);
     playTrack(nextIndex);
-  }, [tracks.length]);
+  }, [tracks.length, playTrack]);
 
   const stopMusic = () => {
     console.log('🛑 stopMusic called, playerRef:', !!playerRef.current);
