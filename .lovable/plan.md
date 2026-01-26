@@ -1,81 +1,101 @@
 
-# Fix: Stop Music on User Logout
+# Fix: Stop Music on User Logout - Root Cause & Solution
 
-## Problem Analysis
+## Root Cause Analysis
 
-When a logged-in user logs out, the music continues playing. This happens because:
+The previous implementation placed `AuthMusicSync` inside `FloatingLayer`, which is rendered inside `AppShell`. However:
 
-1. The YouTube player is a global iframe managed by `MusicPlayerContext`
-2. The existing `VisitorMusicSync` only handles visitor → logged-in transitions
-3. There's no component watching for `SIGNED_OUT` auth events to stop music
-4. The logout handlers in `AppSidebar.tsx` and `Settings.tsx` don't call `stopMusic()`
+| Route Type | Shell Used | Contains FloatingLayer? |
+|------------|------------|------------------------|
+| `/auth/*` | `AuthLayout` | No |
+| `/dashboard`, `/matieres`, etc. | `AppShell` | Yes |
+
+**When a user logs out:**
+1. `supabase.auth.signOut()` is called
+2. React Router navigates to `/auth/login`
+3. `AppShell` unmounts (including `FloatingLayer` and `AuthMusicSync`)
+4. `AuthMusicSync` is destroyed before its `useEffect` can detect the auth change
+5. Music continues playing from the orphaned YouTube iframe
 
 ## Solution
 
-Create a new `AuthMusicSync` component that monitors authentication state and stops music when the user logs out. This follows the same pattern as the existing `VisitorMusicSync`.
+Move `AuthMusicSync` to `App.tsx` at the top level, outside of any route-specific shell. This ensures it stays mounted during navigation from authenticated routes to auth routes.
 
-## Implementation Steps
+---
 
-### Step 1: Create AuthMusicSync Component
+## Implementation Plan
 
-**File**: `src/components/auth/AuthMusicSync.tsx` (new file)
+### Step 1: Move AuthMusicSync to App.tsx
+
+**File**: `src/App.tsx`
+
+Add `AuthMusicSync` directly inside `AppProviders`, before `Routes`:
 
 ```typescript
-import { useEffect, useRef } from "react";
-import { useSessionAuth } from "@/contexts/SessionAuthContext";
-import { useMusicPlayer } from "@/contexts/MusicPlayerContext";
+import { AuthMusicSync } from "@/components/auth/AuthMusicSync";
 
-/**
- * Root-level component that watches auth state and stops music
- * when user logs out. This component is always mounted (in FloatingLayer),
- * so it survives route changes like navigating to /auth.
- */
-export const AuthMusicSync = () => {
-  const { isAuthenticated, isLoading } = useSessionAuth();
-  const { stopMusic } = useMusicPlayer();
-  const prevAuthRef = useRef<boolean>(isAuthenticated);
-  const initialLoadRef = useRef<boolean>(true);
-
-  useEffect(() => {
-    // Skip during initial loading to avoid false triggers
-    if (isLoading) return;
+const App = () => (
+  <AppProviders>
+    {/* Global music sync - must be outside AppShell to survive logout navigation */}
+    <AuthMusicSync />
     
-    // Skip the first render after loading completes
-    if (initialLoadRef.current) {
-      initialLoadRef.current = false;
-      prevAuthRef.current = isAuthenticated;
-      return;
-    }
-
-    // Stop music when transitioning FROM authenticated TO unauthenticated
-    if (prevAuthRef.current === true && isAuthenticated === false) {
-      console.log('[AuthMusicSync] User logged out -> stopping music');
-      stopMusic();
-    }
-    
-    // Update ref for next comparison
-    prevAuthRef.current = isAuthenticated;
-  }, [isAuthenticated, isLoading, stopMusic]);
-
-  // This component renders nothing - it's just a state watcher
-  return null;
-};
+    <Routes>
+      {/* ... existing routes ... */}
+    </Routes>
+  </AppProviders>
+);
 ```
 
-### Step 2: Add to FloatingLayer
+### Step 2: Remove AuthMusicSync from FloatingLayer
 
 **File**: `src/shell/FloatingLayer.tsx`
 
-Add import and render the component:
+Remove the lazy import and render of `AuthMusicSync` (since it's now in App.tsx):
 
 ```typescript
-// Add import (after VisitorMusicSync import)
-const AuthMusicSync = lazy(() => import('@/components/auth/AuthMusicSync').then(m => ({ default: m.AuthMusicSync })));
+// REMOVE this import:
+// const AuthMusicSync = lazy(() => import('@/components/auth/AuthMusicSync').then(...));
 
-// Add render (after VisitorMusicSync)
-<Suspense fallback={null}>
-  <AuthMusicSync />
-</Suspense>
+// REMOVE this render block:
+// <Suspense fallback={null}>
+//   <AuthMusicSync />
+// </Suspense>
+```
+
+---
+
+## Why This Works
+
+```text
+Before (broken):
+┌─────────────────────────────────────────────────────┐
+│  AppProviders                                        │
+│    ┌───────────────────────────────────────────────┐│
+│    │  Routes                                        ││
+│    │    ┌─────────────────────────────────────────┐││
+│    │    │  AppShell (only for auth routes)        │││
+│    │    │    ┌───────────────────────────────────┐│││
+│    │    │    │  FloatingLayer                    ││││
+│    │    │    │    └── AuthMusicSync ❌ UNMOUNTS  ││││
+│    │    │    └───────────────────────────────────┘│││
+│    │    └─────────────────────────────────────────┘││
+│    │    ┌─────────────────────────────────────────┐││
+│    │    │  AuthLayout (for /auth/*)               │││
+│    │    │    └── No AuthMusicSync here!           │││
+│    │    └─────────────────────────────────────────┘││
+│    └───────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────┘
+
+After (fixed):
+┌─────────────────────────────────────────────────────┐
+│  AppProviders                                        │
+│    └── AuthMusicSync ✅ ALWAYS MOUNTED              │
+│    ┌───────────────────────────────────────────────┐│
+│    │  Routes                                        ││
+│    │    ├── AppShell (for authenticated routes)    ││
+│    │    └── AuthLayout (for /auth/*)               ││
+│    └───────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -84,18 +104,8 @@ const AuthMusicSync = lazy(() => import('@/components/auth/AuthMusicSync').then(
 
 | File | Action |
 |------|--------|
-| `src/components/auth/AuthMusicSync.tsx` | Create (new file) |
-| `src/shell/FloatingLayer.tsx` | Add import and render |
-
----
-
-## Why This Approach?
-
-| Approach | Pros | Cons |
-|----------|------|------|
-| **AuthMusicSync (chosen)** | Centralized, follows existing pattern, survives new logout handlers | Adds one small component |
-| Modify logout handlers | Direct | Requires changes in multiple places, easy to miss new handlers |
-| Add to MusicPlayerContext | Self-contained | Mixes auth concerns into music context |
+| `src/App.tsx` | Add `AuthMusicSync` import and render |
+| `src/shell/FloatingLayer.tsx` | Remove `AuthMusicSync` import and render |
 
 ---
 
@@ -103,12 +113,12 @@ const AuthMusicSync = lazy(() => import('@/components/auth/AuthMusicSync').then(
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No - additive only |
-| Works with existing data? | Yes - uses existing contexts |
-| 3G optimized? | Yes - no network calls, lazy-loaded |
+| Breaks existing functionality? | No - only moves component location |
+| Works with existing data? | Yes - uses same contexts |
+| 3G optimized? | Yes - no additional network calls, small component |
 | Backward compatible? | Yes - no API changes |
-| Hook ordering maintained? | Yes - hooks at top |
-| Handles edge cases? | Yes - skips initial load to avoid false triggers |
+| Hook ordering maintained? | Yes - unconditional hooks |
+| Component always mounted? | Yes - outside all route shells |
 
 ---
 
@@ -116,6 +126,6 @@ const AuthMusicSync = lazy(() => import('@/components/auth/AuthMusicSync').then(
 
 After this change:
 - Music stops immediately when user clicks logout
+- `AuthMusicSync` remains mounted during navigation to `/auth/login`
+- The YouTube iframe is destroyed before the auth page loads
 - Works regardless of where logout is triggered (sidebar, settings, etc.)
-- No music plays on the login/auth pages after logout
-- Visitor mode music sync continues to work as before
