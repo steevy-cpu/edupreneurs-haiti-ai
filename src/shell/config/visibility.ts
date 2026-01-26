@@ -19,6 +19,8 @@ export interface VisibilityConfig {
   hideOnPatterns: RegExp[];
   /** Only show for authenticated users */
   requiresAuth?: boolean;
+  /** Allow for visitor mode even if requiresAuth is true */
+  allowForVisitors?: boolean;
   /** Hide when virtual keyboard is open (mobile) */
   hideWhenKeyboardOpen?: boolean;
 }
@@ -48,6 +50,7 @@ export const UI_VISIBILITY: Record<string, VisibilityConfig> = {
       /-lesson\//,
     ],
     requiresAuth: true,
+    allowForVisitors: true, // Show for visitor tour/welcome
   },
   
   musicPlayer: {
@@ -59,6 +62,7 @@ export const UI_VISIBILITY: Record<string, VisibilityConfig> = {
       /^\/blog/,
     ],
     requiresAuth: true,
+    allowForVisitors: true, // Music plays during visitor tour
   },
   
   bottomNav: {
@@ -129,6 +133,7 @@ export const UI_VISIBILITY: Record<string, VisibilityConfig> = {
 
 export interface VisibilityOptions {
   isAuthenticated?: boolean;
+  isVisitor?: boolean;
   keyboardOpen?: boolean;
 }
 
@@ -154,11 +159,13 @@ export function shouldShowComponent(
     return true;
   }
   
-  const { isAuthenticated = true, keyboardOpen = false } = options;
+  const { isAuthenticated = true, isVisitor = false, keyboardOpen = false } = options;
   
-  // Check auth requirement
+  // Check auth requirement - allow visitors if specified
   if (config.requiresAuth && !isAuthenticated) {
-    return false;
+    if (!config.allowForVisitors || !isVisitor) {
+      return false;
+    }
   }
   
   // Check keyboard state
