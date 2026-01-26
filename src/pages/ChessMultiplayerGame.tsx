@@ -751,6 +751,18 @@ const ChessMultiplayerGame = () => {
                     </div>
                   </div>
                 )}
+                
+                {/* Floating Chat - On top of board */}
+                <FloatingMatchChat
+                  messages={chatMessages}
+                  userId={userId}
+                  opponent={opponent}
+                  userProfile={userProfile}
+                  onSendMessage={sendMessage}
+                  isOpen={showChat}
+                  onToggle={() => setShowChat(!showChat)}
+                  unreadCount={unreadCount}
+                />
               </div>
 
               {/* Player Info */}
@@ -797,17 +809,6 @@ const ChessMultiplayerGame = () => {
               )}
             </div>
             
-            {/* Floating Chat */}
-            <FloatingMatchChat
-              messages={chatMessages}
-              userId={userId}
-              opponent={opponent}
-              userProfile={userProfile}
-              onSendMessage={sendMessage}
-              isOpen={showChat}
-              onToggle={() => setShowChat(!showChat)}
-              unreadCount={unreadCount}
-            />
           </div>
         </div>
 

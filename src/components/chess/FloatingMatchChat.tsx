@@ -74,7 +74,7 @@ const FloatingMatchChat: React.FC<FloatingMatchChatProps> = ({
       {/* Floating toggle button with opponent avatar */}
       <button
         onClick={onToggle}
-        className="absolute bottom-4 right-4 z-20 flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-3 py-2 shadow-lg hover:scale-105 transition-transform"
+        className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 z-20 flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-3 py-2 shadow-lg hover:scale-105 transition-transform"
       >
         <Avatar className="w-8 h-8">
           <AvatarImage src={getAvatarUrl(opponent?.avatar_url || null)} />
@@ -104,7 +104,7 @@ const FloatingMatchChat: React.FC<FloatingMatchChatProps> = ({
       {/* Last message floating bubble (when chat is closed) */}
       {!isOpen && lastOpponentMessage && unreadCount > 0 && (
         <div 
-          className="absolute bottom-20 right-4 left-4 z-10 animate-fade-in cursor-pointer"
+          className="absolute bottom-16 right-2 left-2 sm:right-4 sm:left-auto z-10 animate-fade-in cursor-pointer"
           onClick={onToggle}
         >
           <div className="bg-card/95 backdrop-blur-sm border rounded-2xl rounded-br-md p-3 shadow-lg max-w-[280px] ml-auto">
