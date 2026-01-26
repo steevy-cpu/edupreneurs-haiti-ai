@@ -110,13 +110,8 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
       { id: "KpOtuoHL45Y", title: "Liszt - Rêve d'Amour", thumbnail: "https://i.ytimg.com/vi/KpOtuoHL45Y/hqdefault.jpg" },
       { id: "H1Dvg2MxQn8", title: "Liszt - Rhapsodies Hongroises", thumbnail: "https://i.ytimg.com/vi/H1Dvg2MxQn8/hqdefault.jpg" },
       
-      // Brahms - Warm & Soothing
-      { id: "luNc4RyZvmk", title: "Brahms - Symphonies Complètes", thumbnail: "https://i.ytimg.com/vi/luNc4RyZvmk/hqdefault.jpg" },
-      { id: "FRqfbBM2pQQ", title: "Brahms - Berceuse", thumbnail: "https://i.ytimg.com/vi/FRqfbBM2pQQ/hqdefault.jpg" },
-      
       // Schubert - Gentle & Melodic
       { id: "2bosouX_d8Y", title: "Schubert - Ave Maria (Version Orchestrale)", thumbnail: "https://i.ytimg.com/vi/2bosouX_d8Y/hqdefault.jpg" },
-      { id: "k-x7QBFXguQ", title: "Schubert - Sérénade", thumbnail: "https://i.ytimg.com/vi/k-x7QBFXguQ/hqdefault.jpg" },
       
       // Mixed Study Compilations
       { id: "jgpJVI3tDbY", title: "Mix Classique - 4h Concentration", thumbnail: "https://i.ytimg.com/vi/jgpJVI3tDbY/hqdefault.jpg" },
