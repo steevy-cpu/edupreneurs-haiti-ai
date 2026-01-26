@@ -1,5 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  persistQueryData, 
+  getPersistedQueryData, 
+  getPersistedCacheTimestamp,
+  clearPersistedCache,
+  CACHE_KEYS 
+} from "@/utils/queryPersistence";
+import { getStaleTimeFor } from "@/utils/networkAwareCache";
 
 export interface BattleStats {
   id: string;
@@ -32,99 +40,91 @@ export interface BattleBadge {
   earned_at: string;
 }
 
-export const useBattleStats = (userId: string | null) => {
-  const [stats, setStats] = useState<BattleStats | null>(null);
-  const [badges, setBadges] = useState<BattleBadge[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+interface BattleData {
+  stats: BattleStats | null;
+  badges: BattleBadge[];
+}
 
-  useEffect(() => {
-    if (!userId) {
-      setIsLoading(false);
-      return;
-    }
+const fetchBattleData = async (userId: string): Promise<BattleData> => {
+  // Fetch stats
+  let { data: statsData, error: statsError } = await supabase
+    .from('quiz_battle_stats')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
 
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
+  if (statsError) throw statsError;
 
-        // Fetch stats
-        const { data: statsData, error: statsError } = await supabase
-          .from('quiz_battle_stats')
-          .select('*')
-          .eq('user_id', userId)
-          .maybeSingle();
-
-        if (statsError) throw statsError;
-        
-        // If no stats exist, create initial stats
-        if (!statsData) {
-          const { data: newStats, error: insertError } = await supabase
-            .from('quiz_battle_stats')
-            .insert({ user_id: userId })
-            .select()
-            .single();
-
-          if (insertError) throw insertError;
-          setStats(newStats);
-        } else {
-          setStats(statsData);
-        }
-
-        // Fetch badges
-        const { data: badgesData, error: badgesError } = await supabase
-          .from('quiz_battle_badges')
-          .select('*')
-          .eq('user_id', userId)
-          .order('earned_at', { ascending: false });
-
-        if (badgesError) throw badgesError;
-        setBadges(badgesData || []);
-
-      } catch (err) {
-        console.error('Error fetching battle stats:', err);
-        setError(err as Error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [userId]);
-
-  const refreshStats = async () => {
-    if (!userId) return;
-
-    const { data, error } = await supabase
+  // If no stats exist, create initial stats
+  if (!statsData) {
+    const { data: newStats, error: insertError } = await supabase
       .from('quiz_battle_stats')
-      .select('*')
-      .eq('user_id', userId)
+      .insert({ user_id: userId })
+      .select()
       .single();
 
-    if (!error && data) {
-      setStats(data);
-    }
+    if (insertError) throw insertError;
+    statsData = newStats;
+  }
+
+  // Fetch badges
+  const { data: badgesData, error: badgesError } = await supabase
+    .from('quiz_battle_badges')
+    .select('*')
+    .eq('user_id', userId)
+    .order('earned_at', { ascending: false });
+
+  if (badgesError) throw badgesError;
+
+  const result: BattleData = {
+    stats: statsData,
+    badges: badgesData || [],
   };
 
-  const refreshBadges = async () => {
-    if (!userId) return;
+  // Persist to localStorage for instant loading
+  persistQueryData(CACHE_KEYS.BATTLE_STATS, result);
 
-    const { data, error } = await supabase
-      .from('quiz_battle_badges')
-      .select('*')
-      .eq('user_id', userId)
-      .order('earned_at', { ascending: false });
+  return result;
+};
 
-    if (!error) {
-      setBadges(data || []);
-    }
+export const useBattleStats = (userId: string | null) => {
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
+    queryKey: ['battle-stats', userId],
+    queryFn: () => fetchBattleData(userId!),
+    staleTime: getStaleTimeFor('leaderboard'), // Use leaderboard timing (similar update frequency)
+    gcTime: 1000 * 60 * 30, // 30 minutes
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    enabled: !!userId,
+    // Initialize with persisted data for instant rendering
+    initialData: () => {
+      const cached = getPersistedQueryData<BattleData>(CACHE_KEYS.BATTLE_STATS);
+      // Only use cache if it's for the same user
+      if (cached && cached.stats?.user_id === userId) {
+        return cached;
+      }
+      return undefined;
+    },
+    initialDataUpdatedAt: () => getPersistedCacheTimestamp(CACHE_KEYS.BATTLE_STATS),
+  });
+
+  const refreshStats = () => {
+    clearPersistedCache(CACHE_KEYS.BATTLE_STATS);
+    queryClient.invalidateQueries({ queryKey: ['battle-stats', userId] });
+  };
+
+  const refreshBadges = () => {
+    // Stats and badges are fetched together, so refresh both
+    refreshStats();
   };
 
   return {
-    stats,
-    badges,
-    isLoading,
-    error,
+    stats: query.data?.stats || null,
+    badges: query.data?.badges || [],
+    isLoading: query.isLoading,
+    error: query.error,
     refreshStats,
     refreshBadges,
   };
