@@ -100,6 +100,23 @@ const generateInviteCode = (): string => {
   return result;
 };
 
+// Helper to calculate actual remaining time accounting for elapsed time since last move
+const calculateActualTimeRemaining = (
+  storedTime: number | null,
+  lastMoveAt: string | null,
+  isActivePlayersTurn: boolean
+): number | null => {
+  if (storedTime === null || !lastMoveAt || !isActivePlayersTurn) {
+    return storedTime;
+  }
+  
+  const lastMoveTime = new Date(lastMoveAt).getTime();
+  const now = Date.now();
+  const elapsedSeconds = Math.floor((now - lastMoveTime) / 1000);
+  
+  return Math.max(0, storedTime - elapsedSeconds);
+};
+
 interface UseChessMultiplayerOptions {
   userId: string | null;
   enabled?: boolean;
@@ -228,6 +245,24 @@ export const useChessMultiplayer = ({
       
       if (data) {
         const typedMatch = data as unknown as ChessMatch;
+        
+        // Adjust time remaining for the active player based on elapsed time since last move
+        if (typedMatch.status === 'playing' && typedMatch.last_move_at) {
+          if (typedMatch.current_turn === 'w') {
+            typedMatch.white_time_remaining = calculateActualTimeRemaining(
+              typedMatch.white_time_remaining,
+              typedMatch.last_move_at,
+              true
+            );
+          } else {
+            typedMatch.black_time_remaining = calculateActualTimeRemaining(
+              typedMatch.black_time_remaining,
+              typedMatch.last_move_at,
+              true
+            );
+          }
+        }
+        
         setMatch(typedMatch);
         
         // Fetch opponent if we have one
@@ -263,6 +298,24 @@ export const useChessMultiplayer = ({
         },
         (payload) => {
           const updatedMatch = payload.new as unknown as ChessMatch;
+          
+          // Adjust time for active player on realtime updates
+          if (updatedMatch.status === 'playing' && updatedMatch.last_move_at) {
+            if (updatedMatch.current_turn === 'w') {
+              updatedMatch.white_time_remaining = calculateActualTimeRemaining(
+                updatedMatch.white_time_remaining,
+                updatedMatch.last_move_at,
+                true
+              );
+            } else {
+              updatedMatch.black_time_remaining = calculateActualTimeRemaining(
+                updatedMatch.black_time_remaining,
+                updatedMatch.last_move_at,
+                true
+              );
+            }
+          }
+          
           setMatch(updatedMatch);
           
           // Check if opponent just joined
