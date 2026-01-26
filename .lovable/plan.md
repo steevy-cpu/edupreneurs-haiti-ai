@@ -1,155 +1,147 @@
 
-# Fix: React useState Null Dispatcher Errors During Page Navigation
+# First-Time User Flow Review & Fixes for New App Shell
 
-## Problem Statement
+## Overview
 
-When navigating between pages, users encounter a critical React error:
+After restructuring to the new AppShell architecture, the first-time user onboarding flow needs updates to maintain compatibility with the centralized navigation and floating layer system.
+
+## Issues Found
+
+### Issue 1: Missing Tour Highlighting in ShellMobileBottomNav
+
+**Problem**: The new `ShellMobileBottomNav.tsx` does not include tour highlighting logic, while the old `MobileBottomNav.tsx` did. Mobile users won't see the pulsing indicator showing which nav icon corresponds to the current tour step.
+
+**Location**: `src/shell/components/ShellMobileBottomNav.tsx`
+
+**Fix**: Add tour highlighting from `FirstTimeUserContext`:
+
+```typescript
+// Import the hook
+import { useFirstTimeUser } from '@/contexts/FirstTimeUserContext';
+
+// In the component, add:
+const { tourActive, tourCompleted, currentTourNavPath, isLoading: tourLoading } = useFirstTimeUser();
+const tourHighlightPath = !tourLoading && tourActive && !tourCompleted ? currentTourNavPath : null;
+
+// In the render, add highlighting ring:
+const isHighlighted = tourHighlightPath === item.to;
+// Add pulsing ring when highlighted
 ```
-TypeError: Cannot read properties of null (reading 'useState')
-```
-
-This error occurs in:
-- `ReportDialog` (src/components/feed/ReportDialog.tsx)
-- `CreatePostDialog` (src/components/feed/CreatePostDialog.tsx)
-
-The error triggers the ErrorBoundary and shows users the "Oops! Yon bagay mal pase" error page.
-
-## Root Cause Analysis
-
-The "null dispatcher" error in React happens when `useState` is called while React's internal `ReactCurrentDispatcher.current` is null. This occurs during page transitions when components attempt to render while React is in an unstable state.
-
-### Current Rendering Patterns in Feed.tsx
-
-| Dialog | Current Pattern | Has Error? |
-|--------|-----------------|------------|
-| `EditPostDialog` | `{editingPost && <EditPostDialog ... />}` | No |
-| `CreatePostDialog` | `{!isVisitor && <CreatePostDialog ... />}` | Yes |
-| `ReportDialog` | Always rendered (unconditional) | Yes |
-
-### Why EditPostDialog Works
-
-`EditPostDialog` is **only mounted when its primary prop is available** (`editingPost`). This means:
-1. The component never tries to render during unstable transitions
-2. No hooks are called when the guard condition fails
-3. The component only exists in the React tree when needed
-
-### Why the Others Fail
-
-- **CreatePostDialog**: Rendered when `!isVisitor` but `currentUser` can be null during transitions
-- **ReportDialog**: Always rendered with empty string fallbacks (`postId=""`, `reportedUserId=""`), meaning it attempts hook calls during every render, including unstable navigation periods
-
-## Solution
-
-Apply the same stable rendering pattern used by `EditPostDialog` to both problematic dialogs.
 
 ---
 
-## Implementation Details
+### Issue 2: Tour Step Navigation Path Mismatch
 
-### File: `src/pages/Feed.tsx`
+**Problem**: The tour expects certain paths that don't exist in the new mobile navigation configuration.
 
-### Change 1: Guard CreatePostDialog with `currentUser` check
+| Tour Step | Path | In New Mobile Nav? |
+|-----------|------|-------------------|
+| 0 | /dashboard | Yes |
+| 1 | /matieres | Yes |
+| 2 | /feed | No (replaced by /games) |
+| 3 | /leaderboard | No |
+| 4 | /passion-discovery | No |
+| 5 | /community | Yes |
+| 6 | /settings | Yes |
 
-**Location:** Line 1015
+**Location**: `src/contexts/FirstTimeUserContext.tsx` (lines 7-15) and `src/shell/config/navigation.ts`
 
-**Current:**
+**Fix Options**:
+- **Option A**: Update `MOBILE_NAVIGATION` to include `/feed` instead of `/games`
+- **Option B**: Update `TOUR_STEP_NAV_PATHS` to use `/games` and accept that some steps won't highlight any icon (current behavior with `null`)
+
+**Recommendation**: Keep Option B (current) since the tour already handles non-highlighted steps by setting `null`. The mobile nav is for quick access, not for tour purposes.
+
+---
+
+### Issue 3: Missing data-tour Attributes on Pages
+
+**Problem**: The tour expects `data-tour` attributes that may be missing from several pages.
+
+| Target | Expected Location | Status |
+|--------|-------------------|--------|
+| `data-tour='kpi-cards'` | Dashboard.tsx:654 | Present |
+| `data-tour='subject-grid'` | Matieres.tsx | Missing |
+| `data-tour='feed-content'` | Feed.tsx | Missing |
+| `data-tour='leaderboard-list'` | Leaderboard.tsx | Missing |
+| `data-tour='passion-categories'` | PassionDiscovery.tsx | Missing |
+| `data-tour='community-list'` | Community.tsx | Missing |
+| `data-tour='settings-content'` | Settings.tsx:381 | Present |
+
+**Fix**: Add missing `data-tour` attributes to each page's main content container.
+
+---
+
+## Implementation Plan
+
+### Step 1: Add Tour Highlighting to ShellMobileBottomNav
+
+**File**: `src/shell/components/ShellMobileBottomNav.tsx`
+
 ```typescript
-{!isVisitor && <CreatePostDialog currentUser={currentUser} onPostCreated={refreshFeed} />}
-```
+// Add import
+import { useFirstTimeUser } from '@/contexts/FirstTimeUserContext';
 
-**Fixed:**
-```typescript
-{!isVisitor && currentUser && (
-  <CreatePostDialog currentUser={currentUser} onPostCreated={refreshFeed} />
+// Add in component (after other hooks)
+const { tourActive, tourCompleted, currentTourNavPath, isLoading: tourLoading } = useFirstTimeUser();
+const tourHighlightPath = !tourLoading && tourActive && !tourCompleted ? currentTourNavPath : null;
+
+// In the nav item render, add:
+const isHighlighted = tourHighlightPath === item.to;
+
+// In the icon div, add highlight ring:
+{isHighlighted && (
+  <div className="absolute inset-[-10px] rounded-full border-2 border-primary bg-primary/20 animate-pulse" />
 )}
+
+// Add z-index to highlighted item
+className={cn(..., isHighlighted && 'z-[1005]')}
 ```
 
-**Why:** Ensures `CreatePostDialog` only mounts when both:
-1. User is not a visitor
-2. `currentUser` is loaded (not null)
+### Step 2: Add Missing data-tour Attributes
+
+**File**: `src/pages/Matieres.tsx`
+- Find the main subject grid container
+- Add: `data-tour="subject-grid"`
+
+**File**: `src/pages/Feed.tsx`
+- Find the main feed content container
+- Add: `data-tour="feed-content"`
+
+**File**: `src/pages/Leaderboard.tsx`
+- Find the leaderboard list container
+- Add: `data-tour="leaderboard-list"`
+
+**File**: `src/pages/PassionDiscovery.tsx`
+- Find the passion categories grid
+- Add: `data-tour="passion-categories"`
+
+**File**: `src/pages/Community.tsx`
+- Find the community/conversations list
+- Add: `data-tour="community-list"`
 
 ---
 
-### Change 2: Guard ReportDialog with conditional rendering
+## Architecture Validation
 
-**Location:** Lines 1369-1379
-
-**Current:**
-```typescript
-{/* Report Post Dialog */}
-<ReportDialog
-  isOpen={reportDialogOpen}
-  onClose={() => {
-    setReportDialogOpen(false);
-    setPostToReport(null);
-  }}
-  postId={postToReport?.id || ""}
-  reportedUserId={postToReport?.user_id || ""}
-  reportedUserName={postToReport?.profile?.full_name || postToReport?.profile?.nickname}
-/>
-```
-
-**Fixed:**
-```typescript
-{/* Report Post Dialog */}
-{reportDialogOpen && postToReport && (
-  <ReportDialog
-    isOpen={reportDialogOpen}
-    onClose={() => {
-      setReportDialogOpen(false);
-      setPostToReport(null);
-    }}
-    postId={postToReport.id}
-    reportedUserId={postToReport.user_id}
-    reportedUserName={postToReport.profile?.full_name || postToReport.profile?.nickname}
-  />
-)}
-```
-
-**Why:** 
-1. Component only mounts when the dialog should actually be shown
-2. Eliminates empty string fallbacks - component receives valid data
-3. Mirrors the successful `EditPostDialog` pattern exactly
+| Component | Status | Notes |
+|-----------|--------|-------|
+| FirstTimeUserProvider in AppProviders | Correct | Inside BrowserRouter |
+| FloatingLayer renders OnboardingOverlays | Correct | Lazy-loaded |
+| FirstTimeUserContext uses useSessionAuth | Correct | Centralized auth |
+| Tour navigation uses double RAF | Correct | Prevents React error #310 |
+| Tour z-index layering | Correct | z-[1003] overlay, z-[1004] dialog |
 
 ---
 
-## Pattern Comparison
+## Files to Modify
 
-```text
-Before:
-├── EditPostDialog: {editingPost && <Component />}        ✅ Works
-├── CreatePostDialog: {!isVisitor && <Component />}       ❌ Crashes
-└── ReportDialog: <Component isOpen={...} />              ❌ Crashes
-
-After:
-├── EditPostDialog: {editingPost && <Component />}        ✅ Works
-├── CreatePostDialog: {!isVisitor && currentUser && ...}  ✅ Fixed
-└── ReportDialog: {reportDialogOpen && postToReport && ...} ✅ Fixed
-```
-
----
-
-## Technical Explanation
-
-### Why This Prevents the Error
-
-When React navigates away from `/feed`:
-1. State gets reset/cleaned up
-2. React's dispatcher can momentarily become null
-3. If a component tries to call `useState` at this moment → crash
-
-With guard conditions:
-1. Guard evaluates to `false` first (state is reset)
-2. Component is never mounted
-3. No hooks are called
-4. No error occurs
-
-### Why We Don't Need Internal Component Guards
-
-The guard at the **parent level** prevents the component from ever attempting to render. This is more efficient than having the component render and then early-return, because:
-- No hook calls are made
-- No component function is executed
-- React's reconciler skips the subtree entirely
+1. `src/shell/components/ShellMobileBottomNav.tsx` - Add tour highlighting
+2. `src/pages/Matieres.tsx` - Add `data-tour="subject-grid"`
+3. `src/pages/Feed.tsx` - Add `data-tour="feed-content"`
+4. `src/pages/Leaderboard.tsx` - Add `data-tour="leaderboard-list"`
+5. `src/pages/PassionDiscovery.tsx` - Add `data-tour="passion-categories"`
+6. `src/pages/Community.tsx` - Add `data-tour="community-list"`
 
 ---
 
@@ -157,27 +149,18 @@ The guard at the **parent level** prevents the component from ever attempting to
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No - same behavior, just guarded |
-| Works with existing data? | Yes - uses existing state variables |
+| Breaks existing functionality? | No - additive changes only |
+| Works with existing data? | Yes - uses existing context |
 | 3G optimized? | Yes - no additional network calls |
 | Backward compatible? | Yes - no API changes |
-| Edge cases handled? | Yes - null/undefined guards prevent errors |
-
----
-
-## Summary of Changes
-
-| File | Location | Change |
-|------|----------|--------|
-| `src/pages/Feed.tsx` | Line 1015 | Add `currentUser &&` to CreatePostDialog guard |
-| `src/pages/Feed.tsx` | Lines 1369-1379 | Wrap ReportDialog in `{reportDialogOpen && postToReport && ...}` |
+| Hook ordering maintained? | Yes - hooks called unconditionally at top |
 
 ---
 
 ## Expected Outcome
 
 After these changes:
-- No more "Cannot read properties of null" errors during page transitions
-- Dialogs only render when their dependencies are stable
-- ErrorBoundary won't be triggered by these components
-- Users can navigate between pages without seeing the error page
+- Mobile users will see the pulsing highlight on nav icons during the tour
+- Tour dialogs will correctly position relative to `data-tour` target elements
+- The flow sequence (Welcome → Avatar → Tour) remains unchanged
+- All tour steps will navigate and display correctly
