@@ -8,12 +8,14 @@
  * 3G Optimizations:
  * - Uses requestIdleCallback to avoid blocking the main thread
  * - Respects navigator.connection.saveData preference
+ * - Uses network-aware cache settings to skip prefetching on slow connections
  * - Only preloads one route at a time
  * - Debounces rapid hover/touch events
  */
 
 import { useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { shouldSkipPreloading } from '@/utils/networkAwareCache';
 
 /**
  * Map of routes to their lazy import functions.
@@ -48,25 +50,9 @@ const ROUTE_DATA_KEYS: Record<string, string[][]> = {
 
 /**
  * Check if the user has requested reduced data usage.
- * Respects the Save-Data header preference.
+ * Now uses the centralized network-aware cache utility.
  */
-function shouldSkipPreloading(): boolean {
-  if (typeof navigator === 'undefined') return false;
-  
-  const connection = (navigator as Navigator & { 
-    connection?: { saveData?: boolean; effectiveType?: string } 
-  }).connection;
-  
-  // Skip if user explicitly requested data saving
-  if (connection?.saveData) return true;
-  
-  // Skip on very slow connections (2g or slower)
-  if (connection?.effectiveType === 'slow-2g' || connection?.effectiveType === '2g') {
-    return true;
-  }
-  
-  return false;
-}
+// Removed local shouldSkipPreloading - now imported from networkAwareCache
 
 /**
  * Schedule work during browser idle time.

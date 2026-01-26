@@ -1,9 +1,15 @@
 // Service Worker for Push Notifications and Asset Caching - Optimized for 3G
-const SW_VERSION = '1.6.0';
+// Phase 9: Enhanced "Load Once" Behavior
+const SW_VERSION = '1.7.0';
 const CACHE_NAME = `edupreneurs-v${SW_VERSION}`;
 const STATIC_CACHE_NAME = `edupreneurs-static-v${SW_VERSION}`;
 const API_CACHE_NAME = `edupreneurs-api-v${SW_VERSION}`;
+const JS_CACHE_NAME = `edupreneurs-js-v${SW_VERSION}`;
 const MAX_CACHE_ITEMS = 50;
+const MAX_API_CACHE_ITEMS = 100;
+
+// Supabase host for API caching
+const SUPABASE_HOST = 'xdyavylcmucjpueybdku.supabase.co';
 
 // Critical assets to precache for offline/slow network support
 const PRECACHE_ASSETS = [
@@ -13,6 +19,37 @@ const PRECACHE_ASSETS = [
   '/favicon.ico',
   '/characters/eric-ai-helper.png',
   '/offline.html'
+];
+
+// API endpoints with their cache durations (in seconds)
+const API_CACHE_CONFIG = {
+  // Static/rarely changing data - long cache
+  '/rest/v1/subjects': 3600, // 1 hour
+  '/rest/v1/lessons': 3600, // 1 hour
+  '/rest/v1/ebooks': 1800, // 30 minutes
+  '/rest/v1/daily_words': 3600, // 1 hour
+  
+  // User data - medium cache
+  '/rest/v1/profiles': 300, // 5 minutes
+  '/rest/v1/quiz_battle_stats': 300, // 5 minutes
+  '/rest/v1/chess_player_stats': 300, // 5 minutes
+  '/rest/v1/lesson_completions': 300, // 5 minutes
+  '/rest/v1/achievements': 300, // 5 minutes
+  
+  // Semi-dynamic - short cache
+  '/rest/v1/posts': 120, // 2 minutes
+  '/rest/v1/follows': 120, // 2 minutes
+};
+
+// Endpoints that should NEVER be cached (real-time critical)
+const NO_CACHE_ENDPOINTS = [
+  '/rest/v1/messages',
+  '/rest/v1/notifications',
+  '/rest/v1/conversation_participants',
+  '/rest/v1/conversations',
+  '/auth/',
+  '/realtime/',
+  '/functions/',
 ];
 
 // BroadcastChannel for cross-tab sync
@@ -71,7 +108,8 @@ self.addEventListener('activate', (event) => {
           .filter(name => name.startsWith('edupreneurs-') && 
             name !== CACHE_NAME && 
             name !== STATIC_CACHE_NAME && 
-            name !== API_CACHE_NAME)
+            name !== API_CACHE_NAME &&
+            name !== JS_CACHE_NAME)
           .map(name => {
             console.log(`🗑️ Deleting old cache: ${name}`);
             return caches.delete(name);
@@ -79,7 +117,8 @@ self.addEventListener('activate', (event) => {
       );
     })
     .then(() => trimCache(STATIC_CACHE_NAME, MAX_CACHE_ITEMS))
-    .then(() => trimCache(API_CACHE_NAME, MAX_CACHE_ITEMS))
+    .then(() => trimCache(API_CACHE_NAME, MAX_API_CACHE_ITEMS))
+    .then(() => trimCache(JS_CACHE_NAME, MAX_CACHE_ITEMS))
     .then(() => clients.claim())
   );
 });
@@ -100,7 +139,22 @@ async function trimCache(cacheName, maxItems) {
   }
 }
 
-// Fetch handler with stale-while-revalidate for images
+// Check if an endpoint should never be cached
+function shouldNeverCache(pathname) {
+  return NO_CACHE_ENDPOINTS.some(endpoint => pathname.includes(endpoint));
+}
+
+// Get cache duration for an API endpoint
+function getCacheDuration(pathname) {
+  for (const [endpoint, duration] of Object.entries(API_CACHE_CONFIG)) {
+    if (pathname.includes(endpoint)) {
+      return duration;
+    }
+  }
+  return 120; // Default 2 minutes
+}
+
+// Fetch handler with comprehensive caching strategies
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -118,7 +172,80 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Skip cross-origin requests except for fonts and CDN assets
+  // ===== PHASE 9: JavaScript/CSS Bundle Caching =====
+  // Cache-first with background update for JS files
+  if (request.destination === 'script' || url.pathname.match(/\.(js|mjs)$/i)) {
+    event.respondWith(
+      caches.open(JS_CACHE_NAME).then(cache => {
+        return cache.match(request).then(cached => {
+          // Fetch in background to update cache
+          const fetchPromise = fetch(request).then(response => {
+            if (response.ok) {
+              cache.put(request, response.clone());
+            }
+            return response;
+          }).catch(() => cached); // Fallback to cache on network error
+          
+          // Return cached immediately if available
+          return cached || fetchPromise;
+        });
+      })
+    );
+    return;
+  }
+  
+  // Cache-first for CSS files
+  if (request.destination === 'style' || url.pathname.match(/\.css$/i)) {
+    event.respondWith(
+      caches.open(STATIC_CACHE_NAME).then(cache => {
+        return cache.match(request).then(cached => {
+          const fetchPromise = fetch(request).then(response => {
+            if (response.ok) {
+              cache.put(request, response.clone());
+            }
+            return response;
+          }).catch(() => cached);
+          
+          return cached || fetchPromise;
+        });
+      })
+    );
+    return;
+  }
+  
+  // ===== PHASE 9: Supabase API Response Caching =====
+  // Stale-while-revalidate for Supabase REST API
+  if (url.hostname === SUPABASE_HOST && url.pathname.startsWith('/rest/v1/')) {
+    // Skip endpoints that need real-time freshness
+    if (shouldNeverCache(url.pathname)) {
+      return; // Let browser handle normally
+    }
+    
+    event.respondWith(
+      caches.open(API_CACHE_NAME).then(cache => {
+        return cache.match(request).then(cached => {
+          // Always fetch in background to update cache
+          const fetchPromise = fetch(request).then(response => {
+            if (response.ok) {
+              // Clone and cache the response
+              const responseToCache = response.clone();
+              cache.put(request, responseToCache);
+            }
+            return response;
+          }).catch(err => {
+            console.warn('📡 Network error, using cache:', err);
+            return cached; // Fallback to cache on network error
+          });
+          
+          // Return cached immediately if available (stale-while-revalidate)
+          return cached || fetchPromise;
+        });
+      })
+    );
+    return;
+  }
+  
+  // Skip other cross-origin requests except for fonts and CDN assets
   if (url.origin !== location.origin && 
       !url.hostname.includes('fonts.googleapis.com') &&
       !url.hostname.includes('fonts.gstatic.com')) {
