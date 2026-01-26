@@ -15,6 +15,7 @@ import {
   GenericPageSkeleton 
 } from "@/components/shared/PageSkeletons";
 import { AppShell } from "@/shell";
+import { AuthMusicSync } from "@/components/auth/AuthMusicSync";
 
 // Lazy load all pages for better 3G performance
 const Index = lazy(() => import("./pages/Index"));
@@ -89,6 +90,9 @@ const BlogPost = lazy(() => import("./pages/BlogPost"));
  */
 const App = () => (
   <AppProviders>
+    {/* Global music sync - must be outside AppShell to survive logout navigation */}
+    <AuthMusicSync />
+    
     <Routes>
                         {/* PUBLIC ROUTES - No shell */}
                         <Route path="/" element={
