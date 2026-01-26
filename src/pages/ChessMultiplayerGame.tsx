@@ -132,8 +132,8 @@ const ChessMultiplayerGame = () => {
           navigate('/chess-multiplayer');
         }
       } else {
-        // Just refresh match data
-        await refreshMatch();
+        // Load match data by ID from URL
+        await refreshMatch(matchId);
       }
     };
 

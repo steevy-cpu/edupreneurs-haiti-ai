@@ -135,7 +135,7 @@ interface UseChessMultiplayerReturn {
   // Utilities
   isMyTurn: boolean;
   myColor: 'w' | 'b' | null;
-  refreshMatch: () => Promise<void>;
+  refreshMatch: (matchId?: string) => Promise<void>;
 }
 
 interface CreateMatchOptions {
@@ -206,15 +206,16 @@ export const useChessMultiplayer = ({
     }
   }, []);
 
-  // Refresh match data
-  const refreshMatch = useCallback(async () => {
-    if (!match?.id) return;
+  // Refresh match data - accepts optional matchId for initial load
+  const refreshMatch = useCallback(async (matchIdParam?: string) => {
+    const idToFetch = matchIdParam || match?.id;
+    if (!idToFetch) return;
     
     try {
       const { data } = await supabase
         .from('chess_matches')
         .select('*')
-        .eq('id', match.id)
+        .eq('id', idToFetch)
         .single();
       
       if (data) {
