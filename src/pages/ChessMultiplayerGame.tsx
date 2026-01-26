@@ -61,6 +61,7 @@ const ChessMultiplayerGame = () => {
   const [showChat, setShowChat] = useState(false);
   const [showResignDialog, setShowResignDialog] = useState(false);
   const [gameEnded, setGameEnded] = useState(false);
+  const [isMatchLoading, setIsMatchLoading] = useState(true);
   
   // Promotion state
   const [pendingPromotion, setPendingPromotion] = useState<{
@@ -123,17 +124,23 @@ const ChessMultiplayerGame = () => {
     if (!matchId || !userId || isAuthLoading) return;
 
     const loadMatch = async () => {
-      // Check if we need to join
-      const shouldJoin = searchParams.get('join') === 'true';
+      setIsMatchLoading(true);
       
-      if (shouldJoin) {
-        const success = await joinMatch(matchId);
-        if (!success) {
-          navigate('/chess-multiplayer');
+      try {
+        // Check if we need to join
+        const shouldJoin = searchParams.get('join') === 'true';
+        
+        if (shouldJoin) {
+          const success = await joinMatch(matchId);
+          if (!success) {
+            navigate('/chess-multiplayer');
+          }
+        } else {
+          // Load match data by ID from URL
+          await refreshMatch(matchId);
         }
-      } else {
-        // Load match data by ID from URL
-        await refreshMatch(matchId);
+      } finally {
+        setIsMatchLoading(false);
       }
     };
 
@@ -502,7 +509,7 @@ const ChessMultiplayerGame = () => {
     navigate('/chess-multiplayer');
   };
 
-  if (isAuthLoading || isLoading) {
+  if (isAuthLoading || isLoading || isMatchLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />

@@ -211,6 +211,12 @@ export const useChessMultiplayer = ({
     const idToFetch = matchIdParam || match?.id;
     if (!idToFetch) return;
     
+    // Set loading true for initial loads (when no match yet)
+    const isInitialLoad = !matchRef.current;
+    if (isInitialLoad) {
+      setIsLoading(true);
+    }
+    
     try {
       const { data } = await supabase
         .from('chess_matches')
@@ -232,6 +238,10 @@ export const useChessMultiplayer = ({
       }
     } catch (err) {
       console.error('Failed to refresh match:', err);
+    } finally {
+      if (isInitialLoad) {
+        setIsLoading(false);
+      }
     }
   }, [match?.id, userId, opponent, fetchOpponent]);
 
