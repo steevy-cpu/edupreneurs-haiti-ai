@@ -2186,7 +2186,7 @@ const Community = () => {
       <AlertDialog open={!!deleteConversationId} onOpenChange={(open) => {
         if (!open) setDeleteConversationId(null);
       }}>
-        <AlertDialogContent className="z-[100]">
+        <AlertDialogContent>
           <AlertDialogHeader>
           <AlertDialogTitle>
             {conversations.find(c => c.id === deleteConversationId)?.is_group 
