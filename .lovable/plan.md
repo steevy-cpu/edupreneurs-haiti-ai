@@ -1,244 +1,155 @@
 
-# Quiz Battle Session Persistence Integration
+# Fix: React useState Null Dispatcher Errors During Page Navigation
 
 ## Problem Statement
 
-Unlike the Chess module (which has `src/chess/store/chessSession.store.ts`), Quiz Battle lacks session persistence. When a user accidentally:
-- Refreshes the page during an active battle
-- Navigates away and returns
-- Closes and reopens the browser tab
+When navigating between pages, users encounter a critical React error:
+```
+TypeError: Cannot read properties of null (reading 'useState')
+```
 
-...they lose their game progress and cannot rejoin.
+This error occurs in:
+- `ReportDialog` (src/components/feed/ReportDialog.tsx)
+- `CreatePostDialog` (src/components/feed/CreatePostDialog.tsx)
 
-## Current State Analysis
+The error triggers the ErrorBoundary and shows users the "Oops! Yon bagay mal pase" error page.
 
-| Feature | Chess | Quiz Battle |
-|---------|-------|-------------|
-| Session Store | `chessSession.store.ts` | Missing |
-| Active Session Detection | On lobby load | Missing |
-| Rejoin UI | Toast with "Rejoindre" button | Missing |
-| Database State Available | Yes | Yes (but unused for recovery) |
+## Root Cause Analysis
 
-### Database Already Supports Recovery
+The "null dispatcher" error in React happens when `useState` is called while React's internal `ReactCurrentDispatcher.current` is null. This occurs during page transitions when components attempt to render while React is in an unstable state.
 
-The `quiz_battles` table stores:
-- `status`: `'in_progress'` indicates active game
-- `questions`: Full question array (no regeneration needed)
-- `current_question_index`: Where the game left off
-- `round_started_at`: Timer sync for multiplayer
-- `round_answers`: Partial results for score recovery
+### Current Rendering Patterns in Feed.tsx
 
-The `quiz_battle_players` table stores:
-- `answers`: User's answered questions with timestamps
-- `score`: Running score
-- `finished_at`: null = still playing
+| Dialog | Current Pattern | Has Error? |
+|--------|-----------------|------------|
+| `EditPostDialog` | `{editingPost && <EditPostDialog ... />}` | No |
+| `CreatePostDialog` | `{!isVisitor && <CreatePostDialog ... />}` | Yes |
+| `ReportDialog` | Always rendered (unconditional) | Yes |
 
-## Implementation Plan
+### Why EditPostDialog Works
 
-### 1. Create Quiz Battle Session Store
+`EditPostDialog` is **only mounted when its primary prop is available** (`editingPost`). This means:
+1. The component never tries to render during unstable transitions
+2. No hooks are called when the guard condition fails
+3. The component only exists in the React tree when needed
 
-**New file:** `src/quiz-battle/store/quizBattleSession.store.ts`
+### Why the Others Fail
+
+- **CreatePostDialog**: Rendered when `!isVisitor` but `currentUser` can be null during transitions
+- **ReportDialog**: Always rendered with empty string fallbacks (`postId=""`, `reportedUserId=""`), meaning it attempts hook calls during every render, including unstable navigation periods
+
+## Solution
+
+Apply the same stable rendering pattern used by `EditPostDialog` to both problematic dialogs.
+
+---
+
+## Implementation Details
+
+### File: `src/pages/Feed.tsx`
+
+### Change 1: Guard CreatePostDialog with `currentUser` check
+
+**Location:** Line 1015
+
+**Current:**
+```typescript
+{!isVisitor && <CreatePostDialog currentUser={currentUser} onPostCreated={refreshFeed} />}
+```
+
+**Fixed:**
+```typescript
+{!isVisitor && currentUser && (
+  <CreatePostDialog currentUser={currentUser} onPostCreated={refreshFeed} />
+)}
+```
+
+**Why:** Ensures `CreatePostDialog` only mounts when both:
+1. User is not a visitor
+2. `currentUser` is loaded (not null)
+
+---
+
+### Change 2: Guard ReportDialog with conditional rendering
+
+**Location:** Lines 1369-1379
+
+**Current:**
+```typescript
+{/* Report Post Dialog */}
+<ReportDialog
+  isOpen={reportDialogOpen}
+  onClose={() => {
+    setReportDialogOpen(false);
+    setPostToReport(null);
+  }}
+  postId={postToReport?.id || ""}
+  reportedUserId={postToReport?.user_id || ""}
+  reportedUserName={postToReport?.profile?.full_name || postToReport?.profile?.nickname}
+/>
+```
+
+**Fixed:**
+```typescript
+{/* Report Post Dialog */}
+{reportDialogOpen && postToReport && (
+  <ReportDialog
+    isOpen={reportDialogOpen}
+    onClose={() => {
+      setReportDialogOpen(false);
+      setPostToReport(null);
+    }}
+    postId={postToReport.id}
+    reportedUserId={postToReport.user_id}
+    reportedUserName={postToReport.profile?.full_name || postToReport.profile?.nickname}
+  />
+)}
+```
+
+**Why:** 
+1. Component only mounts when the dialog should actually be shown
+2. Eliminates empty string fallbacks - component receives valid data
+3. Mirrors the successful `EditPostDialog` pattern exactly
+
+---
+
+## Pattern Comparison
 
 ```text
-Purpose: Mirror the Chess session store pattern
-TTL: 30 minutes (shorter than Chess since quiz rounds are faster)
-Storage: sessionStorage (survives refresh, not cross-tab)
-```
+Before:
+├── EditPostDialog: {editingPost && <Component />}        ✅ Works
+├── CreatePostDialog: {!isVisitor && <Component />}       ❌ Crashes
+└── ReportDialog: <Component isOpen={...} />              ❌ Crashes
 
-**Interface:**
-```typescript
-interface QuizBattleSessionState {
-  battleId: string;
-  mode: 'solo' | 'friend' | 'random';
-  joinedAt: number;
-  expiresAt: number;
-}
-```
-
-**Functions:**
-- `saveQuizBattleSession(battleId, mode)` - Save when entering gameplay
-- `getQuizBattleSession()` - Check for active session
-- `clearQuizBattleSession()` - Clear on game completion/abandonment
-
----
-
-### 2. Save Session on Game Start
-
-**Files to modify:**
-
-**`QuizBattleSolo.tsx` (lines ~169)**
-When `setPhase('playing')` is called, also save session:
-```typescript
-saveQuizBattleSession(battle.id, 'solo');
-setPhase('playing');
-```
-
-**`QuizBattleMultiplayer.tsx` (lines ~164, ~269, ~306)**
-When transitioning to `'playing'` phase:
-```typescript
-saveQuizBattleSession(battleId, battleMode);
-updatePhase('playing');
+After:
+├── EditPostDialog: {editingPost && <Component />}        ✅ Works
+├── CreatePostDialog: {!isVisitor && currentUser && ...}  ✅ Fixed
+└── ReportDialog: {reportDialogOpen && postToReport && ...} ✅ Fixed
 ```
 
 ---
 
-### 3. Clear Session on Game End
+## Technical Explanation
 
-**`QuizBattleSolo.tsx` (line ~178-179)**
-In `handleGameComplete`, clear before setting results:
-```typescript
-clearQuizBattleSession();
-setResult(gameResult);
-setPhase('results');
-```
+### Why This Prevents the Error
 
-**`QuizBattleMultiplayer.tsx` (lines ~324-395)**
-In `handleGameComplete`, clear on:
-- Abandonment (`wasAbandoned`)
-- Opponent abandonment (`opponentAbandoned`)
-- Normal completion
+When React navigates away from `/feed`:
+1. State gets reset/cleaned up
+2. React's dispatcher can momentarily become null
+3. If a component tries to call `useState` at this moment → crash
 
----
+With guard conditions:
+1. Guard evaluates to `false` first (state is reset)
+2. Component is never mounted
+3. No hooks are called
+4. No error occurs
 
-### 4. Check for Active Session on Quiz Battle Hub
+### Why We Don't Need Internal Component Guards
 
-**File:** `src/pages/QuizBattle.tsx`
-
-Add session check in `useEffect` (after line 43):
-
-```typescript
-// Check for active session that can be rejoined
-const session = getQuizBattleSession();
-if (session && userId) {
-  // Verify battle still exists and is in_progress
-  const { data: battle } = await supabase
-    .from('quiz_battles')
-    .select('id, mode, status')
-    .eq('id', session.battleId)
-    .eq('status', 'in_progress')
-    .maybeSingle();
-  
-  if (battle) {
-    // Show rejoin toast
-    toast.info('Tu as une partie en cours!', {
-      action: {
-        label: 'Rejoindre',
-        onClick: () => {
-          if (session.mode === 'solo') {
-            navigate(`/quiz-battle/solo?resume=${session.battleId}`);
-          } else {
-            navigate(`/quiz-battle/multiplayer/${session.battleId}`);
-          }
-        },
-      },
-      duration: 10000,
-    });
-  } else {
-    // Battle no longer valid, clear stale session
-    clearQuizBattleSession();
-  }
-}
-```
-
----
-
-### 5. Solo Mode: Resume from Database State
-
-**File:** `QuizBattleSolo.tsx`
-
-Add resume detection in `useEffect` (after line 84):
-
-```typescript
-// Check for resume parameter
-const searchParams = new URLSearchParams(window.location.search);
-const resumeBattleId = searchParams.get('resume');
-
-if (resumeBattleId) {
-  // Load battle state from database
-  const { data: battle } = await supabase
-    .from('quiz_battles')
-    .select('*, quiz_battle_players(*)')
-    .eq('id', resumeBattleId)
-    .single();
-  
-  if (battle?.status === 'in_progress' && battle.questions?.length > 0) {
-    // Find player's progress
-    const playerData = battle.quiz_battle_players?.find(p => p.user_id === user.id);
-    const answeredCount = playerData?.answers?.length || 0;
-    
-    setBattleId(battle.id);
-    setQuestions(battle.questions);
-    setSelectedSubject(battle.subject_id);
-    setSelectedGrade(battle.grade_level);
-    setSelectedDifficulty(battle.difficulty);
-    
-    // Resume from where they left off
-    // Note: BattleGameplay will need modification to accept initialIndex
-    setPhase('playing');
-    toast.success(`Partie reprise - Question ${answeredCount + 1}/${battle.questions.length}`);
-    return;
-  } else {
-    clearQuizBattleSession();
-    toast.error('Cette partie n\'est plus disponible');
-  }
-}
-```
-
----
-
-### 6. Modify BattleGameplay to Support Resume
-
-**File:** `src/components/quiz-battle/BattleGameplay.tsx`
-
-Add optional props for resuming:
-
-```typescript
-interface BattleGameplayProps {
-  questions: BattleQuestion[];
-  difficulty: 'easy' | 'medium' | 'hard';
-  onComplete: (result: BattleResult) => void;
-  // New props for resume
-  initialIndex?: number;
-  previousAnswers?: BattleResult['answers'];
-}
-```
-
-Update initial state:
-```typescript
-const [currentIndex, setCurrentIndex] = useState(initialIndex || 0);
-const [answers, setAnswers] = useState<BattleResult['answers']>(previousAnswers || []);
-```
-
----
-
-### 7. Multiplayer Mode: Automatic Recovery
-
-**File:** `QuizBattleMultiplayer.tsx`
-
-Multiplayer already loads battle state from database on mount (lines 96-106). The existing logic handles recovery well because:
-- It fetches `battle.questions` from DB
-- It checks `battle.status` before proceeding
-- It redirects if battle is already completed
-
-Only change needed: Save session when entering `'playing'` phase so the hub can detect it.
-
----
-
-## File Structure
-
-```text
-src/
-├── quiz-battle/
-│   └── store/
-│       └── quizBattleSession.store.ts  ← NEW
-├── pages/
-│   ├── QuizBattle.tsx                   ← MODIFY (add rejoin detection)
-│   ├── QuizBattleSolo.tsx               ← MODIFY (save/clear/resume)
-│   └── QuizBattleMultiplayer.tsx        ← MODIFY (save/clear)
-└── components/
-    └── quiz-battle/
-        └── BattleGameplay.tsx           ← MODIFY (add resume props)
-```
+The guard at the **parent level** prevents the component from ever attempting to render. This is more efficient than having the component render and then early-return, because:
+- No hook calls are made
+- No component function is executed
+- React's reconciler skips the subtree entirely
 
 ---
 
@@ -246,42 +157,27 @@ src/
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No - additive changes only |
-| Works with existing data? | Yes - uses existing DB columns |
-| 3G optimized? | Yes - single DB query for resume check |
-| Backward compatible? | Yes - resume params are optional |
-| Edge cases handled? | Yes - stale session cleanup |
+| Breaks existing functionality? | No - same behavior, just guarded |
+| Works with existing data? | Yes - uses existing state variables |
+| 3G optimized? | Yes - no additional network calls |
+| Backward compatible? | Yes - no API changes |
+| Edge cases handled? | Yes - null/undefined guards prevent errors |
 
 ---
 
-## Edge Cases Handled
+## Summary of Changes
 
-1. **Stale session in storage**: Verified against DB before showing rejoin
-2. **Battle already completed**: Cleared from session, user continues normally
-3. **Battle cancelled by opponent (multiplayer)**: Existing redirect logic handles this
-4. **Multiple tabs**: sessionStorage is tab-scoped, no conflicts
-5. **Session expiry**: 30-minute TTL prevents zombie sessions
+| File | Location | Change |
+|------|----------|--------|
+| `src/pages/Feed.tsx` | Line 1015 | Add `currentUser &&` to CreatePostDialog guard |
+| `src/pages/Feed.tsx` | Lines 1369-1379 | Wrap ReportDialog in `{reportDialogOpen && postToReport && ...}` |
 
 ---
 
-## User Experience Flow
+## Expected Outcome
 
-```text
-User starts Solo Quiz
-    ↓
-Session saved to sessionStorage
-    ↓
-User accidentally refreshes page
-    ↓
-Lands on /quiz-battle hub
-    ↓
-Hub detects active session
-    ↓
-Toast: "Tu as une partie en cours!" [Rejoindre]
-    ↓
-User clicks → Navigates to /quiz-battle/solo?resume=battleId
-    ↓
-QuizBattleSolo loads battle from DB
-    ↓
-Resumes at question where user left off
-```
+After these changes:
+- No more "Cannot read properties of null" errors during page transitions
+- Dialogs only render when their dependencies are stable
+- ErrorBoundary won't be triggered by these components
+- Users can navigate between pages without seeing the error page
