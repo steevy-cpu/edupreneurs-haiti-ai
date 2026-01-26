@@ -26,6 +26,8 @@ export interface SidebarNavLinkProps {
   collapsed?: boolean;
   /** Callback when link is clicked */
   onClick?: () => void;
+  /** Callback for preloading on hover/touch */
+  onPreload?: () => void;
   /** Additional paths to consider as "active" */
   activeOnPaths?: string[];
 }
@@ -43,6 +45,7 @@ export function SidebarNavLink({
   variant = 'default',
   collapsed = false,
   onClick,
+  onPreload,
   activeOnPaths = [],
 }: SidebarNavLinkProps) {
   const location = useLocation();
@@ -94,6 +97,8 @@ export function SidebarNavLink({
     <Link
       to={to}
       onClick={onClick}
+      onMouseEnter={onPreload}
+      onTouchStart={onPreload}
       className={cn(
         baseStyles,
         isActive ? styles.active : styles.inactive

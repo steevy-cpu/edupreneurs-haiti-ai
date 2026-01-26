@@ -1,8 +1,11 @@
 /**
  * AppSidebar - Data-driven sidebar using navigation config.
  * 
- * REPLACES inline navigation in Layout.tsx (~300+ lines).
- * All navigation items come from src/shell/config/navigation.ts.
+ * Features:
+ * - Data-driven navigation from navigation.ts
+ * - Collapsible state persisted to localStorage
+ * - Route preloading for faster 3G navigation
+ * - Badge support for notifications/messages
  */
 
 import { useState, memo } from 'react';
@@ -16,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useSidebarBadges } from '@/hooks/useSidebarBadges';
+import { useRoutePreloader } from '../hooks/useRoutePreloader';
 import { isFounder } from '@/lib/founderConstants';
 
 // Config
@@ -74,6 +78,7 @@ export const AppSidebar = memo(function AppSidebar({
 }: AppSidebarProps) {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useSidebarCollapsed();
+  const { preloadRoute } = useRoutePreloader();
   
   // Auth and profile data
   const { profile } = useUserProfile();
@@ -100,6 +105,10 @@ export const AppSidebar = memo(function AppSidebar({
     if (onMobileClose) {
       onMobileClose();
     }
+  };
+  
+  const handleLinkHover = (path: string) => {
+    preloadRoute(path);
   };
   
   return (
@@ -212,6 +221,7 @@ export const AppSidebar = memo(function AppSidebar({
                     variant={item.variant}
                     collapsed={collapsed}
                     onClick={handleLinkClick}
+                    onPreload={() => handleLinkHover(item.to)}
                     activeOnPaths={
                       item.to === '/games' ? ['/chess-game', '/quiz-battle'] : undefined
                     }
