@@ -1063,7 +1063,17 @@ const Community = () => {
           );
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[Messages] Subscription status for conversation:', conversationId, status);
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('[Messages] Channel error, attempting reconnect...');
+          setTimeout(() => {
+            if (selectedConversation === conversationId) {
+              subscribeToConversationMessages(conversationId);
+            }
+          }, 2000);
+        }
+      });
 
     messageChannelRef.current = channel;
   };
@@ -1165,8 +1175,26 @@ const Community = () => {
             }
           }
           
-          // Local state is already updated above - no need to refetch from database
-          // This was causing performance issues by triggering heavy DB operations after every message
+          // Also update messages state if this is the currently selected conversation
+          // This serves as a fallback if the conversation-specific subscription fails
+          if (conversationId === selectedConversation && payload.new.sender_id !== user?.id) {
+            const profile = await getCachedProfile(payload.new.sender_id);
+            
+            setMessages(prev => {
+              if (prev.some(m => m.id === payload.new.id)) return prev;
+              
+              return [...prev, {
+                id: payload.new.id,
+                content: payload.new.content,
+                sender_id: payload.new.sender_id,
+                created_at: payload.new.created_at,
+                read: payload.new.read || false,
+                image_url: payload.new.image_url,
+                video_url: payload.new.video_url,
+                profile,
+              }];
+            });
+          }
         }
       )
       .on(
