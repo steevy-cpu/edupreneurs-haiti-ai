@@ -18,7 +18,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePassionProgress, usePassionPreferences, useSaveQuizResults, useResetQuiz } from "@/hooks/usePassionData";
 import { ModuleActivity } from "@/components/passion/ModuleActivity";
-import { Layout } from "@/components/Layout";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -1758,11 +1757,7 @@ const PassionDiscoveryContent = () => {
 };
 
 const PassionDiscovery = () => {
-  return (
-    <Layout>
-      <PassionDiscoveryContent />
-    </Layout>
-  );
+  return <PassionDiscoveryContent />;
 };
 
 export default PassionDiscovery;

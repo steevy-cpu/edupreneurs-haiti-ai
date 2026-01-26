@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useVisitor } from '@/contexts/VisitorContext';
-import { Layout } from '@/components/Layout';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { BattleModeSelector } from '@/components/quiz-battle/BattleModeSelector';
 import { BattleStatsCard } from '@/components/quiz-battle/BattleStatsCard';
@@ -87,17 +86,14 @@ const QuizBattle = () => {
 
   if (isLoading) {
     return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
     );
   }
 
   return (
-    <Layout>
-      <div className="container max-w-6xl mx-auto px-4 py-6 space-y-6">
+    <div className="container max-w-6xl mx-auto px-4 py-6 space-y-6">
         {isVisitor && <VisitorBattleOverlay />}
         
         <PageHeader
@@ -171,7 +167,6 @@ const QuizBattle = () => {
         {/* Leaderboard Preview */}
         <BattleLeaderboardPreview />
       </div>
-    </Layout>
   );
 };
 

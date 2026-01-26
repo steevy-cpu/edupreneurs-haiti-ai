@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { useMemo, useCallback } from 'react';
-import { Layout } from '@/components/Layout';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,9 +28,7 @@ const GamesHub = () => {
   }, [navigate]);
 
   return (
-    <Layout>
-      {/* Scroll container inside Layout */}
-      <main className="h-[calc(100dvh-3.5rem)] lg:h-dvh flex flex-col overflow-hidden">
+    <main className="h-[calc(100dvh-3.5rem)] lg:h-dvh flex flex-col overflow-hidden">
         {/* Fixed Header */}
         <header className="shrink-0 px-4 py-6 bg-background">
           <div className="max-w-4xl mx-auto">
@@ -188,7 +185,6 @@ const GamesHub = () => {
           </div>
         </section>
       </main>
-    </Layout>
   );
 };
 

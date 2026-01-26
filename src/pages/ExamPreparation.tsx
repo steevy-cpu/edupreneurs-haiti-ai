@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Layout } from "@/components/Layout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -209,38 +208,33 @@ export default function ExamPreparation() {
 
   if (isLoading) {
     return (
-      <Layout>
-        <div className="container mx-auto px-4 py-8 space-y-8">
-          <Skeleton className="h-20 w-full" />
-          <div className="grid md:grid-cols-2 gap-8">
-            <Skeleton className="h-[600px]" />
-            <Skeleton className="h-[600px]" />
-          </div>
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        <Skeleton className="h-20 w-full" />
+        <div className="grid md:grid-cols-2 gap-8">
+          <Skeleton className="h-[600px]" />
+          <Skeleton className="h-[600px]" />
         </div>
-      </Layout>
+      </div>
     );
   }
 
   if (!exam || exercises.length === 0) {
     return (
-      <Layout>
-        <div className="container mx-auto px-4 py-8">
-          <Card className="p-8 text-center">
-            <p>Examen non trouvé</p>
-            <Button onClick={() => navigate('/examens-officiels')} className="mt-4">
-              Retour aux examens
-            </Button>
-          </Card>
-        </div>
-      </Layout>
+      <div className="container mx-auto px-4 py-8">
+        <Card className="p-8 text-center">
+          <p>Examen non trouvé</p>
+          <Button onClick={() => navigate('/examens-officiels')} className="mt-4">
+            Retour aux examens
+          </Button>
+        </Card>
+      </div>
     );
   }
 
   const currentExerciseData = exercises[currentExercise - 1];
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
         <div className="container mx-auto px-4 py-4">
           {/* Header - Compact for mobile */}
           <div className="mb-4">
@@ -365,6 +359,5 @@ export default function ExamPreparation() {
           </div>
         </div>
       </div>
-    </Layout>
   );
 }

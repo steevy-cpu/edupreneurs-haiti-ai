@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -46,8 +45,7 @@ export default function MigratePDFs() {
   };
 
   return (
-    <Layout>
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center gap-4 mb-8">
           <Button
             variant="ghost"
@@ -139,6 +137,5 @@ export default function MigratePDFs() {
           )}
         </div>
       </div>
-    </Layout>
   );
 }

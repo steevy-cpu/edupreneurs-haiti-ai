@@ -138,7 +138,7 @@ export function PresenceProvider({ children }: PresenceProviderProps) {
   }, [extractOnlineUsers]);
 
   useEffect(() => {
-    // Find the shared 'online-users' channel created by Layout.tsx
+    // Find the shared 'online-users' channel created by AppShell
     const findAndSubscribe = () => {
       const allChannels = supabase.getChannels();
       const onlineChannel = allChannels.find(ch => 

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Layout } from '@/components/Layout';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -158,19 +157,16 @@ const ChessMultiplayerLobby = () => {
 
   if (isAuthLoading) {
     return (
-      <Layout>
-        <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </Layout>
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
     );
   }
 
   // Waiting room view
   if (match && match.status === 'waiting') {
     return (
-      <Layout>
-        <main className="min-h-screen bg-background">
+      <main className="min-h-screen bg-background">
           <div className="container max-w-2xl mx-auto px-4 py-8">
             <Button 
               variant="ghost" 
@@ -251,13 +247,11 @@ const ChessMultiplayerLobby = () => {
             </Card>
           </div>
         </main>
-      </Layout>
     );
   }
 
   return (
-    <Layout>
-      <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background">
         <div className="container max-w-4xl mx-auto px-4 py-8">
           <Button 
             variant="ghost" 
@@ -410,7 +404,6 @@ const ChessMultiplayerLobby = () => {
           </div>
         </div>
       </main>
-    </Layout>
   );
 };
 
