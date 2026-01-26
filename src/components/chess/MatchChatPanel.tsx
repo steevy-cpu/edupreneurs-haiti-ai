@@ -63,7 +63,7 @@ const MatchChatPanel: React.FC<MatchChatPanelProps> = ({
   ];
 
   return (
-    <div className="fixed inset-4 sm:inset-8 z-50 bg-card/95 backdrop-blur-md border rounded-2xl shadow-xl flex flex-col animate-scale-in overflow-hidden">
+    <div className="fixed inset-0 sm:inset-4 md:inset-8 z-50 bg-card/95 backdrop-blur-md sm:border sm:rounded-2xl shadow-xl flex flex-col animate-scale-in overflow-hidden max-h-[100dvh]">
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b bg-muted/50">
         <div className="flex items-center gap-2">
