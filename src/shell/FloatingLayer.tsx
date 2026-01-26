@@ -17,8 +17,7 @@ const GlobalMusicPlayer = lazy(() => import('@/components/GlobalMusicPlayer').th
 const QuickMessageFAB = lazy(() => import('@/components/shared/QuickMessageFAB'));
 const CookieConsent = lazy(() => import('@/components/CookieConsent').then(m => ({ default: m.CookieConsent })));
 
-// Visitor-specific components
-const VisitorMusicSync = lazy(() => import('@/components/visitor/VisitorMusicSync').then(m => ({ default: m.VisitorMusicSync })));
+// Visitor-specific components (VisitorMusicSync is in App.tsx to survive logout navigation)
 const VisitorTour = lazy(() => import('@/components/visitor/VisitorTour').then(m => ({ default: m.VisitorTour })));
 
 // First-time user overlays
@@ -72,10 +71,7 @@ export function FloatingLayer() {
         <CookieConsent />
       </Suspense>
       
-      {/* Visitor-specific overlays */}
-      <Suspense fallback={null}>
-        <VisitorMusicSync />
-      </Suspense>
+      {/* Visitor-specific overlays (VisitorMusicSync is in App.tsx) */}
       <Suspense fallback={null}>
         <VisitorTour />
       </Suspense>

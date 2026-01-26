@@ -6,6 +6,7 @@
 import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
+import { useVisitor } from '@/contexts/VisitorContext';
 import { 
   shouldShowComponent, 
   createVisibilityChecker,
@@ -41,10 +42,12 @@ export interface UseVisibilityResult {
 export function useVisibility(options: Partial<VisibilityOptions> = {}): UseVisibilityResult {
   const location = useLocation();
   const { isAuthenticated } = useSessionAuth();
+  const { isVisitor } = useVisitor();
   
   return useMemo(() => {
     const opts: VisibilityOptions = {
       isAuthenticated,
+      isVisitor,
       keyboardOpen: options.keyboardOpen ?? false,
     };
     
@@ -55,7 +58,7 @@ export function useVisibility(options: Partial<VisibilityOptions> = {}): UseVisi
       isVisible: (componentKey: string) => 
         shouldShowComponent(componentKey as any, location.pathname, opts),
     };
-  }, [location.pathname, isAuthenticated, options.keyboardOpen]);
+  }, [location.pathname, isAuthenticated, isVisitor, options.keyboardOpen]);
 }
 
 /**
