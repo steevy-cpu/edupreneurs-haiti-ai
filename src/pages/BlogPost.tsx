@@ -335,9 +335,39 @@ export default function BlogPost() {
                     <p className="text-muted-foreground">{post.author.bio}</p>
                   )}
                 </div>
-              </div>
+            </div>
             </>
           )}
+
+          {/* CTA Section */}
+          <Separator className="my-12" />
+          <section className="text-center py-10 px-6 rounded-2xl bg-gradient-to-br from-primary/10 via-accent/5 to-primary/10 border border-primary/20">
+            <h2 className="text-2xl md:text-3xl font-bold mb-3">
+              Prêt à transformer ton apprentissage?
+            </h2>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+              Rejoins des milliers d'étudiants haïtiens et accède à Jude, ton assistant IA personnel.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-3">
+              <Link to="/auth/signup/step-1">
+                <Button 
+                  size="lg" 
+                  className="w-full sm:w-auto bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 font-bold transition-all duration-300 ease-out hover:scale-[1.02]"
+                >
+                  Créer un compte gratuit
+                </Button>
+              </Link>
+              <Link to="/auth/login">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="w-full sm:w-auto border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold transition-all duration-300 ease-out hover:scale-[1.02]"
+                >
+                  Se connecter
+                </Button>
+              </Link>
+            </div>
+          </section>
         </article>
 
         {/* Footer */}
