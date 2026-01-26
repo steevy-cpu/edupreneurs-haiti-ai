@@ -13,6 +13,7 @@ import { Loader2, Swords, Trophy } from 'lucide-react';
 import { calculateLevel, getWeekStart } from '@/lib/quizBattleUtils';
 import type { BattleQuestion, BattleResult } from './QuizBattleSolo';
 import { useRealtimeSubscription } from '@/hooks/useRealtimeSubscription';
+import { saveQuizBattleSession, clearQuizBattleSession } from '@/quiz-battle/store/quizBattleSession.store';
 
 type GamePhase = 'loading' | 'generating' | 'playing' | 'waiting-opponent' | 'results';
 
@@ -161,6 +162,7 @@ const QuizBattleMultiplayer = () => {
       if (battle.questions && Array.isArray(battle.questions) && battle.questions.length > 0) {
         console.log('[Multiplayer] Questions already exist, starting gameplay');
         setQuestions(battle.questions as unknown as BattleQuestion[]);
+        saveQuizBattleSession(battleId, battleMode as 'friend' | 'random');
         updatePhase('playing');
       } else if (host) {
         // Host generates questions - use local 'host' variable, NOT state
@@ -266,6 +268,7 @@ const QuizBattleMultiplayer = () => {
         .eq('id', battle.id);
 
       setQuestions(parsedQuestions);
+      saveQuizBattleSession(battle.id, battleMode as 'friend' | 'random');
       updatePhase('playing');
     } catch (error) {
       console.error('Error generating questions:', error);
@@ -303,6 +306,7 @@ const QuizBattleMultiplayer = () => {
         clearInterval(interval);
         console.log('[Multiplayer] Questions received:', battle.questions.length);
         setQuestions(battle.questions as unknown as BattleQuestion[]);
+        saveQuizBattleSession(bId, 'friend'); // Guest doesn't know battle mode, default to friend
         updatePhase('playing');
       }
     }, 1000);
@@ -321,6 +325,9 @@ const QuizBattleMultiplayer = () => {
   }, [cancelBattleSafely, navigate]);
 
   const handleGameComplete = async (result: BattleResult) => {
+    // Clear session first - game is complete or abandoned
+    clearQuizBattleSession();
+    
     setMyResult(result);
     
     if (!userId || !battleId) return;

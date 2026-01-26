@@ -21,6 +21,9 @@ interface BattleGameplayProps {
   questions: BattleQuestion[];
   difficulty: 'easy' | 'medium' | 'hard';
   onComplete: (result: BattleResult) => void;
+  // Resume support props
+  initialIndex?: number;
+  previousAnswers?: BattleResult['answers'];
 }
 
 const DIFFICULTY_TIME = {
@@ -29,12 +32,18 @@ const DIFFICULTY_TIME = {
   hard: 15,
 };
 
-export const BattleGameplay = ({ questions, difficulty, onComplete }: BattleGameplayProps) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+export const BattleGameplay = ({ 
+  questions, 
+  difficulty, 
+  onComplete,
+  initialIndex = 0,
+  previousAnswers = [],
+}: BattleGameplayProps) => {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [timeLeft, setTimeLeft] = useState(DIFFICULTY_TIME[difficulty]);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [answers, setAnswers] = useState<BattleResult['answers']>([]);
+  const [answers, setAnswers] = useState<BattleResult['answers']>(previousAnswers);
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
   const [showStopDialog, setShowStopDialog] = useState(false);
   const hasPlayedGameStart = useRef(false);

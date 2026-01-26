@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { SubjectDifficultySelector } from '@/components/quiz-battle/SubjectDifficultySelector';
 import { BattleGameplay } from '@/components/quiz-battle/BattleGameplay';
@@ -14,6 +14,10 @@ import {
   LANGUAGE_SUBJECTS,
   SUBJECT_BADGE_THRESHOLDS 
 } from '@/lib/quizBattleUtils';
+import { 
+  saveQuizBattleSession, 
+  clearQuizBattleSession 
+} from '@/quiz-battle/store/quizBattleSession.store';
 
 type GamePhase = 'setup' | 'loading' | 'playing' | 'results';
 
@@ -48,11 +52,16 @@ export interface BattleResult {
 
 const QuizBattleSolo = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [userId, setUserId] = useState<string | null>(null);
   const [phase, setPhase] = useState<GamePhase>('setup');
   const [battleId, setBattleId] = useState<string | null>(null);
   const [questions, setQuestions] = useState<BattleQuestion[]>([]);
   const [result, setResult] = useState<BattleResult | null>(null);
+  
+  // Resume support state
+  const [initialQuestionIndex, setInitialQuestionIndex] = useState(0);
+  const [previousAnswers, setPreviousAnswers] = useState<BattleResult['answers']>([]);
   
   // Setup state
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
@@ -69,6 +78,44 @@ const QuizBattleSolo = () => {
       }
       setUserId(user.id);
 
+      // Check for resume parameter first
+      const resumeBattleId = searchParams.get('resume');
+      if (resumeBattleId) {
+        // Load battle state from database
+        const { data: battle, error } = await supabase
+          .from('quiz_battles')
+          .select('*, quiz_battle_players(*)')
+          .eq('id', resumeBattleId)
+          .single();
+        
+        const questionsArray = battle?.questions as unknown as BattleQuestion[] | null;
+        if (!error && battle?.status === 'in_progress' && questionsArray && questionsArray.length > 0) {
+          // Find player's progress
+          const playerData = (battle.quiz_battle_players as any[])?.find(
+            (p: any) => p.user_id === user.id
+          );
+          const existingAnswers = playerData?.answers || [];
+          const answeredCount = existingAnswers.length;
+          
+          setBattleId(battle.id);
+          setQuestions(questionsArray);
+          setSelectedSubject(battle.subject_id);
+          setSelectedGrade(battle.grade_level);
+          setSelectedDifficulty(battle.difficulty as 'easy' | 'medium' | 'hard');
+          setInitialQuestionIndex(answeredCount);
+          setPreviousAnswers(existingAnswers);
+          
+          // Resume from where they left off
+          setPhase('playing');
+          toast.success(`Partie reprise - Question ${answeredCount + 1}/${questionsArray.length}`);
+          return;
+        } else {
+          clearQuizBattleSession();
+          toast.error("Cette partie n'est plus disponible");
+          // Continue to normal setup
+        }
+      }
+
       // Get user's grade level
       const { data: profile } = await supabase
         .from('profiles')
@@ -82,7 +129,7 @@ const QuizBattleSolo = () => {
     };
 
     checkAuth();
-  }, [navigate]);
+  }, [navigate, searchParams]);
 
   const handleStartBattle = async (subjectId: string, gradeLevel: string, difficulty: 'easy' | 'medium' | 'hard') => {
     if (!userId) return;
@@ -166,6 +213,8 @@ const QuizBattleSolo = () => {
         .update({ questions: parsedQuestions })
         .eq('id', battle.id);
 
+      // Save session for recovery
+      saveQuizBattleSession(battle.id, 'solo');
       setPhase('playing');
     } catch (error) {
       console.error('Error starting battle:', error);
@@ -175,6 +224,9 @@ const QuizBattleSolo = () => {
   };
 
   const handleGameComplete = async (gameResult: BattleResult) => {
+    // Clear session first - game is complete
+    clearQuizBattleSession();
+    
     setResult(gameResult);
     setPhase('results');
 
@@ -575,6 +627,8 @@ const QuizBattleSolo = () => {
           questions={questions}
           difficulty={selectedDifficulty}
           onComplete={handleGameComplete}
+          initialIndex={initialQuestionIndex}
+          previousAnswers={previousAnswers}
         />
       )}
 
