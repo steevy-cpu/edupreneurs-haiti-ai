@@ -400,7 +400,7 @@ export const useChessMultiplayer = ({
     }
   }, [userId, toast, fetchOpponent]);
 
-  // Join with invite code
+  // Join with invite code - using RPC to bypass RLS for private matches
   const joinWithCode = useCallback(async (code: string): Promise<{ success: boolean; matchId?: string; error?: string }> => {
     if (!userId) {
       return { success: false, error: 'User not authenticated' };
@@ -410,29 +410,39 @@ export const useChessMultiplayer = ({
     setError(null);
 
     try {
-      // Find match by code
-      const { data: matchData, error: findError } = await supabase
-        .from('chess_matches')
-        .select('*')
-        .eq('invite_code', code.toUpperCase())
-        .eq('status', 'waiting')
-        .single();
+      // Use RPC function to find match (bypasses RLS for private matches)
+      const { data: findResult, error: findError } = await supabase.rpc(
+        'find_match_by_invite_code',
+        { p_code: code.toUpperCase() }
+      );
 
-      if (findError || !matchData) {
-        return { success: false, error: 'Code invalide ou partie non disponible' };
+      if (findError) throw findError;
+
+      const result = findResult as {
+        status: string;
+        message?: string;
+        match_id?: string;
+        white_player_id?: string;
+      };
+
+      if (result.status === 'error') {
+        return { success: false, error: result.message || 'Code invalide' };
       }
 
-      const foundMatch = matchData as unknown as ChessMatch;
+      if (!result.match_id) {
+        return { success: false, error: 'Match non trouvé' };
+      }
 
-      if (foundMatch.white_player_id === userId) {
+      // Check if user is trying to join their own match
+      if (result.white_player_id === userId) {
         return { success: false, error: 'Vous ne pouvez pas rejoindre votre propre partie' };
       }
 
-      // Join the match
-      const success = await joinMatch(foundMatch.id);
-      
+      // Join the match using existing RPC
+      const success = await joinMatch(result.match_id);
+
       if (success) {
-        return { success: true, matchId: foundMatch.id };
+        return { success: true, matchId: result.match_id };
       } else {
         return { success: false, error: 'Impossible de rejoindre la partie' };
       }
