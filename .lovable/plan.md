@@ -1,149 +1,145 @@
 
-# Clock Synchronization Fix for Timed Chess Games
 
-## Problem Identified
-When a user reloads the page or navigates away from the game, the timer resets to the last stored value (`white_time_remaining`/`black_time_remaining`) without accounting for time elapsed since the last move. The `last_move_at` timestamp exists in the database but is not being used to calculate actual remaining time on page load.
+# Chess Mode Selection Dialog
 
-**Example:**
-- Player A has 4:30 remaining at their last move
-- 45 seconds pass, they reload the page
-- Timer shows 4:30 instead of the correct 3:45
-
----
+## Problem
+When users click "Jouer" on the chess game card in the Games Hub, they go directly to the AI game (`/chess-game`). To play multiplayer, they must first load the solo page and then switch tabs. This creates an extra step and can be confusing.
 
 ## Solution
-Calculate elapsed time since `last_move_at` and subtract it from the stored `time_remaining` when:
-1. Loading match data initially
-2. Receiving match updates via realtime subscription
-3. The game is active (`status === 'playing'`) and it's that player's turn
+Create a **modal dialog** that intercepts the "Jouer" click for chess and asks users to choose:
+1. **Jouer avec Jude** (Solo AI) - navigates to `/chess-game`
+2. **Défier un ami** (Multiplayer) - navigates to `/chess-multiplayer`
+
+This follows the existing pattern used in `VisitorTypeSelector` and `BattleModeSelector`.
 
 ---
 
 ## Implementation
 
-### File: `src/hooks/useChessMultiplayer.ts`
+### 1. Create New Component: `ChessModeSelector.tsx`
 
-**Add a helper function** to calculate adjusted time based on `last_move_at`:
+**File:** `src/components/chess/ChessModeSelector.tsx`
+
+A dialog component that shows two options:
+
+```text
++------------------------------------------------+
+|                  Jouer aux Échecs              |
+|  Comment veux-tu jouer ?                       |
++------------------------------------------------+
+|                                                |
+|  +------------------+  +------------------+    |
+|  | [Jude Avatar]    |  | [Users Icon]     |    |
+|  | Jouer avec Jude  |  | Défier un ami    |    |
+|  | Partie contre    |  | Invite un ami    |    |
+|  | l'IA coach       |  | ou trouve un     |    |
+|  |                  |  | adversaire       |    |
+|  +------------------+  +------------------+    |
+|                                                |
++------------------------------------------------+
+```
+
+**Key Features:**
+- Uses the existing `Dialog` component from `@/components/ui/dialog`
+- Two clickable cards with icons and descriptions
+- Visual feedback on hover (like `BattleModeSelector` pattern)
+- Closes on selection and navigates to the appropriate route
+
+---
+
+### 2. Modify `GamesHub.tsx`
+
+**File:** `src/pages/GamesHub.tsx`
+
+**Changes:**
+1. Add state for dialog open/close: `const [showChessModeDialog, setShowChessModeDialog] = useState(false)`
+2. Modify `handlePlay` to check if the game is chess and has multiple modes - if so, show the dialog instead of navigating directly
+3. Import and render `ChessModeSelector` component
 
 ```typescript
-// Helper to calculate actual remaining time accounting for elapsed time
-const calculateActualTimeRemaining = (
-  storedTime: number | null,
-  lastMoveAt: string | null,
-  isActivePlayersTurn: boolean
-): number | null => {
-  if (storedTime === null || !lastMoveAt || !isActivePlayersTurn) {
-    return storedTime;
+// Modified handlePlay
+const handlePlay = useCallback((game: Game) => {
+  if (game.id === 'chess' && game.modes.length > 1) {
+    setShowChessModeDialog(true);
+    return;
   }
-  
-  const lastMoveTime = new Date(lastMoveAt).getTime();
-  const now = Date.now();
-  const elapsedSeconds = Math.floor((now - lastMoveTime) / 1000);
-  
-  return Math.max(0, storedTime - elapsedSeconds);
+  navigate(game.path);
+}, [navigate]);
+```
+
+---
+
+### 3. Component Structure
+
+**`ChessModeSelector.tsx` Details:**
+
+```tsx
+interface ChessModeSelectorProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSelectSolo: () => void;
+  onSelectMultiplayer: () => void;
+}
+
+const ChessModeSelector = ({ isOpen, onClose, onSelectSolo, onSelectMultiplayer }) => {
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Jouer aux Échecs</DialogTitle>
+          <DialogDescription>Comment veux-tu jouer ?</DialogDescription>
+        </DialogHeader>
+        
+        {/* Two selection cards */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Jude (Solo) Card */}
+          <button onClick={onSelectSolo} className="...">
+            <Crown icon />
+            <h4>Jouer avec Jude</h4>
+            <p>Partie contre l'IA coach</p>
+          </button>
+          
+          {/* Multiplayer Card */}
+          <button onClick={onSelectMultiplayer} className="...">
+            <Users icon />
+            <h4>Défier un ami</h4>
+            <p>Invite ou trouve un adversaire</p>
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 };
 ```
 
-**Modify the `refreshMatch` function** (around line 223-240) to adjust times when setting match data:
+---
 
-```typescript
-if (data) {
-  const typedMatch = data as unknown as ChessMatch;
-  
-  // Adjust time remaining for the active player
-  if (typedMatch.status === 'playing' && typedMatch.last_move_at) {
-    if (typedMatch.current_turn === 'w') {
-      typedMatch.white_time_remaining = calculateActualTimeRemaining(
-        typedMatch.white_time_remaining,
-        typedMatch.last_move_at,
-        true
-      );
-    } else {
-      typedMatch.black_time_remaining = calculateActualTimeRemaining(
-        typedMatch.black_time_remaining,
-        typedMatch.last_move_at,
-        true
-      );
-    }
-  }
-  
-  setMatch(typedMatch);
-  // ... rest of the code
-}
-```
+## Files to Create/Modify
 
-**Modify the realtime subscription handler** (around line 264-266) to also adjust times:
-
-```typescript
-(payload) => {
-  const updatedMatch = payload.new as unknown as ChessMatch;
-  
-  // Adjust time for active player on realtime updates
-  if (updatedMatch.status === 'playing' && updatedMatch.last_move_at) {
-    if (updatedMatch.current_turn === 'w') {
-      updatedMatch.white_time_remaining = calculateActualTimeRemaining(
-        updatedMatch.white_time_remaining,
-        updatedMatch.last_move_at,
-        true
-      );
-    } else {
-      updatedMatch.black_time_remaining = calculateActualTimeRemaining(
-        updatedMatch.black_time_remaining,
-        updatedMatch.last_move_at,
-        true
-      );
-    }
-  }
-  
-  setMatch(updatedMatch);
-  // ... rest of the code
-}
-```
+| File | Action |
+|------|--------|
+| `src/components/chess/ChessModeSelector.tsx` | Create new dialog component |
+| `src/pages/GamesHub.tsx` | Add dialog state and conditional logic for chess |
 
 ---
 
-### File: `src/pages/ChessMultiplayerGame.tsx`
-
-**No changes needed** - the existing timer sync effect at lines 272-280 will pick up the already-adjusted values from the hook.
-
----
-
-## How It Works
+## User Flow After Implementation
 
 ```text
-User reloads page at 14:30:45
-         |
-         v
-+------------------+
-| Database stores: |
-| white_time = 300 |
-| last_move_at =   |
-|   14:30:00       |
-+------------------+
-         |
-         v
-+----------------------------+
-| calculateActualTimeRemaining |
-| elapsed = 14:30:45 - 14:30:00 |
-|        = 45 seconds           |
-| actual = 300 - 45 = 255 secs  |
-+----------------------------+
-         |
-         v
-Timer displays 4:15 (correct!)
+Games Hub
+    |
+    | Click "Jouer" on Chess card
+    v
++--------------------+
+| Mode Selection     |
+| Dialog             |
++--------------------+
+    |         |
+    |         |
+    v         v
+/chess-game   /chess-multiplayer
+(Jude AI)     (Lobby)
 ```
-
----
-
-## Edge Cases Handled
-
-| Scenario | Handling |
-|----------|----------|
-| Not active player's turn | Return stored time unchanged |
-| `last_move_at` is null | Return stored time unchanged |
-| Game not in `playing` status | Return stored time unchanged |
-| Calculated time goes negative | Clamp to 0 (triggers timeout logic) |
-| Untimed games | `time_remaining` is null, skipped |
 
 ---
 
@@ -151,16 +147,18 @@ Timer displays 4:15 (correct!)
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No - adds calculation layer only |
-| Works with existing data? | Yes - uses existing DB columns |
-| 3G optimized? | Yes - no additional network calls |
-| Backward compatible? | Yes - null-safe checks throughout |
-| Both players see consistent time? | Yes - both calculate from same source |
+| Breaks existing functionality? | No - just adds an intermediary step |
+| Works with existing data? | N/A - no database changes |
+| 3G optimized? | Yes - dialog is lightweight, no additional network calls |
+| Backward compatible? | Yes - other games still navigate directly |
+| Mobile friendly? | Yes - dialog adapts to screen size |
 
 ---
 
-## Files to Modify
+## Technical Notes
 
-| File | Changes |
-|------|---------|
-| `src/hooks/useChessMultiplayer.ts` | Add `calculateActualTimeRemaining` helper, apply in `refreshMatch` and realtime handler |
+- The dialog uses the existing `Dialog` component already imported in the codebase
+- Visual styling follows the `BattleModeSelector` pattern for consistency
+- The `gamesConfig.ts` already defines `modes: ['solo', 'multiplayer']` for chess, which we use to determine if the dialog should appear
+- For visitors, the multiplayer option can show a lock icon or redirect to login (following existing patterns in `ChessGame.tsx`)
+
