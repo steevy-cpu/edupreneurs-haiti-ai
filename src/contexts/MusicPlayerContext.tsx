@@ -31,6 +31,12 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   const [playerReady, setPlayerReady] = useState(false);
   const [youtubeApiLoaded, setYoutubeApiLoaded] = useState(false);
   const playerRef = useRef<any>(null);
+  const currentTrackIndexRef = useRef(currentTrackIndex);
+
+  // Keep ref in sync for use in callbacks (avoids stale closure)
+  useEffect(() => {
+    currentTrackIndexRef.current = currentTrackIndex;
+  }, [currentTrackIndex]);
 
   // Check if on slow connection
   const isSlowConnection = useCallback(() => {
@@ -236,6 +242,8 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   const playPause = () => {
     if (!playerRef.current || !playerReady || typeof playerRef.current.pauseVideo !== 'function') {
       console.log('⏳ Player not ready, initializing...');
+      // Set playing state optimistically - initPlayer has autoplay: 1
+      setIsPlaying(true);
       initPlayer();
       return;
     }
@@ -256,11 +264,13 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const nextTrack = () => {
-    const nextIndex = (currentTrackIndex + 1) % tracks.length;
-    console.log('⏭️ Moving to next track:', nextIndex);
+  const nextTrack = useCallback(() => {
+    // Use ref to always get the latest index (avoids stale closure in onStateChange)
+    const currentIndex = currentTrackIndexRef.current;
+    const nextIndex = (currentIndex + 1) % tracks.length;
+    console.log('⏭️ Moving to next track:', nextIndex, 'from', currentIndex);
     playTrack(nextIndex);
-  };
+  }, [tracks.length]);
 
   const stopMusic = () => {
     console.log('🛑 stopMusic called, playerRef:', !!playerRef.current);
