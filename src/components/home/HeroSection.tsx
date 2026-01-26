@@ -141,13 +141,13 @@ export const HeroSection = memo(function HeroSection({
 
         {/* Right - Hero Image */}
         <div className="relative flex justify-center items-center order-first md:order-last">
-          <div className="relative z-10 w-[180px] h-[180px] xs:w-[220px] xs:h-[220px] sm:w-[280px] sm:h-[280px] md:w-[320px] md:h-[320px] lg:w-[400px] lg:h-[400px]">
+          <div className="relative z-10 w-[220px] h-[220px] xs:w-[280px] xs:h-[280px] sm:w-[340px] sm:h-[340px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px]">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/30 rounded-full blur-2xl opacity-40" />
             <img
               src={ericCelebrating}
               alt="Eric célébrant - Mascotte EDUPRENEURS"
-              width={400}
-              height={400}
+              width={500}
+              height={500}
               className="relative z-10 w-full h-full object-contain drop-shadow-2xl"
               loading="eager"
               fetchPriority="high"
