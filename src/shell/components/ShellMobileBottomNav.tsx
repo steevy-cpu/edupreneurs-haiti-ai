@@ -13,6 +13,7 @@ import { useKeyboardOpen } from '@/hooks/useKeyboardOpen';
 import { useSidebarBadges } from '@/hooks/useSidebarBadges';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useRoutePreloader } from '../hooks/useRoutePreloader';
+import { useFirstTimeUser } from '@/contexts/FirstTimeUserContext';
 import { MOBILE_NAVIGATION, type BadgeKey } from '../config/navigation';
 
 /**
@@ -28,6 +29,10 @@ export const ShellMobileBottomNav = memo(function ShellMobileBottomNav() {
   // Badge data
   const { profile } = useUserProfile();
   const { badges } = useSidebarBadges(profile.userId);
+  
+  // Tour highlighting for first-time users
+  const { tourActive, tourCompleted, currentTourNavPath, isLoading: tourLoading } = useFirstTimeUser();
+  const tourHighlightPath = !tourLoading && tourActive && !tourCompleted ? currentTourNavPath : null;
   
   // Don't render if hidden by visibility rules or keyboard is open
   if (!showBottomNav) {
@@ -53,6 +58,7 @@ export const ShellMobileBottomNav = memo(function ShellMobileBottomNav() {
         {MOBILE_NAVIGATION.map((item) => {
           const active = isActive(item.to);
           const badgeCount = getBadgeCount(item.badgeKey);
+          const isHighlighted = tourHighlightPath === item.to;
           
           return (
             <Link
@@ -65,9 +71,15 @@ export const ShellMobileBottomNav = memo(function ShellMobileBottomNav() {
                 'transition-colors duration-200',
                 active 
                   ? 'text-primary' 
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
+                isHighlighted && 'z-[1005]'
               )}
             >
+              {/* Tour highlight ring */}
+              {isHighlighted && (
+                <div className="absolute inset-[-10px] rounded-full border-2 border-primary bg-primary/20 animate-pulse" />
+              )}
+              
               {/* Icon with badge */}
               <div className="relative">
                 <item.icon 

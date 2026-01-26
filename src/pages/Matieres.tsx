@@ -547,7 +547,7 @@ export default function Matieres() {
             />
 
             {/* Subjects Grid */}
-            <div id="subjects-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
+            <div id="subjects-grid" data-tour="subject-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
               {processedSubjects.map((subject) => (
                 isVisitor ? (
                   <VisitorSubjectCard

@@ -116,7 +116,7 @@ const Leaderboard = () => {
       </div>
 
       {/* Leaderboard */}
-      <div className="max-w-4xl mx-auto px-3 sm:px-4 pt-4 sm:pt-6">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 pt-4 sm:pt-6" data-tour="leaderboard-list">
         {isLoading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (

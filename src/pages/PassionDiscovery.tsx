@@ -1191,7 +1191,7 @@ const PassionDiscoveryContent = () => {
                       <p>Aucune catégorie trouvée pour "{searchQuery}"</p>
                     </div>
                   ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8" data-tour="passion-categories">
                     {filteredCategories.map((category, index) => {
                       const Icon = category.icon;
                       const categoryProgress = getCategoryProgress(category.id, category.modules.length);

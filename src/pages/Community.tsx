@@ -2086,6 +2086,7 @@ const Community = () => {
       {isVisitor && <VisitorCommunityOverlay />}
       
       {/* Conversations List - Fixed sidebar on desktop/tablet */}
+      <div data-tour="community-list">
       <ConversationSidebar
         conversations={conversations}
         selectedConversation={selectedConversation}
@@ -2106,6 +2107,7 @@ const Community = () => {
         onBack={() => navigate("/dashboard")}
         formatTime={formatTime}
       />
+      </div>
 
       {/* Messages View - fixed positioning with proper height for mobile nav */}
       <section
