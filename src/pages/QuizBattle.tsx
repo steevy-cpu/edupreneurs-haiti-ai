@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Swords, Trophy, Target, Zap } from 'lucide-react';
 import { toast } from 'sonner';
+import { getQuizBattleSession, clearQuizBattleSession } from '@/quiz-battle/store/quizBattleSession.store';
 
 const QuizBattle = () => {
   const navigate = useNavigate();
@@ -38,6 +39,38 @@ const QuizBattle = () => {
       }
       setUserId(user.id);
       setIsLoading(false);
+
+      // Check for active session that can be rejoined
+      const session = getQuizBattleSession();
+      if (session) {
+        // Verify battle still exists and is in_progress
+        const { data: battle } = await supabase
+          .from('quiz_battles')
+          .select('id, mode, status')
+          .eq('id', session.battleId)
+          .eq('status', 'in_progress')
+          .maybeSingle();
+        
+        if (battle) {
+          // Show rejoin toast
+          toast.info('Tu as une partie en cours!', {
+            action: {
+              label: 'Rejoindre',
+              onClick: () => {
+                if (session.mode === 'solo') {
+                  navigate(`/quiz-battle/solo?resume=${session.battleId}`);
+                } else {
+                  navigate(`/quiz-battle/multiplayer/${session.battleId}`);
+                }
+              },
+            },
+            duration: 10000,
+          });
+        } else {
+          // Battle no longer valid, clear stale session
+          clearQuizBattleSession();
+        }
+      }
     };
 
     checkAuth();
