@@ -1375,8 +1375,10 @@ const Community = () => {
     clearMedia();
     playSendSound();
     
-    // Force scroll to bottom when sending a message
-    setTimeout(() => scrollToBottom(true), 50);
+    // Force scroll to bottom when sending a message - use requestAnimationFrame for reliable timing
+    requestAnimationFrame(() => {
+      setTimeout(() => scrollToBottom(true), 50);
+    });
     
     // Clear typing indicator
     sendTypingStatus(false);
@@ -2182,10 +2184,9 @@ const Community = () => {
       
       {/* Delete Conversation Confirmation Dialog */}
       <AlertDialog open={!!deleteConversationId} onOpenChange={(open) => {
-        console.log('🔵 [DIALOG] Dialog state changed:', open, 'conversationId:', deleteConversationId);
         if (!open) setDeleteConversationId(null);
       }}>
-        <AlertDialogContent>
+        <AlertDialogContent className="z-[100]">
           <AlertDialogHeader>
           <AlertDialogTitle>
             {conversations.find(c => c.id === deleteConversationId)?.is_group 
