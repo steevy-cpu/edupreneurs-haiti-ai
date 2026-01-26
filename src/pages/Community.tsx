@@ -426,7 +426,7 @@ const Community = () => {
         supabase.removeChannel(reactionChannelRef.current);
       }
     };
-  }, [selectedConversation, user]);
+  }, [selectedConversation, user?.id]);
   
   // Fix 3: Keep selectedConversationRef in sync and clear typing on switch
   useEffect(() => {
@@ -952,10 +952,14 @@ const Community = () => {
   };
 
   const subscribeToConversationMessages = (conversationId: string) => {
-    // Unsubscribe from previous channel if exists
-    if (messageChannelRef.current) {
-      supabase.removeChannel(messageChannelRef.current);
+    // Guard: Don't re-subscribe if already subscribed to this conversation
+    if (messageChannelRef.current?.topic === `realtime:messages-${conversationId}`) {
+      console.log('[Messages] Already subscribed to:', conversationId);
+      return;
     }
+
+    // Note: Cleanup is handled by useEffect return function
+    // Removing here causes race conditions with React's cleanup timing
 
     // Subscribe to real-time updates for this specific conversation
     const channel = supabase
@@ -1645,9 +1649,14 @@ const Community = () => {
   };
 
   const subscribeToReactions = (conversationId: string) => {
-    if (reactionChannelRef.current) {
-      supabase.removeChannel(reactionChannelRef.current);
+    // Guard: Don't re-subscribe if already subscribed to this conversation
+    if (reactionChannelRef.current?.topic === `realtime:reactions-${conversationId}`) {
+      console.log('[Reactions] Already subscribed to:', conversationId);
+      return;
     }
+
+    // Note: Cleanup is handled by useEffect return function
+    // Removing here causes race conditions with React's cleanup timing
 
     const channel = supabase
       .channel(`reactions-${conversationId}`)
