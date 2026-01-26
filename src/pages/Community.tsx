@@ -2113,13 +2113,12 @@ const Community = () => {
       <section
         className={`${
           selectedConversation
-            ? "fixed inset-x-0 top-0 md:relative md:inset-auto"
-            : "hidden md:flex"
-        } flex-col bg-background h-full overflow-hidden`}
-        style={{
-          // On mobile, set explicit height to account for bottom nav (56px) + safe area
-          height: selectedConversation ? 'calc(100dvh - 3.5rem - env(safe-area-inset-bottom, 0px))' : undefined
-        }}
+            ? "fixed inset-x-0 top-0 md:relative md:inset-auto md:h-full"
+            : "hidden md:flex h-full"
+        } flex-col bg-background overflow-hidden`}
+        style={selectedConversation ? {
+          bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))'
+        } : undefined}
       >
         {selectedConversation ? (
           (() => {
