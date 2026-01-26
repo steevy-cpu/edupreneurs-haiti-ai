@@ -138,83 +138,44 @@ export function PresenceProvider({ children }: PresenceProviderProps) {
   }, [extractOnlineUsers]);
 
   useEffect(() => {
-    // Find the shared 'online-users' channel created by AppShell
-    const findAndSubscribe = () => {
-      const allChannels = supabase.getChannels();
-      const onlineChannel = allChannels.find(ch => 
-        ch.topic === 'realtime:online-users' || 
-        (ch as any).name === 'online-users'
-      );
-      
-      if (onlineChannel) {
-        // Get initial state
-        const state = onlineChannel.presenceState();
-        handleSync(state);
-        setIsConnected(true);
-        return onlineChannel;
-      }
-      return null;
-    };
-
-    // Try to find existing channel first
-    let channel = findAndSubscribe();
-    
-    if (!channel) {
-      // Create our own presence listener channel
-      channel = supabase.channel('presence-context-listener');
-      
-      channel
-        .on('presence', { event: 'sync' }, () => {
-          // On sync, re-check the main online-users channel
-          const mainChannel = supabase.getChannels().find(ch => 
-            ch.topic === 'realtime:online-users' || 
-            (ch as any).name === 'online-users'
-          );
-          if (mainChannel) {
-            const state = mainChannel.presenceState();
-            handleSync(state);
-          }
-        })
-        .on('presence', { event: 'join' }, ({ key }) => {
-          if (key) handleUserOnline(key);
-        })
-        .on('presence', { event: 'leave' }, ({ key }) => {
-          if (key) handleUserOffline(key);
-        })
-        .subscribe((status) => {
-          setIsConnected(status === 'SUBSCRIBED');
-          
-          if (status === 'SUBSCRIBED') {
-            // Try to get initial state from main channel
-            const mainChannel = supabase.getChannels().find(ch => 
-              ch.topic === 'realtime:online-users' || 
-              (ch as any).name === 'online-users'
-            );
-            if (mainChannel) {
-              const state = mainChannel.presenceState();
-              handleSync(state);
-            }
-          }
-        });
-      
-      channelRef.current = channel;
+    // Skip for visitors or unauthenticated users
+    if (!user) {
+      setIsConnected(false);
+      return;
     }
-
-    // Poll the main channel periodically as backup (every 15s - less aggressive than before)
-    const pollInterval = setInterval(() => {
-      const mainChannel = supabase.getChannels().find(ch => 
-        ch.topic === 'realtime:online-users' || 
-        (ch as any).name === 'online-users'
-      );
-      if (mainChannel) {
-        const state = mainChannel.presenceState();
+    
+    // Create the global presence channel with user's ID as the key
+    const channel = supabase.channel('online-users', {
+      config: { presence: { key: user.id } }
+    });
+    
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
         handleSync(state);
-      }
-    }, 15000);
-
+      })
+      .on('presence', { event: 'join' }, ({ key }) => {
+        if (key) handleUserOnline(key);
+      })
+      .on('presence', { event: 'leave' }, ({ key }) => {
+        if (key) handleUserOffline(key);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          setIsConnected(true);
+          // Track current user's presence
+          await channel.track({
+            user_id: user.id,
+            online_at: new Date().toISOString(),
+          });
+        } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+          setIsConnected(false);
+        }
+      });
+    
+    channelRef.current = channel;
+    
     return () => {
-      clearInterval(pollInterval);
-      
       // Clear all pending offline timers
       pendingOfflineRef.current.forEach(timer => clearTimeout(timer));
       pendingOfflineRef.current.clear();
@@ -228,7 +189,7 @@ export function PresenceProvider({ children }: PresenceProviderProps) {
         channelRef.current = null;
       }
     };
-  }, [handleSync, handleUserOnline, handleUserOffline]);
+  }, [user?.id, handleSync, handleUserOnline, handleUserOffline]);
 
   /**
    * Selector function - only causes re-render if THIS user's status changes
