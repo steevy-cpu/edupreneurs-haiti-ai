@@ -3676,6 +3676,7 @@ export type Database = {
         }
         Returns: Json
       }
+      find_match_by_invite_code: { Args: { p_code: string }; Returns: Json }
       generate_blog_slug: { Args: { title: string }; Returns: string }
       generate_chess_invite_code: { Args: never; Returns: string }
       generate_invite_code: { Args: never; Returns: string }
