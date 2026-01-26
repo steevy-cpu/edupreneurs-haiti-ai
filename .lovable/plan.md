@@ -1,163 +1,149 @@
 
+# Clock Synchronization Fix for Timed Chess Games
 
-# Integrate Chat into Opponent Card
+## Problem Identified
+When a user reloads the page or navigates away from the game, the timer resets to the last stored value (`white_time_remaining`/`black_time_remaining`) without accounting for time elapsed since the last move. The `last_move_at` timestamp exists in the database but is not being used to calculate actual remaining time on page load.
 
-## Problem
-There's a duplication issue: the opponent's avatar and name appear twice - once in the `FloatingMatchChat` component and once in the Opponent Info `Card`. This creates visual clutter.
+**Example:**
+- Player A has 4:30 remaining at their last move
+- 45 seconds pass, they reload the page
+- Timer shows 4:30 instead of the correct 3:45
+
+---
 
 ## Solution
-Remove the separate `FloatingMatchChat` toggle button and integrate the chat functionality directly into the existing opponent info card:
-- Make the opponent section clickable to open chat
-- Add a chat icon with unread badge next to the opponent's name
-- Show last message preview below the opponent card when there are unread messages
-- Keep the full-screen chat panel for when the user clicks
+Calculate elapsed time since `last_move_at` and subtract it from the stored `time_remaining` when:
+1. Loading match data initially
+2. Receiving match updates via realtime subscription
+3. The game is active (`status === 'playing'`) and it's that player's turn
 
 ---
 
 ## Implementation
 
+### File: `src/hooks/useChessMultiplayer.ts`
+
+**Add a helper function** to calculate adjusted time based on `last_move_at`:
+
+```typescript
+// Helper to calculate actual remaining time accounting for elapsed time
+const calculateActualTimeRemaining = (
+  storedTime: number | null,
+  lastMoveAt: string | null,
+  isActivePlayersTurn: boolean
+): number | null => {
+  if (storedTime === null || !lastMoveAt || !isActivePlayersTurn) {
+    return storedTime;
+  }
+  
+  const lastMoveTime = new Date(lastMoveAt).getTime();
+  const now = Date.now();
+  const elapsedSeconds = Math.floor((now - lastMoveTime) / 1000);
+  
+  return Math.max(0, storedTime - elapsedSeconds);
+};
+```
+
+**Modify the `refreshMatch` function** (around line 223-240) to adjust times when setting match data:
+
+```typescript
+if (data) {
+  const typedMatch = data as unknown as ChessMatch;
+  
+  // Adjust time remaining for the active player
+  if (typedMatch.status === 'playing' && typedMatch.last_move_at) {
+    if (typedMatch.current_turn === 'w') {
+      typedMatch.white_time_remaining = calculateActualTimeRemaining(
+        typedMatch.white_time_remaining,
+        typedMatch.last_move_at,
+        true
+      );
+    } else {
+      typedMatch.black_time_remaining = calculateActualTimeRemaining(
+        typedMatch.black_time_remaining,
+        typedMatch.last_move_at,
+        true
+      );
+    }
+  }
+  
+  setMatch(typedMatch);
+  // ... rest of the code
+}
+```
+
+**Modify the realtime subscription handler** (around line 264-266) to also adjust times:
+
+```typescript
+(payload) => {
+  const updatedMatch = payload.new as unknown as ChessMatch;
+  
+  // Adjust time for active player on realtime updates
+  if (updatedMatch.status === 'playing' && updatedMatch.last_move_at) {
+    if (updatedMatch.current_turn === 'w') {
+      updatedMatch.white_time_remaining = calculateActualTimeRemaining(
+        updatedMatch.white_time_remaining,
+        updatedMatch.last_move_at,
+        true
+      );
+    } else {
+      updatedMatch.black_time_remaining = calculateActualTimeRemaining(
+        updatedMatch.black_time_remaining,
+        updatedMatch.last_move_at,
+        true
+      );
+    }
+  }
+  
+  setMatch(updatedMatch);
+  // ... rest of the code
+}
+```
+
+---
+
 ### File: `src/pages/ChessMultiplayerGame.tsx`
 
-**Remove** the `FloatingMatchChat` component entirely from the layout (lines 595-604).
-
-**Replace** the opponent info `Card` (lines 607-637) with an interactive version:
-
-```tsx
-{/* Opponent Info - Clickable to open chat */}
-<Card 
-  className="p-2 sm:p-3 cursor-pointer hover:bg-accent/50 transition-colors"
-  onClick={() => setShowChat(true)}
->
-  <div className="flex items-center justify-between gap-2">
-    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-      <Avatar className="w-8 h-8 sm:w-10 sm:h-10 shrink-0">
-        <AvatarImage src={getAvatarUrl(opponent?.avatar_url || null)} />
-        <AvatarFallback className="text-sm">
-          {opponent?.nickname?.[0]?.toUpperCase() || '?'}
-        </AvatarFallback>
-      </Avatar>
-      <div className="min-w-0">
-        <div className="flex items-center gap-1.5">
-          <p className="font-medium text-sm sm:text-base truncate">
-            {opponent?.nickname || 'Adversaire'}
-          </p>
-          {/* Chat icon with unread badge */}
-          <div className="relative shrink-0">
-            <MessageCircle className="w-4 h-4 text-muted-foreground" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] flex items-center justify-center bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full px-0.5">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </div>
-        </div>
-        <p className="text-[10px] sm:text-xs text-muted-foreground">
-          {myColor === 'w' ? 'Noirs' : 'Blancs'}
-        </p>
-      </div>
-    </div>
-    
-    {/* Timer stays the same */}
-    {match.time_control !== 'untimed' && (
-      <div className={cn(...)}>
-        {formatTime(...)}
-      </div>
-    )}
-  </div>
-  
-  {/* Last message preview - appears when there are unread messages */}
-  {unreadCount > 0 && lastOpponentMessage && (
-    <div className="mt-2 pt-2 border-t">
-      <p className="text-sm text-muted-foreground line-clamp-1">
-        {lastOpponentMessage.message}
-      </p>
-    </div>
-  )}
-</Card>
-```
-
-**Add** the `lastOpponentMessage` variable (before the return statement):
-```tsx
-const lastOpponentMessage = chatMessages.filter(m => m.sender_id !== userId).slice(-1)[0];
-```
-
-**Keep** the expanded chat panel from `FloatingMatchChat` but move it inline (or create a simpler `ChatPanel` component):
-```tsx
-{/* Full-screen Chat Panel */}
-{showChat && (
-  <div className="fixed inset-4 sm:inset-8 z-50 bg-card/95 backdrop-blur-md border rounded-2xl shadow-xl flex flex-col animate-scale-in overflow-hidden">
-    {/* ... same chat panel content as FloatingMatchChat ... */}
-  </div>
-)}
-```
+**No changes needed** - the existing timer sync effect at lines 272-280 will pick up the already-adjusted values from the hook.
 
 ---
 
-### File: `src/components/chess/FloatingMatchChat.tsx`
-
-**Option A (Recommended)**: Refactor to only export the chat panel (without the toggle button):
-
-```tsx
-interface MatchChatPanelProps {
-  messages: ChatMessage[];
-  userId: string | null;
-  opponent: PlayerInfo | null;
-  userProfile: { nickname: string; avatar_url: string | null } | null;
-  onSendMessage: (message: string) => Promise<void>;
-  onClose: () => void;
-}
-
-// Rename component to MatchChatPanel
-// Remove the toggle button code (lines 75-100)
-// Remove the last message bubble code (lines 102-114)
-// Keep only the expanded chat panel (lines 116-242)
-// Replace onToggle with onClose
-```
-
-**Option B**: Keep the file as-is and just move the chat panel JSX inline in the game page (simpler, less abstraction).
-
----
-
-## Updated Structure
-
-| Before | After |
-|--------|-------|
-| FloatingMatchChat (avatar + name + icon) | Removed |
-| Opponent Card (avatar + name + timer) | Opponent Card (avatar + name + chat icon + timer + message preview) |
-| Separate chat toggle button | Click anywhere on opponent card to open chat |
-
----
-
-## Visual Flow
+## How It Works
 
 ```text
-+------------------------------------------+
-| [Avatar] Celestin  [💬 2]       [05:00]  |
-|          Noirs                           |
-| ---------------------------------------- |
-| "Bien joué!" (last message preview)      |
-+------------------------------------------+
-           |
-           | (click anywhere on card)
-           v
-+------------------------------------------+
-|          FULL SCREEN CHAT PANEL          |
-| [Avatar] Celestin        [X close]       |
-| ---------------------------------------- |
-| Messages...                              |
-| Quick replies...                         |
-| Input field...                           |
-+------------------------------------------+
+User reloads page at 14:30:45
+         |
+         v
++------------------+
+| Database stores: |
+| white_time = 300 |
+| last_move_at =   |
+|   14:30:00       |
++------------------+
+         |
+         v
++----------------------------+
+| calculateActualTimeRemaining |
+| elapsed = 14:30:45 - 14:30:00 |
+|        = 45 seconds           |
+| actual = 300 - 45 = 255 secs  |
++----------------------------+
+         |
+         v
+Timer displays 4:15 (correct!)
 ```
 
 ---
 
-## Files to Modify
+## Edge Cases Handled
 
-| File | Action |
-|------|--------|
-| `src/pages/ChessMultiplayerGame.tsx` | Remove FloatingMatchChat usage, enhance opponent Card with chat integration |
-| `src/components/chess/FloatingMatchChat.tsx` | Refactor to `MatchChatPanel` (panel-only) or delete if inlining |
+| Scenario | Handling |
+|----------|----------|
+| Not active player's turn | Return stored time unchanged |
+| `last_move_at` is null | Return stored time unchanged |
+| Game not in `playing` status | Return stored time unchanged |
+| Calculated time goes negative | Clamp to 0 (triggers timeout logic) |
+| Untimed games | `time_remaining` is null, skipped |
 
 ---
 
@@ -165,9 +151,16 @@ interface MatchChatPanelProps {
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No - chat still works, just different trigger |
-| Eliminates duplication? | Yes - single opponent info display |
-| Mobile friendly? | Yes - card tap opens chat |
-| Unread indicator visible? | Yes - badge on chat icon |
-| Sound notification still works? | Yes - unchanged |
+| Breaks existing functionality? | No - adds calculation layer only |
+| Works with existing data? | Yes - uses existing DB columns |
+| 3G optimized? | Yes - no additional network calls |
+| Backward compatible? | Yes - null-safe checks throughout |
+| Both players see consistent time? | Yes - both calculate from same source |
 
+---
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/hooks/useChessMultiplayer.ts` | Add `calculateActualTimeRemaining` helper, apply in `refreshMatch` and realtime handler |
