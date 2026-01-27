@@ -91,7 +91,7 @@ function TemplateEditorInner({ template }: { template: NonNullable<ReturnType<ty
           name="description" 
           content={template.seo_description || template.description} 
         />
-        <link rel="canonical" href={`https://edupreneurs-haiti-ai.lovable.app/templates/${template.slug}`} />
+        <link rel="canonical" href={`https://edupreneurs-haiti-ai.lovable.app/templates/edit/${template.slug}`} />
         <meta property="og:title" content={`${template.title} | Templates EDUPRENEURS`} />
         <meta property="og:description" content={template.description} />
         <meta property="og:image" content={template.og_image_url || template.thumbnail_url || ''} />

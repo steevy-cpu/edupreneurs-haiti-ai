@@ -24,7 +24,7 @@ export default function TemplateCard({ template }: TemplateCardProps) {
   };
 
   return (
-    <Link to={`/templates/${template.slug}`}>
+    <Link to={`/templates/edit/${template.slug}`}>
       <Card className="group overflow-hidden hover:shadow-lg transition-all duration-200 hover:border-primary/50 h-full">
         {/* Thumbnail */}
         <div className="aspect-[4/3] bg-muted relative overflow-hidden">
