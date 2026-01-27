@@ -232,7 +232,7 @@ function applyBranding(pdf: jsPDF, branding: TemplateSchema['branding']): void {
   pdf.setTextColor(150, 150, 150);
   pdf.setFont('helvetica', 'normal');
   
-  const footerText = branding.footerText || 'Créé avec Edupreneurs | edupreneurs.app';
+  const footerText = branding.footerText || 'Créé avec Edupreneurs | mon-edupreneur.com';
   pdf.text(footerText, width / 2, height - 15, { align: 'center' });
 }
 
