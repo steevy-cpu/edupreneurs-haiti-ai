@@ -1,83 +1,141 @@
 
-
-# Fix Template Canvas Preview Cutoff
+# Fix Personnaliser Section Cutoff & Preview Element Overlap
 
 ## Problem Analysis
 
-The template preview canvas cuts off the left side of the schedule table. Looking at the screenshot:
-- "Heure" and "Lundi" columns are completely hidden
-- Only "ardi" (part of "Mardi"), "Mercredi", "Jeudi", "Vendredi" are visible
+### Issue 1: Personnaliser Section Cutoff
+The sidebar table editor is cut off at the bottom. Looking at the current structure:
 
-**Root Cause**: In `TemplateCanvas.tsx`, all elements use `transform: 'translate(-50%, 0)'` which horizontally centers them at their x-coordinate. This works for centered text (title at x=297) but breaks for elements positioned near edges:
+```
+Card (overflow-hidden) ← Clips content!
+  └─ CardContent (overflow-hidden) ← Double clips!
+       └─ ScrollArea (max-h-[50vh]) ← Too restrictive
+```
 
-- The table is at `x: 40, y: 110` (near left edge)
-- With `translate(-50%, 0)`, the table's center is placed at x=40
-- This pushes the left half of the table outside the container
-- The container has `overflow-hidden`, clipping the overflow
+**Root Cause**: Multiple `overflow-hidden` constraints combined with a fixed `max-h-[50vh]` limit that doesn't account for the full table height (9 rows × ~30px = 270px+).
+
+### Issue 2: Preview Elements Overlayed
+Looking at the schema positions and the screenshot:
+- Title: `y: 35`, fontSize: 22
+- School name: `y: 60`, fontSize: 12  
+- Student name: `y: 80`, fontSize: 12
+
+The elements overlap because:
+1. The percentage-based positioning (`top: (y/842)*100%`) compresses vertical spacing on smaller canvas renders
+2. Font sizes don't scale proportionally with the container
 
 ---
 
 ## Solution
 
-Apply smart positioning based on element type and alignment:
+### File 1: `src/components/templates/EditorSidebar.tsx`
 
-| Element Type | Current Behavior | Fixed Behavior |
-|--------------|------------------|----------------|
-| Text (centered) | Center at x | Keep centered |
-| Text (left-aligned) | Center at x ❌ | Left edge at x |
-| Text (right-aligned) | Center at x ❌ | Right edge at x |
-| Table | Center at x ❌ | Left edge at x |
+**Changes:**
+1. Remove `overflow-hidden` from Card - use visible overflow
+2. Remove `overflow-hidden` from CardContent - allow content to flow
+3. Change ScrollArea height to be more flexible - use full available height on desktop
+4. Remove max-h constraints that cut off content
+
+```tsx
+// Before
+<Card className="flex flex-col h-auto lg:h-full overflow-hidden">
+  <CardContent className="flex-1 min-h-0 p-0 overflow-hidden">
+    <ScrollArea className="h-full max-h-[50vh] lg:max-h-[calc(100vh-280px)]">
+
+// After  
+<Card className="flex flex-col">
+  <CardContent className="flex-1 p-0">
+    <ScrollArea className="max-h-[60vh] lg:max-h-[calc(100vh-260px)]">
+```
+
+### File 2: `src/components/templates/TemplateCanvas.tsx`
+
+**Changes:**
+1. Scale font sizes relative to canvas width using a scale factor
+2. Ensure proper vertical spacing by using absolute pixel positioning within the scaled container
+3. Add a min-height to prevent over-compression
+
+```tsx
+// Calculate scale factor based on container width vs template width
+// This ensures text doesn't overlap when canvas is smaller than template dimensions
+
+// Add proper spacing by using relative units that respect the document scale
+```
 
 ---
 
-## Implementation
+## Technical Implementation
 
-### File: `src/components/templates/TemplateCanvas.tsx`
+### EditorSidebar.tsx Changes
 
-**Changes:**
+| Line | Change |
+|------|--------|
+| 115 | Remove `overflow-hidden` from Card, keep flex structure |
+| 119 | Remove `overflow-hidden` from CardContent |
+| 120 | Adjust ScrollArea height constraints |
 
-1. Determine transform based on element type and text alignment
-2. Remove `overflow-hidden` from container, use `overflow-auto` 
-3. Tables and left-aligned text: no horizontal transform (left edge at x)
-4. Centered text: `translate(-50%, 0)` (center at x)
-5. Right-aligned text: `translate(-100%, 0)` (right edge at x)
+### TemplateCanvas.tsx Changes
 
-```tsx
-// Calculate transform based on element type and alignment
-const getTransform = (element) => {
-  if (element.type === 'table') {
-    // Tables: position left edge at x
-    return 'translate(0, 0)';
-  }
-  
-  if (element.type === 'text') {
-    const align = element.style?.textAlign || 'left';
-    if (align === 'center') return 'translate(-50%, 0)';
-    if (align === 'right') return 'translate(-100%, 0)';
-    return 'translate(0, 0)'; // left-aligned
-  }
-  
-  // Default for checkbox, date, image
-  return 'translate(0, 0)';
-};
-```
+| Line | Change |
+|------|--------|
+| 46-55 | Add scale factor calculation based on actual container width |
+| 88-100 | Scale text fontSize dynamically based on container scale |
+| Add | Ensure container has minimum height to prevent cramping |
 
 ---
 
 ## Visual Result
 
-**Before:**
+**Personnaliser - Before:**
 ```
-| [Mon Emploi...]       2025-2026 |
-|                                 |
-| ardi | Merc | Jeudi | Vendredi  |  <- "Heure", "Lundi" cut off
+┌─────────────────────┐
+│ Personnaliser       │
+│ ─────────────────── │
+│ Titre: [input]      │
+│ École: [input]      │
+│ Élève: [input]      │
+│ Horaire:            │
+│ ┌──────────┐        │
+│ │ Heure  7:│← CUT   │
+└─────────────────────┘
 ```
 
-**After:**
+**Personnaliser - After:**
 ```
-| [Mon Emploi...]          2025-2026 |
-|                                    |
-| Heure | Lundi | Mardi | Merc | ... |  <- Full table visible
+┌─────────────────────┐
+│ Personnaliser       │
+│ ─────────────────── │
+│ Titre: [input]      │
+│ École: [input]      │
+│ Élève: [input]      │
+│ Horaire:            │
+│ ┌──────────────────┐│
+│ │ Heure│Lun│Mar│...││
+│ │ 7:00 │...│...│...││
+│ │ ...  │   │   │   ││◄ Scrollable
+│ └──────────────────┘│
+└─────────────────────┘
+```
+
+**Preview - Before:**
+```
+  Mon Emploi du Temps    2025-2026
+  Ex: Collège Saint-Louis
+      Votre nom              ← Text overlapping
+  ─────────────────────────────
+  │ Heure │ Lundi │ ... │
+```
+
+**Preview - After:**
+```
+  Mon Emploi du Temps         2025-2026
+
+  Ex: Collège Saint-Louis
+  
+  Votre nom                   ← Proper spacing
+  
+  ─────────────────────────────
+  │ Heure │ Lundi │ ... │
 ```
 
 ---
@@ -86,17 +144,18 @@ const getTransform = (element) => {
 
 | Check | Status |
 |-------|--------|
-| Centered text elements still center? | Yes (title, school name, student name) |
-| Right-aligned text still aligns right? | Yes (year field at x=520) |
-| Tables fully visible from left edge? | Yes |
-| No regression on other template types? | Yes (same logic applies) |
-| Backward compatible with existing schemas? | Yes (uses existing position data) |
+| Table inputs fully accessible? | Yes - removed overflow-hidden |
+| ScrollArea still works? | Yes - max-height preserved |
+| Desktop layout maintained? | Yes - lg: breakpoints preserved |
+| Mobile layout improved? | Yes - better height handling |
+| Text elements properly spaced? | Yes - scaled positioning |
+| Backward compatible? | Yes - no schema changes |
 
 ---
 
 ## Files to Modify
 
-| File | Change |
-|------|--------|
-| `src/components/templates/TemplateCanvas.tsx` | Fix element positioning logic |
-
+| File | Changes |
+|------|---------|
+| `src/components/templates/EditorSidebar.tsx` | Remove overflow-hidden, adjust height constraints |
+| `src/components/templates/TemplateCanvas.tsx` | Add proper font scaling relative to container width |
