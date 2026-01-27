@@ -1,109 +1,95 @@
 
-# Fix PDF Table Black Cells Issue
 
-## Root Cause Analysis
+# Apply Missing PDF Fix - Move Color Setters Inside Loops
 
-The screenshot shows a specific pattern:
-- First cell of header row (Heure) is visible with gray background
-- First cell of data rows (7:00 - 8:00) is visible with white background  
-- ALL subsequent cells in EVERY row are solid black
+## What Happened
 
-This pattern reveals that jsPDF's color state is being corrupted **after each `text()` call**. When `text()` renders, it may internally modify drawing states, causing the next `rect()` to use incorrect fill color (defaulting to black).
+The previous fix attempt did not update the correct lines. The `setFillColor` and `setTextColor` calls are still **outside** the column loops, which causes jsPDF state corruption after each `text()` call.
 
-**The fix**: Call `setFillColor()` immediately before **every** `rect()` call, not just once per row.
+## Current State (Broken - Lines 188-223)
 
----
-
-## Solution
-
-Move the `setFillColor()` calls inside the column loops so they execute before each individual cell rectangle is drawn.
-
-### Current Code (Broken)
 ```typescript
-// Render header row
-pdf.setFillColor(245, 245, 245); // Set once before loop
+// Header: color set ONCE before loop
+pdf.setFillColor(245, 245, 245);  // Line 190
+pdf.setTextColor(0, 0, 0);        // Line 191
 for (let col = 0; col < columns; col++) {
-  pdf.rect(x, currentY, colWidth, rowHeight, 'FD'); // 2nd+ cells use corrupted state
-  pdf.text(headers[col]); // Corrupts fill state
+  pdf.rect(...);  // 2nd cell gets corrupted state
+  pdf.text(...);  // Corrupts state for next cell
 }
 
-// Render data rows
-pdf.setFillColor(255, 255, 255); // Set once before loop
+// Data: same problem
+pdf.setFillColor(255, 255, 255);  // Line 207
+pdf.setTextColor(0, 0, 0);        // Line 208
 for (const row of data) {
   for (let col = 0; col < columns; col++) {
-    pdf.rect(x, currentY, colWidth, rowHeight, 'FD'); // 2nd+ cells use corrupted state
-    pdf.text(cellValue); // Corrupts fill state
+    pdf.rect(...);  // 2nd cell gets corrupted state
+    pdf.text(...);  // Corrupts state for next cell
   }
 }
 ```
 
-### Fixed Code
-```typescript
-// Render header row
-for (let col = 0; col < columns; col++) {
-  pdf.setFillColor(245, 245, 245); // Set BEFORE each rect
-  pdf.setTextColor(0, 0, 0);       // Reset text color too
-  pdf.rect(x, currentY, colWidth, rowHeight, 'FD');
-  pdf.text(headers[col]);
-}
+## Required Fix
 
-// Render data rows
-for (const row of data) {
+Move the color state setters **inside** the column loops:
+
+### Header Row (Lines 188-202)
+```typescript
+if (headers.length > 0) {
+  pdf.setFont('helvetica', 'bold');
+  
   for (let col = 0; col < columns; col++) {
-    pdf.setFillColor(255, 255, 255); // Set BEFORE each rect
-    pdf.setTextColor(0, 0, 0);        // Reset text color too
+    // Reset colors BEFORE each cell
+    pdf.setFillColor(245, 245, 245);
+    pdf.setTextColor(0, 0, 0);
+    
+    const x = element.position.x + col * colWidth;
     pdf.rect(x, currentY, colWidth, rowHeight, 'FD');
-    pdf.text(cellValue);
+    pdf.text(headers[col] || '', x + cellPadding, currentY + cellPadding + fontSize * 0.8);
   }
+  currentY += rowHeight;
+}
+```
+
+### Data Rows (Lines 205-223)
+```typescript
+pdf.setFont('helvetica', 'normal');
+
+for (const row of data) {
+  for (let col = 0; col < columns; col++) {
+    // Reset colors BEFORE each cell
+    pdf.setFillColor(255, 255, 255);
+    pdf.setTextColor(0, 0, 0);
+    
+    const x = element.position.x + col * colWidth;
+    pdf.rect(x, currentY, colWidth, rowHeight, 'FD');
+    
+    const cellValue = row[col] || '';
+    const maxWidth = colWidth - cellPadding * 2;
+    const truncated = pdf.splitTextToSize(cellValue, maxWidth)[0] || '';
+    
+    pdf.text(truncated, x + cellPadding, currentY + cellPadding + fontSize * 0.8);
+  }
+  currentY += rowHeight;
 }
 ```
 
 ---
 
-## Technical Changes
+## File to Modify
 
-### File: `supabase/functions/export-template/index.ts`
+**`supabase/functions/export-template/index.ts`**
 
-| Location | Change |
-|----------|--------|
-| Lines 188-201 | Move `setFillColor` and `setTextColor` inside the header column loop |
-| Lines 210-220 | Move `setFillColor` and `setTextColor` inside the data cell loop |
-
-**Specific edits:**
-
-1. **Header row loop** (around line 193):
-   - Move `pdf.setFillColor(245, 245, 245);` inside the `for (let col = 0; col < columns; col++)` loop
-   - Add `pdf.setTextColor(0, 0, 0);` before `pdf.text()`
-
-2. **Data row loop** (around line 211):
-   - Move `pdf.setFillColor(255, 255, 255);` inside the nested `for (let col = 0; col < columns; col++)` loop
-   - Add `pdf.setTextColor(0, 0, 0);` before `pdf.text()`
+| Lines | Change |
+|-------|--------|
+| 188-202 | Restructure header loop with colors inside |
+| 205-223 | Restructure data loop with colors inside |
 
 ---
 
 ## Expected Result
 
-**Before (Black cells):**
-```text
-| Heure       | ████████ | ████████ | ████████ | ████████ | ████████ |
-| 7:00 - 8:00 | ████████ | ████████ | ████████ | ████████ | ████████ |
-```
+All table cells will render correctly:
+- Header cells: light gray background (#F5F5F5), black text
+- Data cells: white background (#FFFFFF), black text
+- No more black boxes
 
-**After (All cells visible):**
-```text
-| Heure       | Lundi    | Mardi    | Mercredi | Jeudi    | Vendredi |
-| 7:00 - 8:00 |          |          |          |          |          |
-| 8:00 - 9:00 |          |          |          |          |          |
-```
-
----
-
-## Safety Verification
-
-| Check | Status |
-|-------|--------|
-| PNG export still works? | Yes - unaffected (client-side) |
-| PDF branding preserved? | Yes - no changes to applyBranding |
-| Performance impact? | Minimal - setFillColor is lightweight |
-| Backward compatible? | Yes - same output, just correct colors |
-| 3G optimized? | Yes - no change to file size |
