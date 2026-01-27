@@ -168,3 +168,6 @@ verify_jwt = false
 
 [functions.award-weekly-champion]
 verify_jwt = false
+
+[functions.export-template]
+verify_jwt = false
