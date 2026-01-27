@@ -3238,6 +3238,107 @@ export type Database = {
         }
         Relationships: []
       }
+      template_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          name: string
+          name_ht: string | null
+          order_index: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id: string
+          name: string
+          name_ht?: string | null
+          order_index?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          name?: string
+          name_ht?: string | null
+          order_index?: number
+        }
+        Relationships: []
+      }
+      templates: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          download_count: number
+          id: string
+          is_featured: boolean
+          is_published: boolean
+          language: string
+          og_image_url: string | null
+          schema: Json
+          seo_description: string | null
+          seo_title: string | null
+          slug: string
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string
+          title_ht: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          download_count?: number
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          language?: string
+          og_image_url?: string | null
+          schema: Json
+          seo_description?: string | null
+          seo_title?: string | null
+          slug: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+          title_ht?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          download_count?: number
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          language?: string
+          og_image_url?: string | null
+          schema?: Json
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+          title_ht?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "templates_category_fkey"
+            columns: ["category"]
+            isOneToOne: false
+            referencedRelation: "template_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_daily_word: {
         Row: {
           created_at: string | null
@@ -3722,6 +3823,10 @@ export type Database = {
           user_id: string
           verified: boolean
         }[]
+      }
+      increment_template_downloads: {
+        Args: { template_id: string }
+        Returns: undefined
       }
       is_battle_participant: {
         Args: { battle_uuid: string; user_uuid: string }

@@ -109,6 +109,7 @@ export const ROUTE_LAYOUT_MAPPINGS: RouteLayoutMapping[] = [
   { pattern: '/', mode: 'public' },
   { pattern: /^\/auth/, mode: 'public' },
   { pattern: /^\/blog/, mode: 'public' },
+  { pattern: /^\/templates/, mode: 'public' },
   { pattern: '/privacy-policy', mode: 'public' },
   { pattern: '/terms', mode: 'public' },
   
