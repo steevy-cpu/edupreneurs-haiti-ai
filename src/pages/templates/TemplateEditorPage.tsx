@@ -21,8 +21,8 @@ const EditorSidebar = lazy(() => import('@/components/templates/EditorSidebar'))
 function EditorSkeleton() {
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-200px)]">
-      <div className="flex-1 bg-muted animate-pulse rounded-xl" />
       <div className="w-full lg:w-80 bg-muted animate-pulse rounded-xl" />
+      <div className="flex-1 bg-muted animate-pulse rounded-xl" />
     </div>
   );
 }
@@ -157,20 +157,6 @@ function TemplateEditorInner({ template }: { template: NonNullable<ReturnType<ty
 
         {/* Editor Layout */}
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Canvas Preview */}
-          <div className="flex-1 bg-muted/30 rounded-xl p-4 flex items-center justify-center overflow-auto">
-            <Suspense fallback={
-              <div className="w-full max-w-[595px] aspect-[1/1.414] bg-muted animate-pulse rounded-lg" />
-            }>
-              <TemplateCanvas
-                schema={template.schema}
-                values={state.values}
-                selectedElementId={state.selectedElementId}
-                onElementSelect={selectElement}
-              />
-            </Suspense>
-          </div>
-
           {/* Editor Sidebar */}
           <div className="w-full lg:w-80 shrink-0">
             <Suspense fallback={
@@ -182,6 +168,20 @@ function TemplateEditorInner({ template }: { template: NonNullable<ReturnType<ty
                 selectedElementId={state.selectedElementId}
                 onFieldChange={updateField}
                 onTableCellChange={updateTableCell}
+                onElementSelect={selectElement}
+              />
+            </Suspense>
+          </div>
+
+          {/* Canvas Preview */}
+          <div className="flex-1 bg-muted/30 rounded-xl p-4 flex items-center justify-center overflow-auto">
+            <Suspense fallback={
+              <div className="w-full max-w-[595px] aspect-[1/1.414] bg-muted animate-pulse rounded-lg" />
+            }>
+              <TemplateCanvas
+                schema={template.schema}
+                values={state.values}
+                selectedElementId={state.selectedElementId}
                 onElementSelect={selectElement}
               />
             </Suspense>
