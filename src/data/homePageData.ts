@@ -276,7 +276,8 @@ export const footerLinks = {
     { href: "#accueil", label: "Accueil" },
     { href: "#comment-ca-marche", label: "Comment ça marche" },
     { href: "#courses", label: "Nos Cours" },
-    { to: "/blog", label: "Blog" }
+    { to: "/blog", label: "Blog" },
+    { to: "/templates", label: "Templates" }
   ],
   about: [
     { href: "#about", label: "Notre Mission" },
