@@ -187,10 +187,12 @@ function renderTableElement(
   // Render header row
   if (headers.length > 0) {
     pdf.setFont('helvetica', 'bold');
-    pdf.setFillColor(245, 245, 245); // Light gray header background
-    pdf.setTextColor(0, 0, 0); // Ensure black text
     
     for (let col = 0; col < columns; col++) {
+      // Reset colors BEFORE each cell to prevent jsPDF state corruption
+      pdf.setFillColor(245, 245, 245);
+      pdf.setTextColor(0, 0, 0);
+      
       const x = element.position.x + col * colWidth;
       pdf.rect(x, currentY, colWidth, rowHeight, 'FD');
       pdf.text(
@@ -202,18 +204,19 @@ function renderTableElement(
     currentY += rowHeight;
   }
   
-  // Render data rows - reset all states for each section
+  // Render data rows
   pdf.setFont('helvetica', 'normal');
-  pdf.setFillColor(255, 255, 255); // White background for data rows
-  pdf.setTextColor(0, 0, 0); // Ensure black text for data
   
   for (const row of data) {
     for (let col = 0; col < columns; col++) {
+      // Reset colors BEFORE each cell to prevent jsPDF state corruption
+      pdf.setFillColor(255, 255, 255);
+      pdf.setTextColor(0, 0, 0);
+      
       const x = element.position.x + col * colWidth;
       pdf.rect(x, currentY, colWidth, rowHeight, 'FD');
       
       const cellValue = row[col] || '';
-      // Truncate text if too long for cell
       const maxWidth = colWidth - cellPadding * 2;
       const truncated = pdf.splitTextToSize(cellValue, maxWidth)[0] || '';
       
