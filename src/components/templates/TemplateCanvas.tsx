@@ -5,7 +5,7 @@
  * The actual PDF rendering happens server-side for branding enforcement.
  */
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import type { TemplateSchema } from '@/types/templates';
 
 interface TemplateCanvasProps {
@@ -39,8 +39,27 @@ export default function TemplateCanvas({
   onElementSelect 
 }: TemplateCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(schema.dimensions.width);
 
-  // Calculate scale to fit container while maintaining aspect ratio
+  // Track container width for proper scaling
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.offsetWidth);
+      }
+    };
+    
+    updateWidth();
+    const resizeObserver = new ResizeObserver(updateWidth);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  // Calculate scale factor based on actual container width vs template width
+  const scaleFactor = Math.min(containerWidth / schema.dimensions.width, 1);
   const aspectRatio = schema.dimensions.width / schema.dimensions.height;
   
   return (
@@ -51,6 +70,7 @@ export default function TemplateCanvas({
         width: '100%',
         maxWidth: `${schema.dimensions.width}px`,
         aspectRatio: `${aspectRatio}`,
+        minHeight: '400px',
       }}
       onClick={() => onElementSelect(null)}
     >
@@ -88,10 +108,11 @@ export default function TemplateCanvas({
             {element.type === 'text' && (
               <div
                 style={{
-                  fontSize: `${(element.style?.fontSize || 14) * 0.8}px`,
+                  fontSize: `${(element.style?.fontSize || 14) * scaleFactor}px`,
                   fontWeight: element.style?.fontWeight || 'normal',
                   textAlign: element.style?.textAlign || 'left',
                   color: element.style?.color || '#000000',
+                  lineHeight: 1.3,
                 }}
                 className="whitespace-pre-wrap min-w-[50px] px-1"
               >

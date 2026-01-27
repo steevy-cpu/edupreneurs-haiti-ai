@@ -112,12 +112,12 @@ export default function EditorSidebar({
   };
 
   return (
-    <Card className="flex flex-col h-auto lg:h-full overflow-hidden">
+    <Card className="flex flex-col">
       <CardHeader className="shrink-0 pb-3 px-3 sm:px-6">
         <CardTitle className="text-base sm:text-lg">Personnaliser</CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 min-h-0 p-0 overflow-hidden">
-        <ScrollArea className="h-full max-h-[50vh] lg:max-h-[calc(100vh-280px)]">
+      <CardContent className="flex-1 p-0">
+        <ScrollArea className="max-h-[60vh] lg:max-h-[calc(100vh-260px)]">
           <div className="space-y-2 px-3 sm:px-4 pb-4">
             {schema.elements.map(renderElementEditor)}
           </div>
