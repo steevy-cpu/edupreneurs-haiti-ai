@@ -34,12 +34,12 @@ export default function EditorSidebar({
     return (
       <div
         key={element.id}
-        className={`p-3 rounded-lg border transition-colors cursor-pointer ${
+        className={`p-2 sm:p-3 rounded-lg border transition-colors cursor-pointer ${
           isSelected ? 'border-primary bg-primary/5' : 'border-transparent hover:border-border'
         }`}
         onClick={() => onElementSelect(element.id)}
       >
-        <Label className="text-sm font-medium mb-2 block">{element.label}</Label>
+        <Label className="text-xs sm:text-sm font-medium mb-2 block">{element.label}</Label>
 
         {element.type === 'text' && (
           <Input
@@ -112,12 +112,12 @@ export default function EditorSidebar({
   };
 
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Personnaliser</CardTitle>
+    <Card className="h-full max-h-[60vh] lg:max-h-full">
+      <CardHeader className="pb-3 px-3 sm:px-6">
+        <CardTitle className="text-base sm:text-lg">Personnaliser</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-[calc(100vh-320px)] px-4 pb-4">
+        <ScrollArea className="h-[calc(60vh-80px)] lg:h-[calc(100vh-320px)] px-3 sm:px-4 pb-4">
           <div className="space-y-2">
             {schema.elements.map(renderElementEditor)}
           </div>
