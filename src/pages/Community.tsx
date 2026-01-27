@@ -2086,7 +2086,7 @@ const Community = () => {
       {isVisitor && <VisitorCommunityOverlay />}
       
       {/* Conversations List - Fixed sidebar on desktop/tablet */}
-      <div data-tour="community-list">
+      <div data-tour="community-list" className="h-full overflow-hidden">
       <ConversationSidebar
         conversations={conversations}
         selectedConversation={selectedConversation}
@@ -2113,12 +2113,9 @@ const Community = () => {
       <section
         className={`${
           selectedConversation
-            ? "fixed inset-x-0 top-0 flex md:relative md:inset-auto md:h-full"
+            ? "fixed inset-x-0 top-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] flex md:relative md:inset-auto md:bottom-auto md:flex md:h-full"
             : "hidden md:flex h-full"
         } flex-col bg-background overflow-hidden`}
-        style={selectedConversation ? {
-          bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))'
-        } : undefined}
       >
         {selectedConversation ? (
           (() => {
