@@ -15,6 +15,23 @@ interface TemplateCanvasProps {
   onElementSelect: (elementId: string | null) => void;
 }
 
+// Calculate transform based on element type and alignment
+const getTransform = (element: import('@/types/templates').TemplateElement): string => {
+  if (element.type === 'table') {
+    return 'translate(0, 0)';
+  }
+  
+  if (element.type === 'text') {
+    const align = element.style?.textAlign || 'left';
+    if (align === 'center') return 'translate(-50%, 0)';
+    if (align === 'right') return 'translate(-100%, 0)';
+    return 'translate(0, 0)';
+  }
+  
+  // Default for checkbox, date, image
+  return 'translate(0, 0)';
+};
+
 export default function TemplateCanvas({ 
   schema, 
   values, 
@@ -29,7 +46,7 @@ export default function TemplateCanvas({
   return (
     <div 
       ref={containerRef}
-      className="relative bg-white shadow-xl rounded-lg overflow-hidden"
+      className="relative bg-white shadow-xl rounded-lg overflow-auto"
       style={{
         width: '100%',
         maxWidth: `${schema.dimensions.width}px`,
@@ -61,7 +78,7 @@ export default function TemplateCanvas({
             style={{
               left: `${left}%`,
               top: `${top}%`,
-              transform: 'translate(-50%, 0)',
+              transform: getTransform(element),
             }}
             onClick={(e) => {
               e.stopPropagation();
