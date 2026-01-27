@@ -129,7 +129,7 @@ const App = () => (
                             <TemplatesCategoryPage />
                           </Suspense>
                         } />
-                        <Route path="/templates/:slug" element={
+                        <Route path="/templates/edit/:slug" element={
                           <Suspense fallback={<GenericPageSkeleton />}>
                             <TemplateEditorPage />
                           </Suspense>
