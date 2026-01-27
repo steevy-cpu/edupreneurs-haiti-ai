@@ -82,6 +82,11 @@ const EbookReader = lazy(() => import("./pages/EbookReader"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 
+// Templates (public, no auth)
+const TemplatesHomePage = lazy(() => import("./pages/templates/TemplatesHomePage"));
+const TemplatesCategoryPage = lazy(() => import("./pages/templates/TemplatesCategoryPage"));
+const TemplateEditorPage = lazy(() => import("./pages/templates/TemplateEditorPage"));
+
 /**
  * Main App Component
  * 
@@ -112,6 +117,23 @@ const App = () => (
                         } />
                         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                         <Route path="/cookie-settings" element={<CookieSettings />} />
+                        
+                        {/* Templates - Public, no shell */}
+                        <Route path="/templates" element={
+                          <Suspense fallback={<GenericPageSkeleton />}>
+                            <TemplatesHomePage />
+                          </Suspense>
+                        } />
+                        <Route path="/templates/:category" element={
+                          <Suspense fallback={<GenericPageSkeleton />}>
+                            <TemplatesCategoryPage />
+                          </Suspense>
+                        } />
+                        <Route path="/templates/:slug" element={
+                          <Suspense fallback={<GenericPageSkeleton />}>
+                            <TemplateEditorPage />
+                          </Suspense>
+                        } />
                         
                         {/* AUTH ROUTES - Auth shell */}
                         <Route path="/auth" element={
