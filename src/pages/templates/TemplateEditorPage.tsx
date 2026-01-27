@@ -5,7 +5,7 @@
  * SEO-optimized with template-specific meta tags.
  */
 
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useRef } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { useTemplate } from '@/hooks/useTemplates';
@@ -13,7 +13,6 @@ import { useTemplateEditor } from '@/hooks/useTemplateEditor';
 import { useTemplateExport } from '@/hooks/useTemplateExport';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, FileText, Download, RotateCcw, Loader2 } from 'lucide-react';
-
 // Lazy load heavy editor components
 const TemplateCanvas = lazy(() => import('@/components/templates/TemplateCanvas'));
 const EditorSidebar = lazy(() => import('@/components/templates/EditorSidebar'));
@@ -59,14 +58,15 @@ function TemplateEditorContent({ slug }: { slug: string }) {
 
 function TemplateEditorInner({ template }: { template: NonNullable<ReturnType<typeof useTemplate>['data']> }) {
   const { state, updateField, updateTableCell, selectElement, reset } = useTemplateEditor(template);
-  const { isExporting, exportPDF, exportPNG } = useTemplateExport();
+  const { isExporting, exportPDF, exportPNGClient } = useTemplateExport();
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   const handleExportPDF = () => {
     exportPDF(template.id, state.values, template.slug);
   };
 
   const handleExportPNG = () => {
-    exportPNG(template.id, state.values, template.slug);
+    exportPNGClient(canvasRef, template.slug);
   };
 
   // JSON-LD structured data
@@ -179,6 +179,7 @@ function TemplateEditorInner({ template }: { template: NonNullable<ReturnType<ty
               <div className="w-full max-w-[595px] aspect-[1/1.414] bg-muted animate-pulse rounded-lg" />
             }>
               <TemplateCanvas
+                ref={canvasRef}
                 schema={template.schema}
                 values={state.values}
                 selectedElementId={state.selectedElementId}

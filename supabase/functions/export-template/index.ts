@@ -179,14 +179,16 @@ function renderTableElement(
   
   let currentY = element.position.y;
   
-  // Set styles
+  // Set base styles - explicitly reset ALL color states to prevent pollution
   pdf.setFontSize(fontSize);
   pdf.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
+  pdf.setTextColor(0, 0, 0); // Explicit black text for table
   
   // Render header row
   if (headers.length > 0) {
     pdf.setFont('helvetica', 'bold');
-    pdf.setFillColor(245, 245, 245);
+    pdf.setFillColor(245, 245, 245); // Light gray header background
+    pdf.setTextColor(0, 0, 0); // Ensure black text
     
     for (let col = 0; col < columns; col++) {
       const x = element.position.x + col * colWidth;
@@ -200,9 +202,10 @@ function renderTableElement(
     currentY += rowHeight;
   }
   
-  // Render data rows
+  // Render data rows - reset all states for each section
   pdf.setFont('helvetica', 'normal');
-  pdf.setFillColor(255, 255, 255);
+  pdf.setFillColor(255, 255, 255); // White background for data rows
+  pdf.setTextColor(0, 0, 0); // Ensure black text for data
   
   for (const row of data) {
     for (let col = 0; col < columns; col++) {
