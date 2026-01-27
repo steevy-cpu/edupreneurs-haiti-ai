@@ -1,176 +1,216 @@
 
+# Updated Sitemap for Google Search Console
 
-# Improve Templates Pages Frontend
+## Domain Confirmation
 
-## Current Issues Identified
-
-1. **Plain template cards** - Only show the first letter as placeholder (E, P, B)
-2. **No visual representation** - Templates have `thumbnail_url: null` in database
-3. **Simple styling** - Minimal visual appeal compared to the polished home page
-4. **Missing visual interest** - Cards lack illustrations or meaningful previews
+Using the correct published domain: **mon-edupreneur.com**
 
 ---
 
-## Solution Overview
+## Public Pages to Include
 
-Since templates don't have pre-generated thumbnails, we'll create **visual preview representations** that render a mini-version of the template structure client-side. This approach:
-- Avoids storing large images in the database
-- Is bandwidth-efficient for 3G users
-- Generates meaningful previews based on template schema
-- Adds polish with better styling and animations
+Based on the App.tsx routes analysis, here are all the **public pages** that should be indexed:
+
+### Core Public Pages
+
+| URL | Priority | Change Frequency | Description |
+|-----|----------|------------------|-------------|
+| `/` | 1.0 | daily | Homepage |
+| `/blog` | 0.9 | weekly | Blog listing |
+| `/templates` | 0.9 | weekly | Templates hub |
+| `/privacy-policy` | 0.3 | monthly | Privacy policy |
+| `/cookie-settings` | 0.3 | monthly | Cookie settings |
+
+### Template Category Pages
+
+| URL | Priority | Change Frequency |
+|-----|----------|------------------|
+| `/templates/schedule` | 0.8 | weekly |
+| `/templates/planner` | 0.8 | weekly |
+| `/templates/budget` | 0.8 | weekly |
+| `/templates/certificate` | 0.8 | weekly |
+| `/templates/resume` | 0.8 | weekly |
+| `/templates/invoice` | 0.8 | weekly |
+
+### Auth Pages (publicly accessible)
+
+| URL | Priority | Change Frequency |
+|-----|----------|------------------|
+| `/auth` | 0.6 | monthly |
+| `/auth/login` | 0.6 | monthly |
+| `/auth/signup` | 0.6 | monthly |
 
 ---
 
-## Technical Implementation
+## Pages NOT Included (Require Authentication)
 
-### 1. Create TemplatePreview Component
+These routes are inside `AppShell` and require login:
+- `/dashboard`
+- `/matieres`
+- `/course/*`
+- `/feed`
+- `/community`
+- `/profile/*`
+- `/games`
+- `/lecture`
+- `/leaderboard`
+- `/baccalaureat`
+- All admin routes (`/control-center`, `/content-editor`, etc.)
 
-A new component that renders a simplified visual representation of the template based on its category and schema elements.
+---
 
-**File: `src/components/templates/TemplatePreview.tsx`**
+## Files to Update
 
-| Feature | Description |
-|---------|-------------|
-| Category-based icons | Schedule shows calendar grid, Planner shows checklist, Budget shows columns |
-| Visual elements | Render placeholder lines, table grids, and shapes |
-| Color theming | Each category gets a distinct gradient background |
-| Lightweight | Uses CSS-only graphics, no images to load |
+### 1. `public/sitemap.xml`
 
-```typescript
-// Pseudo-structure
-const CATEGORY_THEMES = {
-  schedule: { gradient: 'from-blue-500/20 to-cyan-500/20', icon: Calendar },
-  planner: { gradient: 'from-purple-500/20 to-pink-500/20', icon: ClipboardList },
-  budget: { gradient: 'from-green-500/20 to-emerald-500/20', icon: Wallet },
-  certificate: { gradient: 'from-amber-500/20 to-yellow-500/20', icon: Award },
-  resume: { gradient: 'from-slate-500/20 to-gray-500/20', icon: FileText },
-  invoice: { gradient: 'from-indigo-500/20 to-violet-500/20', icon: Receipt },
-};
+Complete replacement with:
+- Updated `lastmod` to 2026-01-27
+- All current public pages
+- Correct domain (mon-edupreneur.com)
 
-// Renders abstract table grid, text lines, etc.
-function TemplatePreview({ category }: { category: string }) {
-  // Render category-specific visual representation
-}
+### 2. `public/robots.txt`
+
+Keep current content (already uses correct domain).
+
+---
+
+## New Sitemap Content
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Homepage -->
+  <url>
+    <loc>https://mon-edupreneur.com/</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- Blog -->
+  <url>
+    <loc>https://mon-edupreneur.com/blog</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- Templates Hub -->
+  <url>
+    <loc>https://mon-edupreneur.com/templates</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- Template Categories -->
+  <url>
+    <loc>https://mon-edupreneur.com/templates/schedule</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://mon-edupreneur.com/templates/planner</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://mon-edupreneur.com/templates/budget</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://mon-edupreneur.com/templates/certificate</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://mon-edupreneur.com/templates/resume</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://mon-edupreneur.com/templates/invoice</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Auth Pages -->
+  <url>
+    <loc>https://mon-edupreneur.com/auth</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://mon-edupreneur.com/auth/login</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://mon-edupreneur.com/auth/signup</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <!-- Legal Pages -->
+  <url>
+    <loc>https://mon-edupreneur.com/privacy-policy</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <url>
+    <loc>https://mon-edupreneur.com/cookie-settings</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>
 ```
 
-### 2. Update TemplateCard Component
+---
 
-**File: `src/components/templates/TemplateCard.tsx`**
+## Changes Summary
 
-| Change | Description |
-|--------|-------------|
-| Replace letter fallback | Use new TemplatePreview component |
-| Improve card styling | Add gradient borders, better shadows |
-| Enhance hover effects | Subtle scale + shadow elevation |
-| Category badge | Show category with icon in corner |
-
-Before (current fallback):
-```tsx
-<span className="text-4xl font-bold text-primary/20">
-  {template.title.charAt(0)}
-</span>
-```
-
-After:
-```tsx
-<TemplatePreview category={template.category} />
-```
-
-### 3. Enhance TemplatesHomePage Styling
-
-**File: `src/pages/templates/TemplatesHomePage.tsx`**
-
-| Section | Enhancement |
-|---------|-------------|
-| Hero | Add Eric mascot illustration, better gradient |
-| Categories grid | Larger cards with hover animations |
-| Featured section | Glass morphism background |
-| How it works | Step icons with connecting lines |
-| Overall | Match home page polish level |
-
-### 4. Enhance TemplatesCategoryPage Styling
-
-**File: `src/pages/templates/TemplatesCategoryPage.tsx`**
-
-| Change | Description |
-|--------|-------------|
-| Header | Add category icon and better styling |
-| Empty state | Add Eric illustration |
-| Grid | Better spacing and card shadows |
+| Item | Old Value | New Value |
+|------|-----------|-----------|
+| Domain | mon-edupreneur.com | mon-edupreneur.com (unchanged) |
+| Last modified | 2025-06-25 | 2026-01-27 |
+| Total URLs | 26 (many outdated) | 15 (current public pages) |
+| Templates section | Not included | 7 URLs added |
+| Auth pages | Not included | 3 URLs added |
+| Old course URLs | Included | Removed (require auth now) |
 
 ---
 
-## Category Visual Themes
+## Technical Notes
 
-Each category gets a unique color scheme and abstract preview:
-
-| Category | Color Theme | Preview Elements |
-|----------|-------------|------------------|
-| schedule | Blue/Cyan | 6-column table grid |
-| planner | Purple/Pink | Checkbox list with lines |
-| budget | Green/Emerald | 3-column money grid |
-| certificate | Amber/Yellow | Decorative border frame |
-| resume | Slate/Gray | Header + sections layout |
-| invoice | Indigo/Violet | Header + line items |
+1. **Dynamic pages excluded**: Individual blog posts (`/blog/:slug`) and template editor (`/templates/edit/:slug`) are dynamic and would need a server-side sitemap generator to include all entries
+2. **Authenticated routes excluded**: All routes inside `AppShell` require login and should not be indexed
+3. **robots.txt**: Already correct, no changes needed
 
 ---
 
-## Files to Create/Modify
+## File to Modify
 
-### New Files
-| File | Purpose |
-|------|---------|
-| `src/components/templates/TemplatePreview.tsx` | Visual preview component |
-
-### Modified Files
-| File | Changes |
-|------|---------|
-| `src/components/templates/TemplateCard.tsx` | Use TemplatePreview, improve styling |
-| `src/pages/templates/TemplatesHomePage.tsx` | Enhanced hero, categories, overall polish |
-| `src/pages/templates/TemplatesCategoryPage.tsx` | Better header, improved grid styling |
-
----
-
-## UI/UX Improvements Summary
-
-1. **Cards**
-   - Category-specific gradient backgrounds
-   - Abstract template structure visualization
-   - Smooth hover animations (scale-[1.02])
-   - Better shadow elevation on hover
-   - Category icon badge
-
-2. **Home Page**
-   - Enhanced hero with visual interest
-   - Category cards with larger icons
-   - Glass-morphism featured section
-   - Visual step connections in "How it works"
-
-3. **Category Page**
-   - Category-themed header
-   - Better grid spacing
-   - Improved empty states with mascot
-
----
-
-## Performance Considerations
-
-| Aspect | Approach |
-|--------|----------|
-| No image downloads | Previews are CSS-only |
-| Lazy loading | Keep Suspense for cards |
-| Animation | Use CSS transforms (GPU-accelerated) |
-| 3G optimized | Zero additional network requests |
-
----
-
-## Safety Verification
-
-| Check | Status |
-|-------|--------|
-| Existing links work? | Yes - no routing changes |
-| Template editing works? | Yes - only list page changes |
-| Mobile responsive? | Yes - grid breakpoints preserved |
-| 3G optimized? | Yes - CSS-only previews |
-| Backward compatible? | Yes - fallback for unknown categories |
+| File | Action |
+|------|--------|
+| `public/sitemap.xml` | Replace with updated content |
 
