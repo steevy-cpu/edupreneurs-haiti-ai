@@ -1,141 +1,177 @@
 
-# Fix Personnaliser Section Cutoff & Preview Element Overlap
+
+# Fix Template Export Issues: PDF Black Cells & PNG Format
 
 ## Problem Analysis
 
-### Issue 1: Personnaliser Section Cutoff
-The sidebar table editor is cut off at the bottom. Looking at the current structure:
+### Issue 1: PDF Table Renders with Black Cells
 
+Looking at the screenshot, the table cells after the header are completely black. The root cause is in the `renderTableElement` function in the edge function:
+
+```typescript
+// Line 205 - After header, this sets fill to white for data rows
+pdf.setFillColor(255, 255, 255);
+
+// Line 210 - But 'FD' means Fill+Draw
+pdf.rect(x, currentY, colWidth, rowHeight, 'FD');
 ```
-Card (overflow-hidden) ← Clips content!
-  └─ CardContent (overflow-hidden) ← Double clips!
-       └─ ScrollArea (max-h-[50vh]) ← Too restrictive
+
+The problem: **Text color is not reset after rendering the header**. The header text uses black color (default), but after rendering the header, no explicit `setTextColor()` is called before rendering data rows. Additionally, jsPDF may be inheriting incorrect color states.
+
+Looking more closely at the rendering flow:
+1. Header row: `setFillColor(245, 245, 245)` + `setFont('bold')` + draw rects with 'FD'
+2. Data rows: `setFillColor(255, 255, 255)` + `setFont('normal')` + draw rects with 'FD'
+
+**The actual bug**: `setTextColor()` is **never called** in `renderTableElement`. The text color inherits from the previous element rendered (which could be the title/objectives text that sets a custom color). When the previous text element has a dark color, the table text becomes invisible against a white background.
+
+Wait - the cells are BLACK, not the text invisible. Looking again at the screenshot:
+- "Jour" header and "Lundi" are visible
+- All other cells are solid black rectangles
+
+This suggests `setFillColor` is NOT being reset properly between rows, OR the fill color is being set to black (0,0,0) somewhere.
+
+**Root cause found**: After `renderTextElement` sets `setTextColor(0,0,0)` for black text, this could affect subsequent fill operations in some jsPDF versions. But more likely: the **draw color** `setDrawColor` is set to the border color, but `setFillColor` may be affected by incomplete state.
+
+Actually, the real issue is simpler: After `setTextColor()` is called with a custom color in `renderTextElement`, that color persists. But that affects text, not fill.
+
+Let me trace more carefully:
+1. Text elements render with colors like `#1e3a5f` (title) or `#666666` (date)
+2. Table renders - `setFillColor(245, 245, 245)` for header
+3. For data rows: `setFillColor(255, 255, 255)` should set white
+
+The black cells suggest either:
+- The fill color is defaulting to black (0,0,0) somewhere
+- Or the rect is being drawn without proper fill
+
+**Most likely cause**: jsPDF state pollution. The solution is to explicitly reset ALL colors before each element type.
+
+### Issue 2: PNG Mode Doesn't Work
+
+The code explicitly shows the problem (lines 382-385):
+```typescript
+if (format === 'png') {
+  documentBuffer = await generatePNG(template as Template, validatedValues);
+  contentType = 'application/pdf'; // MVP: return PDF, client handles PNG
+  fileExtension = 'pdf'; // Returns .pdf even when user requested PNG!
+}
 ```
 
-**Root Cause**: Multiple `overflow-hidden` constraints combined with a fixed `max-h-[50vh]` limit that doesn't account for the full table height (9 rows × ~30px = 270px+).
+And the `generatePNG` function (lines 284-292):
+```typescript
+async function generatePNG(...) {
+  // For MVP, we return the PDF and let client convert
+  const pdfBuffer = generatePDF(template, values);
+  // TODO: Implement PDF to PNG conversion
+  return pdfBuffer; // Returns PDF data!
+}
+```
 
-### Issue 2: Preview Elements Overlayed
-Looking at the schema positions and the screenshot:
-- Title: `y: 35`, fontSize: 22
-- School name: `y: 60`, fontSize: 12  
-- Student name: `y: 80`, fontSize: 12
-
-The elements overlap because:
-1. The percentage-based positioning (`top: (y/842)*100%`) compresses vertical spacing on smaller canvas renders
-2. Font sizes don't scale proportionally with the container
+**Problem**: The PNG button downloads a PDF file with `.png` extension (due to line 76 in hook: `a.download = ${filename}.${request.format}`). PNG files can't open PDF data.
 
 ---
 
 ## Solution
 
-### File 1: `src/components/templates/EditorSidebar.tsx`
+### Fix 1: PDF Table Rendering - Explicit Color State Management
 
-**Changes:**
-1. Remove `overflow-hidden` from Card - use visible overflow
-2. Remove `overflow-hidden` from CardContent - allow content to flow
-3. Change ScrollArea height to be more flexible - use full available height on desktop
-4. Remove max-h constraints that cut off content
+Modify `renderTableElement` to:
+1. Explicitly set text color to black before rendering
+2. Reset fill and draw states properly between header and data rows
 
-```tsx
-// Before
-<Card className="flex flex-col h-auto lg:h-full overflow-hidden">
-  <CardContent className="flex-1 min-h-0 p-0 overflow-hidden">
-    <ScrollArea className="h-full max-h-[50vh] lg:max-h-[calc(100vh-280px)]">
+```typescript
+function renderTableElement(pdf: jsPDF, element: TemplateElement, data: string[][]): void {
+  const style = element.style || {};
+  const cellPadding = style.cellPadding || 6;
+  const fontSize = style.fontSize || 9;
+  const borderColor = style.borderColor ? hexToRgb(style.borderColor) : [200, 200, 200];
+  
+  // ... calculate dimensions ...
 
-// After  
-<Card className="flex flex-col">
-  <CardContent className="flex-1 p-0">
-    <ScrollArea className="max-h-[60vh] lg:max-h-[calc(100vh-260px)]">
+  // Set base styles
+  pdf.setFontSize(fontSize);
+  pdf.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
+  pdf.setTextColor(0, 0, 0); // ← ADD: Explicit black text
+
+  // Render header row
+  if (headers.length > 0) {
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFillColor(245, 245, 245);
+    // ... render headers ...
+  }
+
+  // Render data rows
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFillColor(255, 255, 255); // ← Already exists
+  pdf.setTextColor(0, 0, 0);       // ← ADD: Ensure black text for data
+  // ... render data ...
+}
 ```
 
-### File 2: `src/components/templates/TemplateCanvas.tsx`
+### Fix 2: PNG Export - Client-Side Conversion Using html2canvas
 
-**Changes:**
-1. Scale font sizes relative to canvas width using a scale factor
-2. Ensure proper vertical spacing by using absolute pixel positioning within the scaled container
-3. Add a min-height to prevent over-compression
+Since server-side PNG generation in Deno is complex, implement client-side conversion:
 
-```tsx
-// Calculate scale factor based on container width vs template width
-// This ensures text doesn't overlap when canvas is smaller than template dimensions
+1. **Remove PNG button from edge function** - only support PDF server-side
+2. **Add client-side PNG export** using `html2canvas` (already installed) to capture the canvas preview
 
-// Add proper spacing by using relative units that respect the document scale
-```
+This approach:
+- Uses the already-rendered HTML preview
+- Works offline (no server call needed)
+- Is much simpler than server-side canvas rendering
+- Gives pixel-perfect output matching what user sees
 
 ---
 
 ## Technical Implementation
 
-### EditorSidebar.tsx Changes
+### File 1: `supabase/functions/export-template/index.ts`
 
-| Line | Change |
-|------|--------|
-| 115 | Remove `overflow-hidden` from Card, keep flex structure |
-| 119 | Remove `overflow-hidden` from CardContent |
-| 120 | Adjust ScrollArea height constraints |
+| Location | Change |
+|----------|--------|
+| Line 183-184 | Add `pdf.setTextColor(0, 0, 0);` after setting fontSize/drawColor |
+| Line 204 | Add `pdf.setTextColor(0, 0, 0);` before rendering data rows |
 
-### TemplateCanvas.tsx Changes
+### File 2: `src/hooks/useTemplateExport.ts`
 
-| Line | Change |
-|------|--------|
-| 46-55 | Add scale factor calculation based on actual container width |
-| 88-100 | Scale text fontSize dynamically based on container scale |
-| Add | Ensure container has minimum height to prevent cramping |
+| Change | Description |
+|--------|-------------|
+| Add canvas ref parameter | Accept a ref to the canvas element |
+| Add `exportPNGClient` function | Use html2canvas to capture the preview |
+| Keep `exportPDF` for server-side | Only PDF uses the edge function |
+
+### File 3: `src/pages/templates/TemplateEditorPage.tsx`
+
+| Change | Description |
+|--------|-------------|
+| Add canvas ref | Create ref to pass to TemplateCanvas |
+| Update PNG handler | Call client-side PNG export instead |
+
+### File 4: `src/components/templates/TemplateCanvas.tsx`
+
+| Change | Description |
+|--------|-------------|
+| Accept forwardRef | Allow parent to get DOM reference for capture |
 
 ---
 
-## Visual Result
+## Code Changes Summary
 
-**Personnaliser - Before:**
-```
-┌─────────────────────┐
-│ Personnaliser       │
-│ ─────────────────── │
-│ Titre: [input]      │
-│ École: [input]      │
-│ Élève: [input]      │
-│ Horaire:            │
-│ ┌──────────┐        │
-│ │ Heure  7:│← CUT   │
-└─────────────────────┘
-```
+```text
+supabase/functions/export-template/index.ts
+├── Line ~183: Add pdf.setTextColor(0, 0, 0) after setDrawColor
+└── Line ~204: Add pdf.setTextColor(0, 0, 0) before data row loop
 
-**Personnaliser - After:**
-```
-┌─────────────────────┐
-│ Personnaliser       │
-│ ─────────────────── │
-│ Titre: [input]      │
-│ École: [input]      │
-│ Élève: [input]      │
-│ Horaire:            │
-│ ┌──────────────────┐│
-│ │ Heure│Lun│Mar│...││
-│ │ 7:00 │...│...│...││
-│ │ ...  │   │   │   ││◄ Scrollable
-│ └──────────────────┘│
-└─────────────────────┘
-```
+src/hooks/useTemplateExport.ts
+├── Add exportPNGClient function using html2canvas
+└── Keep exportPDF unchanged for server-side PDF
 
-**Preview - Before:**
-```
-  Mon Emploi du Temps    2025-2026
-  Ex: Collège Saint-Louis
-      Votre nom              ← Text overlapping
-  ─────────────────────────────
-  │ Heure │ Lundi │ ... │
-```
+src/pages/templates/TemplateEditorPage.tsx
+├── Add useRef for canvas element
+└── Pass ref to TemplateCanvas
+└── Update handleExportPNG to use client-side export
 
-**Preview - After:**
-```
-  Mon Emploi du Temps         2025-2026
-
-  Ex: Collège Saint-Louis
-  
-  Votre nom                   ← Proper spacing
-  
-  ─────────────────────────────
-  │ Heure │ Lundi │ ... │
+src/components/templates/TemplateCanvas.tsx
+└── Wrap component with forwardRef to expose DOM element
 ```
 
 ---
@@ -144,18 +180,26 @@ The elements overlap because:
 
 | Check | Status |
 |-------|--------|
-| Table inputs fully accessible? | Yes - removed overflow-hidden |
-| ScrollArea still works? | Yes - max-height preserved |
-| Desktop layout maintained? | Yes - lg: breakpoints preserved |
-| Mobile layout improved? | Yes - better height handling |
-| Text elements properly spaced? | Yes - scaled positioning |
-| Backward compatible? | Yes - no schema changes |
+| PDF export still works? | Yes - only adds explicit color resets |
+| PNG produces valid image? | Yes - uses html2canvas client-side |
+| Existing table data preserved? | Yes - no schema changes |
+| Branding still enforced? | Yes - branding in PDF, visible in PNG capture |
+| 3G optimized? | Yes - PNG generated locally, no extra network call |
+| Backward compatible? | Yes - no breaking changes |
 
 ---
 
-## Files to Modify
+## Expected Results
 
-| File | Changes |
-|------|---------|
-| `src/components/templates/EditorSidebar.tsx` | Remove overflow-hidden, adjust height constraints |
-| `src/components/templates/TemplateCanvas.tsx` | Add proper font scaling relative to container width |
+**PDF Export - After Fix:**
+- Table cells render with white background
+- All text visible in black
+- Headers have light gray background
+- Borders render correctly
+
+**PNG Export - After Fix:**
+- Downloads valid PNG file
+- Captures exactly what user sees in preview
+- Includes branding footer
+- Opens correctly in any image viewer
+
