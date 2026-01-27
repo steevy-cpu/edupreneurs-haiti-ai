@@ -52,6 +52,29 @@ export default function TemplatesHomePage() {
   const { data: counts = {} } = useTemplateCounts();
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Generate JSON-LD for categories
+  const categoriesJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Templates Gratuits - EDUPRENEURS",
+    "description": "Collection de templates PDF gratuits pour étudiants haïtiens",
+    "url": "https://mon-edupreneur.com/templates",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "EDUPRENEURS",
+      "url": "https://mon-edupreneur.com"
+    },
+    "mainEntity": {
+      "@type": "ItemList",
+      "itemListElement": categories.map((cat, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "name": cat.name,
+        "url": `https://mon-edupreneur.com/templates/${cat.id}`
+      }))
+    }
+  };
+
   return (
     <>
       <Helmet>
@@ -61,11 +84,17 @@ export default function TemplatesHomePage() {
           content="Téléchargez gratuitement des templates PDF personnalisables: emplois du temps scolaires, planificateurs d'études, fiches de budget, certificats. Exportez sans inscription." 
         />
         <meta name="keywords" content="templates gratuits, emploi du temps, planificateur, budget étudiant, certificat, Haiti, MENFP" />
-        <link rel="canonical" href="https://edupreneurs-haiti-ai.lovable.app/templates" />
+        <link rel="canonical" href="https://mon-edupreneur.com/templates" />
+        <link rel="alternate" hrefLang="fr-HT" href="https://mon-edupreneur.com/templates" />
+        <link rel="alternate" hrefLang="fr" href="https://mon-edupreneur.com/templates" />
         <meta property="og:title" content="Templates Gratuits | EDUPRENEURS" />
         <meta property="og:description" content="Templates PDF gratuits pour étudiants haïtiens. Personnalisez et exportez sans inscription." />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="fr_HT" />
+        <meta property="og:url" content="https://mon-edupreneur.com/templates" />
+        <script type="application/ld+json">
+          {JSON.stringify(categoriesJsonLd)}
+        </script>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">

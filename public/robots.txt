@@ -13,5 +13,20 @@ Allow: /
 User-agent: *
 Allow: /
 
+# Block authenticated/private paths
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /profile
+Disallow: /admin
+Disallow: /control-center
+Disallow: /content-editor
+Disallow: /feed
+Disallow: /community
+Disallow: /games
+Disallow: /lecture
+Disallow: /leaderboard
+Disallow: /matieres
+Disallow: /course
+
 # Sitemap
 Sitemap: https://mon-edupreneur.com/sitemap.xml

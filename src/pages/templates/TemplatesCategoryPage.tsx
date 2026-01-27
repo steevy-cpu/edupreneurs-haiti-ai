@@ -48,6 +48,17 @@ export default function TemplatesCategoryPage() {
   const CategoryIcon = CATEGORY_ICONS[category || ''] || FileText;
   const colors = CATEGORY_COLORS[category || ''] || CATEGORY_COLORS.schedule;
 
+  // Generate breadcrumb JSON-LD
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://mon-edupreneur.com" },
+      { "@type": "ListItem", "position": 2, "name": "Templates", "item": "https://mon-edupreneur.com/templates" },
+      { "@type": "ListItem", "position": 3, "name": categoryName, "item": `https://mon-edupreneur.com/templates/${category}` }
+    ]
+  };
+
   return (
     <>
       <Helmet>
@@ -56,9 +67,15 @@ export default function TemplatesCategoryPage() {
           name="description" 
           content={`${categoryDescription} Téléchargez gratuitement des templates ${categoryName.toLowerCase()} personnalisables en PDF.`}
         />
-        <link rel="canonical" href={`https://edupreneurs-haiti-ai.lovable.app/templates/${category}`} />
+        <link rel="canonical" href={`https://mon-edupreneur.com/templates/${category}`} />
+        <link rel="alternate" hrefLang="fr-HT" href={`https://mon-edupreneur.com/templates/${category}`} />
+        <link rel="alternate" hrefLang="fr" href={`https://mon-edupreneur.com/templates/${category}`} />
         <meta property="og:title" content={`${categoryName} - Templates EDUPRENEURS`} />
         <meta property="og:type" content="website" />
+        <meta property="og:url" content={`https://mon-edupreneur.com/templates/${category}`} />
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbJsonLd)}
+        </script>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
