@@ -1,322 +1,119 @@
 
 
-# Next Steps: Template Export Function & Initial Templates
+# Fix Template Routing Conflict
 
-## Overview
+## Problem Identified
 
-The templates feature foundation is complete (database, frontend, hooks). Now we need to:
-1. Create the server-side export edge function
-2. Seed initial templates into the database
+In `App.tsx` (lines 127-136), two routes use identical dynamic segment patterns:
+
+```tsx
+<Route path="/templates/:category" element={<TemplatesCategoryPage />} />
+<Route path="/templates/:slug" element={<TemplateEditorPage />} />
+```
+
+Since React Router evaluates routes top-to-bottom, **the first matching route always wins**. When a user visits `/templates/emploi-du-temps-primaire`, the router interprets `emploi-du-temps-primaire` as a `category` parameter, not a `slug`, rendering the wrong page.
 
 ---
 
-## 1. Create Export Edge Function
+## Solution: Add Unique Prefix to Editor Route
 
-### File: `supabase/functions/export-template/index.ts`
+Change the template editor route from `/templates/:slug` to `/templates/edit/:slug`.
 
-A server-side function that renders templates to PDF/PNG with mandatory branding.
+This creates unambiguous routing:
+| URL | Route | Component |
+|-----|-------|-----------|
+| `/templates` | `/templates` | TemplatesHomePage |
+| `/templates/schedule` | `/templates/:category` | TemplatesCategoryPage |
+| `/templates/edit/emploi-du-temps-primaire` | `/templates/edit/:slug` | TemplateEditorPage |
 
-**Key Features:**
-- IP-based rate limiting (5 anon / 20 auth exports per minute)
-- Schema validation with Zod
-- PDF generation with jsPDF
-- PNG generation using canvas rendering
-- Mandatory Edupreneurs branding footer
-- Download counter increment
+---
 
-```typescript
-// Core structure:
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { checkRateLimit, getClientIp, rateLimitResponse } from "../_shared/rateLimiter.ts";
-import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
-import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+## Files to Modify
 
-// Rate limit: stricter for anonymous users
-const RATE_LIMIT_CONFIG = {
-  windowMs: 60 * 1000,
-  maxRequests: 20,
-  maxAnonRequests: 5,
-  keyPrefix: 'template_export'
-};
+### 1. `src/App.tsx`
 
-// Validation schema
-const exportRequestSchema = z.object({
-  templateId: z.string().uuid(),
-  values: z.record(z.unknown()),
-  format: z.enum(['pdf', 'png']).default('pdf'),
-});
-
-serve(async (req) => {
-  // CORS handling
-  // Rate limiting
-  // Auth check (optional - works for anon too)
-  // Validate input
-  // Fetch template from DB
-  // Generate PDF/PNG with branding
-  // Increment download counter
-  // Return file
-});
+**Current (line 132-136):**
+```tsx
+<Route path="/templates/:slug" element={
+  <Suspense fallback={<GenericPageSkeleton />}>
+    <TemplateEditorPage />
+  </Suspense>
+} />
 ```
 
-### PDF Rendering Strategy
-
-Using Deno-compatible jsPDF for server-side rendering:
-
-```typescript
-// Import jsPDF for Deno
-import { jsPDF } from "https://esm.sh/jspdf@2.5.2";
-
-function generatePDF(template, values) {
-  const pdf = new jsPDF({
-    orientation: 'portrait',
-    unit: 'pt',
-    format: [template.schema.dimensions.width, template.schema.dimensions.height]
-  });
-  
-  // Set background
-  pdf.setFillColor(template.schema.background);
-  pdf.rect(0, 0, width, height, 'F');
-  
-  // Render elements
-  for (const element of template.schema.elements) {
-    renderElement(pdf, element, values[element.id]);
-  }
-  
-  // MANDATORY: Apply branding (cannot skip)
-  applyBranding(pdf, template.schema.branding);
-  
-  return pdf.output('arraybuffer');
-}
-
-function applyBranding(pdf, branding) {
-  const width = pdf.internal.pageSize.getWidth();
-  const height = pdf.internal.pageSize.getHeight();
-  
-  // Footer text - always added
-  pdf.setFontSize(8);
-  pdf.setTextColor(150, 150, 150);
-  pdf.text(branding.footerText || 'Créé avec Edupreneurs', width / 2, height - 10, { 
-    align: 'center' 
-  });
-}
-```
-
-### PNG Rendering Strategy
-
-For PNG export, we'll use a canvas-based approach with deno-canvas:
-
-```typescript
-// For MVP, PNG will convert the PDF to image
-// Future: direct canvas rendering for better quality
-async function generatePNG(template, values) {
-  // Generate PDF first
-  const pdfData = generatePDF(template, values);
-  
-  // Convert PDF to PNG (using pdf.js or similar)
-  // For MVP, we can use a simpler approach with canvas
-  
-  return pngBuffer;
-}
+**Change to:**
+```tsx
+<Route path="/templates/edit/:slug" element={
+  <Suspense fallback={<GenericPageSkeleton />}>
+    <TemplateEditorPage />
+  </Suspense>
+} />
 ```
 
 ---
 
-## 2. Update Config.toml
+### 2. `src/components/templates/TemplateCard.tsx`
 
-Add the edge function configuration:
+**Current (line 27):**
+```tsx
+<Link to={`/templates/${template.slug}`}>
+```
 
-```toml
-[functions.export-template]
-verify_jwt = false
+**Change to:**
+```tsx
+<Link to={`/templates/edit/${template.slug}`}>
 ```
 
 ---
 
-## 3. Seed Initial Templates
+### 3. `src/pages/templates/TemplatesHomePage.tsx`
 
-Add 3 initial templates to get the feature working:
+The "Voir tout" link currently points to `/templates/schedule`. This is correct for a category link, **no change needed**.
 
-### Template 1: Emploi du Temps (Schedule)
+---
 
-```sql
-INSERT INTO templates (
-  slug, title, title_ht, description, category, tags, language,
-  schema, seo_title, seo_description, is_featured, is_published
-) VALUES (
-  'emploi-du-temps-primaire',
-  'Emploi du Temps - Primaire',
-  'Orè - Primer',
-  'Organisez votre semaine scolaire avec ce template d''emploi du temps pour le primaire.',
-  'schedule',
-  ARRAY['emploi du temps', 'primaire', 'école', '7AF', '8AF', '9AF'],
-  'fr',
-  -- Full schema JSON with table, text fields, etc.
-  'Emploi du Temps Primaire Gratuit | Template PDF',
-  'Téléchargez un emploi du temps gratuit pour l''école primaire. Personnalisable et exportable en PDF.',
-  true,
-  true
-);
+### 4. `src/pages/templates/TemplateEditorPage.tsx`
+
+The canonical URL and any self-referential links need updating.
+
+**Current (line 89):**
+```tsx
+<link rel="canonical" href={`https://edupreneurs-haiti-ai.lovable.app/templates/${template.slug}`} />
 ```
 
-### Template 2: Planificateur d'Études
-
-```sql
-INSERT INTO templates (
-  slug, title, description, category, tags, language,
-  schema, is_featured, is_published
-) VALUES (
-  'planificateur-etudes-hebdomadaire',
-  'Planificateur d''Études Hebdomadaire',
-  'Organisez vos sessions d''étude pour la semaine avec objectifs et sujets.',
-  'planner',
-  ARRAY['planificateur', 'études', 'hebdomadaire', 'organisation'],
-  'fr',
-  -- Schema JSON
-  true,
-  true
-);
+**Change to:**
+```tsx
+<link rel="canonical" href={`https://edupreneurs-haiti-ai.lovable.app/templates/edit/${template.slug}`} />
 ```
 
-### Template 3: Fiche Budget Étudiant
-
-```sql
-INSERT INTO templates (
-  slug, title, description, category, tags, language,
-  schema, is_featured, is_published
-) VALUES (
-  'budget-etudiant-mensuel',
-  'Budget Étudiant Mensuel',
-  'Gérez vos finances étudiantes avec cette fiche de budget mensuel.',
-  'budget',
-  ARRAY['budget', 'finances', 'étudiant', 'mensuel'],
-  'fr',
-  -- Schema JSON
-  true,
-  true
-);
-```
+Also update the OG URL if present.
 
 ---
 
-## 4. Template Schema Examples
+## Implementation Checklist
 
-### Schedule Template Schema
-
-```json
-{
-  "version": 1,
-  "dimensions": { "width": 595, "height": 842, "unit": "pt" },
-  "background": "#ffffff",
-  "elements": [
-    {
-      "id": "title",
-      "type": "text",
-      "label": "Titre",
-      "defaultValue": "Mon Emploi du Temps",
-      "position": { "x": 297, "y": 35 },
-      "style": { "fontSize": 22, "fontWeight": "bold", "textAlign": "center", "color": "#1e3a5f" }
-    },
-    {
-      "id": "school_name",
-      "type": "text",
-      "label": "Nom de l'école",
-      "defaultValue": "",
-      "placeholder": "Ex: Collège Saint-Louis",
-      "position": { "x": 297, "y": 60 },
-      "style": { "fontSize": 12, "textAlign": "center", "color": "#666666" }
-    },
-    {
-      "id": "student_name",
-      "type": "text",
-      "label": "Nom de l'élève",
-      "defaultValue": "",
-      "placeholder": "Votre nom",
-      "position": { "x": 297, "y": 80 },
-      "style": { "fontSize": 12, "textAlign": "center" }
-    },
-    {
-      "id": "schedule_table",
-      "type": "table",
-      "label": "Horaire",
-      "rows": 9,
-      "columns": 6,
-      "headers": ["Heure", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"],
-      "defaultData": [
-        ["7:00 - 8:00", "", "", "", "", ""],
-        ["8:00 - 9:00", "", "", "", "", ""],
-        ["9:00 - 10:00", "", "", "", "", ""],
-        ["10:00 - 10:30", "Récréation", "Récréation", "Récréation", "Récréation", "Récréation"],
-        ["10:30 - 11:30", "", "", "", "", ""],
-        ["11:30 - 12:30", "", "", "", "", ""],
-        ["12:30 - 13:30", "Déjeuner", "Déjeuner", "Déjeuner", "Déjeuner", "Déjeuner"],
-        ["13:30 - 14:30", "", "", "", "", ""],
-        ["14:30 - 15:30", "", "", "", "", ""]
-      ],
-      "position": { "x": 40, "y": 110 },
-      "style": { "cellPadding": 6, "borderColor": "#e0e0e0", "fontSize": 9 }
-    },
-    {
-      "id": "year",
-      "type": "text",
-      "label": "Année scolaire",
-      "defaultValue": "2025-2026",
-      "position": { "x": 520, "y": 35 },
-      "style": { "fontSize": 10, "textAlign": "right", "color": "#666666" }
-    }
-  ],
-  "branding": {
-    "logoPosition": "bottom-right",
-    "watermark": false,
-    "footerText": "Créé avec Edupreneurs | edupreneurs.app"
-  }
-}
-```
+| File | Change | Lines |
+|------|--------|-------|
+| `src/App.tsx` | Route path: `:slug` → `edit/:slug` | 132 |
+| `src/components/templates/TemplateCard.tsx` | Link path: add `/edit/` | 27 |
+| `src/pages/templates/TemplateEditorPage.tsx` | Canonical URL: add `/edit/` | 89 |
 
 ---
 
-## 5. Implementation Order
+## Verification Steps
 
-| Step | Task | Priority |
-|------|------|----------|
-| 1 | Create `export-template` edge function | P0 |
-| 2 | Add config.toml entry | P0 |
-| 3 | Deploy and test edge function | P0 |
-| 4 | Insert 3 seed templates via migration | P0 |
-| 5 | Test end-to-end: view, edit, export | P0 |
+After implementation:
+1. Navigate to `/templates` → Should show homepage with categories
+2. Click a category (e.g., "Emplois du temps") → Should go to `/templates/schedule` and show category page
+3. Click a template card → Should go to `/templates/edit/emploi-du-temps-primaire` and show editor
+4. "Retour" link in editor should return to `/templates/:category` page
 
 ---
 
-## 6. Security Considerations
+## Technical Notes
 
-| Concern | Mitigation |
-|---------|------------|
-| Rate limiting | IP-based, 5/min anon, 20/min auth |
-| Input validation | Zod schema for all fields |
-| XSS in values | Sanitize text before rendering |
-| Branding bypass | Branding applied server-side, cannot be removed |
-| Large payloads | Max 500 chars per text field, max 50 table rows |
-
----
-
-## 7. Testing Checklist
-
-- [ ] Edge function deploys without errors
-- [ ] PDF export works with sample template
-- [ ] PNG export works with sample template
-- [ ] Rate limiting blocks after 5 anon requests
-- [ ] Branding appears on all exports
-- [ ] Template editor loads and previews correctly
-- [ ] LocalStorage persistence works across page refresh
-- [ ] Download counter increments on export
-
----
-
-## Files to Create/Modify
-
-| File | Action |
-|------|--------|
-| `supabase/functions/export-template/index.ts` | Create |
-| `supabase/config.toml` | Add function entry |
-| `supabase/migrations/XXXX_seed_templates.sql` | Create (seed data) |
+- **No database changes required**
+- **No edge function changes required**
+- **Backward compatibility**: Old bookmarks to `/templates/:slug` will now incorrectly load the category page (showing "no templates" or redirecting to `/templates`). This is acceptable for a new feature with no existing traffic.
+- **SEO impact**: Minimal - templates are new and not yet indexed
 
