@@ -24,7 +24,10 @@ export default function Blog() {
           name="keywords"
           content="blog éducation, Haïti, apprentissage, conseils études, EDUPRENEURS"
         />
-        <link rel="canonical" href="https://edupreneurs-haiti-ai.lovable.app/blog" />
+        <link rel="canonical" href="https://mon-edupreneur.com/blog" />
+        <link rel="alternate" hrefLang="fr-HT" href="https://mon-edupreneur.com/blog" />
+        <link rel="alternate" hrefLang="fr" href="https://mon-edupreneur.com/blog" />
+        <meta property="og:url" content="https://mon-edupreneur.com/blog" />
       </Helmet>
 
       <div className="min-h-screen bg-background">
