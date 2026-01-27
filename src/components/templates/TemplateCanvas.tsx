@@ -3,9 +3,10 @@
  * 
  * Renders the template preview using HTML/CSS for consistent display.
  * The actual PDF rendering happens server-side for branding enforcement.
+ * Supports forwardRef for client-side PNG export via html2canvas.
  */
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, forwardRef } from 'react';
 import type { TemplateSchema } from '@/types/templates';
 
 interface TemplateCanvasProps {
@@ -32,27 +33,27 @@ const getTransform = (element: import('@/types/templates').TemplateElement): str
   return 'translate(0, 0)';
 };
 
-export default function TemplateCanvas({ 
+const TemplateCanvas = forwardRef<HTMLDivElement, TemplateCanvasProps>(({ 
   schema, 
   values, 
   selectedElementId, 
   onElementSelect 
-}: TemplateCanvasProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+}, forwardedRef) => {
+  const internalRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(schema.dimensions.width);
 
   // Track container width for proper scaling
   useEffect(() => {
     const updateWidth = () => {
-      if (containerRef.current) {
-        setContainerWidth(containerRef.current.offsetWidth);
+      if (internalRef.current) {
+        setContainerWidth(internalRef.current.offsetWidth);
       }
     };
     
     updateWidth();
     const resizeObserver = new ResizeObserver(updateWidth);
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
+    if (internalRef.current) {
+      resizeObserver.observe(internalRef.current);
     }
     
     return () => resizeObserver.disconnect();
@@ -61,10 +62,20 @@ export default function TemplateCanvas({
   // Calculate scale factor based on actual container width vs template width
   const scaleFactor = Math.min(containerWidth / schema.dimensions.width, 1);
   const aspectRatio = schema.dimensions.width / schema.dimensions.height;
-  
+
+  // Combine refs for both internal use and forwarding
+  const setRefs = (node: HTMLDivElement | null) => {
+    internalRef.current = node;
+    if (typeof forwardedRef === 'function') {
+      forwardedRef(node);
+    } else if (forwardedRef) {
+      forwardedRef.current = node;
+    }
+  };
+
   return (
     <div 
-      ref={containerRef}
+      ref={setRefs}
       className="relative bg-white shadow-xl rounded-lg overflow-auto"
       style={{
         width: '100%',
@@ -200,4 +211,8 @@ export default function TemplateCanvas({
       </div>
     </div>
   );
-}
+});
+
+TemplateCanvas.displayName = 'TemplateCanvas';
+
+export default TemplateCanvas;

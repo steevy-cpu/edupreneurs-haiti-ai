@@ -1,11 +1,12 @@
 /**
  * Template Export Hook
  * 
- * Handles exporting templates to PDF/PNG via the edge function.
+ * Handles exporting templates to PDF via edge function and PNG via client-side html2canvas.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, RefObject } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import html2canvas from 'html2canvas';
 import type { ExportFormat, ExportRequest } from '@/types/templates';
 import { toast } from 'sonner';
 
@@ -30,7 +31,7 @@ export function useTemplateExport() {
   });
 
   /**
-   * Export template to PDF or PNG
+   * Export template to PDF via server
    */
   const exportTemplate = useCallback(async (
     request: ExportRequest,
@@ -92,7 +93,7 @@ export function useTemplateExport() {
   }, []);
 
   /**
-   * Export as PDF
+   * Export as PDF (server-side)
    */
   const exportPDF = useCallback(async (
     templateId: string,
@@ -106,22 +107,66 @@ export function useTemplateExport() {
   }, [exportTemplate]);
 
   /**
-   * Export as PNG
+   * Export as PNG (client-side using html2canvas)
+   * Captures the exact preview the user sees
    */
-  const exportPNG = useCallback(async (
-    templateId: string,
-    values: Record<string, unknown>,
+  const exportPNGClient = useCallback(async (
+    canvasRef: RefObject<HTMLDivElement>,
     filename: string
   ): Promise<boolean> => {
-    return exportTemplate(
-      { templateId, values, format: 'png' },
-      filename
-    );
-  }, [exportTemplate]);
+    if (!canvasRef.current) {
+      toast.error('Aperçu non disponible');
+      return false;
+    }
+
+    setState({ isExporting: true, progress: 20, error: null });
+
+    try {
+      setState(prev => ({ ...prev, progress: 50 }));
+
+      // Capture the canvas element with html2canvas
+      const canvas = await html2canvas(canvasRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2, // Higher quality
+        useCORS: true,
+        logging: false,
+      });
+
+      setState(prev => ({ ...prev, progress: 80 }));
+
+      // Convert to blob and download
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          setState({ isExporting: false, progress: 0, error: 'Échec de la génération PNG' });
+          toast.error('Échec de la génération PNG');
+          return;
+        }
+
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${filename}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        setState({ isExporting: false, progress: 100, error: null });
+        toast.success('Template téléchargé en PNG');
+      }, 'image/png', 1.0);
+
+      return true;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erreur lors de l\'export PNG';
+      setState({ isExporting: false, progress: 0, error: message });
+      toast.error(message);
+      return false;
+    }
+  }, []);
 
   return {
     ...state,
     exportPDF,
-    exportPNG,
+    exportPNGClient,
   };
 }
