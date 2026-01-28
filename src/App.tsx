@@ -50,6 +50,7 @@ const Community = lazy(() => import("./pages/Community"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const CookieSettings = lazy(() => import("./pages/CookieSettings"));
+const Terms = lazy(() => import("./pages/Terms"));
 const DevPush = lazy(() => import("./pages/DevPush"));
 const DynamicCoursePage = lazy(() => import("./pages/DynamicCoursePage"));
 const DynamicLessonPage = lazy(() => import("./pages/DynamicLessonPage"));
@@ -115,8 +116,21 @@ const App = () => (
                             <BlogPost />
                           </Suspense>
                         } />
-                        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                        <Route path="/cookie-settings" element={<CookieSettings />} />
+                        <Route path="/privacy-policy" element={
+                          <Suspense fallback={<GenericPageSkeleton />}>
+                            <PrivacyPolicy />
+                          </Suspense>
+                        } />
+                        <Route path="/cookie-settings" element={
+                          <Suspense fallback={<GenericPageSkeleton />}>
+                            <CookieSettings />
+                          </Suspense>
+                        } />
+                        <Route path="/terms" element={
+                          <Suspense fallback={<GenericPageSkeleton />}>
+                            <Terms />
+                          </Suspense>
+                        } />
                         
                         {/* Templates - Public, no shell */}
                         <Route path="/templates" element={
