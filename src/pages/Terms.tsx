@@ -1,5 +1,7 @@
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Terms() {
   return (
@@ -8,6 +10,12 @@ export default function Terms() {
         <ThemeToggle />
       </div>
       <div className="max-w-4xl mx-auto">
+        <Link to="/">
+          <Button variant="ghost" className="mb-4 gap-2">
+            <ArrowLeft className="w-4 h-4" />
+            Retour
+          </Button>
+        </Link>
         <div className="bg-card border border-border rounded-2xl shadow-lg p-8">
           <h1 className="text-3xl font-bold mb-6 text-primary">Conditions d'Utilisation</h1>
 
