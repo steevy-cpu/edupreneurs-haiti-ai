@@ -1,104 +1,129 @@
 
+# Fix Navigation Crashes - Apply Safe Defaults Pattern
 
-# Fix Chess AI Difficulty Levels
+## Problem Identified
 
-## Problem Analysis
+The error `TypeError: Cannot read properties of null (reading 'useContext')` occurs during navigation transitions because two context hooks throw errors when accessed before their providers are ready.
 
-Users report that even when selecting "Expert" difficulty, Jude plays at a beginner level. After investigating, I found **two critical issues**:
+### Root Cause Analysis
 
-### Issue 1: Missing "Advanced" Difficulty Level
+| Context | Current Behavior | Safe Pattern |
+|---------|-----------------|--------------|
+| `SessionAuthContext` | Returns safe defaults | Works during transitions |
+| `PresenceContext` | Returns safe defaults | Works during transitions |
+| `FirstTimeUserContext` | Returns safe defaults | Works during transitions |
+| `VisitorContext` | **Throws error** | Crashes on navigation |
+| `MusicPlayerContext` | **Throws error** | Crashes on navigation |
 
-| Location | Difficulty Levels Defined |
-|----------|---------------------------|
-| Frontend (`ChessGameControls.tsx`) | `beginner`, `intermediate`, `advanced`, `expert` (4 levels) |
-| Edge Function (`chess-ai-tutor`) | `beginner`, `intermediate`, `expert` (3 levels only) |
-
-**Problem**: When a user selects "Avancé" (advanced), the edge function falls back to the `default` case which returns `intermediate` level prompts. This means:
-- Selecting "Advanced" → AI plays at "Intermediate"
-- No true 4-tier difficulty system
-
-### Issue 2: Weak Expert-Level Prompts
-
-The current expert prompt says "Choisis TOUJOURS le meilleur coup" but doesn't provide the AI with concrete guidance on HOW to evaluate positions or play strong chess. LLMs aren't chess engines - they need explicit strategic instructions to play better moves.
+When users navigate between pages (especially lazy-loaded ones like Feed), React's context dispatcher can temporarily be null. The throwing behavior causes the entire app to crash.
 
 ---
 
 ## Solution
 
-### Change 1: Add "Advanced" Difficulty to Edge Function
+Apply the proven "safe defaults" pattern to the two problematic contexts.
 
-**File:** `supabase/functions/chess-ai-tutor/index.ts`
+### Change 1: Fix VisitorContext.tsx
 
-**Current (line 20):**
-```typescript
-type DifficultyLevel = 'beginner' | 'intermediate' | 'expert';
-```
+**File:** `src/contexts/VisitorContext.tsx`
 
-**After:**
-```typescript
-type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
-```
-
-### Change 2: Add Advanced Difficulty Prompt
-
-Insert a new case for `advanced` between `intermediate` and `expert`:
+Add safe defaults constant and update the hook:
 
 ```typescript
-case 'advanced':
-  return `
-NIVEAU DE JEU: AVANCÉ 💪
-- Tu joues à un niveau avancé avec une bonne compréhension stratégique
-- Joue des coups solides et tactiquement corrects
-- Utilise activement des tactiques (fourchettes, clouages, enfilades, attaques doubles)
-- Développe tes pièces harmonieusement vers des cases actives
-- Contrôle le centre et les colonnes ouvertes
-- Applique les principes d'ouverture classiques
-- Fais très rarement des erreurs, seulement sur des positions très complexes
-- Explique les concepts tactiques et stratégiques avancés`;
+// Safe defaults when context is unavailable (prevents React error #310)
+const SAFE_VISITOR_DEFAULTS: VisitorState = {
+  isVisitor: false,
+  visitorType: null,
+  tourStep: 0,
+  tourCompleted: false,
+  tourActive: false,
+  showWelcomePopup: false,
+  setVisitorType: () => {},
+  startVisitorMode: () => {},
+  exitVisitorMode: () => {},
+  nextTourStep: () => {},
+  previousTourStep: () => {},
+  skipTour: () => {},
+  startTour: () => {},
+  completeTour: () => {},
+  completeWelcomePopup: () => {},
+};
+
+export const useVisitor = (): VisitorState => {
+  const context = useContext(VisitorContext);
+  // Return safe defaults if used outside provider (prevents React error #310)
+  if (context === undefined) {
+    return SAFE_VISITOR_DEFAULTS;
+  }
+  return context;
+};
 ```
 
-### Change 3: Strengthen Expert Prompts with Chess Heuristics
+### Change 2: Fix MusicPlayerContext.tsx
 
-The expert prompt needs concrete chess evaluation criteria:
+**File:** `src/contexts/MusicPlayerContext.tsx`
+
+Add safe defaults constant and update the hook:
 
 ```typescript
-case 'expert':
-  return `
-NIVEAU DE JEU: EXPERT 🏆
-- Tu joues au MAXIMUM de tes capacités - comme un maître d'échecs
-- TOUJOURS analyser: sécurité du roi, matériel, structure de pions, activité des pièces
-- Priorités d'ouverture: 1) Contrôler le centre (e4/d4), 2) Développer les pièces mineures, 3) Roquer tôt
-- CALCULE les tactiques: cherche fourchettes, clouages, enfilades, échecs doubles, sacrifices
-- En milieu de partie: coordonne tes pièces, crée des faiblesses dans le camp adverse
-- EXPLOITE immédiatement les erreurs de l'adversaire
-- Utilise des ouvertures solides: Italienne, Espagnole, Sicilienne, Défense Française
-- Si tu captures, calcule TOUS les échanges avant de jouer
-- Explique des concepts de niveau tournoi: prophylaxie, zugzwang, compensation, initiative`;
+// Safe defaults when context is unavailable (prevents React error #310)
+const SAFE_MUSIC_DEFAULTS: MusicPlayerContextType = {
+  isPlaying: false,
+  currentTrack: null,
+  volume: 0.5,
+  playlist: [],
+  shuffle: false,
+  repeat: 'none',
+  isMinimized: true,
+  isMuted: false,
+  // All action functions as no-ops
+  play: () => {},
+  pause: () => {},
+  togglePlay: () => {},
+  nextTrack: () => {},
+  prevTrack: () => {},
+  setVolume: () => {},
+  seekTo: () => {},
+  selectTrack: () => {},
+  addToPlaylist: () => {},
+  removeFromPlaylist: () => {},
+  clearPlaylist: () => {},
+  toggleShuffle: () => {},
+  toggleRepeat: () => {},
+  minimize: () => {},
+  maximize: () => {},
+  toggleMute: () => {},
+  getCurrentTime: () => 0,
+  getDuration: () => 0,
+};
+
+export const useMusicPlayer = (): MusicPlayerContextType => {
+  const context = useContext(MusicPlayerContext);
+  // Return safe defaults if used outside provider (prevents React error #310)
+  if (!context) {
+    return SAFE_MUSIC_DEFAULTS;
+  }
+  return context;
+};
 ```
-
-### Change 4: Increase Temperature for Expert to Avoid Repetitive Play
-
-Consider adjusting the AI temperature based on difficulty to make expert play more varied and less predictable. However, this is optional.
 
 ---
 
 ## Technical Summary
 
-| File | Changes |
-|------|---------|
-| `supabase/functions/chess-ai-tutor/index.ts` | Add `advanced` to type, add advanced case, improve expert prompt |
+| File | Change |
+|------|--------|
+| `src/contexts/VisitorContext.tsx` | Add `SAFE_VISITOR_DEFAULTS`, return defaults instead of throwing |
+| `src/contexts/MusicPlayerContext.tsx` | Add `SAFE_MUSIC_DEFAULTS`, return defaults instead of throwing |
 
 ---
 
-## Before vs After Comparison
+## Why This Works
 
-**Selecting "Avancé" (Advanced):**
-- Before: Falls back to Intermediate (default case) → weak play
-- After: Uses dedicated Advanced prompt → stronger tactical play
-
-**Selecting "Expert":**
-- Before: Generic "play best move" instruction → LLM guesses randomly
-- After: Specific chess heuristics → LLM applies opening principles, tactics, coordination
+1. **Consistent Pattern**: Matches the existing safe defaults in `SessionAuthContext`, `PresenceContext`, and `FirstTimeUserContext`
+2. **Non-Breaking**: Components using these hooks still work - they just get safe defaults during transitions
+3. **Zero Performance Cost**: No additional rendering or state management
+4. **Prevents Cascade Failure**: When one hook fails, it doesn't crash the entire component tree
 
 ---
 
@@ -106,19 +131,36 @@ Consider adjusting the AI temperature based on difficulty to make expert play mo
 
 | Check | Status |
 |-------|--------|
-| Backward compatible? | Yes - existing beginner/intermediate unchanged |
-| Breaks existing functionality? | No - only improves AI behavior |
-| 3G optimized? | Yes - no payload changes |
-| Edge cases handled? | Yes - unknown difficulty still falls back to intermediate |
-| Frontend sync? | Yes - frontend already has all 4 levels defined |
+| Backward compatible? | Yes - existing code works unchanged |
+| Breaks existing functionality? | No - only changes error handling |
+| Existing data affected? | No - this is purely runtime behavior |
+| 3G optimized? | Yes - no additional network calls |
+| Edge cases handled? | Yes - specifically designed for edge cases |
 
 ---
 
 ## Expected Outcome
 
 After implementation:
-- "Débutant" → AI makes deliberate mistakes, simple explanations
-- "Intermédiaire" → AI plays solid but imperfect, teaching tactics
-- "Avancé" → AI plays strong tactical chess with rare mistakes
-- "Expert" → AI applies master-level principles, exploits errors immediately
+- Navigation between all pages works smoothly
+- No more "Cannot read properties of null" errors
+- ErrorBoundary is no longer triggered during normal navigation
+- Users can switch pages without seeing the error screen
 
+---
+
+## Affected Pages (All Will Be Fixed)
+
+These pages use `useVisitor()` and will benefit from the fix:
+- Feed.tsx
+- Dashboard.tsx
+- Matieres.tsx
+- Community.tsx
+- Profile.tsx
+- ChessGame.tsx
+- QuizBattle.tsx
+- Library.tsx
+- EbookReader.tsx
+- Leaderboard.tsx
+- PassionDiscovery.tsx
+- Index.tsx
