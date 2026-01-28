@@ -110,6 +110,9 @@ const Settings = () => {
   const [language, setLanguage] = useState(() => {
     return localStorage.getItem("lessonLanguage") || "fr";
   });
+  
+  // Stability guard for lazy-loaded AvatarSelector (prevents React error #310)
+  const [avatarSectionReady, setAvatarSectionReady] = useState(false);
 
   // Redirect if not authenticated (handled after all hooks)
   useEffect(() => {
@@ -117,6 +120,17 @@ const Settings = () => {
       navigate("/auth/login");
     }
   }, [authLoading, isAuthenticated, navigate]);
+
+  // Delay AvatarSelector mounting until React dispatcher is stable (double rAF pattern)
+  useEffect(() => {
+    const frame1 = requestAnimationFrame(() => {
+      const frame2 = requestAnimationFrame(() => {
+        setAvatarSectionReady(true);
+      });
+      return () => cancelAnimationFrame(frame2);
+    });
+    return () => cancelAnimationFrame(frame1);
+  }, []);
 
   // Fetch all data in parallel
   const fetchUserData = useCallback(async () => {
@@ -477,24 +491,31 @@ const Settings = () => {
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0">
                 <form onSubmit={handleProfileUpdate} className="space-y-4 sm:space-y-6" name="profile-form" autoComplete="on">
-{/* Avatar Selection - Lazy loaded */}
+{/* Avatar Selection - Guarded lazy load */}
                   <div className="space-y-3">
                     <Label className="text-base font-semibold">Photo de profil</Label>
                     <p className="text-sm text-muted-foreground mb-3">
                       Choisis un avatar qui te représente
                     </p>
-                    <Suspense fallback={
+                    {avatarSectionReady ? (
+                      <Suspense fallback={
+                        <div className="flex items-center justify-center p-8 bg-muted/50 rounded-xl">
+                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                          <span className="ml-2 text-sm text-muted-foreground">Chargement...</span>
+                        </div>
+                      }>
+                        <AvatarSelector 
+                          selectedAvatar={selectedAvatar}
+                          onSelect={handleAvatarSelect}
+                          userId={userId || undefined}
+                        />
+                      </Suspense>
+                    ) : (
                       <div className="flex items-center justify-center p-8 bg-muted/50 rounded-xl">
                         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                         <span className="ml-2 text-sm text-muted-foreground">Chargement...</span>
                       </div>
-                    }>
-                      <AvatarSelector 
-                        selectedAvatar={selectedAvatar}
-                        onSelect={handleAvatarSelect}
-                        userId={userId || undefined}
-                      />
-                    </Suspense>
+                    )}
                   </div>
 
                   <Separator />
