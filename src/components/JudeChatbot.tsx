@@ -11,6 +11,7 @@ import { useEricDraggable } from "@/hooks/useEricDraggable";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import { useSessionAuth } from "@/contexts/SessionAuthContext";
+import { ChatMessageRenderer } from "@/components/ChatMessageRenderer";
 // Get human-readable page name from path
 const getPageName = (path: string): string => {
   const pageNames: Record<string, string> = {
@@ -426,7 +427,7 @@ export const JudeChatbot = () => {
                       onComplete={() => setTypingMessageIndex(null)}
                     />
                   ) : (
-                    message.content
+                    <ChatMessageRenderer content={message.content} />
                   )}
                   {message.navigationPath && (
                     <Button
