@@ -1446,6 +1446,74 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_assets: {
+        Row: {
+          created_at: string | null
+          generated_by: string | null
+          id: string
+          kind: Database["public"]["Enums"]["asset_kind"]
+          lesson_id: string
+          payload_json: Json
+          schema_version: number | null
+          status: Database["public"]["Enums"]["asset_status"] | null
+          updated_at: string | null
+          validation_report_json: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          generated_by?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["asset_kind"]
+          lesson_id: string
+          payload_json: Json
+          schema_version?: number | null
+          status?: Database["public"]["Enums"]["asset_status"] | null
+          updated_at?: string | null
+          validation_report_json?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          generated_by?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["asset_kind"]
+          lesson_id?: string
+          payload_json?: Json
+          schema_version?: number | null
+          status?: Database["public"]["Enums"]["asset_status"] | null
+          updated_at?: string | null
+          validation_report_json?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_assets_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "leaderboard_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "lesson_assets_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "lesson_assets_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "lesson_assets_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_comments: {
         Row: {
           comment: string
@@ -3745,6 +3813,10 @@ export type Database = {
         Args: { _is_public: boolean; _post_user_id: string; _user_id: string }
         Returns: boolean
       }
+      check_lesson_publishable: {
+        Args: { p_lesson_id: string }
+        Returns: boolean
+      }
       check_nickname_available: {
         Args: { nickname_input: string }
         Returns: boolean
@@ -3940,6 +4012,13 @@ export type Database = {
       xp_for_level: { Args: { lvl: number }; Returns: number }
     }
     Enums: {
+      asset_kind: "quiz_final" | "activities" | "outline" | "keywords"
+      asset_status:
+        | "draft"
+        | "validating"
+        | "validated"
+        | "rejected"
+        | "published"
       chess_match_status:
         | "waiting"
         | "playing"
@@ -4084,6 +4163,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      asset_kind: ["quiz_final", "activities", "outline", "keywords"],
+      asset_status: [
+        "draft",
+        "validating",
+        "validated",
+        "rejected",
+        "published",
+      ],
       chess_match_status: [
         "waiting",
         "playing",
