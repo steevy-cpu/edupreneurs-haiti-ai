@@ -1,105 +1,95 @@
 
-# Repository Cleanup Plan
+
+# Remove Cosmetic Lovable References Plan
 
 ## Overview
 
-Before connecting to GitHub, we'll carefully clean up internal development files that shouldn't be in the public repository. Each file will be reviewed and categorized.
+This plan removes visible "Lovable" branding from the repository while preserving critical AI infrastructure (the AI gateway that powers tutors and content generation).
 
 ---
 
-## File Inventory & Analysis
+## Reference Categories
 
-### Files to DELETE (Internal Dev Notes - Temporary/Outdated)
+### Category 1: REMOVABLE (Cosmetic/Dev Tools)
 
-| File | Content | Reason to Delete |
-|------|---------|------------------|
-| `src/temp-dashboard-reference.html` | 948-line Bootstrap prototype | Obsolete prototype, not used in React app |
-| `TEMP_ACTIVITES_UPDATE.md` | 13 lines, progress tracker | Temporary progress note, task completed |
-| `LESSONS_COMPLETION_NOTE.md` | 34 lines, lesson status | Internal progress tracker, outdated |
+| Location | Reference | Action |
+|----------|-----------|--------|
+| `.lovable/plan.md` | Internal planning file | **Delete folder** |
+| `vite.config.ts` line 4 | `import { componentTagger } from "lovable-tagger"` | **Remove import & usage** |
+| `package.json` line 108 | `"lovable-tagger": "^1.1.10"` | **Remove dependency** |
 
-### Files to DELETE (Operational Guides - Should Not Be Public)
+### Category 2: REBRAND (UI Labels)
 
-| File | Content | Reason to Delete |
-|------|---------|------------------|
-| `CREATE_ERIC_ACCOUNT.md` | Setup instructions for system account | Contains internal setup details |
-| `GENERATE_VAPID_KEYS.md` | VAPID key generation steps | Security-sensitive instructions |
+| File | Current Text | New Text |
+|------|--------------|----------|
+| `src/components/content-editor/AIAssistant.tsx` line 265 | "Propulsé par Lovable AI" | "Propulsé par IA" |
+| `src/components/content-editor/BatchLessonGenerator.tsx` line 1267 | "Lovable AI (Nano banana)" | "IA Edupreneurs" |
+| `src/components/content-editor/BatchGenerationValidation.tsx` line 2026 | "Lovable AI (Nano banana)" | "IA Edupreneurs" |
+| `src/components/content-editor/SectionGenerator.tsx` line 114 | "Crédits Lovable AI épuisés" | "Crédits IA épuisés" |
 
-### Files to DELETE (Redundant/Consolidated)
+### Category 3: INTERNAL CODE (Keep As-Is)
 
-| File | Content | Reason to Delete |
-|------|---------|------------------|
-| `DASHBOARD_ANALYTICS_STATUS.md` | Dashboard data sources | Internal implementation notes |
-| `OPTIMIZATION_REPORT.md` | Performance audit results | Overlaps with other docs, internal |
-| `PRODUCTION_OPTIMIZATION.md` | Optimization notes | Internal development notes |
-| `PERFORMANCE_CHECKLIST.md` | Pre-deploy checklist | Internal development notes |
+| Type | Reason to Keep |
+|------|----------------|
+| `imageGenerationModel: 'lovable'` (type values) | Internal enum value, not visible to users |
+| `model: 'lovable'` in LessonImageManager.tsx | API parameter, not user-facing |
+| Edge functions using `ai.gateway.lovable.dev` | **Critical infrastructure** - powers all AI features |
+| `LOVABLE_API_KEY` references | Required for AI gateway authentication |
 
-### Files to CONSIDER Keeping (Useful Documentation)
+### Category 4: FILE PATHS (Cannot Change)
 
-| File | Content | Lines | Decision |
-|------|---------|-------|----------|
-| `GUIDE_GENERATION_IA.md` | Comprehensive AI generation guide | 380 | **Keep internally** - valuable for content editors |
-| `PUSH_NOTIFICATIONS_INTEGRATION.md` | Push notification docs | 250 | **Delete** - covered by README_PUSH |
-| `README_PUSH.md` | Complete push notification guide | 417 | **Keep internally** - detailed technical reference |
-
----
-
-## Recommended Action
-
-### Option A: Delete All Dev Docs (Cleanest)
-Delete all 11 markdown files. The README.md you already updated provides sufficient public documentation.
-
-**Pros**: 
-- Clean repository root
-- No internal details exposed
-- Professional appearance
-
-**Cons**:
-- Lose internal documentation (but can be recreated)
-
-### Option B: Move to `.lovable/docs/` (Preserve Internal Docs)
-Keep 2 valuable docs in a hidden folder:
-- `GUIDE_GENERATION_IA.md` → `.lovable/docs/ai-generation-guide.md`
-- `README_PUSH.md` → `.lovable/docs/push-notifications.md`
-
-Delete everything else.
-
-**Pros**:
-- Preserves useful internal documentation
-- Clean root directory
-- `.lovable/` folder is already gitignored by many configurations
-
-**Cons**:
-- Slightly more complex
+| Reference | Reason |
+|-----------|--------|
+| `/lovable-uploads/...` paths in sciencesLessons.ts | These are Lovable's CDN paths for uploaded files. Changing them would break audio playback. They are not visible to end users. |
+| Push notification cleanup comment | Internal code comment, not visible |
 
 ---
 
-## Proposed Implementation (Option A - Recommended)
+## Implementation Steps
 
-### Step 1: Delete Temporary Files
+### Step 1: Delete `.lovable` Folder
+- Delete `.lovable/plan.md`
+- Remove the empty folder
 
-Delete from `src/`:
-```
-src/temp-dashboard-reference.html
-```
+### Step 2: Remove lovable-tagger from Vite Config
 
-### Step 2: Delete All Root Markdown Files (except README.md)
-
-Delete from root:
-```
-CREATE_ERIC_ACCOUNT.md
-DASHBOARD_ANALYTICS_STATUS.md
-GENERATE_VAPID_KEYS.md
-GUIDE_GENERATION_IA.md
-LESSONS_COMPLETION_NOTE.md
-OPTIMIZATION_REPORT.md
-PERFORMANCE_CHECKLIST.md
-PRODUCTION_OPTIMIZATION.md
-PUSH_NOTIFICATIONS_INTEGRATION.md
-README_PUSH.md
-TEMP_ACTIVITES_UPDATE.md
+**Before (vite.config.ts):**
+```typescript
+import { componentTagger } from "lovable-tagger";
+// ...
+plugins: [
+  react(),
+  mode === "development" && componentTagger(),
+  // ...
+]
 ```
 
-**Total: 12 files to delete**
+**After:**
+```typescript
+// Remove import entirely
+// ...
+plugins: [
+  react(),
+  // componentTagger removed
+  // ...
+]
+```
+
+### Step 3: Remove lovable-tagger from package.json
+
+Remove from devDependencies:
+```json
+"lovable-tagger": "^1.1.10",
+```
+
+### Step 4: Rebrand UI Labels
+
+| File | Line | Change |
+|------|------|--------|
+| AIAssistant.tsx | 265 | "Propulsé par Lovable AI" → "Propulsé par IA" |
+| BatchLessonGenerator.tsx | 1267 | "Lovable AI (Nano banana)" → "IA Edupreneurs" |
+| BatchGenerationValidation.tsx | 2026 | "Lovable AI (Nano banana)" → "IA Edupreneurs" |
+| SectionGenerator.tsx | 114 | "Crédits Lovable AI épuisés" → "Crédits IA épuisés" |
 
 ---
 
@@ -107,48 +97,47 @@ TEMP_ACTIVITES_UPDATE.md
 
 | Check | Status |
 |-------|--------|
-| Will this break functionality? | No - these are documentation files only |
-| Are there code references to these files? | No - markdown files are not imported |
-| Is any critical information lost? | GUIDE_GENERATION_IA.md has useful content but can be regenerated |
-| Can we recover if needed? | Yes - Git history will preserve everything |
+| Will this break AI features? | No - backend infrastructure untouched |
+| Will this break audio playback? | No - `/lovable-uploads/` paths preserved |
+| Will this affect development? | Minor - componentTagger was dev-only (optional analytics) |
+| Is backward compatibility maintained? | Yes - no functional changes |
+| Are edge cases handled? | Yes - internal code values left as-is |
 
 ---
 
-## Post-Cleanup Repository Structure
+## What Will Remain (Unavoidable)
 
-```
-edupreneurs/
-├── .lovable/
-│   └── plan.md
-├── public/
-├── src/
-├── supabase/
-├── .env
-├── .gitignore
-├── README.md           ✅ (updated)
-├── package.json
-├── vite.config.ts
-├── tailwind.config.ts
-├── tsconfig.json
-└── ... (standard config files)
-```
+| Item | Why It Stays |
+|------|--------------|
+| `/lovable-uploads/` file paths | Lovable CDN - files are hosted there |
+| `ai.gateway.lovable.dev` in edge functions | Critical AI infrastructure |
+| `LOVABLE_API_KEY` environment variable | Required for AI authentication |
+| Git history (commits by lovable-dev[bot]) | Permanent part of version control |
+| Internal `'lovable'` type values | Not user-visible, breaking change if renamed |
 
 ---
 
-## Technical Changes Summary
+## Files to Modify
 
-| Action | Files | Impact |
-|--------|-------|--------|
-| Delete | 12 files | Cleaner repository, no internal docs exposed |
-| Keep | README.md | Public-facing documentation |
-| No changes | All source code | Zero risk to functionality |
+| File | Action |
+|------|--------|
+| `.lovable/plan.md` | Delete |
+| `vite.config.ts` | Remove lovable-tagger import and usage |
+| `package.json` | Remove lovable-tagger dependency |
+| `src/components/content-editor/AIAssistant.tsx` | Rebrand text |
+| `src/components/content-editor/BatchLessonGenerator.tsx` | Rebrand text |
+| `src/components/content-editor/BatchGenerationValidation.tsx` | Rebrand text |
+| `src/components/content-editor/SectionGenerator.tsx` | Rebrand text |
+
+**Total: 7 files modified/deleted**
 
 ---
 
-## Questions for You
+## Post-Cleanup Result
 
-1. **Do you want to keep GUIDE_GENERATION_IA.md and README_PUSH.md internally?** (Option B moves them to `.lovable/docs/`)
+- No "Lovable" visible in UI labels
+- No Lovable-specific dev tools in config
+- Clean repository for GitHub
+- All AI features continue working
+- All uploaded content continues working
 
-2. **Or should we delete everything for a clean repository?** (Option A)
-
-Both options are safe. Option A is simpler; Option B preserves internal reference documentation.
