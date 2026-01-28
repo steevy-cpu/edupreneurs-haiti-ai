@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -7,29 +7,20 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Sparkles, Loader2, CheckCircle2, XCircle, Clock, Check } from "lucide-react";
+import { Sparkles, Loader2, CheckCircle2, Check } from "lucide-react";
 import { DEFAULT_WORD_COUNTS, type SectionName } from "@/lib/lessonPrompts";
 import { createSanitizedMarkup } from "@/lib/sanitize";
+import { useGenerationJob, GenerationJobProgress, type JobConfig } from "@/features/content-editor";
 
 interface SingleLessonGeneratorProps {
   lesson: any;
   onComplete: () => void;
 }
 
-type SectionStatus = 'pending' | 'generating' | 'completed' | 'error';
-
-interface SectionProgress {
-  name: SectionName | 'quiz_final' | 'youtube_url' | 'explanatory_images' | 'audio_objectif' | 'audio_introduction' | 'audio_contenu' | 'audio_exemples';
-  status: SectionStatus;
-  error?: string;
-}
-
 export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGeneratorProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [selectedSections, setSelectedSections] = useState<SectionName[]>([
     'objectif', 'introduction', 'contenu', 'exemples_exercices', 'activites_interactives'
   ]);
@@ -39,11 +30,41 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
   const [imageGenerationModel, setImageGenerationModel] = useState<'none' | 'openai' | 'lovable'>('none');
   const [wordCounts, setWordCounts] = useState(DEFAULT_WORD_COUNTS);
   const [globalContext, setGlobalContext] = useState("");
-  const [progress, setProgress] = useState<SectionProgress[]>([]);
-  const [currentSection, setCurrentSection] = useState(0);
   const [generatedContent, setGeneratedContent] = useState<Record<string, any>>({});
   const [showPreview, setShowPreview] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
+
+  // Use the async job hook
+  const {
+    activeJob,
+    existingJob,
+    isGenerating,
+    isPending,
+    progress,
+    currentSection,
+    progressPercentage,
+    resultContent,
+    startJob,
+    cancelJob,
+    resumeJob,
+    canResume,
+  } = useGenerationJob({
+    lessonId: lesson?.id,
+    onJobComplete: (result) => {
+      if (result) {
+        setGeneratedContent(result);
+        setShowPreview(true);
+      }
+    },
+  });
+
+  // Update generatedContent when resultContent changes
+  useEffect(() => {
+    if (resultContent && Object.keys(resultContent).length > 0) {
+      setGeneratedContent(resultContent);
+      setShowPreview(true);
+    }
+  }, [resultContent]);
 
   const sections: { value: SectionName; label: string }[] = [
     { value: "objectif", label: "Objectif" },
@@ -51,12 +72,6 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     { value: "contenu", label: "Contenu principal" },
     { value: "exemples_exercices", label: "Exemples & Exercices" },
     { value: "activites_interactives", label: "Activités Interactives" },
-  ];
-
-  const additionalFeatures = [
-    { key: 'quiz', label: 'Quiz Final (10-15 questions)' },
-    { key: 'videos', label: 'Vidéos YouTube (suggestions IA)' },
-    { key: 'images', label: 'Images explicatives (Recraft v3)' },
   ];
 
   const toggleSection = (section: SectionName) => {
@@ -74,7 +89,6 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     let match;
     while ((match = regex.exec(htmlContent)) !== null) {
       const url = match[1];
-      // Only extract URLs from lesson-images bucket
       if (url.includes('/storage/v1/object/public/lesson-images/')) {
         urls.push(url);
       }
@@ -85,12 +99,10 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
   // Helper function to delete old images from storage
   const deleteOldImages = async (imageUrls: string[]) => {
     if (imageUrls.length === 0) return;
-
     console.log(`🗑️ Deleting ${imageUrls.length} old image(s)...`);
     
     for (const url of imageUrls) {
       try {
-        // Extract the file path from the URL
         const urlParts = url.split('/lesson-images/');
         if (urlParts.length === 2) {
           const filePath = urlParts[1];
@@ -112,15 +124,9 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
 
   // Helper function to remove all image HTML from content
   const removeAllImageHtml = (htmlContent: string): string => {
-    // Remove all <div class="my-6 flex justify-center">...</div> blocks containing images
     let cleaned = htmlContent.replace(/<div class="my-6 flex justify-center">[\s\S]*?<\/div>\s*<\/div>/g, '');
-    
-    // Also remove standalone <img> tags
     cleaned = cleaned.replace(/<img[^>]*>/g, '');
-    
-    // Clean up extra whitespace
     cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
-    
     return cleaned;
   };
 
@@ -135,420 +141,29 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       return;
     }
 
-    setIsGenerating(true);
-    setCurrentSection(0);
-    setGeneratedContent({}); // Clear previous content
-    
-    // Calculate total tasks (sections + quiz + videos + images + audio sections)
-    const audioSections = generateAudio ? 4 : 0; // objectif, introduction, contenu, exemples
-    const totalTasks = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) + (imageGenerationModel !== 'none' ? 1 : 0) + audioSections;
-    
-    // Initialize progress for sections and optional features
-    const initialProgress: SectionProgress[] = [
-      ...selectedSections.map(name => ({ name, status: 'pending' as SectionStatus })),
-    ];
-    if (generateQuiz) initialProgress.push({ name: 'quiz_final' as SectionName, status: 'pending' });
-    if (generateVideos) initialProgress.push({ name: 'youtube_url' as SectionName, status: 'pending' });
-    if (imageGenerationModel !== 'none') initialProgress.push({ name: 'explanatory_images' as any, status: 'pending' });
-    if (generateAudio) {
-      initialProgress.push({ name: 'audio_objectif' as any, status: 'pending' });
-      initialProgress.push({ name: 'audio_introduction' as any, status: 'pending' });
-      initialProgress.push({ name: 'audio_contenu' as any, status: 'pending' });
-      initialProgress.push({ name: 'audio_exemples' as any, status: 'pending' });
+    // Build job config
+    const config: JobConfig = {
+      selectedSections,
+      wordCounts,
+      generateQuiz,
+      generateVideos,
+      generateAudio,
+      imageGenerationModel,
+      globalContext: globalContext || undefined,
+    };
+
+    // Start the async job
+    startJob(config);
+  };
+
+  const handleResume = () => {
+    if (existingJob) {
+      resumeJob(existingJob);
     }
-    
-    setProgress(initialProgress);
+  };
 
-    let successCount = 0;
-    let errorCount = 0;
-    let currentTask = 0;
-
-    for (let i = 0; i < selectedSections.length; i++) {
-      const sectionName = selectedSections[i];
-      currentTask++;
-      setCurrentSection(currentTask);
-      
-      // Update status to generating
-      setProgress(prev => prev.map(p => 
-        p.name === sectionName ? { ...p, status: 'generating' } : p
-      ));
-
-      const startTime = Date.now();
-
-      try {
-        let generatedContent: string;
-        let wordCount: number | undefined;
-
-        // Special handling for activites_interactives section
-        if (sectionName === 'activites_interactives') {
-          const { data: lessonData } = await supabase
-            .from('lessons')
-            .select('contenu, exemples_exercices, title, grade_level, subjects(name)')
-            .eq('id', lesson.id)
-            .single();
-
-          // Combine both contenu and exemples_exercices to get all exercises
-          const fullContent = [
-            lessonData?.contenu || '',
-            lessonData?.exemples_exercices || ''
-          ].filter(Boolean).join('\n\n');
-
-          const { data, error } = await supabase.functions.invoke('generate-interactive-activities', {
-            body: {
-              exercisesContent: fullContent,
-              lessonTitle: lessonData?.title || lesson.title,
-              gradeLevel: lessonData?.grade_level || lesson.grade_level,
-              subject: lessonData?.subjects?.name || lesson.subjects?.name || 'Matière',
-            }
-          });
-
-          if (error) throw error;
-          if (!data?.content) throw new Error('Aucun contenu généré');
-          generatedContent = data.content;
-          wordCount = data.content.split(/\s+/).length;
-        } else {
-          // Standard generation for other sections
-          const { data, error } = await supabase.functions.invoke('generate-lesson-section', {
-            body: {
-              lessonId: lesson.id,
-              sectionName,
-              lessonTitle: lesson.title,
-              subject: lesson.subjects?.name || 'Matière',
-              gradeLevel: lesson.grade_level || '7AF',
-              targetWords: wordCounts[sectionName],
-              context: globalContext || undefined,
-            }
-          });
-
-          if (error) throw error;
-          if (!data?.content) throw new Error('Aucun contenu généré');
-          generatedContent = data.content;
-          wordCount = data.wordCount;
-        }
-
-        console.log('✅ [Single] Section generated successfully:', {
-          sectionName,
-          wordCount
-        });
-
-        // Store generated content in state for preview
-        setGeneratedContent(prev => ({
-          ...prev,
-          [sectionName]: generatedContent
-        }));
-
-        // Log successful generation
-        await supabase.from('ai_generation_logs').insert({
-          lesson_id: lesson.id,
-          section_name: sectionName,
-          target_words: wordCounts[sectionName],
-          additional_context: globalContext,
-          response_content: generatedContent,
-          word_count: wordCount,
-          generation_time_ms: Date.now() - startTime,
-          success: true,
-          generated_by: (await supabase.auth.getUser()).data.user?.id,
-        });
-
-        setProgress(prev => prev.map(p => 
-          p.name === sectionName ? { ...p, status: 'completed' } : p
-        ));
-        successCount++;
-
-        // Rate limiting: wait 3 seconds between requests
-        if (i < selectedSections.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 3000));
-        }
-      } catch (error: any) {
-        console.error(`Error generating ${sectionName}:`, error);
-        
-        // Log failed generation
-        await supabase.from('ai_generation_logs').insert({
-          lesson_id: lesson.id,
-          section_name: sectionName,
-          target_words: wordCounts[sectionName],
-          additional_context: globalContext,
-          success: false,
-          error_message: error.message,
-          generation_time_ms: Date.now() - startTime,
-          generated_by: (await supabase.auth.getUser()).data.user?.id,
-        });
-
-        setProgress(prev => prev.map(p => 
-          p.name === sectionName ? { ...p, status: 'error', error: error.message } : p
-        ));
-        errorCount++;
-      }
-    }
-
-    // Generate Quiz Final if selected
-    if (generateQuiz) {
-      currentTask++;
-      setCurrentSection(currentTask);
-      
-      setProgress(prev => prev.map(p => 
-        p.name === 'quiz_final' ? { ...p, status: 'generating' } : p
-      ));
-
-      const startTime = Date.now();
-      
-      try {
-        const { data: lessonData } = await supabase
-          .from('lessons')
-          .select('contenu, exemples_exercices, title, grade_level, subjects(name)')
-          .eq('id', lesson.id)
-          .single();
-
-        const { data, error } = await supabase.functions.invoke('generate-quiz-final', {
-          body: {
-            lessonTitle: lessonData?.title || lesson.title,
-            contenu: lessonData?.contenu || '',
-            exemplesExercices: lessonData?.exemples_exercices || '',
-            gradeLevel: lessonData?.grade_level || lesson.grade_level,
-            subject: lessonData?.subjects?.name || 'Matière',
-          }
-        });
-
-        if (error) throw error;
-        if (data?.quizContent) {
-          setGeneratedContent(prev => ({
-            ...prev,
-            quiz_final: data.quizContent
-          }));
-          
-          setProgress(prev => prev.map(p => 
-            p.name === 'quiz_final' ? { ...p, status: 'completed' } : p
-          ));
-          successCount++;
-        }
-      } catch (error: any) {
-        console.error('Error generating quiz:', error);
-        setProgress(prev => prev.map(p => 
-          p.name === 'quiz_final' ? { ...p, status: 'error', error: error.message } : p
-        ));
-        errorCount++;
-      }
-    }
-
-    // Suggest YouTube videos if selected
-    if (generateVideos) {
-      currentTask++;
-      setCurrentSection(currentTask);
-      
-      setProgress(prev => prev.map(p => 
-        p.name === 'youtube_url' ? { ...p, status: 'generating' } : p
-      ));
-
-      const startTime = Date.now();
-      
-      try {
-        const { data: lessonData } = await supabase
-          .from('lessons')
-          .select('contenu, exemples_exercices, title, grade_level, subjects(name)')
-          .eq('id', lesson.id)
-          .single();
-
-        const { data, error } = await supabase.functions.invoke('suggest-youtube-videos', {
-          body: {
-            lessonTitle: lessonData?.title || lesson.title,
-            contenu: lessonData?.contenu || '',
-            exemplesExercices: lessonData?.exemples_exercices || '',
-            gradeLevel: lessonData?.grade_level || lesson.grade_level,
-            subject: lessonData?.subjects?.name || 'Matière',
-          }
-        });
-
-        if (error) throw error;
-        if (data?.videos && data.videos.length > 0) {
-          setGeneratedContent(prev => ({
-            ...prev,
-            youtube_url: `https://www.youtube.com/watch?v=${data.videos[0].id}`,
-            suggested_videos: JSON.stringify(data.videos)
-          }));
-          
-          setProgress(prev => prev.map(p => 
-            p.name === 'youtube_url' ? { ...p, status: 'completed' } : p
-          ));
-          successCount++;
-        } else {
-          // No videos found
-          setProgress(prev => prev.map(p => 
-            p.name === 'youtube_url' ? { ...p, status: 'error', error: 'Aucune vidéo trouvée' } : p
-          ));
-          errorCount++;
-        }
-      } catch (error: any) {
-        console.error('Error suggesting videos:', error);
-        setProgress(prev => prev.map(p => 
-          p.name === 'youtube_url' ? { ...p, status: 'error', error: error.message } : p
-        ));
-        errorCount++;
-      }
-    }
-
-    // Generate explanatory images if selected
-    if (imageGenerationModel !== 'none') {
-      currentTask++;
-      setCurrentSection(currentTask);
-      
-      setProgress(prev => prev.map(p => 
-        p.name === 'explanatory_images' ? { ...p, status: 'generating' } : p
-      ));
-
-      try {
-        const { data: lessonData } = await supabase
-          .from('lessons')
-          .select('contenu, exemples_exercices, title, grade_level, subjects(name)')
-          .eq('id', lesson.id)
-          .single();
-
-        // Step 1: Clean up old images before generating new ones
-        const oldContenuImages = extractImageUrls(lessonData?.contenu || '');
-        const oldExemplesImages = extractImageUrls(lessonData?.exemples_exercices || '');
-        const allOldImages = [...oldContenuImages, ...oldExemplesImages];
-        
-        if (allOldImages.length > 0) {
-          console.log(`🗑️ Found ${allOldImages.length} old image(s) to clean up`);
-          toast.info(`Nettoyage de ${allOldImages.length} ancienne(s) image(s)...`);
-          await deleteOldImages(allOldImages);
-        }
-
-        const { data, error } = await supabase.functions.invoke('generate-explanatory-images', {
-          body: {
-            lessonTitle: lessonData?.title || lesson.title,
-            contenu: lessonData?.contenu || '',
-            exemplesExercices: lessonData?.exemples_exercices || '',
-            gradeLevel: lessonData?.grade_level || lesson.grade_level,
-            subject: lessonData?.subjects?.name || 'Matière',
-            model: imageGenerationModel
-          }
-        });
-
-        if (error) {
-          console.warn('Image generation failed (likely pending OpenAI verification):', error);
-          setProgress(prev => prev.map(p => 
-            p.name === 'explanatory_images' ? { ...p, status: 'completed' } : p
-          ));
-        } else if (data?.images && data.images.length > 0) {
-          setGeneratedContent(prev => ({
-            ...prev,
-            explanatory_images: data.images
-          }));
-          
-          setProgress(prev => prev.map(p => 
-            p.name === 'explanatory_images' ? { ...p, status: 'completed' } : p
-          ));
-          successCount++;
-        } else {
-          console.warn('No images generated');
-          setProgress(prev => prev.map(p => 
-            p.name === 'explanatory_images' ? { ...p, status: 'completed' } : p
-          ));
-        }
-      } catch (error: any) {
-        console.warn('Image generation error (silently handled):', error);
-        setProgress(prev => prev.map(p => 
-          p.name === 'explanatory_images' ? { ...p, status: 'completed' } : p
-        ));
-      }
-    }
-
-    // Generate Audio TTS if selected (sequential to respect ElevenLabs concurrency limit)
-    if (generateAudio) {
-      const audioSections = ['objectif', 'introduction', 'contenu', 'exemples'] as const;
-      
-      // Get the lesson content for audio generation
-      const { data: lessonData } = await supabase
-        .from('lessons')
-        .select('objectif, introduction, contenu, exemples_exercices')
-        .eq('id', lesson.id)
-        .single();
-
-      for (const audioSection of audioSections) {
-        currentTask++;
-        setCurrentSection(currentTask);
-        
-        const progressName = `audio_${audioSection}` as any;
-        
-        setProgress(prev => prev.map(p => 
-          p.name === progressName ? { ...p, status: 'generating' } : p
-        ));
-
-        try {
-          // Get the text content for this section
-          let textContent = '';
-          if (audioSection === 'objectif') textContent = lessonData?.objectif || '';
-          else if (audioSection === 'introduction') textContent = lessonData?.introduction || '';
-          else if (audioSection === 'contenu') textContent = lessonData?.contenu || '';
-          else if (audioSection === 'exemples') textContent = lessonData?.exemples_exercices || '';
-          
-          // Strip HTML tags
-          const cleanText = textContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-          
-          if (!cleanText || cleanText.length < 10) {
-            console.log(`Skipping audio for ${audioSection} - no content`);
-            setProgress(prev => prev.map(p => 
-              p.name === progressName ? { ...p, status: 'completed' } : p
-            ));
-            continue;
-          }
-
-          console.log(`🔊 Generating audio for ${audioSection}...`);
-          
-          const { data, error } = await supabase.functions.invoke('elevenlabs-tts', {
-            body: {
-              text: cleanText,
-              lessonId: lesson.id,
-              sectionName: audioSection,
-            }
-          });
-
-          if (error) throw error;
-          
-          if (data?.audioUrl) {
-            setGeneratedContent(prev => ({
-              ...prev,
-              [`audio_${audioSection}_url`]: data.audioUrl
-            }));
-            
-            setProgress(prev => prev.map(p => 
-              p.name === progressName ? { ...p, status: 'completed' } : p
-            ));
-            successCount++;
-          }
-          
-          // Wait 3 seconds between audio generations to respect rate limits
-          if (audioSections.indexOf(audioSection) < audioSections.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 3000));
-          }
-        } catch (error: any) {
-          console.error(`Error generating audio for ${audioSection}:`, error);
-          setProgress(prev => prev.map(p => 
-            p.name === progressName ? { ...p, status: 'error', error: error.message } : p
-          ));
-          errorCount++;
-          
-          // Still wait before next attempt to avoid rate limiting
-          await new Promise(resolve => setTimeout(resolve, 2000));
-        }
-      }
-    }
-
-    setIsGenerating(false);
-    
-    const totalGenerated = successCount;
-    const totalAttempted = totalTasks;
-    
-    if (successCount > 0) {
-      setShowPreview(true);
-      if (errorCount > 0) {
-        toast.warning(`${successCount} élément(s) généré(s), ${errorCount} erreur(s) - Consultez l'aperçu`);
-      } else {
-        toast.success(`${successCount} élément(s) généré(s) - Consultez l'aperçu`);
-      }
-    } else {
-      toast.error("Aucun contenu n'a pu être généré");
-    }
+  const handleCancel = () => {
+    cancelJob();
   };
 
   const handleApplyChanges = async () => {
@@ -557,12 +172,10 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       console.log('🔄 Starting to apply changes...');
       console.log('Generated content:', generatedContent);
       
-      // Start with generated content or existing lesson content
       let updatedContenu = generatedContent.contenu || lesson.contenu || '';
       let updatedExemples = generatedContent.exemples_exercices || lesson.exemples_exercices || '';
       
-      // CRITICAL: Remove all existing image HTML before processing new images
-      // This ensures old images are removed when regenerating
+      // Clean old images before processing new ones
       if (generatedContent.explanatory_images) {
         console.log('🧹 Cleaning old images from content before inserting new ones...');
         updatedContenu = removeAllImageHtml(updatedContenu);
@@ -574,7 +187,6 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
         const images = generatedContent.explanatory_images;
         console.log(`📸 Processing ${images.length} images...`);
         
-        // Separate images by their target section
         const contenuImages: any[] = [];
         const exemplesImages: any[] = [];
         
@@ -592,7 +204,6 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
           try {
             console.log(`🖼️ Processing image: ${image.concept} (insertAt: ${image.insertAt})`);
             
-            // Convert base64 to blob for WebP format
             const base64Data = image.base64Data;
             const binaryString = atob(base64Data);
             const bytes = new Uint8Array(binaryString.length);
@@ -600,7 +211,6 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
               bytes[i] = binaryString.charCodeAt(i);
             }
             
-            // Create canvas to convert PNG to WebP
             const blob = new Blob([bytes], { type: 'image/png' });
             const imageBitmap = await createImageBitmap(blob);
             const canvas = document.createElement('canvas');
@@ -609,14 +219,12 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
             const ctx = canvas.getContext('2d');
             ctx?.drawImage(imageBitmap, 0, 0);
             
-            // Convert to WebP with quality 85 for good compression
             const webpBlob = await new Promise<Blob>((resolve) => {
               canvas.toBlob((blob) => resolve(blob!), 'image/webp', 0.85);
             });
             
             console.log(`✅ Converted to WebP, size: ${webpBlob.size} bytes (from ${blob.size} bytes)`);
             
-            // Sanitize filename to remove special characters
             const sanitizedConcept = image.concept
               .normalize('NFD')
               .replace(/[\u0300-\u036f]/g, '')
@@ -625,7 +233,6 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
               .toLowerCase()
               .substring(0, 100);
             
-            // Upload to Supabase Storage with WebP extension
             const fileName = `${lesson.id}/${sanitizedConcept}-${Date.now()}.webp`;
             console.log(`📤 Uploading to: ${fileName}`);
             
@@ -644,14 +251,12 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
             
             console.log('✅ Image uploaded successfully');
             
-            // Get public URL
             const { data: { publicUrl } } = supabase.storage
               .from('lesson-images')
               .getPublicUrl(fileName);
             
             console.log(`🔗 Public URL: ${publicUrl}`);
             
-            // Create HTML for the image without the heading
             const imageHtml = `
 <div class="my-6 flex justify-center">
   <div class="max-w-2xl">
@@ -668,7 +273,6 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
 </div>
 `;
             
-            // Add image to the appropriate section array for later insertion
             if (image.insertAt === 'contenu') {
               const paragraphs = updatedContenu.split('\n\n');
               const insertIndex = Math.floor(paragraphs.length / (contenuImages.length + 1)) * (contenuImages.indexOf(image) + 1);
@@ -691,33 +295,26 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
         console.log('✅ All images processed and inserted');
       }
       
-      // Function to remove AI-generated image description headings
       const cleanImageDescriptions = (text: string): string => {
-        // Remove markdown headings that describe images (### followed by emoji and description)
         return text.replace(/###\s*[\u{1F300}-\u{1F9FF}]\s*[^\n]+\n\n?/gu, '');
       };
       
-      // Clean the content before saving
       updatedContenu = cleanImageDescriptions(updatedContenu);
       updatedExemples = cleanImageDescriptions(updatedExemples);
       
-      // Apply all generated content to the database
       const updates: any = {};
       
-      // Add all non-image generated content
       Object.keys(generatedContent).forEach(key => {
         if (key !== 'suggested_videos' && key !== 'explanatory_images') {
           updates[key] = generatedContent[key];
         }
       });
       
-      // Always update contenu and exemples if images were generated
       if (generatedContent.explanatory_images) {
         updates.contenu = updatedContenu;
         updates.exemples_exercices = updatedExemples;
         console.log('📝 Updating database with images included (descriptions cleaned)');
       } else {
-        // Only update if content changed
         if (updatedContenu !== (lesson.contenu || '')) {
           updates.contenu = updatedContenu;
         }
@@ -740,18 +337,12 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
 
       console.log('✅ Database updated successfully');
       
-      // Trigger parent refresh FIRST to update the preview
       await onComplete();
       
-      toast.success("Contenu appliqué avec succès (images incluses)");
+      toast.success("Contenu appliqué avec succès");
       
-      // Reset all states
       setShowPreview(false);
       setGeneratedContent({});
-      setProgress([]);
-      setCurrentSection(0);
-      
-      // Close the dialog
       setIsOpen(false);
     } catch (error) {
       console.error('Error applying changes:', error);
@@ -764,24 +355,11 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
   const handleDiscardChanges = () => {
     setGeneratedContent({});
     setShowPreview(false);
-    setProgress([]);
     toast.info("Aperçu fermé");
-  };
-
-  const getStatusIcon = (status: SectionStatus) => {
-    switch (status) {
-      case 'pending': return <Clock className="h-4 w-4 text-muted-foreground" />;
-      case 'generating': return <Loader2 className="h-4 w-4 animate-spin text-primary" />;
-      case 'completed': return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-      case 'error': return <XCircle className="h-4 w-4 text-destructive" />;
-    }
   };
 
   const audioSectionCount = generateAudio ? 4 : 0;
   const totalProgressItems = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) + (imageGenerationModel !== 'none' ? 1 : 0) + audioSectionCount;
-  const progressPercentage = totalProgressItems > 0 
-    ? (currentSection / totalProgressItems) * 100 
-    : 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -804,193 +382,148 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Section Selection */}
-          <div className="space-y-3">
-            <div>
-              <Label className="text-base">Sections de contenu</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
+          {/* Resume existing job banner */}
+          <GenerationJobProgress
+            job={activeJob}
+            progress={progress}
+            currentSection={currentSection}
+            progressPercentage={progressPercentage}
+            onCancel={handleCancel}
+            onResume={handleResume}
+            existingJob={existingJob}
+            canResume={canResume}
+          />
+
+          {/* Section Selection - hide when generating */}
+          {!isGenerating && !showPreview && (
+            <>
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-base">Sections de contenu</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {sections.map(section => (
+                      <div key={section.value} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={section.value}
+                          checked={selectedSections.includes(section.value)}
+                          onCheckedChange={() => toggleSection(section.value)}
+                          disabled={isGenerating}
+                        />
+                        <label htmlFor={section.value} className="text-sm cursor-pointer">
+                          {section.label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border-t pt-3">
+                  <Label className="text-base">Fonctionnalités additionnelles</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="quiz-final"
+                        checked={generateQuiz}
+                        onCheckedChange={(checked) => setGenerateQuiz(checked as boolean)}
+                        disabled={isGenerating}
+                      />
+                      <label htmlFor="quiz-final" className="text-sm cursor-pointer">
+                        📝 Quiz Final (10-15 questions)
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="video-suggest"
+                        checked={generateVideos}
+                        onCheckedChange={(checked) => setGenerateVideos(checked as boolean)}
+                        disabled={isGenerating}
+                      />
+                      <label htmlFor="video-suggest" className="text-sm cursor-pointer">
+                        🎥 Suggérer vidéos YouTube
+                      </label>
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="image-model-single" className="text-sm font-medium">
+                        🖼️ Générer images explicatives
+                      </label>
+                      <Select value={imageGenerationModel} onValueChange={(value: 'none' | 'openai' | 'lovable') => setImageGenerationModel(value)} disabled={isGenerating}>
+                        <SelectTrigger id="image-model-single">
+                          <SelectValue placeholder="Sélectionner un modèle" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Aucun</SelectItem>
+                          <SelectItem value="openai">OpenAI (gpt-image-1)</SelectItem>
+                          <SelectItem value="lovable">Lovable AI (Nano banana)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="audio-tts"
+                        checked={generateAudio}
+                        onCheckedChange={(checked) => setGenerateAudio(checked as boolean)}
+                        disabled={isGenerating}
+                      />
+                      <label htmlFor="audio-tts" className="text-sm cursor-pointer">
+                        🔊 Audio TTS (ElevenLabs)
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Word Count Sliders */}
+              <div className="space-y-4">
+                <Label>Nombre de mots par section</Label>
                 {sections.map(section => (
-                  <div key={section.value} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={section.value}
-                      checked={selectedSections.includes(section.value)}
-                      onCheckedChange={() => toggleSection(section.value)}
+                  <div key={section.value} className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm">{section.label}</span>
+                      <span className="text-sm font-medium">{wordCounts[section.value]} mots</span>
+                    </div>
+                    <Slider
+                      value={[wordCounts[section.value]]}
+                      onValueChange={([value]) => setWordCounts(prev => ({ ...prev, [section.value]: value }))}
+                      min={100}
+                      max={1500}
+                      step={50}
                       disabled={isGenerating}
                     />
-                    <label htmlFor={section.value} className="text-sm cursor-pointer">
-                      {section.label}
-                    </label>
                   </div>
                 ))}
               </div>
-            </div>
 
-            <div className="border-t pt-3">
-              <Label className="text-base">Fonctionnalités additionnelles</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="quiz-final"
-                    checked={generateQuiz}
-                    onCheckedChange={(checked) => setGenerateQuiz(checked as boolean)}
-                    disabled={isGenerating}
-                  />
-                  <label htmlFor="quiz-final" className="text-sm cursor-pointer">
-                    📝 Quiz Final (10-15 questions)
-                  </label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="video-suggest"
-                    checked={generateVideos}
-                    onCheckedChange={(checked) => setGenerateVideos(checked as boolean)}
-                    disabled={isGenerating}
-                  />
-                  <label htmlFor="video-suggest" className="text-sm cursor-pointer">
-                    🎥 Suggérer vidéos YouTube
-                  </label>
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="image-model-single" className="text-sm font-medium">
-                    🖼️ Générer images explicatives
-                  </label>
-                  <Select value={imageGenerationModel} onValueChange={(value: 'none' | 'openai' | 'lovable') => setImageGenerationModel(value)} disabled={isGenerating}>
-                    <SelectTrigger id="image-model-single">
-                      <SelectValue placeholder="Sélectionner un modèle" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Aucun</SelectItem>
-                      <SelectItem value="openai">OpenAI (gpt-image-1)</SelectItem>
-                      <SelectItem value="lovable">Lovable AI (Nano banana)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="audio-tts"
-                    checked={generateAudio}
-                    onCheckedChange={(checked) => setGenerateAudio(checked as boolean)}
-                    disabled={isGenerating}
-                  />
-                  <label htmlFor="audio-tts" className="text-sm cursor-pointer">
-                    🔊 Audio TTS (ElevenLabs)
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Word Count Sliders */}
-          <div className="space-y-4">
-            <Label>Nombre de mots par section</Label>
-            {sections.map(section => (
-              <div key={section.value} className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm">{section.label}</span>
-                  <span className="text-sm font-medium">{wordCounts[section.value]} mots</span>
-                </div>
-                <Slider
-                  value={[wordCounts[section.value]]}
-                  onValueChange={([value]) => setWordCounts(prev => ({ ...prev, [section.value]: value }))}
-                  min={100}
-                  max={1500}
-                  step={50}
+              {/* Global Context */}
+              <div className="space-y-2">
+                <Label>Contexte additionnel (optionnel)</Label>
+                <Textarea
+                  placeholder="Ex: Ajouter plus d'exemples pratiques, Focus sur les applications quotidiennes en Haïti..."
+                  value={globalContext}
+                  onChange={(e) => setGlobalContext(e.target.value)}
+                  rows={3}
                   disabled={isGenerating}
                 />
               </div>
-            ))}
-          </div>
 
-          {/* Global Context */}
-          <div className="space-y-2">
-            <Label>Contexte additionnel (optionnel)</Label>
-            <Textarea
-              placeholder="Ex: Ajouter plus d'exemples pratiques, Focus sur les applications quotidiennes en Haïti..."
-              value={globalContext}
-              onChange={(e) => setGlobalContext(e.target.value)}
-              rows={3}
-              disabled={isGenerating}
-            />
-          </div>
-
-          {/* Progress */}
-          {isGenerating && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Progression</span>
-                  <span>{currentSection}/{totalProgressItems} éléments</span>
-                </div>
-                <Progress value={progressPercentage} />
-              </div>
-
-              <div className="space-y-2">
-                {progress.map((section) => {
-                  const displayName = section.name === 'quiz_final' ? 'Quiz Final' :
-                                     section.name === 'youtube_url' ? 'Vidéos YouTube' :
-                                     section.name === 'explanatory_images' ? 'Images Explicatives' :
-                                     section.name === 'audio_objectif' ? '🔊 Audio Objectif' :
-                                     section.name === 'audio_introduction' ? '🔊 Audio Introduction' :
-                                     section.name === 'audio_contenu' ? '🔊 Audio Contenu' :
-                                     section.name === 'audio_exemples' ? '🔊 Audio Exemples' :
-                                     section.name;
-                  return (
-                    <div key={section.name} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        {getStatusIcon(section.status)}
-                        <div>
-                          <p className="text-sm font-medium capitalize">{displayName}</p>
-                          {section.error && (
-                            <p className="text-xs text-destructive">{section.error}</p>
-                          )}
-                        </div>
-                      </div>
-                      {section.status === 'completed' && (
-                        <Badge variant="default">Terminé</Badge>
-                      )}
-                      {section.status === 'generating' && (
-                        <Badge variant="secondary">En cours...</Badge>
-                      )}
-                      {section.status === 'error' && (
-                        <Badge variant="destructive">Erreur</Badge>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Action Button */}
-          <Button
-            onClick={handleGenerate}
-            disabled={isGenerating || (selectedSections.length === 0 && !generateQuiz && !generateVideos && imageGenerationModel === 'none' && !generateAudio)}
-            className="w-full"
-          >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Génération en cours... ({currentSection}/{totalProgressItems})
-                </>
-              ) : (
-              <>
-                <Sparkles className="mr-2 h-4 w-4" />
-                Démarrer la génération
-              </>
-            )}
-          </Button>
-
-          {!isGenerating && progress.length > 0 && !showPreview && (
-            <div className="space-y-2 text-center">
-              <div className="text-sm text-muted-foreground">
-                {progress.filter(p => p.status === 'completed').length} section(s) générée(s) avec succès
-              </div>
-              {progress.filter(p => p.status === 'error').length > 0 && (
-                <div className="text-sm text-destructive">
-                  {progress.filter(p => p.status === 'error').length} erreur(s)
-                </div>
-              )}
-            </div>
+              {/* Action Button */}
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating || isPending || (selectedSections.length === 0 && !generateQuiz && !generateVideos && imageGenerationModel === 'none' && !generateAudio)}
+                className="w-full"
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Démarrage...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Démarrer la génération
+                  </>
+                )}
+              </Button>
+            </>
           )}
 
           {/* Preview Section */}
@@ -1070,7 +603,6 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
                         </div>
                       ) : key === 'youtube_url' ? (
                         <div className="space-y-3">
-                          {/* Parse suggested_videos if available */}
                           {generatedContent.suggested_videos ? (
                             (() => {
                               try {
@@ -1101,8 +633,8 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
                               } catch (e) {
                                 return (
                                   <div className="text-sm text-muted-foreground">
-                                    <a href={value} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                                      {value}
+                                    <a href={value as string} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                      {value as string}
                                     </a>
                                   </div>
                                 );
@@ -1110,20 +642,18 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
                             })()
                           ) : (
                             <div className="text-sm text-muted-foreground">
-                              <a href={value} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                                {value}
+                              <a href={value as string} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                {value as string}
                               </a>
                             </div>
                           )}
                         </div>
                       ) : key === 'quiz_final' ? (
-                        /* Show full quiz for better preview */
                         <div 
                           className="prose prose-sm dark:prose-invert max-w-none bg-background/50 p-4 rounded border max-h-96 overflow-y-auto"
                           dangerouslySetInnerHTML={createSanitizedMarkup(value as string)}
                         />
                       ) : (
-                        /* Show truncated content for other sections */
                         <div 
                           className="prose prose-sm dark:prose-invert max-w-none text-xs max-h-32 overflow-y-auto bg-background/50 p-3 rounded border"
                           dangerouslySetInnerHTML={createSanitizedMarkup((value as string).substring(0, 500) + ((value as string).length > 500 ? '...' : ''))}
@@ -1149,14 +679,14 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
                   ) : (
                     <>
                       <Check className="mr-2 h-4 w-4" />
-                      Appliquer les modifications
+                      Appliquer les changements
                     </>
                   )}
                 </Button>
                 <Button 
                   onClick={handleDiscardChanges}
-                  disabled={isApplying}
                   variant="outline"
+                  disabled={isApplying}
                 >
                   Annuler
                 </Button>
