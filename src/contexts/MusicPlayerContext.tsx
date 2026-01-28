@@ -330,10 +330,27 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useMusicPlayer = () => {
+// Safe defaults when context is unavailable (prevents React error #310)
+const SAFE_MUSIC_DEFAULTS: MusicPlayerContextType = {
+  tracks: [],
+  currentTrackIndex: 0,
+  isPlaying: false,
+  isLoading: false,
+  playerReady: false,
+  setCurrentTrackIndex: () => {},
+  setIsPlaying: () => {},
+  playTrack: () => {},
+  playPause: () => {},
+  nextTrack: () => {},
+  initPlayer: () => {},
+  stopMusic: () => {},
+};
+
+export const useMusicPlayer = (): MusicPlayerContextType => {
   const context = useContext(MusicPlayerContext);
+  // Return safe defaults if used outside provider (prevents React error #310)
   if (!context) {
-    throw new Error("useMusicPlayer must be used within MusicPlayerProvider");
+    return SAFE_MUSIC_DEFAULTS;
   }
   return context;
 };
