@@ -1,11 +1,13 @@
-// Features/Matieres module exports
-// Organized structure for the educational content system
-
-// Validation schemas
+// Export all matieres feature modules
 export * from './validation';
-
-// Data hooks
 export * from './data';
-
-// Renderers
 export * from './renderers';
+
+// Tab components
+export { 
+  LessonIntroductionTab, 
+  LessonContenuTab, 
+  LessonActivitiesTab, 
+  LessonQuizTab, 
+  LessonNotesTab 
+} from './components/tabs';
