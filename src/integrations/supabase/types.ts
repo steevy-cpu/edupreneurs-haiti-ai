@@ -47,6 +47,86 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_generation_jobs: {
+        Row: {
+          completed_at: string | null
+          config: Json
+          created_at: string | null
+          created_by: string | null
+          current_section: string | null
+          error_message: string | null
+          id: string
+          job_type: string
+          lesson_id: string
+          progress: Json | null
+          result_content: Json | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["ai_job_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          config?: Json
+          created_at?: string | null
+          created_by?: string | null
+          current_section?: string | null
+          error_message?: string | null
+          id?: string
+          job_type: string
+          lesson_id: string
+          progress?: Json | null
+          result_content?: Json | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["ai_job_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          config?: Json
+          created_at?: string | null
+          created_by?: string | null
+          current_section?: string | null
+          error_message?: string | null
+          id?: string
+          job_type?: string
+          lesson_id?: string
+          progress?: Json | null
+          result_content?: Json | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["ai_job_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_generation_jobs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "leaderboard_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "ai_generation_jobs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "ai_generation_jobs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "ai_generation_jobs_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_generation_logs: {
         Row: {
           additional_context: string | null
@@ -4012,6 +4092,12 @@ export type Database = {
       xp_for_level: { Args: { lvl: number }; Returns: number }
     }
     Enums: {
+      ai_job_status:
+        | "pending"
+        | "running"
+        | "completed"
+        | "failed"
+        | "cancelled"
       asset_kind: "quiz_final" | "activities" | "outline" | "keywords"
       asset_status:
         | "draft"
@@ -4163,6 +4249,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ai_job_status: ["pending", "running", "completed", "failed", "cancelled"],
       asset_kind: ["quiz_final", "activities", "outline", "keywords"],
       asset_status: [
         "draft",
