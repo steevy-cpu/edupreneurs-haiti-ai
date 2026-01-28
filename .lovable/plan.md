@@ -1,102 +1,84 @@
 
 
-# Expand Home Chatbot to Answer Educational Questions
+# Fix Chess AI Difficulty Levels
 
-## Overview
+## Problem Analysis
 
-This plan modifies the home page chatbot (Jude) to answer any education-related questions while always encouraging visitors to create an account at the end of each response.
+Users report that even when selecting "Expert" difficulty, Jude plays at a beginner level. After investigating, I found **two critical issues**:
+
+### Issue 1: Missing "Advanced" Difficulty Level
+
+| Location | Difficulty Levels Defined |
+|----------|---------------------------|
+| Frontend (`ChessGameControls.tsx`) | `beginner`, `intermediate`, `advanced`, `expert` (4 levels) |
+| Edge Function (`chess-ai-tutor`) | `beginner`, `intermediate`, `expert` (3 levels only) |
+
+**Problem**: When a user selects "Avancé" (advanced), the edge function falls back to the `default` case which returns `intermediate` level prompts. This means:
+- Selecting "Advanced" → AI plays at "Intermediate"
+- No true 4-tier difficulty system
+
+### Issue 2: Weak Expert-Level Prompts
+
+The current expert prompt says "Choisis TOUJOURS le meilleur coup" but doesn't provide the AI with concrete guidance on HOW to evaluate positions or play strong chess. LLMs aren't chess engines - they need explicit strategic instructions to play better moves.
 
 ---
 
-## Current Behavior
+## Solution
 
-The system prompt currently says:
-> "Si on te pose des questions hors sujet, rappelle gentiment que tu es là pour parler d'EDUPRENEURS et de l'éducation."
+### Change 1: Add "Advanced" Difficulty to Edge Function
 
-This limits Jude to only discussing the platform itself.
+**File:** `supabase/functions/chess-ai-tutor/index.ts`
 
----
-
-## Proposed Changes
-
-### Change 1: Update System Prompt
-
-**File:** `supabase/functions/home-eric-chat/index.ts` (lines 155-195)
-
-**Before (line 168-173):**
-```text
-📚 Ton rôle :
-- Accueillir les ÉTUDIANTS et futurs apprenants
-- Leur présenter EDUPRENEURS comme leur futur outil d'apprentissage
-- Répondre aux questions sur la plateforme et ses fonctionnalités
-- Expliquer comment s'inscrire et utiliser la plateforme
-- Encourager l'apprentissage et l'inscription
+**Current (line 20):**
+```typescript
+type DifficultyLevel = 'beginner' | 'intermediate' | 'expert';
 ```
 
 **After:**
-```text
-📚 Ton rôle :
-- Accueillir les ÉTUDIANTS et futurs apprenants
-- Répondre à TOUTES les questions sur l'ÉDUCATION (mathématiques, sciences, français, histoire, etc.)
-- Aider avec les devoirs, expliquer des concepts, donner des exemples
-- Présenter EDUPRENEURS comme leur futur outil d'apprentissage
-- Encourager l'apprentissage et l'inscription
+```typescript
+type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 ```
 
-**Before (line 195):**
-```text
-Si on te pose des questions hors sujet, rappelle gentiment que tu es là pour parler d'EDUPRENEURS et de l'éducation.
+### Change 2: Add Advanced Difficulty Prompt
+
+Insert a new case for `advanced` between `intermediate` and `expert`:
+
+```typescript
+case 'advanced':
+  return `
+NIVEAU DE JEU: AVANCÉ 💪
+- Tu joues à un niveau avancé avec une bonne compréhension stratégique
+- Joue des coups solides et tactiquement corrects
+- Utilise activement des tactiques (fourchettes, clouages, enfilades, attaques doubles)
+- Développe tes pièces harmonieusement vers des cases actives
+- Contrôle le centre et les colonnes ouvertes
+- Applique les principes d'ouverture classiques
+- Fais très rarement des erreurs, seulement sur des positions très complexes
+- Explique les concepts tactiques et stratégiques avancés`;
 ```
 
-**After:**
-```text
-🎯 RÈGLE OBLIGATOIRE - APPEL À L'ACTION :
-À la FIN de CHAQUE réponse, tu DOIS inclure un encouragement à créer un compte. Exemples :
-- "Pour approfondir ce sujet et accéder à plus de leçons interactives, créez votre compte gratuit sur EDUPRENEURS ! 🚀"
-- "Envie d'en apprendre plus ? Inscrivez-vous gratuitement sur EDUPRENEURS pour accéder à tous nos cours ! 📚✨"
-- "Pour continuer votre apprentissage avec moi comme tuteur personnel, créez votre compte EDUPRENEURS ! 🎓"
+### Change 3: Strengthen Expert Prompts with Chess Heuristics
 
-⛔ Questions NON-ÉDUCATIVES :
-Si on te pose des questions sans rapport avec l'éducation (politique, divertissement, etc.), réponds poliment que tu es spécialisé dans l'éducation et propose de l'aide sur des sujets scolaires.
+The expert prompt needs concrete chess evaluation criteria:
+
+```typescript
+case 'expert':
+  return `
+NIVEAU DE JEU: EXPERT 🏆
+- Tu joues au MAXIMUM de tes capacités - comme un maître d'échecs
+- TOUJOURS analyser: sécurité du roi, matériel, structure de pions, activité des pièces
+- Priorités d'ouverture: 1) Contrôler le centre (e4/d4), 2) Développer les pièces mineures, 3) Roquer tôt
+- CALCULE les tactiques: cherche fourchettes, clouages, enfilades, échecs doubles, sacrifices
+- En milieu de partie: coordonne tes pièces, crée des faiblesses dans le camp adverse
+- EXPLOITE immédiatement les erreurs de l'adversaire
+- Utilise des ouvertures solides: Italienne, Espagnole, Sicilienne, Défense Française
+- Si tu captures, calcule TOUS les échanges avant de jouer
+- Explique des concepts de niveau tournoi: prophylaxie, zugzwang, compensation, initiative`;
 ```
 
----
+### Change 4: Increase Temperature for Expert to Avoid Repetitive Play
 
-### Change 2: Update FAQ Exact-Match Responses
-
-Add account creation CTA to all three FAQ responses.
-
-**File:** `supabase/functions/home-eric-chat/index.ts` (lines 56-102)
-
-Each FAQ response should end with a CTA like:
-
-```text
-👉 Créez votre compte gratuit maintenant pour commencer ! 🚀
-```
-
----
-
-### Change 3: Update EDUPRENEURS Description Response
-
-**File:** `supabase/functions/home-eric-chat/index.ts` (lines 125-141)
-
-Add CTA at the end of the hardcoded EDUPRENEURS description.
-
----
-
-### Change 4: Increase max_tokens
-
-Since responses now include educational content + CTA, increase token limit slightly.
-
-**File:** `supabase/functions/home-eric-chat/index.ts` (line 218)
-
-```tsx
-// Before
-max_tokens: 350,
-
-// After
-max_tokens: 500,
-```
+Consider adjusting the AI temperature based on difficulty to make expert play more varied and less predictable. However, this is optional.
 
 ---
 
@@ -104,30 +86,19 @@ max_tokens: 500,
 
 | File | Changes |
 |------|---------|
-| `supabase/functions/home-eric-chat/index.ts` | Update system prompt, FAQ responses, EDUPRENEURS response, and max_tokens |
+| `supabase/functions/chess-ai-tutor/index.ts` | Add `advanced` to type, add advanced case, improve expert prompt |
 
 ---
 
-## Example Interaction
+## Before vs After Comparison
 
-**User asks:** "Quelle est la formule de Pythagore ?"
+**Selecting "Avancé" (Advanced):**
+- Before: Falls back to Intermediate (default case) → weak play
+- After: Uses dedicated Advanced prompt → stronger tactical play
 
-**Before:** Jude might redirect to platform topics
-
-**After:**
-```
-Le théorème de Pythagore est une formule fondamentale en géométrie ! 📐
-
-Dans un triangle rectangle, il établit que :
-$$a^2 + b^2 = c^2$$
-
-Où $c$ est l'hypoténuse (le côté le plus long, opposé à l'angle droit) et $a$, $b$ sont les deux autres côtés. 🔺
-
-Exemple : Si $a = 3$ et $b = 4$, alors :
-$c = \sqrt{3^2 + 4^2} = \sqrt{25} = 5$ ✨
-
-👉 Pour maîtriser ce théorème avec des exercices interactifs et un suivi personnalisé, créez votre compte gratuit sur EDUPRENEURS ! 🚀🎓
-```
+**Selecting "Expert":**
+- Before: Generic "play best move" instruction → LLM guesses randomly
+- After: Specific chess heuristics → LLM applies opening principles, tactics, coordination
 
 ---
 
@@ -135,9 +106,19 @@ $c = \sqrt{3^2 + 4^2} = \sqrt{25} = 5$ ✨
 
 | Check | Status |
 |-------|--------|
-| Backward compatible? | Yes - existing FAQ buttons still work |
-| Breaks existing functionality? | No - only expands capabilities |
-| 3G optimized? | Yes - minor token increase (350→500) |
-| Security maintained? | Yes - still blocks non-educational content |
-| CTA consistent? | Yes - every response ends with account creation encouragement |
+| Backward compatible? | Yes - existing beginner/intermediate unchanged |
+| Breaks existing functionality? | No - only improves AI behavior |
+| 3G optimized? | Yes - no payload changes |
+| Edge cases handled? | Yes - unknown difficulty still falls back to intermediate |
+| Frontend sync? | Yes - frontend already has all 4 levels defined |
+
+---
+
+## Expected Outcome
+
+After implementation:
+- "Débutant" → AI makes deliberate mistakes, simple explanations
+- "Intermédiaire" → AI plays solid but imperfect, teaching tactics
+- "Avancé" → AI plays strong tactical chess with rare mistakes
+- "Expert" → AI applies master-level principles, exploits errors immediately
 
