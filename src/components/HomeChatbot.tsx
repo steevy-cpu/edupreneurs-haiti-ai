@@ -5,6 +5,7 @@ import { X, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
+import { ChatMessageRenderer } from "@/components/ChatMessageRenderer";
 import ericStudentDesk from "@/assets/eric-student-desk.png";
 
 interface Message {
@@ -186,7 +187,7 @@ const messagesEndRef = useRef<HTMLDivElement>(null);
                       onComplete={() => setTypingMessageIndex(null)}
                     />
                   ) : (
-                    message.content
+                    <ChatMessageRenderer content={message.content} />
                   )}
                 </div>
               </div>

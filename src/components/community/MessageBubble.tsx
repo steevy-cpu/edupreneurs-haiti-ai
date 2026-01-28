@@ -8,6 +8,7 @@ import { Check, CheckCheck, Download, Edit2, FileText, Smile, Trash2, X } from "
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { Message, Reaction } from "@/types/community";
 import { FloatingReaction } from "./FloatingReaction";
+import { ChatMessageRenderer } from "@/components/ChatMessageRenderer";
 
 interface MessageBubbleProps {
   message: Message;
@@ -232,9 +233,9 @@ export function MessageBubble({
         }`}
       >
         <div className={`flex items-start ${(message.image_url && !isDocument) ? 'justify-between' : 'justify-start'} gap-2`}>
-          <p className="text-xs sm:text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere flex-1">
-            {message.content}
-          </p>
+          <div className="text-xs sm:text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere flex-1">
+            <ChatMessageRenderer content={message.content} />
+          </div>
           {message.image_url && !isDocument && (
             <Button
               size="sm"
