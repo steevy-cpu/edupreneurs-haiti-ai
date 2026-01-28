@@ -65,7 +65,7 @@ serve(async (req) => {
 
 C'est gratuit et prend moins de 2 minutes ! 🚀✨
 
-Avez-vous besoin d'aide pour une étape spécifique ? 😊`,
+👉 Créez votre compte gratuit maintenant pour commencer votre aventure d'apprentissage ! 🎓`,
 
       "quels cours sont disponibles ?": `EDUPRENEURS propose des cours adaptés au programme du MENFP ! 📚
 
@@ -84,7 +84,9 @@ Avez-vous besoin d'aide pour une étape spécifique ? 😊`,
 - 9ème Année Fondamentale
 - NS1 à NS4 (Secondaire)
 
-Chaque cours inclut des leçons interactives, exercices et quiz ! ✨🎯`,
+Chaque cours inclut des leçons interactives, exercices et quiz ! ✨🎯
+
+👉 Inscrivez-vous gratuitement pour accéder à tous ces cours ! 🚀`,
 
       "comment fonctionne la plateforme ?": `EDUPRENEURS utilise l'IA pour personnaliser votre apprentissage ! 🤖✨
 
@@ -98,7 +100,7 @@ Chaque cours inclut des leçons interactives, exercices et quiz ! ✨🎯`,
 
 💡 Bonus : Gagnez des XP et des badges en apprenant ! 🏆
 
-Prêt à commencer votre aventure ? 🚀😊`
+👉 Créez votre compte gratuit maintenant et commencez à apprendre avec moi ! 🚀🎓`
     };
 
     // Check for exact FAQ match (instant response)
@@ -138,7 +140,7 @@ Rendre l'éducation de qualité accessible à tous les étudiants haïtiens en u
 - Suivi de progression en temps réel 📊
 - Communauté d'apprentissage collaborative 🤝
 
-Voulez-vous en savoir plus sur nos fonctionnalités ou comment vous inscrire ? 😊💡`;
+👉 Créez votre compte gratuit maintenant et rejoignez notre communauté d'apprenants ! 🚀🎓`;
 
       return new Response(
         JSON.stringify({ response: edupreneursResponse }),
@@ -167,9 +169,9 @@ const systemPrompt = `Tu es Jude, l'assistant IA de la plateforme EDUPRENEURS, u
 
 📚 Ton rôle :
 - Accueillir les ÉTUDIANTS et futurs apprenants
-- Leur présenter EDUPRENEURS comme leur futur outil d'apprentissage
-- Répondre aux questions sur la plateforme et ses fonctionnalités
-- Expliquer comment s'inscrire et utiliser la plateforme
+- Répondre à TOUTES les questions sur l'ÉDUCATION (mathématiques, sciences, français, histoire, etc.)
+- Aider avec les devoirs, expliquer des concepts, donner des exemples
+- Présenter EDUPRENEURS comme leur futur outil d'apprentissage
 - Encourager l'apprentissage et l'inscription
 
 💬 Ton style :
@@ -192,7 +194,14 @@ const systemPrompt = `Tu es Jude, l'assistant IA de la plateforme EDUPRENEURS, u
 - Suivi de progression en temps réel
 - Communauté d'apprentissage collaborative
 
-Si on te pose des questions hors sujet, rappelle gentiment que tu es là pour parler d'EDUPRENEURS et de l'éducation.`;
+🎯 RÈGLE OBLIGATOIRE - APPEL À L'ACTION :
+À la FIN de CHAQUE réponse, tu DOIS inclure un encouragement à créer un compte. Exemples :
+- "Pour approfondir ce sujet et accéder à plus de leçons interactives, créez votre compte gratuit sur EDUPRENEURS ! 🚀"
+- "Envie d'en apprendre plus ? Inscrivez-vous gratuitement sur EDUPRENEURS pour accéder à tous nos cours ! 📚✨"
+- "Pour continuer votre apprentissage avec moi comme tuteur personnel, créez votre compte EDUPRENEURS ! 🎓"
+
+⛔ Questions NON-ÉDUCATIVES :
+Si on te pose des questions sans rapport avec l'éducation (politique, divertissement, etc.), réponds poliment que tu es spécialisé dans l'éducation et propose de l'aide sur des sujets scolaires.`;
 
     // Limit chat history to last 6 messages for faster processing
     const recentHistory = (chatHistory || []).slice(-6);
@@ -214,7 +223,7 @@ Si on te pose des questions hors sujet, rappelle gentiment que tu es là pour pa
         model: 'google/gemini-2.5-flash',
         messages: messages,
         temperature: 0.7,
-        max_tokens: 350,
+        max_tokens: 500,
       }),
     });
 
