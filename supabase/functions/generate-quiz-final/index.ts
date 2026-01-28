@@ -6,11 +6,33 @@ import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 // Security: Input validation schema
 const generateQuizSchema = z.object({
   lessonTitle: z.string().min(1).max(500),
+  lessonSlug: z.string().min(1).max(200).optional(),
+  subjectSlug: z.string().min(1).max(200).optional(),
   contenu: z.string().max(50000).optional(),
   exemplesExercices: z.string().max(50000).optional(),
   gradeLevel: z.string().max(10).optional(),
   subject: z.string().max(200).optional(),
+  outputFormat: z.enum(['json', 'html']).optional().default('html'), // Default to HTML for backward compatibility
 }).strict();
+
+// Canonical Quiz JSON Schema (matches frontend quiz.schema.ts)
+const QuizQuestionMCQSchema = z.object({
+  type: z.literal('mcq'),
+  prompt: z.string().min(10).max(500),
+  choices: z.array(z.string().max(200)).length(4),
+  answerIndex: z.number().min(0).max(3),
+  explanation: z.string().min(10).max(500),
+  tags: z.array(z.string()).max(5).default([]),
+});
+
+const QuizPayloadSchema = z.object({
+  version: z.literal(1),
+  lessonSlug: z.string().min(1),
+  gradeLevel: z.string().min(1),
+  subjectSlug: z.string().min(1),
+  language: z.enum(['fr', 'ht', 'en', 'es']).default('fr'),
+  questions: z.array(QuizQuestionMCQSchema).min(10).max(15),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -27,13 +49,16 @@ serve(async (req) => {
       return secureErrorResponse('Invalid input', 400, parseResult.error.errors.map(e => e.message));
     }
     
-    const { lessonTitle, contenu, exemplesExercices, gradeLevel, subject } = parseResult.data;
+    const { lessonTitle, lessonSlug, subjectSlug, contenu, exemplesExercices, gradeLevel, subject, outputFormat } = parseResult.data;
 
     console.log('📝 Generating Quiz Final for:', lessonTitle);
     console.log('📋 Request params:', { 
       lessonTitle, 
+      lessonSlug,
+      subjectSlug,
       gradeLevel, 
       subject,
+      outputFormat,
       contenuLength: contenu?.length,
       exercicesLength: exemplesExercices?.length
     });
@@ -50,9 +75,28 @@ serve(async (req) => {
                            subjectNormalized === 'kreyol' ||
                            subjectNormalized === 'creole';
     
-    console.log('🔍 Creole detection:', { subject, subjectNormalized, isCreoleLesson });
+    // Determine language code
+    const language = isCreoleLesson ? 'ht' : 'fr';
+    
+    console.log('🔍 Creole detection:', { subject, subjectNormalized, isCreoleLesson, language });
 
     const combinedContent = `${contenu || ''}\n\n${exemplesExercices || ''}`.trim();
+    
+    // Use JSON output format if requested
+    if (outputFormat === 'json') {
+      return await generateJsonQuiz({
+        lessonTitle,
+        lessonSlug: lessonSlug || lessonTitle.toLowerCase().replace(/\s+/g, '-'),
+        subjectSlug: subjectSlug || (subject || 'general').toLowerCase().replace(/\s+/g, '-'),
+        gradeLevel: gradeLevel || '7AF',
+        combinedContent,
+        isCreoleLesson,
+        language,
+        LOVABLE_API_KEY,
+      });
+    }
+    
+    // Legacy HTML generation (backward compatibility)
 
     // Strict HTML format with exactly 4 options
     const systemPrompt = isCreoleLesson
@@ -186,3 +230,175 @@ ${combinedContent}
     return secureErrorResponse(error instanceof Error ? error.message : 'Unknown error');
   }
 });
+
+// ============================================================================
+// JSON Quiz Generation (Phase 2 - Structured Content)
+// ============================================================================
+
+interface JsonQuizParams {
+  lessonTitle: string;
+  lessonSlug: string;
+  subjectSlug: string;
+  gradeLevel: string;
+  combinedContent: string;
+  isCreoleLesson: boolean;
+  language: 'fr' | 'ht' | 'en' | 'es';
+  LOVABLE_API_KEY: string;
+}
+
+async function generateJsonQuiz(params: JsonQuizParams): Promise<Response> {
+  const { lessonTitle, lessonSlug, subjectSlug, gradeLevel, combinedContent, isCreoleLesson, language, LOVABLE_API_KEY } = params;
+
+  console.log('🎯 Generating JSON Quiz (Phase 2)');
+
+  const jsonSystemPrompt = isCreoleLesson
+    ? `Ou se yon ekspè nan kreye quiz edikasyon. Jenere yon quiz final ak 10-15 kesyon QCM.
+
+FÒMA JSON EGZAKT OBLIGATWA:
+{
+  "version": 1,
+  "lessonSlug": "${lessonSlug}",
+  "gradeLevel": "${gradeLevel}",
+  "subjectSlug": "${subjectSlug}",
+  "language": "ht",
+  "questions": [
+    {
+      "type": "mcq",
+      "prompt": "Tèks kesyon an isit la?",
+      "choices": ["Premye opsyon", "Dezyèm opsyon", "Twazyèm opsyon", "Katriyèm opsyon"],
+      "answerIndex": 1,
+      "explanation": "Esplikasyon detaye poukisa repons sa a kòrèk...",
+      "tags": ["tag1", "tag2"]
+    }
+  ]
+}
+
+RÈG KRITIK:
+1. EGZAKTEMAN 4 chwa pa kesyon
+2. answerIndex se yon nimewo ant 0 ak 3 (0=premye chwa, 1=dezyèm, elatriye)
+3. Jenere 10-15 kesyon
+4. PA itilize emojis nan kesyon yo
+5. TOUT KONTNI AN KREYÒL AYISYEN
+6. Retounen SÈL JSON valid, pa gen tèks anvan oswa apre`
+    : `Tu es un expert en création de quiz éducatifs. Génère un quiz final de 10-15 questions QCM.
+
+FORMAT JSON EXACT OBLIGATOIRE:
+{
+  "version": 1,
+  "lessonSlug": "${lessonSlug}",
+  "gradeLevel": "${gradeLevel}",
+  "subjectSlug": "${subjectSlug}",
+  "language": "fr",
+  "questions": [
+    {
+      "type": "mcq",
+      "prompt": "Texte de la question ici?",
+      "choices": ["Première option", "Deuxième option", "Troisième option", "Quatrième option"],
+      "answerIndex": 0,
+      "explanation": "Explication détaillée de pourquoi cette réponse est correcte...",
+      "tags": ["concept1", "concept2"]
+    }
+  ]
+}
+
+RÈGLES CRITIQUES:
+1. EXACTEMENT 4 choix par question
+2. answerIndex est un nombre entre 0 et 3 (0=premier choix, 1=deuxième, etc.)
+3. Générer 10-15 questions
+4. NE PAS utiliser d'emojis dans les questions
+5. TOUT EN FRANÇAIS
+6. Retourner UNIQUEMENT du JSON valide, pas de texte avant ou après`;
+
+  const jsonUserPrompt = isCreoleLesson
+    ? `Jenere yon quiz JSON pou lesyon sa a:
+
+Tit: ${lessonTitle}
+Nivo: ${gradeLevel}
+Matyè: ${subjectSlug}
+
+Kontni lesyon an:
+${combinedContent.substring(0, 15000)}
+
+Retounen SÈL yon objè JSON valid.`
+    : `Génère un quiz JSON pour cette leçon:
+
+Titre: ${lessonTitle}
+Niveau: ${gradeLevel}
+Matière: ${subjectSlug}
+
+Contenu de la leçon:
+${combinedContent.substring(0, 15000)}
+
+Retourne UNIQUEMENT un objet JSON valide.`;
+
+  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'google/gemini-2.5-flash',
+      messages: [
+        { role: 'system', content: jsonSystemPrompt },
+        { role: 'user', content: jsonUserPrompt }
+      ],
+      response_format: { type: 'json_object' },
+    }),
+  });
+
+  if (!response.ok) {
+    if (response.status === 429) {
+      return secureErrorResponse('Rate limits exceeded, please try again later.', 429);
+    }
+    if (response.status === 402) {
+      return secureErrorResponse('Payment required, please add funds to your Lovable AI workspace.', 402);
+    }
+    const errorText = await response.text();
+    console.error('AI gateway error:', response.status, errorText);
+    throw new Error('AI gateway error');
+  }
+
+  const data = await response.json();
+  let rawContent = data.choices[0].message.content;
+
+  // Clean up any markdown code blocks
+  rawContent = rawContent
+    .replace(/```json\n?/g, '')
+    .replace(/```\n?/g, '')
+    .trim();
+
+  console.log('📦 Raw JSON response (first 500 chars):', rawContent.substring(0, 500));
+
+  // Parse and validate the JSON
+  let parsedQuiz;
+  try {
+    parsedQuiz = JSON.parse(rawContent);
+  } catch (parseError) {
+    console.error('Failed to parse JSON:', parseError);
+    return secureErrorResponse('AI returned invalid JSON', 500);
+  }
+
+  // Validate against schema
+  const validationResult = QuizPayloadSchema.safeParse(parsedQuiz);
+  
+  if (!validationResult.success) {
+    console.error('Schema validation failed:', validationResult.error.errors);
+    
+    // Return validation errors for debugging
+    return secureJsonResponse({
+      success: false,
+      validationErrors: validationResult.error.errors.map(e => `${e.path.join('.')}: ${e.message}`),
+      rawPayload: parsedQuiz,
+    }, 400);
+  }
+
+  console.log('✅ JSON Quiz generated and validated successfully');
+  console.log(`📊 ${validationResult.data.questions.length} questions generated`);
+
+  return secureJsonResponse({
+    success: true,
+    payload: validationResult.data,
+    format: 'json',
+  });
+}
