@@ -1,26 +1,29 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { BookOpen, FileText, Gamepad2, Target, Lightbulb, ArrowLeft, Save, GraduationCap, Sparkles } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { BookOpen, FileText, Gamepad2, Target, ArrowLeft, GraduationCap, Sparkles } from "lucide-react";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
-import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
-import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
-import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 import { JudeChatbot } from "@/components/JudeChatbot";
 import { LessonAIPracticeSection } from "@/components/lesson/LessonAIPracticeSection";
 import { LessonQuickStats } from "@/components/lesson/LessonQuickStats";
 import { LessonNavigation } from "@/components/lesson/LessonNavigation";
 import { LessonAudioPlayerSimple } from "@/components/LessonAudioPlayerSimple";
 import { MathContent, isMathSubject } from "@/components/MathContent";
-import { ProgressiveContent } from "@/components/lesson/ProgressiveContent";
+
+// Lazy-loaded tab components for 3G optimization
+import { 
+  LessonIntroductionTab, 
+  LessonContenuTab, 
+  LessonActivitiesTab, 
+  LessonQuizTab, 
+  LessonNotesTab 
+} from "@/features/matieres/components/tabs";
 
 // Security: DOMPurify configuration for educational content
 const PURIFY_CONFIG = {
@@ -124,12 +127,10 @@ export const LessonPageTemplate = ({
   isFirstLesson = false
 }: LessonPageTemplateProps) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("introduction");
-  const [personalNotes, setPersonalNotes] = useState("");
   const [viewedTabs, setViewedTabs] = useState<Set<string>>(new Set(["introduction"]));
   const [isLessonCompleted, setIsLessonCompleted] = useState(false);
-  
+  const [hasNotes, setHasNotes] = useState(false);
 
   // Get random motivational message (stable per session)
   const [motivationalMessage] = useState(() => 
@@ -144,7 +145,6 @@ export const LessonPageTemplate = ({
   const estimatedMinutes = estimateReadingTime(lesson.contenu, lesson.introduction, lesson.exemples_exercices);
 
   useEffect(() => {
-    loadPersonalNotes();
     checkLessonCompletion();
   }, [lessonSlug]);
 
@@ -152,31 +152,6 @@ export const LessonPageTemplate = ({
   useEffect(() => {
     setViewedTabs(prev => new Set([...prev, activeTab]));
   }, [activeTab]);
-
-  const loadPersonalNotes = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('lesson_notes')
-        .select('notes')
-        .eq('lesson_id', lessonSlug)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      if (data) {
-        setPersonalNotes(data.notes || '');
-        if (data.notes) {
-          setViewedTabs(prev => new Set([...prev, 'notes']));
-        }
-      }
-    } catch (error) {
-      console.error('Error loading notes:', error);
-    }
-  };
 
   const checkLessonCompletion = async () => {
     try {
@@ -196,49 +171,9 @@ export const LessonPageTemplate = ({
     }
   };
 
-  const savePersonalNotes = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          title: "Erreur",
-          description: "Vous devez être connecté pour sauvegarder des notes",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const { error } = await supabase
-        .from('lesson_notes')
-        .upsert({
-          lesson_id: lessonSlug,
-          user_id: user.id,
-          notes: personalNotes,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'lesson_id,user_id'
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Succès",
-        description: "Notes sauvegardées avec succès",
-      });
-    } catch (error) {
-      console.error('Error saving notes:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de sauvegarder les notes",
-        variant: "destructive",
-      });
-    }
-  };
-
   // Tab completion indicator
   const getTabStatus = (tabId: string): 'complete' | 'viewed' | 'pending' => {
-    if (tabId === 'notes' && personalNotes.length > 0) return 'complete';
+    if (tabId === 'notes' && hasNotes) return 'complete';
     if (isLessonCompleted && (tabId === 'activites' || tabId === 'quiz')) return 'complete';
     if (viewedTabs.has(tabId)) return 'viewed';
     return 'pending';
@@ -481,176 +416,57 @@ export const LessonPageTemplate = ({
           </div>
         </div>
 
-        {/* Scrollable Content Container */}
+        {/* Scrollable Content Container - Lazy-loaded tabs */}
         <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4">
           <TabsContent value="introduction" className="space-y-4 sm:space-y-6 mt-4">
-            <Card>
-              <CardHeader className="p-3 sm:p-6">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
-                  <Target className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Introduction
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 sm:p-6 space-y-4">
-                {lesson.audio_introduction_url && (
-                  <LessonAudioPlayerSimple
-                    audioUrl={lesson.audio_introduction_url}
-                    label="Écouter l'introduction"
-                    className="w-full"
-                  />
-                )}
-                {lesson.introduction ? (
-                  <ProgressiveContent 
-                    content={lesson.introduction}
-                    subjectName={subjectName}
-                    showProgressBar={false}
-                  />
-                ) : (
-                  <p className="text-muted-foreground text-sm sm:text-base">Pas d'introduction disponible</p>
-                )}
-              </CardContent>
-            </Card>
+            <LessonIntroductionTab
+              introduction={lesson.introduction}
+              audioUrl={lesson.audio_introduction_url}
+              subjectName={subjectName}
+            />
           </TabsContent>
 
           <TabsContent value="contenu" className="space-y-4 sm:space-y-6 mt-4">
-            <Card>
-              <CardHeader className="p-3 sm:p-6">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
-                  <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Contenu du cours
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 sm:p-6 space-y-4">
-                {lesson.audio_contenu_url && (
-                  <LessonAudioPlayerSimple
-                    audioUrl={lesson.audio_contenu_url}
-                    label="Écouter le contenu"
-                    className="w-full"
-                  />
-                )}
-                {lesson.contenu ? (
-                  <ProgressiveContent 
-                    content={lesson.contenu}
-                    subjectName={subjectName}
-                    showProgressBar={true}
-                    className="overflow-x-auto"
-                  />
-                ) : (
-                  <p className="text-muted-foreground text-sm sm:text-base">Pas de contenu disponible</p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="p-3 sm:p-6">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
-                  <Lightbulb className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Exemples et Exercices
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 sm:p-6 space-y-4">
-                {lesson.audio_exemples_url && (
-                  <LessonAudioPlayerSimple
-                    audioUrl={lesson.audio_exemples_url}
-                    label="Écouter les exemples"
-                    className="w-full"
-                  />
-                )}
-                {lesson.exemples_exercices ? (
-                  <ProgressiveContent 
-                    content={lesson.exemples_exercices}
-                    subjectName={subjectName}
-                    showProgressBar={true}
-                    className="overflow-x-auto"
-                  />
-                ) : (
-                  <p className="text-muted-foreground text-sm sm:text-base">Pas d'exemples disponibles</p>
-                )}
-              </CardContent>
-            </Card>
-
-            <YouTubeVideoSection 
+            <LessonContenuTab
               lessonId={lesson.id}
               lessonTitle={lesson.title}
-              objectives={lesson.objectif}
+              contenu={lesson.contenu}
+              exemplesExercices={lesson.exemples_exercices}
+              youtubeUrl={lesson.youtube_url}
+              audioContenuUrl={lesson.audio_contenu_url}
+              audioExemplesUrl={lesson.audio_exemples_url}
+              subjectName={subjectName}
               gradeLevel={gradeLevel}
-              subject={subjectName.toLowerCase()}
-              customYoutubeUrl={lesson.youtube_url}
+              objectif={lesson.objectif}
             />
           </TabsContent>
 
           <TabsContent value="activites" className="space-y-4 sm:space-y-6 mt-4">
-            {lesson.activites_interactives ? (
-              <Card>
-                <CardHeader className="p-3 sm:p-6">
-                  <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
-                    <Gamepad2 className="h-4 w-4 sm:h-5 sm:w-5" />
-                    Activités Interactives
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-3 sm:p-6">
-                  <InteractiveActivitiesEnhanced 
-                    content={lesson.activites_interactives}
-                    isLoading={false}
-                  />
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="p-3 sm:p-6">
-                  <p className="text-muted-foreground text-sm sm:text-base">Aucune activité interactive disponible</p>
-                </CardContent>
-              </Card>
-            )}
+            <LessonActivitiesTab
+              lessonId={lesson.id}
+              legacyActivitiesHtml={lesson.activites_interactives}
+            />
           </TabsContent>
 
           <TabsContent value="quiz" className="space-y-4 sm:space-y-6 mt-4">
-            {lesson.quiz_final ? (
-              <Card>
-                <CardHeader className="p-3 sm:p-6">
-                  <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
-                    <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5" />
-                    Quiz Final
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-3 sm:p-6">
-                  <HTMLQuizParser 
-                    htmlContent={lesson.quiz_final}
-                    lessonSlug={lessonSlug}
-                    subject={subjectName.toLowerCase()}
-                  />
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="p-3 sm:p-6">
-                  <p className="text-muted-foreground text-sm sm:text-base">Aucun quiz disponible pour le moment</p>
-                </CardContent>
-              </Card>
-            )}
+            <LessonQuizTab
+              lessonId={lesson.id}
+              lessonSlug={lessonSlug}
+              subjectName={subjectName}
+              legacyQuizHtml={lesson.quiz_final}
+            />
           </TabsContent>
 
           <TabsContent value="notes" className="space-y-4 sm:space-y-6 mt-4">
-            <Card>
-              <CardHeader className="p-3 sm:p-6">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
-                  <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Mes Notes Personnelles
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 p-3 sm:p-6">
-                <Textarea
-                  placeholder="Écris tes notes ici..."
-                  value={personalNotes}
-                  onChange={(e) => setPersonalNotes(e.target.value)}
-                  className="min-h-[200px] sm:min-h-[300px] resize-none text-sm sm:text-base"
-                />
-                <Button onClick={savePersonalNotes} className="w-full">
-                  <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                  Sauvegarder mes notes
-                </Button>
-              </CardContent>
-            </Card>
+            <LessonNotesTab
+              lessonSlug={lessonSlug}
+              onNotesChange={(notesExist) => {
+                setHasNotes(notesExist);
+                if (notesExist) {
+                  setViewedTabs(prev => new Set([...prev, 'notes']));
+                }
+              }}
+            />
           </TabsContent>
         </div>
       </Tabs>
