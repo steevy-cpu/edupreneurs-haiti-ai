@@ -17,7 +17,7 @@ interface Message {
   content: string;
 }
 
-type DifficultyLevel = 'beginner' | 'intermediate' | 'expert';
+type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 
 const getDifficultyPrompt = (difficulty: DifficultyLevel): string => {
   switch (difficulty) {
@@ -41,16 +41,31 @@ NIVEAU DE JEU: INTERMÉDIAIRE 🎯
 - Explique des stratégies comme le contrôle du centre, le développement des pièces
 - Fais occasionnellement une petite erreur que l'élève peut exploiter
 - Sois pédagogique et explique le "pourquoi" de tes coups`;
+
+    case 'advanced':
+      return `
+NIVEAU DE JEU: AVANCÉ 💪
+- Tu joues à un niveau avancé avec une bonne compréhension stratégique
+- Joue des coups solides et tactiquement corrects
+- Utilise activement des tactiques (fourchettes, clouages, enfilades, attaques doubles)
+- Développe tes pièces harmonieusement vers des cases actives
+- Contrôle le centre et les colonnes ouvertes
+- Applique les principes d'ouverture classiques
+- Fais très rarement des erreurs, seulement sur des positions très complexes
+- Explique les concepts tactiques et stratégiques avancés`;
       
     case 'expert':
       return `
 NIVEAU DE JEU: EXPERT 🏆
-- Tu joues au plus haut niveau possible
-- Choisis TOUJOURS le meilleur coup ou un des meilleurs coups
-- Utilise des tactiques avancées (sacrifices, combinaisons)
-- Explique des concepts stratégiques avancés (structure de pions, cases faibles, initiative)
-- Sois un défi pour l'élève, mais reste encourageant
-- Si l'élève fait une erreur, exploite-la mais explique comment il aurait pu l'éviter`;
+- Tu joues au MAXIMUM de tes capacités - comme un maître d'échecs
+- TOUJOURS analyser: sécurité du roi, matériel, structure de pions, activité des pièces
+- Priorités d'ouverture: 1) Contrôler le centre (e4/d4), 2) Développer les pièces mineures, 3) Roquer tôt
+- CALCULE les tactiques: cherche fourchettes, clouages, enfilades, échecs doubles, sacrifices
+- En milieu de partie: coordonne tes pièces, crée des faiblesses dans le camp adverse
+- EXPLOITE immédiatement les erreurs de l'adversaire
+- Utilise des ouvertures solides: Italienne, Espagnole, Sicilienne, Défense Française
+- Si tu captures, calcule TOUS les échanges avant de jouer
+- Explique des concepts de niveau tournoi: prophylaxie, zugzwang, compensation, initiative`;
       
     default:
       return getDifficultyPrompt('intermediate');
