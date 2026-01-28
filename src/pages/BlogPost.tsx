@@ -161,12 +161,42 @@ export default function BlogPost() {
         <meta property="og:type" content="article" />
         <link
           rel="canonical"
-          href={`https://edupreneurs-haiti-ai.lovable.app/blog/${post.slug}`}
+          href={`https://mon-edupreneur.com/blog/${post.slug}`}
         />
+        <link rel="alternate" hrefLang="fr-HT" href={`https://mon-edupreneur.com/blog/${post.slug}`} />
+        <link rel="alternate" hrefLang="fr" href={`https://mon-edupreneur.com/blog/${post.slug}`} />
         <meta property="article:published_time" content={post.published_at || post.created_at} />
         {post.author?.display_name && (
           <meta property="article:author" content={post.author.display_name} />
         )}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": post.title,
+            "description": post.excerpt || post.title,
+            "image": post.cover_image_url || "https://mon-edupreneur.com/og-image.jpeg",
+            "datePublished": post.published_at || post.created_at,
+            "dateModified": post.updated_at,
+            "author": {
+              "@type": "Person",
+              "name": authorName,
+              "url": "https://mon-edupreneur.com"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "EDUPRENEURS Haiti",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://mon-edupreneur.com/logo.png"
+              }
+            },
+            "mainEntityOfPage": {
+              "@type": "WebPage",
+              "@id": `https://mon-edupreneur.com/blog/${post.slug}`
+            }
+          })}
+        </script>
       </Helmet>
 
       <div className="min-h-screen bg-background">
