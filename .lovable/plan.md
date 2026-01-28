@@ -1,6 +1,18 @@
 
 # Matières Architecture Gap Analysis & Improvement Roadmap
 
+## Implementation Progress
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: lesson_assets + schemas | ✅ COMPLETE | Table created, Zod schemas defined, QuizRenderer + HTMLQuizFallback implemented |
+| Phase 2: Validation pipeline | 🔄 NEXT | Need to update edge functions to output JSON |
+| Phase 3: Lazy tab loading | ⏳ Pending | |
+| Phase 5: Publishing gate | ⏳ Pending | `check_lesson_publishable` function created |
+| Phase 4: Async jobs | ⏳ Pending | |
+
+---
+
 ## Executive Summary
 
 After thorough analysis of your codebase against the 10-point guidelines, I've identified **5 critical gaps** and **3 alignment areas**. This plan provides a phased roadmap to bring the system to the recommended architecture.
