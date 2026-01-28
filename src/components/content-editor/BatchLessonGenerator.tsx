@@ -1264,7 +1264,7 @@ export const BatchLessonGenerator = () => {
                     <SelectContent>
                       <SelectItem value="none">Aucun</SelectItem>
                       <SelectItem value="openai">OpenAI (gpt-image-1)</SelectItem>
-                      <SelectItem value="lovable">Lovable AI (Nano banana)</SelectItem>
+                      <SelectItem value="lovable">IA Edupreneurs</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

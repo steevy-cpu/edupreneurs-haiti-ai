@@ -111,7 +111,7 @@ export const SectionGenerator = ({
         if (error.message?.includes('429')) {
           toast.error("Trop de requêtes. Veuillez attendre quelques secondes.");
         } else if (error.message?.includes('402')) {
-          toast.error("Crédits Lovable AI épuisés. Veuillez recharger votre compte.");
+          toast.error("Crédits IA épuisés. Veuillez recharger votre compte.");
         } else {
           toast.error("Erreur lors de la génération");
         }

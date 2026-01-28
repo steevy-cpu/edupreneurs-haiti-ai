@@ -262,7 +262,7 @@ Après la création, valide la leçon avec validate_lesson.`;
               Assistant IA - Commandes Naturelles
             </CardTitle>
             <CardDescription className="text-xs">
-              Propulsé par Lovable AI • Créez, modifiez et gérez le contenu en langage naturel
+              Propulsé par IA • Créez, modifiez et gérez le contenu en langage naturel
             </CardDescription>
           </div>
           <div className="flex gap-2">
