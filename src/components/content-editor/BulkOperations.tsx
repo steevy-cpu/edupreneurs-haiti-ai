@@ -60,14 +60,33 @@ export const BulkOperations = () => {
     }
 
     try {
+      // Check publishability for each selected lesson
+      const publishableResults = await Promise.all(
+        selectedLessons.map(id =>
+          supabase.rpc('check_lesson_publishable', { p_lesson_id: id })
+        )
+      );
+
+      const publishableIds = selectedLessons.filter((_, i) => publishableResults[i].data === true);
+      const blockedCount = selectedLessons.length - publishableIds.length;
+
+      if (publishableIds.length === 0) {
+        toast.error('Aucune leçon ne peut être publiée (quiz/activités non validés)');
+        return;
+      }
+
+      if (blockedCount > 0) {
+        toast.warning(`${blockedCount} leçon(s) ignorée(s) (validation manquante)`);
+      }
+
       const { error } = await supabase
         .from('lessons')
         .update({ is_published: true, workflow_status: 'published' })
-        .in('id', selectedLessons);
+        .in('id', publishableIds);
 
       if (error) throw error;
 
-      toast.success(`${selectedLessons.length} leçon(s) publiée(s)`);
+      toast.success(`${publishableIds.length} leçon(s) publiée(s)`);
       setSelectedLessons([]);
       fetchLessons();
     } catch (error) {

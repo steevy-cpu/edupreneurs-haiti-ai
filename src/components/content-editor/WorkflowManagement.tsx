@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { GitBranch, CheckCircle, XCircle, Send, Calendar } from "lucide-react";
 import { useContentEditorPermissions } from "@/hooks/useContentEditorPermissions";
+import { useLessonPublishable } from "@/features/content-editor/hooks/useLessonPublishable";
+import { PublishGateIndicator } from "@/features/content-editor/components/PublishGateIndicator";
 
 interface WorkflowManagementProps {
   selectedLesson: any;
@@ -117,6 +119,9 @@ export const WorkflowManagement = ({ selectedLesson, onUpdate }: WorkflowManagem
   const currentStatus = selectedLesson.workflow_status || 'draft';
   const canSubmitForReview = role === 'editor' || role === 'admin';
   const canApprove = role === 'admin';
+  
+  // Publishing gate check
+  const { canPublish, isLoading: gateLoading, blockers, quizAsset, activitiesAsset } = useLessonPublishable(selectedLesson?.id);
 
   return (
     <Card>
@@ -188,14 +193,23 @@ export const WorkflowManagement = ({ selectedLesson, onUpdate }: WorkflowManagem
 
           {/* Publish */}
           {currentStatus === 'approved' && canApprove && (
-            <Button
-              className="w-full"
-              onClick={() => updateWorkflowStatus('published', reviewNotes)}
-              disabled={isSubmitting}
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              Publier
-            </Button>
+            <>
+              <PublishGateIndicator
+                blockers={blockers}
+                quizAsset={quizAsset}
+                activitiesAsset={activitiesAsset}
+                isLoading={gateLoading}
+                className="mb-2"
+              />
+              <Button
+                className="w-full"
+                onClick={() => updateWorkflowStatus('published', reviewNotes)}
+                disabled={isSubmitting || !canPublish}
+              >
+                <Calendar className="mr-2 h-4 w-4" />
+                Publier
+              </Button>
+            </>
           )}
 
           {/* Return to Draft */}
