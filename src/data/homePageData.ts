@@ -283,7 +283,7 @@ export const footerLinks = {
     { href: "#about", label: "Notre Mission" },
     { href: "#team", label: "L'Équipe" },
     { href: "#partners", label: "Nos Partenaires" },
-    { to: "/exams-hub", label: "Préparation au Bac" }
+    { to: "/examens-officiels", label: "Préparation au Bac" }
   ],
   support: [
     { href: "#faq", label: "FAQ" },
