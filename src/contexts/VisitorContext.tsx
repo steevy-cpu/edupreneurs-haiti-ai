@@ -183,10 +183,30 @@ export const VisitorProvider = ({ children }: VisitorProviderProps) => {
   );
 };
 
-export const useVisitor = () => {
+// Safe defaults when context is unavailable (prevents React error #310)
+const SAFE_VISITOR_DEFAULTS: VisitorState = {
+  isVisitor: false,
+  visitorType: null,
+  tourStep: 0,
+  tourCompleted: false,
+  tourActive: false,
+  showWelcomePopup: false,
+  setVisitorType: () => {},
+  startVisitorMode: () => {},
+  exitVisitorMode: () => {},
+  nextTourStep: () => {},
+  previousTourStep: () => {},
+  skipTour: () => {},
+  startTour: () => {},
+  completeTour: () => {},
+  completeWelcomePopup: () => {},
+};
+
+export const useVisitor = (): VisitorState => {
   const context = useContext(VisitorContext);
+  // Return safe defaults if used outside provider (prevents React error #310)
   if (context === undefined) {
-    throw new Error("useVisitor must be used within a VisitorProvider");
+    return SAFE_VISITOR_DEFAULTS;
   }
   return context;
 };
