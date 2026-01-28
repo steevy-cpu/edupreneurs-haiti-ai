@@ -1,106 +1,281 @@
-# Lesson Content Architecture - Implementation Plan
+
+# Phase 5: Publishing Gate - Implementation Plan
 
 ## Overview
 
-This plan documents the phased migration from legacy HTML-in-column storage to a structured JSON asset architecture for lesson content (quiz, activities). This enables validation, real-time generation tracking, and improved maintainability.
+This phase enforces content quality by blocking lesson publication until quiz and activities assets are validated. The goal is to prevent incomplete or invalid lessons from reaching students.
 
 ---
 
-## Phase Status
+## Current State Analysis
 
-| Phase | Description | Status |
-|-------|-------------|--------|
-| **Phase 1** | Foundation - `lesson_assets` table + Zod schemas + Renderers | ✅ Complete |
-| **Phase 2** | JSON Quiz Generation - Edge function + asset storage | ✅ Complete |
-| **Phase 3** | Lazy Tab Loading - Performance optimization for 3G | ✅ Complete |
-| **Phase 4** | Async Generation Jobs - Background processing with realtime | ✅ Complete |
-| **Phase 5** | Publishing Gate - Block publish unless validated | ⏳ Pending |
+### Publishing Points Identified
+
+| Location | Component | Publishing Action |
+|----------|-----------|-------------------|
+| `WorkflowManagement.tsx` | Workflow panel | Sets `is_published: true` when status → published |
+| `BulkOperations.tsx` | Bulk actions | Mass publish selected lessons |
+| `BatchGenerationValidation.tsx` | Batch validator | Publish single or all valid lessons |
+| `LessonEditor.tsx` | Editor toggle | `is_published` switch in form |
+
+### Existing Infrastructure
+
+1. **Database function** `check_lesson_publishable(lesson_id)` already exists:
+   - Checks for validated `quiz_final` asset in `lesson_assets` table
+   - Checks for validated `activities` asset in `lesson_assets` table
+   - Falls back to legacy HTML content if no JSON assets exist
+   - Returns `TRUE` only if both quiz AND activities are present
+
+2. **Validation types** in `validation-report.types.ts`:
+   - `AssetStatus`: `'draft' | 'validating' | 'validated' | 'rejected' | 'published'`
+   - `ValidationReport` with `passed`, `schemaErrors`, `alignmentScore`, `qualityChecks`
+
+3. **Asset queries** in `lessonAssets.queries.ts`:
+   - `useLessonQuizAsset(lessonId)` - fetch quiz JSON asset
+   - `useLessonActivitiesAsset(lessonId)` - fetch activities JSON asset
+   - `useUpdateAssetStatus()` - update asset validation status
 
 ---
 
-## Phase 4: Async Generation Jobs (COMPLETED)
+## Implementation Architecture
 
-### What Was Built
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                     Publishing Gate Flow                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  User clicks "Publish"                                          │
+│         │                                                       │
+│         ▼                                                       │
+│  ┌─────────────────────┐                                        │
+│  │ useLessonPublishable│ ◄─── Hook checks gate status           │
+│  │       (hook)        │                                        │
+│  └──────────┬──────────┘                                        │
+│             │                                                   │
+│             ▼                                                   │
+│  ┌─────────────────────┐     ┌─────────────────────┐           │
+│  │ check_lesson_       │     │    lesson_assets    │           │
+│  │ publishable()       │────▶│     (table)         │           │
+│  │   (db function)     │     │  status='validated' │           │
+│  └──────────┬──────────┘     └─────────────────────┘           │
+│             │                                                   │
+│      ┌──────┴──────┐                                           │
+│      │             │                                           │
+│      ▼             ▼                                           │
+│   ┌──────┐     ┌──────┐                                        │
+│   │ TRUE │     │FALSE │                                        │
+│   └──┬───┘     └──┬───┘                                        │
+│      │            │                                            │
+│      ▼            ▼                                            │
+│  Enable        Disable button                                  │
+│  Publish       + Show blockers                                 │
+│                                                                │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-1. **Database: `ai_generation_jobs` table**
-   - Status enum: `pending`, `running`, `completed`, `failed`, `cancelled`
-   - Progress tracking via JSONB with realtime updates
-   - RLS policies for user ownership + editor viewing
-   - Indexed for efficient job queries
+---
 
-2. **Edge Function: `process-ai-job`**
-   - Background job processor that orchestrates generation
-   - Calls existing functions (generate-lesson-section, generate-quiz-final, suggest-youtube-videos)
-   - Updates progress in database after each section (triggers realtime)
-   - 3-second rate limiting between API calls
-   - Handles cancellation mid-job
-   - Stores results in `result_content` JSONB
+## Technical Implementation
 
-3. **React Hook: `useGenerationJob`**
-   - Manages job lifecycle (create, track, cancel)
-   - Realtime subscription for progress updates
-   - Resume capability for existing jobs
-   - Type-safe transformation from database records
+### 5.1 New Hook: `useLessonPublishable`
 
-4. **Component: `GenerationJobProgress`**
-   - Visual progress display with section status
-   - Cancel button for running jobs
-   - Resume button for interrupted sessions
-   - Background processing info message
+**Purpose**: Centralized gate check that can be reused across all publishing locations.
 
-### Files Created
+**File**: `src/features/content-editor/hooks/useLessonPublishable.ts`
+
+```typescript
+interface PublishGateStatus {
+  canPublish: boolean;
+  isLoading: boolean;
+  blockers: {
+    quizMissing: boolean;
+    quizNotValidated: boolean;
+    activitiesMissing: boolean;
+    activitiesNotValidated: boolean;
+  };
+  quizAsset: LessonAsset | null;
+  activitiesAsset: LessonAsset | null;
+}
+
+export function useLessonPublishable(lessonId: string | undefined): PublishGateStatus
+```
+
+**Logic**:
+1. Fetch quiz and activities assets using existing hooks
+2. Check if each asset exists and has `status === 'validated'`
+3. Return structured blockers for UI feedback
+4. Optionally call `check_lesson_publishable()` RPC for server-side confirmation
+
+### 5.2 New Component: `PublishGateIndicator`
+
+**Purpose**: Visual indicator showing what's blocking publication.
+
+**File**: `src/features/content-editor/components/PublishGateIndicator.tsx`
+
+**Features**:
+- Shows checkmarks for validated assets
+- Shows warnings for missing/unvalidated assets
+- Links to validation panel for quick fixes
+- Compact mode for inline display, expanded mode for detailed view
+
+**Example UI**:
+```
+┌─────────────────────────────────────────┐
+│ 📋 Publication Readiness                │
+├─────────────────────────────────────────┤
+│ ✅ Quiz Final (15 questions, validated) │
+│ ⚠️ Activités: Non validées              │
+│                                         │
+│ [Valider les activités]                 │
+└─────────────────────────────────────────┘
+```
+
+### 5.3 Integration Points
+
+#### A. WorkflowManagement.tsx (Primary)
+
+**Current code (line 190)**:
+```typescript
+{currentStatus === 'approved' && canApprove && (
+  <Button onClick={() => updateWorkflowStatus('published')}>
+    Publier
+  </Button>
+)}
+```
+
+**Modified code**:
+```typescript
+const { canPublish, blockers } = useLessonPublishable(selectedLesson?.id);
+
+{currentStatus === 'approved' && canApprove && (
+  <>
+    <PublishGateIndicator 
+      blockers={blockers} 
+      lessonId={selectedLesson.id}
+      compact 
+    />
+    <Button 
+      onClick={() => updateWorkflowStatus('published')}
+      disabled={!canPublish}
+    >
+      Publier
+    </Button>
+  </>
+)}
+```
+
+#### B. BulkOperations.tsx
+
+**Enhancement**: Filter out unpublishable lessons from bulk publish:
+```typescript
+const bulkPublish = async () => {
+  // Fetch publishability status for all selected
+  const publishable = await Promise.all(
+    selectedLessons.map(id => 
+      supabase.rpc('check_lesson_publishable', { p_lesson_id: id })
+    )
+  );
+  
+  const validIds = selectedLessons.filter((_, i) => publishable[i].data);
+  const blocked = selectedLessons.length - validIds.length;
+  
+  if (blocked > 0) {
+    toast.warning(`${blocked} leçon(s) ne peuvent pas être publiées (validation manquante)`);
+  }
+  
+  // Proceed with valid ones...
+};
+```
+
+#### C. BatchGenerationValidation.tsx
+
+Already has validation checks (lines 1210-1214), but should use centralized hook.
+
+#### D. LessonEditor.tsx
+
+Add visual indicator near the `is_published` switch showing gate status.
+
+---
+
+## Files to Create
 
 | File | Purpose |
 |------|---------|
-| `supabase/functions/process-ai-job/index.ts` | Background job processor |
-| `src/features/content-editor/hooks/useGenerationJob.ts` | React hook for job management |
-| `src/features/content-editor/components/GenerationJobProgress.tsx` | Progress UI component |
-| `src/features/content-editor/index.ts` | Feature exports |
+| `src/features/content-editor/hooks/useLessonPublishable.ts` | Gate status hook |
+| `src/features/content-editor/components/PublishGateIndicator.tsx` | Visual blocker display |
 
-### Files Modified
+## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `supabase/config.toml` | Added `process-ai-job` function config |
-
-### Next Step: Integrate with SingleLessonGenerator
-
-The async job system is ready. To complete integration:
-
-1. Import `useGenerationJob` and `GenerationJobProgress` in `SingleLessonGenerator.tsx`
-2. Replace local `isGenerating` state with hook's `isGenerating`
-3. Replace sync generation loop with `startJob` mutation
-4. Show `GenerationJobProgress` component during generation
-5. Use `resultContent` from job for preview/apply flow
+| `src/components/content-editor/WorkflowManagement.tsx` | Add gate check + indicator |
+| `src/components/content-editor/BulkOperations.tsx` | Filter unpublishable lessons |
+| `src/features/content-editor/index.ts` | Export new hook + component |
+| `.lovable/plan.md` | Mark Phase 5 complete |
 
 ---
 
-## Phase 5: Publishing Gate (PENDING)
+## Safety Verification
 
-### Goal
-Block lesson publishing unless quiz and activities assets are validated.
+| Check | Status | Notes |
+|-------|--------|-------|
+| Backward compatible? | ✅ Yes | Fallback to legacy HTML in DB function |
+| Breaks existing functionality? | ✅ No | Only adds restrictions, doesn't remove |
+| Existing data affected? | ✅ No | Lessons already published remain published |
+| 3G optimized? | ✅ Yes | Asset queries already cached |
+| Edge cases handled? | ✅ Yes | Missing assets show as blockers |
 
-### Implementation
+### Edge Cases
 
-1. **Database function**: `check_lesson_publishable(lesson_id)` - already exists
-2. **UI integration**: Disable publish button if not publishable
-3. **Validation status display**: Show which assets need attention
+1. **Legacy lessons with HTML but no JSON assets**: DB function already handles this with fallback check
+2. **Lesson with validated quiz but no activities**: Shows activities as blocker
+3. **Bulk publish with mixed valid/invalid**: Only publishes valid ones, warns about blocked
+
+---
+
+## Implementation Sequence
+
+1. Create `useLessonPublishable` hook
+2. Create `PublishGateIndicator` component
+3. Integrate into `WorkflowManagement.tsx`
+4. Integrate into `BulkOperations.tsx`
+5. Update feature exports
+6. Test end-to-end
+7. Update `.lovable/plan.md`
+
+---
+
+## User Experience
+
+### Before (Current)
+- User can publish any lesson regardless of content quality
+- No visibility into what's missing
+- Invalid content reaches students
+
+### After (With Gate)
+- Clear visual indicators show publication readiness
+- Disabled publish button with explanation
+- One-click navigation to validation panel
+- Quality ensured before students see content
 
 ---
 
 ## Technical Notes
 
-### Rate Limiting Strategy
-The edge function maintains 3-second delays between AI API calls to respect Lovable AI rate limits.
+### Why Not Just Use RPC?
 
-### Error Recovery
-If a section fails:
-1. Mark that section as `error` in progress JSON
-2. Continue with remaining sections
-3. Job completes with partial results
+While `check_lesson_publishable()` RPC works, calling it for each lesson in bulk operations is N+1 queries. The hook approach:
+1. Uses existing asset query caching
+2. Provides detailed blockers for UI
+3. Reduces database round-trips
+4. Enables optimistic UI updates
 
-### Image/Audio Generation
-Currently handled client-side due to canvas requirements. Future enhancement could move image processing to edge function with storage integration.
+### Validation Status Flow
 
-### Job Cleanup
-Consider adding scheduled function to clean up old jobs (completed/failed > 7 days).
+```
+draft → validating → validated → published
+         ↓
+      rejected (requires regeneration)
+```
+
+Publishing is only allowed when both quiz and activities are in `validated` or have legacy HTML content.
