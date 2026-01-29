@@ -6,13 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { Search, ChevronDown, ChevronRight, BookOpen, Calculator, FlaskConical, Book, RefreshCw } from "lucide-react";
+import { Search, ChevronDown, ChevronRight, BookOpen, Calculator, FlaskConical, Book, RefreshCw, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LessonBrowserProps {
@@ -20,6 +22,13 @@ interface LessonBrowserProps {
   selectedLesson: any;
   refreshKey?: number;
 }
+
+// Helper function to check if a lesson has a valid quiz
+const hasValidQuiz = (lesson: any): boolean => {
+  if (!lesson.quiz_final) return false;
+  return lesson.quiz_final.includes('quiz-question') || 
+         lesson.quiz_final.includes('quiz-container');
+};
 
 export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: LessonBrowserProps) => {
   const [gradeLevel, setGradeLevel] = useState<string>("all");
@@ -30,6 +39,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(true);
   const [openSubjects, setOpenSubjects] = useState<Set<string>>(new Set());
+  const [showOnlyMissingQuiz, setShowOnlyMissingQuiz] = useState(false);
 
   const gradeLevels = [
     { value: "all", label: "Tous les niveaux" },
@@ -113,7 +123,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
         const batch = subjectIds.slice(i, i + batchSize);
         const { data: lessonsData, error } = await supabase
           .from('lessons')
-          .select('id, title, slug, subject_id, order_index, workflow_status, grade_level, subjects(id, name)')
+          .select('id, title, slug, subject_id, order_index, workflow_status, grade_level, quiz_final, subjects(id, name)')
           .in('subject_id', batch)
           .order('order_index');
 
@@ -162,14 +172,33 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
     }
   };
 
+  // Calculate quiz stats for the current grade level
+  const allLessons = Object.values(lessonsBySubject).flat();
+  const totalLessons = allLessons.length;
+  const lessonsWithQuiz = allLessons.filter(hasValidQuiz).length;
+  const missingQuizzesTotal = totalLessons - lessonsWithQuiz;
+  const quizPercentage = totalLessons > 0 ? Math.round((lessonsWithQuiz / totalLessons) * 100) : 0;
+
   const filteredSubjects = availableSubjects.map(subject => {
     const subjectLessons = lessonsBySubject[subject.id] || [];
-    const filteredLessons = subjectLessons.filter(lesson =>
+    let filteredLessons = subjectLessons.filter(lesson =>
       lesson.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
+    
+    // Apply missing quiz filter
+    if (showOnlyMissingQuiz) {
+      filteredLessons = filteredLessons.filter(lesson => !hasValidQuiz(lesson));
+    }
+    
+    const quizCount = subjectLessons.filter(hasValidQuiz).length;
+    const missingQuizzes = subjectLessons.length - quizCount;
+    
     return {
       ...subject,
-      lessons: filteredLessons
+      lessons: filteredLessons,
+      quizCount,
+      missingQuizzes,
+      totalLessons: subjectLessons.length
     };
   }).filter(subject => 
     searchQuery === "" || 
@@ -245,6 +274,42 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
             className="pl-8"
           />
         </div>
+
+        {/* Missing Quiz Filter */}
+        <div className="flex items-center space-x-2 mt-3">
+          <Checkbox 
+            id="missing-quiz" 
+            checked={showOnlyMissingQuiz}
+            onCheckedChange={(checked) => setShowOnlyMissingQuiz(checked === true)}
+          />
+          <Label htmlFor="missing-quiz" className="text-sm text-muted-foreground cursor-pointer">
+            Quizzes manquants uniquement
+          </Label>
+        </div>
+
+        {/* Quiz Coverage Stats */}
+        {gradeLevel !== "all" && totalLessons > 0 && (
+          <div className="mt-4 p-3 rounded-lg bg-muted/50 space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-medium flex items-center gap-1">
+                {missingQuizzesTotal > 0 && <AlertCircle className="h-3.5 w-3.5 text-destructive" />}
+                {gradeLevel}: {lessonsWithQuiz}/{totalLessons} quizzes
+              </span>
+              <span className={missingQuizzesTotal > 0 ? "text-destructive font-medium" : "text-muted-foreground"}>
+                {quizPercentage}%
+              </span>
+            </div>
+            <Progress 
+              value={quizPercentage} 
+              className={`h-2 ${missingQuizzesTotal > 50 ? "[&>div]:bg-destructive" : missingQuizzesTotal > 0 ? "[&>div]:bg-amber-500" : ""}`}
+            />
+            {missingQuizzesTotal > 0 && (
+              <p className="text-xs text-destructive">
+                {missingQuizzesTotal} leçon{missingQuizzesTotal > 1 ? 's' : ''} sans quiz
+              </p>
+            )}
+          </div>
+        )}
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden p-0">
         <ScrollArea className="h-full px-6 pb-6">
@@ -272,9 +337,16 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
                     <span className="flex-1 text-left font-medium text-sm leading-tight">
                       {subject.name}
                     </span>
-                    <Badge variant="secondary" className="flex-shrink-0 ml-auto">
-                      {subject.lessons.length}
-                    </Badge>
+                    <div className="flex items-center gap-1 ml-auto flex-shrink-0">
+                      <Badge variant="secondary">
+                        {subject.lessons.length}
+                      </Badge>
+                      {subject.missingQuizzes > 0 && (
+                        <Badge variant="destructive" className="text-xs">
+                          -{subject.missingQuizzes}
+                        </Badge>
+                      )}
+                    </div>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <div className="ml-6 mt-1 space-y-1">
@@ -292,15 +364,23 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
                             <span className="text-sm font-medium flex-1 line-clamp-2">
                               {lesson.title}
                             </span>
-                            <Badge 
-                              variant={lesson.workflow_status === 'published' ? "default" : lesson.workflow_status === 'approved' ? "secondary" : "outline"}
-                              className="flex-shrink-0 text-xs"
-                            >
-                              {lesson.workflow_status === 'published' ? 'Publié' : 
-                               lesson.workflow_status === 'approved' ? 'Approuvé' :
-                               lesson.workflow_status === 'in_review' ? 'En révision' :
-                               lesson.workflow_status === 'rejected' ? 'Rejeté' : 'Brouillon'}
-                            </Badge>
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              {!hasValidQuiz(lesson) && (
+                                <Badge variant="destructive" className="text-xs flex items-center gap-0.5">
+                                  <AlertCircle className="h-3 w-3" />
+                                  Quiz
+                                </Badge>
+                              )}
+                              <Badge 
+                                variant={lesson.workflow_status === 'published' ? "default" : lesson.workflow_status === 'approved' ? "secondary" : "outline"}
+                                className="text-xs"
+                              >
+                                {lesson.workflow_status === 'published' ? 'Publié' : 
+                                 lesson.workflow_status === 'approved' ? 'Approuvé' :
+                                 lesson.workflow_status === 'in_review' ? 'En révision' :
+                                 lesson.workflow_status === 'rejected' ? 'Rejeté' : 'Brouillon'}
+                              </Badge>
+                            </div>
                           </div>
                           <div className="mt-1">
                             <Badge variant="outline" className="text-xs">
