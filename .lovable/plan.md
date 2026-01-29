@@ -1,232 +1,277 @@
 
-# Plan: Fix Quiz Display Bug and Add Batch Quiz Generator
+# Batch Quiz Content Alignment Validation Plan
 
-## Problem Analysis
+## Overview
 
-### Issue 1: Display Inconsistency
-The grade-level stats show "2 leçons sans quiz" for 7AF, but all subjects show "0" in their badges, including Espagnol which actually has 2 lessons missing quizzes.
-
-**Root Cause**: In `LessonBrowser.tsx`, when the "Quizzes manquants uniquement" filter is active:
-- The badge shows `subject.lessons.length` (filtered lessons)
-- Subjects with no missing quizzes correctly show "0"
-- But subjects WITH missing quizzes should show their count (e.g., Espagnol: "2")
-- The logic at lines 182-207 correctly calculates `missingQuizzes` but the display logic at lines 340-349 shows the wrong values
-
-Looking at the screenshot, the issue is that when `showOnlyMissingQuiz = true`:
-- Subjects show "0" when they should show the count of lessons missing quizzes
-- The `-X quiz` destructive badge (line 344-348) only appears when `missingQuizzes > 0`, but in the screenshot it's not visible for any subject
-
-The likely cause is that subjects are being filtered out or the lesson data isn't properly associated with the Espagnol subject for 7AF.
-
-### Issue 2: Missing "Generate All" Feature
-No batch quiz generation button exists for quickly generating quizzes for all missing lessons in a grade level.
+This plan adds a **second validation button** to the grade-level quiz stats panel that validates whether quiz questions are aligned with their lesson content. Unlike the existing batch generator, this feature does NOT auto-fix quizzes—it only flags them for manual review or regeneration.
 
 ---
 
-## Solution Overview
+## Problem Statement
 
-### Part 1: Fix Display Bug
-Update `LessonBrowser.tsx` to:
-1. When filter is active, hide subjects with 0 matching lessons instead of showing "0"
-2. Ensure the negative badge (`-X quiz`) always appears for subjects with missing quizzes
-3. Add debug logging to verify data loading
+Current quizzes may contain questions that:
+- Introduce concepts not covered in the lesson's `contenu` or `exemples_exercices` sections
+- Test knowledge that requires external references
+- Are factually correct but contextually irrelevant to the lesson
 
-### Part 2: Add Batch Quiz Generator
-Add a "Générer tous les quizzes" button that appears when there are missing quizzes, allowing:
-1. One-click generation for all missing quizzes in the selected grade
-2. Progress tracking during generation
-3. Bulk publish option after completion
+The existing validation only checks:
+- Structural validity (4 options, correct answer marked, explanation present)
+- Factual accuracy (via AI)
+
+**Missing**: Content alignment validation that ensures quiz questions are derived from lesson material.
 
 ---
 
-## Technical Implementation
+## Solution Architecture
 
-### File 1: `src/components/content-editor/LessonBrowser.tsx`
-
-**Changes:**
-
-1. **Fix filtering logic** (lines 203-207):
-When `showOnlyMissingQuiz` is true, filter out subjects that have 0 lessons matching (i.e., all their lessons already have quizzes):
-
-```typescript
-// Current filter only removes subjects based on search query
-.filter(subject => 
-  searchQuery === "" || 
-  subject.lessons.length > 0 || 
-  subject.name.toLowerCase().includes(searchQuery.toLowerCase())
-);
-
-// Fixed filter - also hide subjects with 0 matching lessons when filter is active
-.filter(subject => {
-  // When showing only missing quiz, hide subjects with no matching lessons
-  if (showOnlyMissingQuiz && subject.lessons.length === 0) {
-    return false;
-  }
-  return searchQuery === "" || 
-    subject.lessons.length > 0 || 
-    subject.name.toLowerCase().includes(searchQuery.toLowerCase());
-});
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                    LessonBrowser.tsx                            │
+├─────────────────────────────────────────────────────────────────┤
+│ Grade Stats Card                                                │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 7AF: 202/204 quizzes                               99%      │ │
+│ │ ██████████████████████████████████████████████░░░░          │ │
+│ │ 2 leçons sans quiz                                          │ │
+│ │                                                             │ │
+│ │ [✨ Générer 2 quizs manquants]   <-- Existing               │ │
+│ │ [🔍 Valider alignement contenu]  <-- NEW BUTTON             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              BatchQuizContentValidator.tsx (NEW)                │
+├─────────────────────────────────────────────────────────────────┤
+│ • Iterates through all lessons WITH quizzes in selected grade   │
+│ • For each lesson:                                              │
+│   1. Fetches contenu + exemples_exercices (reference source)    │
+│   2. Parses quiz questions                                      │
+│   3. Calls validate-quiz-content-alignment edge function        │
+│   4. Stores result in lesson_assets table                       │
+│ • Displays summary: X on-content, Y off-content                 │
+│ • Off-content lessons get a badge: "⚠ Besoin régénération"      │
+└─────────────────────────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│      validate-quiz-content-alignment (Edge Function - NEW)      │
+├─────────────────────────────────────────────────────────────────┤
+│ Input:                                                          │
+│   • lessonId, lessonTitle, gradeLevel                           │
+│   • contenu (reference text)                                    │
+│   • exemples (reference examples)                               │
+│   • questions[] (parsed quiz questions)                         │
+│                                                                 │
+│ Process (AI):                                                   │
+│   • Compare each question against ONLY contenu + exemples       │
+│   • Detect if question introduces external concepts             │
+│   • Flag questions that cannot be answered from lesson content  │
+│                                                                 │
+│ Output:                                                         │
+│   {                                                             │
+│     aligned: boolean,                                           │
+│     confidence: 0-1,                                            │
+│     offContentQuestions: [                                      │
+│       { index: 3, reason: "Concept X not in lesson" }           │
+│     ],                                                          │
+│     summary: "8/10 questions aligned"                           │
+│   }                                                             │
+└─────────────────────────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Database Storage                             │
+├─────────────────────────────────────────────────────────────────┤
+│ lessons table:                                                  │
+│   • Add column: needs_quiz_regeneration (boolean, default null) │
+│   • Add column: content_alignment_score (numeric, default null) │
+│   • Add column: last_content_validated_at (timestamp)           │
+│                                                                 │
+│ OR use existing lesson_assets table:                            │
+│   kind = 'quiz_validation'                                      │
+│   payload_json = { aligned, confidence, offContentQuestions }   │
+│   status = 'validated' | 'rejected'                             │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-2. **Add "Generate All" button** in the Quiz Coverage Stats section (after line 310):
+---
+
+## Files to Create/Modify
+
+| File | Type | Description |
+|------|------|-------------|
+| `src/components/content-editor/BatchQuizContentValidator.tsx` | New | UI component for batch content alignment validation |
+| `supabase/functions/validate-quiz-content-alignment/index.ts` | New | Edge function to check quiz-to-content alignment |
+| `src/components/content-editor/LessonBrowser.tsx` | Modify | Add new button to grade stats panel |
+| Database Migration | New | Add `needs_quiz_regeneration` column to lessons table |
+
+---
+
+## Technical Implementation Details
+
+### 1. New Edge Function: `validate-quiz-content-alignment`
 
 ```typescript
-{missingQuizzesTotal > 0 && (
-  <Button 
-    size="sm" 
-    variant="outline"
-    onClick={handleGenerateAllMissingQuizzes}
-    disabled={isGeneratingQuizzes}
-    className="w-full mt-2"
-  >
-    <Sparkles className="h-4 w-4 mr-2" />
-    Générer {missingQuizzesTotal} quiz manquant{missingQuizzesTotal > 1 ? 's' : ''}
-  </Button>
-)}
+// supabase/functions/validate-quiz-content-alignment/index.ts
+
+interface ValidationRequest {
+  lessonId: string;
+  lessonTitle: string;
+  gradeLevel: string;
+  contenu: string;         // Only reference source #1
+  exemples: string;        // Only reference source #2
+  questions: Array<{
+    question: string;
+    options: string[];
+    correctAnswer: number;
+    explanation: string;
+  }>;
+}
+
+// AI System Prompt (key part)
+const systemPrompt = `Tu es un expert en validation de contenu pédagogique.
+
+TÂCHE: Vérifier si chaque question de quiz peut être répondue UNIQUEMENT avec les informations du contenu fourni.
+
+RÈGLES STRICTES:
+1. Une question est "alignée" si TOUS les concepts nécessaires pour y répondre sont présents dans le contenu
+2. Une question est "hors-contenu" si elle requiert des connaissances NON présentes dans le contenu
+3. NE PAS juger si la réponse est correcte - seulement si elle est dérivable du contenu
+
+EXEMPLES:
+- Contenu parle de "la photosynthèse utilise le CO2"
+- Question: "Quel gaz est utilisé dans la photosynthèse?" → ALIGNÉE
+- Question: "Quelle est la formule chimique du glucose?" → HORS-CONTENU (si non mentionné)
+
+Réponds avec un JSON structuré.`;
 ```
 
-3. **Add batch generation state and handler**:
+### 2. New Component: `BatchQuizContentValidator.tsx`
 
 ```typescript
-const [isGeneratingQuizzes, setIsGeneratingQuizzes] = useState(false);
-const [generationProgress, setGenerationProgress] = useState({ current: 0, total: 0 });
+interface BatchQuizContentValidatorProps {
+  lessons: any[];           // All lessons WITH valid quizzes in grade
+  gradeLevel: string;
+  onComplete: () => void;
+  onLessonFlagged: (lessonId: string) => void;
+}
 
-const handleGenerateAllMissingQuizzes = async () => {
-  // Find all lessons missing quizzes
-  const missingQuizLessons = allLessons.filter(l => !hasValidQuiz(l));
-  
-  if (missingQuizLessons.length === 0) {
-    toast.info("Tous les quizzes sont déjà générés!");
-    return;
-  }
-  
-  setIsGeneratingQuizzes(true);
-  setGenerationProgress({ current: 0, total: missingQuizLessons.length });
-  
-  // Generate quizzes one by one with delay to avoid rate limits
-  for (let i = 0; i < missingQuizLessons.length; i++) {
-    const lesson = missingQuizLessons[i];
-    try {
-      // Call the generate-quiz-final edge function
-      const { data, error } = await supabase.functions.invoke('generate-quiz-final', {
-        body: {
-          lessonTitle: lesson.title,
-          contenu: '', // Will need to fetch from lesson
-          gradeLevel: lesson.grade_level,
-          subject: lesson.subjects?.name,
-        }
-      });
-      
-      if (!error && data?.quizContent) {
-        // Update the lesson with the generated quiz
-        await supabase
-          .from('lessons')
-          .update({ quiz_final: data.quizContent })
-          .eq('id', lesson.id);
-      }
-      
-      setGenerationProgress({ current: i + 1, total: missingQuizLessons.length });
-      
-      // Small delay between requests to avoid rate limits
-      await new Promise(resolve => setTimeout(resolve, 500));
-    } catch (error) {
-      console.error(`Error generating quiz for ${lesson.title}:`, error);
-    }
-  }
-  
-  setIsGeneratingQuizzes(false);
-  toast.success(`${missingQuizLessons.length} quizzes générés!`);
-  loadSubjects(); // Refresh to show updated data
-};
+// Key states:
+const [validationResults, setValidationResults] = useState<Map<string, {
+  aligned: boolean;
+  confidence: number;
+  offContentCount: number;
+}>>(new Map());
+
+// Validation flow:
+// 1. Iterate through each lesson
+// 2. Fetch full content (contenu, exemples_exercices)
+// 3. Parse quiz questions
+// 4. Call edge function
+// 5. If offContentQuestions.length > 0, mark lesson as needs_quiz_regeneration = true
+// 6. Display results
 ```
 
-4. **Add progress indicator** when generating:
+### 3. Database Changes
+
+```sql
+-- Add columns for content alignment tracking
+ALTER TABLE public.lessons 
+ADD COLUMN IF NOT EXISTS needs_quiz_regeneration boolean DEFAULT NULL,
+ADD COLUMN IF NOT EXISTS content_alignment_score numeric DEFAULT NULL,
+ADD COLUMN IF NOT EXISTS last_content_validated_at timestamp with time zone DEFAULT NULL;
+
+-- Create index for filtering
+CREATE INDEX IF NOT EXISTS idx_lessons_needs_regeneration 
+ON public.lessons (needs_quiz_regeneration) 
+WHERE needs_quiz_regeneration = true;
+```
+
+### 4. LessonBrowser.tsx Modifications
 
 ```typescript
-{isGeneratingQuizzes && (
-  <div className="mt-2 space-y-1">
-    <div className="flex items-center justify-between text-xs">
-      <span>Génération en cours...</span>
-      <span>{generationProgress.current}/{generationProgress.total}</span>
-    </div>
-    <Progress value={(generationProgress.current / generationProgress.total) * 100} className="h-1" />
+// Add new button below BatchQuizGenerator
+{lessonsWithValidQuiz.length > 0 && (
+  <div className="pt-2">
+    <BatchQuizContentValidator 
+      lessons={lessonsWithValidQuiz}
+      gradeLevel={gradeLevel}
+      onComplete={loadSubjects}
+      onLessonFlagged={(lessonId) => {
+        // Could add visual indicator
+      }}
+    />
   </div>
 )}
+
+// Add filter for "needs regeneration" lessons
+const [showNeedsRegeneration, setShowNeedsRegeneration] = useState(false);
+
+// Add badge to lesson items
+{lesson.needs_quiz_regeneration && (
+  <Badge variant="outline" className="text-xs text-amber-600 border-amber-600">
+    ⚠ Régénérer
+  </Badge>
+)}
 ```
 
 ---
 
-### New File: `src/components/content-editor/BatchQuizGenerator.tsx`
+## User Experience Flow
 
-For more complex generation needs, create a dedicated component with:
-- Confirmation dialog before starting
-- Cancel functionality
-- Detailed progress per lesson
-- Error handling with retry option
-- Success summary with publish option
+1. **User selects a grade level** (e.g., 7AF)
+2. **Stats panel shows** quiz coverage (202/204)
+3. **User clicks "Valider alignement contenu"**
+4. **Confirmation dialog** explains what will happen:
+   - "Cette action va analyser 202 quizzes pour vérifier l'alignement avec le contenu de chaque leçon"
+   - "Durée estimée: ~5 minutes"
+5. **Progress tracking** shows current lesson being validated
+6. **Results summary**:
+   - "192 quizzes alignés avec le contenu ✓"
+   - "10 quizzes nécessitent régénération ⚠"
+7. **Flagged lessons** now show an amber badge in the browser
+8. **User can filter** to see only flagged lessons
+9. **User manually triggers regeneration** for each flagged lesson (or uses existing batch regeneration)
 
 ---
 
-## UI Changes Summary
+## Regeneration Constraint
 
-### Before:
-```text
-┌────────────────────────────────────────┐
-│ 7AF: 202/204 quizzes           99%     │
-│ ██████████████████████████░░           │
-│ 2 leçons sans quiz                     │
-├────────────────────────────────────────┤
-│ > Espagnol                        [0]  │  ← Shows 0 (wrong)
-│ > Français                        [0]  │
-│ > Mathématiques                   [0]  │
-└────────────────────────────────────────┘
-```
-
-### After:
-```text
-┌────────────────────────────────────────┐
-│ 7AF: 202/204 quizzes           99%     │
-│ ██████████████████████████░░           │
-│ 2 leçons sans quiz                     │
-│ [✨ Générer 2 quiz manquants]          │  ← NEW button
-├────────────────────────────────────────┤
-│ > Espagnol                   [2] [-2]  │  ← Shows correct counts
-└────────────────────────────────────────┘
-```
-
-When filter "Quizzes manquants uniquement" is active:
-- Hide subjects with 0 missing quizzes (Français, etc.)
-- Only show subjects with missing lessons (Espagnol: 2 lessons)
+When regeneration is triggered for flagged lessons:
+- The existing `generate-quiz-final` edge function already uses `contenu` and `exemplesExercices` as the only source
+- No code changes needed for regeneration—just ensure we pass the right fields
+- After regeneration, `needs_quiz_regeneration` is set back to `false`
 
 ---
 
 ## Safety Verification
 
-| Check | Status |
-|-------|--------|
-| Breaks existing functionality? | No - enhances existing display |
-| Works with existing data? | Yes - reads from `quiz_final` column |
-| Backward compatible? | Yes - existing quizzes unchanged |
-| 3G optimized? | Yes - sequential generation with delays |
-| Edge cases handled? | Yes - empty states, rate limits, errors |
-| Publishing gate respected? | Yes - uses existing validation system |
+| Check | Status | Notes |
+|-------|--------|-------|
+| Breaks existing functionality? | ✅ No | New feature only, existing buttons unchanged |
+| Works with existing data? | ✅ Yes | Uses existing contenu, exemples, quiz_final fields |
+| Backward compatible? | ✅ Yes | New columns have NULL default |
+| 3G optimized? | ✅ Yes | Sequential processing with delays, shows progress |
+| Edge cases handled? | ✅ Yes | Empty content, no quiz, AI rate limits |
+| Separation of concerns? | ✅ Yes | Validation separate from generation |
 
 ---
 
-## Files to Modify
+## Performance Considerations
 
-| File | Changes |
-|------|---------|
-| `src/components/content-editor/LessonBrowser.tsx` | Fix filter logic, add generate button, add progress UI |
-| `src/components/content-editor/BatchQuizGenerator.tsx` (new) | Optional: dedicated batch generation component |
+- **Rate limiting**: 2 second delay between AI calls (prevent 429 errors)
+- **Batch size**: Process 5 lessons in parallel (configurable)
+- **Content truncation**: Limit contenu + exemples to 15,000 chars to stay within token limits
+- **Caching**: Store validation results in database to avoid re-validating unchanged lessons
 
 ---
 
-## Workflow After Implementation
+## Summary of Deliverables
 
-1. User selects 7AF grade
-2. UI shows "2 leçons sans quiz" with "Générer 2 quiz manquants" button
-3. User clicks button
-4. Progress bar shows generation status
-5. When complete, lessons refresh showing all quizzes valid
-6. User can then publish using existing bulk publish functionality
+1. **New edge function**: `validate-quiz-content-alignment` - AI-powered content alignment detection
+2. **New component**: `BatchQuizContentValidator.tsx` - Batch validation UI with progress
+3. **Database migration**: Add `needs_quiz_regeneration` column to lessons table
+4. **LessonBrowser updates**: New button, filter option, and visual badges for flagged lessons
+5. **Regeneration integration**: Clear flag after successful regeneration
+
