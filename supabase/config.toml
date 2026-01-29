@@ -177,3 +177,6 @@ verify_jwt = false
 
 [functions.cleanup-old-jobs]
 verify_jwt = false
+
+[functions.validate-quiz-content-alignment]
+verify_jwt = true

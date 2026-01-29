@@ -14,9 +14,10 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { Search, ChevronDown, ChevronRight, BookOpen, Calculator, FlaskConical, Book, RefreshCw, AlertCircle } from "lucide-react";
+import { Search, ChevronDown, ChevronRight, BookOpen, Calculator, FlaskConical, Book, RefreshCw, AlertCircle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BatchQuizGenerator } from "./BatchQuizGenerator";
+import { BatchQuizContentValidator } from "./BatchQuizContentValidator";
 
 interface LessonBrowserProps {
   onSelectLesson: (lesson: any) => void;
@@ -124,7 +125,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
         const batch = subjectIds.slice(i, i + batchSize);
         const { data: lessonsData, error } = await supabase
           .from('lessons')
-          .select('id, title, slug, subject_id, order_index, workflow_status, grade_level, quiz_final, subjects(id, name)')
+          .select('id, title, slug, subject_id, order_index, workflow_status, grade_level, quiz_final, needs_quiz_regeneration, subjects(id, name)')
           .in('subject_id', batch)
           .order('order_index');
 
@@ -182,6 +183,9 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
 
   // Get all lessons missing quizzes for batch generation
   const lessonsMissingQuiz = allLessons.filter(lesson => !hasValidQuiz(lesson));
+  
+  // Get all lessons WITH valid quizzes for content validation
+  const lessonsWithValidQuiz = allLessons.filter(lesson => hasValidQuiz(lesson));
 
   const filteredSubjects = availableSubjects.map(subject => {
     const subjectLessons = lessonsBySubject[subject.id] || [];
@@ -330,6 +334,16 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
                 />
               </div>
             )}
+            {/* Batch Quiz Content Validator Button */}
+            {lessonsWithValidQuiz.length > 0 && (
+              <div className="pt-2">
+                <BatchQuizContentValidator 
+                  lessons={lessonsWithValidQuiz}
+                  gradeLevel={gradeLevel}
+                  onComplete={loadSubjects}
+                />
+              </div>
+            )}
           </div>
         )}
       </CardHeader>
@@ -387,6 +401,12 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
                               {lesson.title}
                             </span>
                             <div className="flex items-center gap-1 flex-shrink-0">
+                              {lesson.needs_quiz_regeneration && (
+                                <Badge variant="outline" className="text-xs border-amber-500 text-amber-600">
+                                  <RotateCcw className="h-3 w-3 mr-0.5" />
+                                  Régénérer
+                                </Badge>
+                              )}
                               {!hasValidQuiz(lesson) && (
                                 <Badge variant="destructive" className="text-xs flex items-center gap-0.5">
                                   <AlertCircle className="h-3 w-3" />

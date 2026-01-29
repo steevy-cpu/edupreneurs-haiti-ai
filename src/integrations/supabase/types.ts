@@ -1798,6 +1798,7 @@ export type Database = {
           audio_generated_at: string | null
           audio_introduction_url: string | null
           audio_objectif_url: string | null
+          content_alignment_score: number | null
           contenu: string | null
           created_at: string
           created_by: string | null
@@ -1806,7 +1807,9 @@ export type Database = {
           id: string
           introduction: string | null
           is_published: boolean | null
+          last_content_validated_at: string | null
           mois: string | null
+          needs_quiz_regeneration: boolean | null
           objectif: string | null
           order_index: number
           quiz_count: number | null
@@ -1830,6 +1833,7 @@ export type Database = {
           audio_generated_at?: string | null
           audio_introduction_url?: string | null
           audio_objectif_url?: string | null
+          content_alignment_score?: number | null
           contenu?: string | null
           created_at?: string
           created_by?: string | null
@@ -1838,7 +1842,9 @@ export type Database = {
           id?: string
           introduction?: string | null
           is_published?: boolean | null
+          last_content_validated_at?: string | null
           mois?: string | null
+          needs_quiz_regeneration?: boolean | null
           objectif?: string | null
           order_index?: number
           quiz_count?: number | null
@@ -1864,6 +1870,7 @@ export type Database = {
           audio_generated_at?: string | null
           audio_introduction_url?: string | null
           audio_objectif_url?: string | null
+          content_alignment_score?: number | null
           contenu?: string | null
           created_at?: string
           created_by?: string | null
@@ -1872,7 +1879,9 @@ export type Database = {
           id?: string
           introduction?: string | null
           is_published?: boolean | null
+          last_content_validated_at?: string | null
           mois?: string | null
+          needs_quiz_regeneration?: boolean | null
           objectif?: string | null
           order_index?: number
           quiz_count?: number | null
