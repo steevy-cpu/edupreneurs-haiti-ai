@@ -16,6 +16,8 @@ import { useContentEditorRealtime } from "@/hooks/useContentEditorRealtime";
 import { SectionGenerator } from "./SectionGenerator";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { createSanitizedMarkup } from "@/lib/sanitize";
+import { useLessonPublishable } from "@/features/content-editor/hooks/useLessonPublishable";
+import { PublishGateIndicator } from "@/features/content-editor/components/PublishGateIndicator";
 
 interface LessonEditorProps {
   selectedLesson: any;
@@ -46,6 +48,14 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
     currentUserId,
     selectedLesson?.id
   );
+
+  // Get publish gate status for selected lesson
+  const { 
+    isLoading: gateLoading, 
+    blockers, 
+    quizAsset, 
+    activitiesAsset 
+  } = useLessonPublishable(selectedLesson?.id);
 
   // Get current user
   useEffect(() => {
@@ -233,6 +243,13 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
                   }
                 />
                 <span className="text-xs md:text-sm whitespace-nowrap">Publié</span>
+                <PublishGateIndicator
+                  blockers={blockers}
+                  quizAsset={quizAsset}
+                  activitiesAsset={activitiesAsset}
+                  isLoading={gateLoading}
+                  compact={true}
+                />
               </div>
               <Button 
                 onClick={handleSave} 
