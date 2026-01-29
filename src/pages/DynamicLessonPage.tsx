@@ -51,9 +51,14 @@ export default function DynamicLessonPage() {
         .from('subjects')
         .select('*')
         .eq('slug', decodedSubjectSlug)
-        .single();
+        .maybeSingle();
 
       if (subjectError) throw subjectError;
+      if (!subjectData) {
+        console.warn('Subject not found:', decodedSubjectSlug);
+        setIsLoading(false);
+        return;
+      }
       setSubject(subjectData);
 
       // Load ALL lessons for this subject to get navigation info
@@ -102,9 +107,19 @@ export default function DynamicLessonPage() {
         .select('*')
         .eq('slug', decodedLessonSlug)
         .eq('subject_id', subjectData.id)
-        .single();
+        .eq('is_published', true)
+        .maybeSingle();
 
       if (lessonError) throw lessonError;
+      if (!lessonData) {
+        console.warn('Lesson not found:', {
+          lessonSlug: decodedLessonSlug,
+          subjectSlug: decodedSubjectSlug,
+          subjectId: subjectData.id
+        });
+        setIsLoading(false);
+        return;
+      }
 
       // Transform lesson data to match expected format
       const transformedLesson = {
