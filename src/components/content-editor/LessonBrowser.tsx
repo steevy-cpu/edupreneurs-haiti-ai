@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 import { Search, ChevronDown, ChevronRight, BookOpen, Calculator, FlaskConical, Book, RefreshCw, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BatchQuizGenerator } from "./BatchQuizGenerator";
 
 interface LessonBrowserProps {
   onSelectLesson: (lesson: any) => void;
@@ -179,8 +180,17 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
   const missingQuizzesTotal = totalLessons - lessonsWithQuiz;
   const quizPercentage = totalLessons > 0 ? Math.round((lessonsWithQuiz / totalLessons) * 100) : 0;
 
+  // Get all lessons missing quizzes for batch generation
+  const lessonsMissingQuiz = allLessons.filter(lesson => !hasValidQuiz(lesson));
+
   const filteredSubjects = availableSubjects.map(subject => {
     const subjectLessons = lessonsBySubject[subject.id] || [];
+    
+    // Calculate quiz stats from ALL lessons in this subject (not filtered)
+    const quizCount = subjectLessons.filter(hasValidQuiz).length;
+    const missingQuizzes = subjectLessons.length - quizCount;
+    
+    // Apply search filter
     let filteredLessons = subjectLessons.filter(lesson =>
       lesson.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -190,9 +200,6 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
       filteredLessons = filteredLessons.filter(lesson => !hasValidQuiz(lesson));
     }
     
-    const quizCount = subjectLessons.filter(hasValidQuiz).length;
-    const missingQuizzes = subjectLessons.length - quizCount;
-    
     return {
       ...subject,
       lessons: filteredLessons,
@@ -200,11 +207,16 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
       missingQuizzes,
       totalLessons: subjectLessons.length
     };
-  }).filter(subject => 
-    searchQuery === "" || 
-    subject.lessons.length > 0 || 
-    subject.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  }).filter(subject => {
+    // When showing only missing quizzes, hide subjects with no matching lessons
+    if (showOnlyMissingQuiz && subject.lessons.length === 0) {
+      return false;
+    }
+    // Otherwise, show subjects that match search or have lessons
+    return searchQuery === "" || 
+      subject.lessons.length > 0 || 
+      subject.name.toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   return (
     <Card className="h-full flex flex-col">
@@ -307,6 +319,16 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
               <p className="text-xs text-destructive">
                 {missingQuizzesTotal} leçon{missingQuizzesTotal > 1 ? 's' : ''} sans quiz
               </p>
+            )}
+            {/* Batch Quiz Generator Button */}
+            {missingQuizzesTotal > 0 && (
+              <div className="pt-2">
+                <BatchQuizGenerator 
+                  lessons={lessonsMissingQuiz}
+                  gradeLevel={gradeLevel}
+                  onComplete={loadSubjects}
+                />
+              </div>
             )}
           </div>
         )}
