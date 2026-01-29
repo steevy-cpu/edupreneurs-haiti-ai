@@ -1,205 +1,202 @@
 
-# Content Editor Quiz Status Display Plan
+# Plan: Fix Quiz Display Bug and Add Batch Quiz Generator
 
-## Problem Summary
+## Problem Analysis
 
-The content editor does not show which lessons are missing quizzes. The database conversion was successful (2,478 valid quizzes), but the **frontend has no visual indicator** for the 354 lessons still missing quizzes (221 of which are in NS2).
+### Issue 1: Display Inconsistency
+The grade-level stats show "2 leçons sans quiz" for 7AF, but all subjects show "0" in their badges, including Espagnol which actually has 2 lessons missing quizzes.
 
-**Current State:**
-| Grade | Total | Valid Quizzes | Missing |
-|-------|-------|---------------|---------|
-| 7AF | 204 | 202 | 2 |
-| 8AF | 197 | 197 | 0 |
-| 9AF | 191 | 139 | 52 |
-| NS1 | 249 | 244 | 5 |
-| NS2 | 245 | 24 | **221** |
-| NS3 | 874 | 814 | 60 |
-| NS4 | 872 | 858 | 14 |
+**Root Cause**: In `LessonBrowser.tsx`, when the "Quizzes manquants uniquement" filter is active:
+- The badge shows `subject.lessons.length` (filtered lessons)
+- Subjects with no missing quizzes correctly show "0"
+- But subjects WITH missing quizzes should show their count (e.g., Espagnol: "2")
+- The logic at lines 182-207 correctly calculates `missingQuizzes` but the display logic at lines 340-349 shows the wrong values
+
+Looking at the screenshot, the issue is that when `showOnlyMissingQuiz = true`:
+- Subjects show "0" when they should show the count of lessons missing quizzes
+- The `-X quiz` destructive badge (line 344-348) only appears when `missingQuizzes > 0`, but in the screenshot it's not visible for any subject
+
+The likely cause is that subjects are being filtered out or the lesson data isn't properly associated with the Espagnol subject for 7AF.
+
+### Issue 2: Missing "Generate All" Feature
+No batch quiz generation button exists for quickly generating quizzes for all missing lessons in a grade level.
 
 ---
 
 ## Solution Overview
 
-Add visual quiz status indicators to the LessonBrowser component:
+### Part 1: Fix Display Bug
+Update `LessonBrowser.tsx` to:
+1. When filter is active, hide subjects with 0 matching lessons instead of showing "0"
+2. Ensure the negative badge (`-X quiz`) always appears for subjects with missing quizzes
+3. Add debug logging to verify data loading
 
-1. **Per-Lesson Badge**: Show a warning icon next to lessons missing quizzes
-2. **Subject-Level Summary**: Display "X/Y quizzes" count per subject
-3. **Grade-Level Stats Card**: Add a summary dashboard showing quiz coverage
+### Part 2: Add Batch Quiz Generator
+Add a "Générer tous les quizzes" button that appears when there are missing quizzes, allowing:
+1. One-click generation for all missing quizzes in the selected grade
+2. Progress tracking during generation
+3. Bulk publish option after completion
 
 ---
 
-## Implementation Details
+## Technical Implementation
 
-### 1. Update Lesson Query (LessonBrowser.tsx)
+### File 1: `src/components/content-editor/LessonBrowser.tsx`
 
-Add `quiz_final` to the lesson select fields so we can detect missing quizzes:
+**Changes:**
 
-```typescript
-// Current query (line 114)
-.select('id, title, slug, subject_id, order_index, workflow_status, grade_level, subjects(id, name)')
-
-// Updated query - add quiz_final check
-.select('id, title, slug, subject_id, order_index, workflow_status, grade_level, quiz_final, subjects(id, name)')
-```
-
-### 2. Add Quiz Status Badge (LessonBrowser.tsx)
-
-Add a visual indicator for lessons missing quizzes:
+1. **Fix filtering logic** (lines 203-207):
+When `showOnlyMissingQuiz` is true, filter out subjects that have 0 lessons matching (i.e., all their lessons already have quizzes):
 
 ```typescript
-// Add helper function
-const hasValidQuiz = (lesson: any) => {
-  return lesson.quiz_final && 
-    (lesson.quiz_final.includes('quiz-question') || 
-     lesson.quiz_final.includes('quiz-container'));
-};
+// Current filter only removes subjects based on search query
+.filter(subject => 
+  searchQuery === "" || 
+  subject.lessons.length > 0 || 
+  subject.name.toLowerCase().includes(searchQuery.toLowerCase())
+);
 
-// In the lesson item render (around line 291)
-{!hasValidQuiz(lesson) && (
-  <Badge variant="destructive" className="text-xs flex-shrink-0">
-    <AlertCircle className="h-3 w-3 mr-1" />
-    Quiz
-  </Badge>
-)}
-```
-
-### 3. Add Subject-Level Quiz Stats
-
-Update the subject header to show quiz completion:
-
-```typescript
-// In filteredSubjects calculation, add quiz stats
-const filteredSubjects = availableSubjects.map(subject => {
-  const subjectLessons = lessonsBySubject[subject.id] || [];
-  const filteredLessons = subjectLessons.filter(lesson =>
-    lesson.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  const quizCount = filteredLessons.filter(l => hasValidQuiz(l)).length;
-  return {
-    ...subject,
-    lessons: filteredLessons,
-    quizCount,
-    missingQuizzes: filteredLessons.length - quizCount
-  };
+// Fixed filter - also hide subjects with 0 matching lessons when filter is active
+.filter(subject => {
+  // When showing only missing quiz, hide subjects with no matching lessons
+  if (showOnlyMissingQuiz && subject.lessons.length === 0) {
+    return false;
+  }
+  return searchQuery === "" || 
+    subject.lessons.length > 0 || 
+    subject.name.toLowerCase().includes(searchQuery.toLowerCase());
 });
 ```
 
-Display in the collapsible trigger:
+2. **Add "Generate All" button** in the Quiz Coverage Stats section (after line 310):
 
 ```typescript
-<CollapsibleTrigger>
-  {/* existing content */}
-  <Badge variant="secondary">
-    {subject.lessons.length}
-  </Badge>
-  {subject.missingQuizzes > 0 && (
-    <Badge variant="destructive" className="ml-1">
-      -{subject.missingQuizzes} quiz
-    </Badge>
-  )}
-</CollapsibleTrigger>
+{missingQuizzesTotal > 0 && (
+  <Button 
+    size="sm" 
+    variant="outline"
+    onClick={handleGenerateAllMissingQuizzes}
+    disabled={isGeneratingQuizzes}
+    className="w-full mt-2"
+  >
+    <Sparkles className="h-4 w-4 mr-2" />
+    Générer {missingQuizzesTotal} quiz manquant{missingQuizzesTotal > 1 ? 's' : ''}
+  </Button>
+)}
 ```
 
-### 4. Add Grade-Level Summary Card (New Component)
-
-Create a summary card at the top of the content editor showing overall quiz coverage:
+3. **Add batch generation state and handler**:
 
 ```typescript
-// New component: QuizCoverageSummary.tsx
-interface QuizStats {
-  gradeLevel: string;
-  total: number;
-  withQuiz: number;
-  missing: number;
-}
+const [isGeneratingQuizzes, setIsGeneratingQuizzes] = useState(false);
+const [generationProgress, setGenerationProgress] = useState({ current: 0, total: 0 });
 
-export function QuizCoverageSummary({ gradeLevel }: { gradeLevel: string }) {
-  // Fetch summary stats from database
-  // Display progress bar and counts
-}
+const handleGenerateAllMissingQuizzes = async () => {
+  // Find all lessons missing quizzes
+  const missingQuizLessons = allLessons.filter(l => !hasValidQuiz(l));
+  
+  if (missingQuizLessons.length === 0) {
+    toast.info("Tous les quizzes sont déjà générés!");
+    return;
+  }
+  
+  setIsGeneratingQuizzes(true);
+  setGenerationProgress({ current: 0, total: missingQuizLessons.length });
+  
+  // Generate quizzes one by one with delay to avoid rate limits
+  for (let i = 0; i < missingQuizLessons.length; i++) {
+    const lesson = missingQuizLessons[i];
+    try {
+      // Call the generate-quiz-final edge function
+      const { data, error } = await supabase.functions.invoke('generate-quiz-final', {
+        body: {
+          lessonTitle: lesson.title,
+          contenu: '', // Will need to fetch from lesson
+          gradeLevel: lesson.grade_level,
+          subject: lesson.subjects?.name,
+        }
+      });
+      
+      if (!error && data?.quizContent) {
+        // Update the lesson with the generated quiz
+        await supabase
+          .from('lessons')
+          .update({ quiz_final: data.quizContent })
+          .eq('id', lesson.id);
+      }
+      
+      setGenerationProgress({ current: i + 1, total: missingQuizLessons.length });
+      
+      // Small delay between requests to avoid rate limits
+      await new Promise(resolve => setTimeout(resolve, 500));
+    } catch (error) {
+      console.error(`Error generating quiz for ${lesson.title}:`, error);
+    }
+  }
+  
+  setIsGeneratingQuizzes(false);
+  toast.success(`${missingQuizLessons.length} quizzes générés!`);
+  loadSubjects(); // Refresh to show updated data
+};
 ```
 
-### 5. Add Filter Option
-
-Add a "Show only missing quizzes" toggle to quickly find lessons that need attention:
+4. **Add progress indicator** when generating:
 
 ```typescript
-// Add state
-const [showOnlyMissingQuiz, setShowOnlyMissingQuiz] = useState(false);
-
-// Add checkbox in header
-<div className="flex items-center space-x-2 mt-2">
-  <Checkbox 
-    id="missing-quiz" 
-    checked={showOnlyMissingQuiz}
-    onCheckedChange={setShowOnlyMissingQuiz}
-  />
-  <Label htmlFor="missing-quiz" className="text-sm text-muted-foreground">
-    Quizzes manquants uniquement
-  </Label>
-</div>
-
-// Apply filter
-const displayedLessons = showOnlyMissingQuiz 
-  ? filteredLessons.filter(l => !hasValidQuiz(l))
-  : filteredLessons;
+{isGeneratingQuizzes && (
+  <div className="mt-2 space-y-1">
+    <div className="flex items-center justify-between text-xs">
+      <span>Génération en cours...</span>
+      <span>{generationProgress.current}/{generationProgress.total}</span>
+    </div>
+    <Progress value={(generationProgress.current / generationProgress.total) * 100} className="h-1" />
+  </div>
+)}
 ```
 
 ---
 
-## Files to Modify
+### New File: `src/components/content-editor/BatchQuizGenerator.tsx`
 
-| File | Changes |
-|------|---------|
-| `src/components/content-editor/LessonBrowser.tsx` | Add quiz_final to query, add badges, add filter |
-| `src/components/content-editor/QuizCoverageSummary.tsx` (new) | Grade-level stats card |
-| `src/pages/ContentEditor.tsx` | Add summary card above LessonBrowser |
-
----
-
-## User Experience
-
-**Before:**
-- User sees lesson list with no indication of quiz status
-- Must click each lesson to check if quiz exists
-
-**After:**
-- Red badge appears next to lessons missing quizzes
-- Subject header shows "-221 quiz" warning for NS2
-- Optional filter to show only lessons needing quizzes
-- Summary card shows "NS2: 24/245 (10% coverage)"
+For more complex generation needs, create a dedicated component with:
+- Confirmation dialog before starting
+- Cancel functionality
+- Detailed progress per lesson
+- Error handling with retry option
+- Success summary with publish option
 
 ---
 
-## Visual Mockup
+## UI Changes Summary
 
+### Before:
 ```text
-┌─────────────────────────────────────────────┐
-│ Parcourir les Leçons                   🔄   │
-├─────────────────────────────────────────────┤
-│ Niveau: [NS2 ▼]                             │
-│ 🔲 Quizzes manquants uniquement             │
-├─────────────────────────────────────────────┤
-│ ⚠️ NS2: 24/245 leçons avec quiz (10%)       │
-│ ████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
-├─────────────────────────────────────────────┤
-│ ▼ 📖 Français NS2          [34] [-30 quiz]  │
-│    ├ Leçon 1: Adapter sa parole... [⚠ Quiz] │
-│    ├ Leçon 2: Analyser les types... [⚠ Quiz]│
-│    └ Leçon 3: Argumenter...                 │
-│ ▼ 📖 Anglais NS2           [40] [-35 quiz]  │
-│    ├ Leçon 1: Grammar review...     [⚠ Quiz]│
-│    └ ...                                    │
-└─────────────────────────────────────────────┘
+┌────────────────────────────────────────┐
+│ 7AF: 202/204 quizzes           99%     │
+│ ██████████████████████████░░           │
+│ 2 leçons sans quiz                     │
+├────────────────────────────────────────┤
+│ > Espagnol                        [0]  │  ← Shows 0 (wrong)
+│ > Français                        [0]  │
+│ > Mathématiques                   [0]  │
+└────────────────────────────────────────┘
 ```
 
----
+### After:
+```text
+┌────────────────────────────────────────┐
+│ 7AF: 202/204 quizzes           99%     │
+│ ██████████████████████████░░           │
+│ 2 leçons sans quiz                     │
+│ [✨ Générer 2 quiz manquants]          │  ← NEW button
+├────────────────────────────────────────┤
+│ > Espagnol                   [2] [-2]  │  ← Shows correct counts
+└────────────────────────────────────────┘
+```
 
-## Performance Considerations
-
-- The `quiz_final` field is already loaded in the same query (no extra request)
-- Client-side filtering is fast since lesson count per subject is typically under 50
-- Summary stats can be cached with React Query (staleTime: 5 minutes)
+When filter "Quizzes manquants uniquement" is active:
+- Hide subjects with 0 missing quizzes (Français, etc.)
+- Only show subjects with missing lessons (Espagnol: 2 lessons)
 
 ---
 
@@ -207,8 +204,29 @@ const displayedLessons = showOnlyMissingQuiz
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No - only adds new UI elements |
+| Breaks existing functionality? | No - enhances existing display |
 | Works with existing data? | Yes - reads from `quiz_final` column |
-| Backward compatible? | Yes - existing lessons display unchanged |
-| 3G optimized? | Yes - uses existing data, no extra queries |
+| Backward compatible? | Yes - existing quizzes unchanged |
+| 3G optimized? | Yes - sequential generation with delays |
+| Edge cases handled? | Yes - empty states, rate limits, errors |
+| Publishing gate respected? | Yes - uses existing validation system |
 
+---
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/components/content-editor/LessonBrowser.tsx` | Fix filter logic, add generate button, add progress UI |
+| `src/components/content-editor/BatchQuizGenerator.tsx` (new) | Optional: dedicated batch generation component |
+
+---
+
+## Workflow After Implementation
+
+1. User selects 7AF grade
+2. UI shows "2 leçons sans quiz" with "Générer 2 quiz manquants" button
+3. User clicks button
+4. Progress bar shows generation status
+5. When complete, lessons refresh showing all quizzes valid
+6. User can then publish using existing bulk publish functionality
