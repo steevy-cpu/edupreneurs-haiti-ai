@@ -223,7 +223,7 @@ export function SubjectCardEnhanced({
           </div>
 
           <p className="text-xs sm:text-sm text-muted-foreground mt-3 line-clamp-2 min-h-[2.5rem]">
-            {description}
+            {description || getFallbackDescription(title)}
           </p>
 
           {/* Progress bar (if user has progress) */}
