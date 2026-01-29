@@ -23,6 +23,44 @@ import {
 import { toast } from "sonner";
 import { prefetchCourseData } from "@/hooks/useCourseData";
 
+// Generate fallback description when database field is empty
+const getFallbackDescription = (title: string): string => {
+  const fallbacks: Record<string, string> = {
+    'Français': 'Grammaire, conjugaison, orthographe et littérature française',
+    'Mathématiques': 'Algèbre, géométrie, arithmétique et résolution de problèmes',
+    'Anglais': 'Vocabulaire, grammaire et conversation en anglais',
+    'Chimie': 'Réactions chimiques, structures moléculaires et laboratoire',
+    'Physique': 'Mécanique, optique, électricité et phénomènes physiques',
+    'Biologie': 'Étude du vivant, cellules, organes et écosystèmes',
+    'Géologie': 'Sciences de la Terre, roches et phénomènes géologiques',
+    'Histoire': "Histoire d'Haïti et du monde, événements marquants",
+    'Géographie': 'Géographie physique et humaine, cartographie',
+    'Économie': 'Principes économiques, marchés et ressources',
+    'Espagnol': 'Vocabulaire, grammaire et conversation en espagnol',
+    'Kreyòl': 'Lang, literati ak kilti ayisyèn',
+    'Créole': 'Lang, literati ak kilti ayisyèn',
+    'Informatique': 'Programmation, logiciels et technologies numériques',
+    'Philosophie': 'Pensée critique, éthique et grands philosophes',
+    'Sociologie': 'Étude des sociétés, cultures et comportements sociaux',
+    'Art': 'Arts plastiques, musique et expression créative',
+    'Musique': 'Arts plastiques, musique et expression créative',
+    'Éducation à la citoyenneté': 'Droits, devoirs et participation citoyenne',
+  };
+
+  // Try exact match first
+  if (fallbacks[title]) return fallbacks[title];
+
+  // Try partial match for compound names like "Mathématiques NS3"
+  for (const [key, value] of Object.entries(fallbacks)) {
+    if (title.toLowerCase().includes(key.toLowerCase())) {
+      return value;
+    }
+  }
+
+  // Generic fallback
+  return `Cours de ${title} selon le programme MENFP`;
+};
+
 interface SubjectCardEnhancedProps {
   id: string;
   title: string;
