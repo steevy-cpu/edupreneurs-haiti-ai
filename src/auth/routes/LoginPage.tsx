@@ -7,7 +7,8 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Eye, EyeOff, KeyRound, Telescope } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2, Eye, EyeOff, KeyRound, Telescope, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { loginWithEmail, handleDeviceTracking, validateLoginCredentials } from "../services/login.service";
 import { VisitorTypeSelector } from "@/components/visitor";
@@ -21,6 +22,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberDevice, setRememberDevice] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showVisitorSelector, setShowVisitorSelector] = useState(false);
   
@@ -60,12 +62,13 @@ export default function LoginPage() {
         throw new Error(result.error);
       }
 
-      // Handle device tracking (non-blocking)
+      // Handle device tracking with trust preference (non-blocking)
       if (result.profile) {
         handleDeviceTracking(
           result.profile.full_name || '', 
           email, 
-          result.profile.full_name || 'Utilisateur'
+          result.profile.full_name || 'Utilisateur',
+          rememberDevice
         );
       }
 
@@ -173,10 +176,33 @@ export default function LoginPage() {
               </button>
             </div>
           </div>
+          
+          {/* Remember Device Checkbox */}
+          <div className="flex items-start gap-3 pt-2">
+            <Checkbox
+              id="remember-device"
+              checked={rememberDevice}
+              onCheckedChange={(checked) => setRememberDevice(checked === true)}
+              className="mt-0.5"
+            />
+            <div className="flex-1">
+              <Label 
+                htmlFor="remember-device" 
+                className="text-sm font-medium cursor-pointer flex items-center gap-1.5"
+              >
+                <Shield className="h-3.5 w-3.5 text-primary" />
+                Se souvenir de cet appareil
+              </Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Les connexions futures depuis cet appareil seront plus rapides
+              </p>
+            </div>
+          </div>
+          
           <Button 
             type="submit" 
             disabled={isLoading} 
-            className="auth-btn-submit w-full mt-6 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
+            className="auth-btn-submit w-full mt-4 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
           >
             {isLoading ? (
               <>

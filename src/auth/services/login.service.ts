@@ -114,27 +114,36 @@ export async function loginWithEmail(credentials: LoginCredentials): Promise<Log
 
 /**
  * Handle device tracking for login notifications
+ * @param userId - The user's ID
+ * @param email - The user's email
+ * @param fullName - The user's full name
+ * @param trustDevice - Whether the user wants to trust this device (skip future verification)
  */
 export async function handleDeviceTracking(
   userId: string,
   email: string,
-  fullName: string
+  fullName: string,
+  trustDevice: boolean = false
 ): Promise<void> {
   try {
     const deviceInfo = getFullDeviceIdentifier();
     
     const { data: existingDevice } = await supabase
       .from('user_trusted_devices')
-      .select('id')
+      .select('id, is_trusted')
       .eq('user_id', userId)
       .eq('device_fingerprint', deviceInfo.fingerprint)
       .maybeSingle();
     
     if (existingDevice) {
-      // Known device - update last login
+      // Known device - update last login and trust status if requested
       await supabase
         .from('user_trusted_devices')
-        .update({ last_login_at: new Date().toISOString() })
+        .update({ 
+          last_login_at: new Date().toISOString(),
+          // Only upgrade trust, never downgrade
+          is_trusted: existingDevice.is_trusted || trustDevice,
+        })
         .eq('id', existingDevice.id);
       return;
     }
@@ -149,7 +158,7 @@ export async function handleDeviceTracking(
     
     const isSamePhysicalDevice = (sameHardwareDevices && sameHardwareDevices.length > 0) || false;
     
-    // Register new device
+    // Register new device with trust status
     await supabase
       .from('user_trusted_devices')
       .insert({
@@ -159,6 +168,7 @@ export async function handleDeviceTracking(
         device_name: deviceInfo.deviceName,
         browser: deviceInfo.browser,
         os: deviceInfo.os,
+        is_trusted: trustDevice,
       });
     
     // Send notification for new physical device only
