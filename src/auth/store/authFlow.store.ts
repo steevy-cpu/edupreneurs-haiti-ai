@@ -41,8 +41,8 @@ export function saveAuthFlow(state: Partial<AuthFlowState>): void {
     const merged: AuthFlowState = {
       ...current,
       ...state,
-      // Set expiration based on flow type
-      expiresAt: state.flow === 'verify' 
+      // Set expiration based on flow type (verify and verify-device get 60min TTL)
+      expiresAt: (state.flow === 'verify' || state.flow === 'verify-device')
         ? Date.now() + VERIFY_TTL_MS 
         : Date.now() + SIGNUP_TTL_MS,
     };
