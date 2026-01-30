@@ -1,14 +1,16 @@
 /**
  * VerifyEmailPage - Email verification with OTP
+ * Includes session recovery for expired sessions
  */
 
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, Mail, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { verifyEmailCode, resendVerificationCode, sendWelcomeEmail } from "../services/verify.service";
+import { verifyEmailCode, resendVerificationCode, sendWelcomeEmail, recoverVerificationByEmail } from "../services/verify.service";
 import { getAuthFlow, clearAuthFlow } from "../store/authFlow.store";
 
 export default function VerifyEmailPage() {
@@ -22,10 +24,17 @@ export default function VerifyEmailPage() {
   const [canResend, setCanResend] = useState(false);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   
+  // Recovery mode state
+  const [recoveryEmail, setRecoveryEmail] = useState("");
+  const [isRecovering, setIsRecovering] = useState(false);
+  
   // Get auth flow state
   const authFlow = getAuthFlow();
   const pendingUserId = authFlow?.pendingUserId;
   const email = authFlow?.email;
+  
+  // Check if session is valid
+  const hasValidSession = authFlow && authFlow.flow === 'verify' && pendingUserId;
 
   // Cooldown timer
   useEffect(() => {
@@ -43,19 +52,6 @@ export default function VerifyEmailPage() {
     }
   }, [resendCooldown, canResend]);
 
-  // Self-healing: No valid flow = expired
-  if (!authFlow || authFlow.flow !== 'verify' || !pendingUserId) {
-    return (
-      <div className="p-5 text-center space-y-4">
-        <h2 className="text-xl font-bold">Session expirée</h2>
-        <p className="text-sm text-muted-foreground">
-          Veuillez vous reconnecter pour continuer la vérification.
-        </p>
-        <Button onClick={() => navigate('/auth/login')}>Retour à la connexion</Button>
-      </div>
-    );
-  }
-
   const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!verificationCode || verificationCode.length !== 6) {
@@ -64,7 +60,7 @@ export default function VerifyEmailPage() {
     }
 
     setIsVerifying(true);
-    const result = await verifyEmailCode(pendingUserId, verificationCode);
+    const result = await verifyEmailCode(pendingUserId!, verificationCode);
     
     if (!result.success) {
       toast({ title: "Code incorrect", description: result.error, variant: "destructive" });
@@ -86,7 +82,7 @@ export default function VerifyEmailPage() {
     if (!canResend || isResending || !email) return;
     
     setIsResending(true);
-    const result = await resendVerificationCode(pendingUserId, email);
+    const result = await resendVerificationCode(pendingUserId!, email);
     
     if (!result.success) {
       toast({ title: "Erreur", description: result.error, variant: "destructive" });
@@ -98,6 +94,124 @@ export default function VerifyEmailPage() {
     setIsResending(false);
   };
 
+  const handleRecovery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!recoveryEmail || !recoveryEmail.includes('@')) {
+      toast({ 
+        title: "Email invalide", 
+        description: "Veuillez entrer une adresse email valide", 
+        variant: "destructive" 
+      });
+      return;
+    }
+    
+    setIsRecovering(true);
+    const result = await recoverVerificationByEmail(recoveryEmail);
+    
+    if (!result.success) {
+      let errorMessage = "Une erreur est survenue";
+      
+      if (result.errorCode === 'email_not_found') {
+        errorMessage = "Aucun compte associé à cet email";
+      } else if (result.errorCode === 'profile_not_found') {
+        errorMessage = "Profil non trouvé. Veuillez vous réinscrire.";
+      } else if (result.errorCode === 'already_verified') {
+        errorMessage = "Cet email est déjà vérifié. Vous pouvez vous connecter.";
+        toast({ title: "Email déjà vérifié", description: errorMessage });
+        setIsRecovering(false);
+        navigate('/auth/login');
+        return;
+      } else if (result.error) {
+        errorMessage = result.error;
+      }
+      
+      toast({ title: "Erreur", description: errorMessage, variant: "destructive" });
+      setIsRecovering(false);
+      return;
+    }
+    
+    // Success - page will refresh with new auth flow state
+    toast({ 
+      title: "Code envoyé ✅", 
+      description: "Un nouveau code de vérification a été envoyé à votre email" 
+    });
+    setIsRecovering(false);
+    setRecoveryEmail("");
+    // Force re-render to show verification form
+    window.location.reload();
+  };
+
+  // Show recovery form when session is expired/invalid
+  if (!hasValidSession) {
+    return (
+      <>
+        <div className="auth-tabs p-3 flex justify-center">
+          <div className="text-center py-3 font-bold text-primary">Récupération de la vérification</div>
+        </div>
+        <div className="auth-content p-5">
+          <form onSubmit={handleRecovery} className="space-y-4">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                <RefreshCw className="w-8 h-8 text-primary" />
+              </div>
+              <h2 className="text-xl font-bold mb-2">Session expirée</h2>
+              <p className="text-sm text-muted-foreground">
+                Entrez votre adresse email pour recevoir un nouveau code de vérification.
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="recovery-email">Adresse email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="recovery-email"
+                  type="email"
+                  placeholder="votre@email.com"
+                  value={recoveryEmail}
+                  onChange={(e) => setRecoveryEmail(e.target.value)}
+                  className="pl-10"
+                  disabled={isRecovering}
+                  autoComplete="email"
+                />
+              </div>
+            </div>
+            
+            <Button 
+              type="submit" 
+              disabled={isRecovering || !recoveryEmail} 
+              className="auth-btn-submit w-full mt-6"
+            >
+              {isRecovering ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Envoi en cours...
+                </>
+              ) : (
+                "Recevoir un nouveau code"
+              )}
+            </Button>
+            
+            <div className="text-center mt-4 space-y-2">
+              <button
+                type="button"
+                onClick={() => navigate('/auth/login')}
+                className="text-sm text-muted-foreground hover:text-primary"
+              >
+                Retour à la connexion
+              </button>
+              <p className="text-xs text-muted-foreground">
+                💡 Si votre email est déjà vérifié, vous serez redirigé vers la connexion.
+              </p>
+            </div>
+          </form>
+        </div>
+      </>
+    );
+  }
+
+  // Normal verification flow
   return (
     <>
       <div className="auth-tabs p-3 flex justify-center">

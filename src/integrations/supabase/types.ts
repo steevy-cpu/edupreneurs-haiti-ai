@@ -4043,6 +4043,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      recover_verification_by_email: {
+        Args: { p_email: string }
+        Returns: Json
+      }
       remove_user_from_group: {
         Args: {
           p_conversation_id: string
