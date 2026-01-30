@@ -2,17 +2,21 @@
  * VerifyDevicePage - Device verification with OTP
  * 
  * Shown when a user logs in from an unknown/untrusted device
+ * Two-phase flow:
+ * 1. Enter OTP code
+ * 2. Confirm password to re-authenticate
  */
 
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Monitor, Shield } from "lucide-react";
+import { Loader2, Monitor, Shield, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { verifyDeviceCode, resendDeviceCode } from "../services/device-verify.service";
-import { getAuthFlow, clearAuthFlow, saveAuthFlow } from "../store/authFlow.store";
+import { getAuthFlow, clearAuthFlow } from "../store/authFlow.store";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function VerifyDevicePage() {
@@ -25,6 +29,8 @@ export default function VerifyDevicePage() {
   const [resendCooldown, setResendCooldown] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [trustDevice, setTrustDevice] = useState(true);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [password, setPassword] = useState("");
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   
   // Get auth flow state
@@ -95,25 +101,61 @@ export default function VerifyDevicePage() {
       return;
     }
 
-    // Device verified - now sign in the user
-    // The user was already authenticated but signed out for device verification
-    // We need to re-authenticate them
+    // OTP verified - switch to password confirmation phase
+    setShowPasswordConfirm(true);
+    setIsVerifying(false);
     toast({ 
-      title: "Appareil vérifié ✅", 
-      description: trustDevice 
-        ? "Cet appareil est maintenant mémorisé" 
-        : "Vous êtes maintenant connecté" 
+      title: "Code vérifié ✅", 
+      description: "Confirmez votre mot de passe pour continuer" 
     });
+  };
+
+  const handlePasswordConfirm = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    clearAuthFlow();
+    if (!password) {
+      toast({ 
+        title: "Mot de passe requis", 
+        description: "Veuillez entrer votre mot de passe", 
+        variant: "destructive" 
+      });
+      return;
+    }
+
+    setIsVerifying(true);
     
-    // Redirect to dashboard or return URL
-    const returnTo = sessionStorage.getItem('quiz_battle_return_url');
-    if (returnTo) {
-      sessionStorage.removeItem('quiz_battle_return_url');
-      navigate(returnTo, { replace: true });
-    } else {
-      navigate('/dashboard', { replace: true });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email!,
+        password: password,
+      });
+      
+      if (error) throw error;
+      
+      toast({ 
+        title: "Appareil vérifié ✅", 
+        description: trustDevice 
+          ? "Cet appareil est maintenant mémorisé" 
+          : "Vous êtes maintenant connecté" 
+      });
+      
+      clearAuthFlow();
+      
+      // Redirect to dashboard or return URL
+      const returnTo = sessionStorage.getItem('quiz_battle_return_url');
+      if (returnTo) {
+        sessionStorage.removeItem('quiz_battle_return_url');
+        navigate(returnTo, { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
+    } catch (error: any) {
+      toast({ 
+        title: "Erreur", 
+        description: "Mot de passe incorrect", 
+        variant: "destructive" 
+      });
+      setIsVerifying(false);
     }
   };
 
@@ -159,140 +201,199 @@ export default function VerifyDevicePage() {
       </div>
       
       <div className="auth-content p-5">
-        <form onSubmit={handleVerifyCode} className="space-y-4">
-          {/* Header */}
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-              <Monitor className="w-8 h-8 text-primary" />
-            </div>
-            <h2 className="text-xl font-bold mb-2">Nouvel appareil détecté 🔐</h2>
-            <p className="text-sm text-muted-foreground">
-              Un code de vérification a été envoyé à <strong>{email}</strong>
-            </p>
-          </div>
-          
-          {/* User info */}
-          {fullName && (
-            <div className="text-center text-sm text-muted-foreground mb-4">
-              Bonjour <span className="font-medium text-foreground">{fullName}</span> !
-            </div>
-          )}
-          
-          {/* OTP Input */}
-          <div className="space-y-3">
-            <Label className="text-sm text-muted-foreground text-center block">
-              Code de vérification
-            </Label>
-            <div className="flex justify-center gap-2">
-              {[0, 1, 2, 3, 4, 5].map((index) => (
-                <input
-                  key={index}
-                  ref={(el) => { otpInputRefs.current[index] = el; }}
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={1}
-                  value={verificationCode[index] || ''}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
-                    if (value.length <= 1) {
-                      const newCode = verificationCode.split('');
-                      newCode[index] = value;
-                      setVerificationCode(newCode.join('').slice(0, 6));
-                      if (value && index < 5) {
-                        otpInputRefs.current[index + 1]?.focus();
-                      }
-                    }
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Backspace' && !verificationCode[index] && index > 0) {
-                      otpInputRefs.current[index - 1]?.focus();
-                    }
-                  }}
-                  onPaste={(e) => {
-                    e.preventDefault();
-                    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-                    setVerificationCode(pastedData);
-                  }}
-                  className="w-12 h-14 text-center text-2xl font-bold border border-input rounded-lg bg-muted/50 focus:border-primary focus:ring-1 focus:ring-primary/15 outline-none transition-all"
-                />
-              ))}
-            </div>
-          </div>
-          
-          {/* Trust Device Checkbox */}
-          <div className="flex items-start gap-3 pt-4 bg-muted/30 rounded-lg p-4">
-            <Checkbox
-              id="trust-device"
-              checked={trustDevice}
-              onCheckedChange={(checked) => setTrustDevice(checked === true)}
-              className="mt-0.5"
-            />
-            <div className="flex-1">
-              <Label 
-                htmlFor="trust-device" 
-                className="text-sm font-medium cursor-pointer flex items-center gap-1.5"
-              >
-                <Shield className="h-3.5 w-3.5 text-primary" />
-                Mémoriser cet appareil
-              </Label>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Les connexions futures depuis cet appareil ne nécessiteront pas de vérification
+        {showPasswordConfirm ? (
+          /* Phase 2: Password Confirmation */
+          <form onSubmit={handlePasswordConfirm} className="space-y-4">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                <Lock className="w-8 h-8 text-primary" />
+              </div>
+              <h2 className="text-xl font-bold mb-2">Dernière étape 🔒</h2>
+              <p className="text-sm text-muted-foreground">
+                Confirmez votre mot de passe pour finaliser la connexion
               </p>
             </div>
-          </div>
-          
-          {/* Submit Button */}
-          <Button 
-            type="submit" 
-            disabled={isVerifying} 
-            className="auth-btn-submit w-full mt-6"
-          >
-            {isVerifying ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Vérification...
-              </>
-            ) : (
-              "Vérifier et continuer"
+            
+            {fullName && (
+              <div className="text-center text-sm text-muted-foreground mb-4">
+                Bonjour <span className="font-medium text-foreground">{fullName}</span> !
+              </div>
             )}
-          </Button>
-          
-          {/* Resend Code */}
-          <div className="mt-4 text-center">
+            
+            <div className="space-y-2">
+              <Label htmlFor="password">Mot de passe</Label>
+              <Input 
+                id="password"
+                type="password" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                placeholder="Entrez votre mot de passe"
+                className="h-12"
+                autoFocus
+              />
+            </div>
+            
+            <Button 
+              type="submit" 
+              disabled={isVerifying} 
+              className="auth-btn-submit w-full mt-6"
+            >
+              {isVerifying ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Connexion...
+                </>
+              ) : (
+                "Se connecter"
+              )}
+            </Button>
+            
             <button
               type="button"
-              onClick={handleResendCode}
-              disabled={!canResend || isResending}
-              className={`text-sm font-medium ${
-                canResend && !isResending 
-                  ? 'text-primary hover:underline cursor-pointer' 
-                  : 'text-muted-foreground cursor-not-allowed'
-              }`}
+              onClick={handleCancel}
+              className="text-sm text-muted-foreground hover:text-destructive mt-4 text-center w-full transition-colors"
             >
-              {isResending 
-                ? "Envoi en cours..." 
-                : canResend 
-                  ? "Renvoyer le code" 
-                  : `Renvoyer le code (${resendCooldown}s)`
-              }
+              Annuler et revenir à la connexion
             </button>
-          </div>
+          </form>
+        ) : (
+          /* Phase 1: OTP Verification */
+          <form onSubmit={handleVerifyCode} className="space-y-4">
+            {/* Header */}
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                <Monitor className="w-8 h-8 text-primary" />
+              </div>
+              <h2 className="text-xl font-bold mb-2">Nouvel appareil détecté 🔐</h2>
+              <p className="text-sm text-muted-foreground">
+                Un code de vérification a été envoyé à <strong>{email}</strong>
+              </p>
+            </div>
+            
+            {/* User info */}
+            {fullName && (
+              <div className="text-center text-sm text-muted-foreground mb-4">
+                Bonjour <span className="font-medium text-foreground">{fullName}</span> !
+              </div>
+            )}
+            
+            {/* OTP Input */}
+            <div className="space-y-3">
+              <Label className="text-sm text-muted-foreground text-center block">
+                Code de vérification
+              </Label>
+              <div className="flex justify-center gap-2">
+                {[0, 1, 2, 3, 4, 5].map((index) => (
+                  <input
+                    key={index}
+                    ref={(el) => { otpInputRefs.current[index] = el; }}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={1}
+                    value={verificationCode[index] || ''}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      if (value.length <= 1) {
+                        const newCode = verificationCode.split('');
+                        newCode[index] = value;
+                        setVerificationCode(newCode.join('').slice(0, 6));
+                        if (value && index < 5) {
+                          otpInputRefs.current[index + 1]?.focus();
+                        }
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Backspace' && !verificationCode[index] && index > 0) {
+                        otpInputRefs.current[index - 1]?.focus();
+                      }
+                    }}
+                    onPaste={(e) => {
+                      e.preventDefault();
+                      const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+                      setVerificationCode(pastedData);
+                    }}
+                    className="w-12 h-14 text-center text-2xl font-bold border border-input rounded-lg bg-muted/50 focus:border-primary focus:ring-1 focus:ring-primary/15 outline-none transition-all"
+                  />
+                ))}
+              </div>
+            </div>
+            
+            {/* Trust Device Checkbox */}
+            <div className="flex items-start gap-3 pt-4 bg-muted/30 rounded-lg p-4">
+              <Checkbox
+                id="trust-device"
+                checked={trustDevice}
+                onCheckedChange={(checked) => setTrustDevice(checked === true)}
+                className="mt-0.5"
+              />
+              <div className="flex-1">
+                <Label 
+                  htmlFor="trust-device" 
+                  className="text-sm font-medium cursor-pointer flex items-center gap-1.5"
+                >
+                  <Shield className="h-3.5 w-3.5 text-primary" />
+                  Mémoriser cet appareil
+                </Label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Les connexions futures depuis cet appareil ne nécessiteront pas de vérification
+                </p>
+              </div>
+            </div>
+            
+            {/* Submit Button */}
+            <Button 
+              type="submit" 
+              disabled={isVerifying} 
+              className="auth-btn-submit w-full mt-6"
+            >
+              {isVerifying ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Vérification...
+                </>
+              ) : (
+                "Vérifier et continuer"
+              )}
+            </Button>
+            
+            {/* Resend Code */}
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={handleResendCode}
+                disabled={!canResend || isResending}
+                className={`text-sm font-medium ${
+                  canResend && !isResending 
+                    ? 'text-primary hover:underline cursor-pointer' 
+                    : 'text-muted-foreground cursor-not-allowed'
+                }`}
+              >
+                {isResending 
+                  ? "Envoi en cours..." 
+                  : canResend 
+                    ? "Renvoyer le code" 
+                    : `Renvoyer le code (${resendCooldown}s)`
+                }
+              </button>
+            </div>
 
-          {/* Cancel */}
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="text-sm text-muted-foreground hover:text-destructive mt-4 text-center w-full transition-colors"
-          >
-            Annuler et revenir à la connexion
-          </button>
-          
-          {/* Help Text */}
-          <p className="text-xs text-center text-muted-foreground mt-4">
-            💡 N'oubliez pas de vérifier votre dossier <strong>spam/courrier indésirable</strong>
-          </p>
-        </form>
+            {/* Cancel */}
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="text-sm text-muted-foreground hover:text-destructive mt-4 text-center w-full transition-colors"
+            >
+              Annuler et revenir à la connexion
+            </button>
+            
+            {/* Help Text */}
+            <p className="text-xs text-center text-muted-foreground mt-4">
+              💡 N'oubliez pas de vérifier votre dossier <strong>spam/courrier indésirable</strong>
+            </p>
+          </form>
+        )}
       </div>
     </>
   );
