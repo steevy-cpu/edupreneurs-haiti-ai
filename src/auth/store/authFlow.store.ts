@@ -25,7 +25,7 @@ const AUTH_FLOW_KEY = 'edupreneurs_auth_flow';
 const SIGNUP_DATA_KEY = 'edupreneurs_signup_data';
 
 // TTL configurations
-const VERIFY_TTL_MS = 15 * 60 * 1000; // 15 minutes for verification
+const VERIFY_TTL_MS = 60 * 60 * 1000; // 60 minutes for verification (extended for 3G users)
 const SIGNUP_TTL_MS = 30 * 60 * 1000; // 30 minutes for signup flow
 
 /**
@@ -42,7 +42,7 @@ export function saveAuthFlow(state: Partial<AuthFlowState>): void {
         ? Date.now() + VERIFY_TTL_MS 
         : Date.now() + SIGNUP_TTL_MS,
     };
-    sessionStorage.setItem(AUTH_FLOW_KEY, JSON.stringify(merged));
+    localStorage.setItem(AUTH_FLOW_KEY, JSON.stringify(merged));
   } catch (error) {
     console.error('Failed to save auth flow:', error);
   }
@@ -54,7 +54,7 @@ export function saveAuthFlow(state: Partial<AuthFlowState>): void {
  */
 export function getAuthFlow(): AuthFlowState | null {
   try {
-    const stored = sessionStorage.getItem(AUTH_FLOW_KEY);
+    const stored = localStorage.getItem(AUTH_FLOW_KEY);
     if (!stored) return null;
     
     const state: AuthFlowState = JSON.parse(stored);
@@ -77,7 +77,7 @@ export function getAuthFlow(): AuthFlowState | null {
  */
 export function clearAuthFlow(): void {
   try {
-    sessionStorage.removeItem(AUTH_FLOW_KEY);
+    localStorage.removeItem(AUTH_FLOW_KEY);
   } catch (error) {
     console.error('Failed to clear auth flow:', error);
   }
@@ -126,7 +126,7 @@ export function saveSignupProgress(data: Partial<SignupFormData>): void {
   try {
     const existing = getSignupProgress();
     const merged = { ...existing, ...data };
-    sessionStorage.setItem(SIGNUP_DATA_KEY, JSON.stringify(merged));
+    localStorage.setItem(SIGNUP_DATA_KEY, JSON.stringify(merged));
   } catch (error) {
     console.error('Failed to save signup progress:', error);
   }
@@ -137,7 +137,7 @@ export function saveSignupProgress(data: Partial<SignupFormData>): void {
  */
 export function getSignupProgress(): SignupFormData {
   try {
-    const stored = sessionStorage.getItem(SIGNUP_DATA_KEY);
+    const stored = localStorage.getItem(SIGNUP_DATA_KEY);
     if (!stored) return {};
     return JSON.parse(stored);
   } catch (error) {
@@ -151,7 +151,7 @@ export function getSignupProgress(): SignupFormData {
  */
 export function clearSignupProgress(): void {
   try {
-    sessionStorage.removeItem(SIGNUP_DATA_KEY);
+    localStorage.removeItem(SIGNUP_DATA_KEY);
   } catch (error) {
     console.error('Failed to clear signup progress:', error);
   }

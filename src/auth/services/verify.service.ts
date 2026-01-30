@@ -4,7 +4,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { verificationCodeSchema } from "@/lib/authValidation";
-import { clearAuthFlow } from "../store/authFlow.store";
+import { clearAuthFlow, saveAuthFlow } from "../store/authFlow.store";
 
 export interface VerifyResult {
   success: boolean;
@@ -139,6 +139,72 @@ export async function resendVerificationCode(userId: string, email: string): Pro
     };
   } catch (error: any) {
     console.error("Resend error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Recovery result interface
+ */
+export interface RecoveryResult {
+  success: boolean;
+  userId?: string;
+  error?: string;
+  errorCode?: 'email_not_found' | 'profile_not_found' | 'already_verified';
+}
+
+/**
+ * Recover verification by email for expired sessions
+ */
+export async function recoverVerificationByEmail(email: string): Promise<RecoveryResult> {
+  try {
+    const normalizedEmail = email.toLowerCase().trim();
+    
+    const { data, error } = await supabase.rpc('recover_verification_by_email', {
+      p_email: normalizedEmail
+    });
+    
+    if (error) throw error;
+    
+    const result = data as { 
+      success: boolean; 
+      error?: string; 
+      user_id?: string;
+      full_name?: string;
+      nickname?: string;
+      academic_grade?: string;
+      confirmation_code?: string;
+    };
+    
+    if (!result.success) {
+      return { 
+        success: false, 
+        error: result.error, 
+        errorCode: result.error as RecoveryResult['errorCode']
+      };
+    }
+    
+    // Send new verification email
+    await supabase.functions.invoke('send-confirmation-email', {
+      body: {
+        email: normalizedEmail,
+        fullName: result.full_name || result.nickname || 'Utilisateur',
+        nickname: result.nickname || '',
+        academicGrade: result.academic_grade || '',
+        confirmationCode: result.confirmation_code,
+      }
+    });
+    
+    // Save auth flow state
+    saveAuthFlow({
+      flow: 'verify',
+      pendingUserId: result.user_id,
+      email: normalizedEmail,
+    });
+    
+    return { success: true, userId: result.user_id };
+  } catch (error: any) {
+    console.error('Recovery error:', error);
     return { success: false, error: error.message };
   }
 }
