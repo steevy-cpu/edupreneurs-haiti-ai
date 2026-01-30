@@ -1031,6 +1031,54 @@ export type Database = {
         }
         Relationships: []
       }
+      device_verification_challenges: {
+        Row: {
+          attempts: number | null
+          browser: string | null
+          created_at: string | null
+          device_fingerprint: string
+          device_name: string | null
+          expires_at: string
+          hardware_fingerprint: string | null
+          id: string
+          max_attempts: number | null
+          os: string | null
+          user_id: string
+          verification_code: string
+          verified_at: string | null
+        }
+        Insert: {
+          attempts?: number | null
+          browser?: string | null
+          created_at?: string | null
+          device_fingerprint: string
+          device_name?: string | null
+          expires_at?: string
+          hardware_fingerprint?: string | null
+          id?: string
+          max_attempts?: number | null
+          os?: string | null
+          user_id: string
+          verification_code: string
+          verified_at?: string | null
+        }
+        Update: {
+          attempts?: number | null
+          browser?: string | null
+          created_at?: string | null
+          device_fingerprint?: string
+          device_name?: string | null
+          expires_at?: string
+          hardware_fingerprint?: string | null
+          id?: string
+          max_attempts?: number | null
+          os?: string | null
+          user_id?: string
+          verification_code?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       ebook_comments: {
         Row: {
           comment: string
@@ -3934,6 +3982,17 @@ export type Database = {
       }
       count_quiz_in_html: { Args: { html_content: string }; Returns: number }
       create_conversation: { Args: never; Returns: string }
+      create_device_challenge: {
+        Args: {
+          p_browser: string
+          p_device_fingerprint: string
+          p_device_name: string
+          p_hardware_fingerprint: string
+          p_os: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       create_group_chat: {
         Args: { p_avatar_url?: string; p_description?: string; p_name: string }
         Returns: string
@@ -4059,6 +4118,10 @@ export type Database = {
         Args: { p_match_id: string; p_user_id: string }
         Returns: Json
       }
+      resend_device_challenge: {
+        Args: { p_challenge_id: string }
+        Returns: Json
+      }
       resend_verification_code: { Args: { p_user_id: string }; Returns: Json }
       start_direct_conversation: {
         Args: { other_user_id: string }
@@ -4099,6 +4162,14 @@ export type Database = {
         Returns: Json
       }
       user_has_active_battle: { Args: { p_user_id: string }; Returns: boolean }
+      verify_device_challenge: {
+        Args: {
+          p_challenge_id: string
+          p_code: string
+          p_trust_device?: boolean
+        }
+        Returns: Json
+      }
       verify_email_code: {
         Args: { p_code: string; p_user_id: string }
         Returns: Json

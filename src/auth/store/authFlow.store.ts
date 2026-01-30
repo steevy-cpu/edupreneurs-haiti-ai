@@ -10,7 +10,7 @@
  * Fixes the OTP bypass issue by persisting verification state.
  */
 
-export type AuthFlowType = 'idle' | 'signup' | 'login' | 'verify' | 'forgot-password';
+export type AuthFlowType = 'idle' | 'signup' | 'login' | 'verify' | 'verify-device' | 'forgot-password';
 
 export interface AuthFlowState {
   flow: AuthFlowType;
@@ -19,6 +19,10 @@ export interface AuthFlowState {
   step?: number; // For multi-step signup (1, 2, 3)
   expiresAt?: number; // Unix timestamp in milliseconds
   referralCode?: string;
+  // Device verification fields
+  deviceChallengeId?: string;
+  fullName?: string;
+  rememberDevice?: boolean;
 }
 
 const AUTH_FLOW_KEY = 'edupreneurs_auth_flow';
@@ -97,6 +101,14 @@ export function isFlowValid(): boolean {
 export function hasPendingVerification(): boolean {
   const flow = getAuthFlow();
   return flow !== null && flow.flow === 'verify' && !!flow.pendingUserId;
+}
+
+/**
+ * Check if there's a pending device verification
+ */
+export function hasPendingDeviceVerification(): boolean {
+  const flow = getAuthFlow();
+  return flow !== null && flow.flow === 'verify-device' && !!flow.deviceChallengeId;
 }
 
 // ============= Signup Data Persistence =============
