@@ -18,6 +18,7 @@ import { Search, ChevronDown, ChevronRight, BookOpen, Calculator, FlaskConical, 
 import { Button } from "@/components/ui/button";
 import { BatchQuizGenerator } from "./BatchQuizGenerator";
 import { BatchQuizContentValidator } from "./BatchQuizContentValidator";
+import { BatchActivitiesContentValidator } from "./BatchActivitiesContentValidator";
 
 interface LessonBrowserProps {
   onSelectLesson: (lesson: any) => void;
@@ -30,6 +31,12 @@ const hasValidQuiz = (lesson: any): boolean => {
   if (!lesson.quiz_final) return false;
   return lesson.quiz_final.includes('quiz-question') || 
          lesson.quiz_final.includes('quiz-container');
+};
+
+// Helper function to check if a lesson has valid activities
+const hasValidActivities = (lesson: any): boolean => {
+  return !!lesson.activites_interactives && 
+         lesson.activites_interactives.length > 50;
 };
 
 export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: LessonBrowserProps) => {
@@ -125,7 +132,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
         const batch = subjectIds.slice(i, i + batchSize);
         const { data: lessonsData, error } = await supabase
           .from('lessons')
-          .select('id, title, slug, subject_id, order_index, workflow_status, grade_level, quiz_final, needs_quiz_regeneration, subjects(id, name)')
+          .select('id, title, slug, subject_id, order_index, workflow_status, grade_level, quiz_final, activites_interactives, needs_quiz_regeneration, needs_activities_regeneration, subjects(id, name)')
           .in('subject_id', batch)
           .order('order_index');
 
@@ -186,6 +193,9 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
   
   // Get all lessons WITH valid quizzes for content validation
   const lessonsWithValidQuiz = allLessons.filter(lesson => hasValidQuiz(lesson));
+  
+  // Get all lessons WITH valid activities for content validation
+  const lessonsWithValidActivities = allLessons.filter(lesson => hasValidActivities(lesson));
 
   const filteredSubjects = availableSubjects.map(subject => {
     const subjectLessons = lessonsBySubject[subject.id] || [];
@@ -344,6 +354,16 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
                 />
               </div>
             )}
+            {/* Batch Activities Content Validator Button */}
+            {lessonsWithValidActivities.length > 0 && (
+              <div className="pt-2">
+                <BatchActivitiesContentValidator 
+                  lessons={lessonsWithValidActivities}
+                  gradeLevel={gradeLevel}
+                  onComplete={loadSubjects}
+                />
+              </div>
+            )}
           </div>
         )}
       </CardHeader>
@@ -404,7 +424,13 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
                               {lesson.needs_quiz_regeneration && (
                                 <Badge variant="outline" className="text-xs border-amber-500 text-amber-600">
                                   <RotateCcw className="h-3 w-3 mr-0.5" />
-                                  Régénérer
+                                  Quiz
+                                </Badge>
+                              )}
+                              {lesson.needs_activities_regeneration && (
+                                <Badge variant="outline" className="text-xs border-purple-500 text-purple-600">
+                                  <RotateCcw className="h-3 w-3 mr-0.5" />
+                                  Activités
                                 </Badge>
                               )}
                               {!hasValidQuiz(lesson) && (

@@ -1792,6 +1792,7 @@ export type Database = {
       lessons: {
         Row: {
           activites_interactives: string | null
+          activities_alignment_score: number | null
           activities_count: number | null
           audio_contenu_url: string | null
           audio_exemples_url: string | null
@@ -1807,8 +1808,10 @@ export type Database = {
           id: string
           introduction: string | null
           is_published: boolean | null
+          last_activities_validated_at: string | null
           last_content_validated_at: string | null
           mois: string | null
+          needs_activities_regeneration: boolean | null
           needs_quiz_regeneration: boolean | null
           objectif: string | null
           order_index: number
@@ -1827,6 +1830,7 @@ export type Database = {
         }
         Insert: {
           activites_interactives?: string | null
+          activities_alignment_score?: number | null
           activities_count?: number | null
           audio_contenu_url?: string | null
           audio_exemples_url?: string | null
@@ -1842,8 +1846,10 @@ export type Database = {
           id?: string
           introduction?: string | null
           is_published?: boolean | null
+          last_activities_validated_at?: string | null
           last_content_validated_at?: string | null
           mois?: string | null
+          needs_activities_regeneration?: boolean | null
           needs_quiz_regeneration?: boolean | null
           objectif?: string | null
           order_index?: number
@@ -1864,6 +1870,7 @@ export type Database = {
         }
         Update: {
           activites_interactives?: string | null
+          activities_alignment_score?: number | null
           activities_count?: number | null
           audio_contenu_url?: string | null
           audio_exemples_url?: string | null
@@ -1879,8 +1886,10 @@ export type Database = {
           id?: string
           introduction?: string | null
           is_published?: boolean | null
+          last_activities_validated_at?: string | null
           last_content_validated_at?: string | null
           mois?: string | null
+          needs_activities_regeneration?: boolean | null
           needs_quiz_regeneration?: boolean | null
           objectif?: string | null
           order_index?: number

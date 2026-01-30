@@ -15,9 +15,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { parseQuizQuestions as parseQuizQuestionsFromUtils } from "@/utils/quizActivityParsing";
+import { parseActivities, ParsedActivity, ParsedQuizActivity, ParsedTrueFalseActivity } from "@/utils/quizActivityParsing";
 
-interface BatchQuizContentValidatorProps {
+interface BatchActivitiesContentValidatorProps {
   lessons: any[];
   gradeLevel: string;
   onComplete: () => void;
@@ -32,14 +32,7 @@ interface ValidationResult {
   error?: string;
 }
 
-interface QuizQuestion {
-  question: string;
-  options: string[];
-  correctAnswer: number;
-  explanation: string;
-}
-
-export const BatchQuizContentValidator = ({ lessons, gradeLevel, onComplete }: BatchQuizContentValidatorProps) => {
+export const BatchActivitiesContentValidator = ({ lessons, gradeLevel, onComplete }: BatchActivitiesContentValidatorProps) => {
   const [isValidating, setIsValidating] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [results, setResults] = useState<ValidationResult[]>([]);
@@ -48,7 +41,7 @@ export const BatchQuizContentValidator = ({ lessons, gradeLevel, onComplete }: B
 
   const handleValidateAll = async () => {
     if (lessons.length === 0) {
-      toast.info("Aucun quiz à valider!");
+      toast.info("Aucune activité à valider!");
       return;
     }
 
@@ -73,7 +66,7 @@ export const BatchQuizContentValidator = ({ lessons, gradeLevel, onComplete }: B
         // Fetch full lesson content
         const { data: fullLesson, error: fetchError } = await supabase
           .from('lessons')
-          .select('contenu, exemples_exercices, quiz_final')
+          .select('contenu, exemples_exercices, activites_interactives')
           .eq('id', lesson.id)
           .single();
 
@@ -81,33 +74,48 @@ export const BatchQuizContentValidator = ({ lessons, gradeLevel, onComplete }: B
           throw new Error('Erreur de chargement');
         }
 
-        if (!fullLesson?.quiz_final) {
-          throw new Error('Pas de quiz disponible');
+        if (!fullLesson?.activites_interactives) {
+          throw new Error('Pas d\'activités disponibles');
         }
 
-        // Parse quiz questions from HTML
-        // Parse quiz questions using proven utility
-        const parseResult = parseQuizQuestionsFromUtils(fullLesson.quiz_final);
-        const questions: QuizQuestion[] = parseResult.items.map(q => ({
-          question: q.question,
-          options: q.options,
-          correctAnswer: q.correctAnswer,
-          explanation: q.explanation
-        }));
-
-        if (questions.length === 0) {
-          throw new Error('Aucune question trouvée dans le quiz');
+        // Parse activities using proven utility
+        const parseResult = parseActivities(fullLesson.activites_interactives);
+        
+        if (parseResult.items.length === 0) {
+          throw new Error('Aucune activité trouvée');
         }
+
+        // Map activities to the format expected by the edge function
+        const activities = parseResult.items.map((activity: ParsedActivity) => {
+          if (activity.activityType === 'QUIZ') {
+            const quizActivity = activity as ParsedQuizActivity;
+            return {
+              activityType: 'QUIZ' as const,
+              question: quizActivity.question,
+              options: quizActivity.options,
+              correctAnswer: quizActivity.correctAnswer,
+              explanation: quizActivity.explanation
+            };
+          } else {
+            const tfActivity = activity as ParsedTrueFalseActivity;
+            return {
+              activityType: 'TRUE_FALSE' as const,
+              statement: tfActivity.statement,
+              isTrue: tfActivity.isTrue,
+              explanation: tfActivity.explanation
+            };
+          }
+        });
 
         // Call the validation edge function
-        const { data, error } = await supabase.functions.invoke('validate-quiz-content-alignment', {
+        const { data, error } = await supabase.functions.invoke('validate-activities-content-alignment', {
           body: {
             lessonId: lesson.id,
             lessonTitle: lesson.title,
             gradeLevel: lesson.grade_level,
             contenu: fullLesson.contenu || '',
             exemples: fullLesson.exemples_exercices || '',
-            questions
+            activities
           }
         });
 
@@ -116,16 +124,16 @@ export const BatchQuizContentValidator = ({ lessons, gradeLevel, onComplete }: B
         }
 
         const aligned = data?.aligned ?? false;
-        const offContentCount = data?.offContentQuestions?.length || 0;
+        const offContentCount = data?.offContentActivities?.length || 0;
         const confidence = data?.confidence || 0;
 
         // Update the lesson with validation results
         const { error: updateError } = await supabase
           .from('lessons')
           .update({
-            needs_quiz_regeneration: !aligned,
-            content_alignment_score: confidence,
-            last_content_validated_at: new Date().toISOString()
+            needs_activities_regeneration: !aligned,
+            activities_alignment_score: confidence,
+            last_activities_validated_at: new Date().toISOString()
           })
           .eq('id', lesson.id);
 
@@ -169,11 +177,11 @@ export const BatchQuizContentValidator = ({ lessons, gradeLevel, onComplete }: B
     const errorCount = validationResults.filter(r => r.error).length;
 
     if (offContentCount === 0 && errorCount === 0) {
-      toast.success(`✓ Tous les ${alignedCount} quizzes sont alignés avec le contenu!`);
+      toast.success(`✓ Toutes les ${alignedCount} activités sont alignées avec le contenu!`);
     } else if (alignedCount === 0 && offContentCount > 0) {
-      toast.warning(`⚠ ${offContentCount} quiz${offContentCount > 1 ? 's' : ''} nécessite${offContentCount > 1 ? 'nt' : ''} régénération`);
+      toast.warning(`⚠ ${offContentCount} leçon${offContentCount > 1 ? 's' : ''} nécessite${offContentCount > 1 ? 'nt' : ''} régénération d'activités`);
     } else {
-      toast.info(`${alignedCount} aligné${alignedCount > 1 ? 's' : ''}, ${offContentCount} à régénérer${errorCount > 0 ? `, ${errorCount} erreur${errorCount > 1 ? 's' : ''}` : ''}`);
+      toast.info(`${alignedCount} alignée${alignedCount > 1 ? 's' : ''}, ${offContentCount} à régénérer${errorCount > 0 ? `, ${errorCount} erreur${errorCount > 1 ? 's' : ''}` : ''}`);
     }
 
     onComplete();
@@ -189,11 +197,11 @@ export const BatchQuizContentValidator = ({ lessons, gradeLevel, onComplete }: B
 
   if (isValidating) {
     return (
-      <div className="space-y-3 p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+      <div className="space-y-3 p-3 rounded-lg bg-purple-500/5 border border-purple-500/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm font-medium">
-            <Loader2 className="h-4 w-4 animate-spin text-amber-600" />
-            <span>Validation en cours...</span>
+            <Loader2 className="h-4 w-4 animate-spin text-purple-600" />
+            <span>Validation activités...</span>
           </div>
           <Button 
             variant="ghost" 
@@ -213,7 +221,7 @@ export const BatchQuizContentValidator = ({ lessons, gradeLevel, onComplete }: B
           </div>
           <Progress 
             value={(progress.current / progress.total) * 100} 
-            className="h-2 [&>div]:bg-amber-500"
+            className="h-2 [&>div]:bg-purple-500"
           />
         </div>
 
@@ -222,11 +230,11 @@ export const BatchQuizContentValidator = ({ lessons, gradeLevel, onComplete }: B
             {alignedCount > 0 && (
               <span className="flex items-center gap-1 text-primary">
                 <CheckCircle2 className="h-3 w-3" />
-                {alignedCount} aligné{alignedCount > 1 ? 's' : ''}
+                {alignedCount} alignée{alignedCount > 1 ? 's' : ''}
               </span>
             )}
             {offContentCount > 0 && (
-              <span className="flex items-center gap-1 text-amber-600">
+              <span className="flex items-center gap-1 text-purple-600">
                 <AlertTriangle className="h-3 w-3" />
                 {offContentCount} hors-contenu
               </span>
@@ -249,23 +257,23 @@ export const BatchQuizContentValidator = ({ lessons, gradeLevel, onComplete }: B
         <Button 
           size="sm" 
           variant="outline"
-          className="w-full border-amber-500/30 text-amber-700 hover:bg-amber-500/10"
+          className="w-full border-purple-500/30 text-purple-700 hover:bg-purple-500/10"
         >
           <Search className="h-4 w-4 mr-2" />
-          Valider alignement contenu
+          Valider alignement activités
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Valider l'alignement du contenu?</AlertDialogTitle>
+          <AlertDialogTitle>Valider l'alignement des activités?</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-2">
               <p>
-                Cette action va analyser {lessons.length} quiz{lessons.length > 1 ? 's' : ''} du niveau {gradeLevel} 
-                pour vérifier si les questions sont alignées avec le contenu des leçons.
+                Cette action va analyser les activités interactives de {lessons.length} leçon{lessons.length > 1 ? 's' : ''} du niveau {gradeLevel} 
+                pour vérifier si elles sont alignées avec le contenu.
               </p>
               <p className="text-xs text-muted-foreground">
-                ℹ️ Les quizzes avec des questions hors-contenu seront marqués pour régénération.
+                ℹ️ Les leçons avec des activités hors-contenu seront marquées pour régénération.
               </p>
               <p className="text-xs text-muted-foreground">
                 ⏱️ Durée estimée: ~{Math.ceil(lessons.length * 3 / 60)} minute{Math.ceil(lessons.length * 3 / 60) > 1 ? 's' : ''}
@@ -277,7 +285,7 @@ export const BatchQuizContentValidator = ({ lessons, gradeLevel, onComplete }: B
           <AlertDialogCancel>Annuler</AlertDialogCancel>
           <AlertDialogAction 
             onClick={handleValidateAll}
-            className="bg-amber-600 hover:bg-amber-700"
+            className="bg-purple-600 hover:bg-purple-700"
           >
             <Search className="h-4 w-4 mr-2" />
             Commencer

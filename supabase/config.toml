@@ -133,6 +133,9 @@ verify_jwt = true
 [functions.validate-activities-accuracy]
 verify_jwt = true
 
+[functions.validate-activities-content-alignment]
+verify_jwt = true
+
 [functions.fix-invalid-activities]
 verify_jwt = true
 
