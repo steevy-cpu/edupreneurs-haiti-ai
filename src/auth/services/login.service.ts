@@ -7,6 +7,7 @@ import { getFullDeviceIdentifier } from "@/utils/deviceFingerprint";
 import { generateConfirmationCode } from "@/utils/emailService";
 import { loginSchema } from "@/lib/authValidation";
 import { saveAuthFlow } from "../store/authFlow.store";
+import { isDeviceTrusted, createDeviceChallenge } from "./device-verify.service";
 
 export interface LoginCredentials {
   email: string;
@@ -16,6 +17,8 @@ export interface LoginCredentials {
 export interface LoginResult {
   success: boolean;
   requiresVerification?: boolean;
+  requiresDeviceVerification?: boolean;
+  deviceChallengeId?: string;
   pendingUserId?: string;
   userId?: string;
   error?: string;
@@ -106,6 +109,43 @@ export async function loginWithEmail(credentials: LoginCredentials): Promise<Log
       success: false,
       requiresVerification: true,
       pendingUserId: authData.user.id,
+      profile,
+    };
+  }
+
+  // Check if device is trusted (after email is verified)
+  const deviceTrusted = await isDeviceTrusted(authData.user.id);
+  
+  if (!deviceTrusted) {
+    // Unknown or untrusted device - require step-up verification
+    // Sign out to prevent access before verification
+    await supabase.auth.signOut();
+    
+    // Create device challenge
+    const challengeResult = await createDeviceChallenge(
+      authData.user.id,
+      credentials.email,
+      profile?.full_name || profile?.nickname || 'Utilisateur'
+    );
+    
+    if (!challengeResult.success) {
+      return { success: false, error: challengeResult.error };
+    }
+    
+    // Persist device verification flow state
+    saveAuthFlow({
+      flow: 'verify-device',
+      pendingUserId: authData.user.id,
+      email: credentials.email,
+      deviceChallengeId: challengeResult.challengeId,
+      fullName: profile?.full_name,
+    });
+    
+    return {
+      success: false,
+      requiresDeviceVerification: true,
+      pendingUserId: authData.user.id,
+      deviceChallengeId: challengeResult.challengeId,
       profile,
     };
   }

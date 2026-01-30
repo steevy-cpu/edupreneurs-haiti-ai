@@ -10,7 +10,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSessionAuth } from "@/contexts/SessionAuthContext";
-import { getAuthFlow, hasPendingVerification, saveAuthFlow } from "../store/authFlow.store";
+import { getAuthFlow, hasPendingVerification, hasPendingDeviceVerification, saveAuthFlow } from "../store/authFlow.store";
 import { supabase } from "@/integrations/supabase/client";
 
 interface AuthRouteGuardProps {
@@ -31,9 +31,16 @@ export function AuthRouteGuard({ children }: AuthRouteGuardProps) {
       const authFlow = getAuthFlow();
       const currentPath = location.pathname;
 
-      // Rule 1: If there's a pending verification, always redirect to verify page
+      // Rule 1: If there's a pending email verification, always redirect to verify page
       if (hasPendingVerification() && currentPath !== '/auth/verify-email') {
         navigate('/auth/verify-email', { replace: true });
+        setIsChecking(false);
+        return;
+      }
+
+      // Rule 1b: If there's a pending device verification, redirect to device verify page
+      if (hasPendingDeviceVerification() && currentPath !== '/auth/verify-device') {
+        navigate('/auth/verify-device', { replace: true });
         setIsChecking(false);
         return;
       }

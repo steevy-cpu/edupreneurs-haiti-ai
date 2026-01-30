@@ -48,13 +48,21 @@ export default function LoginPage() {
       const result = await loginWithEmail({ email, password });
       
       if (result.requiresVerification) {
-        // AuthRouteGuard will handle redirect to verify page
         toast({
           title: "Email non vérifié",
           description: "Un nouveau code de vérification a été envoyé à votre adresse email.",
           variant: "destructive",
         });
         navigate('/auth/verify-email');
+        return;
+      }
+
+      if (result.requiresDeviceVerification) {
+        toast({
+          title: "Vérification requise",
+          description: "Un code de vérification a été envoyé pour confirmer cet appareil.",
+        });
+        navigate('/auth/verify-device');
         return;
       }
       
