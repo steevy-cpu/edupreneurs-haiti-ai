@@ -17,6 +17,7 @@ export interface LoginResult {
   success: boolean;
   requiresVerification?: boolean;
   pendingUserId?: string;
+  userId?: string;
   error?: string;
   profile?: {
     full_name?: string;
@@ -109,7 +110,7 @@ export async function loginWithEmail(credentials: LoginCredentials): Promise<Log
     };
   }
 
-  return { success: true, profile: profile || undefined };
+  return { success: true, userId: authData.user.id, profile: profile || undefined };
 }
 
 /**

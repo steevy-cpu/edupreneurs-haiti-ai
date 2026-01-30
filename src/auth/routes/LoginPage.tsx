@@ -63,11 +63,11 @@ export default function LoginPage() {
       }
 
       // Handle device tracking with trust preference (non-blocking)
-      if (result.profile) {
+      if (result.userId) {
         handleDeviceTracking(
-          result.profile.full_name || '', 
+          result.userId,
           email, 
-          result.profile.full_name || 'Utilisateur',
+          result.profile?.full_name || 'Utilisateur',
           rememberDevice
         );
       }
