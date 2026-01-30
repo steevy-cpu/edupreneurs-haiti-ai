@@ -502,10 +502,15 @@ export const BatchLessonGenerator = () => {
             return l;
           }));
 
-          // Update lesson in database
+          // Update lesson in database (clear regeneration flag if applicable)
+          const updatePayload: Record<string, any> = { [sectionName]: generatedContent };
+          if (sectionName === 'activites_interactives') {
+            updatePayload.needs_activities_regeneration = false;
+            updatePayload.activities_alignment_score = null;
+          }
           await supabase
             .from('lessons')
-            .update({ [sectionName]: generatedContent })
+            .update(updatePayload)
             .eq('id', lesson.id);
 
           // Log successful generation to analytics

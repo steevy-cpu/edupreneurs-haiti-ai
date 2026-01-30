@@ -171,7 +171,12 @@ export const LessonValidationPanel = ({ lesson, onRefresh }: LessonValidationPan
       if (data?.quizContent) {
         await supabase
           .from('lessons')
-          .update({ quiz_final: data.quizContent })
+          .update({ 
+            quiz_final: data.quizContent,
+            needs_quiz_regeneration: false,
+            content_alignment_score: null,
+            last_content_validated_at: null
+          })
           .eq('id', lesson.id);
 
         toast.success("Quiz régénéré avec succès");
@@ -203,7 +208,12 @@ export const LessonValidationPanel = ({ lesson, onRefresh }: LessonValidationPan
       if (data?.content) {
         await supabase
           .from('lessons')
-          .update({ activites_interactives: data.content })
+          .update({ 
+            activites_interactives: data.content,
+            needs_activities_regeneration: false,
+            activities_alignment_score: null,
+            last_activities_validated_at: null
+          })
           .eq('id', lesson.id);
 
         toast.success("Activités régénérées avec succès");

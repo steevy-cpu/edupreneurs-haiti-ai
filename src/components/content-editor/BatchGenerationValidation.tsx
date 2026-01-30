@@ -533,9 +533,15 @@ export const BatchGenerationValidation = () => {
             return l;
           }));
 
+          // Clear regeneration flag if applicable
+          const updatePayload: Record<string, any> = { [sectionName]: generatedContent };
+          if (sectionName === 'activites_interactives') {
+            updatePayload.needs_activities_regeneration = false;
+            updatePayload.activities_alignment_score = null;
+          }
           await supabase
             .from('lessons')
-            .update({ [sectionName]: generatedContent })
+            .update(updatePayload)
             .eq('id', lesson.id);
         }
       }
@@ -559,7 +565,11 @@ export const BatchGenerationValidation = () => {
               i === index ? { ...l, error: (l.error || '') + ' Quiz: ' + quizError.message } : l
             ));
           } else if (quizData?.quizContent) {
-            await supabase.from('lessons').update({ quiz_final: quizData.quizContent }).eq('id', lesson.id);
+            await supabase.from('lessons').update({ 
+              quiz_final: quizData.quizContent,
+              needs_quiz_regeneration: false,
+              content_alignment_score: null
+            }).eq('id', lesson.id);
             setLessonStatuses(prev => prev.map((l, i) => {
               if (i === index) {
                 return { 
@@ -1143,11 +1153,23 @@ export const BatchGenerationValidation = () => {
 
     setIsSavingRegeneration(true);
     try {
-      const updateField = regenerationPreview.type === 'quiz' ? 'quiz_final' : 'activites_interactives';
+      const isQuiz = regenerationPreview.type === 'quiz';
+      const updatePayload: Record<string, any> = {
+        [isQuiz ? 'quiz_final' : 'activites_interactives']: regenerationPreview.newContent
+      };
+      
+      // Clear regeneration flags and alignment scores
+      if (isQuiz) {
+        updatePayload.needs_quiz_regeneration = false;
+        updatePayload.content_alignment_score = null;
+      } else {
+        updatePayload.needs_activities_regeneration = false;
+        updatePayload.activities_alignment_score = null;
+      }
       
       const { error } = await supabase
         .from('lessons')
-        .update({ [updateField]: regenerationPreview.newContent })
+        .update(updatePayload)
         .eq('id', regenerationPreview.lessonId);
 
       if (error) throw error;
