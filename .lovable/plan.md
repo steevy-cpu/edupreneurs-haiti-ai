@@ -1,159 +1,90 @@
 
+# Fix SEO Metadata: Clarify EDUPRENEURS vs MENFP Relationship
 
-# Fix MonCash Payment: Add Success/Error URL Parameters
+## Problem
 
-## Problem Identified
+The search result title shows:
+> "EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA | **Plateforme MENFP**"
 
-Looking at the Bazik.io API response in the logs:
-
-```json
-{
-  "successUrl": "noolock.com",
-  "errorUrl": "noolock.com",
-  "redirectUrl": "http://moncashbutton.digicelgroup.com/..."
-}
-```
-
-The `successUrl` and `errorUrl` are set to "noolock.com" - this is an invalid placeholder URL configured in the Bazik.io dashboard. When MonCash tries to redirect after payment, it fails because these URLs are not valid.
+This phrase "Plateforme MENFP" implies that MENFP (Ministère de l'Éducation Nationale et de la Formation Professionnelle) created or owns EDUPRENEURS. In reality, EDUPRENEURS is an independent platform that **follows** the MENFP curriculum.
 
 ---
 
-## Solution
+## Files to Update
 
-Pass `successUrl` and `errorUrl` parameters in the API request to override the dashboard defaults. Based on the PGecom documentation (which uses the same Bazik.io API), these parameters are accepted:
+| File | Issue | Fix |
+|------|-------|-----|
+| `src/pages/Index.tsx` | Title says "Plateforme MENFP" | Change to clarify relationship |
 
-```json
-{
-  "gdes": 500,
-  "description": "Payment description",
-  "referenceId": "YOUR_ORDER_ID",
-  "successUrl": "https://your-app.com/payment/callback?orderId=XXX",
-  "errorUrl": "https://your-app.com/payment/callback?orderId=XXX&error=true"
-}
+---
+
+## Proposed Title Changes
+
+**Current (Line 83):**
 ```
+EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA | Plateforme MENFP
+```
+
+**Proposed Options:**
+
+1. **Option A - Focus on brand + benefit:**
+   ```
+   EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA | Cours en ligne
+   ```
+
+2. **Option B - Clarify the relationship:**
+   ```
+   EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA | Curriculum MENFP
+   ```
+
+3. **Option C - Match index.html pattern:**
+   ```
+   EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA | Éducation Haïti
+   ```
+
+**Recommendation: Option C** - This matches the existing `index.html` title pattern ("Éducation Haïti") and removes any ambiguity about MENFP ownership while still being SEO-relevant for Haiti education searches.
 
 ---
 
 ## Implementation
 
-### File to Update
+### File: `src/pages/Index.tsx`
 
-`supabase/functions/moncash-create-payment/index.ts`
+**Line 83 - Change:**
+```tsx
+// Before
+<title>EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA | Plateforme MENFP</title>
 
-### Changes Required
-
-1. Accept the app base URL (we'll use the published URL or derive it)
-2. Add `successUrl` and `errorUrl` to the Bazik API request
-
-**Before (lines 76-80):**
-```typescript
-body: JSON.stringify({
-  gdes: amount,
-  description: `Edupreneurs Payment - ${orderId}`,
-  referenceId: orderId,
-}),
+// After
+<title>EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA | Éducation Haïti</title>
 ```
 
-**After:**
-```typescript
-// Build callback URLs
-const baseUrl = 'https://edupreneurs-haiti-ai.lovable.app';
-const successUrl = `${baseUrl}/payment/callback?orderId=${orderId}`;
-const errorUrl = `${baseUrl}/payment/callback?orderId=${orderId}&error=true`;
+**Line 84 - The description is fine** (it says "Programme MENFP complet" which correctly implies following the program, not being owned by MENFP)
 
-body: JSON.stringify({
-  gdes: amount,
-  description: description || `Edupreneurs Payment - ${orderId}`,
-  referenceId: orderId,
-  successUrl: successUrl,
-  errorUrl: errorUrl,
-}),
-```
+**Line 87 - The og:description is also fine** (says "Programme MENFP complet")
 
 ---
 
-## Why This Matters
+## What Stays Unchanged
 
-| Without URLs | With URLs |
-|--------------|-----------|
-| Uses dashboard defaults ("noolock.com") | Uses our valid app URLs |
-| MonCash fails to redirect | MonCash redirects correctly |
-| User sees "System Error" | User sees payment result page |
+The following phrases are **correct** and should not be changed because they properly express that EDUPRENEURS *follows* the MENFP curriculum:
 
----
-
-## Updated Function Signature
-
-The `createBazikPayment` function will be updated to accept additional parameters:
-
-```typescript
-async function createBazikPayment(
-  token: string,
-  amount: number,
-  orderId: string,
-  description: string,
-  successUrl: string,
-  errorUrl: string
-): Promise<{ redirectUrl: string; bazikOrderId?: string; transactionId?: string }>
-```
+| Location | Phrase | Why it's correct |
+|----------|--------|------------------|
+| `index.html` line 23 | "Suivez le programme MENFP" | Says "follow the program" |
+| `index.html` line 111 | "suivant le programme MENFP" | Says "following the program" |
+| `Index.tsx` line 84 | "Programme MENFP complet" | Describes the curriculum, not ownership |
+| `AuthSidebar.tsx` line 29 | "Programme MENFP complet" | Feature description, not ownership |
 
 ---
 
-## Full Code Changes
+## SEO Impact
 
-### Updated `createBazikPayment` function:
-
-```typescript
-async function createBazikPayment(
-  token: string,
-  amount: number,
-  orderId: string,
-  description: string,
-  successUrl: string,
-  errorUrl: string
-): Promise<{ redirectUrl: string; bazikOrderId?: string; transactionId?: string }> {
-  console.log(`Creating Bazik MonCash payment: amount=${amount}, orderId=${orderId}`);
-  console.log(`Success URL: ${successUrl}`);
-  console.log(`Error URL: ${errorUrl}`);
-  
-  const response = await fetch(`${BAZIK_API_BASE}/moncash/token`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-    body: JSON.stringify({
-      gdes: amount,
-      description: description,
-      referenceId: orderId,
-      successUrl: successUrl,
-      errorUrl: errorUrl,
-    }),
-  });
-
-  // ... rest of the function unchanged
-}
-```
-
-### Updated function call in main handler:
-
-```typescript
-// Build callback URLs using the published app URL
-const baseUrl = 'https://edupreneurs-haiti-ai.lovable.app';
-const successUrl = `${baseUrl}/payment/callback?orderId=${finalOrderId}`;
-const errorUrl = `${baseUrl}/payment/callback?orderId=${finalOrderId}&error=true`;
-
-// Step 2: Create payment via Bazik.io with callback URLs
-const { redirectUrl, bazikOrderId, transactionId } = await createBazikPayment(
-  bazikToken,
-  amount,
-  finalOrderId,
-  description || 'Edupreneurs Payment',
-  successUrl,
-  errorUrl
-);
-```
+| Before | After |
+|--------|-------|
+| "Plateforme MENFP" suggests government ownership | "Éducation Haïti" is neutral and location-focused |
+| May confuse users about who created the platform | Clear that EDUPRENEURS is the brand |
+| Could have legal implications | No ambiguity |
 
 ---
 
@@ -161,30 +92,7 @@ const { redirectUrl, bazikOrderId, transactionId } = await createBazikPayment(
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Breaks existing functionality? | No | Adds optional parameters |
-| Works with existing data? | Yes | Same database structure |
-| Backward compatible? | Yes | Uses same API, adds parameters |
-| 3G optimized? | Yes | No extra network calls |
-| Security risk? | No | URLs are hardcoded to our domain |
-
----
-
-## Testing After Fix
-
-1. Go to `/payment-demo`
-2. Fill out the form and select a plan
-3. Click "Payer avec MonCash"
-4. You should be redirected to MonCash (no more "System Error")
-5. After payment, you should return to `/payment/callback?orderId=XXX`
-
----
-
-## Alternative: Make Base URL Configurable
-
-For flexibility between preview and production environments, we could also pass the base URL from the frontend. This would require:
-
-1. Frontend sends `callbackBaseUrl` in the request body
-2. Edge function uses this URL to build success/error URLs
-
-This approach would be more flexible for testing in preview vs production environments.
-
+| Breaks existing functionality? | No | Only metadata text change |
+| Backward compatible? | Yes | No code logic changes |
+| SEO impact? | Positive | Clearer branding, same keywords |
+| 3G optimized? | N/A | No performance impact |
