@@ -1,28 +1,50 @@
 /**
- * MonCash Webhook Handler
+ * MonCash Webhook Handler (Bazik.io Gateway)
  * 
  * Receives payment notifications from Bazik.io and updates payment status.
  * Server-to-server only - no CORS headers.
  * 
  * Security:
- * - HMAC-SHA256 signature verification
+ * - HMAC-SHA256 signature verification (Bazik format: v1=hmac(timestamp.eventId.body))
  * - Input validation
  * - Idempotent updates
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Signature verification using Web Crypto API
-async function verifyHmacSignature(
-  payload: string,
+// Extract Bazik-specific headers
+function extractBazikHeaders(headers: Headers): {
+  signature: string | null;
+  timestamp: string | null;
+  eventId: string | null;
+  env: string | null;
+} {
+  return {
+    signature: headers.get('x-bazik-signature'),
+    timestamp: headers.get('x-bazik-timestamp'),
+    eventId: headers.get('x-bazik-event-id'),
+    env: headers.get('x-bazik-env'),
+  };
+}
+
+// Verify Bazik.io webhook signature
+// Format: v1=hmac_sha256(timestamp.eventId.rawBody, secret)
+async function verifyBazikSignature(
+  rawBody: string,
   signature: string,
+  timestamp: string,
+  eventId: string,
   secret: string
 ): Promise<boolean> {
   try {
-    if (!signature || !secret) {
+    if (!signature || !timestamp || !eventId || !secret) {
+      console.error('Missing signature components');
       return false;
     }
 
+    // Build signed payload per Bazik.io docs: timestamp.eventId.rawBody
+    const signedPayload = `${timestamp}.${eventId}.${rawBody}`;
+    
     const encoder = new TextEncoder();
     const key = await crypto.subtle.importKey(
       "raw",
@@ -35,21 +57,24 @@ async function verifyHmacSignature(
     const signatureBuffer = await crypto.subtle.sign(
       "HMAC",
       key,
-      encoder.encode(payload)
+      encoder.encode(signedPayload)
     );
 
     const calculated = Array.from(new Uint8Array(signatureBuffer))
       .map(b => b.toString(16).padStart(2, '0'))
       .join('');
 
-    // Timing-safe comparison (length check + character comparison)
-    if (signature.length !== calculated.length) {
+    // Bazik uses v1= prefix
+    const expected = `v1=${calculated}`;
+
+    // Timing-safe comparison
+    if (signature.length !== expected.length) {
       return false;
     }
 
     let result = 0;
     for (let i = 0; i < signature.length; i++) {
-      result |= signature.charCodeAt(i) ^ calculated.charCodeAt(i);
+      result |= signature.charCodeAt(i) ^ expected.charCodeAt(i);
     }
 
     return result === 0;
@@ -59,34 +84,16 @@ async function verifyHmacSignature(
   }
 }
 
-// Extract signature from request headers (check multiple common header names)
-function extractSignature(headers: Headers): string | null {
-  const headerNames = [
-    'x-signature',
-    'x-webhook-signature',
-    'x-moncash-signature',
-    'x-bazik-signature',
-    'signature'
-  ];
-
-  for (const name of headerNames) {
-    const value = headers.get(name);
-    if (value) {
-      return value;
-    }
-  }
-
-  return null;
-}
-
-// Validate webhook payload structure
+// Validate Bazik.io webhook payload structure
 function validatePayload(data: unknown): { 
   valid: boolean; 
-  orderId?: string; 
+  referenceId?: string;   // Our internal order ID
+  bazikOrderId?: string;  // Bazik's order ID
   transactionId?: string;
   amount?: number;
-  payer?: string;
+  currency?: string;
   status?: string;
+  eventType?: string;
   error?: string;
 } {
   if (!data || typeof data !== 'object') {
@@ -95,24 +102,24 @@ function validatePayload(data: unknown): {
 
   const payload = data as Record<string, unknown>;
 
-  // orderId is required
-  if (!payload.orderId || typeof payload.orderId !== 'string') {
-    return { valid: false, error: 'Missing or invalid orderId' };
-  }
+  // Get event type (e.g., "payment.succeeded", "payment.failed")
+  const eventType = payload.type as string | undefined;
 
-  // Determine status from various possible field names
-  const statusField = payload.message || payload.status || payload.state;
-  const status = typeof statusField === 'string' 
-    ? statusField.toLowerCase() 
-    : undefined;
+  // referenceId is OUR order ID - this is what we passed when creating the payment
+  // This is the primary identifier we use to find our transaction
+  if (!payload.referenceId || typeof payload.referenceId !== 'string') {
+    return { valid: false, error: 'Missing referenceId' };
+  }
 
   return {
     valid: true,
-    orderId: payload.orderId as string,
-    transactionId: (payload.transactionId || payload.transaction_id) as string | undefined,
+    referenceId: payload.referenceId as string,      // OUR order ID
+    bazikOrderId: payload.orderId as string,         // Bazik's internal order ID
+    transactionId: payload.transactionId as string,  // Bazik transaction ID
     amount: typeof payload.amount === 'number' ? payload.amount : undefined,
-    payer: (payload.payer || payload.phone || payload.sender) as string | undefined,
-    status
+    currency: payload.currency as string | undefined,
+    status: payload.status as string | undefined,    // "successful", "failed", etc.
+    eventType,                                       // "payment.succeeded", etc.
   };
 }
 
@@ -147,28 +154,31 @@ serve(async (req) => {
       );
     }
 
-    // Extract and verify signature
-    const signature = extractSignature(req.headers);
+    // Extract Bazik-specific headers
+    const { signature, timestamp, eventId, env } = extractBazikHeaders(req.headers);
     
-    if (!signature) {
-      console.error('No signature header found');
+    console.log(`Webhook received from Bazik.io (env: ${env || 'unknown'})`);
+
+    // Verify signature if present
+    if (!signature || !timestamp || !eventId) {
+      console.error('Missing Bazik signature headers');
       return new Response(
-        JSON.stringify({ error: 'Missing signature' }),
+        JSON.stringify({ error: 'Missing signature headers' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    const isValid = await verifyHmacSignature(rawPayload, signature, webhookSecret);
+    const isValid = await verifyBazikSignature(rawPayload, signature, timestamp, eventId, webhookSecret);
     
     if (!isValid) {
-      console.error('Invalid webhook signature');
+      console.error('Invalid Bazik webhook signature');
       return new Response(
         JSON.stringify({ error: 'Invalid signature' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Webhook signature verified successfully');
+    console.log('Bazik webhook signature verified successfully');
 
     // Parse and validate payload
     let payload: unknown;
@@ -192,33 +202,43 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Processing webhook for orderId: ${validation.orderId}`);
+    console.log(`Processing webhook: type=${validation.eventType}, referenceId=${validation.referenceId}, status=${validation.status}`);
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Determine payment status
+    // Determine payment status from event type and status field
+    const successEvents = ['payment.succeeded', 'payment.completed'];
+    const failedEvents = ['payment.failed', 'payment.cancelled'];
     const successStatuses = ['successful', 'success', 'completed', 'paid', 'approved'];
     const failedStatuses = ['failed', 'failure', 'declined', 'rejected', 'cancelled'];
     
     let newStatus = 'pending';
-    if (validation.status && successStatuses.includes(validation.status)) {
+    
+    // Check event type first (more reliable)
+    if (validation.eventType && successEvents.includes(validation.eventType)) {
       newStatus = 'completed';
-    } else if (validation.status && failedStatuses.includes(validation.status)) {
+    } else if (validation.eventType && failedEvents.includes(validation.eventType)) {
+      newStatus = 'failed';
+    }
+    // Fall back to status field
+    else if (validation.status && successStatuses.includes(validation.status.toLowerCase())) {
+      newStatus = 'completed';
+    } else if (validation.status && failedStatuses.includes(validation.status.toLowerCase())) {
       newStatus = 'failed';
     }
 
-    // Update payment transaction (idempotent - won't fail if already updated)
+    // Look up transaction by OUR order_id (which is Bazik's referenceId)
     const { data: transaction, error: fetchError } = await supabase
       .from('payment_transactions')
       .select('id, status')
-      .eq('order_id', validation.orderId)
+      .eq('order_id', validation.referenceId)  // Use referenceId to find our transaction
       .single();
 
     if (fetchError || !transaction) {
-      console.error('Transaction not found:', validation.orderId);
+      console.error('Transaction not found for referenceId:', validation.referenceId);
       // Return 200 to prevent webhook retries for unknown orders
       return new Response(
         JSON.stringify({ 
@@ -236,12 +256,9 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       };
 
-      // Add transaction details if provided
+      // Add Bazik transaction details
       if (validation.transactionId) {
         updateData.transaction_id = validation.transactionId;
-      }
-      if (validation.payer) {
-        updateData.payer_phone = validation.payer;
       }
       if (newStatus === 'completed') {
         updateData.completed_at = new Date().toISOString();
@@ -260,16 +277,16 @@ serve(async (req) => {
         );
       }
 
-      console.log(`Transaction ${validation.orderId} updated to: ${newStatus}`);
+      console.log(`Transaction ${validation.referenceId} updated to: ${newStatus}`);
     } else {
-      console.log(`Transaction ${validation.orderId} already processed or not pending`);
+      console.log(`Transaction ${validation.referenceId} already processed or not pending`);
     }
 
     // Return 200 OK to acknowledge receipt
     return new Response(
       JSON.stringify({ 
         received: true,
-        orderId: validation.orderId,
+        referenceId: validation.referenceId,
         status: newStatus
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
