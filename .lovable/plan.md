@@ -1,193 +1,171 @@
 
 
-# Auth Flow Review - Issues Identified & Fixes Required
+# MonCash Integration Plan
 
-## Summary of Review
+## Overview
 
-I've analyzed the complete authentication flow across all components. While the overall architecture is solid, I found **1 CRITICAL issue** and **2 MINOR improvements** needed.
-
----
-
-## Issues Found
-
-### 🔴 CRITICAL: User Not Re-Authenticated After Device Verification
-
-| File | Issue | Impact |
-|------|-------|--------|
-| `src/auth/routes/VerifyDevicePage.tsx` (lines 98-117) | After successful OTP verification, the user is redirected to dashboard but **never re-authenticated** | User arrives at dashboard in logged-out state, gets kicked back to login |
-
-**The Problem:**
-
-In `login.service.ts` (line 122), when device verification is required, we call:
-```typescript
-await supabase.auth.signOut();
-```
-
-Then in `VerifyDevicePage.tsx` (lines 108-117), after successful verification:
-```typescript
-// Device verified - now sign in the user
-// The user was already authenticated but signed out for device verification
-// We need to re-authenticate them  ← Comment says we should, but we don't!
-toast({ ... });
-clearAuthFlow();
-navigate('/dashboard', { replace: true });  // ← Navigates without signing in!
-```
-
-**Result**: User is sent to `/dashboard` while `supabase.auth.signOut()` was called earlier. The AppShell or Dashboard will detect no session and redirect back to login.
-
-**Root Cause**: The `verify_device_challenge` RPC function only validates the code and updates the trusted devices table. It does NOT re-authenticate the user.
+Transition from simulated payment flow to a live MonCash integration with Bazik.io webhook support for automated payment status updates.
 
 ---
 
-### 🟡 MINOR: TTL for Device Verification Uses Wrong TTL
+## Current State Assessment
 
-| File | Line | Issue |
-|------|------|-------|
-| `src/auth/store/authFlow.store.ts` | 45-47 | Device verification flow (`verify-device`) gets 30min TTL instead of 60min |
-
-```typescript
-expiresAt: state.flow === 'verify' 
-  ? Date.now() + VERIFY_TTL_MS   // ← Only 'verify' gets 60min
-  : Date.now() + SIGNUP_TTL_MS,  // ← 'verify-device' gets 30min
-```
-
-The database challenge expires in 15 minutes, so this isn't breaking, but it's inconsistent.
-
----
-
-### 🟡 MINOR: Unused import in VerifyDevicePage
-
-| File | Line | Issue |
-|------|------|-------|
-| `src/auth/routes/VerifyDevicePage.tsx` | 15 | `saveAuthFlow` is imported but never used |
+| Component | Status | Notes |
+|-----------|--------|-------|
+| `moncash-create-payment` | Ready | Creates payment, stores in DB as pending |
+| `moncash-verify-payment` | Ready | Manual verification via API |
+| `moncash-check-status` | Ready | Checks local DB status |
+| `MONCASH_CLIENT_ID` | Configured | Sandbox credential |
+| `MONCASH_CLIENT_SECRET` | Configured | Sandbox credential |
+| `MONCASH_MODE` | Configured | sandbox/live |
+| `MONCASH_WEBHOOK_SECRET` | Configured | For signature verification |
+| **Webhook endpoint** | Missing | Needed for automatic status updates |
+| **Frontend integration** | Missing | Demo page uses setTimeout simulation |
+| **Return URL page** | Missing | Handle user return from MonCash portal |
 
 ---
 
-## Solution for Critical Issue
+## Implementation Tasks
 
-The device verification flow needs to store the user's credentials temporarily so we can re-authenticate after verification. There are two approaches:
+### Task 1: Create Webhook Edge Function
 
-### Option A: Store Password Temporarily (Less Secure)
-Store the password in sessionStorage during the challenge, then use it to sign in after verification. **Not recommended** - password in memory.
+**File**: `supabase/functions/moncash-webhook/index.ts`
 
-### Option B: Re-prompt for Password (Recommended)
-After successful device verification, show a simple password confirmation field and re-authenticate. This is the most secure approach.
+This server-to-server endpoint will:
 
-### Option C: Use Supabase Magic Link/Token (Most Elegant)
-Have the `verify_device_challenge` RPC return a one-time login token that can be exchanged for a session. **Requires significant backend changes**.
+1. **Receive POST requests** from Bazik.io when payment status changes
+2. **Verify HMAC-SHA256 signature** using `MONCASH_WEBHOOK_SECRET`
+3. **Update payment_transactions table** with:
+   - `status` = 'completed' or 'failed'
+   - `transaction_id` from MonCash
+   - `payer_phone` from MonCash
+   - `completed_at` timestamp
+4. **Return 200 OK** to acknowledge receipt
+5. **No CORS** (server-to-server only, not browser-accessible)
+
+Security features:
+- HMAC signature verification (timing-safe comparison)
+- Input validation with Zod
+- Idempotent updates (safe to retry)
+- Logging for debugging
 
 ---
 
-## Recommended Fix (Option B)
+### Task 2: Update Supabase Config
 
-### Step 1: Update VerifyDevicePage to Request Password After OTP Success
+**File**: `supabase/config.toml`
 
-Add a two-phase flow:
-1. Phase 1: Enter OTP code (current)
-2. Phase 2: Confirm password to complete login
+Add webhook configuration:
+```toml
+[functions.moncash-webhook]
+verify_jwt = false
+```
 
-### Step 2: Update VerifyDevicePage Logic
+This allows the webhook to receive requests from Bazik.io without JWT authentication.
 
+---
+
+### Task 3: Create Payment Callback Page
+
+**File**: `src/pages/PaymentCallback.tsx`
+
+When users complete payment on MonCash portal, they're redirected back to the app. This page will:
+
+1. Extract `orderId` from URL query parameters
+2. Poll `moncash-check-status` to verify payment completed
+3. Show loading state while checking
+4. Display success or failure message
+5. Redirect to dashboard or retry option
+
+---
+
+### Task 4: Add Callback Route
+
+**File**: `src/App.tsx`
+
+Add route for payment callback:
 ```typescript
-const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
-const [password, setPassword] = useState("");
+const PaymentCallback = lazy(() => import("./pages/PaymentCallback"));
 
-const handleVerifyCode = async (e: React.FormEvent) => {
-  // ... existing OTP validation ...
-  
-  const result = await verifyDeviceCode(challengeId, verificationCode, trustDevice);
-  
-  if (result.success) {
-    // Switch to password confirmation phase
-    setShowPasswordConfirm(true);
-    setIsVerifying(false);
-    toast({ 
-      title: "Code vérifié ✅", 
-      description: "Confirmez votre mot de passe pour continuer" 
-    });
-    return;
-  }
-  // ... error handling ...
-};
-
-const handlePasswordConfirm = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsVerifying(true);
-  
-  try {
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email!,
-      password: password,
-    });
-    
-    if (error) throw error;
-    
-    toast({ 
-      title: "Appareil vérifié ✅", 
-      description: trustDevice 
-        ? "Cet appareil est maintenant mémorisé" 
-        : "Vous êtes maintenant connecté" 
-    });
-    
-    clearAuthFlow();
-    navigate('/dashboard', { replace: true });
-  } catch (error: any) {
-    toast({ 
-      title: "Erreur", 
-      description: "Mot de passe incorrect", 
-      variant: "destructive" 
-    });
-    setIsVerifying(false);
-  }
-};
+// In routes
+<Route path="/payment/callback" element={
+  <Suspense fallback={<GenericPageSkeleton />}>
+    <PaymentCallback />
+  </Suspense>
+} />
 ```
 
-### Step 3: Update UI to Show Password Field After OTP Success
+---
 
-Add a conditional render for the password confirmation phase:
+### Task 5: Wire Up Frontend to Real APIs
 
-```tsx
-{showPasswordConfirm ? (
-  <form onSubmit={handlePasswordConfirm}>
-    <div className="text-center mb-6">
-      <h2 className="text-xl font-bold mb-2">Dernière étape 🔒</h2>
-      <p className="text-sm text-muted-foreground">
-        Confirmez votre mot de passe pour finaliser la connexion
-      </p>
-    </div>
-    
-    <div className="space-y-2">
-      <Label>Mot de passe</Label>
-      <Input 
-        type="password" 
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        autoComplete="current-password"
-      />
-    </div>
-    
-    <Button type="submit" disabled={isVerifying} className="w-full mt-4">
-      {isVerifying ? <Loader2 className="animate-spin" /> : "Se connecter"}
-    </Button>
-  </form>
-) : (
-  // ... existing OTP form ...
-)}
+**File**: `src/pages/PaymentDemo.tsx`
+
+Update the demo page to:
+
+1. **Call real API** instead of simulation:
+   ```typescript
+   const response = await supabase.functions.invoke('moncash-create-payment', {
+     body: { amount: selectedPlan.price, description: `Plan ${selectedPlan.name}` }
+   });
+   ```
+
+2. **Redirect to MonCash portal** using the returned `redirectUrl`
+
+3. **Set return URL** so users come back to `/payment/callback?orderId=XXX`
+
+---
+
+## Data Flow Diagram
+
+```text
+User Flow:
+┌──────────┐    1. Select Plan    ┌──────────────┐
+│   User   │────────────────────▶│  PaymentDemo │
+└──────────┘                      └──────┬───────┘
+                                         │
+                                  2. Call Edge Function
+                                         │
+                                         ▼
+                           ┌──────────────────────────┐
+                           │  moncash-create-payment  │
+                           │  (stores pending tx)     │
+                           └────────────┬─────────────┘
+                                        │
+                                 3. Redirect URL
+                                        │
+                                        ▼
+                              ┌───────────────────┐
+                              │  MonCash Portal   │
+                              │  (User pays)      │
+                              └────────┬──────────┘
+                                       │
+                    ┌──────────────────┴──────────────────┐
+                    │                                     │
+          4a. Webhook (async)                   4b. User redirect
+                    │                                     │
+                    ▼                                     ▼
+         ┌──────────────────┐                  ┌──────────────────┐
+         │ moncash-webhook  │                  │ PaymentCallback  │
+         │ (updates status) │                  │ (checks status)  │
+         └────────┬─────────┘                  └────────┬─────────┘
+                  │                                     │
+                  └──────────────┬──────────────────────┘
+                                 ▼
+                      ┌──────────────────────┐
+                      │ payment_transactions │
+                      │   status=completed   │
+                      └──────────────────────┘
 ```
 
-### Step 4: Fix TTL in authFlow.store.ts
+---
 
-Update the expiration logic to include `verify-device`:
+## Files to Create
 
-```typescript
-expiresAt: (state.flow === 'verify' || state.flow === 'verify-device')
-  ? Date.now() + VERIFY_TTL_MS 
-  : Date.now() + SIGNUP_TTL_MS,
-```
-
-### Step 5: Clean Up Unused Import
-
-Remove `saveAuthFlow` from imports in VerifyDevicePage.tsx.
+| File | Purpose |
+|------|---------|
+| `supabase/functions/moncash-webhook/index.ts` | Webhook handler for Bazik.io |
+| `src/pages/PaymentCallback.tsx` | Handle return from MonCash portal |
 
 ---
 
@@ -195,8 +173,76 @@ Remove `saveAuthFlow` from imports in VerifyDevicePage.tsx.
 
 | File | Changes |
 |------|---------|
-| `src/auth/routes/VerifyDevicePage.tsx` | Add password confirmation phase, fix imports |
-| `src/auth/store/authFlow.store.ts` | Fix TTL for `verify-device` flow |
+| `supabase/config.toml` | Add `moncash-webhook` config |
+| `src/App.tsx` | Add `/payment/callback` route |
+| `src/pages/PaymentDemo.tsx` | Replace simulation with real API calls |
+
+---
+
+## Technical Details
+
+### Webhook Signature Verification
+
+```typescript
+async function verifyHmacSignature(
+  payload: string,
+  signature: string,
+  secret: string
+): Promise<boolean> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  
+  const signatureBuffer = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(payload)
+  );
+  
+  const calculated = Array.from(new Uint8Array(signatureBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+  
+  // Timing-safe comparison
+  return signature.length === calculated.length && 
+    signature === calculated;
+}
+```
+
+### Expected Webhook Payload
+
+The webhook handler will check multiple common header names for the signature:
+- `X-Signature`
+- `X-Webhook-Signature`
+- `X-MonCash-Signature`
+
+Expected payload structure:
+```json
+{
+  "transactionId": "123456789",
+  "orderId": "EDU-ABC123",
+  "amount": 500,
+  "cost": 500,
+  "payer": "50937001234",
+  "message": "successful",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+---
+
+## Post-Deployment Configuration
+
+After implementation, configure this webhook URL in the Bazik.io dashboard:
+
+```text
+https://xdyavylcmucjpueybdku.supabase.co/functions/v1/moncash-webhook
+```
 
 ---
 
@@ -204,25 +250,20 @@ Remove `saveAuthFlow` from imports in VerifyDevicePage.tsx.
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Breaks existing email verification? | ✅ No | Separate flow, unchanged |
-| Breaks login for trusted devices? | ✅ No | Trusted devices skip verification entirely |
-| Works with existing data? | ✅ Yes | No database changes needed |
-| Backward compatible? | ✅ Yes | Existing users unaffected |
-| 3G optimized? | ✅ Yes | Single extra field, minimal overhead |
+| Breaks existing functionality? | No | New endpoint, existing code unchanged until we wire up |
+| Works with existing data? | Yes | Updates existing `payment_transactions` table |
+| Backward compatible? | Yes | Demo page simulation still works until final switch |
+| 3G optimized? | Yes | Lightweight JSON responses, minimal polling |
+| Security implemented? | Yes | HMAC signature verification, no raw SQL |
+| Edge cases handled? | Yes | Duplicate webhooks, expired transactions |
 
 ---
 
-## What Works Correctly
+## Testing Strategy
 
-| Component | Status |
-|-----------|--------|
-| Email verification flow | ✅ Working |
-| Login with trusted device | ✅ Working |
-| Device fingerprinting | ✅ Working |
-| OTP generation and validation | ✅ Working |
-| AuthRouteGuard redirects | ✅ Working |
-| Route registration | ✅ Working |
-| Edge function email sending | ✅ Working |
-| Rate limiting | ✅ Working |
-| RPC functions | ✅ Working |
+1. Deploy webhook function
+2. Create a test payment with sandbox credentials
+3. Check edge function logs for webhook receipt
+4. Verify database status update
+5. Test full user flow from demo page to callback
 
