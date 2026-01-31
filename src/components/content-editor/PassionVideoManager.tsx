@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Save, Trash2, Youtube, Music, Palette, Brain, BookOpen, CheckCircle2, AlertCircle, ExternalLink, Video, ChevronRight, Plus, Edit2, FolderOpen, Ban, Unlock, Film } from "lucide-react";
+import { Loader2, Save, Trash2, Youtube, Music, Palette, Brain, BookOpen, CheckCircle2, AlertCircle, ExternalLink, Video, ChevronRight, Plus, Edit2, FolderOpen, Ban, Unlock, Film, Award, Users, Heart, Lightbulb } from "lucide-react";
 import { useAllPassionVideos, useSavePassionVideo, useDeletePassionVideo, type PassionVideo } from "@/hooks/usePassionVideos";
 import { 
   useAllPassionRecommendedVideos, 
@@ -18,7 +18,21 @@ import {
   type PassionRecommendedVideo,
   type BannedYouTubeVideo
 } from "@/hooks/usePassionRecommendedVideos";
-import { musicActivities, artsActivities, chessActivities, literatureActivities, type ActivityContent, type ModuleContent } from "@/data/passionActivities";
+import { 
+  musicActivities, 
+  artsActivities, 
+  chessActivities, 
+  literatureActivities, 
+  rightsActivities, 
+  citizenshipActivities, 
+  peaceActivities, 
+  personalActivities,
+  type ActivityContent, 
+  type ModuleContent 
+} from "@/data/passionActivities";
+
+// Content type for switching between passion, civic, and personal
+type ContentType = 'passion' | 'civic' | 'personal';
 
 // Passion categories configuration
 const passionCategories = [
@@ -26,6 +40,18 @@ const passionCategories = [
   { id: 'arts', title: 'Arts Plastiques', icon: Palette, emoji: '🎨', activities: artsActivities },
   { id: 'chess', title: 'Échecs', icon: Brain, emoji: '♟️', activities: chessActivities },
   { id: 'literature', title: 'Littérature', icon: BookOpen, emoji: '📖', activities: literatureActivities },
+];
+
+// Civic categories configuration
+const civicCategories = [
+  { id: 'rights', title: 'Droits Fondamentaux', icon: Award, emoji: '🏛️', activities: rightsActivities },
+  { id: 'citizenship', title: 'Citoyenneté Active', icon: Users, emoji: '🗳️', activities: citizenshipActivities },
+  { id: 'peace', title: 'Culture de la Paix', icon: Heart, emoji: '☮️', activities: peaceActivities },
+];
+
+// Personal categories configuration
+const personalCategories = [
+  { id: 'personal', title: 'Croissance Personnelle', icon: Lightbulb, emoji: '🌱', activities: personalActivities },
 ];
 
 const extractYouTubeVideoId = (url: string): string | null => {
@@ -41,9 +67,10 @@ const extractYouTubeVideoId = (url: string): string | null => {
   return null;
 };
 
-// Helper to get activity title from category data
+// Helper to get activity title from category data - searches all category types
 const getActivityTitle = (categoryId: string, moduleId: string, activityId: string): string => {
-  const category = passionCategories.find(c => c.id === categoryId);
+  const allCategories = [...passionCategories, ...civicCategories, ...personalCategories];
+  const category = allCategories.find(c => c.id === categoryId);
   if (!category) return activityId;
   const module = category.activities[moduleId];
   if (!module) return activityId;
@@ -51,9 +78,10 @@ const getActivityTitle = (categoryId: string, moduleId: string, activityId: stri
   return activity?.title || activityId;
 };
 
-// Helper to get module title from category data
+// Helper to get module title from category data - searches all category types
 const getModuleTitle = (categoryId: string, moduleId: string): string => {
-  const category = passionCategories.find(c => c.id === categoryId);
+  const allCategories = [...passionCategories, ...civicCategories, ...personalCategories];
+  const category = allCategories.find(c => c.id === categoryId);
   if (!category) return moduleId;
   const module = category.activities[moduleId];
   return module?.title || moduleId;
@@ -93,6 +121,7 @@ interface RecommendedTreeCategory {
 
 export const PassionVideoManager = () => {
   const [activeTab, setActiveTab] = useState<string>('activities');
+  const [contentType, setContentType] = useState<ContentType>('passion');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedModule, setSelectedModule] = useState<string>('');
   const [videoUrls, setVideoUrls] = useState<Record<string, string>>({});
@@ -127,9 +156,25 @@ export const PassionVideoManager = () => {
   const { data: bannedVideos, isLoading: loadingBanned } = useBannedYouTubeVideos();
   const unbanVideo = useUnbanYouTubeVideo();
 
+  // Get current categories based on content type
+  const currentCategories = useMemo(() => {
+    switch (contentType) {
+      case 'civic': return civicCategories;
+      case 'personal': return personalCategories;
+      default: return passionCategories;
+    }
+  }, [contentType]);
+
+  // Content type labels for UI
+  const contentTypeLabels = {
+    passion: 'Passions',
+    civic: 'Civique',
+    personal: 'Personnel'
+  };
+
   // Build hierarchical tree structure for activity videos
   const categoryTree = useMemo((): TreeCategory[] => {
-    return passionCategories.map(category => {
+    return currentCategories.map(category => {
       const modules = Object.values(category.activities).map((module: ModuleContent) => {
         const videoActivities = module.activities.filter(a => a.type === 'video');
         const configuredVideos = allVideos?.filter(
@@ -159,11 +204,11 @@ export const PassionVideoManager = () => {
         totalCount: totalVideos
       };
     });
-  }, [allVideos]);
+  }, [allVideos, currentCategories]);
 
   // Build tree structure for recommended videos
   const recommendedTree = useMemo((): RecommendedTreeCategory[] => {
-    return passionCategories.map(category => {
+    return currentCategories.map(category => {
       const modules = Object.values(category.activities).map((module: ModuleContent) => {
         const videos = allRecommendedVideos?.filter(
           (v: PassionRecommendedVideo) => 
@@ -188,39 +233,39 @@ export const PassionVideoManager = () => {
         totalVideos
       };
     });
-  }, [allRecommendedVideos]);
+  }, [allRecommendedVideos, currentCategories]);
 
   // Get modules for selected category
   const modules = useMemo(() => {
     if (!selectedCategory) return [];
-    const category = passionCategories.find(c => c.id === selectedCategory);
+    const category = currentCategories.find(c => c.id === selectedCategory);
     if (!category) return [];
     return Object.values(category.activities);
-  }, [selectedCategory]);
+  }, [selectedCategory, currentCategories]);
 
   // Get modules for recommended videos category
   const recModules = useMemo(() => {
     if (!recCategory) return [];
-    const category = passionCategories.find(c => c.id === recCategory);
+    const category = currentCategories.find(c => c.id === recCategory);
     if (!category) return [];
     return Object.values(category.activities);
-  }, [recCategory]);
+  }, [recCategory, currentCategories]);
 
   // Get video activities for selected module
   const videoActivities = useMemo(() => {
     if (!selectedCategory || !selectedModule) return [];
-    const category = passionCategories.find(c => c.id === selectedCategory);
+    const category = currentCategories.find(c => c.id === selectedCategory);
     if (!category) return [];
     const module = category.activities[selectedModule];
     if (!module) return [];
     return module.activities.filter(a => a.type === 'video');
-  }, [selectedCategory, selectedModule]);
+  }, [selectedCategory, selectedModule, currentCategories]);
 
   // Calculate video counts per module for selected category
   const moduleVideoCounts = useMemo(() => {
     if (!allVideos || !selectedCategory) return {};
     const counts: Record<string, number> = {};
-    const category = passionCategories.find(c => c.id === selectedCategory);
+    const category = currentCategories.find(c => c.id === selectedCategory);
     if (!category) return counts;
     
     Object.keys(category.activities).forEach(moduleId => {
@@ -229,11 +274,11 @@ export const PassionVideoManager = () => {
       ).length;
     });
     return counts;
-  }, [allVideos, selectedCategory]);
+  }, [allVideos, selectedCategory, currentCategories]);
 
   // Get total video activities count for a module
   const getModuleVideoActivityCount = (categoryId: string, moduleId: string): number => {
-    const category = passionCategories.find(c => c.id === categoryId);
+    const category = currentCategories.find(c => c.id === categoryId);
     if (!category) return 0;
     const module = category.activities[moduleId];
     if (!module) return 0;
@@ -451,7 +496,7 @@ export const PassionVideoManager = () => {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Video className="h-5 w-5 text-primary" />
-                Vidéos Passion - Vue d'ensemble
+                Vidéos {contentTypeLabels[contentType]} - Vue d'ensemble
               </CardTitle>
               <CardDescription className="mt-1">
                 Gérez les vidéos d'activités, recommandées et bannies
@@ -473,6 +518,59 @@ export const PassionVideoManager = () => {
             </div>
           </div>
         </CardHeader>
+      </Card>
+
+      {/* Content Type Selector */}
+      <Card className="border-2 border-primary/20">
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <span className="text-sm font-medium whitespace-nowrap">Type de contenu:</span>
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                variant={contentType === 'passion' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setContentType('passion');
+                  setSelectedCategory('');
+                  setSelectedModule('');
+                  setRecCategory('');
+                  setRecModule('');
+                }}
+              >
+                <Music className="h-4 w-4 mr-2" />
+                Passions ({passionCategories.length})
+              </Button>
+              <Button
+                variant={contentType === 'civic' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setContentType('civic');
+                  setSelectedCategory('');
+                  setSelectedModule('');
+                  setRecCategory('');
+                  setRecModule('');
+                }}
+              >
+                <Award className="h-4 w-4 mr-2" />
+                Civique ({civicCategories.length})
+              </Button>
+              <Button
+                variant={contentType === 'personal' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setContentType('personal');
+                  setSelectedCategory('');
+                  setSelectedModule('');
+                  setRecCategory('');
+                  setRecModule('');
+                }}
+              >
+                <Lightbulb className="h-4 w-4 mr-2" />
+                Personnel ({personalCategories.length})
+              </Button>
+            </div>
+          </div>
+        </CardContent>
       </Card>
 
       {/* Main Tabs */}
@@ -543,7 +641,7 @@ export const PassionVideoManager = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FolderOpen className="h-5 w-5 text-primary" />
-                Structure des Passions
+                Structure des {contentTypeLabels[contentType]}
               </CardTitle>
               <CardDescription>
                 Vue hiérarchique: Catégorie → Module → Activités vidéo

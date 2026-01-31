@@ -1,4 +1,8 @@
 // Real educational activities for each passion category
+// Also imports civic and personal activities for unified access
+
+import { rightsActivities, citizenshipActivities, peaceActivities } from './civicActivities';
+import { personalActivities } from './personalActivities';
 
 export interface ActivityContent {
   id: string;
@@ -1215,10 +1219,12 @@ export const literatureActivities: CategoryContent = {
 };
 
 // Helper function to get activities for a category and module
+// Supports all 8 categories: 4 passion, 3 civic, 1 personal
 export const getActivitiesForModule = (categoryId: string, moduleId: string): ActivityContent[] | null => {
   let categoryData: CategoryContent | undefined;
   
   switch (categoryId) {
+    // Passion categories
     case "music":
       categoryData = musicActivities;
       break;
@@ -1231,6 +1237,20 @@ export const getActivitiesForModule = (categoryId: string, moduleId: string): Ac
     case "literature":
       categoryData = literatureActivities;
       break;
+    // Civic categories
+    case "rights":
+      categoryData = rightsActivities;
+      break;
+    case "citizenship":
+      categoryData = citizenshipActivities;
+      break;
+    case "peace":
+      categoryData = peaceActivities;
+      break;
+    // Personal category
+    case "personal":
+      categoryData = personalActivities;
+      break;
     default:
       return null;
   }
@@ -1241,5 +1261,13 @@ export const getActivitiesForModule = (categoryId: string, moduleId: string): Ac
 
 // Get all category IDs that have real activities
 export const getCategoriesWithActivities = (): string[] => {
-  return ["music", "arts", "chess", "literature"];
+  return [
+    "music", "arts", "chess", "literature",  // Passion
+    "rights", "citizenship", "peace",         // Civic
+    "personal"                                 // Personal
+  ];
 };
+
+// Re-export civic and personal activities for external use
+export { rightsActivities, citizenshipActivities, peaceActivities } from './civicActivities';
+export { personalActivities } from './personalActivities';
