@@ -1,10 +1,11 @@
 /**
- * Security-Hardened: MonCash Create Payment
+ * Security-Hardened: MonCash Create Payment via Bazik.io
  * 
  * Features:
  * - Rate limiting (30 req/min for auth, 5 req/min for anon)
  * - Input validation
  * - Security headers
+ * - Bazik.io API integration
  */
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -13,19 +14,8 @@ import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../
 import { validateInput, paymentSchema, validationErrorResponse } from "../_shared/validation.ts";
 import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 
-// MonCash API endpoints
-const MONCASH_ENDPOINTS = {
-  sandbox: {
-    auth: 'https://sandbox.moncashbutton.digicelgroup.com/Api/oauth/token',
-    payment: 'https://sandbox.moncashbutton.digicelgroup.com/Api/v1/CreatePayment',
-    redirect: 'https://sandbox.moncashbutton.digicelgroup.com/Moncash-middleware/Payment/Redirect?token=',
-  },
-  live: {
-    auth: 'https://moncashbutton.digicelgroup.com/Api/oauth/token',
-    payment: 'https://moncashbutton.digicelgroup.com/Api/v1/CreatePayment',
-    redirect: 'https://moncashbutton.digicelgroup.com/Moncash-middleware/Payment/Redirect?token=',
-  }
-};
+// Bazik.io API configuration
+const BAZIK_API_BASE = 'https://api.bazik.io';
 
 // Generate unique order ID
 function generateOrderId(): string {
@@ -34,41 +24,48 @@ function generateOrderId(): string {
   return `EDU-${timestamp}-${randomPart}`.toUpperCase();
 }
 
-// Get OAuth token from MonCash
-async function getMonCashToken(clientId: string, clientSecret: string, mode: string): Promise<string> {
-  const endpoints = mode === 'live' ? MONCASH_ENDPOINTS.live : MONCASH_ENDPOINTS.sandbox;
+// Get Bazik.io access token
+async function getBazikToken(userID: string, secretKey: string): Promise<string> {
+  console.log('Authenticating with Bazik.io...');
   
-  const credentials = btoa(`${clientId}:${clientSecret}`);
-  
-  const response = await fetch(endpoints.auth, {
+  const response = await fetch(`${BAZIK_API_BASE}/token`, {
     method: 'POST',
     headers: {
-      'Authorization': `Basic ${credentials}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
-    body: 'scope=read,write&grant_type=client_credentials',
+    body: JSON.stringify({
+      userID,
+      secretKey,
+    }),
   });
 
   if (!response.ok) {
-    console.error('MonCash auth error');
-    throw new Error(`Failed to authenticate with MonCash: ${response.status}`);
+    const errorText = await response.text();
+    console.error('Bazik auth error:', response.status, errorText);
+    throw new Error(`Failed to authenticate with Bazik.io: ${response.status}`);
   }
 
   const data = await response.json();
+  
+  if (!data.access_token) {
+    console.error('No access token in Bazik response:', data);
+    throw new Error('No access token received from Bazik.io');
+  }
+  
+  console.log('Bazik.io authentication successful');
   return data.access_token;
 }
 
-// Create payment with MonCash
-async function createMonCashPayment(
+// Create payment via Bazik.io MonCash endpoint
+async function createBazikPayment(
   token: string,
   amount: number,
-  orderId: string,
-  mode: string
-): Promise<{ paymentToken: string; redirectUrl: string }> {
-  const endpoints = mode === 'live' ? MONCASH_ENDPOINTS.live : MONCASH_ENDPOINTS.sandbox;
+  orderId: string
+): Promise<{ redirectUrl: string; referenceId?: string }> {
+  console.log(`Creating Bazik MonCash payment: amount=${amount}, orderId=${orderId}`);
   
-  const response = await fetch(endpoints.payment, {
+  const response = await fetch(`${BAZIK_API_BASE}/moncash/token`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -76,30 +73,31 @@ async function createMonCashPayment(
       'Accept': 'application/json',
     },
     body: JSON.stringify({
-      amount: amount,
-      orderId: orderId,
+      amount,
+      orderId,
     }),
   });
 
   if (!response.ok) {
-    console.error('MonCash payment creation error');
-    throw new Error(`Failed to create MonCash payment: ${response.status}`);
+    const errorText = await response.text();
+    console.error('Bazik payment creation error:', response.status, errorText);
+    throw new Error(`Failed to create payment via Bazik.io: ${response.status}`);
   }
 
   const data = await response.json();
+  console.log('Bazik payment response:', JSON.stringify(data));
   
-  if (data.status !== 'Success') {
-    throw new Error(data.message || 'Payment creation failed');
-  }
-
-  const paymentToken = data.payment_token?.token;
-  if (!paymentToken) {
-    throw new Error('No payment token received from MonCash');
+  // Handle Bazik.io response format
+  const redirectUrl = data.redirectUrl || data.redirect_url || data.payment_url;
+  
+  if (!redirectUrl) {
+    console.error('No redirect URL in Bazik response:', data);
+    throw new Error('No redirect URL received from Bazik.io');
   }
 
   return {
-    paymentToken,
-    redirectUrl: `${endpoints.redirect}${paymentToken}`,
+    redirectUrl,
+    referenceId: data.referenceId || data.reference_id || data.transactionId,
   };
 }
 
@@ -116,13 +114,14 @@ serve(async (req) => {
   };
 
   try {
-    // Get MonCash credentials from secrets
-    const clientId = Deno.env.get('MONCASH_CLIENT_ID');
-    const clientSecret = Deno.env.get('MONCASH_CLIENT_SECRET');
-    const mode = Deno.env.get('MONCASH_MODE') || 'sandbox';
+    // Get Bazik.io credentials from secrets
+    // MONCASH_CLIENT_ID should contain Bazik userID (e.g., bzk_xxx)
+    // MONCASH_CLIENT_SECRET should contain Bazik secretKey (e.g., sk_xxx)
+    const userID = Deno.env.get('MONCASH_CLIENT_ID');
+    const secretKey = Deno.env.get('MONCASH_CLIENT_SECRET');
 
-    if (!clientId || !clientSecret) {
-      console.error('MonCash credentials not configured');
+    if (!userID || !secretKey) {
+      console.error('Bazik.io credentials not configured');
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -185,15 +184,15 @@ serve(async (req) => {
     // Generate or use provided order ID
     const finalOrderId = orderId || generateOrderId();
 
-    console.log(`Creating MonCash payment: amount=${amount}, orderId=${finalOrderId}, mode=${mode}`);
+    console.log(`Processing payment request: amount=${amount}, orderId=${finalOrderId}`);
 
-    // Get OAuth token
-    const token = await getMonCashToken(clientId, clientSecret, mode);
-    console.log('MonCash authentication successful');
+    // Step 1: Get Bazik.io access token
+    const bazikToken = await getBazikToken(userID, secretKey);
 
-    // Create payment
-    const { paymentToken, redirectUrl } = await createMonCashPayment(token, amount, finalOrderId, mode);
-    console.log('MonCash payment created');
+    // Step 2: Create payment via Bazik.io
+    const { redirectUrl, referenceId } = await createBazikPayment(bazikToken, amount, finalOrderId);
+    
+    console.log('Payment created successfully, redirectUrl:', redirectUrl);
 
     // Store pending transaction in database
     await supabase
@@ -205,9 +204,12 @@ serve(async (req) => {
         currency: 'HTG',
         provider: 'moncash',
         status: 'pending',
-        payment_token: paymentToken,
+        payment_token: referenceId || finalOrderId,
         description: description || 'Edupreneurs Payment',
-        metadata: { mode },
+        metadata: { 
+          gateway: 'bazik.io',
+          referenceId 
+        },
       });
 
     return new Response(
@@ -215,7 +217,7 @@ serve(async (req) => {
         success: true,
         orderId: finalOrderId,
         redirectUrl: redirectUrl,
-        paymentToken: paymentToken,
+        referenceId: referenceId,
       }),
       { headers: responseHeaders }
     );
