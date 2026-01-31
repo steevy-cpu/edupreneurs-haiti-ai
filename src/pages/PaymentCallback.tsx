@@ -57,13 +57,13 @@ export default function PaymentCallback() {
         return;
       }
 
-      const paymentStatus = data?.status;
+      const paymentStatus = data?.transaction?.status;
 
       if (paymentStatus === 'completed') {
         setStatus('completed');
       } else if (paymentStatus === 'failed') {
         setStatus('failed');
-        setErrorMessage(data?.message || 'Le paiement a échoué');
+        setErrorMessage(data?.transaction?.description || data?.error || 'Le paiement a échoué');
       } else if (paymentStatus === 'pending') {
         // Still pending, continue polling if we haven't exceeded max attempts
         if (attempts < maxAttempts) {
