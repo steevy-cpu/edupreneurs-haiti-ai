@@ -1,143 +1,91 @@
 
-
-# Fix: Video Double-Save Issue in Content Editor
+# Fix: MonCash Sandbox Mode - Response Path Mismatch
 
 ## Problem Identified
 
-Super users must save a video twice for it to appear in the UI because the query cache invalidation is not awaited. The mutation completes and UI updates before the refetch finishes.
+The sandbox mode IS working correctly - Bazik.io creates payments in sandbox mode and returns a redirect URL. However, when the user returns from MonCash to the callback page, the status check fails because of a **response path mismatch**:
 
-## Root Cause Analysis
+| Component | Expects | Receives |
+|-----------|---------|----------|
+| `PaymentCallback.tsx` | `data.status` | `data.transaction.status` |
 
-In `src/hooks/usePassionVideos.ts`, the `onSuccess` callback for both `useSavePassionVideo` and `useDeletePassionVideo` mutations does NOT await the invalidation promises:
+### Evidence from Logs
 
-```typescript
-// CURRENT CODE (lines 91-95)
-onSuccess: () => {
-  queryClient.invalidateQueries({ queryKey: ['passion-videos'] });      // Fire & forget
-  queryClient.invalidateQueries({ queryKey: ['passion-videos-all'] });  // Fire & forget
-  toast.success("Vidéo enregistrée avec succès");
-},
+```javascript
+// moncash-check-status returns:
+{
+  success: true,
+  transaction: {
+    orderId: "EDU-ML2K5ZG1-PM0E1X",
+    status: "pending",  // <-- Status is nested here
+    ...
+  }
+}
+
+// PaymentCallback.tsx reads:
+const paymentStatus = data?.status;  // <-- Reads wrong path (undefined)
 ```
 
-When `mutateAsync` resolves, the refetch is still in-flight. The UI reacts to the mutation completing, but `allVideos` data hasn't updated yet.
-
-### Timeline of First Save (Broken)
-
-```text
-1. User clicks Save
-2. mutateAsync sends data to Supabase
-3. Supabase responds with success
-4. onSuccess fires:
-   - invalidateQueries() called (starts refetch in background)
-   - toast.success() shows
-5. mutateAsync Promise resolves
-6. Component's finally block: setSavingActivity(null)
-7. UI shows "saved" but allVideos is STILL the old data
-8. ~200ms later: refetch completes, allVideos updates, but UI already showed "not configured"
-```
-
-### Timeline of Second Save (Works)
-
-```text
-1. User clicks Save again
-2. This time allVideos ALREADY has the data from the background refetch
-3. UI correctly shows configured status
-```
-
----
-
-## Solution
-
-Make the `onSuccess` callback `async` and await the invalidation promises using `Promise.all`. This ensures the mutation doesn't resolve until the fresh data is available.
+This causes `paymentStatus` to be `undefined`, which triggers the "unknown status" error path.
 
 ---
 
 ## Files to Modify
 
-### 1. `src/hooks/usePassionVideos.ts`
+### 1. `src/pages/PaymentCallback.tsx`
 
-**Change 1: useSavePassionVideo - lines 91-95**
+**Fix the response path to read from `data.transaction.status` instead of `data.status`:**
+
+```typescript
+// Line 60 - BEFORE
+const paymentStatus = data?.status;
+
+// Line 60 - AFTER  
+const paymentStatus = data?.transaction?.status;
+```
+
+**Also update error message handling (line 65-66):**
 
 ```typescript
 // BEFORE
-onSuccess: () => {
-  queryClient.invalidateQueries({ queryKey: ['passion-videos'] });
-  queryClient.invalidateQueries({ queryKey: ['passion-videos-all'] });
-  toast.success("Vidéo enregistrée avec succès");
-},
+setErrorMessage(data?.message || 'Le paiement a échoué');
 
 // AFTER
-onSuccess: async () => {
-  await Promise.all([
-    queryClient.invalidateQueries({ queryKey: ['passion-videos'] }),
-    queryClient.invalidateQueries({ queryKey: ['passion-videos-all'] })
-  ]);
-  toast.success("Vidéo enregistrée avec succès");
-},
-```
-
-**Change 2: useDeletePassionVideo - lines 126-130**
-
-```typescript
-// BEFORE
-onSuccess: () => {
-  queryClient.invalidateQueries({ queryKey: ['passion-videos'] });
-  queryClient.invalidateQueries({ queryKey: ['passion-videos-all'] });
-  toast.success("Vidéo supprimée avec succès");
-},
-
-// AFTER
-onSuccess: async () => {
-  await Promise.all([
-    queryClient.invalidateQueries({ queryKey: ['passion-videos'] }),
-    queryClient.invalidateQueries({ queryKey: ['passion-videos-all'] })
-  ]);
-  toast.success("Vidéo supprimée avec succès");
-},
-```
-
-### 2. `src/hooks/usePassionRecommendedVideos.ts`
-
-Apply the same fix to recommended videos for consistency:
-
-**Change 3: useSavePassionRecommendedVideo - lines 124-127**
-
-```typescript
-// AFTER
-onSuccess: async () => {
-  await Promise.all([
-    queryClient.invalidateQueries({ queryKey: ['passion-recommended-videos'] }),
-    queryClient.invalidateQueries({ queryKey: ['passion-recommended-videos-all'] })
-  ]);
-  toast.success("Vidéo recommandée ajoutée avec succès");
-},
-```
-
-**Change 4: useDeletePassionRecommendedVideo - lines 149-153**
-
-```typescript
-// AFTER
-onSuccess: async () => {
-  await Promise.all([
-    queryClient.invalidateQueries({ queryKey: ['passion-recommended-videos'] }),
-    queryClient.invalidateQueries({ queryKey: ['passion-recommended-videos-all'] })
-  ]);
-  toast.success("Vidéo recommandée supprimée");
-},
+setErrorMessage(data?.transaction?.description || data?.error || 'Le paiement a échoué');
 ```
 
 ---
 
-## Technical Explanation
+## Additional Context: Why Sandbox Appears to "Not Work"
 
-`invalidateQueries()` returns a Promise that resolves when the refetch completes. By awaiting it:
+### What's Actually Happening
 
-1. The `onSuccess` callback becomes async
-2. React Query waits for the callback to complete before resolving `mutateAsync`
-3. The component's `finally` block runs AFTER fresh data is available
-4. `allVideos` is updated when the loading state clears
-5. The `categoryTree` useMemo recalculates with fresh data
-6. UI shows the correct configured status immediately
+1. User clicks "Pay with MonCash" on payment-demo page
+2. Edge function creates payment via Bazik.io (sandbox mode) - SUCCESS
+3. User is redirected to `http://moncashbutton.digicelgroup.com/...` - the real MonCash payment page
+4. MonCash shows the payment screen but:
+   - In sandbox, you need MonCash test credentials to complete
+   - Without completing, the user navigates away or MonCash redirects with error
+5. User lands on `/payment/callback?orderId=XXX`
+6. Callback page calls `moncash-check-status` - works correctly
+7. **BUG**: Callback reads `data.status` (undefined) instead of `data.transaction.status`
+8. Falls into "unknown status" error case
+
+### The Fix
+
+Once we correct the response path, the callback page will properly:
+- Show "pending" status if payment is still pending
+- Show "completed" if MonCash webhook updated the status
+- Allow manual retry/verification
+
+---
+
+## Changes Summary
+
+| File | Line | Change |
+|------|------|--------|
+| `PaymentCallback.tsx` | 60 | Read `data?.transaction?.status` |
+| `PaymentCallback.tsx` | 65-66 | Read error from `data?.transaction?.description` or `data?.error` |
 
 ---
 
@@ -145,20 +93,19 @@ onSuccess: async () => {
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Breaks existing functionality? | No | Same logic, just awaited |
-| Increases latency? | Slightly | ~100-200ms for refetch, but ensures correct UI |
-| User experience impact? | Positive | Spinner stays active until data is ready |
-| Error handling preserved? | Yes | onError still catches errors properly |
-| 3G optimization? | Maintained | No additional network calls, same refetch pattern |
-| Backward compatible? | Yes | No API changes to hooks |
+| Breaks existing functionality? | No | Fixes the broken status check |
+| Database changes needed? | No | Just frontend path fix |
+| Works with existing data? | Yes | Pending transactions in DB will be correctly read |
+| Backward compatible? | Yes | Same data, corrected access path |
+| 3G optimized? | N/A | No change to network behavior |
 
 ---
 
-## Summary
+## Testing After Fix
 
-| Issue | Cause | Fix |
-|-------|-------|-----|
-| Double-save required | `invalidateQueries` not awaited | Add `async/await` to `onSuccess` |
-| Stale UI after save | Refetch in-flight when UI updates | Use `Promise.all` to wait for refetch |
-| Affects both hooks | Same pattern in both files | Fix both `usePassionVideos` and `usePassionRecommendedVideos` |
-
+1. Navigate to `/payment-demo`
+2. Complete signup and select Premium plan
+3. Click "Pay with MonCash" - should redirect to MonCash
+4. Navigate back or wait for redirect to `/payment/callback?orderId=XXX`
+5. Should now see "Pending" status (yellow clock icon) instead of error
+6. "Vérifier à nouveau" button should work to poll for status updates
