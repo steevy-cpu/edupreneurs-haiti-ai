@@ -62,9 +62,14 @@ async function getBazikToken(userID: string, secretKey: string): Promise<string>
 async function createBazikPayment(
   token: string,
   amount: number,
-  orderId: string
+  orderId: string,
+  description: string,
+  successUrl: string,
+  errorUrl: string
 ): Promise<{ redirectUrl: string; bazikOrderId?: string; transactionId?: string }> {
   console.log(`Creating Bazik MonCash payment: amount=${amount}, orderId=${orderId}`);
+  console.log(`Success URL: ${successUrl}`);
+  console.log(`Error URL: ${errorUrl}`);
   
   const response = await fetch(`${BAZIK_API_BASE}/moncash/token`, {
     method: 'POST',
@@ -74,9 +79,11 @@ async function createBazikPayment(
       'Accept': 'application/json',
     },
     body: JSON.stringify({
-      gdes: amount,  // Bazik.io uses "gdes" for amount in Gourdes
-      description: `Edupreneurs Payment - ${orderId}`,
-      referenceId: orderId,  // Our order ID becomes their referenceId
+      gdes: amount,
+      description: description,
+      referenceId: orderId,
+      successUrl: successUrl,
+      errorUrl: errorUrl,
     }),
   });
 
@@ -99,7 +106,7 @@ async function createBazikPayment(
 
   return {
     redirectUrl,
-    bazikOrderId: data.orderId,  // Bazik's internal orderId
+    bazikOrderId: data.orderId,
     transactionId: data.transactionId,
   };
 }
@@ -192,8 +199,20 @@ serve(async (req) => {
     // Step 1: Get Bazik.io access token
     const bazikToken = await getBazikToken(userID, secretKey);
 
-    // Step 2: Create payment via Bazik.io
-    const { redirectUrl, bazikOrderId, transactionId } = await createBazikPayment(bazikToken, amount, finalOrderId);
+    // Build callback URLs using the published app URL
+    const baseUrl = 'https://edupreneurs-haiti-ai.lovable.app';
+    const successUrl = `${baseUrl}/payment/callback?orderId=${finalOrderId}`;
+    const errorUrl = `${baseUrl}/payment/callback?orderId=${finalOrderId}&error=true`;
+
+    // Step 2: Create payment via Bazik.io with callback URLs
+    const { redirectUrl, bazikOrderId, transactionId } = await createBazikPayment(
+      bazikToken,
+      amount,
+      finalOrderId,
+      description || 'Edupreneurs Payment',
+      successUrl,
+      errorUrl
+    );
     
     console.log('Payment created successfully, redirectUrl:', redirectUrl);
 
