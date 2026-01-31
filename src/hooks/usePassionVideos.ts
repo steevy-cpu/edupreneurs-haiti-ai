@@ -88,9 +88,11 @@ export const useSavePassionVideo = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['passion-videos'] });
-      queryClient.invalidateQueries({ queryKey: ['passion-videos-all'] });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['passion-videos'] }),
+        queryClient.invalidateQueries({ queryKey: ['passion-videos-all'] })
+      ]);
       toast.success("Vidéo enregistrée avec succès");
     },
     onError: (error) => {
@@ -123,9 +125,11 @@ export const useDeletePassionVideo = () => {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['passion-videos'] });
-      queryClient.invalidateQueries({ queryKey: ['passion-videos-all'] });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['passion-videos'] }),
+        queryClient.invalidateQueries({ queryKey: ['passion-videos-all'] })
+      ]);
       toast.success("Vidéo supprimée avec succès");
     },
     onError: (error) => {
