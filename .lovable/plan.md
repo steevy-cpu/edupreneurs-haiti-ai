@@ -1,153 +1,251 @@
 
 
-# Fix MonCash Integration for Bazik.io API
+# Fix Bazik.io API Integration (Based on Official Documentation)
 
-## Problem Identified
+## Problems Identified
 
-The current `moncash-create-payment` edge function is calling the **wrong API endpoints**. It's using the direct MonCash/DigiCel endpoints instead of the Bazik.io gateway.
-
-| Current (Wrong) | Correct (Bazik.io) |
-|-----------------|-------------------|
-| `sandbox.moncashbutton.digicelgroup.com` | `api.bazik.io` |
-| OAuth with client_id/secret | JWT token with userID/secretKey |
-| Basic Auth header | JSON body authentication |
+After reviewing the official Bazik.io documentation at https://bazik.io/docs, I found several implementation issues:
 
 ---
 
-## What We Need to Change
+## Issue 1: Payment Creation - Wrong Field Names
 
-### 1. Update Secrets Configuration
-
-The current secrets use MonCash naming, but Bazik.io uses different credential names:
-
-| Current Secret | Bazik.io Equivalent |
-|---------------|---------------------|
-| `MONCASH_CLIENT_ID` | Should contain `userID` (e.g., `bzk_c5b754a0_...`) |
-| `MONCASH_CLIENT_SECRET` | Should contain `secretKey` (e.g., `sk_5b0ff521...`) |
-
-**Action needed:** Verify your secrets contain Bazik.io credentials (starting with `bzk_` and `sk_`).
-
----
-
-### 2. Rewrite Edge Function: `moncash-create-payment`
-
-**File:** `supabase/functions/moncash-create-payment/index.ts`
-
-Replace the DigiCel API calls with Bazik.io API calls:
-
-**Authentication Flow:**
-```text
-Step 1: POST https://api.bazik.io/token
-Body: { "userID": "bzk_xxx", "secretKey": "sk_xxx" }
-Response: { "access_token": "bzk_token_xxx", ... }
-
-Step 2: POST https://api.bazik.io/moncash/token  
-Headers: Authorization: Bearer bzk_token_xxx
-Body: { "amount": 500, "orderId": "EDU-XXX" }
-Response: { "redirectUrl": "https://...", "referenceId": "..." }
-```
-
-**Key Changes:**
-- Replace `MONCASH_ENDPOINTS` with Bazik.io base URL
-- Change authentication from Basic Auth to JSON body
-- Update payment creation endpoint from `/Api/v1/CreatePayment` to `/moncash/token`
-- Handle Bazik.io response format
-
----
-
-### 3. Update Webhook Handler (Already Correct)
-
-The webhook handler already supports `x-bazik-signature` header - no changes needed there.
-
----
-
-## Implementation Tasks
-
-| Task | File | Action |
-|------|------|--------|
-| 1 | `supabase/functions/moncash-create-payment/index.ts` | **Rewrite** - Use Bazik.io API |
-| 2 | Secrets | **Verify** - Ensure credentials are from Bazik dashboard |
-
----
-
-## Updated Edge Function Flow
-
-```text
-┌──────────────────────────────────────────────────────────────┐
-│                    moncash-create-payment                    │
-├──────────────────────────────────────────────────────────────┤
-│                                                              │
-│  1. Validate user authentication (JWT)                       │
-│  2. Validate input (amount, description)                     │
-│  3. Get Bazik token:                                         │
-│     POST https://api.bazik.io/token                          │
-│     Body: { userID, secretKey }                              │
-│                                                              │
-│  4. Create payment:                                          │
-│     POST https://api.bazik.io/moncash/token                  │
-│     Headers: Authorization: Bearer <bazik_token>             │
-│     Body: { amount, orderId }                                │
-│                                                              │
-│  5. Store transaction in payment_transactions (pending)      │
-│  6. Return redirectUrl to frontend                           │
-│                                                              │
-└──────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Bazik.io API Reference
-
-**Base URL:** `https://api.bazik.io`
-
-### Authentication
-```bash
-POST /token
-Content-Type: application/json
-
-{
-  "userID": "bzk_c5b754a0_1757383229",
-  "secretKey": "sk_5b0ff521b331c73db55313dc82f17cab"
-}
-```
-
-**Response:**
+**Current (Wrong):**
 ```json
 {
-  "access_token": "bzk_token_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer",
-  "expires_in": 86400,
-  "user_id": "bzk_c5b754a0_1757383229"
+  "amount": 500,
+  "orderId": "EDU-XXX"
 }
 ```
 
-### Create Payment
-```bash
-POST /moncash/token
-Authorization: Bearer bzk_token_xxx
-Content-Type: application/json
-
+**Correct (Per Bazik.io Docs):**
+```json
 {
-  "amount": 500,
-  "orderId": "EDU-ML1NS6A6-ZZIJV1"
+  "gdes": 5000,
+  "description": "Payment description",
+  "referenceId": "YOUR_REFERENCE_ID"
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `gdes` | Amount in Haitian Gourdes (not `amount`) |
+| `description` | Payment description |
+| `referenceId` | Your internal reference ID for tracking |
+
+---
+
+## Issue 2: Webhook Signature Verification - Wrong Algorithm
+
+The current implementation hashes just the raw payload. Bazik.io uses a **specific format** that includes timestamp and event ID:
+
+**Current (Wrong):**
+```javascript
+const signedPayload = rawPayload;
+const expectedSignature = hmacSha256(signedPayload, secret);
+```
+
+**Correct (Per Bazik.io Docs):**
+```javascript
+const timestamp = headers['x-bazik-timestamp'];
+const eventId = headers['x-bazik-event-id'];
+
+// Signature format: timestamp.eventId.payload
+const signedPayload = `${timestamp}.${eventId}.${rawBody}`;
+
+const expectedSignature = hmacSha256(signedPayload, secret);
+
+// Signature has v1= prefix
+if (`v1=${expectedSignature}` !== headers['x-bazik-signature']) {
+  throw new Error('Invalid signature');
 }
 ```
 
 ---
 
-## Credential Verification Checklist
+## Issue 3: Webhook Payload Field Mapping
 
-Before I implement, please confirm:
+The webhook uses different field names than what we're parsing:
 
-1. **Is your `MONCASH_CLIENT_ID` a Bazik userID?**
-   - Should look like: `bzk_c5b754a0_1757383229`
-   
-2. **Is your `MONCASH_CLIENT_SECRET` a Bazik secretKey?**
-   - Should look like: `sk_5b0ff521b331c73db55313dc82f17cab`
+| Expected (Bazik) | Current Code | Notes |
+|------------------|--------------|-------|
+| `type` | Not checked | "payment.succeeded" or "payment.failed" |
+| `orderId` | `orderId` | This is BAZIK's orderId, not ours! |
+| `referenceId` | Not used | THIS is our reference ID |
+| `transactionId` | `transactionId` | Correct |
+| `status` | `message/status/state` | Should just be `status` |
 
-3. **Should `MONCASH_MODE` control sandbox vs live?**
-   - Bazik.io uses a single endpoint for both
-   - Mode is determined by the credentials type
+**Critical Issue:** We're using Bazik's `orderId` to look up our transaction, but we should be using `referenceId` which is the ID we passed when creating the payment.
+
+---
+
+## Files to Update
+
+| File | Changes |
+|------|---------|
+| `supabase/functions/moncash-create-payment/index.ts` | Fix field names (`gdes`, `referenceId`, `description`) |
+| `supabase/functions/moncash-webhook/index.ts` | Fix signature verification, fix field mapping |
+
+---
+
+## Implementation Details
+
+### Task 1: Update `moncash-create-payment/index.ts`
+
+**Changes to `createBazikPayment` function:**
+
+```typescript
+// BEFORE
+body: JSON.stringify({
+  amount,
+  orderId,
+}),
+
+// AFTER
+body: JSON.stringify({
+  gdes: amount,  // "gdes" not "amount"
+  description: description || 'Edupreneurs Payment',
+  referenceId: orderId,  // Our internal order ID becomes their referenceId
+}),
+```
+
+Also update the database insert to store Bazik's orderId in metadata:
+```typescript
+metadata: { 
+  gateway: 'bazik.io',
+  bazikOrderId: data.orderId,  // Store Bazik's orderId
+},
+```
+
+---
+
+### Task 2: Update `moncash-webhook/index.ts`
+
+**Fix signature verification:**
+
+```typescript
+function extractBazikHeaders(headers: Headers): {
+  signature: string | null;
+  timestamp: string | null;
+  eventId: string | null;
+} {
+  return {
+    signature: headers.get('x-bazik-signature'),
+    timestamp: headers.get('x-bazik-timestamp'),
+    eventId: headers.get('x-bazik-event-id'),
+  };
+}
+
+async function verifyBazikSignature(
+  rawBody: string,
+  signature: string,
+  timestamp: string,
+  eventId: string,
+  secret: string
+): Promise<boolean> {
+  // Build signed payload per Bazik docs
+  const signedPayload = `${timestamp}.${eventId}.${rawBody}`;
+  
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  
+  const signatureBuffer = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(signedPayload)
+  );
+  
+  const calculated = Array.from(new Uint8Array(signatureBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+  
+  // Bazik uses v1= prefix
+  const expected = `v1=${calculated}`;
+  
+  // Timing-safe comparison
+  return signature === expected;
+}
+```
+
+**Fix payload parsing to use `referenceId`:**
+
+```typescript
+function validatePayload(data: unknown): { 
+  valid: boolean; 
+  referenceId?: string;   // Our order ID
+  bazikOrderId?: string;  // Bazik's order ID
+  transactionId?: string;
+  amount?: number;
+  status?: string;
+  eventType?: string;
+  error?: string;
+} {
+  const payload = data as Record<string, unknown>;
+
+  // Check event type
+  const eventType = payload.type as string;
+  
+  // referenceId is OUR order ID - this is what we use to find the transaction
+  if (!payload.referenceId || typeof payload.referenceId !== 'string') {
+    return { valid: false, error: 'Missing referenceId' };
+  }
+
+  return {
+    valid: true,
+    referenceId: payload.referenceId as string,  // OUR order ID
+    bazikOrderId: payload.orderId as string,     // Bazik's order ID
+    transactionId: payload.transactionId as string,
+    amount: payload.amount as number,
+    status: payload.status as string,            // "successful", "failed", etc.
+    eventType,                                   // "payment.succeeded", etc.
+  };
+}
+```
+
+**Update database lookup to use `referenceId`:**
+
+```typescript
+// Look up by our order_id (which is Bazik's referenceId)
+const { data: transaction } = await supabase
+  .from('payment_transactions')
+  .select('id, status')
+  .eq('order_id', validation.referenceId)  // Use referenceId, not orderId
+  .single();
+```
+
+---
+
+## Bazik Webhook Payload Example (From Docs)
+
+```json
+{
+  "type": "payment.succeeded",
+  "orderId": "BZK_sandbox_c5b754a0_1758848912342_q2oz",
+  "transactionId": "673219d6-5345-4f3b-a6a5-9dd646222f5d",
+  "status": "successful",
+  "amount": 95,
+  "currency": "HTG",
+  "referenceId": "S0QVRUIQ",
+  "timestamp": "2025-09-26T03:38:30.165Z"
+}
+```
+
+---
+
+## Webhook Headers (From Docs)
+
+| Header | Description |
+|--------|-------------|
+| `X-Bazik-Env` | Environment (sandbox or live) |
+| `X-Bazik-Timestamp` | Unix timestamp when webhook was sent |
+| `X-Bazik-Event-Id` | Unique identifier for the webhook event |
+| `X-Bazik-Signature` | HMAC-SHA256 signature (format: `v1=hex_signature`) |
 
 ---
 
@@ -155,9 +253,9 @@ Before I implement, please confirm:
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Breaks existing functionality? | No | Updates API endpoints only |
+| Breaks existing functionality? | No | Fixes incorrect implementation |
 | Works with existing data? | Yes | Same `payment_transactions` table |
 | Backward compatible? | Yes | Same function interface |
-| 3G optimized? | Yes | Same lightweight responses |
-| Security maintained? | Yes | Same rate limiting, validation |
+| 3G optimized? | Yes | Lightweight responses |
+| Security improved? | Yes | Correct signature verification |
 
