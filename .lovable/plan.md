@@ -1,365 +1,417 @@
 
-
-# Restructure Mot du Jour Feature with TTS Provider Choice
+# Expand Content Editor to Include Civique and Personnel Video Management
 
 ## Overview
 
-This plan addresses both problems identified and adds a **TTS provider selection feature** so super users can compare OpenAI vs ElevenLabs audio quality before deciding which to use.
+This plan creates a **robust, matching architecture** for Civique and Personnel categories that mirrors the existing Passion structure exactly. The goal is a unified, maintainable system where all three content types share the same patterns.
 
 ---
 
-## Problem 1: Word Repetition Too Soon
+## Current Architecture Analysis
 
-| Current Behavior | Issue |
-|------------------|-------|
-| Uses hash-based selection: `hash(date) % totalWords` | With 15 words, same word can repeat within 9-10 days |
-| No tracking of which words were recently shown | No guarantee all words appear before cycling |
+| Component | Passion | Civique | Personnel |
+|-----------|---------|---------|-----------|
+| Activity Data File | `passionActivities.ts` | None (fallback) | None (fallback) |
+| Categories | 4 (music, arts, chess, literature) | 3 (rights, citizenship, peace) | 1 (personal) |
+| Modules per Category | 4 | 4 | 4 |
+| Activities per Module | 4 (video, reading, quiz, game) | Generated fallback | Generated fallback |
+| Video Management | Full support | None | None |
 
-**Solution**: Sequential word cycling with database tracking.
+**After Implementation:**
 
----
-
-## Problem 2: Low Audio Volume + Provider Choice
-
-| Current Behavior | Issue |
-|------------------|-------|
-| Uses only OpenAI TTS (`tts-1-hd`, voice: `nova`) | Known issue - produces very quiet audio |
-| No way to compare alternatives | Super users can't test which provider sounds better |
-
-**Solution**: Add TTS provider selection in the Control Center so super users can generate audio with either:
-- **OpenAI TTS** (current - `tts-1-hd` with `nova` voice)
-- **ElevenLabs TTS** (`eleven_multilingual_v2` with `Sarah` voice and `use_speaker_boost: true`)
+| Component | Passion | Civique | Personnel |
+|-----------|---------|---------|-----------|
+| Activity Data File | `passionActivities.ts` | `civicActivities.ts` | `personalActivities.ts` |
+| Categories | 4 | 3 | 1 |
+| Modules per Category | 4 | 4 | 4 |
+| Activities per Module | 4 | 4 | 4 |
+| Video Management | Full support | Full support | Full support |
 
 ---
 
-## Implementation Plan
+## Files to Create
 
-### Step 1: Database Migration
+### 1. `src/data/civicActivities.ts`
 
-```sql
--- Add display_order column for sequential rotation
-ALTER TABLE daily_words 
-ADD COLUMN IF NOT EXISTS display_order INTEGER;
+Structure matching `passionActivities.ts`:
 
--- Populate existing words with sequential order
-WITH ordered_words AS (
-  SELECT id, ROW_NUMBER() OVER (ORDER BY created_at, id) as rn
-  FROM daily_words
-  WHERE is_active = true
-)
-UPDATE daily_words 
-SET display_order = (SELECT rn FROM ordered_words WHERE ordered_words.id = daily_words.id);
+```
+civicActivities.ts
+├── Exports:
+│   ├── rightsActivities: CategoryContent
+│   ├── citizenshipActivities: CategoryContent
+│   └── peaceActivities: CategoryContent
+│
+├── rightsActivities (Droits Fondamentaux):
+│   ├── education (Droit a l'Education)
+│   │   ├── education-video
+│   │   ├── education-reading
+│   │   ├── education-quiz
+│   │   └── education-game
+│   ├── health (Droit a la Sante)
+│   ├── expression-civic (Liberte d'Expression)
+│   └── duties (Devoirs du Citoyen)
+│
+├── citizenshipActivities (Citoyennete Active):
+│   ├── democracy (Principes de la Democratie)
+│   ├── participation (Participation Civique)
+│   ├── laws (Respect des Lois)
+│   └── civic-role (Role du Citoyen)
+│
+└── peaceActivities (Culture de la Paix):
+    ├── tolerance (Tolerance & Diversite)
+    ├── solidarity (Solidarite & Entraide)
+    ├── justice (Justice Sociale)
+    └── conflict (Resolution de Conflits)
 
--- Create unique index for display_order
-CREATE INDEX IF NOT EXISTS idx_daily_words_display_order ON daily_words(display_order);
-
--- Create app_settings table for tracking global state
-CREATE TABLE IF NOT EXISTS app_settings (
-  key TEXT PRIMARY KEY,
-  value JSONB NOT NULL,
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Enable RLS
-ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
-
--- Allow authenticated users to read settings
-CREATE POLICY "Anyone can read app settings"
-ON app_settings FOR SELECT
-TO authenticated
-USING (true);
-
--- Only founders can update settings (use security definer function)
-CREATE OR REPLACE FUNCTION public.update_app_setting(_key TEXT, _value JSONB)
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-  INSERT INTO app_settings (key, value, updated_at)
-  VALUES (_key, _value, NOW())
-  ON CONFLICT (key) 
-  DO UPDATE SET value = _value, updated_at = NOW();
-END;
-$$;
-
--- Initialize the word rotation tracker
-SELECT public.update_app_setting('word_of_day', '{"last_date": null, "last_order": 0}');
+Total: 3 categories x 4 modules x 4 activities = 48 activities (12 videos)
 ```
 
----
+### 2. `src/data/personalActivities.ts`
 
-### Step 2: Update Edge Function - Add Provider Choice
-
-**File**: `supabase/functions/generate-word-audio/index.ts`
-
-Add support for `provider` parameter (`openai` or `elevenlabs`):
-
-```typescript
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { corsHeaders, corsPreflightResponse, secureJsonResponse, secureErrorResponse } from '../_shared/securityHeaders.ts';
-
-const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
-
-const FOUNDER_USER_IDS = [
-  '0de08330-4183-48f9-b169-19b92f4d114f',
-  '7580cd10-e18c-4b2f-ac50-def28d046c9d',
-];
-
-type TTSProvider = 'openai' | 'elevenlabs';
-
-async function generateWithOpenAI(word: string): Promise<Uint8Array> {
-  const response = await fetch('https://api.openai.com/v1/audio/speech', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'tts-1-hd',
-      voice: 'nova',
-      input: word,
-      response_format: 'mp3',
-    }),
-  });
-  
-  if (!response.ok) {
-    throw new Error(`OpenAI TTS error: ${response.status}`);
-  }
-  
-  return new Uint8Array(await response.arrayBuffer());
-}
-
-async function generateWithElevenLabs(word: string): Promise<Uint8Array> {
-  const voiceId = 'EXAVITQu4vr4xnSDxMaL'; // Sarah
-  
-  const response = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
-    {
-      method: 'POST',
-      headers: {
-        'xi-api-key': ELEVENLABS_API_KEY!,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        text: word,
-        model_id: 'eleven_multilingual_v2',
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.75,
-          style: 0.3,
-          use_speaker_boost: true, // KEY: Ensures proper volume!
-        },
-      }),
-    }
-  );
-  
-  if (!response.ok) {
-    throw new Error(`ElevenLabs TTS error: ${response.status}`);
-  }
-  
-  return new Uint8Array(await response.arrayBuffer());
-}
-
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return corsPreflightResponse();
-  }
-
-  try {
-    // Auth verification (unchanged)...
-    
-    const { wordId, word, provider = 'elevenlabs' } = await req.json();
-    const ttsProvider: TTSProvider = provider === 'openai' ? 'openai' : 'elevenlabs';
-    
-    // Validate API key for selected provider
-    if (ttsProvider === 'openai' && !OPENAI_API_KEY) {
-      return secureErrorResponse('OpenAI API key not configured', 500);
-    }
-    if (ttsProvider === 'elevenlabs' && !ELEVENLABS_API_KEY) {
-      return secureErrorResponse('ElevenLabs API key not configured', 500);
-    }
-    
-    console.log(`Generating audio for "${word}" using ${ttsProvider}`);
-    
-    // Generate audio based on provider
-    const audioBytes = ttsProvider === 'openai'
-      ? await generateWithOpenAI(word)
-      : await generateWithElevenLabs(word);
-    
-    // Upload and update database (unchanged)...
-    
-    return secureJsonResponse({
-      success: true,
-      audioUrl,
-      provider: ttsProvider,
-      message: `Audio generated for "${word}" using ${ttsProvider}`,
-    });
-  } catch (error) {
-    // Error handling (unchanged)...
-  }
-});
 ```
+personalActivities.ts
+├── Exports:
+│   └── personalActivities: CategoryContent
+│
+└── personalActivities (Croissance Personnelle):
+    ├── time-management (Gestion du Temps)
+    │   ├── time-management-video
+    │   ├── time-management-reading
+    │   ├── time-management-quiz
+    │   └── time-management-game
+    ├── confidence (Confiance en Soi)
+    ├── emotions (Intelligence Emotionnelle)
+    └── communication (Communication)
 
----
-
-### Step 3: Update Control Center UI - Add Provider Toggle
-
-**File**: `src/pages/control-center/modules/WordsModule.tsx`
-
-Add a TTS provider selector for super users:
-
-```tsx
-// Add state for provider selection
-const [selectedProvider, setSelectedProvider] = useState<'openai' | 'elevenlabs'>('elevenlabs');
-
-// Update generateAudio to pass provider
-const generateAudio = async (word: DailyWord) => {
-  // ...existing code...
-  
-  const response = await supabase.functions.invoke("generate-word-audio", {
-    body: { 
-      wordId: word.id, 
-      word: word.word,
-      provider: selectedProvider  // NEW: Pass selected provider
-    },
-  });
-  
-  // Show which provider was used in success toast
-  if (response.data?.success) {
-    toast.success(`Audio généré pour "${word.word}" (${response.data.provider})`);
-  }
-};
-
-// Add UI for provider selection (in the Stats Header section)
-<div className="flex items-center gap-4 p-4 bg-muted/30 rounded-lg mb-4">
-  <span className="text-sm font-medium">Fournisseur TTS:</span>
-  <div className="flex gap-2">
-    <Button
-      variant={selectedProvider === 'elevenlabs' ? 'default' : 'outline'}
-      size="sm"
-      onClick={() => setSelectedProvider('elevenlabs')}
-    >
-      ElevenLabs (Recommandé)
-    </Button>
-    <Button
-      variant={selectedProvider === 'openai' ? 'default' : 'outline'}
-      size="sm"
-      onClick={() => setSelectedProvider('openai')}
-    >
-      OpenAI
-    </Button>
-  </div>
-  <span className="text-xs text-muted-foreground">
-    {selectedProvider === 'elevenlabs' 
-      ? 'Volume plus élevé, meilleur français' 
-      : 'Volume plus bas, alternative'}
-  </span>
-</div>
-```
-
----
-
-### Step 4: Update Word Selection Hook
-
-**File**: `src/hooks/useWordOfTheDay.ts`
-
-Replace hash-based selection with sequential fetching:
-
-```typescript
-// REMOVE: getGlobalWordIndex function
-
-// NEW: Fetch word based on sequential order
-const fetchWord = async () => {
-  const haitiDate = getHaitiDate();
-  
-  // Check cache first (unchanged)...
-  
-  // Get current rotation state
-  const { data: settings } = await supabase
-    .from('app_settings')
-    .select('value')
-    .eq('key', 'word_of_day')
-    .single();
-  
-  const lastDate = settings?.value?.last_date;
-  const lastOrder = settings?.value?.last_order || 0;
-  
-  let currentOrder = lastOrder;
-  
-  // If new day, advance to next word
-  if (lastDate !== haitiDate) {
-    const { data: maxData } = await supabase
-      .from('daily_words')
-      .select('display_order')
-      .eq('is_active', true)
-      .order('display_order', { ascending: false })
-      .limit(1)
-      .single();
-    
-    const maxOrder = maxData?.display_order || 1;
-    currentOrder = (lastOrder % maxOrder) + 1;
-    
-    // Update rotation state (uses security definer function)
-    await supabase.rpc('update_app_setting', {
-      _key: 'word_of_day',
-      _value: { last_date: haitiDate, last_order: currentOrder }
-    });
-  }
-  
-  // Fetch word with this display_order
-  const { data: wordData } = await supabase
-    .from('daily_words')
-    .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category')
-    .eq('is_active', true)
-    .eq('display_order', currentOrder)
-    .single();
-  
-  return wordData;
-};
+Total: 1 category x 4 modules x 4 activities = 16 activities (4 videos)
 ```
 
 ---
 
 ## Files to Modify
 
-| File | Changes |
-|------|---------|
-| Database | Add `display_order`, create `app_settings` table, add RPC function |
-| `supabase/functions/generate-word-audio/index.ts` | Add provider choice (OpenAI or ElevenLabs) |
-| `src/pages/control-center/modules/WordsModule.tsx` | Add TTS provider toggle UI |
-| `src/hooks/useWordOfTheDay.ts` | Replace hash with sequential selection |
+### 3. `src/data/passionActivities.ts`
+
+**Update `getActivitiesForModule` function to handle all 8 categories:**
+
+```typescript
+// Add imports at top (after we create the files)
+import { rightsActivities, citizenshipActivities, peaceActivities } from './civicActivities';
+import { personalActivities } from './personalActivities';
+
+export const getActivitiesForModule = (categoryId: string, moduleId: string): ActivityContent[] | null => {
+  let categoryData: CategoryContent | undefined;
+  
+  switch (categoryId) {
+    // Passion categories
+    case "music":
+      categoryData = musicActivities;
+      break;
+    case "arts":
+      categoryData = artsActivities;
+      break;
+    case "chess":
+      categoryData = chessActivities;
+      break;
+    case "literature":
+      categoryData = literatureActivities;
+      break;
+    // Civic categories (NEW)
+    case "rights":
+      categoryData = rightsActivities;
+      break;
+    case "citizenship":
+      categoryData = citizenshipActivities;
+      break;
+    case "peace":
+      categoryData = peaceActivities;
+      break;
+    // Personal category (NEW)
+    case "personal":
+      categoryData = personalActivities;
+      break;
+    default:
+      return null;
+  }
+  
+  const module = categoryData[moduleId];
+  return module?.activities || null;
+};
+
+// Update helper function
+export const getCategoriesWithActivities = (): string[] => {
+  return [
+    "music", "arts", "chess", "literature",  // Passion
+    "rights", "citizenship", "peace",         // Civic
+    "personal"                                 // Personal
+  ];
+};
+```
 
 ---
 
-## UI Preview
+### 4. `src/components/content-editor/PassionVideoManager.tsx`
 
-The Control Center will show:
+**Add content type selector at the top level:**
 
+Current structure:
 ```
-┌─────────────────────────────────────────────────────┐
-│ Gestion Audio des Mots                              │
-├─────────────────────────────────────────────────────┤
-│ Fournisseur TTS:                                    │
-│ [ElevenLabs (Recommandé)] [OpenAI]                  │
-│ ↳ Volume plus élevé, meilleur français              │
-├─────────────────────────────────────────────────────┤
-│ Word 1: Perspicace [pɛʁ.spi.kas]  [▶️ Play] [🔄]    │
-│ Word 2: Éphémère [e.fe.mɛʁ]       [▶️ Play] [🔄]    │
-│ ...                                                 │
-└─────────────────────────────────────────────────────┘
+PassionVideoManager
+└── passionCategories (4 categories)
+    └── Accordion with modules and activities
 ```
 
-Super users can:
-1. Select their preferred TTS provider
-2. Generate audio for any word
-3. Play both versions to compare
-4. The selected provider is used for all subsequent generations
+New structure:
+```
+PassionVideoManager
+├── Content Type Selector: [Passions] [Civique] [Personnel]
+└── currentCategories (switches based on selection)
+    └── Same Accordion structure
+```
+
+**Key changes:**
+
+```typescript
+// Add new imports
+import { 
+  rightsActivities, 
+  citizenshipActivities, 
+  peaceActivities 
+} from "@/data/civicActivities";
+import { personalActivities } from "@/data/personalActivities";
+import { Award, Users, Heart, Lightbulb } from "lucide-react";
+
+// Add new category arrays
+const civicCategories = [
+  { id: 'rights', title: 'Droits Fondamentaux', icon: Award, emoji: '🏛️', activities: rightsActivities },
+  { id: 'citizenship', title: 'Citoyenneté Active', icon: Users, emoji: '🗳️', activities: citizenshipActivities },
+  { id: 'peace', title: 'Culture de la Paix', icon: Heart, emoji: '☮️', activities: peaceActivities },
+];
+
+const personalCategories = [
+  { id: 'personal', title: 'Croissance Personnelle', icon: Lightbulb, emoji: '🌱', activities: personalActivities },
+];
+
+// Add content type state
+const [contentType, setContentType] = useState<'passion' | 'civic' | 'personal'>('passion');
+
+// Dynamic category selection
+const currentCategories = useMemo(() => {
+  switch (contentType) {
+    case 'civic': return civicCategories;
+    case 'personal': return personalCategories;
+    default: return passionCategories;
+  }
+}, [contentType]);
+
+// Update all usages of passionCategories to use currentCategories
+```
+
+**Add content type UI before the main tabs:**
+
+```tsx
+{/* Content Type Selector */}
+<Card className="border-2 border-primary/20 mb-4">
+  <CardContent className="p-4">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      <span className="text-sm font-medium whitespace-nowrap">Type de contenu:</span>
+      <div className="flex gap-2 flex-wrap">
+        <Button
+          variant={contentType === 'passion' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => {
+            setContentType('passion');
+            setSelectedCategory('');
+            setSelectedModule('');
+          }}
+        >
+          <Music className="h-4 w-4 mr-2" />
+          Passions (4)
+        </Button>
+        <Button
+          variant={contentType === 'civic' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => {
+            setContentType('civic');
+            setSelectedCategory('');
+            setSelectedModule('');
+          }}
+        >
+          <Award className="h-4 w-4 mr-2" />
+          Civique (3)
+        </Button>
+        <Button
+          variant={contentType === 'personal' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => {
+            setContentType('personal');
+            setSelectedCategory('');
+            setSelectedModule('');
+          }}
+        >
+          <Lightbulb className="h-4 w-4 mr-2" />
+          Personnel (1)
+        </Button>
+      </div>
+    </div>
+  </CardContent>
+</Card>
+```
+
+---
+
+## Activity Content Structure (Matching Passion Pattern)
+
+Each activity follows this exact structure from `passionActivities.ts`:
+
+```typescript
+{
+  id: "module-video",
+  type: "video",
+  title: "Video Title",
+  description: "Short description",
+  duration: "X min",
+  content: { videoQuery: "YouTube search query" }
+},
+{
+  id: "module-reading",
+  type: "reading",
+  title: "Reading Title",
+  description: "Description",
+  duration: "X min",
+  content: {
+    readingContent: `<h3>...</h3><p>...</p>`
+  }
+},
+{
+  id: "module-quiz",
+  type: "quiz",
+  title: "Quiz Title",
+  description: "Description",
+  duration: "X min",
+  content: {
+    quizQuestions: [
+      {
+        question: "Question text?",
+        options: ["A", "B", "C", "D"],
+        correctIndex: 1,
+        explanation: "Explanation..."
+      }
+    ]
+  }
+},
+{
+  id: "module-game",
+  type: "game",
+  title: "Game Title",
+  description: "Description",
+  duration: "X min",
+  content: {
+    gameDescription: "Activity instructions..."
+  }
+}
+```
+
+---
+
+## Video Activity Count Summary
+
+| Type | Categories | Modules | Video Activities | Configured Videos |
+|------|------------|---------|------------------|-------------------|
+| Passion | 4 | 16 | 16 | Tracked in DB |
+| Civique | 3 | 12 | 12 | To be added |
+| Personnel | 1 | 4 | 4 | To be added |
+| **Total** | **8** | **32** | **32** | - |
+
+---
+
+## Database Compatibility
+
+No database changes needed. The existing `passion_activity_videos` table already supports any `category_id`:
+
+```sql
+-- Current schema supports all category types
+passion_activity_videos (
+  category_id TEXT,  -- "rights", "citizenship", "peace", "personal" all work
+  module_id TEXT,
+  activity_id TEXT,
+  youtube_url TEXT,
+  ...
+)
+```
+
+---
+
+## Implementation Order
+
+1. **Create `civicActivities.ts`** - Full content for 12 modules (48 activities)
+2. **Create `personalActivities.ts`** - Full content for 4 modules (16 activities)
+3. **Update `passionActivities.ts`** - Extend `getActivitiesForModule` to handle all 8 categories
+4. **Update `PassionVideoManager.tsx`** - Add content type selector and dynamic category switching
+
+---
+
+## Content Examples
+
+### Civic - Rights Category - Education Module
+
+```typescript
+education: {
+  id: "education",
+  title: "Droit a l'Education",
+  description: "Comprends ton droit fondamental a l'education",
+  duration: "15 min",
+  activities: [
+    {
+      id: "education-video",
+      type: "video",
+      title: "Le droit a l'education explique",
+      description: "Decouvre pourquoi l'education est un droit universel",
+      duration: "5 min",
+      content: { videoQuery: "droit education enfants francais explique" }
+    },
+    {
+      id: "education-reading",
+      type: "reading",
+      title: "L'education: un droit universel",
+      description: "Comprends l'importance de ce droit fondamental",
+      duration: "5 min",
+      content: {
+        readingContent: `
+          <h3>Qu'est-ce que le droit a l'education?</h3>
+          <p>Le droit a l'education est un droit humain fondamental...</p>
+          <h4>En Haiti</h4>
+          <p>La Constitution haitienne garantit le droit a l'education...</p>
+        `
+      }
+    },
+    // ... quiz and game activities
+  ]
+}
+```
+
+### Personal - Time Management Module
+
+```typescript
+"time-management": {
+  id: "time-management",
+  title: "Gestion du Temps",
+  description: "Apprends a organiser ton temps efficacement",
+  duration: "15 min",
+  activities: [
+    {
+      id: "time-management-video",
+      type: "video",
+      title: "Les secrets de la gestion du temps",
+      description: "Decouvre comment organiser tes journees",
+      duration: "5 min",
+      content: { videoQuery: "gestion temps etudiant conseils francais" }
+    },
+    // ... other activities
+  ]
+}
+```
 
 ---
 
@@ -367,21 +419,51 @@ Super users can:
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Breaks existing functionality? | No | Gradual migration, existing audio still works |
-| Works with existing data? | Yes | Migration populates display_order for all words |
-| Backward compatible? | Yes | Falls back to ID order if display_order is null |
-| 3G optimized? | Yes | Same number of queries, localStorage cache still works |
-| API keys configured? | Yes | Both ELEVENLABS_API_KEY and OPENAI_API_KEY exist |
-| Super user only? | Yes | Edge function validates founder status |
+| Breaks existing functionality? | No | Adds new content, existing passion management unchanged |
+| Database changes needed? | No | Uses existing table with flexible category_id |
+| Works with existing data? | Yes | 16 existing passion videos remain unchanged |
+| Backward compatible? | Yes | PassionDiscovery already has civic/personal tabs with fallback |
+| 3G optimized? | Yes | Same lazy loading pattern, no additional network requests |
+| Student page impact? | Positive | Real content replaces generated fallbacks |
+| Matches passion structure? | Exactly | Same interfaces, same patterns, same activity types |
 
 ---
 
-## Testing Plan
+## UI Preview - Content Editor
 
-1. Run migration to add `display_order` column and `app_settings` table
-2. Go to Control Center → Words Module
-3. See new TTS provider toggle
-4. Generate audio for same word with both providers
-5. Play both to compare volume and quality
-6. Verify today's word advances correctly at midnight Haiti time
+```
++------------------------------------------------------------------+
+| Video Passion - Vue d'ensemble                                    |
++------------------------------------------------------------------+
+| Type de contenu:                                                  |
+| [Passions (4)] [Civique (3)] [Personnel (1)]                     |
++------------------------------------------------------------------+
+|                                                                   |
+| [Videos d'Activites] [Videos Recommandees] [Videos Bannies]      |
+|                                                                   |
+| Structure des Civique:                                            |
+| Vue hierarchique: Categorie -> Module -> Activites video          |
+|                                                                   |
+| > Droits Fondamentaux                           [ 4/4 videos ]   |
+|   > Droit a l'Education                                           |
+|     - education-video                           [Configurer]      |
+|   > Droit a la Sante                                              |
+|     - health-video                              [Configurer]      |
+|   ...                                                             |
+|                                                                   |
+| > Citoyennete Active                            [ 0/4 videos ]   |
+| > Culture de la Paix                            [ 0/4 videos ]   |
++------------------------------------------------------------------+
+```
 
+---
+
+## Technical Notes
+
+1. **Type Safety**: All new files use the same `ActivityContent`, `ModuleContent`, and `CategoryContent` interfaces from `passionActivities.ts`
+
+2. **Import Strategy**: The new files are imported into `passionActivities.ts` which re-exports the combined `getActivitiesForModule` function - this maintains a single source of truth
+
+3. **State Reset**: When switching content type, the selected category and module are reset to avoid stale selections
+
+4. **Query Key Separation**: React Query hooks continue to work correctly since they key on `category_id` which now includes civic and personal IDs
