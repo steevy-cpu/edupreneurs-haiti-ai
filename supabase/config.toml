@@ -183,3 +183,6 @@ verify_jwt = false
 
 [functions.validate-quiz-content-alignment]
 verify_jwt = true
+
+[functions.moncash-webhook]
+verify_jwt = false
