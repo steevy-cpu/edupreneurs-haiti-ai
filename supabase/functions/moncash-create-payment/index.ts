@@ -48,13 +48,14 @@ async function getBazikToken(userID: string, secretKey: string): Promise<string>
 
   const data = await response.json();
   
-  if (!data.access_token) {
-    console.error('No access token in Bazik response:', data);
+  const accessToken = data.token || data.access_token;
+  if (!accessToken) {
+    console.error('No token in Bazik response:', data);
     throw new Error('No access token received from Bazik.io');
   }
   
   console.log('Bazik.io authentication successful');
-  return data.access_token;
+  return accessToken;
 }
 
 // Create payment via Bazik.io MonCash endpoint
