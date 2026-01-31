@@ -15,7 +15,8 @@ import {
   XCircle,
   AlertTriangle,
   Send,
-  Bell
+  Bell,
+  Mic
 } from "lucide-react";
 import {
   AlertDialog,
@@ -36,17 +37,10 @@ interface DailyWord {
   definition: string;
   audio_url: string | null;
   is_active: boolean;
+  display_order: number | null;
 }
 
-// Same deterministic algorithm as useWordOfTheDay and edge function
-const getGlobalWordIndex = (date: string, totalWords: number): number => {
-  let hash = 0;
-  for (let i = 0; i < date.length; i++) {
-    hash = ((hash << 5) - hash) + date.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash) % totalWords;
-};
+type TTSProvider = 'openai' | 'elevenlabs';
 
 const getHaitiDate = (): string => {
   return new Date().toLocaleDateString('en-CA', { 
@@ -61,6 +55,7 @@ const WordsModule = () => {
   const [playingWordId, setPlayingWordId] = useState<string | null>(null);
   const [sendingNotification, setSendingNotification] = useState(false);
   const [todaysWord, setTodaysWord] = useState<DailyWord | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<TTSProvider>('elevenlabs');
   const [notificationResult, setNotificationResult] = useState<{
     success: boolean;
     word?: string;
@@ -85,29 +80,67 @@ const WordsModule = () => {
   const fetchWords = async () => {
     try {
       setIsLoading(true);
-      // Fetch with consistent ordering (same as useWordOfTheDay and edge function)
+      // Fetch with display_order for sequential rotation
       const { data, error } = await supabase
         .from("daily_words")
-        .select("id, word, phonetic, part_of_speech, definition, audio_url, is_active")
+        .select("id, word, phonetic, part_of_speech, definition, audio_url, is_active, display_order")
         .eq("is_active", true)
-        .order("id", { ascending: true });
+        .order("display_order", { ascending: true, nullsFirst: false });
 
       if (error) throw error;
       
       const wordsList = data || [];
       setWords(wordsList);
       
-      // Calculate today's word using deterministic algorithm
+      // Calculate today's word using sequential rotation
       if (wordsList.length > 0) {
-        const haitiDate = getHaitiDate();
-        const wordIndex = getGlobalWordIndex(haitiDate, wordsList.length);
-        setTodaysWord(wordsList[wordIndex]);
+        await calculateTodaysWord(wordsList);
       }
     } catch (err) {
       console.error("Error fetching words:", err);
       toast.error("Erreur lors du chargement des mots");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const calculateTodaysWord = async (wordsList: DailyWord[]) => {
+    try {
+      const haitiDate = getHaitiDate();
+      
+      // Get current rotation state from app_settings
+      const { data: settings } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'word_of_day')
+        .single();
+      
+      const settingsValue = settings?.value as { last_date?: string; last_order?: number } | null;
+      const lastDate = settingsValue?.last_date;
+      const lastOrder = settingsValue?.last_order || 0;
+      
+      let currentOrder = lastOrder;
+      
+      // If it's a new day, we show the next word
+      if (lastDate !== haitiDate) {
+        const maxOrder = Math.max(...wordsList.map(w => w.display_order || 0));
+        currentOrder = (lastOrder % maxOrder) + 1;
+      }
+      
+      // Find the word with this display_order
+      const todayWord = wordsList.find(w => w.display_order === currentOrder);
+      if (todayWord) {
+        setTodaysWord(todayWord);
+      } else {
+        // Fallback to first word if display_order not found
+        setTodaysWord(wordsList[0]);
+      }
+    } catch (err) {
+      console.error("Error calculating today's word:", err);
+      // Fallback to first word
+      if (wordsList.length > 0) {
+        setTodaysWord(wordsList[0]);
+      }
     }
   };
 
@@ -168,7 +201,11 @@ const WordsModule = () => {
       }
 
       const response = await supabase.functions.invoke("generate-word-audio", {
-        body: { wordId: word.id, word: word.word },
+        body: { 
+          wordId: word.id, 
+          word: word.word,
+          provider: selectedProvider
+        },
       });
 
       if (response.error) {
@@ -182,7 +219,13 @@ const WordsModule = () => {
             w.id === word.id ? { ...w, audio_url: response.data.audioUrl } : w
           )
         );
-        toast.success(`Audio généré pour "${word.word}"`);
+        
+        // Update today's word if it matches
+        if (todaysWord?.id === word.id) {
+          setTodaysWord(prev => prev ? { ...prev, audio_url: response.data.audioUrl } : null);
+        }
+        
+        toast.success(`Audio généré pour "${word.word}" (${response.data.provider})`);
       } else {
         throw new Error(response.data?.error || "Erreur inconnue");
       }
@@ -288,6 +331,11 @@ const WordsModule = () => {
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-primary">{todaysWord.word}</span>
                 <span className="text-xs text-muted-foreground font-mono">[{todaysWord.phonetic}]</span>
+                {todaysWord.display_order && (
+                  <Badge variant="secondary" className="text-xs">
+                    #{todaysWord.display_order}
+                  </Badge>
+                )}
               </div>
               <p className="text-sm text-muted-foreground truncate">{todaysWord.definition}</p>
             </div>
@@ -329,6 +377,50 @@ const WordsModule = () => {
               )}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Separator />
+
+      {/* TTS Provider Selection */}
+      <Card className="border-amber-500/20 bg-amber-500/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Mic className="h-4 w-4 text-amber-500" />
+            Fournisseur TTS (Text-to-Speech)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Choisissez le fournisseur pour générer l'audio des mots. Testez les deux pour comparer la qualité.
+          </p>
+          
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant={selectedProvider === 'elevenlabs' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSelectedProvider('elevenlabs')}
+              className="gap-2"
+            >
+              <CheckCircle2 className={`h-4 w-4 ${selectedProvider === 'elevenlabs' ? '' : 'opacity-0'}`} />
+              ElevenLabs (Recommandé)
+            </Button>
+            <Button
+              variant={selectedProvider === 'openai' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSelectedProvider('openai')}
+              className="gap-2"
+            >
+              <CheckCircle2 className={`h-4 w-4 ${selectedProvider === 'openai' ? '' : 'opacity-0'}`} />
+              OpenAI
+            </Button>
+          </div>
+          
+          <p className="text-xs text-muted-foreground">
+            {selectedProvider === 'elevenlabs' 
+              ? '✨ Volume plus élevé, meilleur français, voix naturelle (Sarah)' 
+              : '🔉 Volume plus bas, voix Nova, alternative rapide'}
+          </p>
         </CardContent>
       </Card>
 
@@ -432,7 +524,8 @@ const WordsModule = () => {
               ) : (
                 <>
                   Le mot <strong>"{confirmDialog.word?.word}"</strong> a déjà un audio.
-                  Voulez-vous le remplacer par une nouvelle génération ?
+                  Voulez-vous le remplacer par une nouvelle génération avec{' '}
+                  <strong>{selectedProvider === 'elevenlabs' ? 'ElevenLabs' : 'OpenAI'}</strong> ?
                 </>
               )}
             </AlertDialogDescription>
@@ -470,6 +563,11 @@ const WordRow = ({ word, isGenerating, isPlaying, onPlay, onRegenerate }: WordRo
     <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
+          {word.display_order && (
+            <Badge variant="outline" className="text-xs h-5 min-w-[24px] justify-center">
+              {word.display_order}
+            </Badge>
+          )}
           <span className="font-medium truncate">{word.word}</span>
           <span className="text-xs text-muted-foreground font-mono">[{word.phonetic}]</span>
           <Badge variant="secondary" className="text-xs">
