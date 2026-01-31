@@ -121,9 +121,11 @@ export const useSavePassionRecommendedVideo = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['passion-recommended-videos'] });
-      queryClient.invalidateQueries({ queryKey: ['passion-recommended-videos-all'] });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['passion-recommended-videos'] }),
+        queryClient.invalidateQueries({ queryKey: ['passion-recommended-videos-all'] })
+      ]);
       toast.success("Vidéo recommandée ajoutée avec succès");
     },
     onError: (error) => {
@@ -146,9 +148,11 @@ export const useDeletePassionRecommendedVideo = () => {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['passion-recommended-videos'] });
-      queryClient.invalidateQueries({ queryKey: ['passion-recommended-videos-all'] });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['passion-recommended-videos'] }),
+        queryClient.invalidateQueries({ queryKey: ['passion-recommended-videos-all'] })
+      ]);
       toast.success("Vidéo recommandée supprimée");
     },
     onError: (error) => {
