@@ -75,6 +75,7 @@ const DataMigration = lazy(() => import("./pages/DataMigration"));
 const AIGenerationAnalytics = lazy(() => import("./pages/AIGenerationAnalytics"));
 const MigratePDFs = lazy(() => import("./pages/MigratePDFs"));
 const PaymentDemo = lazy(() => import("./pages/PaymentDemo"));
+const PaymentCallback = lazy(() => import("./pages/PaymentCallback"));
 const NatCashDemo = lazy(() => import("./pages/NatCashDemo"));
 const AdminPayments = lazy(() => import("./pages/AdminPayments"));
 const AdminPaymentsDemo = lazy(() => import("./pages/AdminPaymentsDemo"));
@@ -414,6 +415,11 @@ const App = () => (
                           <Route path="/payment-demo" element={
                             <Suspense fallback={<GenericPageSkeleton />}>
                               <PaymentDemo />
+                            </Suspense>
+                          } />
+                          <Route path="/payment/callback" element={
+                            <Suspense fallback={<GenericPageSkeleton />}>
+                              <PaymentCallback />
                             </Suspense>
                           } />
                           <Route path="/natcash-demo" element={

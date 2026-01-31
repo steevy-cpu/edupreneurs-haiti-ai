@@ -13,6 +13,7 @@ import {
   Loader2, ExternalLink, CheckCircle2
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 type Step = 'signup' | 'plan' | 'payment' | 'processing' | 'success';
 
@@ -108,15 +109,53 @@ export default function PaymentDemo() {
   };
 
   const handlePayment = async () => {
+    if (!selectedPlan) return;
+    
     setIsLoading(true);
     setStep('processing');
     
-    // Simulate MonCash redirect and processing
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    setIsLoading(false);
-    setStep('success');
-    toast.success("Paiement réussi! Bienvenue sur Edupreneurs Premium!");
+    try {
+      // Call the real MonCash create payment API
+      const { data, error } = await supabase.functions.invoke('moncash-create-payment', {
+        body: { 
+          amount: selectedPlan.price, 
+          description: `Abonnement ${selectedPlan.name} - Edupreneurs` 
+        }
+      });
+
+      if (error) {
+        console.error('Payment creation error:', error);
+        toast.error("Erreur lors de la création du paiement");
+        setStep('payment');
+        setIsLoading(false);
+        return;
+      }
+
+      if (!data?.success || !data?.redirectUrl) {
+        console.error('Invalid payment response:', data);
+        toast.error(data?.error || "Erreur lors de la création du paiement");
+        setStep('payment');
+        setIsLoading(false);
+        return;
+      }
+
+      // Store orderId for callback verification
+      const orderId = data.orderId;
+      
+      // Redirect to MonCash payment portal
+      // The return URL is configured in the MonCash dashboard
+      // After payment, user will be redirected to /payment/callback?orderId=XXX
+      toast.info("Redirection vers MonCash...");
+      
+      // Open MonCash in a new window or redirect
+      window.location.href = data.redirectUrl;
+      
+    } catch (err) {
+      console.error('Payment error:', err);
+      toast.error("Une erreur est survenue");
+      setStep('payment');
+      setIsLoading(false);
+    }
   };
 
   const renderSignup = () => (
