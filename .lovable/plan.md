@@ -1,71 +1,190 @@
 
 
-# Fix: Bazik.io Token Field Name Mismatch
+# Fix MonCash Payment: Add Success/Error URL Parameters
 
 ## Problem Identified
 
-The logs show the authentication is **successful**, but we're looking for the wrong field name in the response:
+Looking at the Bazik.io API response in the logs:
 
-```text
-ERROR No access token in Bazik response: {
-  success: true,
-  token: "eyJ1c2VySWQi...",     <-- API returns "token"
-  user_id: "bzk_sandbox_...",
-  expires_at: 1769912084221,
-  message: "Authentication successful"
+```json
+{
+  "successUrl": "noolock.com",
+  "errorUrl": "noolock.com",
+  "redirectUrl": "http://moncashbutton.digicelgroup.com/..."
 }
 ```
 
-Our code expects `access_token` but Bazik.io returns `token`.
+The `successUrl` and `errorUrl` are set to "noolock.com" - this is an invalid placeholder URL configured in the Bazik.io dashboard. When MonCash tries to redirect after payment, it fails because these URLs are not valid.
 
 ---
 
-## Fix Required
+## Solution
 
-**File:** `supabase/functions/moncash-create-payment/index.ts`
+Pass `successUrl` and `errorUrl` parameters in the API request to override the dashboard defaults. Based on the PGecom documentation (which uses the same Bazik.io API), these parameters are accepted:
 
-**Line 51** - Update token extraction to check both field names:
+```json
+{
+  "gdes": 500,
+  "description": "Payment description",
+  "referenceId": "YOUR_ORDER_ID",
+  "successUrl": "https://your-app.com/payment/callback?orderId=XXX",
+  "errorUrl": "https://your-app.com/payment/callback?orderId=XXX&error=true"
+}
+```
+
+---
+
+## Implementation
+
+### File to Update
+
+`supabase/functions/moncash-create-payment/index.ts`
+
+### Changes Required
+
+1. Accept the app base URL (we'll use the published URL or derive it)
+2. Add `successUrl` and `errorUrl` to the Bazik API request
+
+**Before (lines 76-80):**
+```typescript
+body: JSON.stringify({
+  gdes: amount,
+  description: `Edupreneurs Payment - ${orderId}`,
+  referenceId: orderId,
+}),
+```
+
+**After:**
+```typescript
+// Build callback URLs
+const baseUrl = 'https://edupreneurs-haiti-ai.lovable.app';
+const successUrl = `${baseUrl}/payment/callback?orderId=${orderId}`;
+const errorUrl = `${baseUrl}/payment/callback?orderId=${orderId}&error=true`;
+
+body: JSON.stringify({
+  gdes: amount,
+  description: description || `Edupreneurs Payment - ${orderId}`,
+  referenceId: orderId,
+  successUrl: successUrl,
+  errorUrl: errorUrl,
+}),
+```
+
+---
+
+## Why This Matters
+
+| Without URLs | With URLs |
+|--------------|-----------|
+| Uses dashboard defaults ("noolock.com") | Uses our valid app URLs |
+| MonCash fails to redirect | MonCash redirects correctly |
+| User sees "System Error" | User sees payment result page |
+
+---
+
+## Updated Function Signature
+
+The `createBazikPayment` function will be updated to accept additional parameters:
 
 ```typescript
-// BEFORE (line 51-54)
-if (!data.access_token) {
-  console.error('No access token in Bazik response:', data);
-  throw new Error('No access token received from Bazik.io');
-}
-
-// AFTER
-const accessToken = data.token || data.access_token;
-if (!accessToken) {
-  console.error('No token in Bazik response:', data);
-  throw new Error('No access token received from Bazik.io');
-}
+async function createBazikPayment(
+  token: string,
+  amount: number,
+  orderId: string,
+  description: string,
+  successUrl: string,
+  errorUrl: string
+): Promise<{ redirectUrl: string; bazikOrderId?: string; transactionId?: string }>
 ```
 
-**Line 57** - Update return statement:
+---
+
+## Full Code Changes
+
+### Updated `createBazikPayment` function:
 
 ```typescript
-// BEFORE
-return data.access_token;
+async function createBazikPayment(
+  token: string,
+  amount: number,
+  orderId: string,
+  description: string,
+  successUrl: string,
+  errorUrl: string
+): Promise<{ redirectUrl: string; bazikOrderId?: string; transactionId?: string }> {
+  console.log(`Creating Bazik MonCash payment: amount=${amount}, orderId=${orderId}`);
+  console.log(`Success URL: ${successUrl}`);
+  console.log(`Error URL: ${errorUrl}`);
+  
+  const response = await fetch(`${BAZIK_API_BASE}/moncash/token`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify({
+      gdes: amount,
+      description: description,
+      referenceId: orderId,
+      successUrl: successUrl,
+      errorUrl: errorUrl,
+    }),
+  });
 
-// AFTER  
-return accessToken;
+  // ... rest of the function unchanged
+}
+```
+
+### Updated function call in main handler:
+
+```typescript
+// Build callback URLs using the published app URL
+const baseUrl = 'https://edupreneurs-haiti-ai.lovable.app';
+const successUrl = `${baseUrl}/payment/callback?orderId=${finalOrderId}`;
+const errorUrl = `${baseUrl}/payment/callback?orderId=${finalOrderId}&error=true`;
+
+// Step 2: Create payment via Bazik.io with callback URLs
+const { redirectUrl, bazikOrderId, transactionId } = await createBazikPayment(
+  bazikToken,
+  amount,
+  finalOrderId,
+  description || 'Edupreneurs Payment',
+  successUrl,
+  errorUrl
+);
 ```
 
 ---
 
-## Verification Checklist
+## Safety Verification
 
-| Check | Status |
-|-------|--------|
-| Authentication working? | Yes - API returns success |
-| Token received? | Yes - in `token` field |
-| Field name correct? | No - we check `access_token` |
-| Fix complexity | Low - 2 line changes |
-| Risk of breaking | None - adds fallback |
+| Check | Status | Notes |
+|-------|--------|-------|
+| Breaks existing functionality? | No | Adds optional parameters |
+| Works with existing data? | Yes | Same database structure |
+| Backward compatible? | Yes | Uses same API, adds parameters |
+| 3G optimized? | Yes | No extra network calls |
+| Security risk? | No | URLs are hardcoded to our domain |
 
 ---
 
-## Summary
+## Testing After Fix
 
-This is a simple field name fix. The Bazik.io authentication is working correctly - we just need to read the token from the right field (`token` instead of `access_token`).
+1. Go to `/payment-demo`
+2. Fill out the form and select a plan
+3. Click "Payer avec MonCash"
+4. You should be redirected to MonCash (no more "System Error")
+5. After payment, you should return to `/payment/callback?orderId=XXX`
+
+---
+
+## Alternative: Make Base URL Configurable
+
+For flexibility between preview and production environments, we could also pass the base URL from the frontend. This would require:
+
+1. Frontend sends `callbackBaseUrl` in the request body
+2. Edge function uses this URL to build success/error URLs
+
+This approach would be more flexible for testing in preview vs production environments.
 
