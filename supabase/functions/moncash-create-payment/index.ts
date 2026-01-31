@@ -62,7 +62,7 @@ async function createBazikPayment(
   token: string,
   amount: number,
   orderId: string
-): Promise<{ redirectUrl: string; referenceId?: string }> {
+): Promise<{ redirectUrl: string; bazikOrderId?: string; transactionId?: string }> {
   console.log(`Creating Bazik MonCash payment: amount=${amount}, orderId=${orderId}`);
   
   const response = await fetch(`${BAZIK_API_BASE}/moncash/token`, {
@@ -73,8 +73,9 @@ async function createBazikPayment(
       'Accept': 'application/json',
     },
     body: JSON.stringify({
-      amount,
-      orderId,
+      gdes: amount,  // Bazik.io uses "gdes" for amount in Gourdes
+      description: `Edupreneurs Payment - ${orderId}`,
+      referenceId: orderId,  // Our order ID becomes their referenceId
     }),
   });
 
@@ -97,7 +98,8 @@ async function createBazikPayment(
 
   return {
     redirectUrl,
-    referenceId: data.referenceId || data.reference_id || data.transactionId,
+    bazikOrderId: data.orderId,  // Bazik's internal orderId
+    transactionId: data.transactionId,
   };
 }
 
@@ -190,7 +192,7 @@ serve(async (req) => {
     const bazikToken = await getBazikToken(userID, secretKey);
 
     // Step 2: Create payment via Bazik.io
-    const { redirectUrl, referenceId } = await createBazikPayment(bazikToken, amount, finalOrderId);
+    const { redirectUrl, bazikOrderId, transactionId } = await createBazikPayment(bazikToken, amount, finalOrderId);
     
     console.log('Payment created successfully, redirectUrl:', redirectUrl);
 
@@ -199,16 +201,17 @@ serve(async (req) => {
       .from('payment_transactions')
       .insert({
         user_id: user.id,
-        order_id: finalOrderId,
+        order_id: finalOrderId,  // Our internal order ID (sent as referenceId to Bazik)
         amount: amount,
         currency: 'HTG',
         provider: 'moncash',
         status: 'pending',
-        payment_token: referenceId || finalOrderId,
+        payment_token: transactionId || finalOrderId,
         description: description || 'Edupreneurs Payment',
         metadata: { 
           gateway: 'bazik.io',
-          referenceId 
+          bazikOrderId,  // Store Bazik's internal orderId
+          transactionId,
         },
       });
 
@@ -217,7 +220,7 @@ serve(async (req) => {
         success: true,
         orderId: finalOrderId,
         redirectUrl: redirectUrl,
-        referenceId: referenceId,
+        bazikOrderId: bazikOrderId,
       }),
       { headers: responseHeaders }
     );
