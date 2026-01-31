@@ -13,6 +13,7 @@ export interface DailyWord {
   example: string;
   audio_url: string | null;
   category: string | null;
+  display_order: number | null;
 }
 
 interface UseWordOfTheDayReturn {
@@ -26,23 +27,13 @@ interface UseWordOfTheDayReturn {
   shouldDeferAudio: boolean;
 }
 
-const CACHED_WORD_KEY = 'cached_daily_word_v2';
+const CACHED_WORD_KEY = 'cached_daily_word_v3';
 
 // Get today's date in Haiti timezone (YYYY-MM-DD format)
 const getHaitiDate = (): string => {
   return new Date().toLocaleDateString('en-CA', { 
     timeZone: 'America/Port-au-Prince' 
   });
-};
-
-// Deterministic word selection based on date - ensures same word for everyone
-const getGlobalWordIndex = (date: string, totalWords: number): number => {
-  let hash = 0;
-  for (let i = 0; i < date.length; i++) {
-    hash = ((hash << 5) - hash) + date.charCodeAt(i);
-    hash |= 0; // Convert to 32-bit integer
-  }
-  return Math.abs(hash) % totalWords;
 };
 
 export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
@@ -58,7 +49,7 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
   // Defer audio on slow connections
   const shouldDeferAudio = isSlowConnection || loadingStrategy === 'minimal';
 
-  // Fetch word of the day - same word until midnight Haiti time
+  // Fetch word of the day using sequential rotation
   useEffect(() => {
     const fetchWord = async () => {
       try {
@@ -83,47 +74,99 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
           }
         }
 
-        // Fetch all active words (ordered for consistent selection)
-        const { data: allWords, error: wordsError } = await supabase
+        // Get current rotation state from app_settings
+        const { data: settings } = await supabase
+          .from('app_settings')
+          .select('value')
+          .eq('key', 'word_of_day')
+          .maybeSingle();
+
+        const settingsValue = settings?.value as { last_date?: string; last_order?: number } | null;
+        const lastDate = settingsValue?.last_date;
+        const lastOrder = settingsValue?.last_order || 0;
+        
+        let currentOrder = lastOrder;
+        let needsUpdate = false;
+
+        // If it's a new day, advance to next word
+        if (lastDate !== haitiDate) {
+          // Get max display_order
+          const { data: maxData } = await supabase
+            .from('daily_words')
+            .select('display_order')
+            .eq('is_active', true)
+            .order('display_order', { ascending: false })
+            .limit(1)
+            .single();
+
+          const maxOrder = maxData?.display_order || 1;
+          currentOrder = (lastOrder % maxOrder) + 1;
+          needsUpdate = true;
+        }
+
+        // Fetch the word with this display_order
+        const { data: wordData, error: wordError } = await supabase
           .from('daily_words')
-          .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category')
+          .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category, display_order')
           .eq('is_active', true)
-          .order('id', { ascending: true });
+          .eq('display_order', currentOrder)
+          .maybeSingle();
 
-        if (wordsError) throw wordsError;
-
-        let wordData: DailyWord | null = null;
-
-        if (allWords && allWords.length > 0) {
-          // Use deterministic selection based on today's date
-          const wordIndex = getGlobalWordIndex(haitiDate, allWords.length);
-          const rawWord = allWords[wordIndex];
+        // Fallback to first active word if display_order not found
+        let finalWord: DailyWord | null = wordData;
+        if (!wordData) {
+          const { data: fallbackWord } = await supabase
+            .from('daily_words')
+            .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category, display_order')
+            .eq('is_active', true)
+            .order('display_order', { ascending: true })
+            .limit(1)
+            .single();
           
-          // On slow connections, clear audio_url to defer loading
-          wordData = shouldDeferAudio 
-            ? { ...rawWord, audio_url: null }
-            : rawWord;
+          finalWord = fallbackWord;
+          if (fallbackWord) {
+            currentOrder = fallbackWord.display_order || 1;
+          }
+        }
 
-          // Optionally track for authenticated users (analytics)
+        // On slow connections, clear audio_url to defer loading
+        if (finalWord && shouldDeferAudio) {
+          finalWord = { ...finalWord, audio_url: null };
+        }
+
+        // Update rotation state if it's a new day (only for authenticated users)
+        if (needsUpdate && !isVisitor) {
           const { data: { user } } = await supabase.auth.getUser();
-          if (user && !isVisitor) {
+          if (user) {
+            // Use RPC to update (security definer function)
+            await supabase.rpc('update_app_setting', {
+              _key: 'word_of_day',
+              _value: { last_date: haitiDate, last_order: currentOrder }
+            });
+          }
+        }
+
+        // Track for authenticated users (analytics)
+        if (finalWord && !isVisitor) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
             // Track which word was shown today (fire and forget)
             supabase
               .from('user_daily_word')
               .upsert(
-                { user_id: user.id, word_id: rawWord.id, date: haitiDate },
+                { user_id: user.id, word_id: finalWord.id, date: haitiDate },
                 { onConflict: 'user_id,date', ignoreDuplicates: true }
               )
               .then(() => {});
           }
         }
 
-        setWord(wordData);
+        setWord(finalWord);
 
         // Cache the word for future instant loads (3G optimization)
-        if (wordData) {
+        if (finalWord) {
           localStorage.setItem(CACHED_WORD_KEY, JSON.stringify({
-            word: wordData,
+            word: finalWord,
             date: haitiDate
           }));
         }
@@ -205,7 +248,7 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
         }
       }
 
-      // Generate audio on-demand if none exists
+      // Generate audio on-demand if none exists (founders only - will fail for regular users)
       const response = await supabase.functions.invoke('generate-word-audio', {
         body: { wordId: word.id, word: word.word }
       });
@@ -233,7 +276,7 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
       }
     } catch (err) {
       console.error('Error generating audio:', err);
-      toast.error('Erreur lors de la génération audio');
+      toast.error('Audio non disponible pour ce mot');
     } finally {
       setIsGenerating(false);
     }

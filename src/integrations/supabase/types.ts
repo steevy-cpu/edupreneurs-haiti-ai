@@ -273,6 +273,24 @@ export type Database = {
         }
         Relationships: []
       }
+      app_settings: {
+        Row: {
+          key: string
+          updated_at: string | null
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string | null
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       banned_youtube_videos: {
         Row: {
           banned_at: string | null
@@ -993,6 +1011,7 @@ export type Database = {
           created_at: string | null
           definition: string
           difficulty_level: string | null
+          display_order: number | null
           example: string
           id: string
           is_active: boolean | null
@@ -1007,6 +1026,7 @@ export type Database = {
           created_at?: string | null
           definition: string
           difficulty_level?: string | null
+          display_order?: number | null
           example: string
           id?: string
           is_active?: boolean | null
@@ -1021,6 +1041,7 @@ export type Database = {
           created_at?: string | null
           definition?: string
           difficulty_level?: string | null
+          display_order?: number | null
           example?: string
           id?: string
           is_active?: boolean | null
@@ -4160,6 +4181,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: Json
+      }
+      update_app_setting: {
+        Args: { _key: string; _value: Json }
+        Returns: undefined
       }
       user_has_active_battle: { Args: { p_user_id: string }; Returns: boolean }
       verify_device_challenge: {
