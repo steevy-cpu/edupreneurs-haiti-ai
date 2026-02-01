@@ -1,91 +1,116 @@
 
-# Fix: MonCash Sandbox Mode - Response Path Mismatch
+# Fix: MonCash Error Handling in Payment Callback
 
 ## Problem Identified
 
-The sandbox mode IS working correctly - Bazik.io creates payments in sandbox mode and returns a redirect URL. However, when the user returns from MonCash to the callback page, the status check fails because of a **response path mismatch**:
+There are two issues causing the error page:
 
-| Component | Expects | Receives |
-|-----------|---------|----------|
-| `PaymentCallback.tsx` | `data.status` | `data.transaction.status` |
+### Issue 1: Callback ignores `error=true` parameter
+When MonCash redirects back with `&error=true` (on user cancel or gateway error), the PaymentCallback page ignores this and tries to check status anyway - showing confusing "checking" then "pending" states instead of an immediate error.
 
-### Evidence from Logs
-
-```javascript
-// moncash-check-status returns:
-{
-  success: true,
-  transaction: {
-    orderId: "EDU-ML2K5ZG1-PM0E1X",
-    status: "pending",  // <-- Status is nested here
-    ...
-  }
-}
-
-// PaymentCallback.tsx reads:
-const paymentStatus = data?.status;  // <-- Reads wrong path (undefined)
+**Current Behavior:**
+```text
+1. User clicks "Pay with MonCash"
+2. Redirect to MonCash gateway
+3. User cancels or MonCash has an error
+4. MonCash redirects to: /payment/callback?orderId=XXX&error=true
+5. PaymentCallback ignores "error=true" and calls moncash-check-status
+6. Status returns "pending" (because no payment was made)
+7. User sees "Pending" - confusing!
 ```
 
-This causes `paymentStatus` to be `undefined`, which triggers the "unknown status" error path.
+**Expected Behavior:**
+```text
+1. User clicks "Pay with MonCash"
+2. Redirect to MonCash gateway
+3. User cancels or MonCash has an error
+4. MonCash redirects to: /payment/callback?orderId=XXX&error=true
+5. PaymentCallback sees "error=true" and immediately shows "Failed" state
+6. User sees clear "Payment cancelled" message
+```
+
+### Issue 2: Token expiration
+MonCash sandbox payment tokens expire after 30 minutes. The last token in logs was created at 17:14:16 and expired at 17:44:16. If you're testing after this time, you need to initiate a new payment.
+
+---
+
+## Solution
+
+Update `src/pages/PaymentCallback.tsx` to:
+1. Check for `error=true` query parameter on mount
+2. If error param exists, skip status check and show failed state immediately
+3. Show appropriate error message based on context
 
 ---
 
 ## Files to Modify
 
-### 1. `src/pages/PaymentCallback.tsx`
+### `src/pages/PaymentCallback.tsx`
 
-**Fix the response path to read from `data.transaction.status` instead of `data.status`:**
+**Change 1: Read error parameter from URL (line 24)**
 
 ```typescript
-// Line 60 - BEFORE
-const paymentStatus = data?.status;
+// BEFORE (line 24)
+const orderId = searchParams.get('orderId');
 
-// Line 60 - AFTER  
-const paymentStatus = data?.transaction?.status;
+// AFTER (line 24-25)
+const orderId = searchParams.get('orderId');
+const hasError = searchParams.get('error') === 'true';
 ```
 
-**Also update error message handling (line 65-66):**
+**Change 2: Handle error parameter in useEffect (lines 28-36)**
 
 ```typescript
 // BEFORE
-setErrorMessage(data?.message || 'Le paiement a échoué');
+useEffect(() => {
+  if (!orderId) {
+    setStatus('error');
+    setErrorMessage('Aucun identifiant de commande trouvé');
+    return;
+  }
+
+  checkPaymentStatus();
+}, [orderId]);
 
 // AFTER
-setErrorMessage(data?.transaction?.description || data?.error || 'Le paiement a échoué');
+useEffect(() => {
+  if (!orderId) {
+    setStatus('error');
+    setErrorMessage('Aucun identifiant de commande trouvé');
+    return;
+  }
+
+  // Check if MonCash redirected with an error (user cancelled or gateway error)
+  if (hasError) {
+    setStatus('failed');
+    setErrorMessage('Le paiement a été annulé ou a échoué sur MonCash. Veuillez réessayer.');
+    return;
+  }
+
+  checkPaymentStatus();
+}, [orderId, hasError]);
 ```
 
 ---
 
-## Additional Context: Why Sandbox Appears to "Not Work"
+## Expected Results After Fix
 
-### What's Actually Happening
-
-1. User clicks "Pay with MonCash" on payment-demo page
-2. Edge function creates payment via Bazik.io (sandbox mode) - SUCCESS
-3. User is redirected to `http://moncashbutton.digicelgroup.com/...` - the real MonCash payment page
-4. MonCash shows the payment screen but:
-   - In sandbox, you need MonCash test credentials to complete
-   - Without completing, the user navigates away or MonCash redirects with error
-5. User lands on `/payment/callback?orderId=XXX`
-6. Callback page calls `moncash-check-status` - works correctly
-7. **BUG**: Callback reads `data.status` (undefined) instead of `data.transaction.status`
-8. Falls into "unknown status" error case
-
-### The Fix
-
-Once we correct the response path, the callback page will properly:
-- Show "pending" status if payment is still pending
-- Show "completed" if MonCash webhook updated the status
-- Allow manual retry/verification
+| Scenario | Before Fix | After Fix |
+|----------|------------|-----------|
+| User cancels on MonCash | Shows "Pending" (confusing) | Shows "Paiement échoué" immediately |
+| MonCash gateway error | Polls 10 times, then "Pending" | Shows error immediately |
+| Successful payment | Works correctly | Works correctly (no change) |
+| Token expired on MonCash | User sees MonCash error page, then confused callback | User sees clear error message |
 
 ---
 
-## Changes Summary
+## Testing Instructions
 
-| File | Line | Change |
-|------|------|--------|
-| `PaymentCallback.tsx` | 60 | Read `data?.transaction?.status` |
-| `PaymentCallback.tsx` | 65-66 | Read error from `data?.transaction?.description` or `data?.error` |
+1. Navigate to `/payment-demo`
+2. Select Premium plan and click "Pay with MonCash"
+3. On the MonCash page, click cancel/back (or wait for token to expire)
+4. You should now see "Paiement échoué" with "Le paiement a été annulé" message
+5. For successful flow: Use MonCash sandbox test credentials to complete payment
 
 ---
 
@@ -93,19 +118,19 @@ Once we correct the response path, the callback page will properly:
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Breaks existing functionality? | No | Fixes the broken status check |
-| Database changes needed? | No | Just frontend path fix |
-| Works with existing data? | Yes | Pending transactions in DB will be correctly read |
-| Backward compatible? | Yes | Same data, corrected access path |
-| 3G optimized? | N/A | No change to network behavior |
+| Breaks existing functionality? | No | Adds error handling, doesn't change success flow |
+| Works with existing data? | Yes | Just reads URL params, no DB changes |
+| 3G optimized? | Yes | Avoids unnecessary polling when error is known |
+| Backward compatible? | Yes | Existing pending payments still work |
+| User experience impact? | Positive | Clearer error messages, no confusing "pending" state |
 
 ---
 
-## Testing After Fix
+## Additional Note
 
-1. Navigate to `/payment-demo`
-2. Complete signup and select Premium plan
-3. Click "Pay with MonCash" - should redirect to MonCash
-4. Navigate back or wait for redirect to `/payment/callback?orderId=XXX`
-5. Should now see "Pending" status (yellow clock icon) instead of error
-6. "Vérifier à nouveau" button should work to poll for status updates
+If you're seeing the error page **on the MonCash gateway itself** (not on your callback page), this is likely due to:
+- **Expired token**: Re-initiate the payment to get a fresh token
+- **Sandbox limitations**: MonCash sandbox may have availability issues
+- **Network issues**: Try again in a few minutes
+
+The fix above ensures that even when MonCash has issues, your users get a clear error message rather than a confusing "pending" state.
