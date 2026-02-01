@@ -22,6 +22,7 @@ export default function PaymentCallback() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   const orderId = searchParams.get('orderId');
+  const hasError = searchParams.get('error') === 'true';
   const maxAttempts = 10;
   const pollInterval = 3000; // 3 seconds
 
@@ -32,8 +33,15 @@ export default function PaymentCallback() {
       return;
     }
 
+    // Check if MonCash redirected with an error (user cancelled or gateway error)
+    if (hasError) {
+      setStatus('failed');
+      setErrorMessage('Le paiement a été annulé ou a échoué sur MonCash. Veuillez réessayer.');
+      return;
+    }
+
     checkPaymentStatus();
-  }, [orderId]);
+  }, [orderId, hasError]);
 
   const checkPaymentStatus = async () => {
     if (!orderId) return;
