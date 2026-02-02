@@ -5,6 +5,9 @@
 // Pages
 export { ExamsHubPage } from './pages/ExamsHubPage';
 
+// Admin
+export { ExamAdminPage } from './admin';
+
 // Types
 export * from './types/exam.types';
 

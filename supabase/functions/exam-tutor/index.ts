@@ -5,12 +5,127 @@
  * - Rate limiting
  * - Input validation
  * - Security headers
+ * - Structured TutorResponse with blocks and actions
+ * - Deterministic answer validation for MCQ
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
 import { validateInput, examTutorSchema } from "../_shared/validation.ts";
 import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
+
+// ============= Content Block Types =============
+interface ContentBlock {
+  type: 'text' | 'math-inline' | 'math-block';
+  content?: string;
+  latex?: string;
+}
+
+interface TutorAction {
+  type: 'hint' | 'reveal' | 'next' | 'youtube' | 'reference';
+  label: string;
+  payload?: any;
+}
+
+interface TutorGrading {
+  isCorrect?: boolean;
+  pointsAwarded?: number | null;
+  correctAnswer?: string | null;
+}
+
+// ============= Helper Functions =============
+
+/**
+ * Normalize answer for comparison (accents, case, special chars)
+ */
+function normalizeAnswer(text: string): string {
+  if (!text) return '';
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove accents
+    .replace(/[^a-z0-9]/g, '')       // Remove special chars
+    .trim();
+}
+
+/**
+ * Deterministic answer validation
+ * For MCQ: exact letter match
+ * For open-ended: normalized comparison
+ */
+function validateAnswer(studentAnswer: string, exercise: any): boolean {
+  const correct = exercise.correct_answer?.toUpperCase().trim();
+  const student = studentAnswer?.toUpperCase().trim();
+  
+  if (!correct) {
+    console.warn(`No correct_answer defined for exercise ${exercise.exercise_number}`);
+    return false;
+  }
+  
+  // For MCQ (has options): exact letter match
+  if (exercise.options && (Array.isArray(exercise.options) || typeof exercise.options === 'object')) {
+    return student === correct;
+  }
+  
+  // For open-ended: normalize and compare
+  return normalizeAnswer(student) === normalizeAnswer(correct);
+}
+
+/**
+ * Parse AI response text into structured ContentBlocks
+ * Handles $...$ (inline math) and $$...$$ (block math)
+ */
+function parseToBlocks(text: string): ContentBlock[] {
+  if (!text) return [];
+  
+  const blocks: ContentBlock[] = [];
+  const regex = /(\$\$[\s\S]*?\$\$|\$[^\$\n]+?\$)/g;
+  
+  let lastIndex = 0;
+  let match;
+  
+  while ((match = regex.exec(text)) !== null) {
+    // Add text before the match
+    if (match.index > lastIndex) {
+      const textContent = text.slice(lastIndex, match.index);
+      if (textContent.trim()) {
+        blocks.push({ type: 'text', content: textContent });
+      }
+    }
+    
+    const mathContent = match[0];
+    
+    // Check if it's block math ($$...$$) or inline math ($...$)
+    if (mathContent.startsWith('$$') && mathContent.endsWith('$$')) {
+      blocks.push({
+        type: 'math-block',
+        latex: mathContent.slice(2, -2).trim(),
+      });
+    } else {
+      blocks.push({
+        type: 'math-inline',
+        latex: mathContent.slice(1, -1).trim(),
+      });
+    }
+    
+    lastIndex = match.index + mathContent.length;
+  }
+  
+  // Add remaining text
+  if (lastIndex < text.length) {
+    const remaining = text.slice(lastIndex);
+    if (remaining.trim()) {
+      blocks.push({ type: 'text', content: remaining });
+    }
+  }
+  
+  // If no blocks were created, treat the whole thing as text
+  if (blocks.length === 0 && text.trim()) {
+    blocks.push({ type: 'text', content: text });
+  }
+  
+  return blocks;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -70,8 +185,8 @@ serve(async (req) => {
       });
     }
 
-    // Build system prompt for Eric as exam tutor
-    let systemPrompt = `Tu es Jude, un tuteur pédagogique haïtien qui aide les élèves de 9ème année fondamentale à préparer leur examen officiel.
+    // Build system prompt for Jude as exam tutor
+    let systemPrompt = `Tu es Jude, un tuteur pédagogique haïtien qui aide les élèves à préparer leurs examens officiels.
 
 **IMPORTANT: Tu dois TOUJOURS parler en FRANÇAIS, peu importe la matière de l'examen (sauf si c'est un examen de Kreyòl).**
 ${referenceTextsSection}
@@ -143,16 +258,16 @@ Donne une explication complète mais concise (maximum 150 mots).`;
     }
 
     const data = await response.json();
-    const ericResponse = data.choices[0].message.content;
+    const judeResponse = data.choices[0].message.content;
 
-    // Check if student provided an answer to validate
+    // ============= Deterministic Answer Validation =============
     let isCorrect = false;
     let shouldAwardPoints = false;
     let shouldMoveToNext = false;
 
     if (studentAnswer && exercise.correct_answer) {
-      // Null-safe comparison - only validate if we have a correct answer
-      isCorrect = studentAnswer.toUpperCase() === exercise.correct_answer.toUpperCase();
+      // Use deterministic validation
+      isCorrect = validateAnswer(studentAnswer, exercise);
       shouldAwardPoints = isCorrect;
       shouldMoveToNext = true; // Auto-move after answering (correct or incorrect)
     } else if (studentAnswer && !exercise.correct_answer) {
@@ -161,9 +276,21 @@ Donne une explication complète mais concise (maximum 150 mots).`;
       shouldMoveToNext = true;
     }
 
-    // Suggest YouTube videos for the concept
-    const youtubeKeywords = {
-      'divisibilité': 'divisibilité mathématiques 9ème',
+    // ============= Build Structured Response =============
+    
+    // Parse response into content blocks for KaTeX rendering
+    const blocks = parseToBlocks(judeResponse);
+    
+    // Build available actions
+    const actions: TutorAction[] = [];
+    
+    if (shouldMoveToNext || revealAnswer) {
+      actions.push({ type: 'next', label: 'Question suivante' });
+    }
+
+    // YouTube suggestion
+    const youtubeKeywords: Record<string, string> = {
+      'divisibilité': 'divisibilité mathématiques',
       'puissances': 'puissances exposants mathématiques',
       'équations': 'résoudre équations premier degré',
       'géométrie': 'géométrie triangle rectangle',
@@ -174,16 +301,43 @@ Donne une explication complète mais concise (maximum 150 mots).`;
       'opérations': 'opérations nombres relatifs',
     };
 
-    const youtubeQuery = youtubeKeywords[exercise.concept as keyof typeof youtubeKeywords] || `${exercise.concept} mathématiques 9ème`;
+    const youtubeQuery = youtubeKeywords[exercise.concept as string] || `${exercise.concept} mathématiques`;
+    
+    if (youtubeQuery) {
+      actions.push({ type: 'youtube', label: 'Voir vidéo', payload: youtubeQuery });
+    }
 
+    // Build grading info
+    const grading: TutorGrading = {
+      isCorrect: studentAnswer ? isCorrect : undefined,
+      pointsAwarded: shouldAwardPoints ? exercise.points : 0,
+      correctAnswer: revealAnswer ? exercise.correct_answer : undefined,
+    };
+
+    // Return structured TutorResponse
     return new Response(
       JSON.stringify({
-        response: ericResponse,
+        // NEW: Structured content blocks for KaTeX
+        blocks,
+        
+        // NEW: Available action buttons
+        actions,
+        
+        // NEW: Grading info
+        grading,
+        
+        // Auto-advance flag
+        shouldAutoAdvance: shouldMoveToNext,
+        
+        // YouTube query for video suggestions
+        youtubeQuery,
+        
+        // BACKWARD COMPAT: Keep raw response for older clients
+        response: judeResponse,
         isCorrect,
         shouldAwardPoints,
         pointsEarned: shouldAwardPoints ? exercise.points : 0,
         shouldMoveToNext,
-        youtubeQuery,
         explanation: isCorrect ? exercise.explanation : null,
       }),
       { headers: responseHeaders }

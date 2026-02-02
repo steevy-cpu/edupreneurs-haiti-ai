@@ -11,12 +11,16 @@ import { Send, Loader2, Youtube, MessageCircle, Trash2, ChevronLeft, ChevronRigh
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import judeProfile from "@/assets/jude-profile.jpeg";
 import { MathText } from '@/components/MathContent';
+import { ContentBlocksRenderer } from '@/features/exams/rendering/ContentBlocksRenderer';
+import type { ContentBlock } from '@/features/exams/types/exam.types';
 import { motion, AnimatePresence } from "framer-motion";
 interface Message {
   id: string;
   message_role: string;
   message_content: string;
   created_at: string;
+  // Store structured blocks for assistant messages (from new tutor response)
+  content_blocks?: ContentBlock[];
 }
 
 interface ReferenceText {
@@ -164,7 +168,7 @@ Prends ton temps pour réfléchir! 💡`;
     setSelectedAnswer(null);
   };
 
-  const saveMessage = async (role: string, content: string) => {
+  const saveMessage = async (role: string, content: string, blocks?: ContentBlock[]) => {
     try {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) return;
@@ -183,7 +187,13 @@ Prends ton temps pour réfléchir! 💡`;
 
       if (error) throw error;
 
-      setMessages(prev => [...prev, data]);
+      // Add content_blocks to local state for rendering (not saved to DB)
+      const messageWithBlocks: Message = {
+        ...data,
+        content_blocks: blocks,
+      };
+
+      setMessages(prev => [...prev, messageWithBlocks]);
     } catch (error) {
       console.error('Error saving message:', error);
     }
@@ -210,7 +220,8 @@ Prends ton temps pour réfléchir! 💡`;
 
       if (error) throw error;
 
-      await saveMessage('assistant', data.response);
+      // Save message with optional blocks for KaTeX rendering
+      await saveMessage('assistant', data.response, data.blocks);
 
       if (data.youtubeQuery) {
         setYoutubeQuery(data.youtubeQuery);
@@ -272,7 +283,7 @@ Prends ton temps pour réfléchir! 💡`;
 
       if (error) throw error;
 
-      await saveMessage('assistant', data.response);
+      await saveMessage('assistant', data.response, data.blocks);
 
       if (data.youtubeQuery) {
         setYoutubeQuery(data.youtubeQuery);
@@ -311,7 +322,7 @@ Prends ton temps pour réfléchir! 💡`;
 
       if (error) throw error;
 
-      await saveMessage('assistant', data.response);
+      await saveMessage('assistant', data.response, data.blocks);
 
       if (data.youtubeQuery) {
         setYoutubeQuery(data.youtubeQuery);
@@ -454,7 +465,11 @@ Prends ton temps pour réfléchir! 💡`;
                   }`}
                 >
                   <div className="text-sm whitespace-pre-wrap leading-relaxed">
-                    <MathText text={message.message_content} />
+                    {message.message_role === 'assistant' && message.content_blocks ? (
+                      <ContentBlocksRenderer blocks={message.content_blocks} />
+                    ) : (
+                      <MathText text={message.message_content} />
+                    )}
                   </div>
                 </Card>
               </motion.div>
