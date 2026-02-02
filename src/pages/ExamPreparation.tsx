@@ -40,7 +40,7 @@ export default function ExamPreparation() {
 
       if (!examId) {
         console.error('No exam ID provided');
-        navigate('/examens-officiels');
+        navigate('/exams/9AF');
         return;
       }
 
@@ -223,7 +223,7 @@ export default function ExamPreparation() {
       <div className="container mx-auto px-4 py-8">
         <Card className="p-8 text-center">
           <p>Examen non trouvé</p>
-          <Button onClick={() => navigate('/examens-officiels')} className="mt-4">
+          <Button onClick={() => navigate('/exams/9AF')} className="mt-4">
             Retour aux examens
           </Button>
         </Card>
@@ -242,7 +242,7 @@ export default function ExamPreparation() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate("/examens-officiels")}
+                onClick={() => navigate("/exams/9AF")}
               >
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 <span className="hidden sm:inline">Retour aux examens</span>

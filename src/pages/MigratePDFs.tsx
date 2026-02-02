@@ -50,7 +50,7 @@ export default function MigratePDFs() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/examens-officiels')}
+            onClick={() => navigate('/exams/9AF')}
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />

@@ -356,31 +356,11 @@ const App = () => (
                           } />
                           
                           {/* Legacy Exam Routes - Redirect to unified hub */}
-                          <Route path="/examens-officiels" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <ExamsHub />
-                            </Suspense>
-                          } />
-                          <Route path="/exam-preparation/:examId" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <ExamPreparation />
-                            </Suspense>
-                          } />
-                          <Route path="/baccalaureat" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <BaccExamsHub />
-                            </Suspense>
-                          } />
-                          <Route path="/baccalaureat/:series" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <BaccExamsHub />
-                            </Suspense>
-                          } />
-                          <Route path="/baccalaureat/:series/:subject" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <BaccExamsHub />
-                            </Suspense>
-                          } />
+                          <Route path="/examens-officiels" element={<LegacyRedirect to="/exams/9AF" />} />
+                          <Route path="/exam-preparation/:examId" element={<LegacyRedirect to="/exams/practice/:examId" preserveParams />} />
+                          <Route path="/baccalaureat" element={<LegacyRedirect to="/exams/NS4" />} />
+                          <Route path="/baccalaureat/:series" element={<LegacyRedirect to="/exams/NS4/:series" preserveParams />} />
+                          <Route path="/baccalaureat/:series/:subject" element={<LegacyRedirect to="/exams/NS4/:series/:subject" preserveParams />} />
                           
                           {/* Admin */}
                           <Route path="/control-center" element={

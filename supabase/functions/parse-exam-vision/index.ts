@@ -36,7 +36,7 @@ serve(async (req) => {
       },
     }));
 
-const systemPrompt = `Tu es un expert OCR spécialisé dans l'extraction d'examens officiels haïtiens pour la 9ème année fondamentale (9AF).
+const systemPrompt = `Tu es un expert OCR spécialisé dans l'extraction d'examens officiels haïtiens pour la 9ème année fondamentale (9AF) et le Baccalauréat (NS4).
 
 INSTRUCTIONS CRITIQUES:
 1. Analyse attentivement CHAQUE page de l'examen
@@ -46,10 +46,11 @@ INSTRUCTIONS CRITIQUES:
 5. Préserve les accents français et créoles (é, è, à, ç, ô, etc.)
 6. Identifie les points attribués à chaque question si visibles
 7. Détermine le type d'exercice: "multiple_choice" ou "open_ended"
+8. Pour les formules mathématiques, utilise la notation LaTeX dans "promptBlocks"
 
 RETOURNE UN JSON VALIDE avec cette structure EXACTE:
 {
-  "title": "Examen officiel de [Matière] [Année] - 9AF",
+  "title": "Examen officiel de [Matière] [Année] - [9AF ou NS4]",
   "referenceTexts": [
     {
       "section": "Section A",
@@ -61,10 +62,20 @@ RETOURNE UN JSON VALIDE avec cette structure EXACTE:
     {
       "exerciseNumber": 1,
       "exerciseType": "multiple_choice" ou "open_ended",
-      "questionText": "Le texte complet de la question",
+      "questionText": "Le texte complet de la question (version texte simple)",
+      "promptBlocks": [
+        { "type": "text", "content": "Résoudre " },
+        { "type": "math-inline", "latex": "x^2 + 5x + 6 = 0" }
+      ],
       "options": {"A": "option A", "B": "option B", "C": "option C", "D": "option D"} ou null,
+      "optionsJson": {
+        "A": { "blocks": [{ "type": "text", "content": "x = -2" }], "value": "A" },
+        "B": { "blocks": [{ "type": "math-inline", "latex": "x = -3" }], "value": "B" }
+      },
       "correctAnswer": "A" ou null si inconnu,
+      "answerJson": { "index": 0, "value": "A" },
       "explanation": null,
+      "explanationBlocks": null,
       "points": 5,
       "concept": "Concept mathématique/grammatical principal"
     }
@@ -72,6 +83,12 @@ RETOURNE UN JSON VALIDE avec cette structure EXACTE:
   "totalExercises": nombre total,
   "totalPoints": somme des points
 }
+
+RÈGLES POUR LES MATHÉMATIQUES:
+- Si une question contient des formules mathématiques, utilise "promptBlocks" avec type "math-inline" ou "math-block"
+- Pour les équations en ligne: { "type": "math-inline", "latex": "x^2" }
+- Pour les équations en bloc: { "type": "math-block", "latex": "\\frac{a}{b}" }
+- Garde toujours "questionText" comme version texte simple de secours
 
 IMPORTANT:
 - EXTRAIT TOUS les textes de référence (Reading, Texte, Passage, etc.) COMPLETS dans "referenceTexts"
@@ -170,7 +187,7 @@ Retourne UNIQUEMENT le JSON structuré, sans texte additionnel.`;
       throw new Error("Invalid response structure: missing exercises array");
     }
 
-    // Normalize exercises
+    // Normalize exercises with structured content support
     const normalizedExercises = parsedData.exercises.map((ex: any, index: number) => ({
       exerciseNumber: ex.exerciseNumber || index + 1,
       exerciseType: ex.exerciseType || (ex.options ? "multiple_choice" : "open_ended"),
@@ -180,6 +197,11 @@ Retourne UNIQUEMENT le JSON structuré, sans texte additionnel.`;
       explanation: ex.explanation || null,
       points: typeof ex.points === "number" ? ex.points : (ex.exerciseType === "multiple_choice" ? 5 : 8),
       concept: ex.concept || "Général",
+      // Structured content fields for KaTeX rendering
+      promptBlocks: ex.promptBlocks || null,
+      optionsJson: ex.optionsJson || null,
+      answerJson: ex.answerJson || null,
+      explanationBlocks: ex.explanationBlocks || null,
     }));
 
     const totalPoints = normalizedExercises.reduce((sum: number, ex: any) => sum + (ex.points || 0), 0);
