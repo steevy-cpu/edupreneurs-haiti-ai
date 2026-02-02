@@ -1297,42 +1297,60 @@ export type Database = {
       }
       exam_exercises: {
         Row: {
+          answer_json: Json | null
           concept: string
+          concept_tags: string[] | null
           correct_answer: string | null
           created_at: string
+          difficulty: string | null
           exam_id: string
           exercise_number: number
           exercise_type: string
           explanation: string | null
+          explanation_blocks: Json | null
           id: string
           options: Json | null
+          options_json: Json | null
           points: number
+          prompt_blocks: Json | null
           question_text: string
         }
         Insert: {
+          answer_json?: Json | null
           concept: string
+          concept_tags?: string[] | null
           correct_answer?: string | null
           created_at?: string
+          difficulty?: string | null
           exam_id: string
           exercise_number: number
           exercise_type?: string
           explanation?: string | null
+          explanation_blocks?: Json | null
           id?: string
           options?: Json | null
+          options_json?: Json | null
           points?: number
+          prompt_blocks?: Json | null
           question_text: string
         }
         Update: {
+          answer_json?: Json | null
           concept?: string
+          concept_tags?: string[] | null
           correct_answer?: string | null
           created_at?: string
+          difficulty?: string | null
           exam_id?: string
           exercise_number?: number
           exercise_type?: string
           explanation?: string | null
+          explanation_blocks?: Json | null
           id?: string
           options?: Json | null
+          options_json?: Json | null
           points?: number
+          prompt_blocks?: Json | null
           question_text?: string
         }
         Relationships: [
@@ -1397,8 +1415,10 @@ export type Database = {
           current_exercise: number
           exam_id: string
           id: string
+          mode: string | null
           score: number
           started_at: string
+          time_remaining: number | null
           updated_at: string
           user_id: string
         }
@@ -1408,8 +1428,10 @@ export type Database = {
           current_exercise?: number
           exam_id: string
           id?: string
+          mode?: string | null
           score?: number
           started_at?: string
+          time_remaining?: number | null
           updated_at?: string
           user_id: string
         }
@@ -1419,8 +1441,10 @@ export type Database = {
           current_exercise?: number
           exam_id?: string
           id?: string
+          mode?: string | null
           score?: number
           started_at?: string
+          time_remaining?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -2178,6 +2202,7 @@ export type Database = {
       official_exams: {
         Row: {
           created_at: string
+          exam_type: string | null
           grade_level: string
           id: string
           is_model_exam: boolean | null
@@ -2186,15 +2211,19 @@ export type Database = {
           series: string | null
           session: string | null
           subject: string
+          subject_slug: string | null
           title: string
           total_exercises: number
           total_points: number
+          track: string | null
           updated_at: string
+          version: number | null
           version_number: number | null
           year: number
         }
         Insert: {
           created_at?: string
+          exam_type?: string | null
           grade_level: string
           id?: string
           is_model_exam?: boolean | null
@@ -2203,15 +2232,19 @@ export type Database = {
           series?: string | null
           session?: string | null
           subject: string
+          subject_slug?: string | null
           title: string
           total_exercises?: number
           total_points?: number
+          track?: string | null
           updated_at?: string
+          version?: number | null
           version_number?: number | null
           year: number
         }
         Update: {
           created_at?: string
+          exam_type?: string | null
           grade_level?: string
           id?: string
           is_model_exam?: boolean | null
@@ -2220,10 +2253,13 @@ export type Database = {
           series?: string | null
           session?: string | null
           subject?: string
+          subject_slug?: string | null
           title?: string
           total_exercises?: number
           total_points?: number
+          track?: string | null
           updated_at?: string
+          version?: number | null
           version_number?: number | null
           year?: number
         }
