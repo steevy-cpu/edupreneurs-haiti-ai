@@ -2,6 +2,17 @@
 # ExamHub Restructuring Plan
 ## One Exam Platform, Multiple Products
 
+### ✅ IMPLEMENTATION PROGRESS
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: Database Schema | ✅ DONE | Migration applied - added track, subject_slug, exam_type, structured content fields |
+| Phase 2: Unified Routing | ✅ DONE | Routes added to App.tsx at /exams/* |
+| Phase 3: Unified Hub Architecture | ✅ DONE | Created src/features/exams/ with all hub components |
+| Phase 4: Tutor Contract | 🔲 TODO | Update exam-tutor edge function |
+| Phase 5: Unified Admin | 🔲 TODO | Merge ExamManager and BaccExamManager |
+| Phase 6: KaTeX Pipeline | ✅ DONE | ContentBlocksRenderer created |
+
 ---
 
 ## Executive Summary

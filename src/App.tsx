@@ -37,6 +37,7 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Matieres = lazy(() => import("./pages/Matieres"));
 const ExamPreparation = lazy(() => import("./pages/ExamPreparation"));
 const ExamsHub = lazy(() => import("./pages/ExamsHub"));
+const ExamsHubPage = lazy(() => import("./features/exams/pages/ExamsHubPage"));
 const Resources = lazy(() => import("./pages/Resources"));
 const Affiliations = lazy(() => import("./pages/Affiliations"));
 const Settings = lazy(() => import("./pages/Settings"));
@@ -327,7 +328,34 @@ const App = () => (
                             </Suspense>
                           } />
                           
-                          {/* Exams */}
+                          {/* Exams - Unified Hub */}
+                          <Route path="/exams" element={
+                            <Suspense fallback={<GenericPageSkeleton />}>
+                              <ExamsHubPage />
+                            </Suspense>
+                          } />
+                          <Route path="/exams/:track" element={
+                            <Suspense fallback={<GenericPageSkeleton />}>
+                              <ExamsHubPage />
+                            </Suspense>
+                          } />
+                          <Route path="/exams/:track/:series" element={
+                            <Suspense fallback={<GenericPageSkeleton />}>
+                              <ExamsHubPage />
+                            </Suspense>
+                          } />
+                          <Route path="/exams/:track/:series/:subject" element={
+                            <Suspense fallback={<GenericPageSkeleton />}>
+                              <ExamsHubPage />
+                            </Suspense>
+                          } />
+                          <Route path="/exams/practice/:examId" element={
+                            <Suspense fallback={<GenericPageSkeleton />}>
+                              <ExamPreparation />
+                            </Suspense>
+                          } />
+                          
+                          {/* Legacy Exam Routes - Redirect to unified hub */}
                           <Route path="/examens-officiels" element={
                             <Suspense fallback={<GenericPageSkeleton />}>
                               <ExamsHub />
