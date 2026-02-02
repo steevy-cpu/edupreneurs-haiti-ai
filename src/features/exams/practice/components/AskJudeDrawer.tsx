@@ -5,7 +5,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import {
@@ -103,98 +102,100 @@ export function AskJudeDrawer({ exercise, onAskJude }: AskJudeDrawerProps) {
           Demander à Jude
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="h-[80vh] max-h-[600px]">
-        <DrawerHeader className="border-b">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10 border border-primary/30">
-              <AvatarImage src={judeProfile} alt="Jude" />
-              <AvatarFallback className="bg-primary/10 text-primary font-bold">J</AvatarFallback>
-            </Avatar>
-            <div>
-              <DrawerTitle>Demander à Jude</DrawerTitle>
-              <p className="text-xs text-muted-foreground">
-                Q{exercise.exercise_number} - {exercise.concept}
-              </p>
+      <DrawerContent className="max-h-[85vh]">
+        <div className="flex flex-col h-full max-h-[600px]">
+          <DrawerHeader className="border-b flex-shrink-0">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10 border border-primary/30">
+                <AvatarImage src={judeProfile} alt="Jude" />
+                <AvatarFallback className="bg-primary/10 text-primary font-bold">J</AvatarFallback>
+              </Avatar>
+              <div>
+                <DrawerTitle>Demander à Jude</DrawerTitle>
+                <p className="text-xs text-muted-foreground">
+                  Q{exercise.exercise_number} - {exercise.concept}
+                </p>
+              </div>
             </div>
-          </div>
-        </DrawerHeader>
+          </DrawerHeader>
 
-        {/* Messages area */}
-        <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-          {messages.length === 0 && (
-            <div className="text-center text-muted-foreground py-8">
-              <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">Pose ta question à Jude!</p>
-              <p className="text-xs mt-1">Il t'aidera avec cet exercice.</p>
-            </div>
-          )}
+          {/* Messages area */}
+          <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
+            {messages.length === 0 && (
+              <div className="text-center text-muted-foreground py-8">
+                <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                <p className="text-sm">Pose ta question à Jude!</p>
+                <p className="text-xs mt-1">Il t'aidera avec cet exercice.</p>
+              </div>
+            )}
 
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                {message.role === 'assistant' && (
-                  <Avatar className="h-8 w-8 flex-shrink-0 border border-primary/30">
+            <div className="space-y-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  {message.role === 'assistant' && (
+                    <Avatar className="h-8 w-8 flex-shrink-0 border border-primary/30">
+                      <AvatarImage src={judeProfile} alt="Jude" />
+                      <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">J</AvatarFallback>
+                    </Avatar>
+                  )}
+                  <Card
+                    className={`p-3 max-w-[85%] ${
+                      message.role === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-card border-primary/10'
+                    }`}
+                  >
+                    <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                      {message.blocks && message.blocks.length > 0 ? (
+                        <ContentBlocksRenderer blocks={message.blocks} />
+                      ) : (
+                        <MathText text={message.content} />
+                      )}
+                    </div>
+                  </Card>
+                </div>
+              ))}
+
+              {isLoading && (
+                <div className="flex gap-3">
+                  <Avatar className="h-8 w-8 border border-primary/30">
                     <AvatarImage src={judeProfile} alt="Jude" />
                     <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">J</AvatarFallback>
                   </Avatar>
-                )}
-                <Card
-                  className={`p-3 max-w-[85%] ${
-                    message.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-card border-primary/10'
-                  }`}
-                >
-                  <div className="text-sm whitespace-pre-wrap leading-relaxed">
-                    {message.blocks && message.blocks.length > 0 ? (
-                      <ContentBlocksRenderer blocks={message.blocks} />
-                    ) : (
-                      <MathText text={message.content} />
-                    )}
-                  </div>
-                </Card>
-              </div>
-            ))}
-
-            {isLoading && (
-              <div className="flex gap-3">
-                <Avatar className="h-8 w-8 border border-primary/30">
-                  <AvatarImage src={judeProfile} alt="Jude" />
-                  <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">J</AvatarFallback>
-                </Avatar>
-                <Card className="p-4 bg-card border-primary/10">
-                  <div className="flex gap-1.5">
-                    <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce" />
-                    <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce [animation-delay:0.15s]" />
-                    <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce [animation-delay:0.3s]" />
-                  </div>
-                </Card>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-
-        {/* Input area */}
-        <div className="border-t p-4">
-          <div className="flex gap-2">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Pose ta question..."
-              disabled={isLoading}
-              className="flex-1"
-            />
-            <Button onClick={handleSend} disabled={!input.trim() || isLoading}>
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
+                  <Card className="p-4 bg-card border-primary/10">
+                    <div className="flex gap-1.5">
+                      <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce" />
+                      <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce [animation-delay:0.15s]" />
+                      <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce [animation-delay:0.3s]" />
+                    </div>
+                  </Card>
+                </div>
               )}
-            </Button>
+            </div>
+          </div>
+
+          {/* Input area */}
+          <div className="border-t p-4 flex-shrink-0">
+            <div className="flex gap-2">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Pose ta question..."
+                disabled={isLoading}
+                className="flex-1"
+              />
+              <Button onClick={handleSend} disabled={!input.trim() || isLoading}>
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </DrawerContent>
