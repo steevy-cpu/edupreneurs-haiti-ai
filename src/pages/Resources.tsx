@@ -56,7 +56,7 @@ const Resources = () => {
           className={`border-none rounded-[20px] shadow-lg overflow-hidden transition-all duration-200 ${
             can9AF ? 'cursor-pointer hover:shadow-xl hover:scale-[1.01]' : 'opacity-60 cursor-not-allowed'
           }`}
-          onClick={() => handleSectionClick('/examens-officiels', '9AF', 'Examens Officiels 9ème AF')}
+          onClick={() => handleSectionClick('/exams/9AF', '9AF', 'Examens Officiels 9ème AF')}
         >
           <div className="h-2 bg-gradient-to-r from-blue-500 to-cyan-500" />
           <CardContent className="p-5 sm:p-6">
@@ -126,7 +126,7 @@ const Resources = () => {
           className={`border-none rounded-[20px] shadow-lg overflow-hidden transition-all duration-200 ${
             canNS4 ? 'cursor-pointer hover:shadow-xl hover:scale-[1.01]' : 'opacity-60 cursor-not-allowed'
           }`}
-          onClick={() => handleSectionClick('/baccalaureat', 'NS4', 'Baccalauréat NS4')}
+          onClick={() => handleSectionClick('/exams/NS4', 'NS4', 'Baccalauréat NS4')}
         >
           <div className="h-2 bg-gradient-to-r from-amber-500 to-orange-500" />
           <CardContent className="p-5 sm:p-6">

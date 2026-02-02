@@ -503,7 +503,7 @@ export default function Matieres() {
                       <Badge variant="secondary">Tuteur IA Jude</Badge>
                     </div>
                   </div>
-                  <Button size="lg" onClick={() => navigate('/examens-officiels')} className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold">
+                  <Button size="lg" onClick={() => navigate('/exams/9AF')} className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold">
                     Commencer la préparation
                   </Button>
                 </div>
@@ -527,7 +527,7 @@ export default function Matieres() {
                       <Badge variant="secondary">🤖 Tuteur IA Jude</Badge>
                     </div>
                   </div>
-                  <Button size="lg" onClick={() => navigate(`/baccalaureat${selectedSeries ? `/${selectedSeries}` : ''}`)} className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold">
+                  <Button size="lg" onClick={() => navigate(`/exams/NS4${selectedSeries ? `/${selectedSeries}` : ''}`)} className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold">
                     <GraduationCap className="mr-2 h-5 w-5" />
                     Commencer
                   </Button>

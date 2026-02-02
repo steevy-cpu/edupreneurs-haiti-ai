@@ -13,8 +13,7 @@ import { YouTubeManager } from "@/components/content-editor/YouTubeManager";
 import { LessonComments } from "@/components/content-editor/LessonComments";
 import { SingleLessonGenerator } from "@/components/content-editor/SingleLessonGenerator";
 import { CreateMatiereDialog } from "@/components/content-editor/CreateMatiereDialog";
-import { ExamManager } from "@/components/content-editor/ExamManager";
-import { BaccExamManager } from "@/components/content-editor/BaccExamManager";
+import { ExamAdminPage } from "@/features/exams/admin";
 import { PassionVideoManager } from "@/components/content-editor/PassionVideoManager";
 import { CurriculumAnalyzer } from "@/components/content-editor/CurriculumAnalyzer";
 import { LessonImageManager } from "@/components/content-editor/LessonImageManager";
@@ -244,7 +243,7 @@ const ContentEditor = () => {
         {/* Main Content with Tabs */}
         <div className="max-w-[1600px] mx-auto">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-7 lg:w-[1400px]">
+            <TabsList className="grid w-full grid-cols-6 lg:w-[1200px]">
               <TabsTrigger value="review">
                 <BookOpen className="mr-2 h-4 w-4" />
                 Révision
@@ -254,12 +253,8 @@ const ContentEditor = () => {
                 Génération
               </TabsTrigger>
               <TabsTrigger value="exams">
-                <BarChart3 className="mr-2 h-4 w-4" />
-                Examens 9AF
-              </TabsTrigger>
-              <TabsTrigger value="baccalaureat">
                 <GraduationCap className="mr-2 h-4 w-4" />
-                Baccalauréat
+                Examens
               </TabsTrigger>
               <TabsTrigger value="passion-videos">
                 <Youtube className="mr-2 h-4 w-4" />
@@ -390,11 +385,7 @@ const ContentEditor = () => {
             </TabsContent>
 
             <TabsContent value="exams">
-              <ExamManager />
-            </TabsContent>
-
-            <TabsContent value="baccalaureat">
-              <BaccExamManager />
+              <ExamAdminPage />
             </TabsContent>
 
             <TabsContent value="passion-videos">
