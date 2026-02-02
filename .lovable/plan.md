@@ -1,500 +1,385 @@
 
-# ExamHub Restructuring Plan
-## One Exam Platform, Multiple Products
-
-### ✅ IMPLEMENTATION PROGRESS
-
-| Phase | Status | Notes |
-|-------|--------|-------|
-| Phase 1: Database Schema | ✅ DONE | Migration applied - added track, subject_slug, exam_type, structured content fields |
-| Phase 2: Unified Routing | ✅ DONE | Routes added to App.tsx at /exams/* |
-| Phase 3: Unified Hub Architecture | ✅ DONE | Created src/features/exams/ with all hub components |
-| Phase 4: Tutor Contract | 🔲 TODO | Update exam-tutor edge function |
-| Phase 5: Unified Admin | 🔲 TODO | Merge ExamManager and BaccExamManager |
-| Phase 6: KaTeX Pipeline | ✅ DONE | ContentBlocksRenderer created |
+# ExamHub Restructuring - Phase 4 & 5 Implementation Plan
+## Tutor Contract & Unified Admin Interface
 
 ---
 
-## Executive Summary
+## Summary of Remaining Work
 
-This plan restructures the ExamHub into a unified, scalable exam platform following the principle: "ExamHub is a data platform; 9AF and NS4 are views." The implementation is divided into 4 phases to maintain stability while progressively enhancing the system.
-
----
-
-## Current State Analysis
-
-### What Exists
-| Component | 9AF | NS4 | Issue |
-|-----------|-----|-----|-------|
-| Hub Page | `ExamsHub.tsx` (328 lines) | `BaccExamsHub.tsx` (480 lines) | Duplicated logic |
-| Admin | `ExamManager.tsx` (891 lines) | `BaccExamManager.tsx` (927 lines) | 90% code duplication |
-| Practice | Shared `ExamPreparation.tsx` | Shared | Good - already unified |
-| Routing | `/examens-officiels` | `/baccalaureat/:series?/:subject?` | Inconsistent |
-| Database | `official_exams` table | Same table + series/session fields | Needs normalization |
-
-### Key Problems to Solve
-1. Two separate hubs with duplicated code
-2. Two admin managers with 90% code duplication
-3. Hardcoded subjects per series (not from DB)
-4. No structured content blocks for KaTeX
-5. Tutor responses are unstructured (no action buttons)
-6. Answer validation is LLM-based, not deterministic
-
----
-
-## Phase 1: Database Schema Upgrade
-**Goal**: Canonical data model that supports all exam types
-
-### 1.1 Add Missing Fields to `official_exams`
-
-```sql
-ALTER TABLE official_exams ADD COLUMN IF NOT EXISTS exam_type TEXT DEFAULT 'official';
--- Values: 'official', 'model', 'practice', 'rattrapage'
-
-ALTER TABLE official_exams ADD COLUMN IF NOT EXISTS track TEXT;
--- Values: '9AF', 'NS4' (derived from grade_level for backward compat)
-
-ALTER TABLE official_exams ADD COLUMN IF NOT EXISTS subject_slug TEXT;
--- Normalized slug for consistent querying
-
--- Add index for fast filtering
-CREATE INDEX IF NOT EXISTS idx_exams_track_series_subject 
-ON official_exams(track, series, subject_slug, year DESC);
-```
-
-### 1.2 Upgrade `exam_exercises` for Structured Content
-
-```sql
--- Add structured content fields
-ALTER TABLE exam_exercises ADD COLUMN IF NOT EXISTS prompt_blocks JSONB;
--- Format: [{ type: "text", content: "..." }, { type: "math-inline", latex: "x^2" }]
-
-ALTER TABLE exam_exercises ADD COLUMN IF NOT EXISTS options_json JSONB;
--- Format: { "A": { blocks: [...], value: "..." }, "B": {...} }
-
-ALTER TABLE exam_exercises ADD COLUMN IF NOT EXISTS answer_json JSONB;
--- Format: { index: 0, value: "A", blocks: [...] }
-
-ALTER TABLE exam_exercises ADD COLUMN IF NOT EXISTS explanation_blocks JSONB;
--- Structured explanation with math support
-
-ALTER TABLE exam_exercises ADD COLUMN IF NOT EXISTS difficulty TEXT DEFAULT 'medium';
--- Values: 'easy', 'medium', 'hard'
-
-ALTER TABLE exam_exercises ADD COLUMN IF NOT EXISTS concept_tags TEXT[];
--- Array of concept tags for filtering
-```
-
-### 1.3 Enhance `exam_practice_sessions`
-
-```sql
-ALTER TABLE exam_practice_sessions ADD COLUMN IF NOT EXISTS mode TEXT DEFAULT 'practice';
--- Values: 'practice', 'timed', 'review'
-
-ALTER TABLE exam_practice_sessions ADD COLUMN IF NOT EXISTS time_remaining INTEGER;
--- For timed mode (seconds)
-```
-
-### 1.4 Data Migration Script
-
-```sql
--- Backfill track from grade_level
-UPDATE official_exams SET track = grade_level WHERE track IS NULL;
-
--- Backfill subject_slug from subject
-UPDATE official_exams SET subject_slug = lower(regexp_replace(subject, '[^a-zA-Z0-9]+', '-', 'g'));
-```
-
----
-
-## Phase 2: Unified Routing Structure
-**Goal**: One route pattern for all exam types
-
-### 2.1 New Route Structure
-
-```text
-/exams                              (unified landing)
-/exams/:track                       (9AF | NS4)
-/exams/:track/:series?              (NS4 series; 9AF skips series)
-/exams/:track/:series?/:subject     (subject step)
-/exams/:track/:series?/:subject/:year
-/exams/practice/:examId             (practice engine)
-```
-
-### 2.2 Route Configuration in `App.tsx`
-
-```typescript
-// Replace current exam routes with:
-<Route path="/exams" element={<ExamsHubPage />} />
-<Route path="/exams/:track" element={<ExamsHubPage />} />
-<Route path="/exams/:track/:series" element={<ExamsHubPage />} />
-<Route path="/exams/:track/:series/:subject" element={<ExamsHubPage />} />
-<Route path="/exams/:track/:subject" element={<ExamsHubPage />} /> // 9AF (no series)
-<Route path="/exams/practice/:examId" element={<ExamPracticePage />} />
-
-// Redirects for backward compatibility
-<Route path="/examens-officiels" element={<Navigate to="/exams/9AF" replace />} />
-<Route path="/baccalaureat" element={<Navigate to="/exams/NS4" replace />} />
-<Route path="/baccalaureat/:series" element={<Navigate to="/exams/NS4/:series" replace />} />
-<Route path="/baccalaureat/:series/:subject" element={<Navigate to="/exams/NS4/:series/:subject" replace />} />
-<Route path="/exam-preparation/:examId" element={<Navigate to="/exams/practice/:examId" replace />} />
-```
-
----
-
-## Phase 3: Unified Hub Architecture
-**Goal**: One hub component with data-driven steps
-
-### 3.1 New Folder Structure
-
-```text
-src/features/exams/
-├── pages/
-│   ├── ExamsHubPage.tsx          (unified hub)
-│   └── ExamPracticePage.tsx      (practice engine)
-├── components/
-│   ├── hub/
-│   │   ├── TrackSelector.tsx     (9AF | NS4)
-│   │   ├── SeriesSelector.tsx    (conditional for NS4)
-│   │   ├── SubjectSelector.tsx   (dynamic from DB)
-│   │   ├── ExamYearList.tsx      (grouped by year)
-│   │   └── EmptyState.tsx        (per filter)
-│   └── practice/
-│       ├── ExamHeader.tsx
-│       ├── ExamPDFViewer.tsx     (moved from /exam)
-│       ├── ExamProgressBar.tsx   (moved from /exam)
-│       ├── TutorPane.tsx         (new wrapper)
-│       └── MobileTabs.tsx
-├── data/
-│   ├── exams.queries.ts          (React Query hooks)
-│   └── practice.queries.ts
-├── tutor/
-│   ├── tutor.contract.ts         (types for tutor responses)
-│   └── tutor.actions.ts          (action handlers)
-├── rendering/
-│   ├── ContentBlocksRenderer.tsx (unified block renderer)
-│   └── katex.ts                  (lazy loader)
-└── admin/
-    ├── ExamAdminPage.tsx         (unified admin)
-    ├── UploadExamWizard.tsx      (step-by-step upload)
-    └── ParsingPreview.tsx
-```
-
-### 3.2 ExamsHubPage Component
-
-```typescript
-// src/features/exams/pages/ExamsHubPage.tsx
-export function ExamsHubPage() {
-  const { track, series, subject } = useParams();
-  
-  // Step progression: track -> series (if NS4) -> subject -> exam list
-  const step = useMemo(() => {
-    if (!track) return 'track';
-    if (track === 'NS4' && !series) return 'series';
-    if (!subject) return 'subject';
-    return 'exams';
-  }, [track, series, subject]);
-  
-  return (
-    <PageContainer variant="wide">
-      <ExamHubHeader track={track} series={series} />
-      
-      {step === 'track' && <TrackSelector />}
-      {step === 'series' && <SeriesSelector track={track} />}
-      {step === 'subject' && <SubjectSelector track={track} series={series} />}
-      {step === 'exams' && <ExamYearList track={track} series={series} subject={subject} />}
-    </PageContainer>
-  );
-}
-```
-
-### 3.3 SubjectSelector (Data-Driven, No Hardcoding)
-
-```typescript
-// Query distinct subjects from exams table, not hardcoded
-function SubjectSelector({ track, series }: Props) {
-  const { data: subjects, isLoading } = useQuery({
-    queryKey: ['exam-subjects', track, series],
-    queryFn: async () => {
-      let query = supabase
-        .from('official_exams')
-        .select('subject, subject_slug')
-        .eq('track', track);
-      
-      if (series) query = query.eq('series', series);
-      
-      const { data } = await query;
-      
-      // Group and count
-      const grouped = groupBy(data, 'subject');
-      return Object.entries(grouped).map(([name, exams]) => ({
-        name,
-        slug: exams[0].subject_slug,
-        count: exams.length,
-        icon: SUBJECT_ICONS[name] || BookOpen,
-        color: SUBJECT_COLORS[name] || 'from-gray-500 to-gray-600',
-      }));
-    }
-  });
-  
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {subjects?.map(subject => (
-        <SubjectCard 
-          key={subject.slug} 
-          subject={subject} 
-          disabled={subject.count === 0}
-          disabledTooltip="Bientôt disponible"
-        />
-      ))}
-    </div>
-  );
-}
-```
+| Phase | Component | Status | Description |
+|-------|-----------|--------|-------------|
+| Phase 4 | Tutor Contract | **TODO** | Update `exam-tutor` to return structured responses |
+| Phase 5 | Unified Admin | **TODO** | Merge `ExamManager.tsx` + `BaccExamManager.tsx` into one |
 
 ---
 
 ## Phase 4: Tutor Contract & Structured Responses
-**Goal**: Predictable tutor behavior with action buttons
 
-### 4.1 Tutor Response Contract
+### 4.1 Update Tutor Types
+
+**File:** `src/features/exams/types/exam.types.ts`
+
+Add the tutor contract types (partially done, needs refinement):
 
 ```typescript
-// src/features/exams/tutor/tutor.contract.ts
-interface ContentBlock {
-  type: 'text' | 'math-inline' | 'math-block';
-  content?: string;
-  latex?: string;
-}
-
-interface TutorAction {
-  type: 'hint' | 'reveal' | 'next' | 'youtube' | 'reference';
+// Already exists - enhance with more action types
+export interface TutorAction {
+  type: 'hint' | 'reveal' | 'next' | 'youtube' | 'reference' | 'check';
   label: string;
   payload?: any;
 }
 
-interface TutorGrading {
-  isCorrect?: boolean;
-  pointsAwarded?: number;
-  correctAnswer?: string;  // Only for reveal
-}
-
-interface TutorResponse {
-  blocks: ContentBlock[];           // Structured content
-  actions?: TutorAction[];          // Available actions
-  grading?: TutorGrading;           // Score info
-  shouldAutoAdvance?: boolean;      // Auto-move to next
-  youtubeQuery?: string;            // Video suggestion
+// Add parsing helper for LLM response to blocks
+export function parseResponseToBlocks(text: string): ContentBlock[] {
+  // Parse $...$ and $$...$$ into structured blocks
+  const blocks: ContentBlock[] = [];
+  // Implementation converts plain text with LaTeX to structured blocks
+  return blocks;
 }
 ```
 
 ### 4.2 Update `exam-tutor` Edge Function
 
-```typescript
-// Return structured response instead of free-form text
-return new Response(JSON.stringify({
-  // NEW: Structured blocks for KaTeX rendering
-  blocks: [
-    { type: 'text', content: 'Bravo! La bonne réponse est ' },
-    { type: 'math-inline', latex: 'x = 5' },
-    { type: 'text', content: '. Voici pourquoi...' }
-  ],
-  
-  // NEW: Available actions for UI buttons
-  actions: [
-    { type: 'next', label: 'Question suivante' },
-    { type: 'youtube', label: 'Voir vidéo', payload: youtubeQuery }
-  ],
-  
-  // Grading (existing, refined)
-  grading: {
-    isCorrect: true,
-    pointsAwarded: exercise.points,
-  },
-  
-  // Backward compat: also include text response
-  response: ericResponse,
-  
-  shouldAutoAdvance: true,
-}), { headers: responseHeaders });
-```
+**File:** `supabase/functions/exam-tutor/index.ts`
 
-### 4.3 Deterministic Answer Validation
+**Changes:**
+1. Add deterministic answer validation (no LLM guessing for MCQ)
+2. Return structured `TutorResponse` with blocks and actions
+3. Maintain backward compatibility with `response` field
 
 ```typescript
-// In exam-tutor edge function
-function validateAnswer(studentAnswer: string, exercise: Exercise): boolean {
+// NEW: Deterministic validation for MCQ
+function validateAnswer(studentAnswer: string, exercise: any): boolean {
   const correct = exercise.correct_answer?.toUpperCase().trim();
   const student = studentAnswer?.toUpperCase().trim();
   
-  if (!correct) {
-    // No answer in DB - log and return false (manual grading)
-    console.warn(`No correct_answer for exercise ${exercise.exercise_number}`);
-    return false;
-  }
+  if (!correct) return false;
   
-  // MCQ: exact match
-  if (exercise.exercise_type === 'multiple_choice') {
+  // For MCQ: exact letter match
+  if (exercise.options && Array.isArray(exercise.options)) {
     return student === correct;
   }
   
-  // Short answer: normalize and compare
-  const normalizedStudent = normalizeAnswer(student);
-  const normalizedCorrect = normalizeAnswer(correct);
-  
-  // Check exact match or synonyms
-  if (normalizedStudent === normalizedCorrect) return true;
-  if (SYNONYMS[normalizedCorrect]?.includes(normalizedStudent)) return true;
-  
-  return false;
+  // For open-ended: normalize and compare
+  return normalizeAnswer(student) === normalizeAnswer(correct);
 }
 
 function normalizeAnswer(text: string): string {
   return text
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Remove accents
-    .replace(/[^a-z0-9]/g, '')       // Remove special chars
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '')
     .trim();
 }
+
+// NEW: Parse AI response into content blocks
+function parseToBlocks(text: string): ContentBlock[] {
+  const blocks: ContentBlock[] = [];
+  const mathBlockRegex = /\$\$(.*?)\$\$/gs;
+  const mathInlineRegex = /\$(.*?)\$/g;
+  
+  let lastIndex = 0;
+  let remaining = text;
+  
+  // Extract math blocks and text segments
+  // ... parsing logic ...
+  
+  return blocks;
+}
+
+// UPDATED response structure
+return new Response(JSON.stringify({
+  // NEW: Structured content blocks for KaTeX
+  blocks: parseToBlocks(ericResponse),
+  
+  // NEW: Available action buttons
+  actions: [
+    { type: 'next', label: 'Question suivante' },
+    ...(youtubeQuery ? [{ type: 'youtube', label: 'Voir vidéo', payload: youtubeQuery }] : []),
+  ],
+  
+  // Grading info
+  grading: {
+    isCorrect,
+    pointsAwarded: shouldAwardPoints ? exercise.points : 0,
+    correctAnswer: revealAnswer ? exercise.correct_answer : undefined,
+  },
+  
+  shouldAutoAdvance: shouldMoveToNext,
+  youtubeQuery,
+  
+  // BACKWARD COMPAT: Keep raw response
+  response: ericResponse,
+  isCorrect,
+  shouldAwardPoints,
+  pointsEarned: shouldAwardPoints ? exercise.points : 0,
+  shouldMoveToNext,
+}), { headers: responseHeaders });
+```
+
+### 4.3 Update ExamTutorChat to Use Structured Response
+
+**File:** `src/components/exam/ExamTutorChat.tsx`
+
+**Changes:**
+1. Import `ContentBlocksRenderer` from features/exams
+2. Handle new `blocks` field in response
+3. Render action buttons from `actions` array
+
+```typescript
+// Add import
+import { ContentBlocksRenderer } from '@/features/exams/rendering/ContentBlocksRenderer';
+
+// Update message rendering to use blocks when available
+{message.message_role === 'assistant' ? (
+  data.blocks ? (
+    <ContentBlocksRenderer blocks={data.blocks} />
+  ) : (
+    <MathText text={message.message_content} />
+  )
+) : (
+  message.message_content
+)}
 ```
 
 ---
 
 ## Phase 5: Unified Admin Interface
-**Goal**: One admin for all tracks/series
 
-### 5.1 ExamAdminPage Structure
+### 5.1 Code Duplication Analysis
+
+| Feature | ExamManager.tsx | BaccExamManager.tsx | Unified Approach |
+|---------|-----------------|---------------------|------------------|
+| PDF Upload | Lines 105-144 | Lines 141-182 | Shared utility |
+| PDF to Images | Lines 146-198 | Lines 184-229 | Shared utility |
+| Re-analyze | Lines 200-261 | Lines 231-294 | Pass `track` param |
+| Confirm Save | Lines 413-567 | Lines 433-567 | Unified with track field |
+| Exercise Insert | Lines 497-525 | Lines 494-520 | Identical |
+| Delete Exam | Not present | Lines 555-598 | Add to unified |
+
+**Duplication Rate:** ~85% identical code
+
+### 5.2 Create Unified ExamAdminPage
+
+**New File:** `src/features/exams/admin/ExamAdminPage.tsx`
 
 ```typescript
-// src/features/exams/admin/ExamAdminPage.tsx
 export function ExamAdminPage() {
+  const [track, setTrack] = useState<'9AF' | 'NS4'>('9AF');
+  const [selectedSeries, setSelectedSeries] = useState<string[]>([]);
+  const [subject, setSubject] = useState('');
+  const [year, setYear] = useState('');
+  const [session, setSession] = useState('principale');
+  const [isModelExam, setIsModelExam] = useState(false);
+  // ... rest of state
+
+  // Dynamic subject list based on track/series
+  const availableSubjects = useMemo(() => {
+    if (track === '9AF') return SUBJECTS_9AF;
+    if (selectedSeries.length > 0) {
+      return SUBJECTS_BY_SERIES[selectedSeries[0]] || [];
+    }
+    return [];
+  }, [track, selectedSeries]);
+
   return (
     <div className="space-y-6">
-      <h1>Gestion des Examens</h1>
-      
-      {/* Filters */}
-      <div className="flex gap-4">
-        <TrackFilter />     {/* 9AF | NS4 */}
-        <SeriesFilter />    {/* Conditional for NS4 */}
-        <SubjectFilter />   {/* Dynamic from DB */}
-      </div>
-      
-      {/* Upload wizard */}
-      <UploadExamWizard />
-      
-      {/* Existing exams list */}
-      <ExamsList />
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <GraduationCap className="h-5 w-5" />
+            Gestion des Examens Officiels
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Track Selector */}
+          <div className="flex gap-4">
+            <TrackToggle value={track} onChange={setTrack} />
+          </div>
+
+          {/* Series Selector (NS4 only) */}
+          {track === 'NS4' && (
+            <SeriesMultiSelect 
+              value={selectedSeries} 
+              onChange={setSelectedSeries} 
+            />
+          )}
+
+          {/* Subject, Year, Session selectors */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <SubjectSelect subjects={availableSubjects} value={subject} onChange={setSubject} />
+            <YearSelect years={YEARS} value={year} onChange={setYear} />
+            {track === 'NS4' && (
+              <SessionSelect value={session} onChange={setSession} />
+            )}
+          </div>
+
+          {/* Model exam toggle (NS4 only) */}
+          {track === 'NS4' && (
+            <ModelExamToggle value={isModelExam} onChange={setIsModelExam} />
+          )}
+
+          {/* PDF Upload */}
+          <PDFUploader 
+            file={pdfFile} 
+            onChange={setPdfFile}
+            isConverting={isConvertingPdf}
+            progress={conversionProgress}
+          />
+
+          {/* Analyze Button */}
+          <Button onClick={handleAnalyze} disabled={isAnalyzing}>
+            {isAnalyzing ? <Loader2 className="animate-spin" /> : <Upload />}
+            Analyser et Sauvegarder
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Preview Dialog */}
+      {showPreview && parsedPreview && (
+        <ExamPreviewCard 
+          preview={parsedPreview}
+          onConfirm={handleConfirmAndSave}
+          onCancel={() => setShowPreview(false)}
+        />
+      )}
+
+      {/* Existing Exams List */}
+      <ExistingExamsList 
+        track={track}
+        series={selectedSeries}
+        onReanalyze={handleReanalyze}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }
 ```
 
-### 5.2 UploadExamWizard Fields
+### 5.3 Extract Shared Utilities
+
+**New File:** `src/features/exams/admin/utils/pdfUtils.ts`
 
 ```typescript
-interface UploadExamWizardState {
-  track: '9AF' | 'NS4';
-  gradeLevel: string;          // Derived from track
-  series: string | null;       // Required if NS4
-  subject: string;
-  year: number;
-  version: number;             // Auto-increment
-  examType: 'official' | 'model' | 'rattrapage';
-  sessionLabel?: string;       // "Rattrapage 2024"
-  pdfFile: File | null;
+export async function convertPdfToImages(
+  file: File,
+  onProgress?: (percent: number) => void
+): Promise<string[]> {
+  // Extracted from both ExamManager and BaccExamManager
+  // Identical implementation
+}
+
+export async function uploadPdfToStorage(
+  file: File,
+  track: '9AF' | 'NS4',
+  subject: string,
+  year: number,
+  series?: string,
+  session?: string,
+  isModel?: boolean
+): Promise<string | null> {
+  // Unified upload with dynamic filename
 }
 ```
 
----
-
-## Phase 6: KaTeX Rendering Pipeline
-**Goal**: Math rendering everywhere (prompts, options, explanations, tutor)
-
-### 6.1 ContentBlocksRenderer Component
+**New File:** `src/features/exams/admin/utils/examSaveUtils.ts`
 
 ```typescript
-// src/features/exams/rendering/ContentBlocksRenderer.tsx
-import { lazy, Suspense } from 'react';
-
-const KaTeX = lazy(() => import('./KaTeXWrapper'));
-
-interface ContentBlock {
-  type: 'text' | 'math-inline' | 'math-block';
-  content?: string;
-  latex?: string;
+export async function saveExamWithExercises(
+  examData: ExamFormData,
+  exercises: ParsedExercise[],
+  referenceTexts: ReferenceText[]
+): Promise<string> {
+  // Unified save logic for both tracks
 }
 
-export function ContentBlocksRenderer({ blocks }: { blocks: ContentBlock[] }) {
-  return (
-    <>
-      {blocks.map((block, i) => {
-        switch (block.type) {
-          case 'text':
-            return <span key={i}>{block.content}</span>;
-          case 'math-inline':
-            return (
-              <Suspense key={i} fallback={<code>{block.latex}</code>}>
-                <KaTeX math={block.latex} inline />
-              </Suspense>
-            );
-          case 'math-block':
-            return (
-              <Suspense key={i} fallback={<pre>{block.latex}</pre>}>
-                <KaTeX math={block.latex} block />
-              </Suspense>
-            );
-          default:
-            return null;
-        }
-      })}
-    </>
-  );
+export async function reanalyzeExam(
+  exam: ExistingExam,
+  onProgress?: (stage: string) => void
+): Promise<ParsedPreview> {
+  // Unified reanalysis logic
 }
 ```
 
-### 6.2 Update `parse-exam-vision` to Emit Blocks
+### 5.4 Update parse-exam-vision for Structured Content
+
+**File:** `supabase/functions/parse-exam-vision/index.ts`
+
+**Add:** Support for `prompt_blocks` and `options_json` in output:
 
 ```typescript
-// In parse-exam-vision edge function, instruct AI to return blocks:
+// Update system prompt to request structured blocks
 const systemPrompt = `...
-
-When extracting questions, return structured blocks for any math content:
-
+RETOURNE UN JSON VALIDE avec cette structure EXACTE:
 {
   "exercises": [{
     "exerciseNumber": 1,
+    "exerciseType": "multiple_choice",
+    "questionText": "Le texte complet de la question",
     "promptBlocks": [
       { "type": "text", "content": "Résoudre " },
       { "type": "math-inline", "latex": "x^2 + 5x + 6 = 0" }
     ],
-    "options": {
-      "A": { "blocks": [{ "type": "math-inline", "latex": "x = -2, -3" }] },
-      "B": { "blocks": [{ "type": "text", "content": "x = 2, 3" }] }
+    "options": {"A": "...", "B": "...", "C": "...", "D": "..."},
+    "optionsJson": {
+      "A": { "blocks": [{ "type": "text", "content": "x = -2" }], "value": "A" },
+      ...
     },
+    "correctAnswer": "A",
+    "answerJson": { "index": 0, "value": "A" },
     ...
   }]
 }
-`;
+...`;
+
+// In normalization, preserve structured fields
+const normalizedExercises = parsedData.exercises.map((ex: any, index: number) => ({
+  ...existingFields,
+  // NEW: Structured content
+  promptBlocks: ex.promptBlocks || null,
+  optionsJson: ex.optionsJson || null,
+  answerJson: ex.answerJson || null,
+  explanationBlocks: ex.explanationBlocks || null,
+}));
 ```
+
+---
+
+## File Changes Summary
+
+| Operation | File | Description |
+|-----------|------|-------------|
+| Modify | `supabase/functions/exam-tutor/index.ts` | Add structured response with blocks/actions |
+| Modify | `src/components/exam/ExamTutorChat.tsx` | Handle new response format |
+| Create | `src/features/exams/admin/ExamAdminPage.tsx` | Unified admin component |
+| Create | `src/features/exams/admin/components/TrackToggle.tsx` | 9AF/NS4 toggle |
+| Create | `src/features/exams/admin/components/SeriesMultiSelect.tsx` | Series selector |
+| Create | `src/features/exams/admin/components/PDFUploader.tsx` | PDF upload component |
+| Create | `src/features/exams/admin/components/ExamPreviewCard.tsx` | Preview parsed exam |
+| Create | `src/features/exams/admin/components/ExistingExamsList.tsx` | List with actions |
+| Create | `src/features/exams/admin/utils/pdfUtils.ts` | PDF conversion utilities |
+| Create | `src/features/exams/admin/utils/examSaveUtils.ts` | Save/update utilities |
+| Create | `src/features/exams/admin/index.ts` | Barrel export |
+| Modify | `supabase/functions/parse-exam-vision/index.ts` | Add structured blocks output |
+| Modify | `src/features/exams/index.ts` | Export admin components |
 
 ---
 
 ## Implementation Order
 
-| Order | Task | Files | Est. Time |
-|-------|------|-------|-----------|
-| 1 | Database migration | 1 migration file | 30 min |
-| 2 | Create `/features/exams` folder structure | 15+ new files | 2 hrs |
-| 3 | Build unified `ExamsHubPage` | Hub components | 3 hrs |
-| 4 | Add route redirects for backward compat | App.tsx | 30 min |
-| 5 | Create `ContentBlocksRenderer` | Rendering files | 1 hr |
-| 6 | Update `exam-tutor` with structured responses | Edge function | 2 hrs |
-| 7 | Build unified `ExamAdminPage` | Admin components | 3 hrs |
-| 8 | Update `parse-exam-vision` for blocks | Edge function | 1 hr |
-| 9 | Testing & polish | All files | 2 hrs |
+| Step | Task | Est. Time |
+|------|------|-----------|
+| 1 | Update `exam-tutor` with deterministic validation + structured response | 45 min |
+| 2 | Create admin utility files (`pdfUtils.ts`, `examSaveUtils.ts`) | 30 min |
+| 3 | Create admin sub-components (TrackToggle, SeriesMultiSelect, etc.) | 45 min |
+| 4 | Build unified `ExamAdminPage.tsx` | 60 min |
+| 5 | Update `ExamTutorChat.tsx` to use new response format | 30 min |
+| 6 | Update `parse-exam-vision` for structured blocks (optional enhancement) | 30 min |
+| 7 | Update routing to use new admin page | 15 min |
+| 8 | Deploy and test edge functions | 15 min |
 
-**Total Estimated Time: ~15 hours**
+**Total Estimated Time: ~4.5 hours**
 
 ---
 
@@ -502,26 +387,20 @@ When extracting questions, return structured blocks for any math content:
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Breaks existing functionality? | No | Redirects preserve old URLs |
-| Works with existing data? | Yes | Migration backfills missing fields |
-| 3G optimized? | Yes | Single query for hub data, lazy KaTeX |
-| Backward compatible? | Yes | Old routes redirect to new ones |
-| Edge cases handled? | Yes | Empty states, no-series for 9AF |
+| Breaks existing functionality? | No | Backward compat with `response` field |
+| Works with existing data? | Yes | New fields are optional |
+| 3G optimized? | Yes | Same payload size, lazy KaTeX |
+| Backward compatible? | Yes | Old response format preserved |
+| Edge cases handled? | Yes | Null-safe validation |
 
 ---
 
-## What This Gives You
+## What This Completes
 
-### Immediately
-- No more hardcoded NS4 subjects (dynamic from DB)
-- NS4 gets full admin upload support
-- Clean routing & navigation consistency
-- KaTeX works everywhere (prompts + tutor)
-- Jude becomes a predictable exam tutor (not just chat)
-- 90% less duplicated code
-
-### Long Term
-- Add new tracks (NS3, new series) trivially
-- Add timed mode (time_remaining field ready)
-- Add model exams with versioning
-- Add analytics per concept (concept_tags field ready)
+After this implementation:
+- Jude returns **structured blocks** for KaTeX rendering
+- Answer validation is **deterministic** (no LLM guessing for MCQ)
+- **One admin interface** for both 9AF and NS4 exams
+- **90% less duplicated code** in admin
+- Action buttons are **data-driven** from tutor response
+- Ready for future enhancements (timed mode, concept analytics)
