@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExamPDFViewer } from "@/components/exam/ExamPDFViewer";
-import { ExamTutorChat } from "@/components/exam/ExamTutorChat";
+import { ExamTutorPanel } from "@/features/exams/practice";
+import type { ExerciseForRunner, SessionForRunner, ReferenceText } from "@/features/exams/practice";
 import { ExamProgressBar } from "@/components/exam/ExamProgressBar";
 import { ArrowLeft, FileText, MessageCircle } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -24,7 +25,7 @@ export default function ExamPreparation() {
   const [completedExercises, setCompletedExercises] = useState<number[]>([]);
   const [score, setScore] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [referenceTexts, setReferenceTexts] = useState<any[]>([]);
+  const [referenceTexts, setReferenceTexts] = useState<ReferenceText[]>([]);
 
   useEffect(() => {
     loadExamData();
@@ -57,7 +58,8 @@ export default function ExamPreparation() {
       // Set reference texts from exam data
       const refTexts = examData.reference_texts;
       if (refTexts && Array.isArray(refTexts)) {
-        setReferenceTexts(refTexts);
+        // Cast through unknown for JSON data from Supabase
+        setReferenceTexts(refTexts as unknown as ReferenceText[]);
       }
 
       // Load exercises
@@ -294,21 +296,20 @@ export default function ExamPreparation() {
                 <TabsContent value="tutor" className="mt-4">
                   <div className="h-[calc(100dvh-200px)] min-h-[560px]">
                     {session && currentExerciseData ? (
-                    <ExamTutorChat
-                        sessionId={session.id}
-                        exerciseId={currentExerciseData.id}
-                        exercise={currentExerciseData}
-                        examInfo={{
-                          subject: exam.subject,
-                          year: exam.year,
-                          title: exam.title,
-                        }}
+                      <ExamTutorPanel
+                        exercise={currentExerciseData as ExerciseForRunner}
+                        session={{
+                          id: session.id,
+                          exam_id: exam.id,
+                          current_exercise: currentExercise,
+                          score,
+                          totalExercises: exercises.length,
+                          completedExercises,
+                        } as SessionForRunner}
                         referenceTexts={referenceTexts}
-                        totalExercises={exercises.length}
-                        currentExerciseIndex={currentExercise - 1}
+                        onNext={handleNextExercise}
+                        onPrevious={handlePreviousExercise}
                         onAnswerValidated={handleAnswerValidated}
-                        onPreviousExercise={handlePreviousExercise}
-                        onNextExercise={handleNextExercise}
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full">
@@ -330,24 +331,23 @@ export default function ExamPreparation() {
                 />
               </div>
 
-              {/* Right: Jude Tutor Chat */}
+              {/* Right: Question Runner */}
               <div className="h-[calc(100vh-140px)] min-h-[550px]">
                 {session && currentExerciseData ? (
-                  <ExamTutorChat
-                    sessionId={session.id}
-                    exerciseId={currentExerciseData.id}
-                    exercise={currentExerciseData}
-                    examInfo={{
-                      subject: exam.subject,
-                      year: exam.year,
-                      title: exam.title,
-                    }}
+                  <ExamTutorPanel
+                    exercise={currentExerciseData as ExerciseForRunner}
+                    session={{
+                      id: session.id,
+                      exam_id: exam.id,
+                      current_exercise: currentExercise,
+                      score,
+                      totalExercises: exercises.length,
+                      completedExercises,
+                    } as SessionForRunner}
                     referenceTexts={referenceTexts}
-                    totalExercises={exercises.length}
-                    currentExerciseIndex={currentExercise - 1}
+                    onNext={handleNextExercise}
+                    onPrevious={handlePreviousExercise}
                     onAnswerValidated={handleAnswerValidated}
-                    onPreviousExercise={handlePreviousExercise}
-                    onNextExercise={handleNextExercise}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full">
