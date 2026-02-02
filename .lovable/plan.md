@@ -1,342 +1,212 @@
 
-# ExamHub Restructuring - Phase 4 & 5 Implementation Plan
-## Tutor Contract & Unified Admin Interface
+# Final Integration Plan - ExamHub Restructuring
+## Connecting Admin + Routes + Structured Parsing
 
 ---
 
-## Summary of Remaining Work
+## Summary of Remaining Tasks
 
-| Phase | Component | Status | Description |
-|-------|-----------|--------|-------------|
-| Phase 4 | Tutor Contract | **TODO** | Update `exam-tutor` to return structured responses |
-| Phase 5 | Unified Admin | **TODO** | Merge `ExamManager.tsx` + `BaccExamManager.tsx` into one |
+| Task | Priority | Description |
+|------|----------|-------------|
+| 1. Replace ContentEditor tabs | High | Replace "Examens 9AF" + "Baccalauréat" tabs with unified ExamAdminPage |
+| 2. Convert legacy routes to redirects | High | Change `/examens-officiels` and `/baccalaureat/*` to `<Navigate>` |
+| 3. Update navigation references | Medium | Update `Matieres.tsx`, `ExamPreparation.tsx`, etc. to use new routes |
+| 4. Enhance parse-exam-vision | Low | Add `promptBlocks` structured output for KaTeX |
 
 ---
 
-## Phase 4: Tutor Contract & Structured Responses
+## Task 1: Replace ContentEditor Exam Tabs
 
-### 4.1 Update Tutor Types
+**File:** `src/pages/ContentEditor.tsx`
 
-**File:** `src/features/exams/types/exam.types.ts`
-
-Add the tutor contract types (partially done, needs refinement):
-
+**Current State (Lines 256-263, 392-398):**
 ```typescript
-// Already exists - enhance with more action types
-export interface TutorAction {
-  type: 'hint' | 'reveal' | 'next' | 'youtube' | 'reference' | 'check';
-  label: string;
-  payload?: any;
-}
+// Two separate tabs:
+<TabsTrigger value="exams">Examens 9AF</TabsTrigger>
+<TabsTrigger value="baccalaureat">Baccalauréat</TabsTrigger>
 
-// Add parsing helper for LLM response to blocks
-export function parseResponseToBlocks(text: string): ContentBlock[] {
-  // Parse $...$ and $$...$$ into structured blocks
-  const blocks: ContentBlock[] = [];
-  // Implementation converts plain text with LaTeX to structured blocks
-  return blocks;
-}
+// Two separate components:
+<TabsContent value="exams"><ExamManager /></TabsContent>
+<TabsContent value="baccalaureat"><BaccExamManager /></TabsContent>
 ```
 
-### 4.2 Update `exam-tutor` Edge Function
-
-**File:** `supabase/functions/exam-tutor/index.ts`
-
-**Changes:**
-1. Add deterministic answer validation (no LLM guessing for MCQ)
-2. Return structured `TutorResponse` with blocks and actions
-3. Maintain backward compatibility with `response` field
+**Change:**
+- Replace both tabs with a single "Examens" tab
+- Replace both components with `ExamAdminPage`
+- Remove imports of `ExamManager` and `BaccExamManager`
 
 ```typescript
-// NEW: Deterministic validation for MCQ
-function validateAnswer(studentAnswer: string, exercise: any): boolean {
-  const correct = exercise.correct_answer?.toUpperCase().trim();
-  const student = studentAnswer?.toUpperCase().trim();
-  
-  if (!correct) return false;
-  
-  // For MCQ: exact letter match
-  if (exercise.options && Array.isArray(exercise.options)) {
-    return student === correct;
-  }
-  
-  // For open-ended: normalize and compare
-  return normalizeAnswer(student) === normalizeAnswer(correct);
-}
+// BEFORE: Two imports
+import { ExamManager } from "@/components/content-editor/ExamManager";
+import { BaccExamManager } from "@/components/content-editor/BaccExamManager";
 
-function normalizeAnswer(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]/g, '')
-    .trim();
-}
+// AFTER: One import
+import { ExamAdminPage } from "@/features/exams/admin";
 
-// NEW: Parse AI response into content blocks
-function parseToBlocks(text: string): ContentBlock[] {
-  const blocks: ContentBlock[] = [];
-  const mathBlockRegex = /\$\$(.*?)\$\$/gs;
-  const mathInlineRegex = /\$(.*?)\$/g;
-  
-  let lastIndex = 0;
-  let remaining = text;
-  
-  // Extract math blocks and text segments
-  // ... parsing logic ...
-  
-  return blocks;
-}
+// BEFORE: Two tabs (7 tabs total)
+<TabsList className="grid w-full grid-cols-7 lg:w-[1400px]">
+  ...
+  <TabsTrigger value="exams">Examens 9AF</TabsTrigger>
+  <TabsTrigger value="baccalaureat">Baccalauréat</TabsTrigger>
+  ...
+</TabsList>
 
-// UPDATED response structure
-return new Response(JSON.stringify({
-  // NEW: Structured content blocks for KaTeX
-  blocks: parseToBlocks(ericResponse),
-  
-  // NEW: Available action buttons
-  actions: [
-    { type: 'next', label: 'Question suivante' },
-    ...(youtubeQuery ? [{ type: 'youtube', label: 'Voir vidéo', payload: youtubeQuery }] : []),
-  ],
-  
-  // Grading info
-  grading: {
-    isCorrect,
-    pointsAwarded: shouldAwardPoints ? exercise.points : 0,
-    correctAnswer: revealAnswer ? exercise.correct_answer : undefined,
-  },
-  
-  shouldAutoAdvance: shouldMoveToNext,
-  youtubeQuery,
-  
-  // BACKWARD COMPAT: Keep raw response
-  response: ericResponse,
-  isCorrect,
-  shouldAwardPoints,
-  pointsEarned: shouldAwardPoints ? exercise.points : 0,
-  shouldMoveToNext,
-}), { headers: responseHeaders });
-```
+// AFTER: One tab (6 tabs total)
+<TabsList className="grid w-full grid-cols-6 lg:w-[1200px]">
+  ...
+  <TabsTrigger value="exams">Examens</TabsTrigger>
+  ...
+</TabsList>
 
-### 4.3 Update ExamTutorChat to Use Structured Response
+// BEFORE: Two contents
+<TabsContent value="exams"><ExamManager /></TabsContent>
+<TabsContent value="baccalaureat"><BaccExamManager /></TabsContent>
 
-**File:** `src/components/exam/ExamTutorChat.tsx`
-
-**Changes:**
-1. Import `ContentBlocksRenderer` from features/exams
-2. Handle new `blocks` field in response
-3. Render action buttons from `actions` array
-
-```typescript
-// Add import
-import { ContentBlocksRenderer } from '@/features/exams/rendering/ContentBlocksRenderer';
-
-// Update message rendering to use blocks when available
-{message.message_role === 'assistant' ? (
-  data.blocks ? (
-    <ContentBlocksRenderer blocks={data.blocks} />
-  ) : (
-    <MathText text={message.message_content} />
-  )
-) : (
-  message.message_content
-)}
+// AFTER: One content
+<TabsContent value="exams"><ExamAdminPage /></TabsContent>
 ```
 
 ---
 
-## Phase 5: Unified Admin Interface
+## Task 2: Convert Legacy Routes to Redirects
 
-### 5.1 Code Duplication Analysis
+**File:** `src/App.tsx`
 
-| Feature | ExamManager.tsx | BaccExamManager.tsx | Unified Approach |
-|---------|-----------------|---------------------|------------------|
-| PDF Upload | Lines 105-144 | Lines 141-182 | Shared utility |
-| PDF to Images | Lines 146-198 | Lines 184-229 | Shared utility |
-| Re-analyze | Lines 200-261 | Lines 231-294 | Pass `track` param |
-| Confirm Save | Lines 413-567 | Lines 433-567 | Unified with track field |
-| Exercise Insert | Lines 497-525 | Lines 494-520 | Identical |
-| Delete Exam | Not present | Lines 555-598 | Add to unified |
-
-**Duplication Rate:** ~85% identical code
-
-### 5.2 Create Unified ExamAdminPage
-
-**New File:** `src/features/exams/admin/ExamAdminPage.tsx`
-
+**Current State (Lines 359-383):**
 ```typescript
-export function ExamAdminPage() {
-  const [track, setTrack] = useState<'9AF' | 'NS4'>('9AF');
-  const [selectedSeries, setSelectedSeries] = useState<string[]>([]);
-  const [subject, setSubject] = useState('');
-  const [year, setYear] = useState('');
-  const [session, setSession] = useState('principale');
-  const [isModelExam, setIsModelExam] = useState(false);
-  // ... rest of state
-
-  // Dynamic subject list based on track/series
-  const availableSubjects = useMemo(() => {
-    if (track === '9AF') return SUBJECTS_9AF;
-    if (selectedSeries.length > 0) {
-      return SUBJECTS_BY_SERIES[selectedSeries[0]] || [];
-    }
-    return [];
-  }, [track, selectedSeries]);
-
-  return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <GraduationCap className="h-5 w-5" />
-            Gestion des Examens Officiels
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Track Selector */}
-          <div className="flex gap-4">
-            <TrackToggle value={track} onChange={setTrack} />
-          </div>
-
-          {/* Series Selector (NS4 only) */}
-          {track === 'NS4' && (
-            <SeriesMultiSelect 
-              value={selectedSeries} 
-              onChange={setSelectedSeries} 
-            />
-          )}
-
-          {/* Subject, Year, Session selectors */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <SubjectSelect subjects={availableSubjects} value={subject} onChange={setSubject} />
-            <YearSelect years={YEARS} value={year} onChange={setYear} />
-            {track === 'NS4' && (
-              <SessionSelect value={session} onChange={setSession} />
-            )}
-          </div>
-
-          {/* Model exam toggle (NS4 only) */}
-          {track === 'NS4' && (
-            <ModelExamToggle value={isModelExam} onChange={setIsModelExam} />
-          )}
-
-          {/* PDF Upload */}
-          <PDFUploader 
-            file={pdfFile} 
-            onChange={setPdfFile}
-            isConverting={isConvertingPdf}
-            progress={conversionProgress}
-          />
-
-          {/* Analyze Button */}
-          <Button onClick={handleAnalyze} disabled={isAnalyzing}>
-            {isAnalyzing ? <Loader2 className="animate-spin" /> : <Upload />}
-            Analyser et Sauvegarder
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Preview Dialog */}
-      {showPreview && parsedPreview && (
-        <ExamPreviewCard 
-          preview={parsedPreview}
-          onConfirm={handleConfirmAndSave}
-          onCancel={() => setShowPreview(false)}
-        />
-      )}
-
-      {/* Existing Exams List */}
-      <ExistingExamsList 
-        track={track}
-        series={selectedSeries}
-        onReanalyze={handleReanalyze}
-        onDelete={handleDelete}
-      />
-    </div>
-  );
-}
+// Legacy routes still render old hub pages
+<Route path="/examens-officiels" element={<ExamsHub />} />
+<Route path="/baccalaureat" element={<BaccExamsHub />} />
+<Route path="/baccalaureat/:series" element={<BaccExamsHub />} />
+<Route path="/baccalaureat/:series/:subject" element={<BaccExamsHub />} />
 ```
 
-### 5.3 Extract Shared Utilities
-
-**New File:** `src/features/exams/admin/utils/pdfUtils.ts`
-
-```typescript
-export async function convertPdfToImages(
-  file: File,
-  onProgress?: (percent: number) => void
-): Promise<string[]> {
-  // Extracted from both ExamManager and BaccExamManager
-  // Identical implementation
-}
-
-export async function uploadPdfToStorage(
-  file: File,
-  track: '9AF' | 'NS4',
-  subject: string,
-  year: number,
-  series?: string,
-  session?: string,
-  isModel?: boolean
-): Promise<string | null> {
-  // Unified upload with dynamic filename
-}
-```
-
-**New File:** `src/features/exams/admin/utils/examSaveUtils.ts`
+**Change:**
+- Replace with `<Navigate>` to new unified routes
+- Keep lazy imports but remove `ExamsHub` and `BaccExamsHub`
 
 ```typescript
-export async function saveExamWithExercises(
-  examData: ExamFormData,
-  exercises: ParsedExercise[],
-  referenceTexts: ReferenceText[]
-): Promise<string> {
-  // Unified save logic for both tracks
-}
+// Add Navigate import
+import { Routes, Route, Navigate } from "react-router-dom";
 
-export async function reanalyzeExam(
-  exam: ExistingExam,
-  onProgress?: (stage: string) => void
-): Promise<ParsedPreview> {
-  // Unified reanalysis logic
-}
+// BEFORE: Legacy hub pages
+<Route path="/examens-officiels" element={<ExamsHub />} />
+
+// AFTER: Redirect to unified hub
+<Route path="/examens-officiels" element={<Navigate to="/exams/9AF" replace />} />
+
+// BEFORE: Baccalaureat routes with old hub
+<Route path="/baccalaureat" element={<BaccExamsHub />} />
+<Route path="/baccalaureat/:series" element={<BaccExamsHub />} />
+<Route path="/baccalaureat/:series/:subject" element={<BaccExamsHub />} />
+
+// AFTER: Redirects using LegacyRedirect for params
+<Route path="/baccalaureat" element={<Navigate to="/exams/NS4" replace />} />
+<Route path="/baccalaureat/:series" element={
+  <LegacyRedirect to="/exams/NS4/:series" preserveParams />
+} />
+<Route path="/baccalaureat/:series/:subject" element={
+  <LegacyRedirect to="/exams/NS4/:series/:subject" preserveParams />
+} />
 ```
 
-### 5.4 Update parse-exam-vision for Structured Content
+---
+
+## Task 3: Update Navigation References
+
+**Files to update:**
+
+### `src/pages/Matieres.tsx` (Lines 506, 530)
+```typescript
+// BEFORE
+navigate('/examens-officiels')
+navigate(`/baccalaureat${selectedSeries ? `/${selectedSeries}` : ''}`)
+
+// AFTER
+navigate('/exams/9AF')
+navigate(`/exams/NS4${selectedSeries ? `/${selectedSeries}` : ''}`)
+```
+
+### `src/pages/ExamPreparation.tsx` (Lines 43, 226, 245)
+```typescript
+// BEFORE
+navigate('/examens-officiels')
+
+// AFTER
+navigate('/exams/9AF')  // Or use history.back() for better UX
+```
+
+### `src/pages/Resources.tsx` (Line 59)
+```typescript
+// BEFORE
+handleSectionClick('/examens-officiels', '9AF', 'Examens Officiels 9ème AF')
+
+// AFTER  
+handleSectionClick('/exams/9AF', '9AF', 'Examens Officiels 9ème AF')
+```
+
+### `src/pages/MigratePDFs.tsx` (Line 53)
+```typescript
+// BEFORE
+navigate('/examens-officiels')
+
+// AFTER
+navigate('/exams/9AF')
+```
+
+---
+
+## Task 4: Enhance parse-exam-vision for Structured Blocks (Optional Enhancement)
 
 **File:** `supabase/functions/parse-exam-vision/index.ts`
 
-**Add:** Support for `prompt_blocks` and `options_json` in output:
+**Enhancement:** Request the AI to return `promptBlocks` instead of just `questionText`
 
+**Changes to system prompt:**
 ```typescript
-// Update system prompt to request structured blocks
-const systemPrompt = `...
+const systemPrompt = `Tu es un expert OCR...
+
 RETOURNE UN JSON VALIDE avec cette structure EXACTE:
 {
-  "exercises": [{
-    "exerciseNumber": 1,
-    "exerciseType": "multiple_choice",
-    "questionText": "Le texte complet de la question",
-    "promptBlocks": [
-      { "type": "text", "content": "Résoudre " },
-      { "type": "math-inline", "latex": "x^2 + 5x + 6 = 0" }
-    ],
-    "options": {"A": "...", "B": "...", "C": "...", "D": "..."},
-    "optionsJson": {
-      "A": { "blocks": [{ "type": "text", "content": "x = -2" }], "value": "A" },
-      ...
-    },
-    "correctAnswer": "A",
-    "answerJson": { "index": 0, "value": "A" },
-    ...
-  }]
+  "exercises": [
+    {
+      "exerciseNumber": 1,
+      "exerciseType": "multiple_choice",
+      "questionText": "Le texte complet de la question",
+      "promptBlocks": [
+        { "type": "text", "content": "Résoudre " },
+        { "type": "math-inline", "latex": "x^2 + 5x + 6 = 0" }
+      ],
+      "options": {"A": "...", "B": "...", "C": "...", "D": "..."},
+      "optionsJson": {
+        "A": { "blocks": [{ "type": "text", "content": "x = -2" }], "value": "A" }
+      },
+      "correctAnswer": "A",
+      "answerJson": { "index": 0, "value": "A" },
+      "points": 5,
+      "concept": "Équations quadratiques"
+    }
+  ]
 }
-...`;
 
-// In normalization, preserve structured fields
+RÈGLE POUR LES MATHÉMATIQUES:
+- Si une question contient des formules mathématiques, utilise "promptBlocks" avec type "math-inline" ou "math-block"
+- Sinon, utilise "questionText" pour le texte simple
+`;
+```
+
+**Changes to normalization:**
+```typescript
 const normalizedExercises = parsedData.exercises.map((ex: any, index: number) => ({
-  ...existingFields,
-  // NEW: Structured content
+  exerciseNumber: ex.exerciseNumber || index + 1,
+  exerciseType: ex.exerciseType || (ex.options ? "multiple_choice" : "open_ended"),
+  questionText: ex.questionText || ex.question || `Question ${index + 1}`,
+  options: ex.options || null,
+  correctAnswer: ex.correctAnswer || null,
+  explanation: ex.explanation || null,
+  points: typeof ex.points === "number" ? ex.points : (ex.exerciseType === "multiple_choice" ? 5 : 8),
+  concept: ex.concept || "Général",
+  // NEW: Structured content fields
   promptBlocks: ex.promptBlocks || null,
   optionsJson: ex.optionsJson || null,
   answerJson: ex.answerJson || null,
@@ -350,19 +220,13 @@ const normalizedExercises = parsedData.exercises.map((ex: any, index: number) =>
 
 | Operation | File | Description |
 |-----------|------|-------------|
-| Modify | `supabase/functions/exam-tutor/index.ts` | Add structured response with blocks/actions |
-| Modify | `src/components/exam/ExamTutorChat.tsx` | Handle new response format |
-| Create | `src/features/exams/admin/ExamAdminPage.tsx` | Unified admin component |
-| Create | `src/features/exams/admin/components/TrackToggle.tsx` | 9AF/NS4 toggle |
-| Create | `src/features/exams/admin/components/SeriesMultiSelect.tsx` | Series selector |
-| Create | `src/features/exams/admin/components/PDFUploader.tsx` | PDF upload component |
-| Create | `src/features/exams/admin/components/ExamPreviewCard.tsx` | Preview parsed exam |
-| Create | `src/features/exams/admin/components/ExistingExamsList.tsx` | List with actions |
-| Create | `src/features/exams/admin/utils/pdfUtils.ts` | PDF conversion utilities |
-| Create | `src/features/exams/admin/utils/examSaveUtils.ts` | Save/update utilities |
-| Create | `src/features/exams/admin/index.ts` | Barrel export |
-| Modify | `supabase/functions/parse-exam-vision/index.ts` | Add structured blocks output |
-| Modify | `src/features/exams/index.ts` | Export admin components |
+| Modify | `src/pages/ContentEditor.tsx` | Replace 2 tabs with 1, use ExamAdminPage |
+| Modify | `src/App.tsx` | Convert legacy routes to Navigate redirects |
+| Modify | `src/pages/Matieres.tsx` | Update navigation to /exams routes |
+| Modify | `src/pages/ExamPreparation.tsx` | Update back navigation |
+| Modify | `src/pages/Resources.tsx` | Update exam section link |
+| Modify | `src/pages/MigratePDFs.tsx` | Update back navigation |
+| Modify | `supabase/functions/parse-exam-vision/index.ts` | Add promptBlocks to output |
 
 ---
 
@@ -370,16 +234,15 @@ const normalizedExercises = parsedData.exercises.map((ex: any, index: number) =>
 
 | Step | Task | Est. Time |
 |------|------|-----------|
-| 1 | Update `exam-tutor` with deterministic validation + structured response | 45 min |
-| 2 | Create admin utility files (`pdfUtils.ts`, `examSaveUtils.ts`) | 30 min |
-| 3 | Create admin sub-components (TrackToggle, SeriesMultiSelect, etc.) | 45 min |
-| 4 | Build unified `ExamAdminPage.tsx` | 60 min |
-| 5 | Update `ExamTutorChat.tsx` to use new response format | 30 min |
-| 6 | Update `parse-exam-vision` for structured blocks (optional enhancement) | 30 min |
-| 7 | Update routing to use new admin page | 15 min |
-| 8 | Deploy and test edge functions | 15 min |
+| 1 | Update ContentEditor.tsx (consolidate tabs) | 10 min |
+| 2 | Update App.tsx (legacy route redirects) | 10 min |
+| 3 | Update Matieres.tsx navigation | 5 min |
+| 4 | Update ExamPreparation.tsx navigation | 5 min |
+| 5 | Update Resources.tsx & MigratePDFs.tsx | 5 min |
+| 6 | Enhance parse-exam-vision | 15 min |
+| 7 | Deploy edge function | 5 min |
 
-**Total Estimated Time: ~4.5 hours**
+**Total: ~55 minutes**
 
 ---
 
@@ -387,20 +250,19 @@ const normalizedExercises = parsedData.exercises.map((ex: any, index: number) =>
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Breaks existing functionality? | No | Backward compat with `response` field |
-| Works with existing data? | Yes | New fields are optional |
-| 3G optimized? | Yes | Same payload size, lazy KaTeX |
-| Backward compatible? | Yes | Old response format preserved |
-| Edge cases handled? | Yes | Null-safe validation |
+| Breaks existing functionality? | No | Redirects preserve all old URLs |
+| Works with existing data? | Yes | No DB changes required |
+| 3G optimized? | Yes | Navigate is instant, no network |
+| Backward compatible? | Yes | All old URLs redirect properly |
+| Edge cases handled? | Yes | LegacyRedirect handles params |
 
 ---
 
-## What This Completes
+## Expected Outcomes
 
-After this implementation:
-- Jude returns **structured blocks** for KaTeX rendering
-- Answer validation is **deterministic** (no LLM guessing for MCQ)
-- **One admin interface** for both 9AF and NS4 exams
-- **90% less duplicated code** in admin
-- Action buttons are **data-driven** from tutor response
-- Ready for future enhancements (timed mode, concept analytics)
+After implementation:
+- **One admin tab** in ContentEditor instead of two
+- **All legacy URLs** (`/examens-officiels`, `/baccalaureat/*`) redirect to new hub
+- **Clean navigation** throughout the app using `/exams/:track` pattern
+- **Math content** properly structured for KaTeX rendering
+- **~200 lines removed** from ContentEditor imports and tabs
