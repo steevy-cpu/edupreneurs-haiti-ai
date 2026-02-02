@@ -162,14 +162,16 @@ serve(async (req) => {
     }
 
     const validatedData = validation.data;
+    const action = (rawBody.action as string) || 'ask'; // Action-based routing
+    const hintLevel = rawBody.hint_level as number || 0;
     const exercise = validatedData.exercise;
     const userMessage = validatedData.userMessage || validatedData.message || '';
     const conversationHistory = validatedData.conversationHistory || [];
     const studentAnswer = validatedData.studentAnswer;
-    const revealAnswer = validatedData.revealAnswer;
+    const revealAnswer = validatedData.revealAnswer || action === 'reveal';
     const referenceTexts = validatedData.referenceTexts;
 
-    console.log('Exam tutor request:', { exercise: exercise?.exercise_number, userMessage: userMessage?.substring(0, 100) });
+    console.log('Exam tutor request:', { action, exercise: exercise?.exercise_number, hintLevel });
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -215,8 +217,20 @@ ${exercise.options && Array.isArray(exercise.options) && exercise.options.length
 ${exercise.correct_answer ? `Réponse correcte: ${exercise.correct_answer}` : 'Note: La réponse correcte n\'est pas définie dans la base de données. Guide l\'élève sans pouvoir valider automatiquement.'}
 Concept: ${exercise.concept}`;
 
-    // If reveal answer is requested, modify the prompt
-    if (revealAnswer) {
+    // ============= Action-Based Prompt Modification =============
+    
+    // Handle hint action with progressive levels
+    if (action === 'hint') {
+      const HINT_PROMPTS: Record<number, string> = {
+        1: 'Donne un indice qui pointe vers le concept sans révéler la réponse (max 40 mots).',
+        2: 'Donne un indice plus précis qui élimine certaines mauvaises réponses (max 50 mots).',
+        3: 'Donne un dernier indice qui mène presque directement à la réponse, sans la donner explicitement (max 60 mots).',
+      };
+      systemPrompt += `\n\n**ACTION REQUISE: INDICE (niveau ${hintLevel}/3)**\n${HINT_PROMPTS[hintLevel] || HINT_PROMPTS[1]}`;
+    }
+
+    // Handle reveal action
+    if (action === 'reveal' || revealAnswer) {
       systemPrompt += `\n\n**ACTION REQUISE:** L'élève te demande de révéler la réponse. Tu dois:
 1. Donner la bonne réponse (${exercise.correct_answer})
 2. Expliquer clairement POURQUOI c'est la bonne réponse
@@ -224,6 +238,19 @@ Concept: ${exercise.concept}`;
 4. Encourager l'élève à passer à la prochaine question
 
 Donne une explication complète mais concise (maximum 150 mots).`;
+    }
+
+    // Handle check action - feedback on answer
+    if (action === 'check' && studentAnswer) {
+      const isCorrect = validateAnswer(studentAnswer, exercise);
+      if (isCorrect) {
+        systemPrompt += `\n\n**ACTION REQUISE: L'élève a donné la BONNE réponse (${studentAnswer})**
+Félicite brièvement (max 30 mots) avec enthousiasme! 🎉`;
+      } else {
+        systemPrompt += `\n\n**ACTION REQUISE: L'élève a donné une MAUVAISE réponse (${studentAnswer})**
+La bonne réponse est: ${exercise.correct_answer}
+Explique l'erreur avec bienveillance et donne la bonne réponse avec une explication claire (max 80 mots).`;
+      }
     }
 
     // Build messages array
