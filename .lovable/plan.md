@@ -1,95 +1,93 @@
 
-# Plan: Highlight Questions in Jude's Chat with Styled Box
+# Fix Plan: Highlight Questions with Styled Quote Box
 
 ## Problem Analysis
 
-From the screenshot, when Jude mentions a question in chat, it's wrapped with markdown bold syntax (`**...**`), which just makes the text bold. The user wants a more visually distinct presentation - like a bordered box or "circled" quote card.
+There are **two issues** preventing the question from being highlighted:
 
-**Current behavior:**
+### Issue 1: Frontend - MathText component doesn't detect `《...》`
+
+The `MathText` component (used in `AskJudeDrawer.tsx`) only processes special delimiters if:
+- `containsMath()` returns true, OR
+- `hasLatexDelimiters()` returns true
+
+Neither of these functions check for `《...》`, so text containing this pattern is returned as plain text without processing.
+
+**Current flow:**
 ```
-La question est : **"What do you like the most..."**
+User message → MathText → containsMath? NO → Return plain text (skips 《...》 processing)
 ```
 
-**Desired behavior:**
-The question should appear in a styled card/box instead of just bold text.
+### Issue 2: Backend - AI instruction needs reinforcement
+
+The current instruction is:
+> "Pour citer la question de l'exercice": Utilise les guillemets spéciaux 《...》
+
+This is passive. The AI may describe/paraphrase the question instead of quoting it.
 
 ---
 
-## Solution Overview
+## Solution
 
-We'll use a custom delimiter `《...》` (angle quotation marks) that the AI will use to wrap questions. The frontend will parse this and render a styled quote box.
-
----
-
-## Technical Approach
-
-### 1. Backend: Update Edge Function System Prompt
-
-**File**: `supabase/functions/exam-tutor/index.ts`
-
-Update the system prompt to instruct Jude to use the special delimiter for questions:
-
-```typescript
-// Add to system prompt (around line 206)
-- **Pour citer la question de l'exercice**: Utilise les guillemets spéciaux 《...》 pour entourer le texte de la question (ex: 《What do you like the most?》)
-- **NE PAS utiliser ** pour les questions**, utilise SEULEMENT 《...》
-```
-
-### 2. Frontend: Parse and Render Question Boxes
+### Part 1: Update Frontend Detection Functions
 
 **File**: `src/components/MathContent.tsx`
 
-Add detection and rendering for the `《...》` delimiter:
+1. **Add pattern to `hasLatexDelimiters()`** to detect `《...》`:
 
 ```typescript
-// In renderWithLatexDelimiters function, add pattern for question quotes
-const questionQuoteMatch = remaining.match(/^([\s\S]*?)《([\s\S]+?)》/);
+// Line 207-211 - hasLatexDelimiters function
+const hasLatexDelimiters = (text: string): boolean => {
+  return /\$\$[\s\S]+?\$\$/.test(text) ||    // $$...$$
+         /\$[^$\n]+?\$/.test(text) ||         // $...$
+         /\\\([\s\S]+?\\\)/.test(text) ||     // \(...\)
+         /\\\[[\s\S]+?\\\]/.test(text) ||     // \[...\]
+         /《[\s\S]+?》/.test(text);            // 《...》 question quotes ← ADD THIS
+};
+```
 
-// When matched, render as a styled box instead of plain text
-if (questionQuoteMatch) {
-  // Render as a quote card with border and background
-  result.push(
-    <span 
-      key={keyCounter++} 
-      className="inline-block my-2 px-3 py-2 bg-primary/10 border-l-4 border-primary rounded-r-lg italic text-foreground"
-    >
-      {prefix}
-    </span>
-  );
-}
+This ensures `MathText` will call `renderWithLatexDelimiters()` when it encounters the quote pattern.
+
+### Part 2: Reinforce Backend Instruction
+
+**File**: `supabase/functions/exam-tutor/index.ts`
+
+Update the system prompt to be more directive (line 207):
+
+```typescript
+// Before:
+- **Pour citer la question de l'exercice**: Utilise les guillemets spéciaux 《...》 pour entourer le texte de la question...
+
+// After:
+- **IMPORTANT - Citation de question**: Quand tu mentionnes ou cites la question de l'exercice, tu DOIS TOUJOURS l'entourer avec 《...》 (ex: 《Quelle est ta préférence?》). N'utilise JAMAIS ** ou "" pour les questions.
 ```
 
 ---
 
 ## File Changes Summary
 
-| Operation | File | Description |
-|-----------|------|-------------|
-| Modify | `supabase/functions/exam-tutor/index.ts` | Add instruction to use 《...》 for questions |
-| Modify | `src/components/MathContent.tsx` | Parse 《...》 and render as styled quote box |
+| File | Line | Change |
+|------|------|--------|
+| `src/components/MathContent.tsx` | 207-211 | Add `/《[\s\S]+?》/` pattern to `hasLatexDelimiters()` |
+| `supabase/functions/exam-tutor/index.ts` | 207 | Reinforce instruction to use `《...》` |
 
 ---
 
 ## Visual Result
 
-**Before** (markdown bold):
+**Before** (current screenshot):
 ```
-La question est : **"What do you like..."**
+La question te demande d'écrire un petit texte...
 ```
+(Plain text, not highlighted)
 
-**After** (styled quote box):
+**After** (with fix):
 ```
-La question est :
-┌──────────────────────────────────┐
-│ "What do you like the most..."   │
-└──────────────────────────────────┘
+La question te demande:
+┌────────────────────────────────────────┐
+│ "Écrire un petit texte de 10 lignes..." │
+└────────────────────────────────────────┘
 ```
-
-The quote will have:
-- Light primary background (`bg-primary/10`)
-- Left border accent (`border-l-4 border-primary`)
-- Rounded right corners
-- Italic text for visual distinction
 
 ---
 
@@ -97,14 +95,13 @@ The quote will have:
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Breaks existing functionality? | No | New delimiter doesn't conflict with existing patterns |
-| Works with existing messages? | Yes | Old messages still render normally (bold text) |
-| 3G optimized? | Yes | No additional network requests, pure CSS |
-| Math content affected? | No | 《》 won't interfere with LaTeX $...$ |
-| Backward compatible? | Yes | Falls back gracefully if delimiter not found |
+| Breaks existing functionality? | No | Only adds new pattern detection |
+| Affects LaTeX rendering? | No | `《》` characters don't conflict with math |
+| 3G optimized? | Yes | No additional network requests |
+| Backward compatible? | Yes | Old messages render normally |
 
 ---
 
 ## Implementation Time
 
-~15 minutes - Update edge function prompt and add frontend parsing logic
+~10 minutes - Two small changes to detection and prompt
