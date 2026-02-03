@@ -102,8 +102,8 @@ export function AskJudeDrawer({ exercise, onAskJude }: AskJudeDrawerProps) {
           Demander à Jude
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="max-h-[85vh]">
-        <div className="flex flex-col h-full max-h-[600px]">
+      <DrawerContent className="max-h-[85vh] min-h-[400px]">
+        <div className="flex flex-col h-[70vh] max-h-[600px]">
           <DrawerHeader className="border-b flex-shrink-0">
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 border border-primary/30">
@@ -120,7 +120,7 @@ export function AskJudeDrawer({ exercise, onAskJude }: AskJudeDrawerProps) {
           </DrawerHeader>
 
           {/* Messages area */}
-          <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
+          <div className="flex-1 overflow-y-auto p-4 min-h-[200px]" ref={scrollRef}>
             {messages.length === 0 && (
               <div className="text-center text-muted-foreground py-8">
                 <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-30" />
