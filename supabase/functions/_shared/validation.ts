@@ -129,7 +129,10 @@ export const examTutorSchema = z.object({
   exercise: z.object({
     exercise_number: z.number().optional().nullable(),
     question_text: z.string().max(10000),
-    options: z.array(z.string().max(1000)).max(10).optional().nullable(),
+    options: z.union([
+      z.array(z.string().max(1000)).max(10),
+      z.record(z.string().max(1), z.string().max(1000))
+    ]).optional().nullable(),
     correct_answer: z.string().max(5000).optional().nullable(),
     concept: z.string().max(500).optional().nullable(),
     points: z.number().optional().nullable(),
