@@ -1,61 +1,95 @@
 
-# Fix Plan: AskJudeDrawer Desktop/Tablet Display Issues
+# Plan: Highlight Questions in Jude's Chat with Styled Box
 
 ## Problem Analysis
 
-From the screenshot, the drawer on desktop/tablet shows:
-1. Content appearing in the middle without proper bottom anchoring
-2. Input area getting cut off or hidden at the bottom
-3. Empty state message visible but the input field is not visible
+From the screenshot, when Jude mentions a question in chat, it's wrapped with markdown bold syntax (`**...**`), which just makes the text bold. The user wants a more visually distinct presentation - like a bordered box or "circled" quote card.
 
-**Root Cause**: The `DrawerContent` uses `max-h-[85vh]` but the inner container with `max-h-[600px]` doesn't have a minimum height to push the input area to the bottom. On desktop, the empty state collapses the content area, causing layout issues.
+**Current behavior:**
+```
+La question est : **"What do you like the most..."**
+```
+
+**Desired behavior:**
+The question should appear in a styled card/box instead of just bold text.
 
 ---
 
-## Solution
+## Solution Overview
 
-### File: `src/features/exams/practice/components/AskJudeDrawer.tsx`
+We'll use a custom delimiter `《...》` (angle quotation marks) that the AI will use to wrap questions. The frontend will parse this and render a styled quote box.
 
-**Changes needed:**
+---
 
-```typescript
-// BEFORE (line 105-106):
-<DrawerContent className="max-h-[85vh]">
-  <div className="flex flex-col h-full max-h-[600px]">
+## Technical Approach
 
-// AFTER:
-<DrawerContent className="max-h-[85vh] min-h-[400px]">
-  <div className="flex flex-col h-[70vh] max-h-[600px]">
-```
+### 1. Backend: Update Edge Function System Prompt
 
-**Key changes:**
+**File**: `supabase/functions/exam-tutor/index.ts`
 
-| Change | Purpose |
-|--------|---------|
-| Add `min-h-[400px]` to DrawerContent | Ensures drawer has minimum height on all devices |
-| Change inner div from `h-full` to `h-[70vh]` | Forces explicit height so flexbox can properly push input to bottom |
-| Keep `max-h-[600px]` | Still caps maximum height for usability |
-
-**Additional fix for the messages area (line 123):**
+Update the system prompt to instruct Jude to use the special delimiter for questions:
 
 ```typescript
-// BEFORE:
-<div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
-
-// AFTER:
-<div className="flex-1 overflow-y-auto p-4 min-h-[200px]" ref={scrollRef}>
+// Add to system prompt (around line 206)
+- **Pour citer la question de l'exercice**: Utilise les guillemets spéciaux 《...》 pour entourer le texte de la question (ex: 《What do you like the most?》)
+- **NE PAS utiliser ** pour les questions**, utilise SEULEMENT 《...》
 ```
 
-Adding `min-h-[200px]` to the messages area ensures the scrollable content zone always has height, pushing the input area to the visible bottom.
+### 2. Frontend: Parse and Render Question Boxes
+
+**File**: `src/components/MathContent.tsx`
+
+Add detection and rendering for the `《...》` delimiter:
+
+```typescript
+// In renderWithLatexDelimiters function, add pattern for question quotes
+const questionQuoteMatch = remaining.match(/^([\s\S]*?)《([\s\S]+?)》/);
+
+// When matched, render as a styled box instead of plain text
+if (questionQuoteMatch) {
+  // Render as a quote card with border and background
+  result.push(
+    <span 
+      key={keyCounter++} 
+      className="inline-block my-2 px-3 py-2 bg-primary/10 border-l-4 border-primary rounded-r-lg italic text-foreground"
+    >
+      {prefix}
+    </span>
+  );
+}
+```
 
 ---
 
 ## File Changes Summary
 
-| Operation | File | Lines | Description |
-|-----------|------|-------|-------------|
-| Modify | `src/features/exams/practice/components/AskJudeDrawer.tsx` | 105-106 | Add min-h to DrawerContent, change inner div to explicit height |
-| Modify | `src/features/exams/practice/components/AskJudeDrawer.tsx` | 123 | Add min-h to messages area |
+| Operation | File | Description |
+|-----------|------|-------------|
+| Modify | `supabase/functions/exam-tutor/index.ts` | Add instruction to use 《...》 for questions |
+| Modify | `src/components/MathContent.tsx` | Parse 《...》 and render as styled quote box |
+
+---
+
+## Visual Result
+
+**Before** (markdown bold):
+```
+La question est : **"What do you like..."**
+```
+
+**After** (styled quote box):
+```
+La question est :
+┌──────────────────────────────────┐
+│ "What do you like the most..."   │
+└──────────────────────────────────┘
+```
+
+The quote will have:
+- Light primary background (`bg-primary/10`)
+- Left border accent (`border-l-4 border-primary`)
+- Rounded right corners
+- Italic text for visual distinction
 
 ---
 
@@ -63,14 +97,14 @@ Adding `min-h-[200px]` to the messages area ensures the scrollable content zone 
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Breaks existing functionality? | No | Only CSS class adjustments |
-| Mobile view affected? | No | Already working, min-h provides safety |
-| Desktop/Tablet fixed? | Yes | Explicit heights ensure proper layout |
-| 3G optimized? | Yes | No additional downloads |
-| Backward compatible? | Yes | Pure CSS addition |
+| Breaks existing functionality? | No | New delimiter doesn't conflict with existing patterns |
+| Works with existing messages? | Yes | Old messages still render normally (bold text) |
+| 3G optimized? | Yes | No additional network requests, pure CSS |
+| Math content affected? | No | 《》 won't interfere with LaTeX $...$ |
+| Backward compatible? | Yes | Falls back gracefully if delimiter not found |
 
 ---
 
 ## Implementation Time
 
-~5 minutes - CSS class modifications to fix height constraints
+~15 minutes - Update edge function prompt and add frontend parsing logic
