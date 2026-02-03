@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Check, X, Send } from 'lucide-react';
@@ -120,15 +120,21 @@ export function AnswerInput({
   // Render short answer input
   return (
     <form onSubmit={handleShortAnswerSubmit} className="mt-4">
-      <div className="flex gap-2">
-        <Input
+      <div className="flex flex-col gap-2">
+        <Textarea
           value={shortAnswer}
           onChange={(e) => setShortAnswer(e.target.value)}
           placeholder="Écris ta réponse..."
           disabled={isDisabled}
-          className="flex-1"
+          className="flex-1 min-h-[60px] max-h-[200px] resize-none"
+          rows={2}
+          onInput={(e) => {
+            const target = e.target as HTMLTextAreaElement;
+            target.style.height = 'auto';
+            target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
+          }}
         />
-        <Button type="submit" disabled={!shortAnswer.trim() || isDisabled}>
+        <Button type="submit" disabled={!shortAnswer.trim() || isDisabled} className="self-end">
           <Send className="h-4 w-4 mr-2" />
           Vérifier
         </Button>
