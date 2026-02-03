@@ -35,9 +35,16 @@ export function AnswerInput({
   const showResult = state === 'correct' || state === 'incorrect' || state === 'revealed';
   
   // Determine if we have MCQ options
-  const hasOptions = exercise.options && Array.isArray(exercise.options) && exercise.options.length > 0;
+  // Check for array-based options (legacy format)
+  const hasOptionsArray = exercise.options && Array.isArray(exercise.options) && exercise.options.length > 0;
+  // Check for object-based options (current database format: {A: "...", B: "..."})
+  const hasOptionsObject = exercise.options && 
+    typeof exercise.options === 'object' && 
+    !Array.isArray(exercise.options) && 
+    Object.keys(exercise.options as Record<string, unknown>).length > 0;
+  // Check for structured options_json (with blocks)
   const hasOptionsJson = exercise.options_json && Object.keys(exercise.options_json).length > 0;
-  const isMCQ = hasOptions || hasOptionsJson;
+  const isMCQ = hasOptionsArray || hasOptionsObject || hasOptionsJson;
 
   // Handle MCQ selection
   const handleMCQSelect = (letter: string) => {
@@ -54,10 +61,22 @@ export function AnswerInput({
 
   // Render MCQ options
   if (isMCQ) {
-    // Use options_json if available (structured with blocks), otherwise use options array
-    const optionEntries = hasOptionsJson
-      ? Object.entries(exercise.options_json!).sort(([a], [b]) => a.localeCompare(b))
-      : (exercise.options || []).map((opt, idx) => [LETTERS[idx], { value: opt, blocks: null }] as const);
+    // Priority: options_json > options (object) > options (array)
+    let optionEntries: [string, { value: string; blocks: any } | string][];
+
+    if (hasOptionsJson) {
+      optionEntries = Object.entries(exercise.options_json!).sort(([a], [b]) => a.localeCompare(b));
+    } else if (hasOptionsObject) {
+      // Handle object format: {A: "text", B: "text", ...}
+      optionEntries = Object.entries(exercise.options as Record<string, string>)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, value]) => [key, { value, blocks: null }]);
+    } else {
+      // Handle array format: ["option1", "option2", ...]
+      optionEntries = (exercise.options as string[] || []).map((opt, idx) => 
+        [LETTERS[idx], { value: opt, blocks: null }] as [string, { value: string; blocks: null }]
+      );
+    }
 
     return (
       <div className="space-y-2 mt-4">

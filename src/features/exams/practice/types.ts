@@ -42,7 +42,7 @@ export interface ExerciseForRunner {
   exercise_number: number;
   question_text: string;
   prompt_blocks?: ContentBlock[] | null;
-  options?: string[] | null;
+  options?: string[] | Record<string, string> | null;
   options_json?: Record<string, { blocks: ContentBlock[]; value: string }> | null;
   correct_answer: string | null;
   answer_json?: { index: number; value: string; blocks?: ContentBlock[] } | null;
