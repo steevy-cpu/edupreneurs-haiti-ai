@@ -203,12 +203,13 @@ const containsMath = (text: string): boolean => {
   return mathPatterns.some(pattern => pattern.test(text)) || containsPhysicsMath(text);
 };
 
-// Check if content has LaTeX delimiters
+// Check if content has LaTeX delimiters or question quotes
 const hasLatexDelimiters = (text: string): boolean => {
   return /\$\$[\s\S]+?\$\$/.test(text) ||    // $$...$$
          /\$[^$\n]+?\$/.test(text) ||         // $...$
          /\\\([\s\S]+?\\\)/.test(text) ||     // \(...\)
-         /\\\[[\s\S]+?\\\]/.test(text);       // \[...\]
+         /\\\[[\s\S]+?\\\]/.test(text) ||     // \[...\]
+         /《[\s\S]+?》/.test(text);            // 《...》 question quotes
 };
 
 // Render styled question quote box for 《...》 delimiters
