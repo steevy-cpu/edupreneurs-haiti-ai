@@ -22,6 +22,9 @@ export interface RunnerContext {
   errorMessage?: string;
 }
 
+// ============= Answer Types =============
+export type AnswerType = 'mcq' | 'short' | 'matching' | 'essay';
+
 // ============= Tutor Action Types =============
 export type TutorActionType = 'check' | 'hint' | 'reveal' | 'ask' | 'next';
 
@@ -29,7 +32,7 @@ export interface TutorActionPayload {
   action: TutorActionType;
   exercise_id: string;
   answer?: {
-    type: 'mcq' | 'short';
+    type: AnswerType;
     value: string;
   };
   hint_level?: number;
