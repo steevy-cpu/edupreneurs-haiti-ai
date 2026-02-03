@@ -29,6 +29,7 @@ interface UseExamTutorChatReturn {
   saveAssistantMessage: (content: string, blocks?: ContentBlock[]) => Promise<ChatMessage | null>;
   deleteAllMessages: () => Promise<boolean>;
   addOptimisticMessage: (message: ChatMessage) => void;
+  replaceOptimisticMessage: (tempId: string, realMessage: ChatMessage) => void;
 }
 
 export function useExamTutorChat(
@@ -94,6 +95,13 @@ export function useExamTutorChat(
   // Add optimistic message (for immediate UI update)
   const addOptimisticMessage = useCallback((message: ChatMessage) => {
     setMessages(prev => [...prev, message]);
+  }, []);
+
+  // Replace optimistic message with real one from DB
+  const replaceOptimisticMessage = useCallback((tempId: string, realMessage: ChatMessage) => {
+    setMessages(prev => prev.map(msg => 
+      msg.id === tempId ? realMessage : msg
+    ));
   }, []);
 
   // Save user message to database
@@ -200,5 +208,6 @@ export function useExamTutorChat(
     saveAssistantMessage,
     deleteAllMessages,
     addOptimisticMessage,
+    replaceOptimisticMessage,
   };
 }

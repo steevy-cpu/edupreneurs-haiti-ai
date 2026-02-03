@@ -52,6 +52,7 @@ export function AskJudeDrawer({ exercise, sessionId, onAskJude }: AskJudeDrawerP
     saveAssistantMessage,
     deleteAllMessages,
     addOptimisticMessage,
+    replaceOptimisticMessage,
   } = useExamTutorChat(sessionId, exercise.id);
 
   // Scroll to bottom on new messages
@@ -68,9 +69,10 @@ export function AskJudeDrawer({ exercise, sessionId, onAskJude }: AskJudeDrawerP
     setInput('');
     setIsSending(true);
 
-    // Create optimistic user message
+    // Create optimistic user message with temp ID
+    const tempUserId = `temp-user-${Date.now()}`;
     const optimisticUserMsg: ChatMessage = {
-      id: `temp-user-${Date.now()}`,
+      id: tempUserId,
       role: 'user',
       content: userContent,
       timestamp: new Date(),
@@ -78,16 +80,20 @@ export function AskJudeDrawer({ exercise, sessionId, onAskJude }: AskJudeDrawerP
     addOptimisticMessage(optimisticUserMsg);
 
     try {
-      // Save user message to DB
-      await saveUserMessage(userContent);
+      // Save user message to DB and replace optimistic with real
+      const savedUserMsg = await saveUserMessage(userContent);
+      if (savedUserMsg) {
+        replaceOptimisticMessage(tempUserId, savedUserMsg);
+      }
 
       // Call the tutor API
       const response = await onAskJude(userContent);
 
       if (response) {
-        // Create optimistic assistant message
+        // Create optimistic assistant message with temp ID
+        const tempAssistantId = `temp-assistant-${Date.now()}`;
         const optimisticAssistantMsg: ChatMessage = {
-          id: `temp-assistant-${Date.now()}`,
+          id: tempAssistantId,
           role: 'assistant',
           content: response.response || '',
           blocks: response.blocks,
@@ -95,8 +101,11 @@ export function AskJudeDrawer({ exercise, sessionId, onAskJude }: AskJudeDrawerP
         };
         addOptimisticMessage(optimisticAssistantMsg);
 
-        // Save assistant response to DB
-        await saveAssistantMessage(response.response || '', response.blocks);
+        // Save assistant response and replace optimistic with real
+        const savedAssistantMsg = await saveAssistantMessage(response.response || '', response.blocks);
+        if (savedAssistantMsg) {
+          replaceOptimisticMessage(tempAssistantId, savedAssistantMsg);
+        }
       }
     } catch (error) {
       console.error('Error asking Jude:', error);
