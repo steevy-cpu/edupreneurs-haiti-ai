@@ -95,7 +95,7 @@ export function ExamTutorPanel({
           )}
 
           {/* Ask Jude drawer trigger */}
-          <AskJudeDrawer exercise={exercise} onAskJude={askJude} />
+          <AskJudeDrawer exercise={exercise} sessionId={session.id} onAskJude={askJude} />
         </div>
       </ScrollArea>
 
