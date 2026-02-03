@@ -211,6 +211,13 @@ const hasLatexDelimiters = (text: string): boolean => {
          /\\\[[\s\S]+?\\\]/.test(text);       // \[...\]
 };
 
+// Render styled question quote box for 《...》 delimiters
+const QuestionQuoteBox = ({ content }: { content: string }) => (
+  <span className="inline-block my-2 px-3 py-2 bg-primary/10 border-l-4 border-primary rounded-r-lg italic text-foreground">
+    "{content}"
+  </span>
+);
+
 // Parse content with LaTeX delimiters and render math
 const renderWithLatexDelimiters = (content: string): React.ReactNode[] => {
   const result: React.ReactNode[] = [];
@@ -218,9 +225,11 @@ const renderWithLatexDelimiters = (content: string): React.ReactNode[] => {
   let keyCounter = 0;
   
   while (remaining.length > 0) {
-    // Try to find the next math delimiter
+    // Try to find the next delimiter (math or question quote)
     // Order matters: check $$ before $ to avoid partial matches
     
+    // Question quote: 《...》
+    const questionQuoteMatch = remaining.match(/^([\s\S]*?)《([\s\S]+?)》/);
     // Block math: $$...$$
     const blockDollarMatch = remaining.match(/^([\s\S]*?)\$\$([\s\S]+?)\$\$/);
     // Block math: \[...\]
@@ -231,10 +240,17 @@ const renderWithLatexDelimiters = (content: string): React.ReactNode[] => {
     const inlineParenMatch = remaining.match(/^([\s\S]*?)\\\(([\s\S]+?)\\\)/);
     
     // Find the earliest match
-    type MatchResult = { match: RegExpMatchArray; type: 'block' | 'inline'; fullLength: number } | null;
+    type MatchResult = { match: RegExpMatchArray; type: 'block' | 'inline' | 'quote'; fullLength: number } | null;
     
     const candidates: MatchResult[] = [];
     
+    if (questionQuoteMatch) {
+      candidates.push({ 
+        match: questionQuoteMatch, 
+        type: 'quote', 
+        fullLength: questionQuoteMatch[0].length 
+      });
+    }
     if (blockDollarMatch) {
       candidates.push({ 
         match: blockDollarMatch, 
@@ -270,22 +286,26 @@ const renderWithLatexDelimiters = (content: string): React.ReactNode[] => {
     const best = candidates[0];
     
     if (best) {
-      const [fullMatch, prefix, mathContent] = best.match;
+      const [fullMatch, prefix, innerContent] = best.match;
       
       // Add prefix text if any
       if (prefix) {
         result.push(<span key={keyCounter++}>{prefix}</span>);
       }
       
-      // Add math content
+      // Add content based on type
       try {
-        if (best.type === 'block') {
+        if (best.type === 'quote') {
           result.push(
-            <BlockMath key={keyCounter++} math={mathContent.trim()} />
+            <QuestionQuoteBox key={keyCounter++} content={innerContent.trim()} />
+          );
+        } else if (best.type === 'block') {
+          result.push(
+            <BlockMath key={keyCounter++} math={innerContent.trim()} />
           );
         } else {
           result.push(
-            <InlineMath key={keyCounter++} math={mathContent.trim()} />
+            <InlineMath key={keyCounter++} math={innerContent.trim()} />
           );
         }
       } catch (error) {
@@ -296,7 +316,7 @@ const renderWithLatexDelimiters = (content: string): React.ReactNode[] => {
       // Move past this match
       remaining = remaining.slice(fullMatch.length);
     } else {
-      // No more math delimiters found, add remaining text
+      // No more delimiters found, add remaining text
       result.push(<span key={keyCounter++}>{remaining}</span>);
       break;
     }
