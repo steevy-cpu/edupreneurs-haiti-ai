@@ -7,6 +7,7 @@ export * from './types';
 
 // Hooks
 export { useTutorAction } from './hooks/useTutorAction';
+export { useExamTutorChat, type ChatMessage } from './hooks/useExamTutorChat';
 
 // Components
 export { ExamTutorPanel } from './components/ExamTutorPanel';

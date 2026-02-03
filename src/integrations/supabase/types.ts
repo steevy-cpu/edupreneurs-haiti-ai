@@ -1458,6 +1458,54 @@ export type Database = {
           },
         ]
       }
+      exam_tutor_chats: {
+        Row: {
+          blocks: Json | null
+          content: string
+          created_at: string | null
+          exercise_id: string
+          id: string
+          role: string
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          blocks?: Json | null
+          content: string
+          created_at?: string | null
+          exercise_id: string
+          id?: string
+          role: string
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          blocks?: Json | null
+          content?: string
+          created_at?: string | null
+          exercise_id?: string
+          id?: string
+          role?: string
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_tutor_chats_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exam_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_tutor_chats_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "exam_practice_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string
