@@ -142,13 +142,13 @@ export function AskJudeDrawer({ exercise, onAskJude }: AskJudeDrawerProps) {
                     </Avatar>
                   )}
                   <Card
-                    className={`p-3 max-w-[85%] ${
+                    className={`p-3 max-w-[85%] overflow-hidden ${
                       message.role === 'user'
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-card border-primary/10'
                     }`}
                   >
-                    <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                    <div className="text-sm whitespace-pre-wrap break-words leading-relaxed overflow-hidden">
                       {message.blocks && message.blocks.length > 0 ? (
                         <ContentBlocksRenderer blocks={message.blocks} />
                       ) : (
