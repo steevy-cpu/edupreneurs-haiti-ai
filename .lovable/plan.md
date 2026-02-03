@@ -1,136 +1,287 @@
 
-# Fix Plan: MCQ Detection for Object-Based Options
+# Structured Plan: Question Type Detection System + Specialized UIs
 
-## Problem Summary
+## Overview
 
-Questions that should appear as multiple choice (MCQ) are showing as free-text input. The database stores options as an **object** with letter keys:
-```json
-{"A":"yo te kontinye fè lagè", "B":"yo te ka siyen lapè", "C":"yo t al planifye lagè...", "D":"diskite sou eta malè..."}
-```
+This plan establishes a **well-structured architecture** for detecting and rendering different question types. Instead of adding ad-hoc detection logic to `AnswerInput.tsx`, we'll create a **Question Type Detection System** that cleanly separates:
 
-But the UI checks only for **arrays**:
-```typescript
-const hasOptions = exercise.options && Array.isArray(exercise.options) && exercise.options.length > 0;
-```
-
-Since `Array.isArray({A: "..."})` returns `false`, the MCQ options are never detected.
+1. **Detection Logic** - Pattern recognition algorithms
+2. **Type-Specific Renderers** - Specialized UI components
+3. **Orchestration** - Smart component that routes to the right renderer
 
 ---
 
-## Root Cause
+## Current State Analysis
 
-In `AnswerInput.tsx` (lines 37-40):
-```typescript
-// Current logic - only checks for arrays
-const hasOptions = exercise.options && Array.isArray(exercise.options) && exercise.options.length > 0;
-const hasOptionsJson = exercise.options_json && Object.keys(exercise.options_json).length > 0;
-const isMCQ = hasOptions || hasOptionsJson;
-```
+**Database Statistics:**
+| Detected Type | Count | Current UI |
+|--------------|-------|------------|
+| MCQ | 500 | ✅ Tappable cards |
+| Short Answer | 1,062 | ⚠️ Small textarea |
+| Matching | 16 | ❌ Falls back to textarea |
+| Essay (multi-part) | 23 | ❌ Falls back to small textarea |
 
-The `options` field from the database is an **object** `{A, B, C, D}`, not an array. The code only checks `options_json` for objects, but the actual data is in `options`.
+**Matching Question Patterns Found:**
+- `"Column A: ... Column B: ..."` (English)
+- `"Kolòn A: ... Kolòn B: ..."` (Creole)
+- `"Asosye..."` (Creole for "Match...")
+- `"Relie..."` (French for "Connect...")
+- `"Colonne A ... Colonne B"` (French)
 
----
-
-## Solution
-
-Update the MCQ detection logic to check if `options` is an object with keys (not just an array):
-
-```typescript
-// Check for array-based options (legacy format)
-const hasOptionsArray = exercise.options && Array.isArray(exercise.options) && exercise.options.length > 0;
-
-// Check for object-based options (current database format: {A: "...", B: "..."})
-const hasOptionsObject = exercise.options && 
-  typeof exercise.options === 'object' && 
-  !Array.isArray(exercise.options) && 
-  Object.keys(exercise.options).length > 0;
-
-// Check for structured options_json (with blocks)
-const hasOptionsJson = exercise.options_json && Object.keys(exercise.options_json).length > 0;
-
-const isMCQ = hasOptionsArray || hasOptionsObject || hasOptionsJson;
-```
-
-Also update the rendering logic to handle the object format in `options` (not just `options_json`).
+**Essay Question Patterns Found:**
+- High point values (25-70 points)
+- Multi-part questions with `a)`, `b)`, `c)` structure
+- Keywords: "Développe", "rédaction", "paragraphe", "lignes"
+- Concept tags like "Production écrite"
 
 ---
 
-## File Changes
+## Architecture Design
 
-### File: `src/features/exams/practice/components/AnswerInput.tsx`
-
-**1. Update MCQ Detection (lines 37-40)**
-
-Current:
-```typescript
-const hasOptions = exercise.options && Array.isArray(exercise.options) && exercise.options.length > 0;
-const hasOptionsJson = exercise.options_json && Object.keys(exercise.options_json).length > 0;
-const isMCQ = hasOptions || hasOptionsJson;
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                    AnswerInput.tsx                          │
+│              (Orchestrator - Routes to Renderer)            │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│               detectQuestionType()                          │
+│          (Pure function - Pattern Detection)                │
+│                                                             │
+│  Returns: 'mcq' | 'matching' | 'essay' | 'short'           │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+          ┌───────────────┼───────────────┬──────────────┐
+          ▼               ▼               ▼              ▼
+   ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐
+   │ MCQInput   │  │MatchingUI  │  │ EssayInput │  │ ShortInput │
+   │ (existing) │  │   (new)    │  │   (new)    │  │ (existing) │
+   └────────────┘  └────────────┘  └────────────┘  └────────────┘
 ```
 
-Fixed:
-```typescript
-// Check for array-based options (legacy format)
-const hasOptionsArray = exercise.options && Array.isArray(exercise.options) && exercise.options.length > 0;
-// Check for object-based options (current database format: {A: "...", B: "..."})
-const hasOptionsObject = exercise.options && 
-  typeof exercise.options === 'object' && 
-  !Array.isArray(exercise.options) && 
-  Object.keys(exercise.options as Record<string, unknown>).length > 0;
-// Check for structured options_json (with blocks)
-const hasOptionsJson = exercise.options_json && Object.keys(exercise.options_json).length > 0;
-const isMCQ = hasOptionsArray || hasOptionsObject || hasOptionsJson;
+---
+
+## File Structure (New Files)
+
+```text
+src/features/exams/practice/
+├── components/
+│   ├── AnswerInput.tsx          # Modified: orchestrates renderers
+│   ├── inputs/                  # NEW FOLDER
+│   │   ├── index.ts             # Barrel exports
+│   │   ├── MCQInput.tsx         # Extracted from AnswerInput
+│   │   ├── MatchingInput.tsx    # NEW: Matching question UI
+│   │   ├── EssayInput.tsx       # NEW: Long-form answer UI
+│   │   └── ShortInput.tsx       # Extracted from AnswerInput
+│   └── ...
+├── utils/                       # NEW FOLDER
+│   ├── index.ts                 # Barrel exports
+│   ├── detectQuestionType.ts    # NEW: Type detection logic
+│   └── parseMatching.ts         # NEW: Matching column parser
+├── types.ts                     # Modified: add answer types
+└── index.ts                     # Modified: export new items
 ```
 
-**2. Update Options Rendering (lines 57-60)**
+---
 
-Current:
+## Implementation Details
+
+### 1. Question Type Detection (`detectQuestionType.ts`)
+
+A pure function that analyzes exercise data and returns the appropriate type:
+
 ```typescript
-const optionEntries = hasOptionsJson
-  ? Object.entries(exercise.options_json!).sort(([a], [b]) => a.localeCompare(b))
-  : (exercise.options || []).map((opt, idx) => [LETTERS[idx], { value: opt, blocks: null }] as const);
-```
+export type QuestionType = 'mcq' | 'matching' | 'essay' | 'short';
 
-Fixed:
-```typescript
-// Priority: options_json > options (object) > options (array)
-let optionEntries: [string, { value: string; blocks: any } | string][];
-
-if (hasOptionsJson) {
-  optionEntries = Object.entries(exercise.options_json!).sort(([a], [b]) => a.localeCompare(b));
-} else if (hasOptionsObject) {
-  // Handle object format: {A: "text", B: "text", ...}
-  optionEntries = Object.entries(exercise.options as Record<string, string>)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, value]) => [key, { value, blocks: null }]);
-} else {
-  // Handle array format: ["option1", "option2", ...]
-  optionEntries = (exercise.options as string[] || []).map((opt, idx) => 
-    [LETTERS[idx], { value: opt, blocks: null }] as [string, { value: string; blocks: null }]
-  );
+export function detectQuestionType(exercise: ExerciseForRunner): QuestionType {
+  // Priority 1: Has options → MCQ
+  if (hasOptions(exercise)) {
+    return 'mcq';
+  }
+  
+  // Priority 2: Matching patterns in text
+  if (isMatchingQuestion(exercise.question_text)) {
+    return 'matching';
+  }
+  
+  // Priority 3: Essay indicators
+  if (isEssayQuestion(exercise)) {
+    return 'essay';
+  }
+  
+  // Default: Short answer
+  return 'short';
 }
 ```
 
-**3. Update Type Definition (types.ts line 45)**
-
-Current:
+**Matching Detection Patterns:**
 ```typescript
-options?: string[] | null;
+const MATCHING_PATTERNS = [
+  /Kol[òo]n\s*A.*Kol[òo]n\s*B/is,  // Creole
+  /Column\s*A.*Column\s*B/is,       // English
+  /Colonne\s*A.*Colonne\s*B/is,     // French
+  /Asosye\s+.*ak\s+/i,              // "Associate X with Y"
+  /Relie\s+.*[àa]\s+/i,             // "Connect X to Y"
+  /Match\s+.*to\s+/i,               // English match
+];
 ```
 
-Fixed:
+**Essay Detection Logic:**
 ```typescript
-options?: string[] | Record<string, string> | null;
+function isEssayQuestion(exercise: ExerciseForRunner): boolean {
+  const { question_text, points, concept } = exercise;
+  
+  // High point value indicates essay
+  if (points >= 25) return true;
+  
+  // Concept-based detection
+  if (concept?.toLowerCase().includes('production écrite')) return true;
+  if (concept?.toLowerCase().includes('rédaction')) return true;
+  
+  // Keyword detection
+  const essayKeywords = [
+    /développe/i, /rédaction/i, /paragraphe/i,
+    /\d+\s*(à|a)\s*\d+\s*lignes/i,  // "15 à 20 lignes"
+    /multi-part/i, /a\)\s*.*b\)\s*/s  // Has a) b) structure
+  ];
+  
+  return essayKeywords.some(pattern => pattern.test(question_text));
+}
 ```
 
 ---
 
-## Files to Modify
+### 2. Matching Input Component (`MatchingInput.tsx`)
 
-| File | Change | Lines |
-|------|--------|-------|
-| `src/features/exams/practice/components/AnswerInput.tsx` | Update MCQ detection and rendering logic | ~15 lines |
-| `src/features/exams/practice/types.ts` | Update `options` type to include object format | 1 line |
+**Features:**
+- Auto-parse columns from question text
+- Two-column tap interface
+- Visual match connections
+- Mobile-optimized tap targets
+
+**Parsing Algorithm:**
+```typescript
+interface ParsedMatching {
+  columnA: Array<{ id: string; text: string }>;  // id: "1", "2", "3"
+  columnB: Array<{ id: string; text: string }>;  // id: "a", "b", "c"
+}
+
+function parseMatchingColumns(text: string): ParsedMatching | null {
+  // 1. Split text into Column A and Column B sections
+  // 2. Extract numbered items (1, 2, 3...) for Column A
+  // 3. Extract lettered items (a, b, c...) for Column B
+  // 4. Return structured data or null if parsing fails
+}
+```
+
+**UI Behavior:**
+1. Display Column A items on left, Column B on right
+2. User taps a number → it highlights
+3. User taps a letter → connection is made
+4. Matched pairs show visual indicator (badge/line)
+5. Tap matched number again to change selection
+6. "Vérifier" button enabled when all matched
+
+**Answer Format:** `"1-a, 2-c, 3-b, 4-d"` (sorted, comma-separated)
+
+---
+
+### 3. Essay Input Component (`EssayInput.tsx`)
+
+**Features:**
+- Full-height expandable textarea
+- Word/character count display
+- Auto-save draft (localStorage)
+- Clear section separators for multi-part (a, b, c)
+- "Soumettre" (Submit) with confirmation
+
+**UI Design:**
+```text
+┌─────────────────────────────────────────────────┐
+│  Ta réponse:                      250 mots / ~  │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│  [Full-height textarea with larger font]        │
+│                                                 │
+│                                                 │
+│                                                 │
+│                                                 │
+├─────────────────────────────────────────────────┤
+│  💡 Tip: Pour les questions à plusieurs        │
+│     parties, sépare tes réponses avec a), b)   │
+├─────────────────────────────────────────────────┤
+│                       [Soumettre la réponse]    │
+└─────────────────────────────────────────────────┘
+```
+
+**Essay-Specific UX:**
+- Min height: 200px (vs 60px for short)
+- Max height: 400px (vs 200px for short)
+- Larger font size for readability
+- Word count badge
+- Draft auto-save every 30 seconds
+
+---
+
+### 4. Updated AnswerInput Orchestrator
+
+The main `AnswerInput.tsx` becomes a clean orchestrator:
+
+```typescript
+export function AnswerInput(props: AnswerInputProps) {
+  const questionType = detectQuestionType(props.exercise);
+  
+  switch (questionType) {
+    case 'mcq':
+      return <MCQInput {...props} />;
+    case 'matching':
+      return <MatchingInput {...props} />;
+    case 'essay':
+      return <EssayInput {...props} />;
+    case 'short':
+    default:
+      return <ShortInput {...props} />;
+  }
+}
+```
+
+---
+
+## Type Updates (`types.ts`)
+
+```typescript
+// Extended answer type for different question formats
+export type AnswerType = 'mcq' | 'short' | 'matching' | 'essay';
+
+export interface TutorActionPayload {
+  action: TutorActionType;
+  exercise_id: string;
+  answer?: {
+    type: AnswerType;  // Extended from 'mcq' | 'short'
+    value: string;
+  };
+  // ...
+}
+```
+
+---
+
+## Files to Create/Modify
+
+| File | Action | Purpose |
+|------|--------|---------|
+| `utils/detectQuestionType.ts` | Create | Detection algorithm |
+| `utils/parseMatching.ts` | Create | Column parsing utility |
+| `utils/index.ts` | Create | Barrel exports |
+| `components/inputs/MCQInput.tsx` | Create | Extract MCQ logic |
+| `components/inputs/ShortInput.tsx` | Create | Extract short answer logic |
+| `components/inputs/MatchingInput.tsx` | Create | New matching UI |
+| `components/inputs/EssayInput.tsx` | Create | New essay UI |
+| `components/inputs/index.ts` | Create | Barrel exports |
+| `components/AnswerInput.tsx` | Modify | Slim orchestrator |
+| `types.ts` | Modify | Add `AnswerType` |
+| `index.ts` | Modify | Export utils |
 
 ---
 
@@ -138,17 +289,53 @@ options?: string[] | Record<string, string> | null;
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Breaks existing functionality? | No | Adds support for object format while keeping array support |
-| Works with existing data? | Yes | Database already has object format |
-| 3G optimized? | N/A | No performance change |
-| Backward compatible? | Yes | Still supports array format if used |
-| Edge cases handled? | Yes | Checks for null, array, and object types |
+| Breaks existing MCQ? | No | Extracted, not rewritten |
+| Breaks existing short? | No | Extracted, not rewritten |
+| Works with database data? | Yes | Pattern-based detection |
+| 3G optimized? | Yes | No animations, lazy renders |
+| Backward compatible? | Yes | Fallback to short answer |
+| Edge cases handled? | Yes | Parsing fallback included |
 
 ---
 
-## Expected Result
+## Implementation Order
 
-After this fix:
-- Q1 "Wa Frans ak Espay te vle rankontre pou" will show 4 MCQ options (A, B, C, D)
-- Q2 will also show MCQ options
-- Q3-Q5 (which have `options: null`) will correctly show as short answer
+**Phase 1: Foundation (~30 min)**
+1. Create `utils/` folder with detection logic
+2. Create `components/inputs/` folder
+3. Extract MCQ and Short into separate files
+4. Update `AnswerInput.tsx` to orchestrate
+
+**Phase 2: Matching UI (~45 min)**
+1. Build `parseMatching.ts` utility
+2. Build `MatchingInput.tsx` component
+3. Test with real matching questions
+
+**Phase 3: Essay UI (~30 min)**
+1. Build `EssayInput.tsx` component
+2. Add word count and auto-save
+3. Test with high-point questions
+
+**Phase 4: Polish (~15 min)**
+1. Update barrel exports
+2. Test all question types end-to-end
+3. Verify mobile responsiveness
+
+---
+
+## Edge Case Handling
+
+**Matching:**
+- If column parsing fails → Fall back to ShortInput
+- If unequal columns → Allow partial matches
+- Handle different numbering (1. vs 1) vs (1-)
+
+**Essay:**
+- Multi-part detection (a, b, c in text)
+- Draft persistence on page navigation
+- Handle very long responses (scroll behavior)
+
+**Detection Conflicts:**
+- MCQ always wins (explicit options)
+- Matching > Essay (more specific pattern)
+- Short is the safe fallback
