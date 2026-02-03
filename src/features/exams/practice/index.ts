@@ -5,6 +5,14 @@
 // Types
 export * from './types';
 
+// Utils
+export { 
+  detectQuestionType, 
+  parseMatchingColumns, 
+  formatMatchingAnswer,
+  type QuestionType 
+} from './utils';
+
 // Hooks
 export { useTutorAction } from './hooks/useTutorAction';
 export { useExamTutorChat, type ChatMessage } from './hooks/useExamTutorChat';
@@ -17,3 +25,6 @@ export { AnswerInput } from './components/AnswerInput';
 export { FeedbackCard } from './components/FeedbackCard';
 export { ActionRow } from './components/ActionRow';
 export { AskJudeDrawer } from './components/AskJudeDrawer';
+
+// Input Components (for direct usage if needed)
+export { MCQInput, ShortInput, MatchingInput, EssayInput } from './components/inputs';
