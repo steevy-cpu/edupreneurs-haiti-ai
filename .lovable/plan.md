@@ -1,156 +1,64 @@
 
 
-# Fix Plan: Resolve Duplicate Messages in Chat Persistence
+# Fix Plan: Exam Tutor Validation Schema - Options Format Mismatch
 
-## Problem Summary
+## Problem
 
-The current implementation has a **duplicate message bug**. When the user sends a message:
-
-1. An optimistic message is added to the UI (with temp ID like `temp-user-1234`)
-2. The message is saved to the database (gets real UUID)
-3. The optimistic message is never replaced with the real one
-
-When the drawer is reopened or the component re-renders, messages are loaded from the database AND the optimistic messages remain in state, causing duplicates.
-
----
-
-## Root Cause
-
-In `AskJudeDrawer.tsx`:
-```typescript
-// Current flow (problematic):
-addOptimisticMessage(optimisticUserMsg);     // Adds temp-user-123
-await saveUserMessage(userContent);           // Saves to DB, gets UUID
-// But never replaces temp-user-123 with the real message!
+The `exam-tutor` edge function returns a **400 error** with:
+```json
+{"error":"Validation failed","details":["Expected array, received object"]}
 ```
 
-When messages are reloaded from DB, we get both the real message AND the temp message still in state.
+**Root Cause:** The database stores exercise options as an **object**:
+```json
+{"A":"option 1","B":"option 2","C":"option 3","D":"option 4"}
+```
+
+But the Zod validation schema expects an **array**:
+```typescript
+options: z.array(z.string().max(1000)).max(10).optional().nullable()
+```
+
+The edge function's business logic already handles both formats, but the validation schema rejects the object format before execution reaches that code.
 
 ---
 
 ## Solution
 
-### Option A: Replace Optimistic Messages (Recommended)
-
-After saving to the database, replace the temporary message with the real one:
-
-```typescript
-// AskJudeDrawer.tsx - handleSend function
-
-// Save user message and replace optimistic
-const savedUserMsg = await saveUserMessage(userContent);
-if (savedUserMsg) {
-  replaceOptimisticMessage(optimisticUserMsg.id, savedUserMsg);
-}
-```
-
-Add a new function to the hook:
-```typescript
-// useExamTutorChat.ts
-const replaceOptimisticMessage = useCallback((tempId: string, realMessage: ChatMessage) => {
-  setMessages(prev => prev.map(msg => 
-    msg.id === tempId ? realMessage : msg
-  ));
-}, []);
-```
-
-### Option B: Simpler - No Optimistic for DB Messages
-
-Since we're persisting to DB, just wait for the save to complete before showing:
-
-```typescript
-// No optimistic - just save and update state from returned data
-const savedMsg = await saveUserMessage(userContent);
-if (savedMsg) {
-  setMessages(prev => [...prev, savedMsg]); // Already returns the real message
-}
-```
+Update the `examTutorSchema` in `supabase/functions/_shared/validation.ts` to accept **both formats**:
+1. Array of strings: `["option 1", "option 2", "option 3"]`
+2. Object with letter keys: `{"A": "option 1", "B": "option 2"}`
 
 ---
 
-## Recommended Fix (Option A)
+## Implementation
 
-### File Changes
+### File: `supabase/functions/_shared/validation.ts`
 
-**1. Update `useExamTutorChat.ts`**
-
-Add `replaceOptimisticMessage` function:
-
+**Current (Line 132):**
 ```typescript
-// After addOptimisticMessage (line 97), add:
-const replaceOptimisticMessage = useCallback((tempId: string, realMessage: ChatMessage) => {
-  setMessages(prev => prev.map(msg => 
-    msg.id === tempId ? realMessage : msg
-  ));
-}, []);
+options: z.array(z.string().max(1000)).max(10).optional().nullable(),
 ```
 
-Update return object to include the new function.
-
-**2. Update `AskJudeDrawer.tsx`**
-
-Update `handleSend` to use the replace function:
-
+**Fixed:**
 ```typescript
-const handleSend = async () => {
-  if (!input.trim() || isSending) return;
-
-  const userContent = input.trim();
-  setInput('');
-  setIsSending(true);
-
-  const tempUserId = `temp-user-${Date.now()}`;
-  const optimisticUserMsg: ChatMessage = {
-    id: tempUserId,
-    role: 'user',
-    content: userContent,
-    timestamp: new Date(),
-  };
-  addOptimisticMessage(optimisticUserMsg);
-
-  try {
-    // Save user message to DB and replace optimistic
-    const savedUserMsg = await saveUserMessage(userContent);
-    if (savedUserMsg) {
-      replaceOptimisticMessage(tempUserId, savedUserMsg);
-    }
-
-    // Call the tutor API
-    const response = await onAskJude(userContent);
-
-    if (response) {
-      const tempAssistantId = `temp-assistant-${Date.now()}`;
-      const optimisticAssistantMsg: ChatMessage = {
-        id: tempAssistantId,
-        role: 'assistant',
-        content: response.response || '',
-        blocks: response.blocks,
-        timestamp: new Date(),
-      };
-      addOptimisticMessage(optimisticAssistantMsg);
-
-      // Save assistant response and replace optimistic
-      const savedAssistantMsg = await saveAssistantMessage(response.response || '', response.blocks);
-      if (savedAssistantMsg) {
-        replaceOptimisticMessage(tempAssistantId, savedAssistantMsg);
-      }
-    }
-  } catch (error) {
-    console.error('Error asking Jude:', error);
-  } finally {
-    setIsSending(false);
-  }
-};
+options: z.union([
+  z.array(z.string().max(1000)).max(10),
+  z.record(z.string().max(1), z.string().max(1000))
+]).optional().nullable(),
 ```
+
+This accepts:
+- An array of strings (original format)
+- A record/object with single-character keys (A-Z) and string values (database format)
 
 ---
 
 ## File Changes Summary
 
-| File | Change | Lines |
-|------|--------|-------|
-| `src/features/exams/practice/hooks/useExamTutorChat.ts` | Add `replaceOptimisticMessage` function | ~10 lines |
-| `src/features/exams/practice/components/AskJudeDrawer.tsx` | Use replace function after DB save | Modify ~15 lines |
+| File | Change | Impact |
+|------|--------|--------|
+| `supabase/functions/_shared/validation.ts` | Update `options` field to accept both array and object formats | Fixes 400 error on exam tutor API calls |
 
 ---
 
@@ -158,14 +66,15 @@ const handleSend = async () => {
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Breaks existing functionality? | No | Additive change only |
-| Works with existing messages? | Yes | Old messages already saved correctly |
-| 3G optimized? | Yes | Same number of network requests |
-| Backward compatible? | Yes | No data schema changes |
+| Breaks existing functionality? | No | Still accepts array format |
+| Works with database format? | Yes | Now accepts object format too |
+| Edge function logic compatible? | Yes | Line 66 already handles both formats |
+| 3G optimized? | N/A | No performance change |
+| Backward compatible? | Yes | All existing formats supported |
 
 ---
 
 ## Implementation Time
 
-~10 minutes - Small changes to two files
+~5 minutes - Single line change in validation schema
 
