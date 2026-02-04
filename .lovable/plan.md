@@ -1,247 +1,212 @@
 
-# Plan: Content Quality Dashboard with Detailed Validation Feedback
+# Plan: Integrating Content Quality Dashboard into Content Editor UI
 
-## Problem Analysis
+## Current Architecture Analysis
 
-**Current Gaps:**
-1. **No visibility into validation failure reasons** - Lessons are flagged with "⚠ Besoin régénération" but editors don't know WHY they failed
-2. **No comprehensive quality overview** - Users can't see overall health of content across grade levels
-3. **Validation details are lost** - API returns detailed reasons for off-content questions, but they're not stored or displayed
-4. **Error messages are generic** - "hors-contenu" flag with no actionable context
+**Content Editor Tabs (6 total):**
+1. `review` - Main lesson editing interface (LessonBrowser + detailed editors)
+2. `batch` - Batch generation validation
+3. `exams` - Exam content management
+4. `passion-videos` - Passion video manager
+5. `daily-words` - Daily words manager
+6. `ebooks` - Ebook manager
 
-**Data Currently Available (but underutilized):**
-- `content_alignment_score` - Quiz validation confidence (0-1)
-- `activities_alignment_score` - Activities validation confidence (0-1)
-- `needs_quiz_regeneration` / `needs_activities_regeneration` - Boolean flags
-- `last_content_validated_at` / `last_activities_validated_at` - Validation timestamps
-- **Validation API Response** contains: `offContentQuestions[{index, question, reason}]` with specific failure reasons
+**New Components Ready:**
+- `ContentQualityDashboard.tsx` - Comprehensive stats with grade-level breakdown and issue categories
+- `ValidationDetailsPanel.tsx` - Expandable panel showing specific off-content reasons
+- `validationCategories.ts` - Issue categorization utility
 
-## Solution: Two-Component System
+**Data Flow:**
+- Dashboard fetches all lessons and aggregates stats by grade level
+- Displays overall quiz/activities validation percentages
+- Shows top issue categories with counts
 
-### Component 1: Enhanced Validation Result Storage
-**Currently:** Validation results are calculated but only high-level metrics stored (aligned/confidence).
-**New:** Store full validation response with specific failure reasons.
+## Integration Strategy
 
+### Phase 1: Add "Quality" Tab (High Priority)
+**Location:** New top-level tab in ContentEditor main Tabs component
+
+```
+┌─ ContentEditor.tsx Tabs ─────────────────────────┐
+│  [Review] [Quality] [Génération] [Examens] ... │  ← NEW TAB
+└──────────────────────────────────────────────────┘
+```
+
+**Implementation:**
+1. Import `ContentQualityDashboard` component
+2. Add new TabsTrigger with icon (e.g., `BarChart3` icon - already in imports)
+3. Add TabsContent wrapping the dashboard
+4. Tab value: `"quality"`
+5. Save preference to localStorage (existing pattern)
+
+**User Flow:**
+- Editor opens content editor → clicks "Quality" tab
+- Dashboard loads → shows overall stats + grade-level breakdown
+- Can see top issues by category
+- Understands what needs fixing before diving into individual lessons
+
+### Phase 2: Add Dashboard Refresh Trigger (Medium Priority)
+**Problem:** When batch validation completes, dashboard should refresh to show updated stats
+
+**Solution:**
+1. Add state for dashboard refresh in ContentEditor
+2. Create `refreshDashboard()` function (similar to `refreshLesson`)
+3. Pass refresh callback to BatchQuizContentValidator and BatchActivitiesContentValidator
+4. When validation completes, trigger dashboard refresh
+5. Use same `refreshKey` pattern already in place
+
+**Technical Details:**
+- Dashboard component already has `useEffect` that fires on mount
+- Could add optional `refreshKey` prop to ContentQualityDashboard
+- When refreshKey changes, dashboard re-fetches stats
+
+### Phase 3: Enhance Lesson Details View (Lower Priority - Phase 2)
+**Optional:** Add ValidationDetailsPanel to LessonBrowser for individual lessons
+
+When a lesson is selected in LessonBrowser:
+- Show inline validation details if validation_details_json exists
+- Display specific off-content questions for that lesson
+- Let editor understand why THIS lesson failed without opening full dashboard
+
+**Not required for initial integration** but would be valuable enhancement
+
+## Technical Implementation Details
+
+### Step 1: Modify ContentEditor.tsx
 ```typescript
-// Store in lessons table (or new lesson_validation_details table)
-{
-  lesson_id: uuid,
-  validation_type: 'quiz' | 'activities',
-  aligned: boolean,
-  confidence: number,
-  off_content_details: {
-    offContentQuestions: [
-      { index: 0, question: "...", reason: "Concept X non mentionné dans le contenu" },
-      { index: 3, question: "...", reason: "Formule chimique non présente dans le contenu" }
-    ]
-  },
-  last_validated_at: timestamp
-}
+// At top with other imports
+import { ContentQualityDashboard } from "@/components/content-editor/ContentQualityDashboard";
+
+// In useState hooks
+const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
+
+// New function
+const refreshDashboard = () => {
+  setDashboardRefreshKey(prev => prev + 1);
+};
+
+// Modify TabsList to include "quality"
+<TabsList className="grid w-full grid-cols-7 lg:w-[1400px]">
+  {/* existing triggers... */}
+  <TabsTrigger value="quality">
+    <BarChart3 className="mr-2 h-4 w-4" />
+    Qualité
+  </TabsTrigger>
+</TabsList>
+
+// After TabsContent value="ebooks"
+<TabsContent value="quality">
+  <ContentQualityDashboard 
+    key={`dashboard-${dashboardRefreshKey}`}
+  />
+</TabsContent>
 ```
 
-### Component 2: Content Quality Dashboard
-A comprehensive dashboard with multiple views:
+### Step 2: Update ContentQualityDashboard (Minor Enhancement)
+- Add optional `refreshKey` prop for re-triggering data fetch
+- Ensure dashboard runs stats aggregation query efficiently
+- Consider caching for 3G optimization (dashboard stats shouldn't change every second)
+
+### Step 3: Wire Up Refresh Callbacks (Optional Phase 2)
+- BatchQuizContentValidator calls `onValidationComplete` callback
+- BatchActivitiesContentValidator calls `onValidationComplete` callback
+- ContentEditor passes `refreshDashboard` as callback
+
+## Data Flow Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    📊 CONTENT QUALITY DASHBOARD                 │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  Overview Stats (Top Cards)                                     │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
-│  │ 📈 Overall   │  │ ✓ Quiz       │  │ 🎮 Activités │           │
-│  │ Score: 73%   │  │ 72% validé   │  │ 68% validé   │           │
-│  │ 2,832 total  │  │ 198 validés  │  │ 113 validés  │           │
-│  └──────────────┘  └──────────────┘  └──────────────┘           │
-│                                                                 │
-│  Tabs: [Overview] [Quiz Issues] [Activities Issues] [Trends]    │
-│                                                                 │
-│  ═══════════════════════════════════════════════════════════   │
-│                                                                 │
-│  Grade Level Quality Breakdown                                  │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │ 7AF  ████████████░░░░░░░░░░░░  85% (94/111 lessons)    │   │
-│  │ 8AF  ████████░░░░░░░░░░░░░░░░░  62% (68/109)           │   │
-│  │ 9AF  ██████████████░░░░░░░░░░░  78% (156/201)          │   │
-│  │ NS1  ███████░░░░░░░░░░░░░░░░░░  54% (48/89)            │   │
-│  │ NS2  ███░░░░░░░░░░░░░░░░░░░░░░  32% (44/138)  🔴       │   │
-│  │ NS3-SMP ████░░░░░░░░░░░░░░░░░░  45% (67/149)           │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│                                                                 │
-│  Quiz Issues Detail (Filterable)                               │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │ 📌 Lessons with off-content questions: 187              │   │
-│  │                                                          │   │
-│  │ ⚠ Top Issue Categories:                                 │   │
-│  │  • Concept not in content: 124 questions               │   │
-│  │  • Specific date/formula missing: 45 questions         │   │
-│  │  • Cultural knowledge not mentioned: 18 questions      │   │
-│  │                                                          │   │
-│  │ 🔍 Click to see specific lessons needing fixes         │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+User navigates to "Quality" tab
+        ↓
+ContentQualityDashboard mounts
+        ↓
+Fetches ALL lessons with validation_details_json
+        ↓
+Aggregates stats by:
+  • Grade level (7AF, 8AF, 9AF, NS1, NS2, NS3)
+  • Validation status (quiz/activities)
+  • Issue categories (concept, formula, data, cultural, other)
+        ↓
+Renders:
+  • Overview cards (total lessons, % validated)
+  • Grade-level progress bars
+  • Issue category breakdown
+        ↓
+User can click categories to see specific lessons (Phase 2)
 ```
 
-### Component 3: Enhanced Lesson Browser Integration
-When a lesson is flagged as "needing regeneration", show WHY:
+## UI/UX Considerations
 
-```
-Before:
-❌ Lesson Title
-  [⚠ Besoin régénération - Quiz] [Brouillon]
+**Icon for Quality Tab:**
+- `BarChart3` icon (already imported in ContentEditor)
+- Label: "Qualité" (maintains French consistency)
 
-After:
-❌ Lesson Title  
-  [⚠ Besoin régénération - Quiz] [Brouillon]
-  └─ Q1: Concept X non mentionné; Q5: Formule non présente
-```
+**Dashboard Layout (already implemented):**
+- Top 3 cards: total lessons, quiz validation %, activities validation %
+- Middle section: grade-level breakdown with progress bars
+- Bottom tabs: quiz issues vs activities issues with category details
 
-## Technical Implementation
-
-### Step 1: Extend Validation Result Capture
-In `BatchQuizContentValidator.tsx` and `BatchActivitiesContentValidator.tsx`:
-- Store full validation response from API (not just aligned/confidence)
-- Add new database field: `validation_details_json` (or update lessons table)
-
-### Step 2: Create ContentQualityDashboard Component
-New file: `src/components/content-editor/ContentQualityDashboard.tsx`
-
-Key features:
-- **Overview Cards**: Overall score, quiz health, activities health
-- **Grade Level Breakdown**: Progress bars showing validation % per grade level
-- **Issue Categories**: Aggregate failure reasons to identify patterns
-- **Trend Charts**: Validation progress over time (using recharts already in project)
-- **Drilldown**: Click to see specific lessons with issues
-
-### Step 3: Enhanced Lesson Details in Browser
-Update `LessonBrowser.tsx`:
-- Add expandable "validation details" section showing specific reasons
-- Color-code by severity: red (many issues), amber (some issues), green (few)
-- Allow filtering by issue type
-
-### Step 4: Smart Issue Categorization
-Create utility function to categorize failure reasons:
-```typescript
-function categorizeValidationIssue(reason: string): string {
-  if (reason.includes('non mentionné')) return 'Concept not in content';
-  if (reason.includes('formule') || reason.includes('date')) return 'Specific data missing';
-  if (reason.includes('culture') || reason.includes('connaissances générales')) return 'General knowledge';
-  return 'Other';
-}
-```
-
-## Data Structure Changes
-
-### Option A: Extend Lessons Table (Simpler)
-Add column to `lessons` table:
-```sql
-ALTER TABLE lessons ADD COLUMN validation_details_json JSONB;
--- Stores: { quiz: { offContentQuestions: [...], confidence: 0.75 }, activities: {...} }
-```
-
-### Option B: Create Separate Table (Cleaner)
-```sql
-CREATE TABLE lesson_validation_details (
-  id uuid PRIMARY KEY,
-  lesson_id uuid REFERENCES lessons(id),
-  validation_type 'quiz' | 'activities',
-  response_json JSONB, -- Full API response
-  created_at timestamp,
-  UNIQUE(lesson_id, validation_type)
-);
-```
-
-**Recommendation:** Option A (simpler, leverages existing structure)
-
-## UI Integration Points
-
-| Component | Change | Benefit |
-|-----------|--------|---------|
-| LessonBrowser | Add "validation details" toggle | See why each lesson is flagged |
-| ContentEditor | Add "Quality" tab with dashboard | Overall visibility |
-| BatchValidators | Store detailed results | Enable detailed feedback |
-| WorkflowManagement | Show blockers with reasons | Clear publishing requirements |
-
-## Expected Results
-
-After implementation:
-
-**Educators can:**
-1. ✓ See at a glance which lessons have validation issues
-2. ✓ Understand WHY specific questions failed alignment
-3. ✓ Prioritize fixes based on issue frequency (patterns)
-4. ✓ Track quality improvements over time with dashboard trends
-5. ✓ Filter lessons by issue type to batch-fix similar problems
-
-**For 204 lessons with 50% off-content rate:**
-- Before: "⚠ 102 lessons need regeneration" (no context)
-- After: "⚠ 102 lessons need regeneration — Top issues: Concepts not mentioned (67), Missing formulas (21), Cultural knowledge (14)"
+**Mobile Responsiveness:**
+- Dashboard uses responsive grid (`grid-cols-1 md:grid-cols-3`)
+- Tabs stack vertically on mobile
+- Progress bars scale automatically
 
 ## 3G Optimization
 
-- Dashboard uses aggregated stats (minimal queries)
-- Validation details stored with lesson (no extra fetch)
-- Trends use cached data when possible
-- Drilldown loads details on-demand
+**Current Implementation:**
+- Dashboard fetches entire lessons table once on mount
+- Aggregation happens in-memory (efficient for 2,800 lessons)
+- No pagination needed (stats already aggregated)
+
+**Potential Improvements (Phase 3):**
+- Cache dashboard stats in localStorage for instant load
+- Stale-while-revalidate for stats updates
+- Only refresh when user explicitly clicks refresh button
+
+## Integration Dependencies
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| ContentQualityDashboard | ✓ Ready | No changes needed |
+| ValidationDetailsPanel | ✓ Ready | Can integrate in Phase 2 |
+| validationCategories.ts | ✓ Ready | Utility already used by dashboard |
+| ContentEditor.tsx | ✓ Ready | Simple import + tab addition |
+| LessonBrowser.tsx | Optional | Only needed for Phase 3 |
+
+## Implementation Steps
+
+**Step 1:** Import ContentQualityDashboard in ContentEditor.tsx
+**Step 2:** Add "quality" TabsTrigger with icon to TabsList
+**Step 3:** Add TabsContent value="quality" with dashboard component
+**Step 4:** Test dashboard loads correctly
+**Step 5:** (Optional) Add refreshDashboard callback for batch validation completion
 
 ## Safety Verification
 
-| Check | Status | Notes |
-|-------|--------|-------|
-| Breaks existing validation? | No | Extends, doesn't replace |
-| Works with existing data? | Yes | Backward compatible, new fields optional |
-| Performance impact? | Minimal | Adds one JSONB column, queries still use indexes |
-| 3G optimized? | Yes | Aggregated stats, lazy loading |
-| Backward compatible? | Yes | Old validation results show basic metrics |
+| Check | Status | Details |
+|-------|--------|---------|
+| Breaks existing tabs? | No | Adding new tab, not modifying existing |
+| Tab persistence? | Yes | Uses existing localStorage pattern |
+| Performance? | Good | Single query, in-memory aggregation |
+| Mobile friendly? | Yes | Already responsive components |
+| 3G optimized? | Yes | Single efficient query |
+| Backward compatible? | Yes | No changes to existing components |
 
----
+## Expected Result
 
-## Files to Create/Modify
+After implementation:
+- ✓ Users can access "Qualité" tab from main Content Editor
+- ✓ Dashboard shows overall content health at a glance
+- ✓ Grade-level breakdown shows which levels need most work
+- ✓ Issue categories show patterns (e.g., "Concepts not in content" is top issue)
+- ✓ No performance impact on other tabs
+- ✓ Ready for Phase 2 enhancements (lesson-specific details, refresh triggers)
 
-| File | Action | Purpose |
-|------|--------|---------|
-| `src/components/content-editor/ContentQualityDashboard.tsx` | Create | Main dashboard with stats, trends, drilldown |
-| `src/components/content-editor/ValidationDetailsPanel.tsx` | Create | Shows specific off-content reasons for a lesson |
-| `src/utils/validationCategories.ts` | Create | Utility to categorize and aggregate failure reasons |
-| `BatchQuizContentValidator.tsx` | Modify | Store full validation response, not just metrics |
-| `BatchActivitiesContentValidator.tsx` | Modify | Same as above for activities |
-| `LessonBrowser.tsx` | Modify | Add validation details expansion + filtering |
-| Database | Modify | Add `validation_details_json` column to lessons table |
+## Files to Modify
 
----
+| File | Changes | Complexity |
+|------|---------|-----------|
+| `src/pages/ContentEditor.tsx` | Add import, add TabsTrigger, add TabsContent | Simple |
+| `src/components/content-editor/ContentQualityDashboard.tsx` | Optional: add refreshKey prop | Simple |
 
-## Implementation Phases
+**Total Lines of Code:** ~15 lines added to ContentEditor.tsx
 
-**Phase 1 (High Value):** Core Dashboard + Storage
-- Add column to store validation details
-- Create ContentQualityDashboard component
-- Update batch validators to store full responses
-- 📊 Users can see overall quality + specific failure reasons
-
-**Phase 2 (Medium Value):** Enhanced Integration
-- Add validation details to LessonBrowser
-- Add filtering by issue type
-- Create issue categorization utility
-
-**Phase 3 (Nice-to-Have):** Advanced Analytics
-- Trend charts (quality improvement over time)
-- Predictive alerts ("NS2 quality declining")
-- Batch operations ("Fix all lessons with missing formulas")
-
----
-
-## How This Solves the User's Problem
-
-The user identified two key pain points:
-
-1. **"Can't see why lessons failed validation"**
-   - ✓ Solution: ValidationDetailsPanel shows specific reasons per lesson
-   - ✓ Shows exact question text + reason why it's off-content
-
-2. **"Content Quality Dashboard needed"**
-   - ✓ Solution: Comprehensive dashboard with grade-level breakdown
-   - ✓ Shows issue patterns and aggregated metrics
-   - ✓ Enables prioritization of fixes
-
-The dashboard transforms validation from "X lessons flagged" → "X lessons flagged because of Y patterns, affecting Z students"
