@@ -1,101 +1,82 @@
 
-
-# Fix: Wire Up Exam Content Editor
+# Plan: Fix NS4 Subject Lists for Exam Admin
 
 ## Problem Identified
 
-The **Exam Content Editor module is incomplete**. The components exist but are not connected:
+The "Sélectionner une matière" dropdown for NS4 series shows **incorrect subjects**. Comparing against the **official 2024 Haitian Baccalaureate exam schedule**:
 
-```text
-Current Flow:
-┌──────────────────────┐     ┌─────────────────────┐     ┌───────────────────┐
-│ ExamAdminPage        │ ──► │ ExistingExamsList   │  X  │ ExamDetailEditor  │
-│ (doesn't pass       │     │ (has onEditExam     │     │ (never rendered)  │
-│  onEditExam prop)   │     │  but unused)        │     │                   │
-└──────────────────────┘     └─────────────────────┘     └───────────────────┘
-```
+### Current vs Official Subjects
 
-**What's Missing in `ExamAdminPage.tsx`:**
-1. No `selectedExam` state to track which exam is being edited
-2. No `onEditExam` callback passed to `ExistingExamsList`
-3. No conditional rendering of `ExamDetailEditor` when editing
-4. No `ExamDetailEditor` import
+| Series | Current (Incorrect) | Official (Correct) |
+|--------|---------------------|-------------------|
+| **SVT** | SVT, Chimie, Physique, Mathématiques, Philosophie, Français, Anglais | Philosophie, Chimie, Histoire-Géographie, SVT, Physique, Mathématiques, Anglais/Espagnol, Créole |
+| **SMP** | Mathématiques, Physique, Chimie, Philosophie, Français, Anglais | Philosophie, Chimie, Histoire-Géographie, SVT, Physique, Mathématiques, Anglais/Espagnol, Créole |
+| **SES** | Sciences Économiques, Sociologie, Mathématiques, Philosophie, Français, Anglais | Philosophie, Chimie, Histoire-Géographie, SVT, Physique, Économie, Mathématiques, Anglais/Espagnol, Créole |
+| **LLA** | Littérature, Langues, Philosophie, Histoire-Géographie, Français, Anglais | Philosophie, Chimie, Histoire-Géographie, SVT, Arts et Musique, Anglais, Mathématiques, Créole, Espagnol |
+
+### Key Issues
+1. All series incorrectly include "Français" (not a separate exam subject)
+2. All series missing "Créole" and "Histoire-Géographie"
+3. SES has "Sociologie" instead of proper subjects
+4. LLA has "Littérature" and "Langues" instead of "Arts et Musique"
+5. Series-specific subjects like "Économie" (SES), "Arts et Musique" (LLA) are missing
 
 ---
 
 ## Solution
 
-Update `ExamAdminPage.tsx` to complete the wiring:
+Update `SUBJECTS_BY_SERIES` in **two files** to match the official 2024 exam curriculum:
 
-### 1. Add Import
-
-```typescript
-import { ExamDetailEditor } from "./components/ExamDetailEditor";
-```
-
-### 2. Add State for Selected Exam
+### Corrected Subject Lists
 
 ```typescript
-const [selectedExam, setSelectedExam] = useState<ExistingExam | null>(null);
-```
-
-### 3. Add Edit Handler
-
-```typescript
-const handleEditExam = useCallback((exam: ExistingExam) => {
-  setSelectedExam(exam);
-}, []);
-
-const handleBackFromEdit = useCallback(() => {
-  setSelectedExam(null);
-}, []);
-```
-
-### 4. Conditional Rendering
-
-```tsx
-// If editing an exam, show the ExamDetailEditor instead of the main form
-if (selectedExam) {
-  return (
-    <div className="space-y-6">
-      <ExamDetailEditor 
-        exam={selectedExam} 
-        onBack={handleBackFromEdit}
-      />
-    </div>
-  );
-}
-
-// Otherwise show the normal upload/list view
-return (
-  <div className="space-y-6">
-    {/* Upload Form */}
-    ...
-    {/* Existing Exams List */}
-    <ExistingExamsList
-      track={track}
-      selectedSeries={selectedSeries}
-      onReanalyze={handleReanalyze}
-      reanalyzingExamId={reanalyzingExamId}
-      onEditExam={handleEditExam}  // ← Add this!
-    />
-  </div>
-);
-```
-
----
-
-## Updated Flow
-
-```text
-Fixed Flow:
-┌──────────────────────┐     ┌─────────────────────┐     ┌───────────────────┐
-│ ExamAdminPage        │ ──► │ ExistingExamsList   │ ──► │ ExamDetailEditor  │
-│ selectedExam state   │     │ onEditExam calls    │     │ Edit exercises    │
-│ onEditExam handler   │     │ setSelectedExam     │     │ onBack returns    │
-└──────────────────────┘     └─────────────────────┘     └───────────────────┘
-         ▲                                                        │
-         └────────────────── onBack ──────────────────────────────┘
+const SUBJECTS_BY_SERIES: Record<string, string[]> = {
+  SVT: [
+    "SVT",
+    "Chimie", 
+    "Physique",
+    "Mathématiques",
+    "Philosophie",
+    "Histoire-Géographie",
+    "Anglais",
+    "Espagnol",
+    "Créole"
+  ],
+  SMP: [
+    "Mathématiques",
+    "Physique",
+    "Chimie",
+    "SVT",
+    "Philosophie",
+    "Histoire-Géographie",
+    "Anglais",
+    "Espagnol",
+    "Créole"
+  ],
+  SES: [
+    "Économie",
+    "Histoire-Géographie",
+    "Mathématiques",
+    "Philosophie",
+    "SVT",
+    "Physique",
+    "Chimie",
+    "Anglais",
+    "Espagnol",
+    "Créole"
+  ],
+  LLA: [
+    "Arts et Musique",
+    "Philosophie",
+    "Histoire-Géographie",
+    "SVT",
+    "Anglais",
+    "Espagnol",
+    "Mathématiques",
+    "Chimie",
+    "Créole"
+  ],
+};
 ```
 
 ---
@@ -104,68 +85,26 @@ Fixed Flow:
 
 | File | Changes |
 |------|---------|
-| `src/features/exams/admin/ExamAdminPage.tsx` | Add import, state, handlers, and conditional rendering |
+| `src/features/exams/admin/ExamAdminPage.tsx` | Update `SUBJECTS_BY_SERIES` (lines 35-40) |
+| `src/components/content-editor/BaccExamManager.tsx` | Update `SUBJECTS_BY_SERIES` (lines 68-73) |
 
 ---
 
-## Complete Code Changes
+## Technical Details
 
-### `ExamAdminPage.tsx` Changes:
+### Exam Subject Ordering
+- Specialty subjects listed first (SVT for SVT series, Économie for SES, etc.)
+- Common subjects follow: Philosophie, Histoire-Géographie
+- Languages last: Anglais, Espagnol, Créole
 
-**Add Import (line ~18):**
-```typescript
-import { ExamDetailEditor } from "./components/ExamDetailEditor";
-```
-
-**Add State (after line 68):**
-```typescript
-// Editor state
-const [selectedExam, setSelectedExam] = useState<ExistingExam | null>(null);
-```
-
-**Add Handlers (after resetForm function ~line 335):**
-```typescript
-const handleEditExam = useCallback((exam: ExistingExam) => {
-  setSelectedExam(exam);
-}, []);
-
-const handleBackFromEdit = useCallback(() => {
-  setSelectedExam(null);
-}, []);
-```
-
-**Conditional Rendering (wrap the return statement ~line 343):**
-```typescript
-// Show editor view when an exam is selected
-if (selectedExam) {
-  return (
-    <div className="space-y-6">
-      <ExamDetailEditor 
-        exam={selectedExam} 
-        onBack={handleBackFromEdit}
-      />
-    </div>
-  );
-}
-
-// Normal admin view
-return (
-  <div className="space-y-6">
-    ...existing code...
-  </div>
-);
-```
-
-**Pass onEditExam to ExistingExamsList (line 479-484):**
-```typescript
-<ExistingExamsList
-  track={track}
-  selectedSeries={selectedSeries}
-  onReanalyze={handleReanalyze}
-  reanalyzingExamId={reanalyzingExamId}
-  onEditExam={handleEditExam}  // Add this line
-/>
-```
+### Subject Name Standardization
+| Old Name | New Name | Reason |
+|----------|----------|--------|
+| Sciences Économiques | Économie | Official exam name |
+| Littérature | Arts et Musique | Official LLA specialty |
+| Langues | Espagnol | Specific language exam |
+| Français | (removed) | Not a separate exam subject |
+| Sociologie | (removed) | Not in official curriculum |
 
 ---
 
@@ -173,22 +112,18 @@ return (
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Breaks existing upload flow? | No | Upload form works as before |
-| Breaks exam list? | No | List works, just adds edit button |
-| Works with existing data? | Yes | Uses existing exam_exercises table |
-| 3G optimized? | Yes | Exercises lazy-loaded only when editing |
-| Backward compatible? | Yes | No API or database changes |
+| Breaks existing exams? | No | Existing exams keep their subject field |
+| Works with database? | Yes | Subject field is freeform text |
+| Backward compatible? | Yes | New exams use correct subjects |
+| 3G optimized? | N/A | No network impact |
+| Edge cases? | N/A | Simple config update |
 
 ---
 
-## Result
+## Expected Result
 
-After this fix:
-1. Each exam in the list will show a **pencil icon** (edit button)
-2. Clicking it opens the **ExamDetailEditor** with all exercises
-3. Content editors can update `correct_answer`, `explanation`, `concept`
-4. Quality indicators show data completeness
-5. Back button returns to the exam list
-
-This completes the wiring needed to make the Content Editor functional.
-
+After implementation:
+1. When selecting NS4 + LLA series, dropdown shows: Arts et Musique, Philosophie, Histoire-Géographie, SVT, Anglais, Espagnol, Mathématiques, Chimie, Créole
+2. When selecting NS4 + SES series, dropdown shows: Économie, Histoire-Géographie, etc.
+3. All series show complete subject lists matching official exams
+4. Content editors can upload exams for all official subjects
