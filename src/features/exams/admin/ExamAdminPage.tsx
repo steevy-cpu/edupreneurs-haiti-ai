@@ -33,10 +33,10 @@ const SUBJECTS_9AF = [
 ];
 
 const SUBJECTS_BY_SERIES: Record<string, string[]> = {
-  SMP: ["Mathématiques", "Physique", "Chimie", "Philosophie", "Français", "Anglais"],
-  SES: ["Sciences Économiques", "Sociologie", "Mathématiques", "Philosophie", "Français", "Anglais"],
-  SVT: ["SVT", "Chimie", "Physique", "Mathématiques", "Philosophie", "Français", "Anglais"],
-  LLA: ["Littérature", "Langues", "Philosophie", "Histoire-Géographie", "Français", "Anglais"],
+  SVT: ["SVT", "Chimie", "Physique", "Mathématiques", "Philosophie", "Histoire-Géographie", "Anglais", "Espagnol", "Créole"],
+  SMP: ["Mathématiques", "Physique", "Chimie", "SVT", "Philosophie", "Histoire-Géographie", "Anglais", "Espagnol", "Créole"],
+  SES: ["Économie", "Histoire-Géographie", "Mathématiques", "Philosophie", "SVT", "Physique", "Chimie", "Anglais", "Espagnol", "Créole"],
+  LLA: ["Arts et Musique", "Philosophie", "Histoire-Géographie", "SVT", "Anglais", "Espagnol", "Mathématiques", "Chimie", "Créole"],
 };
 
 const YEARS = Array.from({ length: 15 }, (_, i) => 2025 - i);
