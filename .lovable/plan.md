@@ -1,198 +1,272 @@
 
-# Plan: Phase 2 - Automatic Dashboard Refresh on Validation Completion
+# Plan: Phase 3 - Enhanced Lesson Details with Inline Validation Insights
 
-## Problem
-When batch validation completes (via `BatchQuizContentValidator` or `BatchActivitiesContentValidator`), the Quality dashboard doesn't automatically update to show the new validation results. Users must manually navigate away and back to the Quality tab to see updated statistics.
+## Objective
+Add inline validation details to individual lessons in the LessonBrowser, allowing editors to see specific "off-content" questions and reasons without navigating to the full Quality dashboard.
 
-## Solution: Three-Layer Callback Chain
-Implement an automatic refresh trigger that flows from child components back to the parent ContentEditor to refresh the dashboard.
+## Current State Analysis
 
-**Current Flow:**
+**LessonBrowser Structure:**
+- Displays lessons in collapsible subject groups (lines 387-471)
+- Each lesson is a clickable div showing title and status badges (lines 416-465)
+- Currently shows validation regeneration badges (`needs_quiz_regeneration`, `needs_activities_regeneration`)
+- No display of actual validation details from `validation_details_json`
+
+**ValidationDetailsPanel:**
+- Already exists and is designed for this purpose
+- Accepts `offContentQuestions` array with structure: `{ index, question, reason }`
+- Groups issues by category using `categorizeValidationIssue()` utility
+- Shows success state when aligned, or expandable details when issues exist
+
+**Data Available:**
+- Lessons fetched in `loadLessons()` already include `validation_details_json`
+- Structure: `{ quiz?: { offContentQuestions: [...] }, activities?: { offContentActivities: [...] } }`
+- Can be extracted and passed directly to `ValidationDetailsPanel`
+
+## Implementation Approach
+
+### Phase 3A: Add Validation Details Display (High Priority)
+
+**Integration Point:** Within each lesson's clickable div in LessonBrowser
+
+**Current Lesson Item HTML (lines 416-465):**
 ```
-ContentEditor.tsx
-  ↓
-LessonBrowser.tsx
-  ↓
-BatchQuizContentValidator.tsx → calls onComplete() (loadSubjects)
-BatchActivitiesContentValidator.tsx → calls onComplete() (loadSubjects)
+<div className="p-2 rounded-md cursor-pointer...">
+  <div className="flex items-start justify-between gap-2">
+    <span className="text-sm font-medium...">{lesson.title}</span>
+    <div className="flex items-center gap-1...">
+      {/* Status badges */}
+    </div>
+  </div>
+  <div className="mt-1">
+    <Badge variant="outline">{lesson.grade_level}</Badge>
+  </div>
+</div>
 ```
 
-**New Flow:**
-```
-ContentEditor.tsx (has refreshDashboard)
-  ↓ Pass refreshDashboard to LessonBrowser
-LessonBrowser.tsx
-  ↓ Pass onDashboardRefresh to Validators
-BatchQuizContentValidator.tsx → calls onDashboardRefresh() after onComplete()
-BatchActivitiesContentValidator.tsx → calls onDashboardRefresh() after onComplete()
+**Enhancement:**
+1. Import `ValidationDetailsPanel` component at the top of LessonBrowser
+2. After the badge display, conditionally render `ValidationDetailsPanel` if validation data exists
+3. Extract quiz and activities off-content questions from `validation_details_json`
+4. Show separate panels for quiz and activities issues
+5. Only show when selected lesson matches (`selectedLesson?.id === lesson.id`)
+
+### Phase 3B: Data Extraction Helper Function
+
+Create a utility function to parse validation details:
+
+```typescript
+function extractValidationDetails(lesson: any) {
+  const details = lesson.validation_details_json;
+  if (!details) return { quiz: [], activities: [] };
+  
+  return {
+    quiz: details.quiz?.offContentQuestions || [],
+    activities: details.activities?.offContentActivities || [],
+  };
+}
 ```
 
-## Technical Implementation
+Alternative: Transform activity data to match question format for unified display
+- Activities use `{ index, activity, reason }` format
+- Questions use `{ index, question, reason }` format
+- Can map activities to questions format for reuse
 
-### Step 1: Update LessonBrowser Props
+### Phase 3C: UI Layout in LessonBrowser
+
+**New Layout for Selected Lesson:**
+```
+┌─ Subject ─────────────────────────────────────┐
+│  ├─ Lesson 1 (not selected)                   │
+│  ├─ Lesson 2 (SELECTED)                        │
+│  │  ├─ Title + Status Badges                  │
+│  │  ├─ Grade Level Badge                      │
+│  │  ├─ ─────────────────────────────           │
+│  │  ├─ Quiz Validation Details (if exists)    │
+│  │  └─ Activities Validation Details (if exists)│
+│  └─ Lesson 3                                   │
+```
+
+**Implementation:**
+- Wrap existing lesson content in conditional rendering
+- Show additional validation panels only for selected lesson
+- Use `selectedLesson?.id === lesson.id` check
+- Maintain existing styling/spacing for unselected lessons
+
+## Technical Implementation Details
+
+### Step 1: Import and Helper
 **File:** `src/components/content-editor/LessonBrowser.tsx`
 
-Add new prop to interface:
 ```typescript
-interface LessonBrowserProps {
-  onSelectLesson: (lesson: any) => void;
-  selectedLesson: any;
-  refreshKey?: number;
-  onDashboardRefresh?: () => void;  // NEW
+import { ValidationDetailsPanel } from "@/components/content-editor/ValidationDetailsPanel";
+
+// Helper to extract validation details
+const extractValidationDetails = (lesson: any) => {
+  const details = lesson.validation_details_json;
+  if (!details) return { quiz: [], activities: [] };
+  
+  return {
+    quiz: details.quiz?.offContentQuestions || [],
+    activities: details.activities?.offContentActivities || [],
+  };
+};
+```
+
+### Step 2: Update Lesson Item Rendering
+**Location:** Lines 416-465 in LessonBrowser
+
+```typescript
+{subject.lessons.map((lesson: any) => {
+  const isSelected = selectedLesson?.id === lesson.id;
+  const { quiz: quizIssues, activities: activityIssues } = extractValidationDetails(lesson);
+  
+  return (
+    <div key={lesson.id}>
+      {/* Existing lesson item wrapper and content */}
+      <div
+        onClick={() => onSelectLesson(lesson)}
+        className={`p-2 rounded-md cursor-pointer transition-colors ${
+          isSelected ? "bg-primary/10 border border-primary" : "hover:bg-muted"
+        }`}
+      >
+        {/* Title and badges - EXISTING CODE */}
+        <div className="flex items-start justify-between gap-2">
+          <span className="text-sm font-medium flex-1 line-clamp-2">
+            {lesson.title}
+          </span>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {/* Status badges - EXISTING CODE */}
+          </div>
+        </div>
+        <div className="mt-1">
+          <Badge variant="outline" className="text-xs">
+            {lesson.grade_level}
+          </Badge>
+        </div>
+      </div>
+      
+      {/* NEW: Validation details for selected lesson only */}
+      {isSelected && (quizIssues.length > 0 || activityIssues.length > 0) && (
+        <div className="mt-2 ml-2 space-y-2">
+          {quizIssues.length > 0 && (
+            <ValidationDetailsPanel
+              lessonTitle={lesson.title}
+              validationType="quiz"
+              offContentQuestions={quizIssues}
+              aligned={false}
+              confidence={lesson.content_alignment_score || 0}
+            />
+          )}
+          {activityIssues.length > 0 && (
+            <ValidationDetailsPanel
+              lessonTitle={lesson.title}
+              validationType="activities"
+              offContentQuestions={activityIssues}
+              aligned={false}
+              confidence={lesson.activities_alignment_score || 0}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+})}
+```
+
+### Step 3: Consider Collapsing/Expanding
+**Optional Enhancement:**
+- Add collapsible wrapper around validation details
+- Prevents overwhelming the lesson list when many lessons have issues
+- Can expand on demand
+
+## Data Structure Verification
+
+**From ContentQualityDashboard (lines 122-141):**
+```typescript
+lesson.validation_details_json = {
+  quiz?: {
+    offContentQuestions: Array<{
+      index: number;
+      question: string;
+      reason: string;
+    }>
+  },
+  activities?: {
+    offContentActivities: Array<{
+      index: number;
+      activity: string;  // Note: activities use "activity" key
+      reason: string;
+    }>
+  }
 }
 ```
 
-Update component signature:
-```typescript
-export const LessonBrowser = ({ 
-  onSelectLesson, 
-  selectedLesson, 
-  refreshKey,
-  onDashboardRefresh  // NEW
-}: LessonBrowserProps) => {
-```
+**Needed Transformation for Activities:**
+The `ValidationDetailsPanel` expects `{ index, question, reason }` format, but activities have `{ index, activity, reason }`. Two options:
 
-Pass to validators:
-```typescript
-// Line 350: BatchQuizContentValidator
-<BatchQuizContentValidator 
-  lessons={lessonsWithValidQuiz}
-  gradeLevel={gradeLevel}
-  onComplete={loadSubjects}
-  onDashboardRefresh={onDashboardRefresh}  // NEW
-  validatedCount={lessonsWithValidQuiz.filter(l => l.last_content_validated_at).length}
-  totalWithQuiz={lessonsWithValidQuiz.length}
-/>
+1. **Map in LessonBrowser:** Transform activities before passing
+   ```typescript
+   const activityIssuesFormatted = activityIssues.map(issue => ({
+     ...issue,
+     question: issue.activity  // Alias for display
+   }));
+   ```
 
-// Line 362: BatchActivitiesContentValidator
-<BatchActivitiesContentValidator 
-  lessons={lessonsWithValidActivities}
-  gradeLevel={gradeLevel}
-  onComplete={loadSubjects}
-  onDashboardRefresh={onDashboardRefresh}  // NEW
-  validatedCount={lessonsWithValidActivities.filter(l => l.last_activities_validated_at).length}
-  totalWithActivities={lessonsWithValidActivities.length}
-/>
-```
+2. **Update ValidationDetailsPanel:** Accept generic `content` field
+   - More flexible but requires component changes
+   - Recommended if activities become more common
 
-### Step 2: Update BatchQuizContentValidator Props & Logic
-**File:** `src/components/content-editor/BatchQuizContentValidator.tsx`
+**Recommendation:** Use Option 1 (simpler, non-breaking change)
 
-Add to interface:
-```typescript
-interface BatchQuizContentValidatorProps {
-  lessons: any[];
-  gradeLevel: string;
-  onComplete: () => void;
-  onDashboardRefresh?: () => void;  // NEW
-  validatedCount?: number;
-  totalWithQuiz?: number;
-}
-```
+## UX Flow
 
-Update component signature:
-```typescript
-export const BatchQuizContentValidator = ({ 
-  lessons, 
-  gradeLevel, 
-  onComplete,
-  onDashboardRefresh,  // NEW
-  validatedCount = 0,
-  totalWithQuiz = 0
-}: BatchQuizContentValidatorProps) => {
-```
+1. **User browses lessons** → sees lesson list with status badges (existing behavior)
+2. **User clicks a lesson** → lesson becomes selected with blue highlight
+3. **If lesson has validation issues** → `ValidationDetailsPanel` appears below lesson item
+4. **User expands panel** → sees specific off-content questions grouped by category
+5. **User understands** → why this lesson failed and what needs fixing
+6. **User can then** → navigate to Quality tab for bulk context OR regenerate individual content
 
-Call in `handleValidateAll` after completion (around line 210):
-```typescript
-// After: onComplete();
-onComplete();
-if (onDashboardRefresh) {
-  onDashboardRefresh();
-}
-```
+## Safety Verification
 
-### Step 3: Update BatchActivitiesContentValidator Props & Logic
-**File:** `src/components/content-editor/BatchActivitiesContentValidator.tsx`
-
-Same changes as BatchQuizContentValidator:
-- Add `onDashboardRefresh` to interface
-- Add to component signature
-- Call `onDashboardRefresh()` after `onComplete()` in `handleValidateAll`
-
-### Step 4: Update ContentEditor to Pass Callback
-**File:** `src/pages/ContentEditor.tsx`
-
-Pass `refreshDashboard` to LessonBrowser (around line 287):
-```typescript
-<LessonBrowser
-  onSelectLesson={async (lesson) => {
-    // ... existing code
-  }}
-  selectedLesson={selectedLesson}
-  refreshKey={refreshKey}
-  onDashboardRefresh={refreshDashboard}  // NEW
-/>
-```
-
-## Behavioral Changes
-
-**Before Phase 2:**
-1. User clicks "Valider alignement contenu" in LessonBrowser
-2. Validation completes → batch validator calls onComplete() → LessonBrowser refreshes
-3. Quality dashboard stats are outdated
-4. User must manually switch to Quality tab to refresh view
-
-**After Phase 2:**
-1. User clicks "Valider alignement contenu" in LessonBrowser
-2. Validation completes → calls onComplete() AND onDashboardRefresh()
-3. Dashboard automatically refreshes with latest stats
-4. User sees updated metrics instantly without manual intervention
-
-## Code Changes Summary
-
-| File | Changes | Lines Added |
-|------|---------|------------|
-| `LessonBrowser.tsx` | Add `onDashboardRefresh?` prop, pass to 2 validators | ~3 |
-| `BatchQuizContentValidator.tsx` | Add prop, call onDashboardRefresh() after onComplete() | ~5 |
-| `BatchActivitiesContentValidator.tsx` | Add prop, call onDashboardRefresh() after onComplete() | ~5 |
-| `ContentEditor.tsx` | Pass `refreshDashboard` to LessonBrowser | ~1 |
-
-**Total lines added:** ~14
-
-## Backward Compatibility
-
-- `onDashboardRefresh` is optional (`?`) in all interfaces
-- Existing code without the callback continues to work
-- No breaking changes to existing APIs
-- Can integrate gradually if needed
-
-## 3G Performance Impact
-
-**Zero negative impact:**
-- No additional network calls (just triggers existing dashboard refresh)
-- Dashboard already has efficient query
-- Only runs when user explicitly validates
-- Callback execution is instant
-
-## Testing Strategy
-
-1. **Manual:**
-   - Open Content Editor → Quality tab → note current stats
-   - Switch to Review tab → run batch validation
-   - Switch back to Quality tab → verify stats updated automatically
-   - Check that both Quiz and Activities validators trigger refresh
-
-2. **Edge Cases:**
-   - Validation with 0 lessons (skip validated checkbox)
-   - Validation interrupted/paused mid-way
-   - Dashboard not open when validation completes (no visual change, but state updated)
+| Check | Status | Details |
+|-------|--------|---------|
+| Breaks existing lesson selection? | No | Maintains onClick and selection styling |
+| Performance impact? | Minimal | Only renders details for selected lesson |
+| Mobile friendly? | Yes | Details expand below, responsive layout |
+| 3G optimized? | Yes | No new network calls, just displays existing data |
+| Backward compatible? | Yes | ValidationDetailsPanel already exists and works |
+| Data integrity? | Yes | Uses existing validation_details_json from DB |
 
 ## Files to Modify
 
-1. `src/components/content-editor/LessonBrowser.tsx`
-2. `src/components/content-editor/BatchQuizContentValidator.tsx`
-3. `src/components/content-editor/BatchActivitiesContentValidator.tsx`
-4. `src/pages/ContentEditor.tsx`
+| File | Changes | Complexity |
+|------|---------|-----------|
+| `src/components/content-editor/LessonBrowser.tsx` | Import component, add helper, conditional render validation panels for selected lesson | Medium |
 
-## Implementation Complexity
-**Low** - Simple prop threading with minimal logic additions. No new components or database changes needed.
+**Total lines of code:** ~30 lines added
+
+## Expected Result
+
+After implementation:
+- ✓ When a lesson is selected, validation details appear inline
+- ✓ Quiz and activities issues shown separately with clear categorization
+- ✓ Editor understands specific problems without leaving lesson list
+- ✓ No impact on unselected lessons
+- ✓ Smooth integration with existing data flow
+- ✓ Ready for Phase 3B (optional): Add quick-actions (Regenerate, Mark as reviewed) directly from panel
+
+## Integration Dependencies
+
+- ✓ ValidationDetailsPanel (already exists, fully functional)
+- ✓ validation_details_json (already in database)
+- ✓ categorizeValidationIssue utility (already exists)
+- ✓ Selected lesson state (already tracked in LessonBrowser)
+
+## Future Enhancements (Phase 3B+)
+
+1. **Quick Actions:** Add "Regenerate Quiz" button directly in panel
+2. **Filtering:** Filter lesson list to show only lessons with specific issue types
+3. **Bulk Operations:** "Regenerate all lessons with 'concept_not_in_content' issues"
+4. **Comparison View:** Side-by-side with content to understand gaps
