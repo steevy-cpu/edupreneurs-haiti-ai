@@ -26,7 +26,7 @@ interface IssueStats {
   percentage: number;
 }
 
-export const ContentQualityDashboard = () => {
+export const ContentQualityDashboard = ({ refreshKey = 0 }: { refreshKey?: number } = {}) => {
   const [loading, setLoading] = useState(true);
   const [gradeLevelStats, setGradeLevelStats] = useState<GradeLevelStats[]>([]);
   const [overallStats, setOverallStats] = useState({
@@ -183,7 +183,7 @@ export const ContentQualityDashboard = () => {
     };
 
     fetchStats();
-  }, []);
+  }, [refreshKey]);
 
   if (loading) {
     return (
@@ -275,7 +275,7 @@ export const ContentQualityDashboard = () => {
           {overallStats.quizIssueStats.length === 0 ? (
             <Card>
               <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-green-700">
+                <div className="flex items-center gap-2 text-success">
                   <CheckCircle2 className="h-5 w-5" />
                   <p className="text-sm font-medium">Aucun problème détecté!</p>
                 </div>
@@ -285,7 +285,7 @@ export const ContentQualityDashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-600" />
+                  <AlertTriangle className="h-4 w-4 text-accent" />
                   Catégories de Problèmes
                 </CardTitle>
               </CardHeader>
@@ -310,7 +310,7 @@ export const ContentQualityDashboard = () => {
           {overallStats.activitiesIssueStats.length === 0 ? (
             <Card>
               <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-green-700">
+                <div className="flex items-center gap-2 text-success">
                   <CheckCircle2 className="h-5 w-5" />
                   <p className="text-sm font-medium">Aucun problème détecté!</p>
                 </div>
@@ -320,7 +320,7 @@ export const ContentQualityDashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-600" />
+                  <AlertTriangle className="h-4 w-4 text-accent" />
                   Catégories de Problèmes
                 </CardTitle>
               </CardHeader>

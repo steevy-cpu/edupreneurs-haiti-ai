@@ -21,6 +21,7 @@ import { LessonValidationPanel } from "@/components/content-editor/LessonValidat
 import { BatchGenerationValidation } from "@/components/content-editor/BatchGenerationValidation";
 import { DailyWordsManager } from "@/components/content-editor/DailyWordsManager";
 import { EbookManager } from "@/components/content-editor/EbookManager";
+import { ContentQualityDashboard } from "@/components/content-editor/ContentQualityDashboard";
 
 const CONTENT_EDITOR_STORAGE_KEY = 'content_editor_preferences';
 
@@ -49,6 +50,7 @@ const ContentEditor = () => {
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const [subjectLessons, setSubjectLessons] = useState<Array<{ id: string; title: string; slug: string }>>([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
   const [showCreateMatiere, setShowCreateMatiere] = useState(false);
   const [activeTab, setActiveTab] = useState<string>(() => getStoredPreferences().activeTab);
 
@@ -148,6 +150,10 @@ const ContentEditor = () => {
     }
   };
 
+  const refreshDashboard = () => {
+    setDashboardRefreshKey(prev => prev + 1);
+  };
+
   const refreshLesson = async () => {
     if (!selectedLesson) {
       console.warn('⚠️ No lesson selected, cannot refresh');
@@ -243,10 +249,14 @@ const ContentEditor = () => {
         {/* Main Content with Tabs */}
         <div className="max-w-[1600px] mx-auto">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6 lg:w-[1200px]">
+            <TabsList className="grid w-full grid-cols-7 lg:w-[1400px]">
               <TabsTrigger value="review">
                 <BookOpen className="mr-2 h-4 w-4" />
                 Révision
+              </TabsTrigger>
+              <TabsTrigger value="quality">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Qualité
               </TabsTrigger>
               <TabsTrigger value="batch">
                 <Zap className="mr-2 h-4 w-4" />
@@ -378,6 +388,10 @@ const ContentEditor = () => {
                   </div>
                 </div>
               </div>
+            </TabsContent>
+
+            <TabsContent value="quality">
+              <ContentQualityDashboard key={`dashboard-${dashboardRefreshKey}`} refreshKey={dashboardRefreshKey} />
             </TabsContent>
 
             <TabsContent value="batch">
