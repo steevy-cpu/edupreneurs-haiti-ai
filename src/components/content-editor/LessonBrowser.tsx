@@ -132,7 +132,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
         const batch = subjectIds.slice(i, i + batchSize);
         const { data: lessonsData, error } = await supabase
           .from('lessons')
-          .select('id, title, slug, subject_id, order_index, workflow_status, grade_level, quiz_final, activites_interactives, needs_quiz_regeneration, needs_activities_regeneration, subjects(id, name)')
+          .select('id, title, slug, subject_id, order_index, workflow_status, grade_level, quiz_final, activites_interactives, needs_quiz_regeneration, needs_activities_regeneration, last_content_validated_at, last_activities_validated_at, subjects(id, name)')
           .in('subject_id', batch)
           .order('order_index');
 
@@ -351,6 +351,8 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
                   lessons={lessonsWithValidQuiz}
                   gradeLevel={gradeLevel}
                   onComplete={loadSubjects}
+                  validatedCount={lessonsWithValidQuiz.filter(l => l.last_content_validated_at).length}
+                  totalWithQuiz={lessonsWithValidQuiz.length}
                 />
               </div>
             )}
@@ -361,6 +363,8 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
                   lessons={lessonsWithValidActivities}
                   gradeLevel={gradeLevel}
                   onComplete={loadSubjects}
+                  validatedCount={lessonsWithValidActivities.filter(l => l.last_activities_validated_at).length}
+                  totalWithActivities={lessonsWithValidActivities.length}
                 />
               </div>
             )}
