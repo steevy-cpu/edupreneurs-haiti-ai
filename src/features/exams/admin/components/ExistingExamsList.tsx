@@ -16,7 +16,7 @@ import {
   AlertDialogHeader, 
   AlertDialogTitle 
 } from "@/components/ui/alert-dialog";
-import { Eye, RefreshCw, Trash2, Loader2, FileText, BookOpen } from "lucide-react";
+import { Eye, RefreshCw, Trash2, Loader2, FileText, BookOpen, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { ExamTrack } from "../../types/exam.types";
@@ -42,13 +42,15 @@ interface ExistingExamsListProps {
   selectedSeries?: string[];
   onReanalyze: (exam: ExistingExam) => void;
   reanalyzingExamId?: string | null;
+  onEditExam?: (exam: ExistingExam) => void;
 }
 
 export function ExistingExamsList({ 
   track, 
   selectedSeries = [],
   onReanalyze,
-  reanalyzingExamId
+  reanalyzingExamId,
+  onEditExam
 }: ExistingExamsListProps) {
   const [exams, setExams] = useState<ExistingExam[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -186,6 +188,16 @@ export function ExistingExamsList({
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
+                    {onEditExam && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onEditExam(exam)}
+                        title="Modifier les exercices"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    )}
                     {exam.pdf_url && (
                       <Button
                         variant="ghost"
