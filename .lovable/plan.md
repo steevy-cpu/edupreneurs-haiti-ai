@@ -1,346 +1,247 @@
 
-# Plan: Enhanced Batch Validation with Progress Persistence
+# Plan: Content Quality Dashboard with Detailed Validation Feedback
 
-## Problem Summary
+## Problem Analysis
 
-The current validation buttons ("Valider alignement contenu" and "Valider alignement activités") have critical UX issues:
+**Current Gaps:**
+1. **No visibility into validation failure reasons** - Lessons are flagged with "⚠ Besoin régénération" but editors don't know WHY they failed
+2. **No comprehensive quality overview** - Users can't see overall health of content across grade levels
+3. **Validation details are lost** - API returns detailed reasons for off-content questions, but they're not stored or displayed
+4. **Error messages are generic** - "hors-contenu" flag with no actionable context
 
-1. **No visibility into existing validation status** - Users don't know how many lessons are already validated
-2. **No progress persistence** - If validation stops at lesson 150/204, all progress is lost
-3. **No resume capability** - After stopping, users must restart from the beginning
-4. **No filtering of already-validated lessons** - Re-validates lessons that were already validated
+**Data Currently Available (but underutilized):**
+- `content_alignment_score` - Quiz validation confidence (0-1)
+- `activities_alignment_score` - Activities validation confidence (0-1)
+- `needs_quiz_regeneration` / `needs_activities_regeneration` - Boolean flags
+- `last_content_validated_at` / `last_activities_validated_at` - Validation timestamps
+- **Validation API Response** contains: `offContentQuestions[{index, question, reason}]` with specific failure reasons
 
-**Current Stats (from database):**
-- Total lessons: 2,832
-- Quiz validated: 198 (7%)
-- Activities validated: 113 (4%)
-- Needs quiz regeneration: 151
-- Needs activities regeneration: 88
+## Solution: Two-Component System
 
----
+### Component 1: Enhanced Validation Result Storage
+**Currently:** Validation results are calculated but only high-level metrics stored (aligned/confidence).
+**New:** Store full validation response with specific failure reasons.
 
-## Solution Architecture
-
-```text
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    Enhanced Validation Button                           │
-├─────────────────────────────────────────────────────────────────────────┤
-│  ┌──────────────────────────────────────────────────────────────────┐   │
-│  │  📊 Quiz Content Validation                                      │   │
-│  │                                                                  │   │
-│  │  Already validated: 45/204 (22%)                                 │   │
-│  │  ████████░░░░░░░░░░░░░░░░░░░░░░ 22%                              │   │
-│  │                                                                  │   │
-│  │  Needing validation: 159 lessons                                 │   │
-│  │                                                                  │   │
-│  │  [✓ Skip already validated]  [ Start Validation ]                │   │
-│  └──────────────────────────────────────────────────────────────────┘   │
-│                                                                         │
-│  During Validation:                                                     │
-│  ┌──────────────────────────────────────────────────────────────────┐   │
-│  │  Validating: "Lesson Title..."                    45/159         │   │
-│  │  ████████████░░░░░░░░░░░░░░░░░░ 28%                              │   │
-│  │                                                                  │   │
-│  │  ✓ 32 aligned  ⚠ 13 off-content  ✗ 0 errors                     │   │
-│  │                                                                  │   │
-│  │  [Pause & Save Progress]                                          │   │
-│  └──────────────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────────┘
+```typescript
+// Store in lessons table (or new lesson_validation_details table)
+{
+  lesson_id: uuid,
+  validation_type: 'quiz' | 'activities',
+  aligned: boolean,
+  confidence: number,
+  off_content_details: {
+    offContentQuestions: [
+      { index: 0, question: "...", reason: "Concept X non mentionné dans le contenu" },
+      { index: 3, question: "...", reason: "Formule chimique non présente dans le contenu" }
+    ]
+  },
+  last_validated_at: timestamp
+}
 ```
 
----
+### Component 2: Content Quality Dashboard
+A comprehensive dashboard with multiple views:
 
-## Key Features
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    📊 CONTENT QUALITY DASHBOARD                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Overview Stats (Top Cards)                                     │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
+│  │ 📈 Overall   │  │ ✓ Quiz       │  │ 🎮 Activités │           │
+│  │ Score: 73%   │  │ 72% validé   │  │ 68% validé   │           │
+│  │ 2,832 total  │  │ 198 validés  │  │ 113 validés  │           │
+│  └──────────────┘  └──────────────┘  └──────────────┘           │
+│                                                                 │
+│  Tabs: [Overview] [Quiz Issues] [Activities Issues] [Trends]    │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════   │
+│                                                                 │
+│  Grade Level Quality Breakdown                                  │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │ 7AF  ████████████░░░░░░░░░░░░  85% (94/111 lessons)    │   │
+│  │ 8AF  ████████░░░░░░░░░░░░░░░░░  62% (68/109)           │   │
+│  │ 9AF  ██████████████░░░░░░░░░░░  78% (156/201)          │   │
+│  │ NS1  ███████░░░░░░░░░░░░░░░░░░  54% (48/89)            │   │
+│  │ NS2  ███░░░░░░░░░░░░░░░░░░░░░░  32% (44/138)  🔴       │   │
+│  │ NS3-SMP ████░░░░░░░░░░░░░░░░░░  45% (67/149)           │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│  Quiz Issues Detail (Filterable)                               │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │ 📌 Lessons with off-content questions: 187              │   │
+│  │                                                          │   │
+│  │ ⚠ Top Issue Categories:                                 │   │
+│  │  • Concept not in content: 124 questions               │   │
+│  │  • Specific date/formula missing: 45 questions         │   │
+│  │  • Cultural knowledge not mentioned: 18 questions      │   │
+│  │                                                          │   │
+│  │ 🔍 Click to see specific lessons needing fixes         │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-### 1. Pre-Validation Statistics
-Before starting, show users:
-- How many lessons in this grade level have valid quizzes/activities
-- How many have already been validated (checked `last_content_validated_at`)
-- How many need validation (not yet checked)
-- Estimated time based on remaining lessons
+### Component 3: Enhanced Lesson Browser Integration
+When a lesson is flagged as "needing regeneration", show WHY:
 
-### 2. Progress Auto-Save
-- Each lesson's validation result is saved immediately to the database
-- Progress persists even if the user closes the browser
-- Uses existing fields: `last_content_validated_at`, `needs_quiz_regeneration`, `content_alignment_score`
+```
+Before:
+❌ Lesson Title
+  [⚠ Besoin régénération - Quiz] [Brouillon]
 
-### 3. Skip Already-Validated Option
-- Checkbox to skip lessons that already have `last_content_validated_at` set
-- Default: ON (skip validated)
-- Users can uncheck to re-validate everything
-
-### 4. Consistent UI Design
-Both Quiz and Activities validators will use the same enhanced component structure with appropriate color theming.
-
----
+After:
+❌ Lesson Title  
+  [⚠ Besoin régénération - Quiz] [Brouillon]
+  └─ Q1: Concept X non mentionné; Q5: Formule non présente
+```
 
 ## Technical Implementation
 
-### Files to Modify
+### Step 1: Extend Validation Result Capture
+In `BatchQuizContentValidator.tsx` and `BatchActivitiesContentValidator.tsx`:
+- Store full validation response from API (not just aligned/confidence)
+- Add new database field: `validation_details_json` (or update lessons table)
 
-| File | Changes |
-|------|---------|
-| `src/components/content-editor/BatchQuizContentValidator.tsx` | Add pre-validation stats, skip-validated filter, enhanced UI |
-| `src/components/content-editor/BatchActivitiesContentValidator.tsx` | Same enhancements as above |
-| `src/components/content-editor/LessonBrowser.tsx` | Pass additional props for validation counts |
+### Step 2: Create ContentQualityDashboard Component
+New file: `src/components/content-editor/ContentQualityDashboard.tsx`
 
-### Database Query Updates
+Key features:
+- **Overview Cards**: Overall score, quiz health, activities health
+- **Grade Level Breakdown**: Progress bars showing validation % per grade level
+- **Issue Categories**: Aggregate failure reasons to identify patterns
+- **Trend Charts**: Validation progress over time (using recharts already in project)
+- **Drilldown**: Click to see specific lessons with issues
 
-**Fetch validation stats before starting:**
+### Step 3: Enhanced Lesson Details in Browser
+Update `LessonBrowser.tsx`:
+- Add expandable "validation details" section showing specific reasons
+- Color-code by severity: red (many issues), amber (some issues), green (few)
+- Allow filtering by issue type
+
+### Step 4: Smart Issue Categorization
+Create utility function to categorize failure reasons:
+```typescript
+function categorizeValidationIssue(reason: string): string {
+  if (reason.includes('non mentionné')) return 'Concept not in content';
+  if (reason.includes('formule') || reason.includes('date')) return 'Specific data missing';
+  if (reason.includes('culture') || reason.includes('connaissances générales')) return 'General knowledge';
+  return 'Other';
+}
+```
+
+## Data Structure Changes
+
+### Option A: Extend Lessons Table (Simpler)
+Add column to `lessons` table:
 ```sql
-SELECT 
-  COUNT(*) as total,
-  COUNT(CASE WHEN last_content_validated_at IS NOT NULL THEN 1 END) as validated,
-  COUNT(CASE WHEN needs_quiz_regeneration = true THEN 1 END) as needs_regen
-FROM lessons
-WHERE subject_id IN (...)
+ALTER TABLE lessons ADD COLUMN validation_details_json JSONB;
+-- Stores: { quiz: { offContentQuestions: [...], confidence: 0.75 }, activities: {...} }
 ```
 
-### Component Props Enhancement
-
-```typescript
-interface BatchQuizContentValidatorProps {
-  lessons: any[];
-  gradeLevel: string;
-  onComplete: () => void;
-  // NEW: Pre-computed stats for display
-  validatedCount?: number;
-  totalWithQuiz?: number;
-}
+### Option B: Create Separate Table (Cleaner)
+```sql
+CREATE TABLE lesson_validation_details (
+  id uuid PRIMARY KEY,
+  lesson_id uuid REFERENCES lessons(id),
+  validation_type 'quiz' | 'activities',
+  response_json JSONB, -- Full API response
+  created_at timestamp,
+  UNIQUE(lesson_id, validation_type)
+);
 ```
 
----
+**Recommendation:** Option A (simpler, leverages existing structure)
 
-## UI Enhancements
+## UI Integration Points
 
-### Before Starting (Button State)
-
-**Current:**
-```
-┌────────────────────────────────────────────┐
-│  🔍  Valider alignement contenu            │
-└────────────────────────────────────────────┘
-```
-
-**Enhanced:**
-```
-┌────────────────────────────────────────────┐
-│  🔍  Valider alignement contenu            │
-│      45/204 déjà validés                   │
-└────────────────────────────────────────────┘
-```
-
-### Dialog Content Enhancement
-
-**Current Dialog:**
-- Shows total lesson count
-- Shows estimated time
-
-**Enhanced Dialog:**
-```
-┌─────────────────────────────────────────────────────┐
-│  Valider l'alignement du contenu?                   │
-├─────────────────────────────────────────────────────┤
-│                                                     │
-│  📊 Statistiques actuelles:                         │
-│     • 204 leçons avec quiz valide                   │
-│     • 45 déjà validés (22%)                         │
-│     • 159 restants à valider                        │
-│                                                     │
-│  ┌─────────────────────────────────────────────┐    │
-│  │ ████████░░░░░░░░░░░░░░░░ 22% validé         │    │
-│  └─────────────────────────────────────────────┘    │
-│                                                     │
-│  ☑ Ignorer les leçons déjà validées                 │
-│                                                     │
-│  ℹ️ Les résultats sont sauvegardés automatiquement  │
-│  ⏱️ Durée estimée: ~8 minutes (159 leçons)          │
-│                                                     │
-├─────────────────────────────────────────────────────┤
-│           [Annuler]     [Commencer]                 │
-└─────────────────────────────────────────────────────┘
-```
-
-### During Validation Enhancement
-
-**Current:**
-- Progress bar with current/total
-- Live counts (aligned, off-content, errors)
-- Cancel button
-
-**Enhanced:**
-- Add "Progress auto-saved" indicator
-- Show overall validated percentage updating in real-time
-- "Pause & Save" button (clearer than just "Cancel")
-
-```
-┌─────────────────────────────────────────────────────┐
-│  ⏳ Validation en cours...                          │
-│                                                     │
-│  "Les écosystèmes marins"           67/159          │
-│  ████████████████░░░░░░░░░░░░ 42%                   │
-│                                                     │
-│  ✓ 52 alignés  ⚠ 15 hors-contenu  ✗ 0 erreurs     │
-│                                                     │
-│  💾 Progression sauvegardée automatiquement         │
-│                                                     │
-│            [⏸ Pause & Sauvegarder]                  │
-└─────────────────────────────────────────────────────┘
-```
-
----
-
-## Implementation Details
-
-### Step 1: Add Validation Count Fetching
-
-In `LessonBrowser.tsx`, add a query to fetch validation stats:
-
-```typescript
-// New state for validation counts
-const [quizValidationStats, setQuizValidationStats] = useState({
-  total: 0,
-  validated: 0,
-  needsRegen: 0
-});
-
-// Fetch stats when lessons load
-useEffect(() => {
-  if (lessonsWithValidQuiz.length > 0) {
-    const validated = lessonsWithValidQuiz.filter(
-      l => l.last_content_validated_at != null
-    ).length;
-    setQuizValidationStats({
-      total: lessonsWithValidQuiz.length,
-      validated,
-      needsRegen: lessonsWithValidQuiz.filter(l => l.needs_quiz_regeneration).length
-    });
-  }
-}, [lessonsWithValidQuiz]);
-```
-
-### Step 2: Update BatchQuizContentValidator
-
-Key changes:
-1. Add `skipAlreadyValidated` state (default: true)
-2. Filter lessons based on `last_content_validated_at`
-3. Show pre-validation stats in button and dialog
-4. Add auto-save indicator during validation
-
-```typescript
-const BatchQuizContentValidator = ({ 
-  lessons, 
-  gradeLevel, 
-  onComplete,
-  validatedCount = 0,
-  totalWithQuiz = 0
-}: BatchQuizContentValidatorProps) => {
-  const [skipValidated, setSkipValidated] = useState(true);
-  
-  // Filter lessons to validate
-  const lessonsToValidate = skipValidated 
-    ? lessons.filter(l => !l.last_content_validated_at)
-    : lessons;
-    
-  // ... rest of component
-}
-```
-
-### Step 3: Enhanced Button Display
-
-```tsx
-<Button 
-  size="sm" 
-  variant="outline"
-  className="w-full border-amber-500/30 text-amber-700 hover:bg-amber-500/10"
->
-  <Search className="h-4 w-4 mr-2" />
-  <div className="flex flex-col items-start">
-    <span>Valider alignement contenu</span>
-    <span className="text-xs text-muted-foreground">
-      {validatedCount}/{totalWithQuiz} validés
-    </span>
-  </div>
-</Button>
-```
-
----
-
-## Data Flow
-
-```text
-LessonBrowser loads lessons
-         │
-         ▼
-Fetch validation stats (last_content_validated_at counts)
-         │
-         ▼
-Pass stats to BatchQuizContentValidator
-         │
-         ▼
-User sees: "45/204 validés" on button
-         │
-         ▼
-User clicks → Dialog shows full stats
-         │
-         ▼
-[Skip validated] checkbox filters list
-         │
-         ▼
-Validation starts (159 lessons)
-         │
-         ▼
-Each result IMMEDIATELY saved to DB ← Auto-save
-         │
-         ▼
-User can pause anytime → Progress preserved
-         │
-         ▼
-Resume later → Only remaining lessons processed
-```
-
----
-
-## Safety Verification
-
-| Check | Status | Notes |
-|-------|--------|-------|
-| Breaks existing validation? | No | Same edge functions, same DB fields |
-| Works with existing data? | Yes | Uses existing `last_content_validated_at` |
-| Backward compatible? | Yes | Enhanced display only |
-| 3G optimized? | Yes | Reduces API calls by skipping validated |
-| Progress persistence? | Yes | Each lesson saved immediately |
-
----
+| Component | Change | Benefit |
+|-----------|--------|---------|
+| LessonBrowser | Add "validation details" toggle | See why each lesson is flagged |
+| ContentEditor | Add "Quality" tab with dashboard | Overall visibility |
+| BatchValidators | Store detailed results | Enable detailed feedback |
+| WorkflowManagement | Show blockers with reasons | Clear publishing requirements |
 
 ## Expected Results
 
 After implementation:
 
-1. **Button shows current status**: "Valider alignement contenu (45/204 validés)"
-2. **Dialog shows detailed stats**: Total, validated, remaining counts with progress bar
-3. **Skip option**: Checkbox to skip already-validated lessons (default: ON)
-4. **Auto-save**: Each validation result saved immediately
-5. **Resume capability**: Users can stop/start without losing progress
-6. **Time savings**: Skip 45 already-validated lessons = ~2 minutes saved
+**Educators can:**
+1. ✓ See at a glance which lessons have validation issues
+2. ✓ Understand WHY specific questions failed alignment
+3. ✓ Prioritize fixes based on issue frequency (patterns)
+4. ✓ Track quality improvements over time with dashboard trends
+5. ✓ Filter lessons by issue type to batch-fix similar problems
+
+**For 204 lessons with 50% off-content rate:**
+- Before: "⚠ 102 lessons need regeneration" (no context)
+- After: "⚠ 102 lessons need regeneration — Top issues: Concepts not mentioned (67), Missing formulas (21), Cultural knowledge (14)"
+
+## 3G Optimization
+
+- Dashboard uses aggregated stats (minimal queries)
+- Validation details stored with lesson (no extra fetch)
+- Trends use cached data when possible
+- Drilldown loads details on-demand
+
+## Safety Verification
+
+| Check | Status | Notes |
+|-------|--------|-------|
+| Breaks existing validation? | No | Extends, doesn't replace |
+| Works with existing data? | Yes | Backward compatible, new fields optional |
+| Performance impact? | Minimal | Adds one JSONB column, queries still use indexes |
+| 3G optimized? | Yes | Aggregated stats, lazy loading |
+| Backward compatible? | Yes | Old validation results show basic metrics |
 
 ---
 
 ## Files to Create/Modify
 
-| File | Action | Description |
-|------|--------|-------------|
-| `LessonBrowser.tsx` | Modify | Fetch validation stats, pass as props, add `last_content_validated_at` to query |
-| `BatchQuizContentValidator.tsx` | Modify | Add skip filter, enhanced UI, validation stats display |
-| `BatchActivitiesContentValidator.tsx` | Modify | Same enhancements for activities validation |
+| File | Action | Purpose |
+|------|--------|---------|
+| `src/components/content-editor/ContentQualityDashboard.tsx` | Create | Main dashboard with stats, trends, drilldown |
+| `src/components/content-editor/ValidationDetailsPanel.tsx` | Create | Shows specific off-content reasons for a lesson |
+| `src/utils/validationCategories.ts` | Create | Utility to categorize and aggregate failure reasons |
+| `BatchQuizContentValidator.tsx` | Modify | Store full validation response, not just metrics |
+| `BatchActivitiesContentValidator.tsx` | Modify | Same as above for activities |
+| `LessonBrowser.tsx` | Modify | Add validation details expansion + filtering |
+| Database | Modify | Add `validation_details_json` column to lessons table |
 
 ---
 
-## Estimated Implementation Time
+## Implementation Phases
 
-- LessonBrowser query update: 10 mins
-- BatchQuizContentValidator enhancements: 30 mins
-- BatchActivitiesContentValidator enhancements: 20 mins (copy pattern)
-- Testing: 15 mins
+**Phase 1 (High Value):** Core Dashboard + Storage
+- Add column to store validation details
+- Create ContentQualityDashboard component
+- Update batch validators to store full responses
+- 📊 Users can see overall quality + specific failure reasons
 
-**Total: ~75 minutes**
+**Phase 2 (Medium Value):** Enhanced Integration
+- Add validation details to LessonBrowser
+- Add filtering by issue type
+- Create issue categorization utility
+
+**Phase 3 (Nice-to-Have):** Advanced Analytics
+- Trend charts (quality improvement over time)
+- Predictive alerts ("NS2 quality declining")
+- Batch operations ("Fix all lessons with missing formulas")
+
+---
+
+## How This Solves the User's Problem
+
+The user identified two key pain points:
+
+1. **"Can't see why lessons failed validation"**
+   - ✓ Solution: ValidationDetailsPanel shows specific reasons per lesson
+   - ✓ Shows exact question text + reason why it's off-content
+
+2. **"Content Quality Dashboard needed"**
+   - ✓ Solution: Comprehensive dashboard with grade-level breakdown
+   - ✓ Shows issue patterns and aggregated metrics
+   - ✓ Enables prioritization of fixes
+
+The dashboard transforms validation from "X lessons flagged" → "X lessons flagged because of Y patterns, affecting Z students"
