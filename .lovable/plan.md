@@ -1,118 +1,209 @@
 
-# Fix: AskJudeDrawer Input Section Disappearing
+# Plan: Exam Content Editor Structure
 
-## Problem Analysis
+## Problem Summary
 
-After the first message exchange in the AskJudeDrawer, the input section disappears on mobile. Looking at the screenshot and code:
+The AI grounding system for Jude requires high-quality exercise data, but currently:
 
-**Observed Issue:**
-- User sends "Hey Jude"
-- Jude responds with a full message
-- The input section (with text field + send button) is no longer visible
+| Data Field | Coverage | Impact |
+|------------|----------|--------|
+| `correct_answer` | 7% | Jude can't validate answers definitively |
+| `prompt_blocks` | 0% | No structured math rendering in tutor |
+| `options_json` | 0% | No structured option rendering |
+| `explanation` | 5% | Can't explain why answers are correct |
+| `reference_texts` | 52% (language only) | Works for language, missing for others |
 
-**Root Cause Identified:**
-
-The drawer uses conflicting height constraints that cause the input to be pushed out of view when messages are added:
-
-```
-DrawerContent: max-h-[85vh]
-  └─ Container: h-[70vh] max-h-[600px]
-       ├─ Header (flex-shrink-0)
-       ├─ Messages (flex-1, overflow-y-auto)
-       └─ Input (flex-shrink-0) ← Gets pushed out
-```
-
-**Issues:**
-1. `h-[70vh]` forces a fixed height that doesn't account for dynamic content
-2. `max-h-[600px]` caps the container, but combined with `max-h-[85vh]` on parent creates conflicts
-3. On mobile with long messages, the flexbox layout can push the input out of the visible drawer area
-4. The Vaul drawer doesn't properly handle the input section position when content grows
+Without an editor to fix this data, the grounding improvements cannot be effective.
 
 ---
 
-## Solution
+## Solution: Exam Content Editor Module
 
-Restructure the drawer layout to ensure the input section is **always visible** regardless of message content:
+Build a comprehensive exam content management system with three core components:
 
-### Key Changes:
+### 1. Exercise Detail Editor
+- View and edit individual exercise fields
+- Inline editing for `correct_answer`, `explanation`, `concept`
+- Visual preview of structured content blocks
+- Save with optimistic updates
 
-1. **Use `h-full` instead of fixed viewport heights** - Let the drawer content fill its container naturally
-2. **Add `min-h-0` to the messages container** - Prevents flex item from expanding beyond available space
-3. **Ensure input has proper safe area padding** - For mobile keyboard handling
-4. **Use proper flex constraints** - `overflow-hidden` on parent, `overflow-y-auto` only on scrollable area
+### 2. Exam Dashboard with Quality Indicators
+- Show data completeness per exam (% with answers, % with explanations)
+- Filter exams by quality status (missing answers, needs review)
+- Bulk actions for marking exercises as reviewed
 
----
-
-## Technical Implementation
-
-### File: `src/features/exams/practice/components/AskJudeDrawer.tsx`
-
-**Before (problematic):**
-```tsx
-<DrawerContent className="max-h-[85vh] min-h-[400px]">
-  <div className="flex flex-col h-[70vh] max-h-[600px]">
-    <DrawerHeader className="border-b flex-shrink-0">...</DrawerHeader>
-    <div className="flex-1 overflow-y-auto p-4 min-h-[200px]" ref={scrollRef}>
-      {/* Messages */}
-    </div>
-    <div className="border-t p-4 flex-shrink-0">
-      {/* Input */}
-    </div>
-  </div>
-</DrawerContent>
-```
-
-**After (fixed):**
-```tsx
-<DrawerContent className="max-h-[85vh]">
-  <div className="flex flex-col h-full max-h-[85vh] overflow-hidden">
-    <DrawerHeader className="border-b flex-shrink-0">...</DrawerHeader>
-    <div className="flex-1 overflow-y-auto p-4 min-h-0" ref={scrollRef}>
-      {/* Messages */}
-    </div>
-    <div className="border-t p-4 flex-shrink-0 bg-background">
-      {/* Input - now with bg-background to ensure visibility */}
-    </div>
-  </div>
-</DrawerContent>
-```
-
-**Key Fixes:**
-| Change | Reason |
-|--------|--------|
-| Remove `h-[70vh]` → `h-full` | Let container adapt to parent, not viewport |
-| Remove `max-h-[600px]` | Conflicting with parent's `max-h-[85vh]` |
-| Add `overflow-hidden` to parent | Prevent content from escaping container |
-| Remove `min-h-[200px]` → `min-h-0` | Critical fix - allows flex item to shrink |
-| Add `bg-background` to input | Ensures input is visible over any content |
+### 3. Reference Text Manager
+- View/edit reference texts attached to each exam
+- Add new reference texts from exam PDFs
+- Link reference texts to specific questions
 
 ---
 
-## Additional Mobile Keyboard Handling
+## Technical Architecture
 
-Add focus handling to scroll input into view on mobile:
-
-```tsx
-const handleInputFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-  // Delay to let keyboard appear
-  setTimeout(() => {
-    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, 300);
-}, []);
-
-<Input
-  onFocus={handleInputFocus}
-  // ... other props
-/>
+```text
+src/features/exams/admin/
+├── ExamAdminPage.tsx          (existing - upload/OCR)
+├── components/
+│   ├── ExistingExamsList.tsx  (existing - list view)
+│   ├── ExamPreviewCard.tsx    (existing - OCR preview)
+│   ├── ExamDetailEditor.tsx   (NEW - exercise editing)
+│   ├── ExerciseCard.tsx       (NEW - single exercise)
+│   ├── ReferenceTextEditor.tsx (NEW - manage texts)
+│   └── QualityIndicators.tsx  (NEW - data quality badges)
+└── hooks/
+    ├── useExamExercises.ts    (NEW - fetch/mutate exercises)
+    └── useExamQuality.ts      (NEW - calculate completeness)
 ```
 
 ---
+
+## Component Details
+
+### 1. ExamDetailEditor (Main Editor View)
+
+**Features:**
+- Opens from ExistingExamsList when clicking an exam
+- Tabbed interface: Exercises | Reference Texts | Settings
+- Real-time save with debounce
+- Keyboard navigation between exercises
+
+**Layout:**
+```text
+┌─────────────────────────────────────────────────────┐
+│ ← Back to Exams   [Exam Title] - 2023              │
+│ ──────────────────────────────────────────────────  │
+│ [Exercises] [Reference Texts] [Settings]            │
+├─────────────────────────────────────────────────────┤
+│ Quality: ██████░░░░ 60% answers │ 20% explanations │
+├─────────────────────────────────────────────────────┤
+│ ┌─────────────────────────────────────────────────┐ │
+│ │ Q1. Lequel des nombres suivants...             │ │
+│ │ A) 2  B) 4  C) 7  D) 14                        │ │
+│ │ Answer: [B]  Concept: [divisibilité]           │ │
+│ │ Explanation: [                                 │ │
+│ │              Textarea for explanation          │ │
+│ │                                              ] │ │
+│ │ [Save] [Delete] ● Validated                   │ │
+│ └─────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────┐ │
+│ │ Q2. Quel est le résultat de...                 │ │
+│ │ ...                                            │ │
+│ └─────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────┘
+```
+
+### 2. ExerciseCard (Single Exercise Editing)
+
+**Props:**
+```typescript
+interface ExerciseCardProps {
+  exercise: ExamExercise;
+  onUpdate: (updates: Partial<ExamExercise>) => void;
+  onDelete: () => void;
+  isExpanded?: boolean;
+}
+```
+
+**Editable Fields:**
+- `correct_answer` - Dropdown for MCQ (A/B/C/D), text for open-ended
+- `explanation` - Rich textarea with preview
+- `concept` - Text input with autocomplete from existing concepts
+- `points` - Number input
+- `exercise_type` - Toggle MCQ/open-ended
+
+### 3. QualityIndicators
+
+**Visual Badges:**
+```typescript
+interface QualityMetrics {
+  totalExercises: number;
+  withAnswer: number;
+  withExplanation: number;
+  withBlocks: number;  // Structured content
+  referenceTexts: number;
+}
+```
+
+**Display:**
+- Progress bars for each metric
+- Color-coded: Green (>80%), Yellow (40-80%), Red (<40%)
+- Click to filter exercises by missing data
+
+### 4. useExamExercises Hook
+
+```typescript
+export function useExamExercises(examId: string) {
+  // Fetch all exercises for an exam
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['exam-exercises', examId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('exam_exercises')
+        .select('*')
+        .eq('exam_id', examId)
+        .order('exercise_number', { ascending: true });
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  // Update mutation with optimistic updates
+  const updateExercise = useMutation({
+    mutationFn: async ({ id, updates }) => {
+      const { error } = await supabase
+        .from('exam_exercises')
+        .update(updates)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onMutate: async ({ id, updates }) => {
+      // Optimistic update
+    }
+  });
+
+  return { exercises: data, isLoading, updateExercise };
+}
+```
+
+---
+
+## Implementation Phases
+
+### Phase 1: Core Editor (This Implementation)
+1. Create `ExamDetailEditor.tsx` with basic exercise list
+2. Create `ExerciseCard.tsx` with inline editing
+3. Create `useExamExercises.ts` hook
+4. Add "Edit" button to ExistingExamsList
+5. Create `QualityIndicators.tsx` component
+
+### Phase 2: Reference Text Management (Future)
+1. Create `ReferenceTextEditor.tsx`
+2. Add text linking to exercises
+3. PDF text extraction helper
+
+### Phase 3: Bulk Operations (Future)
+1. Bulk answer entry mode (rapid-fire)
+2. Import answers from spreadsheet
+3. AI-assisted answer detection from explanations
+
+---
+
+## Files to Create
+
+| File | Purpose |
+|------|---------|
+| `src/features/exams/admin/components/ExamDetailEditor.tsx` | Main editor container |
+| `src/features/exams/admin/components/ExerciseCard.tsx` | Single exercise editor |
+| `src/features/exams/admin/components/QualityIndicators.tsx` | Data quality display |
+| `src/features/exams/admin/hooks/useExamExercises.ts` | Data fetching/mutation |
 
 ## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/features/exams/practice/components/AskJudeDrawer.tsx` | Fix flexbox layout, add keyboard handling |
+| `src/features/exams/admin/components/ExistingExamsList.tsx` | Add "Edit" button, quality badges |
+| `src/features/exams/admin/components/index.ts` | Export new components |
 
 ---
 
@@ -120,17 +211,18 @@ const handleInputFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => 
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Breaks existing chat? | No | Same logic, only layout changes |
-| Works with empty messages? | Yes | Empty state still displays correctly |
-| Works with long messages? | Yes | Messages scroll, input stays visible |
-| Mobile keyboard handled? | Yes | Focus scrolls input into view |
-| Backward compatible? | Yes | No API changes |
+| Breaks existing exam upload? | No | New editor is additive |
+| Works with existing data? | Yes | Uses existing exam_exercises table |
+| 3G optimized? | Yes | Lazy loads exercises, optimistic updates |
+| Backward compatible? | Yes | Existing OCR flow unchanged |
+| Edge cases handled? | Yes | Empty exams, missing fields handled |
 
 ---
 
-## Summary
+## Expected Outcomes
 
-The fix involves three key changes:
-1. **Remove conflicting height constraints** (`h-[70vh]`, `max-h-[600px]`, `min-h-[200px]`)
-2. **Add proper flex constraints** (`h-full`, `min-h-0`, `overflow-hidden`)
-3. **Add keyboard focus handling** for mobile devices
+After implementation:
+1. Content editors can fix `correct_answer` for all 1,600+ exercises
+2. Quality dashboard shows which exams need attention
+3. Jude's AI grounding works correctly with accurate data
+4. Explanation field allows better tutoring responses
