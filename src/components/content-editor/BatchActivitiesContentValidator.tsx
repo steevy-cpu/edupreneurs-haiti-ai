@@ -22,6 +22,7 @@ interface BatchActivitiesContentValidatorProps {
   lessons: any[];
   gradeLevel: string;
   onComplete: () => void;
+  onDashboardRefresh?: () => void;
   validatedCount?: number;
   totalWithActivities?: number;
 }
@@ -39,6 +40,7 @@ export const BatchActivitiesContentValidator = ({
   lessons, 
   gradeLevel, 
   onComplete,
+  onDashboardRefresh,
   validatedCount = 0,
   totalWithActivities = 0
 }: BatchActivitiesContentValidatorProps) => {
@@ -213,6 +215,9 @@ export const BatchActivitiesContentValidator = ({
     }
 
     onComplete();
+    if (onDashboardRefresh) {
+      onDashboardRefresh();
+    }
   };
 
   const handleCancel = () => {

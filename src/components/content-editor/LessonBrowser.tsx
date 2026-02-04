@@ -24,6 +24,7 @@ interface LessonBrowserProps {
   onSelectLesson: (lesson: any) => void;
   selectedLesson: any;
   refreshKey?: number;
+  onDashboardRefresh?: () => void;
 }
 
 // Helper function to check if a lesson has a valid quiz
@@ -39,7 +40,7 @@ const hasValidActivities = (lesson: any): boolean => {
          lesson.activites_interactives.length > 50;
 };
 
-export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: LessonBrowserProps) => {
+export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDashboardRefresh }: LessonBrowserProps) => {
   const [gradeLevel, setGradeLevel] = useState<string>("all");
   const [series, setSeries] = useState<string>("all");
   const [availableSubjects, setAvailableSubjects] = useState<any[]>([]);
@@ -348,24 +349,26 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
             {lessonsWithValidQuiz.length > 0 && (
               <div className="pt-2">
                 <BatchQuizContentValidator 
-                  lessons={lessonsWithValidQuiz}
-                  gradeLevel={gradeLevel}
-                  onComplete={loadSubjects}
-                  validatedCount={lessonsWithValidQuiz.filter(l => l.last_content_validated_at).length}
-                  totalWithQuiz={lessonsWithValidQuiz.length}
-                />
+                   lessons={lessonsWithValidQuiz}
+                   gradeLevel={gradeLevel}
+                   onComplete={loadSubjects}
+                   onDashboardRefresh={onDashboardRefresh}
+                   validatedCount={lessonsWithValidQuiz.filter(l => l.last_content_validated_at).length}
+                   totalWithQuiz={lessonsWithValidQuiz.length}
+                 />
               </div>
             )}
             {/* Batch Activities Content Validator Button */}
             {lessonsWithValidActivities.length > 0 && (
               <div className="pt-2">
                 <BatchActivitiesContentValidator 
-                  lessons={lessonsWithValidActivities}
-                  gradeLevel={gradeLevel}
-                  onComplete={loadSubjects}
-                  validatedCount={lessonsWithValidActivities.filter(l => l.last_activities_validated_at).length}
-                  totalWithActivities={lessonsWithValidActivities.length}
-                />
+                   lessons={lessonsWithValidActivities}
+                   gradeLevel={gradeLevel}
+                   onComplete={loadSubjects}
+                   onDashboardRefresh={onDashboardRefresh}
+                   validatedCount={lessonsWithValidActivities.filter(l => l.last_activities_validated_at).length}
+                   totalWithActivities={lessonsWithValidActivities.length}
+                 />
               </div>
             )}
           </div>

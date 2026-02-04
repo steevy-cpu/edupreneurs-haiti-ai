@@ -313,6 +313,7 @@ const ContentEditor = () => {
                     }}
                     selectedLesson={selectedLesson}
                     refreshKey={refreshKey}
+                    onDashboardRefresh={refreshDashboard}
                   />
                 </div>
 
