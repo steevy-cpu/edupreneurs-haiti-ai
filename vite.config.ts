@@ -84,6 +84,9 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    // Force all packages to use the same React instance
+    // Prevents "Cannot read properties of null (reading 'useState')" errors
+    dedupe: ["react", "react-dom", "react/jsx-runtime"],
   },
   build: {
     // Optimizations for production - especially 3G connections
