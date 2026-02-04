@@ -1,87 +1,151 @@
 
-# Plan: Fix Duplicate React Instances Error
+# Plan: Fix React Router Context Error (useContext null)
 
 ## Problem Analysis
 
-**Error:** `TypeError: Cannot read properties of null (reading 'useState')`
+**Error:** `TypeError: Cannot read properties of null (reading 'useContext')`
 
-**Root Cause:** Vite is creating duplicate React instances due to:
-1. `react-chessboard` excluded from pre-bundling (line 17) - causes it to use a separate React instance
-2. Manual chunking splits `react-core` (lines 107-111) - can cause bundling conflicts
-3. **Missing `dedupe` configuration** - the critical fix that forces all packages to use a single React instance
-
-**Stack Trace Shows:**
+**Stack Trace:**
 ```
-at useState → useUserGrade → GamesHub
+at useContext (chunk-ZMLY2J2T.js)
+at useInRouterContext (react-router-dom.js)
+at useLocation (react-router-dom.js)
+at AuthLayout (AuthLayout.tsx:110)
 ```
-The hook fails because React's internal dispatcher is `null` when different React copies don't share state.
 
-## Solution: Add React Deduplication
+**Root Cause Identified:**
+The existing `dedupe` configuration only includes React packages, but `react-router-dom` is being split into a separate chunk (via `manualChunks`) and ends up with its own React reference. When React Router's `useContext` runs, it cannot find the React dispatcher because it's using a different React instance.
 
-The fix requires adding `dedupe` to the Vite `resolve` configuration to ensure all dependencies use the same React instance.
+**Why the previous fix was incomplete:**
+1. The `dedupe` array needs to include `react-router-dom` and `react-router` to ensure they use the same React instance
+2. The `manualChunks` configuration separates `react-router` into its own bundle (line 116-117), which can cause module resolution conflicts
+3. The Vite cache may still contain stale prebundled dependencies
 
-## Implementation
+## Solution: Comprehensive React Deduplication
 
-### File: `vite.config.ts`
+### Changes Required
 
-**Current (lines 83-87):**
+**File: `vite.config.ts`**
+
+| Change | Why |
+|--------|-----|
+| Add `react-router`, `react-router-dom` to `dedupe` array | Forces router to use same React instance |
+| Add `react-router-dom` to `optimizeDeps.include` | Ensures proper pre-bundling with correct React |
+| Remove `react-router` from `manualChunks` | Prevents chunk isolation that causes the issue |
+| Force cache invalidation | Clears stale prebundled dependencies |
+
+### Implementation
+
+**Current `optimizeDeps` (lines 15-20):**
 ```typescript
-resolve: {
-  alias: {
-    "@": path.resolve(__dirname, "./src"),
-  },
+optimizeDeps: {
+  exclude: ["react-chessboard"],
+  include: ["next-themes"],
 },
 ```
 
 **Fixed:**
 ```typescript
-resolve: {
-  alias: {
-    "@": path.resolve(__dirname, "./src"),
-  },
-  // Force all packages to use the same React instance
-  // Prevents "Cannot read properties of null (reading 'useState')" errors
-  dedupe: ["react", "react-dom", "react/jsx-runtime"],
+optimizeDeps: {
+  exclude: ["react-chessboard"],
+  // Ensure these packages use the same React instance
+  include: ["next-themes", "react-router-dom"],
 },
 ```
 
-## Technical Explanation
+**Current `resolve.dedupe` (line 89):**
+```typescript
+dedupe: ["react", "react-dom", "react/jsx-runtime"],
+```
 
-| What `dedupe` does | Why it matters |
-|-------------------|----------------|
-| Forces single React instance | React hooks require shared internal state |
-| Resolves all imports to one copy | Prevents chunk conflicts from `manualChunks` |
-| Works with excluded packages | Ensures `react-chessboard` uses same React |
+**Fixed:**
+```typescript
+dedupe: [
+  "react", 
+  "react-dom", 
+  "react/jsx-runtime",
+  "react-router",
+  "react-router-dom"
+],
+```
+
+**Current `manualChunks` (lines 110-118):**
+```typescript
+manualChunks: (id) => {
+  if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
+    return 'react-core';
+  }
+  // Router separate for code splitting
+  if (id.includes('react-router')) {
+    return 'router';
+  }
+  // ...
+}
+```
+
+**Fixed (remove router chunk):**
+```typescript
+manualChunks: (id) => {
+  // React core + Router bundled together to prevent context issues
+  if (id.includes('node_modules/react/') || 
+      id.includes('node_modules/react-dom/') ||
+      id.includes('react-router')) {
+    return 'react-core';
+  }
+  // ...
+}
+```
+
+**Change cache directory name (line 14):**
+```typescript
+// Current
+cacheDir: "node_modules/.vite-edupreneurs",
+
+// Fixed - force complete cache rebuild
+cacheDir: "node_modules/.vite-edupreneurs-v2",
+```
 
 ## Safety Verification
 
-| Check | Status |
-|-------|--------|
-| Backward compatible? | ✓ Only adds configuration, no code changes |
-| Affects existing functionality? | ✓ No - improves stability |
-| Works with current optimizeDeps? | ✓ Compatible with exclude/include settings |
-| Works with manualChunks? | ✓ Complements chunking strategy |
-| 3G performance impact? | ✓ None - same bundle sizes |
+| Check | Status | Notes |
+|-------|--------|-------|
+| Backward compatible? | ✓ | No code changes, only config |
+| Affects bundle size? | ✓ | Slightly larger react-core chunk (~+30KB) but more stable |
+| 3G performance impact? | ✓ | Minimal - router is small, loaded once |
+| Breaks existing routes? | ✓ | No - routing logic unchanged |
+| Works with lazy loading? | ✓ | Yes - lazy components still work |
 
 ## Files to Modify
 
-| File | Changes |
-|------|---------|
-| `vite.config.ts` | Add `dedupe: ["react", "react-dom", "react/jsx-runtime"]` to `resolve` config (1 line addition) |
+| File | Change Description |
+|------|-------------------|
+| `vite.config.ts` | 4 changes: dedupe array, optimizeDeps.include, manualChunks logic, cacheDir name |
 
 ## Expected Result
 
 After this fix:
-- `/games` page (GamesHub) will load without crashing
-- `/community` page will load without crashing  
-- All pages using `useUserGrade` hook will work correctly
-- No more "Cannot read properties of null" errors during navigation
-- React hooks will have consistent dispatcher state across all components
+- `/auth/login` page loads without crashing
+- All auth routes (`/auth/signup/*`, `/auth/verify-email`) work correctly
+- `useLocation`, `useNavigate`, `useParams` work in all components
+- No more "Cannot read properties of null" errors for any React hooks
+- Clean browser console with no hook-related errors
 
-## Post-Implementation Verification
+## Technical Details for Developers
 
-After applying the fix:
-1. Navigate to `/games` - should load without error
-2. Navigate to `/community` - should load without error
-3. Switch between multiple pages rapidly - no crashes
-4. Check browser console - no React hook errors
+**Why bundling React + Router together is necessary:**
+
+React Router's hooks (useLocation, useNavigate, etc.) internally call React's useContext. When:
+1. React is in chunk A
+2. react-router-dom is in chunk B
+3. Each chunk may resolve to different React instances during bundling
+
+The result is that React Router's `useContext` call receives `null` because it's calling a different React's context system than the one the app uses.
+
+By bundling them together in `react-core`, we guarantee:
+- Single React instance
+- Single context dispatcher
+- Hooks work correctly across all components
+
+**Cache invalidation rationale:**
+
+Vite pre-bundles dependencies on first run and caches them. If the old cache has react-router bundled with a different React reference, simply changing config won't fix it - the cache must be invalidated. Changing `cacheDir` forces a complete rebuild.
