@@ -1,272 +1,287 @@
 
-# Plan: Phase 3 - Enhanced Lesson Details with Inline Validation Insights
+# Plan: Phase 3B - Quick-Action Regenerate Buttons in Validation Panels
 
 ## Objective
-Add inline validation details to individual lessons in the LessonBrowser, allowing editors to see specific "off-content" questions and reasons without navigating to the full Quality dashboard.
+Add "Regenerate" buttons directly to the `ValidationDetailsPanel` component, allowing editors to regenerate quiz or activities with one click without leaving the lesson browser.
 
 ## Current State Analysis
 
-**LessonBrowser Structure:**
-- Displays lessons in collapsible subject groups (lines 387-471)
-- Each lesson is a clickable div showing title and status badges (lines 416-465)
-- Currently shows validation regeneration badges (`needs_quiz_regeneration`, `needs_activities_regeneration`)
-- No display of actual validation details from `validation_details_json`
-
 **ValidationDetailsPanel:**
-- Already exists and is designed for this purpose
-- Accepts `offContentQuestions` array with structure: `{ index, question, reason }`
-- Groups issues by category using `categorizeValidationIssue()` utility
-- Shows success state when aligned, or expandable details when issues exist
+- Currently a display-only component
+- Shows validation issues grouped by category
+- Has a recommendation text at the bottom suggesting regeneration
+- No action capability yet
 
-**Data Available:**
-- Lessons fetched in `loadLessons()` already include `validation_details_json`
-- Structure: `{ quiz?: { offContentQuestions: [...] }, activities?: { offContentActivities: [...] } }`
-- Can be extracted and passed directly to `ValidationDetailsPanel`
+**LessonBrowser Context:**
+- Renders `ValidationDetailsPanel` for selected lessons with issues
+- Has full lesson object available (id, title, contenu, exemples_exercices, grade_level)
+- Currently doesn't have regeneration logic
 
-## Implementation Approach
+**Regeneration Pattern:**
+- Existing `regenerateQuiz()` and `regenerateActivities()` functions in `LessonValidationPanel.tsx` provide the template
+- Both invoke edge functions (`generate-quiz-final`, `generate-interactive-activities`)
+- Both update the database and clear validation flags
+- Both handle loading states and toast notifications
 
-### Phase 3A: Add Validation Details Display (High Priority)
+## Technical Implementation
 
-**Integration Point:** Within each lesson's clickable div in LessonBrowser
+### Step 1: Enhance ValidationDetailsPanel Props
+**File:** `src/components/content-editor/ValidationDetailsPanel.tsx`
 
-**Current Lesson Item HTML (lines 416-465):**
+Add optional callback and loading state:
+```typescript
+interface ValidationDetailsPanelProps {
+  lessonTitle: string;
+  validationType: "quiz" | "activities";
+  offContentQuestions: OffContentQuestion[];
+  aligned: boolean;
+  confidence: number;
+  onRegenerate?: () => Promise<void>;  // NEW
+  isRegenerating?: boolean;              // NEW
+}
 ```
-<div className="p-2 rounded-md cursor-pointer...">
-  <div className="flex items-start justify-between gap-2">
-    <span className="text-sm font-medium...">{lesson.title}</span>
-    <div className="flex items-center gap-1...">
-      {/* Status badges */}
-    </div>
-  </div>
-  <div className="mt-1">
-    <Badge variant="outline">{lesson.grade_level}</Badge>
-  </div>
+
+Update component signature:
+```typescript
+export const ValidationDetailsPanel = ({
+  lessonTitle,
+  validationType,
+  offContentQuestions,
+  aligned,
+  confidence,
+  onRegenerate,        // NEW
+  isRegenerating = false, // NEW
+}: ValidationDetailsPanelProps) => {
+```
+
+### Step 2: Add Regenerate Button to ValidationDetailsPanel
+**Location:** In the recommendation section (around line 128-133)
+
+Replace the static recommendation text with an actionable button:
+```typescript
+<div className="mt-4 pt-3 border-t border-amber-200">
+  <p className="text-xs text-amber-700 mb-2">
+    <span className="font-medium">Recommandation:</span> Régénérez le{" "}
+    {validationType === "quiz" ? "quiz" : "les activités"} pour résoudre ces problèmes.
+  </p>
+  {onRegenerate && (
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={onRegenerate}
+      disabled={isRegenerating}
+      className="w-full gap-2"
+    >
+      {isRegenerating ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Régénération en cours...
+        </>
+      ) : (
+        <>
+          <RefreshCw className="h-4 w-4" />
+          Régénérer {validationType === "quiz" ? "le quiz" : "les activités"}
+        </>
+      )}
+    </Button>
+  )}
 </div>
 ```
 
-**Enhancement:**
-1. Import `ValidationDetailsPanel` component at the top of LessonBrowser
-2. After the badge display, conditionally render `ValidationDetailsPanel` if validation data exists
-3. Extract quiz and activities off-content questions from `validation_details_json`
-4. Show separate panels for quiz and activities issues
-5. Only show when selected lesson matches (`selectedLesson?.id === lesson.id`)
+**Import needed icons:**
+- Add `Loader2, RefreshCw` to lucide-react imports
 
-### Phase 3B: Data Extraction Helper Function
-
-Create a utility function to parse validation details:
-
-```typescript
-function extractValidationDetails(lesson: any) {
-  const details = lesson.validation_details_json;
-  if (!details) return { quiz: [], activities: [] };
-  
-  return {
-    quiz: details.quiz?.offContentQuestions || [],
-    activities: details.activities?.offContentActivities || [],
-  };
-}
-```
-
-Alternative: Transform activity data to match question format for unified display
-- Activities use `{ index, activity, reason }` format
-- Questions use `{ index, question, reason }` format
-- Can map activities to questions format for reuse
-
-### Phase 3C: UI Layout in LessonBrowser
-
-**New Layout for Selected Lesson:**
-```
-┌─ Subject ─────────────────────────────────────┐
-│  ├─ Lesson 1 (not selected)                   │
-│  ├─ Lesson 2 (SELECTED)                        │
-│  │  ├─ Title + Status Badges                  │
-│  │  ├─ Grade Level Badge                      │
-│  │  ├─ ─────────────────────────────           │
-│  │  ├─ Quiz Validation Details (if exists)    │
-│  │  └─ Activities Validation Details (if exists)│
-│  └─ Lesson 3                                   │
-```
-
-**Implementation:**
-- Wrap existing lesson content in conditional rendering
-- Show additional validation panels only for selected lesson
-- Use `selectedLesson?.id === lesson.id` check
-- Maintain existing styling/spacing for unselected lessons
-
-## Technical Implementation Details
-
-### Step 1: Import and Helper
+### Step 3: Implement Regeneration Logic in LessonBrowser
 **File:** `src/components/content-editor/LessonBrowser.tsx`
 
+Add state tracking for regeneration:
 ```typescript
-import { ValidationDetailsPanel } from "@/components/content-editor/ValidationDetailsPanel";
+const [regeneratingLessonId, setRegeneratingLessonId] = useState<string | null>(null);
+```
 
-// Helper to extract validation details
-const extractValidationDetails = (lesson: any) => {
-  const details = lesson.validation_details_json;
-  if (!details) return { quiz: [], activities: [] };
+Add regeneration functions (adapted from LessonValidationPanel.tsx):
+```typescript
+const regenerateQuiz = async (lesson: any) => {
+  if (!lesson?.id) return;
   
-  return {
-    quiz: details.quiz?.offContentQuestions || [],
-    activities: details.activities?.offContentActivities || [],
-  };
+  setRegeneratingLessonId(lesson.id);
+  try {
+    const { data, error } = await supabase.functions.invoke('generate-quiz-final', {
+      body: {
+        lessonTitle: lesson.title,
+        contenu: lesson.contenu || '',
+        exemplesExercices: lesson.exemples_exercices || '',
+        gradeLevel: lesson.grade_level,
+        subject: lesson.subjects?.name || 'Matière',
+      }
+    });
+
+    if (error) throw error;
+
+    if (data?.quizContent) {
+      await supabase
+        .from('lessons')
+        .update({ 
+          quiz_final: data.quizContent,
+          needs_quiz_regeneration: false,
+          content_alignment_score: null,
+          last_content_validated_at: null
+        })
+        .eq('id', lesson.id);
+
+      toast.success("Quiz régénéré avec succès");
+      // Refresh the lessons list to show updated state
+      await loadSubjects();
+      // Trigger dashboard refresh if callback provided
+      onDashboardRefresh?.();
+    }
+  } catch (error) {
+    console.error('Regeneration error:', error);
+    toast.error("Erreur lors de la régénération");
+  } finally {
+    setRegeneratingLessonId(null);
+  }
+};
+
+const regenerateActivities = async (lesson: any) => {
+  if (!lesson?.id) return;
+  
+  setRegeneratingLessonId(lesson.id);
+  try {
+    const { data, error } = await supabase.functions.invoke('generate-interactive-activities', {
+      body: {
+        lessonId: lesson.id,
+        exercisesContent: lesson.exemples_exercices || lesson.contenu || '',
+        isCreole: lesson.grade_level?.includes('creole'),
+      }
+    });
+
+    if (error) throw error;
+
+    if (data?.content) {
+      await supabase
+        .from('lessons')
+        .update({ 
+          activites_interactives: data.content,
+          needs_activities_regeneration: false,
+          activities_alignment_score: null,
+          last_activities_validated_at: null
+        })
+        .eq('id', lesson.id);
+
+      toast.success("Activités régénérées avec succès");
+      // Refresh the lessons list to show updated state
+      await loadSubjects();
+      // Trigger dashboard refresh if callback provided
+      onDashboardRefresh?.();
+    }
+  } catch (error) {
+    console.error('Regeneration error:', error);
+    toast.error("Erreur lors de la régénération");
+  } finally {
+    setRegeneratingLessonId(null);
+  }
 };
 ```
 
-### Step 2: Update Lesson Item Rendering
-**Location:** Lines 416-465 in LessonBrowser
+### Step 4: Pass Callbacks to ValidationDetailsPanel
+**Location:** In the lesson mapping where ValidationDetailsPanel is rendered (lines 489-506)
 
 ```typescript
-{subject.lessons.map((lesson: any) => {
-  const isSelected = selectedLesson?.id === lesson.id;
-  const { quiz: quizIssues, activities: activityIssues } = extractValidationDetails(lesson);
-  
-  return (
-    <div key={lesson.id}>
-      {/* Existing lesson item wrapper and content */}
-      <div
-        onClick={() => onSelectLesson(lesson)}
-        className={`p-2 rounded-md cursor-pointer transition-colors ${
-          isSelected ? "bg-primary/10 border border-primary" : "hover:bg-muted"
-        }`}
-      >
-        {/* Title and badges - EXISTING CODE */}
-        <div className="flex items-start justify-between gap-2">
-          <span className="text-sm font-medium flex-1 line-clamp-2">
-            {lesson.title}
-          </span>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {/* Status badges - EXISTING CODE */}
-          </div>
-        </div>
-        <div className="mt-1">
-          <Badge variant="outline" className="text-xs">
-            {lesson.grade_level}
-          </Badge>
-        </div>
-      </div>
-      
-      {/* NEW: Validation details for selected lesson only */}
-      {isSelected && (quizIssues.length > 0 || activityIssues.length > 0) && (
-        <div className="mt-2 ml-2 space-y-2">
-          {quizIssues.length > 0 && (
-            <ValidationDetailsPanel
-              lessonTitle={lesson.title}
-              validationType="quiz"
-              offContentQuestions={quizIssues}
-              aligned={false}
-              confidence={lesson.content_alignment_score || 0}
-            />
-          )}
-          {activityIssues.length > 0 && (
-            <ValidationDetailsPanel
-              lessonTitle={lesson.title}
-              validationType="activities"
-              offContentQuestions={activityIssues}
-              aligned={false}
-              confidence={lesson.activities_alignment_score || 0}
-            />
-          )}
-        </div>
-      )}
-    </div>
-  );
-})}
+{quizIssues.length > 0 && (
+  <ValidationDetailsPanel
+    lessonTitle={lesson.title}
+    validationType="quiz"
+    offContentQuestions={quizIssues}
+    aligned={false}
+    confidence={lesson.content_alignment_score || 0}
+    onRegenerate={() => regenerateQuiz(lesson)}  // NEW
+    isRegenerating={regeneratingLessonId === lesson.id}  // NEW
+  />
+)}
+{activityIssues.length > 0 && (
+  <ValidationDetailsPanel
+    lessonTitle={lesson.title}
+    validationType="activities"
+    offContentQuestions={activityIssues}
+    aligned={false}
+    confidence={lesson.activities_alignment_score || 0}
+    onRegenerate={() => regenerateActivities(lesson)}  // NEW
+    isRegenerating={regeneratingLessonId === lesson.id}  // NEW
+  />
+)}
 ```
 
-### Step 3: Consider Collapsing/Expanding
-**Optional Enhancement:**
-- Add collapsible wrapper around validation details
-- Prevents overwhelming the lesson list when many lessons have issues
-- Can expand on demand
+## Data Flow Diagram
 
-## Data Structure Verification
-
-**From ContentQualityDashboard (lines 122-141):**
-```typescript
-lesson.validation_details_json = {
-  quiz?: {
-    offContentQuestions: Array<{
-      index: number;
-      question: string;
-      reason: string;
-    }>
-  },
-  activities?: {
-    offContentActivities: Array<{
-      index: number;
-      activity: string;  // Note: activities use "activity" key
-      reason: string;
-    }>
-  }
-}
 ```
-
-**Needed Transformation for Activities:**
-The `ValidationDetailsPanel` expects `{ index, question, reason }` format, but activities have `{ index, activity, reason }`. Two options:
-
-1. **Map in LessonBrowser:** Transform activities before passing
-   ```typescript
-   const activityIssuesFormatted = activityIssues.map(issue => ({
-     ...issue,
-     question: issue.activity  // Alias for display
-   }));
-   ```
-
-2. **Update ValidationDetailsPanel:** Accept generic `content` field
-   - More flexible but requires component changes
-   - Recommended if activities become more common
-
-**Recommendation:** Use Option 1 (simpler, non-breaking change)
+LessonBrowser
+  │
+  ├─ State: regeneratingLessonId
+  ├─ Function: regenerateQuiz(lesson)
+  └─ Function: regenerateActivities(lesson)
+     │
+     ├─ Call edge function (generate-quiz-final or generate-interactive-activities)
+     ├─ Update database
+     ├─ Call loadSubjects() to refresh list
+     ├─ Call onDashboardRefresh() to update quality dashboard
+     └─ Pass callbacks down to ValidationDetailsPanel
+        │
+        └─ ValidationDetailsPanel
+           ├─ Props: onRegenerate, isRegenerating
+           ├─ Renders: Regenerate button
+           └─ On click: Calls onRegenerate callback
+```
 
 ## UX Flow
 
-1. **User browses lessons** → sees lesson list with status badges (existing behavior)
-2. **User clicks a lesson** → lesson becomes selected with blue highlight
-3. **If lesson has validation issues** → `ValidationDetailsPanel` appears below lesson item
-4. **User expands panel** → sees specific off-content questions grouped by category
-5. **User understands** → why this lesson failed and what needs fixing
-6. **User can then** → navigate to Quality tab for bulk context OR regenerate individual content
+1. **User selects lesson** → Validation details appear below lesson title
+2. **User sees issues** → "Régénérer le quiz/les activités" button is visible
+3. **User clicks button** → Button enters loading state with spinner
+4. **Regeneration runs** → Edge function generates new content, database updates
+5. **Success** → Toast notification, lessons list refreshes, panel disappears (no more issues)
+6. **Dashboard syncs** → Quality tab shows updated validation state via `onDashboardRefresh()`
 
 ## Safety Verification
 
 | Check | Status | Details |
 |-------|--------|---------|
-| Breaks existing lesson selection? | No | Maintains onClick and selection styling |
-| Performance impact? | Minimal | Only renders details for selected lesson |
-| Mobile friendly? | Yes | Details expand below, responsive layout |
-| 3G optimized? | Yes | No new network calls, just displays existing data |
-| Backward compatible? | Yes | ValidationDetailsPanel already exists and works |
-| Data integrity? | Yes | Uses existing validation_details_json from DB |
+| Breaks existing panel display? | No | Optional callback, panel works without it |
+| Performance impact? | Minimal | Only renders button when callback provided |
+| Handles loading state? | Yes | isRegenerating prop disables button and shows spinner |
+| Database cleared properly? | Yes | Clears validation flags on successful regeneration |
+| Dashboard syncs? | Yes | Calls onDashboardRefresh() after update |
+| 3G compatible? | Yes | Uses same proven edge functions as batch validators |
+| Error handling? | Yes | Try-catch with toast notifications |
 
 ## Files to Modify
 
 | File | Changes | Complexity |
 |------|---------|-----------|
-| `src/components/content-editor/LessonBrowser.tsx` | Import component, add helper, conditional render validation panels for selected lesson | Medium |
+| `src/components/content-editor/ValidationDetailsPanel.tsx` | Add optional props (onRegenerate, isRegenerating), add Regenerate button with loading state | Low |
+| `src/components/content-editor/LessonBrowser.tsx` | Add regeneratingLessonId state, implement two regeneration functions, pass callbacks to panels | Medium |
 
-**Total lines of code:** ~30 lines added
+**Total lines added:** ~100-120 lines
+
+## Integration with Phase 2
+
+Phase 2 callback (`onDashboardRefresh`) is already being passed to `LessonBrowser`. Phase 3B uses this same callback when regeneration completes, ensuring the Quality dashboard automatically updates.
 
 ## Expected Result
 
 After implementation:
-- ✓ When a lesson is selected, validation details appear inline
-- ✓ Quiz and activities issues shown separately with clear categorization
-- ✓ Editor understands specific problems without leaving lesson list
-- ✓ No impact on unselected lessons
-- ✓ Smooth integration with existing data flow
-- ✓ Ready for Phase 3B (optional): Add quick-actions (Regenerate, Mark as reviewed) directly from panel
+- ✓ Validation panels display regenerate buttons
+- ✓ One-click regeneration without navigation
+- ✓ Clear loading feedback during regeneration
+- ✓ Automatic dashboard refresh on success
+- ✓ Validation flags cleared after successful regeneration
+- ✓ Lessons list updates immediately
+- ✓ Toast notifications for success/error
 
-## Integration Dependencies
+## Future Enhancement Opportunities (Phase 3C+)
 
-- ✓ ValidationDetailsPanel (already exists, fully functional)
-- ✓ validation_details_json (already in database)
-- ✓ categorizeValidationIssue utility (already exists)
-- ✓ Selected lesson state (already tracked in LessonBrowser)
-
-## Future Enhancements (Phase 3B+)
-
-1. **Quick Actions:** Add "Regenerate Quiz" button directly in panel
-2. **Filtering:** Filter lesson list to show only lessons with specific issue types
-3. **Bulk Operations:** "Regenerate all lessons with 'concept_not_in_content' issues"
-4. **Comparison View:** Side-by-side with content to understand gaps
+1. **Bulk regeneration:** Add "Regenerate all with concept issues" feature
+2. **Selective regeneration:** Choose which issue categories to prioritize
+3. **Progress tracking:** Show regeneration progress for lesson queue
+4. **History logging:** Track regeneration attempts and results per lesson
+5. **Comparison view:** Show before/after to understand what changed
