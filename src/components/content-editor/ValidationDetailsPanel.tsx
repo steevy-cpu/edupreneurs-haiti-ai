@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { ChevronDown, AlertTriangle, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -25,6 +25,8 @@ interface ValidationDetailsPanelProps {
   offContentQuestions: OffContentQuestion[];
   aligned: boolean;
   confidence: number;
+  onRegenerate?: () => Promise<void>;
+  isRegenerating?: boolean;
 }
 
 export const ValidationDetailsPanel = ({
@@ -33,6 +35,8 @@ export const ValidationDetailsPanel = ({
   offContentQuestions,
   aligned,
   confidence,
+  onRegenerate,
+  isRegenerating = false,
 }: ValidationDetailsPanelProps) => {
   const [expanded, setExpanded] = useState(false);
 
@@ -126,10 +130,31 @@ export const ValidationDetailsPanel = ({
             })}
 
             <div className="mt-4 pt-3 border-t border-amber-200">
-              <p className="text-xs text-amber-700">
+              <p className="text-xs text-amber-700 mb-2">
                 <span className="font-medium">Recommandation:</span> Régénérez le{" "}
                 {validationType === "quiz" ? "quiz" : "les activités"} pour résoudre ces problèmes.
               </p>
+              {onRegenerate && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={onRegenerate}
+                  disabled={isRegenerating}
+                  className="w-full gap-2"
+                >
+                  {isRegenerating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Régénération en cours...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4" />
+                      Régénérer {validationType === "quiz" ? "le quiz" : "les activités"}
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </CardContent>
         </CollapsibleContent>

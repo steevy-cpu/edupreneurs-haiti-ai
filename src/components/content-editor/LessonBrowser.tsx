@@ -65,6 +65,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(true);
   const [openSubjects, setOpenSubjects] = useState<Set<string>>(new Set());
   const [showOnlyMissingQuiz, setShowOnlyMissingQuiz] = useState(false);
+  const [regeneratingLessonId, setRegeneratingLessonId] = useState<string | null>(null);
 
   const gradeLevels = [
     { value: "all", label: "Tous les niveaux" },
@@ -182,6 +183,84 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
       newOpenSubjects.add(subjectId);
     }
     setOpenSubjects(newOpenSubjects);
+  };
+
+  const regenerateQuiz = async (lesson: any) => {
+    if (!lesson?.id) return;
+    
+    setRegeneratingLessonId(lesson.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-quiz-final', {
+        body: {
+          lessonTitle: lesson.title,
+          contenu: lesson.contenu || '',
+          exemplesExercices: lesson.exemples_exercices || '',
+          gradeLevel: lesson.grade_level,
+          subject: lesson.subjects?.name || 'Matière',
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.quizContent) {
+        await supabase
+          .from('lessons')
+          .update({ 
+            quiz_final: data.quizContent,
+            needs_quiz_regeneration: false,
+            content_alignment_score: null,
+            last_content_validated_at: null
+          })
+          .eq('id', lesson.id);
+
+        toast.success("Quiz régénéré avec succès");
+        await loadSubjects();
+        onDashboardRefresh?.();
+      }
+    } catch (error) {
+      console.error('Regeneration error:', error);
+      toast.error("Erreur lors de la régénération");
+    } finally {
+      setRegeneratingLessonId(null);
+    }
+  };
+
+  const regenerateActivities = async (lesson: any) => {
+    if (!lesson?.id) return;
+    
+    setRegeneratingLessonId(lesson.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-interactive-activities', {
+        body: {
+          lessonId: lesson.id,
+          exercisesContent: lesson.exemples_exercices || lesson.contenu || '',
+          isCreole: lesson.grade_level?.includes('creole'),
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.content) {
+        await supabase
+          .from('lessons')
+          .update({ 
+            activites_interactives: data.content,
+            needs_activities_regeneration: false,
+            activities_alignment_score: null,
+            last_activities_validated_at: null
+          })
+          .eq('id', lesson.id);
+
+        toast.success("Activités régénérées avec succès");
+        await loadSubjects();
+        onDashboardRefresh?.();
+      }
+    } catch (error) {
+      console.error('Regeneration error:', error);
+      toast.error("Erreur lors de la régénération");
+    } finally {
+      setRegeneratingLessonId(null);
+    }
   };
 
   const getSubjectIcon = (iconName: string | null) => {
@@ -483,29 +562,33 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
                                </div>
                              </div>
                              
-                             {/* Validation Details Panel - shown only for selected lesson with issues */}
-                             {isSelected && (quizIssues.length > 0 || activityIssues.length > 0) && (
-                               <div className="mt-2 ml-2 space-y-2">
-                                 {quizIssues.length > 0 && (
-                                   <ValidationDetailsPanel
-                                     lessonTitle={lesson.title}
-                                     validationType="quiz"
-                                     offContentQuestions={quizIssues}
-                                     aligned={false}
-                                     confidence={lesson.content_alignment_score || 0}
-                                   />
-                                 )}
-                                 {activityIssues.length > 0 && (
-                                   <ValidationDetailsPanel
-                                     lessonTitle={lesson.title}
-                                     validationType="activities"
-                                     offContentQuestions={activityIssues}
-                                     aligned={false}
-                                     confidence={lesson.activities_alignment_score || 0}
-                                   />
-                                 )}
-                               </div>
-                             )}
+                              {/* Validation Details Panel - shown only for selected lesson with issues */}
+                              {isSelected && (quizIssues.length > 0 || activityIssues.length > 0) && (
+                                <div className="mt-2 ml-2 space-y-2">
+                                  {quizIssues.length > 0 && (
+                                    <ValidationDetailsPanel
+                                      lessonTitle={lesson.title}
+                                      validationType="quiz"
+                                      offContentQuestions={quizIssues}
+                                      aligned={false}
+                                      confidence={lesson.content_alignment_score || 0}
+                                      onRegenerate={() => regenerateQuiz(lesson)}
+                                      isRegenerating={regeneratingLessonId === lesson.id}
+                                    />
+                                  )}
+                                  {activityIssues.length > 0 && (
+                                    <ValidationDetailsPanel
+                                      lessonTitle={lesson.title}
+                                      validationType="activities"
+                                      offContentQuestions={activityIssues}
+                                      aligned={false}
+                                      confidence={lesson.activities_alignment_score || 0}
+                                      onRegenerate={() => regenerateActivities(lesson)}
+                                      isRegenerating={regeneratingLessonId === lesson.id}
+                                    />
+                                  )}
+                                </div>
+                              )}
                            </div>
                          );
                        })}
