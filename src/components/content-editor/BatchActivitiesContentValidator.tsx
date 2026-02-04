@@ -141,13 +141,27 @@ export const BatchActivitiesContentValidator = ({
         const offContentCount = data?.offContentActivities?.length || 0;
         const confidence = data?.confidence || 0;
 
+        // Prepare validation details to store full API response
+        const validationDetails = {
+          activities: {
+            aligned,
+            confidence,
+            offContentActivities: data?.offContentActivities || [],
+            summary: data?.summary || `${offContentCount === 0 ? 'Aligné' : 'Hors-contenu'}: ${aligned ? 'Oui' : 'Non'}`,
+            totalActivities: data?.totalActivities || 0,
+            alignedCount: data?.alignedCount || 0,
+          },
+          lastValidatedAt: new Date().toISOString(),
+        };
+
         // Update the lesson with validation results
         const { error: updateError } = await supabase
           .from('lessons')
           .update({
             needs_activities_regeneration: !aligned,
             activities_alignment_score: confidence,
-            last_activities_validated_at: new Date().toISOString()
+            last_activities_validated_at: new Date().toISOString(),
+            validation_details_json: validationDetails
           })
           .eq('id', lesson.id);
 
