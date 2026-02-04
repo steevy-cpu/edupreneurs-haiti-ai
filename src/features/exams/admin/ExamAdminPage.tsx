@@ -16,6 +16,7 @@ import { SeriesMultiSelect, SERIES } from "./components/SeriesMultiSelect";
 import { PDFUploader } from "./components/PDFUploader";
 import { ExamPreviewCard } from "./components/ExamPreviewCard";
 import { ExistingExamsList, type ExistingExam } from "./components/ExistingExamsList";
+import { ExamDetailEditor } from "./components/ExamDetailEditor";
 import { convertPdfToImages, uploadPdfToStorage, type PDFConversionProgress } from "./utils/pdfUtils";
 import { saveExamWithExercises, updateExamFromReanalysis, type ParsedPreview } from "./utils/examSaveUtils";
 import type { ExamTrack } from "../types/exam.types";
@@ -65,6 +66,9 @@ export function ExamAdminPage() {
   // Preview state
   const [parsedPreview, setParsedPreview] = useState<ParsedPreview | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  
+  // Editor state
+  const [selectedExam, setSelectedExam] = useState<ExistingExam | null>(null);
   const [reanalyzeExamData, setReanalyzeExamData] = useState<ExistingExam | null>(null);
 
   // Dynamic subject list based on track/series
@@ -340,6 +344,26 @@ export function ExamAdminPage() {
     setReanalyzeExamData(null);
   };
 
+  const handleEditExam = useCallback((exam: ExistingExam) => {
+    setSelectedExam(exam);
+  }, []);
+
+  const handleBackFromEdit = useCallback(() => {
+    setSelectedExam(null);
+  }, []);
+
+  // Show editor view when an exam is selected
+  if (selectedExam) {
+    return (
+      <div className="space-y-6">
+        <ExamDetailEditor 
+          exam={selectedExam} 
+          onBack={handleBackFromEdit}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Upload Form */}
@@ -481,6 +505,7 @@ export function ExamAdminPage() {
         selectedSeries={selectedSeries}
         onReanalyze={handleReanalyze}
         reanalyzingExamId={reanalyzingExamId}
+        onEditExam={handleEditExam}
       />
     </div>
   );
