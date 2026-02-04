@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Search, X, CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
 import {
@@ -21,6 +22,8 @@ interface BatchActivitiesContentValidatorProps {
   lessons: any[];
   gradeLevel: string;
   onComplete: () => void;
+  validatedCount?: number;
+  totalWithActivities?: number;
 }
 
 interface ValidationResult {
@@ -32,33 +35,44 @@ interface ValidationResult {
   error?: string;
 }
 
-export const BatchActivitiesContentValidator = ({ lessons, gradeLevel, onComplete }: BatchActivitiesContentValidatorProps) => {
+export const BatchActivitiesContentValidator = ({ 
+  lessons, 
+  gradeLevel, 
+  onComplete,
+  validatedCount = 0,
+  totalWithActivities = 0
+}: BatchActivitiesContentValidatorProps) => {
   const [isValidating, setIsValidating] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [results, setResults] = useState<ValidationResult[]>([]);
   const [currentLesson, setCurrentLesson] = useState<string>("");
+  const [skipValidated, setSkipValidated] = useState(true);
   const abortRef = useRef(false);
 
+  const lessonsToProcess = skipValidated 
+    ? lessons.filter(l => !l.last_activities_validated_at)
+    : lessons;
+
   const handleValidateAll = async () => {
-    if (lessons.length === 0) {
-      toast.info("Aucune activité à valider!");
+    if (lessonsToProcess.length === 0) {
+      toast.info("Toutes les activités sont déjà validées ou liste vide!");
       return;
     }
 
     abortRef.current = false;
     setIsValidating(true);
-    setProgress({ current: 0, total: lessons.length });
+    setProgress({ current: 0, total: lessonsToProcess.length });
     setResults([]);
 
     const validationResults: ValidationResult[] = [];
 
-    for (let i = 0; i < lessons.length; i++) {
+    for (let i = 0; i < lessonsToProcess.length; i++) {
       if (abortRef.current) {
-        toast.info("Validation annulée");
+        toast.info("Validation arrêtée. Les progrès ont été sauvegardés.");
         break;
       }
 
-      const lesson = lessons[i];
+      const lesson = lessonsToProcess[i];
       setCurrentLesson(lesson.title);
       setProgress({ current: i, total: lessons.length });
 
@@ -164,12 +178,12 @@ export const BatchActivitiesContentValidator = ({ lessons, gradeLevel, onComplet
       setResults([...validationResults]);
 
       // Rate limiting delay between requests (2 seconds for AI calls)
-      if (i < lessons.length - 1 && !abortRef.current) {
+      if (i < lessonsToProcess.length - 1 && !abortRef.current) {
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
     }
 
-    setProgress({ current: lessons.length, total: lessons.length });
+    setProgress({ current: lessonsToProcess.length, total: lessonsToProcess.length });
     setIsValidating(false);
 
     const alignedCount = validationResults.filter(r => r.aligned && !r.error).length;
@@ -210,7 +224,7 @@ export const BatchActivitiesContentValidator = ({ lessons, gradeLevel, onComplet
             className="h-7 px-2 text-destructive hover:text-destructive"
           >
             <X className="h-4 w-4 mr-1" />
-            Annuler
+            Pause & Sauvegarder
           </Button>
         </div>
         
@@ -223,6 +237,10 @@ export const BatchActivitiesContentValidator = ({ lessons, gradeLevel, onComplet
             value={(progress.current / progress.total) * 100} 
             className="h-2 [&>div]:bg-purple-500"
           />
+          <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+            <CheckCircle2 className="h-2.5 w-2.5" />
+            Progression sauvegardée automatiquement
+          </p>
         </div>
 
         {results.length > 0 && (
@@ -257,27 +275,65 @@ export const BatchActivitiesContentValidator = ({ lessons, gradeLevel, onComplet
         <Button 
           size="sm" 
           variant="outline"
-          className="w-full border-purple-500/30 text-purple-700 hover:bg-purple-500/10"
+          className="w-full border-purple-500/30 text-purple-700 hover:bg-purple-500/10 h-auto py-2"
         >
           <Search className="h-4 w-4 mr-2" />
-          Valider alignement activités
+          <div className="flex flex-col items-start text-left">
+            <span>Valider alignement activités</span>
+            {totalWithActivities > 0 && (
+              <span className="text-[10px] text-muted-foreground">
+                {validatedCount}/{totalWithActivities} déjà validées ({Math.round((validatedCount/totalWithActivities)*100)}%)
+              </span>
+            )}
+          </div>
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Valider l'alignement des activités?</AlertDialogTitle>
           <AlertDialogDescription asChild>
-            <div className="space-y-2">
-              <p>
-                Cette action va analyser les activités interactives de {lessons.length} leçon{lessons.length > 1 ? 's' : ''} du niveau {gradeLevel} 
+            <div className="space-y-4">
+              <div className="p-3 rounded-lg bg-muted/50 space-y-2">
+                <div className="flex items-center justify-between text-xs font-medium">
+                  <span>📊 Statistiques pour {gradeLevel}</span>
+                  <span>{validatedCount}/{totalWithActivities} validés</span>
+                </div>
+                <Progress value={(validatedCount / (totalWithActivities || 1)) * 100} className="h-1.5" />
+                <div className="grid grid-cols-2 gap-2 text-[10px] text-muted-foreground">
+                  <div>• Total leçons: {totalWithActivities}</div>
+                  <div>• Restantes: {totalWithActivities - validatedCount}</div>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2 py-1">
+                <Checkbox 
+                  id="skip-validated-activities" 
+                  checked={skipValidated}
+                  onCheckedChange={(checked) => setSkipValidated(checked === true)}
+                />
+                <label 
+                  htmlFor="skip-validated-activities"
+                  className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  Ignorer les leçons déjà validées
+                </label>
+              </div>
+
+              <p className="text-sm">
+                Cette action va analyser les activités interactives de {lessonsToProcess.length} leçon{lessonsToProcess.length > 1 ? 's' : ''} 
                 pour vérifier si elles sont alignées avec le contenu.
               </p>
-              <p className="text-xs text-muted-foreground">
-                ℹ️ Les leçons avec des activités hors-contenu seront marquées pour régénération.
-              </p>
-              <p className="text-xs text-muted-foreground">
-                ⏱️ Durée estimée: ~{Math.ceil(lessons.length * 3 / 60)} minute{Math.ceil(lessons.length * 3 / 60) > 1 ? 's' : ''}
-              </p>
+              
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <CheckCircle2 className="h-3 w-3 text-primary" />
+                  Les résultats sont sauvegardés automatiquement après chaque leçon.
+                </p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Loader2 className="h-3 w-3" />
+                  Durée estimée: ~{Math.ceil(lessonsToProcess.length * 3 / 60)} minute{Math.ceil(lessonsToProcess.length * 3 / 60) > 1 ? 's' : ''}
+                </p>
+              </div>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
