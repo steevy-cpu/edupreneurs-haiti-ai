@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { BatchQuizGenerator } from "./BatchQuizGenerator";
 import { BatchQuizContentValidator } from "./BatchQuizContentValidator";
 import { BatchActivitiesContentValidator } from "./BatchActivitiesContentValidator";
+import { ValidationDetailsPanel } from "./ValidationDetailsPanel";
 
 interface LessonBrowserProps {
   onSelectLesson: (lesson: any) => void;
@@ -38,6 +39,20 @@ const hasValidQuiz = (lesson: any): boolean => {
 const hasValidActivities = (lesson: any): boolean => {
   return !!lesson.activites_interactives && 
          lesson.activites_interactives.length > 50;
+};
+
+// Helper function to extract validation details from lesson
+const extractValidationDetails = (lesson: any) => {
+  const details = lesson.validation_details_json;
+  if (!details) return { quiz: [], activities: [] };
+  
+  return {
+    quiz: details.quiz?.offContentQuestions || [],
+    activities: (details.activities?.offContentActivities || []).map((issue: any) => ({
+      ...issue,
+      question: issue.activity, // Transform "activity" key to "question" for ValidationDetailsPanel
+    })),
+  };
 };
 
 export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDashboardRefresh }: LessonBrowserProps) => {
@@ -131,9 +146,9 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
       
       for (let i = 0; i < subjectIds.length; i += batchSize) {
         const batch = subjectIds.slice(i, i + batchSize);
-        const { data: lessonsData, error } = await supabase
+       const { data: lessonsData, error } = await supabase
           .from('lessons')
-          .select('id, title, slug, subject_id, order_index, workflow_status, grade_level, quiz_final, activites_interactives, needs_quiz_regeneration, needs_activities_regeneration, last_content_validated_at, last_activities_validated_at, subjects(id, name)')
+          .select('id, title, slug, subject_id, order_index, workflow_status, grade_level, quiz_final, activites_interactives, needs_quiz_regeneration, needs_activities_regeneration, last_content_validated_at, last_activities_validated_at, validation_details_json, content_alignment_score, activities_alignment_score, subjects(id, name)')
           .in('subject_id', batch)
           .order('order_index');
 
@@ -413,57 +428,87 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <div className="ml-6 mt-1 space-y-1">
-                      {subject.lessons.map((lesson: any) => (
-                        <div
-                          key={lesson.id}
-                          onClick={() => onSelectLesson(lesson)}
-                          className={`p-2 rounded-md cursor-pointer transition-colors ${
-                            selectedLesson?.id === lesson.id
-                              ? "bg-primary/10 border border-primary"
-                              : "hover:bg-muted"
-                          }`}
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <span className="text-sm font-medium flex-1 line-clamp-2">
-                              {lesson.title}
-                            </span>
-                            <div className="flex items-center gap-1 flex-shrink-0">
-                              {lesson.needs_quiz_regeneration && (
-                                <Badge variant="outline" className="text-xs border-amber-500 text-amber-600">
-                                  <RotateCcw className="h-3 w-3 mr-0.5" />
-                                  Quiz
-                                </Badge>
-                              )}
-                              {lesson.needs_activities_regeneration && (
-                                <Badge variant="outline" className="text-xs border-purple-500 text-purple-600">
-                                  <RotateCcw className="h-3 w-3 mr-0.5" />
-                                  Activités
-                                </Badge>
-                              )}
-                              {!hasValidQuiz(lesson) && (
-                                <Badge variant="destructive" className="text-xs flex items-center gap-0.5">
-                                  <AlertCircle className="h-3 w-3" />
-                                  Quiz
-                                </Badge>
-                              )}
-                              <Badge 
-                                variant={lesson.workflow_status === 'published' ? "default" : lesson.workflow_status === 'approved' ? "secondary" : "outline"}
-                                className="text-xs"
-                              >
-                                {lesson.workflow_status === 'published' ? 'Publié' : 
-                                 lesson.workflow_status === 'approved' ? 'Approuvé' :
-                                 lesson.workflow_status === 'in_review' ? 'En révision' :
-                                 lesson.workflow_status === 'rejected' ? 'Rejeté' : 'Brouillon'}
-                              </Badge>
-                            </div>
-                          </div>
-                          <div className="mt-1">
-                            <Badge variant="outline" className="text-xs">
-                              {lesson.grade_level}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
+                       {subject.lessons.map((lesson: any) => {
+                         const isSelected = selectedLesson?.id === lesson.id;
+                         const { quiz: quizIssues, activities: activityIssues } = extractValidationDetails(lesson);
+                         
+                         return (
+                           <div key={lesson.id}>
+                             <div
+                               onClick={() => onSelectLesson(lesson)}
+                               className={`p-2 rounded-md cursor-pointer transition-colors ${
+                                 selectedLesson?.id === lesson.id
+                                   ? "bg-primary/10 border border-primary"
+                                   : "hover:bg-muted"
+                               }`}
+                             >
+                               <div className="flex items-start justify-between gap-2">
+                                 <span className="text-sm font-medium flex-1 line-clamp-2">
+                                   {lesson.title}
+                                 </span>
+                                 <div className="flex items-center gap-1 flex-shrink-0">
+                                   {lesson.needs_quiz_regeneration && (
+                                     <Badge variant="outline" className="text-xs border-amber-500 text-amber-600">
+                                       <RotateCcw className="h-3 w-3 mr-0.5" />
+                                       Quiz
+                                     </Badge>
+                                   )}
+                                   {lesson.needs_activities_regeneration && (
+                                     <Badge variant="outline" className="text-xs border-purple-500 text-purple-600">
+                                       <RotateCcw className="h-3 w-3 mr-0.5" />
+                                       Activités
+                                     </Badge>
+                                   )}
+                                   {!hasValidQuiz(lesson) && (
+                                     <Badge variant="destructive" className="text-xs flex items-center gap-0.5">
+                                       <AlertCircle className="h-3 w-3" />
+                                       Quiz
+                                     </Badge>
+                                   )}
+                                   <Badge 
+                                     variant={lesson.workflow_status === 'published' ? "default" : lesson.workflow_status === 'approved' ? "secondary" : "outline"}
+                                     className="text-xs"
+                                   >
+                                     {lesson.workflow_status === 'published' ? 'Publié' : 
+                                      lesson.workflow_status === 'approved' ? 'Approuvé' :
+                                      lesson.workflow_status === 'in_review' ? 'En révision' :
+                                      lesson.workflow_status === 'rejected' ? 'Rejeté' : 'Brouillon'}
+                                   </Badge>
+                                 </div>
+                               </div>
+                               <div className="mt-1">
+                                 <Badge variant="outline" className="text-xs">
+                                   {lesson.grade_level}
+                                 </Badge>
+                               </div>
+                             </div>
+                             
+                             {/* Validation Details Panel - shown only for selected lesson with issues */}
+                             {isSelected && (quizIssues.length > 0 || activityIssues.length > 0) && (
+                               <div className="mt-2 ml-2 space-y-2">
+                                 {quizIssues.length > 0 && (
+                                   <ValidationDetailsPanel
+                                     lessonTitle={lesson.title}
+                                     validationType="quiz"
+                                     offContentQuestions={quizIssues}
+                                     aligned={false}
+                                     confidence={lesson.content_alignment_score || 0}
+                                   />
+                                 )}
+                                 {activityIssues.length > 0 && (
+                                   <ValidationDetailsPanel
+                                     lessonTitle={lesson.title}
+                                     validationType="activities"
+                                     offContentQuestions={activityIssues}
+                                     aligned={false}
+                                     confidence={lesson.activities_alignment_score || 0}
+                                   />
+                                 )}
+                               </div>
+                             )}
+                           </div>
+                         );
+                       })}
                     </div>
                   </CollapsibleContent>
                 </Collapsible>
