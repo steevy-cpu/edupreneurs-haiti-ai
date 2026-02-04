@@ -29,8 +29,146 @@ interface TutorAction {
 
 interface TutorGrading {
   isCorrect?: boolean;
+  confidence?: 'high' | 'medium' | 'low';
+  reasoning?: string;
   pointsAwarded?: number | null;
   correctAnswer?: string | null;
+}
+
+// ============= Subject Detection =============
+type SubjectType = 'language' | 'math' | 'science' | 'social' | 'unknown';
+
+/**
+ * Detect subject type from exercise data for applying appropriate evaluation strategy
+ */
+function detectSubjectType(exercise: any, referenceTexts?: any[]): SubjectType {
+  const concept = (exercise.concept || '').toLowerCase();
+  const questionText = (exercise.question_text || '').toLowerCase();
+  
+  // Language indicators (French, English, Spanish, Creole)
+  const languagePatterns = /compréhension|grammaire|vocabulaire|texte|lecture|reading|writing|conjugaison|orthographe|syntaxe|littéraire|rédaction|production écrite/i;
+  if (languagePatterns.test(concept) || languagePatterns.test(questionText)) {
+    return 'language';
+  }
+  
+  // If reference texts are provided, likely a language subject
+  if (referenceTexts && referenceTexts.length > 0) {
+    return 'language';
+  }
+  
+  // Math indicators
+  const mathPatterns = /math|calcul|équation|géométrie|algèbre|statistique|arithmétique|nombre|fraction|pourcentage|divisibilité|puissance|racine|triangle|cercle|aire|volume|périmètre/i;
+  if (mathPatterns.test(concept) || mathPatterns.test(questionText)) {
+    return 'math';
+  }
+  
+  // Science indicators
+  const sciencePatterns = /science|physique|chimie|biologie|svt|cellule|atome|énergie|force|électricité|magnétisme|écosystème|organisme/i;
+  if (sciencePatterns.test(concept) || sciencePatterns.test(questionText)) {
+    return 'science';
+  }
+  
+  // Social studies indicators
+  const socialPatterns = /histoire|géographie|civique|sociale|économie|politique|société|culture|haïti|constitution|gouvernement/i;
+  if (socialPatterns.test(concept) || socialPatterns.test(questionText)) {
+    return 'social';
+  }
+  
+  return 'unknown';
+}
+
+/**
+ * Build grounding prompt for reference texts with citation requirements
+ */
+function buildReferenceGroundingPrompt(referenceTexts: any[]): string {
+  if (!referenceTexts?.length) return '';
+  
+  let prompt = `\n\n**TEXTES DE RÉFÉRENCE DE L'EXAMEN (TU DOIS CITER CES TEXTES POUR JUSTIFIER TES RÉPONSES):**\n`;
+  
+  referenceTexts.forEach((ref: { section?: string; title?: string; text: string }, i: number) => {
+    prompt += `\n[Document ${i + 1}${ref.section ? ` - ${ref.section}` : ''}${ref.title ? `: ${ref.title}` : ''}]\n${ref.text}\n`;
+  });
+  
+  prompt += `
+**INSTRUCTION CRITIQUE POUR L'ÉVALUATION:**
+- Pour CHAQUE réponse que tu évalues, tu DOIS citer le passage exact du texte qui la justifie
+- Utilise le format: 《passage cité》 pour les citations textuelles
+- Si l'information n'est PAS dans le texte, dis-le clairement: "Cette information n'apparaît pas dans le texte fourni."
+- Pour les QCM: L'option correcte est celle qui correspond EXACTEMENT au texte
+- Pour les questions ouvertes: La réponse doit être trouvable ou déductible du texte`;
+  
+  return prompt;
+}
+
+/**
+ * Build subject-specific evaluation rules
+ */
+function buildEvaluationRules(subjectType: SubjectType, hasCorrectAnswer: boolean, hasReferenceTexts: boolean): string {
+  // If we have a confirmed correct answer, use deterministic mode
+  if (hasCorrectAnswer) {
+    return `\n\n**MODE D'ÉVALUATION: Réponse officielle connue**
+La réponse correcte est définie dans la base de données. Utilise-la pour évaluer avec certitude.`;
+  }
+  
+  // Language with reference texts - citation mode
+  if (subjectType === 'language' && hasReferenceTexts) {
+    return `\n\n**RÈGLES D'ÉVALUATION - Mode Texte de Référence:**
+
+Tu as accès aux TEXTES DE RÉFÉRENCE de l'examen. Pour évaluer les réponses:
+
+1. **TOUJOURS CITER** le passage exact du texte qui justifie ta correction
+2. Pour les QCM: L'option correcte est celle qui correspond au texte - cite le passage
+3. Pour les questions ouvertes: La réponse doit être trouvable/déductible du texte
+4. Si la question demande une opinion personnelle, accepte toute réponse cohérente et bien argumentée
+
+**Format de réponse pour vérification:**
+- Si correct: "Dans le texte, on lit: 《citation exacte》. Ta réponse est correcte! 🎉"
+- Si incorrect: "Dans le texte, on lit: 《citation exacte》. La bonne réponse est [X] parce que..."
+- Si opinion: "C'est une question d'opinion/analyse. Ton raisonnement est [acceptable/à améliorer]."`;
+  }
+  
+  // Math - computation mode
+  if (subjectType === 'math') {
+    return `\n\n**RÈGLES D'ÉVALUATION - Mode Mathématique:**
+
+1. **RÉSOUS** le problème étape par étape dans ta tête avant de répondre
+2. **MONTRE** ton calcul complet quand tu corriges
+3. Compare le résultat de l'élève avec ta solution calculée
+4. Pour les équations: Vérifie en substituant la valeur trouvée
+
+**Format de réponse:**
+- Si correct: "Vérifions: [calcul rapide]. Bravo, c'est correct! 🎉"
+- Si incorrect: "Voici la solution: [calcul étape par étape]. Tu as fait une erreur à [étape]. La bonne réponse est [X]."`;
+  }
+  
+  // Science - reasoning mode
+  if (subjectType === 'science') {
+    return `\n\n**RÈGLES D'ÉVALUATION - Mode Scientifique:**
+
+1. **EXPLIQUE** le concept scientifique en jeu
+2. **RAISONNE** à partir des principes fondamentaux
+3. Compare la réponse de l'élève avec le raisonnement scientifique correct
+
+**Format de réponse:**
+- Si correct: "C'est exact! [Explication du concept]. 🎉"
+- Si incorrect: "Le principe scientifique ici est [explication]. Donc la bonne réponse est [X]."`;
+  }
+  
+  // No ground truth available - cautious mode
+  return `\n\n**RÈGLES D'ÉVALUATION - Mode Prudent (pas de réponse officielle):**
+
+⚠️ ATTENTION: Aucune réponse officielle n'est définie pour cette question dans la base de données.
+
+1. **NE JAMAIS dire** "Tu as raison" ou "Tu as tort" de façon définitive
+2. **GUIDER** l'élève avec des questions: "As-tu pensé à...?" "Que se passe-t-il si...?"
+3. **EXPLIQUER** le concept et le raisonnement sans confirmer/infirmer catégoriquement
+4. **ÊTRE TRANSPARENT**: "Je n'ai pas la réponse officielle de cet examen, mais voici comment je raisonnerais..."
+5. **ENCOURAGER** la réflexion: "Ta démarche semble [logique/à revoir]. Vérifie en..."
+
+**Format de réponse:**
+- "Je n'ai pas la correction officielle, mais [explication du raisonnement]."
+- "Ta réponse [semble cohérente / pourrait être améliorée] parce que [explication]."
+- "Pour ce type de question, pense à [concept clé]."`;
 }
 
 // ============= Helper Functions =============
@@ -178,20 +316,24 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    // Build reference texts section if available
-    let referenceTextsSection = '';
-    if (referenceTexts && Array.isArray(referenceTexts) && referenceTexts.length > 0) {
-      referenceTextsSection = `\n\n**TEXTES DE RÉFÉRENCE DE L'EXAMEN (utilise ces textes pour répondre aux questions):**\n`;
-      referenceTexts.forEach((ref: { section?: string; title?: string; text: string }) => {
-        referenceTextsSection += `\n[${ref.section || 'Texte'}] ${ref.title || ''}\n${ref.text}\n`;
-      });
-    }
+    // Detect subject type and grounding context
+    const subjectType = detectSubjectType(exercise, referenceTexts);
+    const hasCorrectAnswer: boolean = Boolean(exercise.correct_answer);
+    const hasReferenceTexts: boolean = Boolean(referenceTexts && Array.isArray(referenceTexts) && referenceTexts.length > 0);
+    
+    console.log('Evaluation context:', { subjectType, hasCorrectAnswer, hasReferenceTexts });
+
+    // Build reference texts section with grounding instructions
+    const referenceTextsSection = buildReferenceGroundingPrompt(referenceTexts || []);
+    
+    // Build subject-specific evaluation rules
+    const evaluationRules = buildEvaluationRules(subjectType, hasCorrectAnswer, hasReferenceTexts);
 
     // Build system prompt for Jude as exam tutor
     let systemPrompt = `Tu es Jude, un tuteur pédagogique haïtien qui aide les élèves à préparer leurs examens officiels.
 
 **IMPORTANT: Tu dois TOUJOURS parler en FRANÇAIS, peu importe la matière de l'examen (sauf si c'est un examen de Kreyòl).**
-${referenceTextsSection}
+
 **Ton rôle:**
 - Guider l'élève à travers chaque exercice
 - Expliquer les concepts avec des termes simples et des exemples concrets
@@ -207,15 +349,20 @@ ${referenceTextsSection}
 - **IMPORTANT - Citation de question**: Quand tu mentionnes ou cites la question de l'exercice, tu DOIS TOUJOURS l'entourer avec 《...》 (ex: 《Quelle est ta préférence?》 ou 《Écrire un petit texte...》). N'utilise JAMAIS ** ou "" pour les questions - SEULEMENT 《...》.
 - Utiliser des analogies de la vie quotidienne haïtienne quand c'est pertinent
 - Répondre aux questions libres de l'élève sur les concepts
-- Si l'élève donne la BONNE réponse: Félicite brièvement (max 30 mots) et dis "Passons à la question suivante! 🎉"
-- Si l'élève donne une MAUVAISE réponse: Explique l'erreur et donne la bonne réponse avec une explication claire (max 80 mots)
+${evaluationRules}
+${referenceTextsSection}
+
+**CONTEXTE D'ÉVALUATION:**
+- Type de sujet détecté: ${subjectType}
+- Réponse officielle connue: ${hasCorrectAnswer ? 'Oui' : 'Non'}
+- Textes de référence disponibles: ${hasReferenceTexts ? 'Oui (' + (referenceTexts?.length || 0) + ' documents)' : 'Non'}
 
 **Exercice actuel:**
 Question: ${exercise.question_text}
 ${exercise.options && Array.isArray(exercise.options) && exercise.options.length > 0 
   ? `Options: ${exercise.options.map((opt: string, idx: number) => `${String.fromCharCode(65 + idx)}) ${opt}`).join(', ')}`
   : 'Type: Question ouverte (pas de choix multiples)'}
-${exercise.correct_answer ? `Réponse correcte: ${exercise.correct_answer}` : 'Note: La réponse correcte n\'est pas définie dans la base de données. Guide l\'élève sans pouvoir valider automatiquement.'}
+${exercise.correct_answer ? `Réponse correcte officielle: ${exercise.correct_answer}` : ''}
 Concept: ${exercise.concept}`;
 
     // ============= Action-Based Prompt Modification =============
@@ -335,9 +482,15 @@ Explique l'erreur avec bienveillance et donne la bonne réponse avec une explica
       actions.push({ type: 'youtube', label: 'Voir vidéo', payload: youtubeQuery });
     }
 
-    // Build grading info
+    // Build grading info with confidence scoring
     const grading: TutorGrading = {
       isCorrect: studentAnswer ? isCorrect : undefined,
+      confidence: hasCorrectAnswer ? 'high' : (hasReferenceTexts ? 'medium' : 'low'),
+      reasoning: hasCorrectAnswer 
+        ? 'Évaluation basée sur la réponse officielle'
+        : hasReferenceTexts 
+          ? 'Évaluation basée sur les textes de référence'
+          : 'Évaluation approximative - pas de réponse officielle',
       pointsAwarded: shouldAwardPoints ? exercise.points : 0,
       correctAnswer: revealAnswer ? exercise.correct_answer : undefined,
     };
