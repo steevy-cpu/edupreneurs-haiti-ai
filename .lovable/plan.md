@@ -1,212 +1,198 @@
 
-# Plan: Integrating Content Quality Dashboard into Content Editor UI
+# Plan: Phase 2 - Automatic Dashboard Refresh on Validation Completion
 
-## Current Architecture Analysis
+## Problem
+When batch validation completes (via `BatchQuizContentValidator` or `BatchActivitiesContentValidator`), the Quality dashboard doesn't automatically update to show the new validation results. Users must manually navigate away and back to the Quality tab to see updated statistics.
 
-**Content Editor Tabs (6 total):**
-1. `review` - Main lesson editing interface (LessonBrowser + detailed editors)
-2. `batch` - Batch generation validation
-3. `exams` - Exam content management
-4. `passion-videos` - Passion video manager
-5. `daily-words` - Daily words manager
-6. `ebooks` - Ebook manager
+## Solution: Three-Layer Callback Chain
+Implement an automatic refresh trigger that flows from child components back to the parent ContentEditor to refresh the dashboard.
 
-**New Components Ready:**
-- `ContentQualityDashboard.tsx` - Comprehensive stats with grade-level breakdown and issue categories
-- `ValidationDetailsPanel.tsx` - Expandable panel showing specific off-content reasons
-- `validationCategories.ts` - Issue categorization utility
-
-**Data Flow:**
-- Dashboard fetches all lessons and aggregates stats by grade level
-- Displays overall quiz/activities validation percentages
-- Shows top issue categories with counts
-
-## Integration Strategy
-
-### Phase 1: Add "Quality" Tab (High Priority)
-**Location:** New top-level tab in ContentEditor main Tabs component
-
+**Current Flow:**
 ```
-┌─ ContentEditor.tsx Tabs ─────────────────────────┐
-│  [Review] [Quality] [Génération] [Examens] ... │  ← NEW TAB
-└──────────────────────────────────────────────────┘
+ContentEditor.tsx
+  ↓
+LessonBrowser.tsx
+  ↓
+BatchQuizContentValidator.tsx → calls onComplete() (loadSubjects)
+BatchActivitiesContentValidator.tsx → calls onComplete() (loadSubjects)
 ```
 
-**Implementation:**
-1. Import `ContentQualityDashboard` component
-2. Add new TabsTrigger with icon (e.g., `BarChart3` icon - already in imports)
-3. Add TabsContent wrapping the dashboard
-4. Tab value: `"quality"`
-5. Save preference to localStorage (existing pattern)
+**New Flow:**
+```
+ContentEditor.tsx (has refreshDashboard)
+  ↓ Pass refreshDashboard to LessonBrowser
+LessonBrowser.tsx
+  ↓ Pass onDashboardRefresh to Validators
+BatchQuizContentValidator.tsx → calls onDashboardRefresh() after onComplete()
+BatchActivitiesContentValidator.tsx → calls onDashboardRefresh() after onComplete()
+```
 
-**User Flow:**
-- Editor opens content editor → clicks "Quality" tab
-- Dashboard loads → shows overall stats + grade-level breakdown
-- Can see top issues by category
-- Understands what needs fixing before diving into individual lessons
+## Technical Implementation
 
-### Phase 2: Add Dashboard Refresh Trigger (Medium Priority)
-**Problem:** When batch validation completes, dashboard should refresh to show updated stats
+### Step 1: Update LessonBrowser Props
+**File:** `src/components/content-editor/LessonBrowser.tsx`
 
-**Solution:**
-1. Add state for dashboard refresh in ContentEditor
-2. Create `refreshDashboard()` function (similar to `refreshLesson`)
-3. Pass refresh callback to BatchQuizContentValidator and BatchActivitiesContentValidator
-4. When validation completes, trigger dashboard refresh
-5. Use same `refreshKey` pattern already in place
-
-**Technical Details:**
-- Dashboard component already has `useEffect` that fires on mount
-- Could add optional `refreshKey` prop to ContentQualityDashboard
-- When refreshKey changes, dashboard re-fetches stats
-
-### Phase 3: Enhance Lesson Details View (Lower Priority - Phase 2)
-**Optional:** Add ValidationDetailsPanel to LessonBrowser for individual lessons
-
-When a lesson is selected in LessonBrowser:
-- Show inline validation details if validation_details_json exists
-- Display specific off-content questions for that lesson
-- Let editor understand why THIS lesson failed without opening full dashboard
-
-**Not required for initial integration** but would be valuable enhancement
-
-## Technical Implementation Details
-
-### Step 1: Modify ContentEditor.tsx
+Add new prop to interface:
 ```typescript
-// At top with other imports
-import { ContentQualityDashboard } from "@/components/content-editor/ContentQualityDashboard";
-
-// In useState hooks
-const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
-
-// New function
-const refreshDashboard = () => {
-  setDashboardRefreshKey(prev => prev + 1);
-};
-
-// Modify TabsList to include "quality"
-<TabsList className="grid w-full grid-cols-7 lg:w-[1400px]">
-  {/* existing triggers... */}
-  <TabsTrigger value="quality">
-    <BarChart3 className="mr-2 h-4 w-4" />
-    Qualité
-  </TabsTrigger>
-</TabsList>
-
-// After TabsContent value="ebooks"
-<TabsContent value="quality">
-  <ContentQualityDashboard 
-    key={`dashboard-${dashboardRefreshKey}`}
-  />
-</TabsContent>
+interface LessonBrowserProps {
+  onSelectLesson: (lesson: any) => void;
+  selectedLesson: any;
+  refreshKey?: number;
+  onDashboardRefresh?: () => void;  // NEW
+}
 ```
 
-### Step 2: Update ContentQualityDashboard (Minor Enhancement)
-- Add optional `refreshKey` prop for re-triggering data fetch
-- Ensure dashboard runs stats aggregation query efficiently
-- Consider caching for 3G optimization (dashboard stats shouldn't change every second)
-
-### Step 3: Wire Up Refresh Callbacks (Optional Phase 2)
-- BatchQuizContentValidator calls `onValidationComplete` callback
-- BatchActivitiesContentValidator calls `onValidationComplete` callback
-- ContentEditor passes `refreshDashboard` as callback
-
-## Data Flow Diagram
-
-```
-User navigates to "Quality" tab
-        ↓
-ContentQualityDashboard mounts
-        ↓
-Fetches ALL lessons with validation_details_json
-        ↓
-Aggregates stats by:
-  • Grade level (7AF, 8AF, 9AF, NS1, NS2, NS3)
-  • Validation status (quiz/activities)
-  • Issue categories (concept, formula, data, cultural, other)
-        ↓
-Renders:
-  • Overview cards (total lessons, % validated)
-  • Grade-level progress bars
-  • Issue category breakdown
-        ↓
-User can click categories to see specific lessons (Phase 2)
+Update component signature:
+```typescript
+export const LessonBrowser = ({ 
+  onSelectLesson, 
+  selectedLesson, 
+  refreshKey,
+  onDashboardRefresh  // NEW
+}: LessonBrowserProps) => {
 ```
 
-## UI/UX Considerations
+Pass to validators:
+```typescript
+// Line 350: BatchQuizContentValidator
+<BatchQuizContentValidator 
+  lessons={lessonsWithValidQuiz}
+  gradeLevel={gradeLevel}
+  onComplete={loadSubjects}
+  onDashboardRefresh={onDashboardRefresh}  // NEW
+  validatedCount={lessonsWithValidQuiz.filter(l => l.last_content_validated_at).length}
+  totalWithQuiz={lessonsWithValidQuiz.length}
+/>
 
-**Icon for Quality Tab:**
-- `BarChart3` icon (already imported in ContentEditor)
-- Label: "Qualité" (maintains French consistency)
+// Line 362: BatchActivitiesContentValidator
+<BatchActivitiesContentValidator 
+  lessons={lessonsWithValidActivities}
+  gradeLevel={gradeLevel}
+  onComplete={loadSubjects}
+  onDashboardRefresh={onDashboardRefresh}  // NEW
+  validatedCount={lessonsWithValidActivities.filter(l => l.last_activities_validated_at).length}
+  totalWithActivities={lessonsWithValidActivities.length}
+/>
+```
 
-**Dashboard Layout (already implemented):**
-- Top 3 cards: total lessons, quiz validation %, activities validation %
-- Middle section: grade-level breakdown with progress bars
-- Bottom tabs: quiz issues vs activities issues with category details
+### Step 2: Update BatchQuizContentValidator Props & Logic
+**File:** `src/components/content-editor/BatchQuizContentValidator.tsx`
 
-**Mobile Responsiveness:**
-- Dashboard uses responsive grid (`grid-cols-1 md:grid-cols-3`)
-- Tabs stack vertically on mobile
-- Progress bars scale automatically
+Add to interface:
+```typescript
+interface BatchQuizContentValidatorProps {
+  lessons: any[];
+  gradeLevel: string;
+  onComplete: () => void;
+  onDashboardRefresh?: () => void;  // NEW
+  validatedCount?: number;
+  totalWithQuiz?: number;
+}
+```
 
-## 3G Optimization
+Update component signature:
+```typescript
+export const BatchQuizContentValidator = ({ 
+  lessons, 
+  gradeLevel, 
+  onComplete,
+  onDashboardRefresh,  // NEW
+  validatedCount = 0,
+  totalWithQuiz = 0
+}: BatchQuizContentValidatorProps) => {
+```
 
-**Current Implementation:**
-- Dashboard fetches entire lessons table once on mount
-- Aggregation happens in-memory (efficient for 2,800 lessons)
-- No pagination needed (stats already aggregated)
+Call in `handleValidateAll` after completion (around line 210):
+```typescript
+// After: onComplete();
+onComplete();
+if (onDashboardRefresh) {
+  onDashboardRefresh();
+}
+```
 
-**Potential Improvements (Phase 3):**
-- Cache dashboard stats in localStorage for instant load
-- Stale-while-revalidate for stats updates
-- Only refresh when user explicitly clicks refresh button
+### Step 3: Update BatchActivitiesContentValidator Props & Logic
+**File:** `src/components/content-editor/BatchActivitiesContentValidator.tsx`
 
-## Integration Dependencies
+Same changes as BatchQuizContentValidator:
+- Add `onDashboardRefresh` to interface
+- Add to component signature
+- Call `onDashboardRefresh()` after `onComplete()` in `handleValidateAll`
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| ContentQualityDashboard | ✓ Ready | No changes needed |
-| ValidationDetailsPanel | ✓ Ready | Can integrate in Phase 2 |
-| validationCategories.ts | ✓ Ready | Utility already used by dashboard |
-| ContentEditor.tsx | ✓ Ready | Simple import + tab addition |
-| LessonBrowser.tsx | Optional | Only needed for Phase 3 |
+### Step 4: Update ContentEditor to Pass Callback
+**File:** `src/pages/ContentEditor.tsx`
 
-## Implementation Steps
+Pass `refreshDashboard` to LessonBrowser (around line 287):
+```typescript
+<LessonBrowser
+  onSelectLesson={async (lesson) => {
+    // ... existing code
+  }}
+  selectedLesson={selectedLesson}
+  refreshKey={refreshKey}
+  onDashboardRefresh={refreshDashboard}  // NEW
+/>
+```
 
-**Step 1:** Import ContentQualityDashboard in ContentEditor.tsx
-**Step 2:** Add "quality" TabsTrigger with icon to TabsList
-**Step 3:** Add TabsContent value="quality" with dashboard component
-**Step 4:** Test dashboard loads correctly
-**Step 5:** (Optional) Add refreshDashboard callback for batch validation completion
+## Behavioral Changes
 
-## Safety Verification
+**Before Phase 2:**
+1. User clicks "Valider alignement contenu" in LessonBrowser
+2. Validation completes → batch validator calls onComplete() → LessonBrowser refreshes
+3. Quality dashboard stats are outdated
+4. User must manually switch to Quality tab to refresh view
 
-| Check | Status | Details |
-|-------|--------|---------|
-| Breaks existing tabs? | No | Adding new tab, not modifying existing |
-| Tab persistence? | Yes | Uses existing localStorage pattern |
-| Performance? | Good | Single query, in-memory aggregation |
-| Mobile friendly? | Yes | Already responsive components |
-| 3G optimized? | Yes | Single efficient query |
-| Backward compatible? | Yes | No changes to existing components |
+**After Phase 2:**
+1. User clicks "Valider alignement contenu" in LessonBrowser
+2. Validation completes → calls onComplete() AND onDashboardRefresh()
+3. Dashboard automatically refreshes with latest stats
+4. User sees updated metrics instantly without manual intervention
 
-## Expected Result
+## Code Changes Summary
 
-After implementation:
-- ✓ Users can access "Qualité" tab from main Content Editor
-- ✓ Dashboard shows overall content health at a glance
-- ✓ Grade-level breakdown shows which levels need most work
-- ✓ Issue categories show patterns (e.g., "Concepts not in content" is top issue)
-- ✓ No performance impact on other tabs
-- ✓ Ready for Phase 2 enhancements (lesson-specific details, refresh triggers)
+| File | Changes | Lines Added |
+|------|---------|------------|
+| `LessonBrowser.tsx` | Add `onDashboardRefresh?` prop, pass to 2 validators | ~3 |
+| `BatchQuizContentValidator.tsx` | Add prop, call onDashboardRefresh() after onComplete() | ~5 |
+| `BatchActivitiesContentValidator.tsx` | Add prop, call onDashboardRefresh() after onComplete() | ~5 |
+| `ContentEditor.tsx` | Pass `refreshDashboard` to LessonBrowser | ~1 |
+
+**Total lines added:** ~14
+
+## Backward Compatibility
+
+- `onDashboardRefresh` is optional (`?`) in all interfaces
+- Existing code without the callback continues to work
+- No breaking changes to existing APIs
+- Can integrate gradually if needed
+
+## 3G Performance Impact
+
+**Zero negative impact:**
+- No additional network calls (just triggers existing dashboard refresh)
+- Dashboard already has efficient query
+- Only runs when user explicitly validates
+- Callback execution is instant
+
+## Testing Strategy
+
+1. **Manual:**
+   - Open Content Editor → Quality tab → note current stats
+   - Switch to Review tab → run batch validation
+   - Switch back to Quality tab → verify stats updated automatically
+   - Check that both Quiz and Activities validators trigger refresh
+
+2. **Edge Cases:**
+   - Validation with 0 lessons (skip validated checkbox)
+   - Validation interrupted/paused mid-way
+   - Dashboard not open when validation completes (no visual change, but state updated)
 
 ## Files to Modify
 
-| File | Changes | Complexity |
-|------|---------|-----------|
-| `src/pages/ContentEditor.tsx` | Add import, add TabsTrigger, add TabsContent | Simple |
-| `src/components/content-editor/ContentQualityDashboard.tsx` | Optional: add refreshKey prop | Simple |
+1. `src/components/content-editor/LessonBrowser.tsx`
+2. `src/components/content-editor/BatchQuizContentValidator.tsx`
+3. `src/components/content-editor/BatchActivitiesContentValidator.tsx`
+4. `src/pages/ContentEditor.tsx`
 
-**Total Lines of Code:** ~15 lines added to ContentEditor.tsx
-
+## Implementation Complexity
+**Low** - Simple prop threading with minimal logic additions. No new components or database changes needed.
