@@ -1,222 +1,110 @@
 
-# Plan: Enhanced AI Grounding for Jude Exam Tutor
+# Fix: AskJudeDrawer Input Section Disappearing
 
-## Problem Summary
+## Problem Analysis
 
-Jude (the exam tutor) lacks ground-truth `correct_answer` data for 93% of exercises. When students submit answers, Jude must evaluate correctness without a definitive answer key, leading to potential inaccuracies.
+After the first message exchange in the AskJudeDrawer, the input section disappears on mobile. Looking at the screenshot and code:
 
-**Current Data Coverage:**
-| Subject | Exercises | Has Answer | Has Reference Text |
-|---------|-----------|------------|-------------------|
-| Sciences sociales | 249 | 0% | 0% |
-| Français | 244 | 0.4% | **100%** |
-| Espagnol | 242 | 2.5% | **100%** |
-| Anglais | 219 | 3.2% | **100%** |
-| Créole | 182 | 1.6% | **100%** |
-| Mathématiques | 204 | 44% | 0% |
-| Sciences expérimentales | 226 | 4.4% | 0% |
+**Observed Issue:**
+- User sends "Hey Jude"
+- Jude responds with a full message
+- The input section (with text field + send button) is no longer visible
 
-**Key Insight:** Language subjects have **reference texts** that can be used to derive correct answers. The AI just needs better grounding instructions.
+**Root Cause Identified:**
+
+The drawer uses conflicting height constraints that cause the input to be pushed out of view when messages are added:
+
+```
+DrawerContent: max-h-[85vh]
+  └─ Container: h-[70vh] max-h-[600px]
+       ├─ Header (flex-shrink-0)
+       ├─ Messages (flex-1, overflow-y-auto)
+       └─ Input (flex-shrink-0) ← Gets pushed out
+```
+
+**Issues:**
+1. `h-[70vh]` forces a fixed height that doesn't account for dynamic content
+2. `max-h-[600px]` caps the container, but combined with `max-h-[85vh]` on parent creates conflicts
+3. On mobile with long messages, the flexbox layout can push the input out of the visible drawer area
+4. The Vaul drawer doesn't properly handle the input section position when content grows
 
 ---
 
-## Solution: Subject-Aware Grounding System
+## Solution
 
-Enhance the `exam-tutor` edge function with:
+Restructure the drawer layout to ensure the input section is **always visible** regardless of message content:
 
-1. **Subject-Specific Evaluation Strategies** - Different grounding rules per subject type
-2. **Reference Text Extraction Mode** - Force AI to cite evidence from texts
-3. **Confidence Scoring** - When uncertain, express confidence level
-4. **Cautious Mode** - When no ground truth exists, avoid definitive grading
+### Key Changes:
+
+1. **Use `h-full` instead of fixed viewport heights** - Let the drawer content fill its container naturally
+2. **Add `min-h-0` to the messages container** - Prevents flex item from expanding beyond available space
+3. **Ensure input has proper safe area padding** - For mobile keyboard handling
+4. **Use proper flex constraints** - `overflow-hidden` on parent, `overflow-y-auto` only on scrollable area
 
 ---
 
 ## Technical Implementation
 
-### 1. Subject Detection & Strategy Selection
+### File: `src/features/exams/practice/components/AskJudeDrawer.tsx`
 
-Add subject detection to route to appropriate evaluation strategy:
-
-```typescript
-type SubjectType = 'language' | 'math' | 'science' | 'social' | 'unknown';
-
-function detectSubjectType(exercise: any): SubjectType {
-  const concept = (exercise.concept || '').toLowerCase();
-  const question = (exercise.question_text || '').toLowerCase();
-  
-  // Language indicators
-  if (/reading|writing|compréhension|grammaire|vocabulaire|text/i.test(concept)) {
-    return 'language';
-  }
-  
-  // Math indicators
-  if (/math|calcul|équation|géométrie|algèbre|statistique/i.test(concept)) {
-    return 'math';
-  }
-  
-  // Science indicators
-  if (/science|physique|chimie|biologie|svt/i.test(concept)) {
-    return 'science';
-  }
-  
-  return 'unknown';
-}
+**Before (problematic):**
+```tsx
+<DrawerContent className="max-h-[85vh] min-h-[400px]">
+  <div className="flex flex-col h-[70vh] max-h-[600px]">
+    <DrawerHeader className="border-b flex-shrink-0">...</DrawerHeader>
+    <div className="flex-1 overflow-y-auto p-4 min-h-[200px]" ref={scrollRef}>
+      {/* Messages */}
+    </div>
+    <div className="border-t p-4 flex-shrink-0">
+      {/* Input */}
+    </div>
+  </div>
+</DrawerContent>
 ```
 
-### 2. Enhanced System Prompt with Grounding Rules
-
-**For Language Subjects (with reference texts):**
-
-```text
-**RÈGLES D'ÉVALUATION - Mode Texte de Référence:**
-
-Tu as accès aux TEXTES DE RÉFÉRENCE de l'examen. Pour évaluer les réponses:
-
-1. **TOUJOURS CITER** le passage exact du texte qui justifie la réponse
-2. Pour les QCM: L'option correcte est celle qui correspond au texte
-3. Pour les questions ouvertes: La réponse doit être trouvable/déductible du texte
-4. Si la question demande une opinion, accepte toute réponse cohérente
-
-**Format de réponse pour vérification:**
-- "Dans le texte, on lit: «[citation exacte]». Donc la bonne réponse est [X]."
-- Si la réponse n'est pas dans le texte: "Cette question demande ton opinion/analyse."
+**After (fixed):**
+```tsx
+<DrawerContent className="max-h-[85vh]">
+  <div className="flex flex-col h-full max-h-[85vh] overflow-hidden">
+    <DrawerHeader className="border-b flex-shrink-0">...</DrawerHeader>
+    <div className="flex-1 overflow-y-auto p-4 min-h-0" ref={scrollRef}>
+      {/* Messages */}
+    </div>
+    <div className="border-t p-4 flex-shrink-0 bg-background">
+      {/* Input - now with bg-background to ensure visibility */}
+    </div>
+  </div>
+</DrawerContent>
 ```
 
-**For Math Subjects (computable answers):**
-
-```text
-**RÈGLES D'ÉVALUATION - Mode Mathématique:**
-
-1. **RÉSOUS** le problème étape par étape
-2. **MONTRE** ton calcul complet
-3. Compare le résultat de l'élève avec ta solution
-4. Pour les équations: Vérifie en substituant la valeur
-
-**Format de réponse:**
-- "Voici la solution: [calcul]. La réponse correcte est [X]."
-- Si l'élève a fait une erreur: "Tu as fait une erreur à l'étape [N]: [explication]"
-```
-
-**For Questions Without Ground Truth:**
-
-```text
-**RÈGLES D'ÉVALUATION - Mode Prudent (pas de réponse confirmée):**
-
-ATTENTION: Aucune réponse correcte n'est définie pour cette question.
-
-1. **NE JAMAIS dire** "Tu as raison" ou "Tu as tort" de façon définitive
-2. **GUIDER** l'élève avec des questions: "As-tu pensé à...?"
-3. **EXPLIQUER** le concept sans confirmer/infirmer
-4. **ÊTRE TRANSPARENT**: "Je n'ai pas la réponse officielle, mais voici comment raisonner..."
-```
-
-### 3. Reference Text Extraction Logic
-
-Force the AI to ground answers in provided texts:
-
-```typescript
-function buildReferenceGroundingPrompt(referenceTexts: any[]): string {
-  if (!referenceTexts?.length) return '';
-  
-  return `
-**TEXTES DE RÉFÉRENCE (TU DOIS CITER CES TEXTES):**
-
-${referenceTexts.map((ref, i) => `
-[Document ${i + 1}${ref.title ? `: ${ref.title}` : ''}]
-${ref.text}
-`).join('\n')}
-
-**INSTRUCTION CRITIQUE:**
-- Pour chaque réponse, tu DOIS citer le passage exact qui la justifie
-- Utilise le format: 《passage cité》 pour les citations
-- Si l'information n'est pas dans le texte, dis-le clairement
-`;
-}
-```
-
-### 4. Confidence-Based Response
-
-Add confidence indication when grading without ground truth:
-
-```typescript
-interface TutorGrading {
-  isCorrect?: boolean;
-  confidence?: 'high' | 'medium' | 'low';  // NEW
-  reasoning?: string;  // NEW: Why we think it's correct/incorrect
-  pointsAwarded?: number | null;
-  correctAnswer?: string | null;
-}
-```
+**Key Fixes:**
+| Change | Reason |
+|--------|--------|
+| Remove `h-[70vh]` → `h-full` | Let container adapt to parent, not viewport |
+| Remove `max-h-[600px]` | Conflicting with parent's `max-h-[85vh]` |
+| Add `overflow-hidden` to parent | Prevent content from escaping container |
+| Remove `min-h-[200px]` → `min-h-0` | Critical fix - allows flex item to shrink |
+| Add `bg-background` to input | Ensures input is visible over any content |
 
 ---
 
-## File Changes
+## Additional Mobile Keyboard Handling
 
-### File: `supabase/functions/exam-tutor/index.ts`
+Add focus handling to scroll input into view on mobile:
 
-**Changes:**
-1. Add `detectSubjectType()` function
-2. Add `buildReferenceGroundingPrompt()` function  
-3. Modify system prompt construction to use subject-specific strategies
-4. Add confidence scoring to grading response
-5. Add "cautious mode" when no `correct_answer` exists
+```tsx
+const handleInputFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+  // Delay to let keyboard appear
+  setTimeout(() => {
+    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 300);
+}, []);
 
----
-
-## Enhanced System Prompt Structure
-
-```text
-Tu es Jude, un tuteur pédagogique haïtien...
-
-[Base instructions - kept]
-
-**EXERCICE ACTUEL:**
-Question: {question_text}
-Options: {options if any}
-Concept: {concept}
-
-**CONTEXTE D'ÉVALUATION:**
-Type de sujet: {language|math|science|unknown}
-Réponse correcte connue: {oui/non}
-Textes de référence disponibles: {oui/non}
-
-[Subject-specific grounding rules based on context]
-
-**TEXTES DE RÉFÉRENCE:**
-[Full reference texts with citation instructions]
+<Input
+  onFocus={handleInputFocus}
+  // ... other props
+/>
 ```
-
----
-
-## Example: Before vs After
-
-**Before (current behavior):**
-```
-Student: "A" (for a reading comprehension question)
-Jude: "Tu as tort! La bonne réponse est B."  
-[But Jude doesn't know the actual answer - guessed based on AI inference]
-```
-
-**After (grounded behavior):**
-```
-Student: "A" (for a reading comprehension question)
-Jude: "Dans le texte, on lit: «Elle avait deux filles de son humeur». 
-Cela signifie que la belle-mère avait deux filles. Donc la réponse 
-correcte est bien A! Bravo! 🎉"
-[Grounded in the actual reference text]
-```
-
----
-
-## Safety Verification
-
-| Check | Status | Notes |
-|-------|--------|-------|
-| Breaks existing functionality? | No | Adds to existing prompt, doesn't remove |
-| Works with existing data? | Yes | Uses available reference_texts |
-| 3G optimized? | Yes | Same token count, no extra API calls |
-| Backward compatible? | Yes | Response format unchanged |
-| Edge cases handled? | Yes | Fallback for missing data |
 
 ---
 
@@ -224,13 +112,25 @@ correcte est bien A! Bravo! 🎉"
 
 | File | Changes |
 |------|---------|
-| `supabase/functions/exam-tutor/index.ts` | Add subject detection, grounding prompts, confidence scoring |
+| `src/features/exams/practice/components/AskJudeDrawer.tsx` | Fix flexbox layout, add keyboard handling |
 
 ---
 
-## Expected Outcomes
+## Safety Verification
 
-1. **Language subjects**: Jude cites reference texts to justify answers
-2. **Math subjects**: Jude shows step-by-step solutions
-3. **Unknown answers**: Jude guides without false confidence
-4. **Overall**: More accurate, trustworthy tutoring experience
+| Check | Status | Notes |
+|-------|--------|-------|
+| Breaks existing chat? | No | Same logic, only layout changes |
+| Works with empty messages? | Yes | Empty state still displays correctly |
+| Works with long messages? | Yes | Messages scroll, input stays visible |
+| Mobile keyboard handled? | Yes | Focus scrolls input into view |
+| Backward compatible? | Yes | No API changes |
+
+---
+
+## Summary
+
+The fix involves three key changes:
+1. **Remove conflicting height constraints** (`h-[70vh]`, `max-h-[600px]`, `min-h-[200px]`)
+2. **Add proper flex constraints** (`h-full`, `min-h-0`, `overflow-hidden`)
+3. **Add keyboard focus handling** for mobile devices
