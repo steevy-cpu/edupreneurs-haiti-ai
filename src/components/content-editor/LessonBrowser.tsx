@@ -147,9 +147,9 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
       
       for (let i = 0; i < subjectIds.length; i += batchSize) {
         const batch = subjectIds.slice(i, i + batchSize);
-       const { data: lessonsData, error } = await supabase
-          .from('lessons')
-          .select('id, title, slug, subject_id, order_index, workflow_status, grade_level, quiz_final, activites_interactives, needs_quiz_regeneration, needs_activities_regeneration, last_content_validated_at, last_activities_validated_at, validation_details_json, content_alignment_score, activities_alignment_score, subjects(id, name)')
+        const { data: lessonsData, error } = await supabase
+           .from('lessons')
+           .select('id, title, slug, subject_id, order_index, workflow_status, grade_level, quiz_final, activites_interactives, contenu, exemples_exercices, needs_quiz_regeneration, needs_activities_regeneration, last_content_validated_at, last_activities_validated_at, validation_details_json, content_alignment_score, activities_alignment_score, subjects(id, name)')
           .in('subject_id', batch)
           .order('order_index');
 
@@ -232,9 +232,10 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
     try {
       const { data, error } = await supabase.functions.invoke('generate-interactive-activities', {
         body: {
-          lessonId: lesson.id,
           exercisesContent: lesson.exemples_exercices || lesson.contenu || '',
-          isCreole: lesson.grade_level?.includes('creole'),
+          lessonTitle: lesson.title,
+          gradeLevel: lesson.grade_level,
+          subject: lesson.subjects?.name || 'Matière',
         }
       });
 
