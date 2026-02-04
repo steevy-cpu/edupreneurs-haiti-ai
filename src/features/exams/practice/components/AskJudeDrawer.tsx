@@ -2,7 +2,7 @@
  * AskJudeDrawer - Full chat drawer for deeper help
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -133,8 +133,8 @@ export function AskJudeDrawer({ exercise, sessionId, onAskJude }: AskJudeDrawerP
           Demander à Jude
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="max-h-[85vh] min-h-[400px]">
-        <div className="flex flex-col h-[70vh] max-h-[600px]">
+      <DrawerContent className="max-h-[85vh]">
+        <div className="flex flex-col h-full max-h-[85vh] overflow-hidden">
           <DrawerHeader className="border-b flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -178,7 +178,7 @@ export function AskJudeDrawer({ exercise, sessionId, onAskJude }: AskJudeDrawerP
           </DrawerHeader>
 
           {/* Messages area */}
-          <div className="flex-1 overflow-y-auto p-4 min-h-[200px]" ref={scrollRef}>
+          <div className="flex-1 overflow-y-auto p-4 min-h-0" ref={scrollRef}>
             {isLoading ? (
               <div className="flex items-center justify-center h-full">
                 <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
@@ -240,12 +240,17 @@ export function AskJudeDrawer({ exercise, sessionId, onAskJude }: AskJudeDrawerP
           </div>
 
           {/* Input area */}
-          <div className="border-t p-4 flex-shrink-0">
+          <div className="border-t p-4 flex-shrink-0 bg-background">
             <div className="flex gap-2">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onFocus={(e) => {
+                  setTimeout(() => {
+                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }, 300);
+                }}
                 placeholder="Pose ta question..."
                 disabled={isSending || isLoading}
                 className="flex-1"
