@@ -1966,6 +1966,7 @@ export type Database = {
           subject_id: string
           title: string
           updated_at: string
+          validation_details_json: Json | null
           workflow_status: Database["public"]["Enums"]["workflow_status"] | null
           youtube_url: string | null
         }
@@ -2004,6 +2005,7 @@ export type Database = {
           subject_id: string
           title: string
           updated_at?: string
+          validation_details_json?: Json | null
           workflow_status?:
             | Database["public"]["Enums"]["workflow_status"]
             | null
@@ -2044,6 +2046,7 @@ export type Database = {
           subject_id?: string
           title?: string
           updated_at?: string
+          validation_details_json?: Json | null
           workflow_status?:
             | Database["public"]["Enums"]["workflow_status"]
             | null

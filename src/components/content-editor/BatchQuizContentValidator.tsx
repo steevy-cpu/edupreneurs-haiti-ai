@@ -133,13 +133,27 @@ export const BatchQuizContentValidator = ({
         const offContentCount = data?.offContentQuestions?.length || 0;
         const confidence = data?.confidence || 0;
 
+        // Prepare validation details to store full API response
+        const validationDetails = {
+          quiz: {
+            aligned,
+            confidence,
+            offContentQuestions: data?.offContentQuestions || [],
+            summary: data?.summary || `${offContentCount === 0 ? 'Aligné' : 'Hors-contenu'}: ${aligned ? 'Oui' : 'Non'}`,
+            totalQuestions: data?.totalQuestions || 0,
+            alignedCount: data?.alignedCount || 0,
+          },
+          lastValidatedAt: new Date().toISOString(),
+        };
+
         // Update the lesson with validation results
         const { error: updateError } = await supabase
           .from('lessons')
           .update({
             needs_quiz_regeneration: !aligned,
             content_alignment_score: confidence,
-            last_content_validated_at: new Date().toISOString()
+            last_content_validated_at: new Date().toISOString(),
+            validation_details_json: validationDetails
           })
           .eq('id', lesson.id);
 
