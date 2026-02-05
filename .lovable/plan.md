@@ -1,151 +1,78 @@
 
-# Plan: Fix React Router Context Error (useContext null)
+# Plan: Fix Mobile Menu Background Transparency Issue
 
 ## Problem Analysis
 
-**Error:** `TypeError: Cannot read properties of null (reading 'useContext')`
+The mobile navigation menu in `HeaderNav.tsx` shows page content ("Pour les élèves" section) bleeding through at the bottom. This happens because:
 
-**Stack Trace:**
-```
-at useContext (chunk-ZMLY2J2T.js)
-at useInRouterContext (react-router-dom.js)
-at useLocation (react-router-dom.js)
-at AuthLayout (AuthLayout.tsx:110)
-```
+1. **Current Implementation**: The mobile menu uses a `max-h-96` (384px) height constraint with `overflow-hidden` and slides down inline with the document flow
+2. **Root Cause**: When the menu is shorter than max-height, there's no visual "cap" - and the sticky header's z-index doesn't prevent content from appearing behind the semi-transparent header backdrop
+3. **The `bg-card` class** is correct, but the menu expansion pattern doesn't create a solid overlay
 
-**Root Cause Identified:**
-The existing `dedupe` configuration only includes React packages, but `react-router-dom` is being split into a separate chunk (via `manualChunks`) and ends up with its own React reference. When React Router's `useContext` runs, it cannot find the React dispatcher because it's using a different React instance.
+## Solution
 
-**Why the previous fix was incomplete:**
-1. The `dedupe` array needs to include `react-router-dom` and `react-router` to ensure they use the same React instance
-2. The `manualChunks` configuration separates `react-router` into its own bundle (line 116-117), which can cause module resolution conflicts
-3. The Vite cache may still contain stale prebundled dependencies
+Transform the mobile menu from an inline expanding element to a proper dropdown overlay that:
+- Has guaranteed solid background color
+- Uses proper z-indexing to overlay page content  
+- Adds a shadow to visually separate from content below
 
-## Solution: Comprehensive React Deduplication
+## Implementation
 
-### Changes Required
+### File: `src/components/home/HeaderNav.tsx`
 
-**File: `vite.config.ts`**
-
-| Change | Why |
-|--------|-----|
-| Add `react-router`, `react-router-dom` to `dedupe` array | Forces router to use same React instance |
-| Add `react-router-dom` to `optimizeDeps.include` | Ensures proper pre-bundling with correct React |
-| Remove `react-router` from `manualChunks` | Prevents chunk isolation that causes the issue |
-| Force cache invalidation | Clears stale prebundled dependencies |
-
-### Implementation
-
-**Current `optimizeDeps` (lines 15-20):**
-```typescript
-optimizeDeps: {
-  exclude: ["react-chessboard"],
-  include: ["next-themes"],
-},
+**Current mobile menu container (lines 100-104):**
+```tsx
+<div 
+  className={`lg:hidden bg-card border-t border-border overflow-hidden transition-all duration-300 ease-out ${
+    mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+  }`}
+>
 ```
 
 **Fixed:**
-```typescript
-optimizeDeps: {
-  exclude: ["react-chessboard"],
-  // Ensure these packages use the same React instance
-  include: ["next-themes", "react-router-dom"],
-},
+```tsx
+<div 
+  className={`lg:hidden absolute left-0 right-0 top-full bg-card border-t border-border shadow-lg overflow-hidden transition-all duration-300 ease-out ${
+    mobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
+  }`}
+>
 ```
 
-**Current `resolve.dedupe` (line 89):**
-```typescript
-dedupe: ["react", "react-dom", "react/jsx-runtime"],
+**Key Changes:**
+
+| Change | Purpose |
+|--------|---------|
+| `absolute left-0 right-0 top-full` | Position menu as overlay below header |
+| `shadow-lg` | Visual separation from page content |
+| `max-h-[500px]` | Slightly more room for content if needed |
+| `pointer-events-none` when closed | Prevent accidental clicks on hidden menu |
+
+**Also update the parent header element (line 27):**
+
+Current:
+```tsx
+<header className="sticky top-0 z-50 bg-card/95 backdrop-blur-lg border-b border-border/50 shadow-sm transition-all duration-300">
 ```
 
-**Fixed:**
-```typescript
-dedupe: [
-  "react", 
-  "react-dom", 
-  "react/jsx-runtime",
-  "react-router",
-  "react-router-dom"
-],
-```
-
-**Current `manualChunks` (lines 110-118):**
-```typescript
-manualChunks: (id) => {
-  if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
-    return 'react-core';
-  }
-  // Router separate for code splitting
-  if (id.includes('react-router')) {
-    return 'router';
-  }
-  // ...
-}
-```
-
-**Fixed (remove router chunk):**
-```typescript
-manualChunks: (id) => {
-  // React core + Router bundled together to prevent context issues
-  if (id.includes('node_modules/react/') || 
-      id.includes('node_modules/react-dom/') ||
-      id.includes('react-router')) {
-    return 'react-core';
-  }
-  // ...
-}
-```
-
-**Change cache directory name (line 14):**
-```typescript
-// Current
-cacheDir: "node_modules/.vite-edupreneurs",
-
-// Fixed - force complete cache rebuild
-cacheDir: "node_modules/.vite-edupreneurs-v2",
+Fixed (add `relative` for absolute child positioning):
+```tsx
+<header className="sticky top-0 z-50 bg-card/95 backdrop-blur-lg border-b border-border/50 shadow-sm transition-all duration-300 relative">
 ```
 
 ## Safety Verification
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Backward compatible? | ✓ | No code changes, only config |
-| Affects bundle size? | ✓ | Slightly larger react-core chunk (~+30KB) but more stable |
-| 3G performance impact? | ✓ | Minimal - router is small, loaded once |
-| Breaks existing routes? | ✓ | No - routing logic unchanged |
-| Works with lazy loading? | ✓ | Yes - lazy components still work |
-
-## Files to Modify
-
-| File | Change Description |
-|------|-------------------|
-| `vite.config.ts` | 4 changes: dedupe array, optimizeDeps.include, manualChunks logic, cacheDir name |
+| Backward compatible? | Yes | Same visual appearance, just better layering |
+| Affects desktop? | No | `lg:hidden` keeps it mobile/tablet only |
+| 3G performance? | Yes | No additional resources, just CSS |
+| Works with dark mode? | Yes | `bg-card` adapts to theme |
+| Accessibility? | Yes | No changes to ARIA attributes |
 
 ## Expected Result
 
 After this fix:
-- `/auth/login` page loads without crashing
-- All auth routes (`/auth/signup/*`, `/auth/verify-email`) work correctly
-- `useLocation`, `useNavigate`, `useParams` work in all components
-- No more "Cannot read properties of null" errors for any React hooks
-- Clean browser console with no hook-related errors
-
-## Technical Details for Developers
-
-**Why bundling React + Router together is necessary:**
-
-React Router's hooks (useLocation, useNavigate, etc.) internally call React's useContext. When:
-1. React is in chunk A
-2. react-router-dom is in chunk B
-3. Each chunk may resolve to different React instances during bundling
-
-The result is that React Router's `useContext` call receives `null` because it's calling a different React's context system than the one the app uses.
-
-By bundling them together in `react-core`, we guarantee:
-- Single React instance
-- Single context dispatcher
-- Hooks work correctly across all components
-
-**Cache invalidation rationale:**
-
-Vite pre-bundles dependencies on first run and caches them. If the old cache has react-router bundled with a different React reference, simply changing config won't fix it - the cache must be invalidated. Changing `cacheDir` forces a complete rebuild.
+- Mobile menu will properly overlay page content
+- No more "Pour les élèves" section bleeding through
+- Clean shadow separates menu from page
+- Menu closes cleanly without visual artifacts
