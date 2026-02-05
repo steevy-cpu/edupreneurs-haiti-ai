@@ -24,7 +24,7 @@ export const HeaderNav = memo(function HeaderNav() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-lg border-b border-border/50 shadow-sm transition-all duration-300">
+    <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-lg border-b border-border/50 shadow-sm transition-all duration-300 relative">
       <div className="container mx-auto px-4 sm:px-6 py-2 sm:py-4 flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-1.5 sm:gap-3">
@@ -96,10 +96,10 @@ export const HeaderNav = memo(function HeaderNav() {
         </div>
       </div>
 
-      {/* Mobile/Tablet Menu - Uses transform for GPU acceleration */}
+      {/* Mobile/Tablet Menu - Absolute overlay to prevent content bleed-through */}
       <div 
-        className={`lg:hidden bg-card border-t border-border overflow-hidden transition-all duration-300 ease-out ${
-          mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        className={`lg:hidden absolute left-0 right-0 top-full bg-card border-t border-border shadow-lg overflow-hidden transition-all duration-300 ease-out ${
+          mobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
         }`}
       >
         <nav className="flex flex-col p-3 gap-2">
