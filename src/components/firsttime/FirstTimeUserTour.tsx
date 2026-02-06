@@ -64,33 +64,37 @@ const tourSteps: TourStep[] = [
 const FirstTimeUserTour = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { 
-    tourActive, 
-    tourStep, 
-    tourCompleted, 
-    nextTourStep, 
-    previousTourStep, 
-    skipTour, 
-    completeTour,
-    userGrade 
-  } = useFirstTimeUser();
+  // STABILITY GUARD: Use safe context access pattern to prevent null dispatcher errors
+  const firstTimeUser = useFirstTimeUser();
   const { shouldShowGlow } = useNetworkAwareAnimations();
   
+  // Track mount stability to prevent errors during navigation transitions
+  const [isStable, setIsStable] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const [typewriterKey, setTypewriterKey] = useState(0);
+  
+  // Wait one render cycle for React dispatcher to stabilize after lazy load
+  useEffect(() => {
+    const timer = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsStable(true);
+      });
+    });
+    return () => cancelAnimationFrame(timer);
+  }, []);
 
   // Preload Eric image on mount
   useEffect(() => {
     preloadImage(ericStudentDesk).catch(() => {});
   }, []);
 
-  const currentStep = tourSteps[tourStep];
-  const isLastStep = tourStep === tourSteps.length - 1;
-  const progress = ((tourStep + 1) / tourSteps.length) * 100;
+  const currentStep = tourSteps[firstTimeUser.tourStep];
+  const isLastStep = firstTimeUser.tourStep === tourSteps.length - 1;
+  const progress = ((firstTimeUser.tourStep + 1) / tourSteps.length) * 100;
 
   // Navigate to the correct page for current step
   useEffect(() => {
-    if (!tourActive || tourCompleted || !currentStep) return;
+    if (!firstTimeUser.tourActive || firstTimeUser.tourCompleted || !currentStep) return;
 
     // Safety check: ensure we're in a stable state before navigating
     if (!isNavigating && location.pathname !== currentStep.path) {
@@ -106,31 +110,33 @@ const FirstTimeUserTour = () => {
         });
       });
     }
-  }, [tourStep, tourActive, tourCompleted, currentStep, location.pathname, navigate, isNavigating]);
+  }, [firstTimeUser.tourStep, firstTimeUser.tourActive, firstTimeUser.tourCompleted, currentStep, location.pathname, navigate, isNavigating]);
 
   // Reset typewriter when step changes
   useEffect(() => {
     setTypewriterKey(prev => prev + 1);
-  }, [tourStep]);
+  }, [firstTimeUser.tourStep]);
 
-  if (!tourActive || tourCompleted || !currentStep) return null;
+  // Early return AFTER all hooks are called (prevents hook count mismatch)
+  if (!isStable) return null;
+  if (!firstTimeUser.tourActive || firstTimeUser.tourCompleted || !currentStep) return null;
 
   const handleNext = () => {
     if (isLastStep) {
-      completeTour();
+      firstTimeUser.completeTour();
     } else {
-      nextTourStep();
+      firstTimeUser.nextTourStep();
     }
   };
 
   const handleSkip = () => {
-    skipTour();
+    firstTimeUser.skipTour();
   };
 
   // Custom description for matieres page
   const getDescription = () => {
-    if (currentStep.path === '/matieres' && userGrade) {
-      return `Voici les cours disponibles pour ton niveau (${userGrade}). Chaque leçon a des résumés clairs, des exercices et des quiz interactifs!`;
+    if (currentStep.path === '/matieres' && firstTimeUser.userGrade) {
+      return `Voici les cours disponibles pour ton niveau (${firstTimeUser.userGrade}). Chaque leçon a des résumés clairs, des exercices et des quiz interactifs!`;
     }
     return currentStep.description;
   };
@@ -149,7 +155,7 @@ const FirstTimeUserTour = () => {
           {/* Progress bar */}
           <div className="px-4 pt-3">
             <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-              <span>Étape {tourStep + 1} sur {tourSteps.length}</span>
+              <span>Étape {firstTimeUser.tourStep + 1} sur {tourSteps.length}</span>
               <span>{Math.round(progress)}%</span>
             </div>
             <Progress value={progress} className="h-1.5" />
@@ -189,8 +195,8 @@ const FirstTimeUserTour = () => {
             </Button>
 
             <div className="flex items-center gap-2">
-              {tourStep > 0 && (
-                <Button variant="outline" size="sm" onClick={previousTourStep}>
+              {firstTimeUser.tourStep > 0 && (
+                <Button variant="outline" size="sm" onClick={firstTimeUser.previousTourStep}>
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
               )}

@@ -10,18 +10,24 @@ import { useNetworkAwareAnimations } from '@/hooks/useNetworkAwareAnimations';
 import { preloadImage } from '@/utils/performanceOptimization';
 
 const AvatarGenerationStep = () => {
-  const { 
-    showAvatarGeneration, 
-    completeAvatarGeneration, 
-    skipAvatarGeneration,
-    userId,
-    isSuperUser,
-    isLoading 
-  } = useFirstTimeUser();
+  // STABILITY GUARD: Use safe context access pattern to prevent null dispatcher errors
+  const firstTimeUser = useFirstTimeUser();
   const { shouldAnimate, shouldShowGlow } = useNetworkAwareAnimations();
   
+  // Track mount stability to prevent errors during navigation transitions
+  const [isStable, setIsStable] = useState(false);
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
   const [textComplete, setTextComplete] = useState(false);
+  
+  // Wait one render cycle for React dispatcher to stabilize after lazy load
+  useEffect(() => {
+    const timer = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsStable(true);
+      });
+    });
+    return () => cancelAnimationFrame(timer);
+  }, []);
 
   // Preload Eric image on mount
   useEffect(() => {
@@ -30,10 +36,12 @@ const AvatarGenerationStep = () => {
 
   const handleAvatarGenerated = (avatarUrl: string) => {
     setShowAvatarDialog(false);
-    completeAvatarGeneration();
+    firstTimeUser.completeAvatarGeneration();
   };
 
-  if (!showAvatarGeneration || isLoading || !userId) return null;
+  // Early return AFTER all hooks are called (prevents hook count mismatch)
+  if (!isStable) return null;
+  if (!firstTimeUser.showAvatarGeneration || firstTimeUser.isLoading || !firstTimeUser.userId) return null;
 
   // Network-aware animation config
   const overlayAnimation = shouldAnimate 
@@ -110,7 +118,7 @@ const AvatarGenerationStep = () => {
                     >
                       <Button
                         variant="outline"
-                        onClick={skipAvatarGeneration}
+                        onClick={firstTimeUser.skipAvatarGeneration}
                         className="gap-2"
                       >
                         <SkipForward className="h-4 w-4" />
@@ -137,8 +145,8 @@ const AvatarGenerationStep = () => {
         open={showAvatarDialog}
         onOpenChange={setShowAvatarDialog}
         onAvatarGenerated={handleAvatarGenerated}
-        userId={userId}
-        isSuperUser={isSuperUser}
+        userId={firstTimeUser.userId}
+        isSuperUser={firstTimeUser.isSuperUser}
       />
     </>
   );
