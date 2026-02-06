@@ -1,174 +1,495 @@
 
 
-# Revised Plan: Content Moderation with Backward Compatibility
+# Plan: Failed Login Attempt Lockout System
 
-## Problem Identified
+## Problem Statement
 
-The original plan only addressed **new signups**. But existing users can also update their nicknames in **Settings.tsx**, which would bypass our moderation.
+Currently, there's no limit on failed login attempts. An attacker (or even a user who forgot their password) can try unlimited password combinations without any protection. After 5 consecutive failed attempts for a specific email, we should:
+1. Block further login attempts
+2. Auto-trigger a password reset email
+3. Require the user to reset their password before logging in again
 
-## Existing Data Analysis
+## Current Architecture Analysis
 
-| Finding | Status |
-|---------|--------|
-| Current nicknames in DB | All appear clean (checked 50 recent) |
-| Profanity in existing data | None detected |
-| Reserved words used | "Jude" exists (owner's account - acceptable) |
+| Component | Current State | Relevance |
+|-----------|--------------|-----------|
+| `login.service.ts` | Handles login, returns error on wrong password | Entry point for tracking |
+| `LoginPage.tsx` | Displays errors, no attempt tracking | Needs attempt counter state |
+| `ForgotPasswordPage.tsx` | Already has password reset flow | Reuse for lockout recovery |
+| `rate_limits` table | Exists for IP-based throttling | Different use case (general throttling) |
+| `authFlow.store.ts` | Persistent localStorage-based flow state | Could extend for attempt tracking |
+| `generate_password_reset_token` RPC | Generates token, sends email | Reuse for auto-reset |
 
-## Updated Solution: "Grandfather + Enforce Forward"
+## Design Decision: Where to Track Attempts?
 
-**Principle**: Existing nicknames are preserved. New rules apply to:
-1. New signups (Step2.tsx)
-2. Profile updates (Settings.tsx)
+### Option A: Database Table (Recommended)
+**Pros:**
+- Persists across devices/browsers (attacker can't bypass by clearing localStorage)
+- Email-based tracking (5 attempts per email, not per device)
+- Server-side security
+- Survives tab closes, browser clears
 
-This is non-disruptive and protects both new and updated content.
+**Cons:**
+- Requires database migration
+
+### Option B: localStorage Only
+**Pros:**
+- No database changes
+
+**Cons:**
+- Easily bypassed (clear storage, use incognito)
+- Device-specific (attacker uses different device)
+- Not production-grade security
+
+**Decision:** Option A - Database table for security. Attacks happen from multiple devices/browsers, so tracking must be server-side.
 
 ---
 
-## Implementation Updates
+## Implementation Architecture
 
-### File 1: `src/lib/textModeration.ts` (NEW - unchanged from original plan)
-
-Create the moderation utility with word lists and normalization.
-
-### File 2: `src/lib/authValidation.ts` (UPDATE - unchanged from original plan)
-
-Add `.refine()` checks for nickname and fullName in Zod schema.
-
-### File 3: `src/auth/services/signup.service.ts` (UPDATE - unchanged from original plan)
-
-Add moderation check in `validateStep2()`.
-
-### File 4: `src/auth/routes/signup/Step2.tsx` (UPDATE - unchanged from original plan)
-
-Add real-time moderation feedback for new signups.
-
-### File 5: `src/pages/Settings.tsx` (NEW ADDITION)
-
-**Critical**: Add moderation to profile update validation:
-
-```typescript
-// At top, add import
-import { validateUserText } from '@/lib/textModeration';
-
-// In handleProfileUpdate function (around line 247, after format check)
-const handleProfileUpdate = async (e: React.FormEvent) => {
-  e.preventDefault();
-  
-  // ... existing validations ...
-  
-  if (!isValidNicknameFormat(profileForm.nickname)) {
-    toast.error("Le pseudo ne peut contenir que des lettres, chiffres et underscores");
-    return;
-  }
-  
-  // NEW: Content moderation for nickname changes
-  const nicknameCheck = validateUserText(profileForm.nickname, 'nickname');
-  if (!nicknameCheck.valid) {
-    toast.error(nicknameCheck.error || "Pseudo invalide");
-    return;
-  }
-  
-  // NEW: Content moderation for full name changes
-  const fullNameCheck = validateUserText(profileForm.fullName, 'fullName');
-  if (!fullNameCheck.valid) {
-    toast.error(fullNameCheck.error || "Nom invalide");
-    return;
-  }
-  
-  // ... rest of update logic unchanged ...
-};
+```text
++------------------+     +-------------------+     +------------------------+
+|   LoginPage.tsx  | --> | login.service.ts  | --> | login_attempts table   |
+|   (UI + State)   |     | (Track attempts)  |     | (DB - email based)     |
++------------------+     +-------------------+     +------------------------+
+                                 |
+                                 | After 5th failed attempt:
+                                 v
+                    +------------------------+
+                    | Auto Password Reset    |
+                    | (generate_password_    |
+                    |  reset_token + email)  |
+                    +------------------------+
 ```
 
 ---
 
-## Handling Special Cases
+## Database Schema
 
-### Case 1: "Jude" is a Reserved Word but Exists
+### New Table: `login_attempts`
 
-The owner's account has nickname "Jude". Solution:
+| Column | Type | Nullable | Default | Description |
+|--------|------|----------|---------|-------------|
+| id | uuid | NO | gen_random_uuid() | Primary key |
+| email | text | NO | - | User's email (case-insensitive) |
+| failed_count | integer | NO | 0 | Consecutive failed attempts |
+| last_failed_at | timestamptz | YES | - | Timestamp of last failure |
+| locked_at | timestamptz | YES | - | When account was locked (5th failure) |
+| reset_requested_at | timestamptz | YES | - | When auto-reset was triggered |
+| created_at | timestamptz | NO | now() | Record creation |
+| updated_at | timestamptz | NO | now() | Last update |
+
+**Constraints:**
+- UNIQUE on email (one record per email)
+- Index on email for fast lookups
+
+**RLS Policies:**
+- No public access (service role only via edge function)
+- Users cannot query this table directly
+
+---
+
+## File Changes
+
+### 1. Database Migration (New Table + RPC Functions)
+
+Create `login_attempts` table with:
+- `check_login_attempt(p_email text)` - Returns current attempt count and lock status
+- `record_failed_login(p_email text)` - Increments counter, returns new count + lock status
+- `clear_login_attempts(p_email text)` - Resets counter on successful login
+- `cleanup_old_login_attempts()` - Scheduled cleanup of old records
+
+### 2. New File: `src/auth/services/loginAttempts.service.ts`
 
 ```typescript
-// In textModeration.ts - exclude exact owner accounts
-const OWNER_EXCEPTIONS = ['jude'];
+/**
+ * Login Attempts Service - Tracks consecutive failed login attempts
+ * 
+ * Security: After 5 consecutive failures, user must reset password.
+ */
 
-export function isReservedUsername(text: string): boolean {
-  const normalized = normalizeText(text);
+import { supabase } from "@/integrations/supabase/client";
+
+export interface AttemptStatus {
+  allowed: boolean;
+  remainingAttempts: number;
+  isLocked: boolean;
+  lockMessage?: string;
+}
+
+export interface FailedLoginResult {
+  newCount: number;
+  isNowLocked: boolean;
+  resetEmailSent: boolean;
+}
+
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_DURATION_HOURS = 1; // Auto-unlock after 1 hour if no reset
+
+/**
+ * Check if login is allowed for this email
+ */
+export async function checkLoginAllowed(email: string): Promise<AttemptStatus> {
+  // Call RPC to check current attempt status
+  const { data, error } = await supabase.rpc('check_login_attempt', {
+    p_email: email.toLowerCase().trim()
+  });
   
-  // Allow exact matches for owner exceptions
-  if (OWNER_EXCEPTIONS.includes(normalized)) {
-    return false;
+  if (error) {
+    console.error('Failed to check login attempts:', error);
+    // On error, allow attempt (fail open for availability)
+    return { allowed: true, remainingAttempts: MAX_ATTEMPTS, isLocked: false };
   }
   
-  return RESERVED_USERNAMES.some(reserved => 
-    normalized === reserved || normalized.startsWith(reserved + '_')
-  );
+  // Parse response
+  const { failed_count, locked_at } = data || { failed_count: 0, locked_at: null };
+  
+  // Check if locked
+  if (locked_at) {
+    const lockTime = new Date(locked_at);
+    const hoursSinceLock = (Date.now() - lockTime.getTime()) / (1000 * 60 * 60);
+    
+    if (hoursSinceLock < LOCKOUT_DURATION_HOURS) {
+      return {
+        allowed: false,
+        remainingAttempts: 0,
+        isLocked: true,
+        lockMessage: "Compte temporairement bloqué. Veuillez réinitialiser votre mot de passe.",
+      };
+    }
+    // Lock expired, will be cleared on next successful login
+  }
+  
+  const remaining = Math.max(0, MAX_ATTEMPTS - failed_count);
+  
+  return {
+    allowed: remaining > 0 || !locked_at,
+    remainingAttempts: remaining,
+    isLocked: !!locked_at,
+  };
+}
+
+/**
+ * Record a failed login attempt
+ * Returns new count and whether account is now locked
+ */
+export async function recordFailedAttempt(email: string): Promise<FailedLoginResult> {
+  const { data, error } = await supabase.rpc('record_failed_login', {
+    p_email: email.toLowerCase().trim()
+  });
+  
+  if (error) {
+    console.error('Failed to record login attempt:', error);
+    return { newCount: 1, isNowLocked: false, resetEmailSent: false };
+  }
+  
+  const { new_count, is_locked, reset_sent } = data || {};
+  
+  return {
+    newCount: new_count || 1,
+    isNowLocked: is_locked || false,
+    resetEmailSent: reset_sent || false,
+  };
+}
+
+/**
+ * Clear attempts on successful login
+ */
+export async function clearLoginAttempts(email: string): Promise<void> {
+  await supabase.rpc('clear_login_attempts', {
+    p_email: email.toLowerCase().trim()
+  });
 }
 ```
 
-### Case 2: What if Someone Already Has a Bad Word?
+### 3. Update: `src/auth/services/login.service.ts`
 
-Currently, no profanity detected in the database. But if discovered later:
-- Their account functions normally (grandfathered)
-- If they try to UPDATE their nickname to something else, they must comply
-- If they keep the same nickname, no change needed
+Add attempt tracking to the login flow:
 
-### Case 3: Nickname Uniqueness Still Works
+```typescript
+// Add import at top
+import { checkLoginAllowed, recordFailedAttempt, clearLoginAttempts } from './loginAttempts.service';
 
-The existing `check_nickname_available` RPC continues to work:
-1. Moderation check runs first (instant, client-side)
-2. If passed, availability check runs (debounced RPC)
-3. Both must pass for "Continuer" to enable
+// Modify loginWithEmail function
+export async function loginWithEmail(credentials: LoginCredentials): Promise<LoginResult> {
+  // STEP 1: Check if login is allowed (before attempting auth)
+  const attemptStatus = await checkLoginAllowed(credentials.email);
+  
+  if (!attemptStatus.allowed) {
+    return {
+      success: false,
+      error: attemptStatus.lockMessage || "Trop de tentatives échouées. Veuillez réinitialiser votre mot de passe.",
+      requiresPasswordReset: true, // NEW field
+    };
+  }
+  
+  // STEP 2: Attempt actual login
+  const { data: authData, error } = await supabase.auth.signInWithPassword({
+    email: credentials.email,
+    password: credentials.password,
+  });
 
----
+  if (error) {
+    // STEP 3: Record failed attempt
+    const failResult = await recordFailedAttempt(credentials.email);
+    
+    if (failResult.isNowLocked) {
+      return {
+        success: false,
+        error: "Trop de tentatives échouées. Un email de réinitialisation a été envoyé.",
+        requiresPasswordReset: true,
+        resetEmailSent: true,
+      };
+    }
+    
+    // Include remaining attempts in error message
+    const remaining = 5 - failResult.newCount;
+    if (remaining > 0 && remaining <= 3) {
+      return {
+        success: false,
+        error: `Mot de passe incorrect. ${remaining} tentative${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}.`,
+      };
+    }
+    
+    return { success: false, error: error.message };
+  }
 
-## Files to Modify (Updated)
+  // STEP 4: Successful login - clear attempts
+  await clearLoginAttempts(credentials.email);
+  
+  // ... rest of existing login logic (email verification, device verification)
+}
+```
 
-| File | Action | Purpose |
-|------|--------|---------|
-| `src/lib/textModeration.ts` | **CREATE** | Moderation utility |
-| `src/lib/authValidation.ts` | **UPDATE** | Zod schema moderation |
-| `src/auth/services/signup.service.ts` | **UPDATE** | Signup validation |
-| `src/auth/routes/signup/Step2.tsx` | **UPDATE** | Signup UI feedback |
-| `src/pages/Settings.tsx` | **UPDATE** | Profile update validation |
+### 4. Update: `src/auth/routes/LoginPage.tsx`
 
----
+Add UI feedback for lockout state:
 
-## Safety Verification (Updated)
+```typescript
+// Add new state
+const [isLocked, setIsLocked] = useState(false);
+const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
 
-| Check | Status | Notes |
-|-------|--------|-------|
-| Existing users affected? | No | Grandfathered unless they update |
-| "Jude" account protected? | Yes | Added to owner exceptions |
-| Profile updates covered? | Yes | Added to Settings.tsx |
-| Database changes needed? | None | Client-side only |
-| 3G performance? | Yes | Instant checks, no network calls |
-| Breaks existing nicknames? | No | Only validates on change |
+// In handleLogin, update error handling
+if (result.requiresPasswordReset) {
+  setIsLocked(true);
+  toast({
+    title: "Compte bloqué",
+    description: result.resetEmailSent 
+      ? "Un email de réinitialisation a été envoyé à votre adresse."
+      : "Veuillez réinitialiser votre mot de passe.",
+    variant: "destructive",
+  });
+  
+  // Auto-redirect to forgot password after 3 seconds
+  setTimeout(() => navigate('/auth/forgot-password'), 3000);
+  return;
+}
 
----
+// Add visual warning when attempts are low
+{remainingAttempts !== null && remainingAttempts <= 3 && remainingAttempts > 0 && (
+  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+    ⚠️ Attention: {remainingAttempts} tentative{remainingAttempts > 1 ? 's' : ''} restante{remainingAttempts > 1 ? 's' : ''}
+  </div>
+)}
 
-## Complete Validation Coverage
+// Add locked state UI
+{isLocked && (
+  <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-800">
+    🔒 Compte temporairement bloqué pour des raisons de sécurité.
+    <br />
+    <span className="text-red-600 font-medium">
+      Vérifiez votre email pour réinitialiser votre mot de passe.
+    </span>
+  </div>
+)}
+```
 
-```text
-NEW SIGNUP (Step2.tsx)
-        ↓
-   Moderation + Availability → createAccount()
-        
-PROFILE UPDATE (Settings.tsx)
-        ↓
-   Moderation Check → supabase.update()
+### 5. Update: `LoginResult` Interface
 
-Both paths now protected ✓
+```typescript
+export interface LoginResult {
+  success: boolean;
+  requiresVerification?: boolean;
+  requiresDeviceVerification?: boolean;
+  requiresPasswordReset?: boolean;  // NEW
+  resetEmailSent?: boolean;          // NEW
+  remainingAttempts?: number;        // NEW
+  deviceChallengeId?: string;
+  pendingUserId?: string;
+  userId?: string;
+  error?: string;
+  profile?: {...};
+}
 ```
 
 ---
 
-## Expected Behavior After Implementation
+## Database RPC Functions
 
-| Scenario | Result |
-|----------|--------|
-| New user signs up with "b4dw0rd" | Blocked at Step 2 |
-| Existing user keeps their name | No change, works normally |
-| Existing user tries to change to "admin123" | Blocked in Settings with toast |
-| "Jude" account updates their bio | Works normally (exception) |
-| User with clean name updates to clean name | Works normally |
+### `check_login_attempt(p_email text)`
+
+```sql
+CREATE OR REPLACE FUNCTION public.check_login_attempt(p_email text)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+DECLARE
+  v_record RECORD;
+BEGIN
+  SELECT failed_count, locked_at
+  INTO v_record
+  FROM login_attempts
+  WHERE email = LOWER(TRIM(p_email));
+  
+  IF NOT FOUND THEN
+    RETURN jsonb_build_object('failed_count', 0, 'locked_at', NULL);
+  END IF;
+  
+  RETURN jsonb_build_object(
+    'failed_count', v_record.failed_count,
+    'locked_at', v_record.locked_at
+  );
+END;
+$$;
+```
+
+### `record_failed_login(p_email text)`
+
+```sql
+CREATE OR REPLACE FUNCTION public.record_failed_login(p_email text)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+DECLARE
+  v_email TEXT := LOWER(TRIM(p_email));
+  v_new_count INTEGER;
+  v_is_locked BOOLEAN := false;
+  v_reset_sent BOOLEAN := false;
+  v_user_id UUID;
+  v_full_name TEXT;
+  v_token TEXT;
+BEGIN
+  -- Upsert attempt record
+  INSERT INTO login_attempts (email, failed_count, last_failed_at, updated_at)
+  VALUES (v_email, 1, now(), now())
+  ON CONFLICT (email) DO UPDATE
+  SET 
+    failed_count = login_attempts.failed_count + 1,
+    last_failed_at = now(),
+    updated_at = now()
+  RETURNING failed_count INTO v_new_count;
+  
+  -- Check if now locked (5 attempts)
+  IF v_new_count >= 5 THEN
+    -- Lock the account
+    UPDATE login_attempts 
+    SET locked_at = now()
+    WHERE email = v_email AND locked_at IS NULL;
+    
+    v_is_locked := true;
+    
+    -- Auto-trigger password reset
+    -- Find user and generate reset token
+    SELECT id INTO v_user_id FROM auth.users WHERE email = v_email;
+    
+    IF v_user_id IS NOT NULL THEN
+      SELECT full_name INTO v_full_name FROM profiles WHERE user_id = v_user_id;
+      
+      -- Generate token (reuse existing function logic)
+      v_token := encode(extensions.gen_random_bytes(32), 'hex');
+      
+      DELETE FROM password_reset_tokens WHERE user_id = v_user_id;
+      INSERT INTO password_reset_tokens (user_id, token, expires_at)
+      VALUES (v_user_id, v_token, now() + interval '1 hour');
+      
+      -- Mark reset as requested
+      UPDATE login_attempts SET reset_requested_at = now() WHERE email = v_email;
+      
+      v_reset_sent := true;
+      -- Note: Edge function will send the email (called from service layer)
+    END IF;
+  END IF;
+  
+  RETURN jsonb_build_object(
+    'new_count', v_new_count,
+    'is_locked', v_is_locked,
+    'reset_sent', v_reset_sent
+  );
+END;
+$$;
+```
+
+### `clear_login_attempts(p_email text)`
+
+```sql
+CREATE OR REPLACE FUNCTION public.clear_login_attempts(p_email text)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+BEGIN
+  DELETE FROM login_attempts WHERE email = LOWER(TRIM(p_email));
+END;
+$$;
+```
+
+---
+
+## Files Summary
+
+| File | Action | Purpose |
+|------|--------|---------|
+| Database Migration | **CREATE** | `login_attempts` table + RPC functions |
+| `src/auth/services/loginAttempts.service.ts` | **CREATE** | Attempt tracking business logic |
+| `src/auth/services/login.service.ts` | **UPDATE** | Integrate attempt checks into login flow |
+| `src/auth/routes/LoginPage.tsx` | **UPDATE** | UI for warnings and lockout state |
+
+---
+
+## Security Considerations
+
+| Aspect | Implementation |
+|--------|---------------|
+| Tracking scope | Per email, not per device (prevents bypass) |
+| Storage | Database (not localStorage - prevents clearing) |
+| Auto-unlock | 1 hour timeout OR password reset clears lock |
+| Reset trigger | Automatic on 5th failure |
+| RLS | No public access, service role only |
+| Fail-open | On DB error, allow attempt (availability > lockout) |
+| Consecutive only | Successful login clears counter |
+
+---
+
+## User Experience Flow
+
+```text
+Attempt 1: "Mot de passe incorrect"
+Attempt 2: "Mot de passe incorrect"
+Attempt 3: "Mot de passe incorrect. 2 tentatives restantes."
+Attempt 4: "Mot de passe incorrect. 1 tentative restante."
+Attempt 5: 
+  → Account locked
+  → Auto password reset email sent
+  → UI shows: "Compte bloqué. Un email de réinitialisation a été envoyé."
+  → Redirects to /auth/forgot-password after 3 seconds
+```
+
+---
+
+## Safety Verification
+
+| Check | Status | Notes |
+|-------|--------|-------|
+| Backward compatible? | Yes | No changes to existing successful logins |
+| Breaks existing flows? | No | Only adds new tracking layer |
+| 3G performance? | Yes | Single RPC call per login attempt |
+| Works with email verification? | Yes | Attempt check happens before auth |
+| Works with device verification? | Yes | Same flow, tracking is earlier |
+| Existing users affected? | No | Fresh tracking for all |
 
