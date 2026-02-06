@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, ComponentType } from "react";
 import { AppProviders } from "@/providers/AppProviders";
 import { LegacyRedirect } from "@/components/LegacyRedirect";
 import { HeroSkeleton } from "@/components/shared/HeroSkeleton";
@@ -16,6 +16,33 @@ import {
 } from "@/components/shared/PageSkeletons";
 import { AppShell } from "@/shell";
 import { AuthMusicSync } from "@/components/auth/AuthMusicSync";
+
+/**
+ * Wrap lazy import with automatic retry on chunk load failure.
+ * If the chunk fails to load (stale cache), reload the page to get fresh chunks.
+ * Prevents infinite reload loops with a 5-second cooldown.
+ */
+function lazyWithRetry<T extends ComponentType<unknown>>(
+  importFn: () => Promise<{ default: T }>
+) {
+  return lazy(() =>
+    importFn().catch((error) => {
+      // Check if it's a chunk load error
+      if (error?.message?.includes('Failed to fetch dynamically imported module') ||
+          error?.message?.includes('Loading chunk') ||
+          error?.message?.includes('Loading CSS chunk')) {
+        // Only reload if we haven't just reloaded
+        const lastReload = sessionStorage.getItem('chunk_reload');
+        const now = Date.now();
+        if (!lastReload || now - parseInt(lastReload, 10) > 5000) {
+          sessionStorage.setItem('chunk_reload', now.toString());
+          window.location.reload();
+        }
+      }
+      throw error;
+    })
+  );
+}
 
 // Lazy load all pages for better 3G performance
 const Index = lazy(() => import("./pages/Index"));
@@ -60,7 +87,9 @@ const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
 const EmailTest = lazy(() => import("./pages/EmailTest"));
 const UploadEmailAssets = lazy(() => import("./pages/UploadEmailAssets"));
 const CustomizeAI = lazy(() => import("./pages/CustomizeAI"));
-const PassionDiscovery = lazy(() => import("./pages/PassionDiscovery"));
+
+// Use lazyWithRetry for routes that have been experiencing chunk load failures
+const PassionDiscovery = lazyWithRetry(() => import("./pages/PassionDiscovery"));
 const ChessGame = lazy(() => import("./pages/ChessGame"));
 const ChessMultiplayerLobby = lazy(() => import("./pages/ChessMultiplayerLobby"));
 const ChessMultiplayerGame = lazy(() => import("./pages/ChessMultiplayerGame"));

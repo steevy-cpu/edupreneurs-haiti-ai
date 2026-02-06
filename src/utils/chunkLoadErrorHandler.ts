@@ -1,0 +1,47 @@
+/**
+ * Handles dynamic import failures caused by stale cache.
+ * 
+ * When Vite rebuilds, chunk hashes change. Users with cached
+ * JavaScript may request old chunk URLs that no longer exist.
+ * 
+ * This utility:
+ * 1. Detects the failure pattern
+ * 2. Forces a page reload to get fresh chunks
+ * 3. Prevents infinite reload loops
+ */
+
+const RELOAD_KEY = 'chunk_reload_attempted';
+const RELOAD_COOLDOWN = 5000; // 5 seconds
+
+export function isChunkLoadError(error: unknown): boolean {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    return (
+      message.includes('failed to fetch dynamically imported module') ||
+      message.includes('loading chunk') ||
+      message.includes('loading css chunk')
+    );
+  }
+  return false;
+}
+
+export function handleChunkLoadError(error: Error): void {
+  const lastReload = sessionStorage.getItem(RELOAD_KEY);
+  const now = Date.now();
+  
+  // Prevent infinite reload loops
+  if (lastReload && now - parseInt(lastReload, 10) < RELOAD_COOLDOWN) {
+    console.error('Chunk load failed after reload:', error);
+    return;
+  }
+  
+  // Mark that we're attempting a reload
+  sessionStorage.setItem(RELOAD_KEY, now.toString());
+  
+  // Force reload to get fresh chunks
+  window.location.reload();
+}
+
+export function clearChunkReloadFlag(): void {
+  sessionStorage.removeItem(RELOAD_KEY);
+}
