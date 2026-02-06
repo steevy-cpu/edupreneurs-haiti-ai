@@ -12,12 +12,12 @@ export default defineConfig(({ mode }) => ({
   },
   // Force a fresh Vite dependency cache to avoid stale prebundled deps (e.g. react-chessboard)
   // Force fresh cache rebuild to clear stale React references
-  cacheDir: "node_modules/.vite-edupreneurs-v2",
+  cacheDir: "node_modules/.vite-edupreneurs-v3",
   optimizeDeps: {
     // Avoid using any previously prebundled react-chessboard that may require React 19's `use`
     exclude: ["react-chessboard"],
     // Ensure these packages use the same React instance as the rest of the app
-    include: ["next-themes", "react-router-dom"],
+    include: ["next-themes", "react-router-dom", "framer-motion"],
   },
   plugins: [
     react(),
@@ -87,7 +87,7 @@ export default defineConfig(({ mode }) => ({
     },
     // Force all packages to use the same React instance
     // Prevents "Cannot read properties of null (reading 'useState'/'useContext')" errors
-    dedupe: ["react", "react-dom", "react/jsx-runtime", "react-router", "react-router-dom"],
+    dedupe: ["react", "react-dom", "react/jsx-runtime", "react-router", "react-router-dom", "framer-motion"],
   },
   build: {
     // Optimizations for production - especially 3G connections

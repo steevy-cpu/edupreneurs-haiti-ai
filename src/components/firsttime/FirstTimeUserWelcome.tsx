@@ -8,14 +8,27 @@ import { useNetworkAwareAnimations } from '@/hooks/useNetworkAwareAnimations';
 import { preloadImage } from '@/utils/performanceOptimization';
 
 const FirstTimeUserWelcome = () => {
-  const { showWelcome, userNickname, completeWelcome, isLoading } = useFirstTimeUser();
+  // STABILITY GUARD: Use safe context access pattern to prevent null dispatcher errors
+  const firstTimeUser = useFirstTimeUser();
   const { shouldAnimate, shouldShowGlow } = useNetworkAwareAnimations();
   
+  // Track mount stability to prevent errors during navigation transitions
+  const [isStable, setIsStable] = useState(false);
   const [phase, setPhase] = useState<'greeting' | 'intro' | 'walkthrough' | 'progress' | 'done'>('greeting');
   const [showGreeting, setShowGreeting] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [showWalkthrough, setShowWalkthrough] = useState(false);
   const [progressValue, setProgressValue] = useState(0);
+  
+  // Wait one render cycle for React dispatcher to stabilize after lazy load
+  useEffect(() => {
+    const timer = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsStable(true);
+      });
+    });
+    return () => cancelAnimationFrame(timer);
+  }, []);
 
   // Preload Eric image on mount for better UX
   useEffect(() => {
@@ -23,7 +36,7 @@ const FirstTimeUserWelcome = () => {
   }, []);
 
   useEffect(() => {
-    if (!showWelcome || isLoading) {
+    if (!firstTimeUser.showWelcome || firstTimeUser.isLoading) {
       // Reset state when not showing
       setPhase('greeting');
       setShowGreeting(false);
@@ -39,7 +52,7 @@ const FirstTimeUserWelcome = () => {
     }, 500);
 
     return () => clearTimeout(greetingTimer);
-  }, [showWelcome, isLoading]);
+  }, [firstTimeUser.showWelcome, firstTimeUser.isLoading]);
 
   // Progress bar animation after walkthrough text
   useEffect(() => {
@@ -63,10 +76,10 @@ const FirstTimeUserWelcome = () => {
     if (progressValue === 100 && phase === 'progress') {
       setTimeout(() => {
         setPhase('done');
-        setTimeout(completeWelcome, 300);
+        setTimeout(firstTimeUser.completeWelcome, 300);
       }, 500);
     }
-  }, [progressValue, phase, completeWelcome]);
+  }, [progressValue, phase, firstTimeUser.completeWelcome]);
 
   const handleGreetingComplete = () => {
     setTimeout(() => {
@@ -88,9 +101,11 @@ const FirstTimeUserWelcome = () => {
     }, 400);
   };
 
-  if (!showWelcome || isLoading) return null;
+  // Early return AFTER all hooks are called (prevents hook count mismatch)
+  if (!isStable) return null;
+  if (!firstTimeUser.showWelcome || firstTimeUser.isLoading) return null;
 
-  const displayName = userNickname || 'ami(e)';
+  const displayName = firstTimeUser.userNickname || 'ami(e)';
 
   // Network-aware animation config - reduce animations on slow connections
   const overlayAnimation = shouldAnimate 
