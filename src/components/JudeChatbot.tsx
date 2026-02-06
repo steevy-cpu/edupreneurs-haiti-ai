@@ -6,6 +6,7 @@ import { Send, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import judeAvatar from "@/assets/dashboard00.png";
+import { cn } from "@/lib/utils";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { useEricDraggable } from "@/hooks/useEricDraggable";
 import { useVisitor } from "@/contexts/VisitorContext";
@@ -338,12 +339,26 @@ export const JudeChatbot = () => {
   };
 
   return (
-    <div 
-      ref={setRootRef}
-      style={getContainerStyles()}
-      onMouseDown={!isOpen ? handleMouseDown : undefined}
-      onTouchStart={!isOpen ? handleTouchStart : undefined}
-    >
+    <>
+      {/* Backdrop overlay when chat is open */}
+      {isOpen && (
+        <div 
+          className={cn(
+            "fixed inset-0 bg-black/40 transition-opacity duration-200",
+            shouldShowBlur ? "backdrop-blur-sm" : ""
+          )}
+          style={{ zIndex: 1000 }}
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      
+      <div 
+        ref={setRootRef}
+        style={getContainerStyles()}
+        onMouseDown={!isOpen ? handleMouseDown : undefined}
+        onTouchStart={!isOpen ? handleTouchStart : undefined}
+      >
       {/* Jude's 2D avatar */}
       <div 
         className={`cursor-pointer ${!isOpen ? 'hover:scale-105' : ''} transition-transform`}
@@ -489,6 +504,7 @@ export const JudeChatbot = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
