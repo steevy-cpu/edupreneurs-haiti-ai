@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { containsProfanity, isReservedUsername } from "./textModeration";
 
 // Valid academic grade values (standardized format)
 export const ACADEMIC_GRADES = ['7AF', '8AF', '9AF', 'NS1', 'NS2', 'NS3', 'NS4', 'UNIV', 'NONE'] as const;
@@ -51,13 +52,22 @@ export const signupSchema = z.object({
     .string()
     .trim()
     .max(100, "Le nom complet ne peut pas dépasser 100 caractères")
+    .refine((val) => !val || !containsProfanity(val), {
+      message: "Le nom contient des termes inappropriés",
+    })
     .optional(),
   nickname: z
     .string()
     .trim()
     .min(3, "Le pseudo doit contenir au moins 3 caractères")
     .max(30, "Le pseudo ne peut pas dépasser 30 caractères")
-    .regex(/^[a-zA-Z0-9_]+$/, "Le pseudo ne peut contenir que des lettres, chiffres et underscores"),
+    .regex(/^[a-zA-Z0-9_]+$/, "Le pseudo ne peut contenir que des lettres, chiffres et underscores")
+    .refine((val) => !containsProfanity(val), {
+      message: "Ce pseudo contient des termes inappropriés",
+    })
+    .refine((val) => !isReservedUsername(val), {
+      message: "Ce pseudo est réservé",
+    }),
   academicGrade: z
     .string()
     .min(1, "Le niveau académique est requis")

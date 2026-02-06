@@ -45,6 +45,7 @@ import { PageHeader, SettingsPageSkeleton } from "@/components/shared";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import { debounce } from "@/utils/performanceOptimization";
 import { useSessionAuth } from "@/contexts/SessionAuthContext";
+import { validateUserText } from "@/lib/textModeration";
 
 // Lazy load heavy components
 const AvatarSelector = lazy(() => import('@/components/AvatarSelector').then(m => ({ default: m.AvatarSelector })));
@@ -248,6 +249,21 @@ const Settings = () => {
       toast.error("Le pseudo ne peut contenir que des lettres, chiffres et underscores");
       return;
     }
+    
+    // Content moderation for nickname
+    const nicknameCheck = validateUserText(profileForm.nickname, 'nickname');
+    if (!nicknameCheck.valid) {
+      toast.error(nicknameCheck.error || "Pseudo invalide");
+      return;
+    }
+    
+    // Content moderation for full name
+    const fullNameCheck = validateUserText(profileForm.fullName, 'fullName');
+    if (!fullNameCheck.valid) {
+      toast.error(fullNameCheck.error || "Nom invalide");
+      return;
+    }
+    
     if (!profileForm.academicGrade) {
       toast.error("Le niveau académique est requis");
       return;

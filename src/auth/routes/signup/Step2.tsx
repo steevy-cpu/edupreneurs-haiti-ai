@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { validateStep2, checkNicknameAvailability } from "../../services/signup.service";
 import { saveSignupProgress, getSignupProgress, saveAuthFlow } from "../../store/authFlow.store";
 import { GRADE_OPTIONS } from "@/lib/authValidation";
+import { validateUserText, type ModerationResult } from "@/lib/textModeration";
 
 export default function SignupStep2() {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ export default function SignupStep2() {
   // Nickname availability state
   const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(null);
   const [checkingNickname, setCheckingNickname] = useState(false);
+  const [nicknameModerationResult, setNicknameModerationResult] = useState<ModerationResult | null>(null);
   const nicknameCheckTimer = useRef<NodeJS.Timeout>();
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -85,7 +87,23 @@ export default function SignupStep2() {
 
   const handleNicknameChange = (value: string) => {
     setNickname(value);
-    handleNicknameCheck(value);
+    
+    // Instant moderation check (no network delay)
+    if (value.length >= 3 && isValidNicknameFormat(value)) {
+      const moderationResult = validateUserText(value, 'nickname');
+      setNicknameModerationResult(moderationResult);
+      
+      // Only check availability if passes moderation
+      if (moderationResult.valid) {
+        handleNicknameCheck(value);
+      } else {
+        setNicknameAvailable(null);
+        setCheckingNickname(false);
+      }
+    } else {
+      setNicknameModerationResult(null);
+      handleNicknameCheck(value);
+    }
   };
 
   const handleGradeChange = (value: string) => {
@@ -193,10 +211,16 @@ export default function SignupStep2() {
               <Loader2 className="h-3 w-3 animate-spin" /> Vérification...
             </p>
           )}
-          {nicknameAvailable === false && isValidNicknameFormat(nickname) && (
+          {nicknameModerationResult?.hasProfanity && (
+            <p className="text-xs text-destructive">Ce pseudo contient des termes inappropriés</p>
+          )}
+          {nicknameModerationResult?.isReserved && (
+            <p className="text-xs text-destructive">Ce pseudo est réservé</p>
+          )}
+          {nicknameAvailable === false && isValidNicknameFormat(nickname) && nicknameModerationResult?.valid !== false && (
             <p className="text-xs text-destructive">Ce pseudo est déjà utilisé</p>
           )}
-          {nicknameAvailable === true && isValidNicknameFormat(nickname) && (
+          {nicknameAvailable === true && isValidNicknameFormat(nickname) && nicknameModerationResult?.valid !== false && (
             <p className="text-xs text-success">Ce pseudo est disponible ✓</p>
           )}
         </div>
@@ -325,7 +349,7 @@ export default function SignupStep2() {
         <Button 
           type="button" 
           className="flex-1"
-          disabled={checkingNickname}
+          disabled={checkingNickname || nicknameModerationResult?.valid === false}
           onClick={handleContinue}
         >
           {checkingNickname ? (
