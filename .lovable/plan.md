@@ -1,108 +1,172 @@
 
-# Plan: Fix Visitor Tour Issues
+# Plan: Fix PassionDiscovery Dynamic Import Failure
 
 ## Problem Summary
 
-Two issues reported with the Visitor Tour:
-
-1. **Inaccurate Highlights**: The spotlight overlay is highlighting the entire page instead of specific elements (visible in screenshots as a teal border around the whole content area)
-2. **React Errors on "Suivant" Button**: `TypeError: Cannot read properties of null (reading 'useState')` when clicking the next button to navigate between tour steps
+The error `Failed to fetch dynamically imported module: .../src/pages/PassionDiscovery.tsx` occurs when users try to navigate to `/passion-discovery`. This is a **cache/chunk mismatch issue**, not a code syntax error.
 
 ## Root Cause Analysis
 
-### Issue 1: Inaccurate Highlights
+When we updated `vite.config.ts` to change the `cacheDir` from `v2` to `v3`, Vite regenerated all chunk hashes. The browser is now requesting old chunk filenames that no longer exist because:
 
-The spotlight overlay in `VisitorTour.tsx` (lines 136-171) uses:
-- A `clipPath` polygon to create a "spotlight" effect
-- `getBoundingClientRect()` to calculate element positions
-- Targets like `[data-tour='feed-content']`
+1. **Stale Browser Cache**: Users have cached JavaScript that references old chunk URLs
+2. **Lazy Loading Timing**: The lazy import tries to fetch a chunk URL that was valid in a previous build
+3. **No Retry Mechanism**: When the chunk fetch fails, React Router's Suspense boundary throws without recovery
 
-**Problems:**
-- Target elements may not exist or have incorrect `data-tour` attributes
-- The `getBoundingClientRect()` values are static and don't account for scroll
-- The complex clip-path calculation is error-prone and creates visual artifacts
+## Solution Overview
 
-**Solution:** Remove the spotlight overlay entirely as requested - the tour dialog provides sufficient context without highlighting.
+Implement a **chunk loading error recovery system** that:
+1. Detects when a lazy-loaded module fails to fetch
+2. Automatically reloads the page to clear stale chunks
+3. Shows a friendly message to users on slow connections
 
-### Issue 2: React Dispatcher Error
+## Implementation Details
 
-The `VisitorTour` component is lazy-loaded in `FloatingLayer.tsx` but **lacks the stability guard pattern** that was added to the FirstTimeUser components (`FirstTimeUserWelcome`, `AvatarGenerationStep`, `FirstTimeUserTour`).
+### File 1: Create `src/utils/chunkLoadErrorHandler.ts`
 
-When clicking "Suivant":
-1. `nextTourStep()` is called → increments `tourStep`
-2. `useEffect` triggers navigation to new path
-3. Navigation causes module isolation issues during the unstable transition
-4. Hooks are called before React's dispatcher is fully initialized
+A utility to handle chunk loading errors gracefully:
 
-**Solution:** Apply the same double `requestAnimationFrame` stability guard pattern to `VisitorTour`.
+```typescript
+/**
+ * Handles dynamic import failures caused by stale cache.
+ * 
+ * When Vite rebuilds, chunk hashes change. Users with cached
+ * JavaScript may request old chunk URLs that no longer exist.
+ * 
+ * This utility:
+ * 1. Detects the failure pattern
+ * 2. Forces a page reload to get fresh chunks
+ * 3. Prevents infinite reload loops
+ */
+
+const RELOAD_KEY = 'chunk_reload_attempted';
+const RELOAD_COOLDOWN = 5000; // 5 seconds
+
+export function isChunkLoadError(error: unknown): boolean {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    return (
+      message.includes('failed to fetch dynamically imported module') ||
+      message.includes('loading chunk') ||
+      message.includes('loading css chunk')
+    );
+  }
+  return false;
+}
+
+export function handleChunkLoadError(error: Error): void {
+  const lastReload = sessionStorage.getItem(RELOAD_KEY);
+  const now = Date.now();
+  
+  // Prevent infinite reload loops
+  if (lastReload && now - parseInt(lastReload, 10) < RELOAD_COOLDOWN) {
+    console.error('Chunk load failed after reload:', error);
+    return;
+  }
+  
+  // Mark that we're attempting a reload
+  sessionStorage.setItem(RELOAD_KEY, now.toString());
+  
+  // Force reload to get fresh chunks
+  window.location.reload();
+}
+
+export function clearChunkReloadFlag(): void {
+  sessionStorage.removeItem(RELOAD_KEY);
+}
+```
+
+### File 2: Update `src/components/ErrorBoundary.tsx`
+
+Enhance the error boundary to detect chunk errors and auto-recover:
+
+Add import at top:
+```typescript
+import { isChunkLoadError, handleChunkLoadError } from '@/utils/chunkLoadErrorHandler';
+```
+
+In the `componentDidCatch` method, add chunk error detection:
+```typescript
+componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  console.error("ErrorBoundary caught an error:", error, errorInfo);
+  
+  // Check if this is a chunk loading error (stale cache)
+  if (isChunkLoadError(error)) {
+    handleChunkLoadError(error);
+    return; // Page will reload, no need to update state
+  }
+  
+  // Rest of existing error handling...
+}
+```
+
+Add a specific UI for chunk errors in the render method:
+```typescript
+// In the error state render, before the generic error UI
+if (isChunkLoadError(this.state.error)) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="text-center space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+        <h2 className="text-lg font-semibold">Mise à jour en cours...</h2>
+        <p className="text-sm text-muted-foreground">
+          Une nouvelle version est disponible. Rechargement automatique...
+        </p>
+      </div>
+    </div>
+  );
+}
+```
+
+### File 3: Update `src/App.tsx` - Add Route Error Element
+
+Wrap lazy imports with retry logic for better resilience:
+
+Create a helper function at the top of App.tsx:
+```typescript
+/**
+ * Wrap lazy import with automatic retry on chunk load failure.
+ * If the chunk fails to load, reload the page to get fresh chunks.
+ */
+function lazyWithRetry(importFn: () => Promise<{ default: React.ComponentType }>) {
+  return lazy(() =>
+    importFn().catch((error) => {
+      // Check if it's a chunk load error
+      if (error?.message?.includes('Failed to fetch dynamically imported module')) {
+        // Only reload if we haven't just reloaded
+        const lastReload = sessionStorage.getItem('chunk_reload');
+        const now = Date.now();
+        if (!lastReload || now - parseInt(lastReload, 10) > 5000) {
+          sessionStorage.setItem('chunk_reload', now.toString());
+          window.location.reload();
+        }
+      }
+      throw error;
+    })
+  );
+}
+```
+
+Then update the PassionDiscovery import:
+```typescript
+// Change from:
+const PassionDiscovery = lazy(() => import("./pages/PassionDiscovery"));
+
+// To:
+const PassionDiscovery = lazyWithRetry(() => import("./pages/PassionDiscovery"));
+```
+
+Apply the same pattern to other frequently-used lazy routes.
 
 ---
 
-## Implementation
-
-### File: `src/components/visitor/VisitorTour.tsx`
-
-**Change 1: Add stability guard (at component start)**
-
-Add state and effect to delay rendering until React is stable:
-
-```tsx
-export const VisitorTour = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  
-  // STABILITY GUARD: Prevent null dispatcher errors during lazy load transitions
-  const [isStable, setIsStable] = useState(false);
-  
-  // Wait for React dispatcher to stabilize after lazy load
-  useEffect(() => {
-    const timer = requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setIsStable(true);
-      });
-    });
-    return () => cancelAnimationFrame(timer);
-  }, []);
-  
-  // Rest of hooks...
-  const { isVisitor, tourStep, tourActive, ... } = useVisitor();
-  // ...other hooks
-  
-  // Early return AFTER all hooks (prevents hook count mismatch)
-  if (!isStable) return null;
-  if (!isVisitor || !tourActive || tourCompleted || !currentStep) return null;
-```
-
-**Change 2: Remove spotlight overlay entirely**
-
-Remove lines 136-171 (the spotlight overlay and highlight border) since:
-- The highlights are inaccurate and visually distracting
-- The tour dialog provides sufficient guidance
-- Simpler is better for 3G performance
-
-The JSX will simplify to just the tour dialog:
-
-```tsx
-return (
-  <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:bottom-4 sm:w-96 z-[1004] animate-slide-up">
-    {/* Tour dialog content - same as before */}
-  </div>
-);
-```
-
-**Change 3: Remove unused state and effect for highlighting**
-
-Remove:
-- `const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);`
-- The `useEffect` that finds and highlights elements (lines 92-109)
-
----
-
-## Files Modified
+## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/components/visitor/VisitorTour.tsx` | Add stability guard, remove spotlight overlay, remove unused highlight state/effects |
+| `src/utils/chunkLoadErrorHandler.ts` | NEW: Chunk error detection and recovery utility |
+| `src/components/ErrorBoundary.tsx` | Add chunk error detection and auto-reload |
+| `src/App.tsx` | Wrap key lazy imports with retry logic |
 
 ---
 
@@ -110,19 +174,32 @@ Remove:
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Backward compatible? | Yes | Tour still functions, just without visual highlights |
-| Breaks existing flow? | No | Same navigation, same tour steps |
-| 3G performance | Improved | Less DOM manipulation, no `getBoundingClientRect()` calls |
-| Works with dark mode? | Yes | No changes to theming |
-| Accessibility? | Yes | No changes to ARIA or interaction patterns |
-| Hook count stable? | Yes | All hooks called unconditionally before early returns |
+| Backward compatible? | ✓ | No changes to existing behavior when chunks load normally |
+| Prevents infinite loops? | ✓ | Session storage flag with 5s cooldown |
+| 3G friendly? | ✓ | Shows loading state, single reload attempt |
+| Works offline? | ✓ | Error boundary still catches offline errors |
+| User experience? | ✓ | Friendly message in French, automatic recovery |
+
+---
+
+## Why This Happens and How to Prevent
+
+### Current Issue
+Every time the Vite dev server restarts or builds change, chunk hashes update. Old URLs become 404s.
+
+### Prevention (For Production)
+In production, ensure your deployment strategy includes:
+1. Cache-Control headers that expire old chunks
+2. Service worker that invalidates on new builds
+3. The error recovery system we're implementing
 
 ---
 
 ## Expected Result
 
 After implementation:
-- "Suivant" button works without React errors
-- Tour dialog appears cleanly without distracting spotlight overlays
-- Smoother navigation between tour steps
-- Consistent behavior across all devices and connection speeds
+- Users hitting stale chunk errors will see a brief "Mise à jour en cours..." message
+- Page automatically reloads to fetch fresh chunks
+- No infinite reload loops (5 second cooldown)
+- Works seamlessly on slow 3G connections
+- French language messaging consistent with the app
