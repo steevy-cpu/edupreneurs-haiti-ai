@@ -193,8 +193,13 @@ const messagesEndRef = useRef<HTMLDivElement>(null);
               </div>
             ))}
             {isTyping && (
-              <div className="eric-typing-indicator">
-                Jude écrit<span className="eric-dots">...</span>
+              <div className="eric-typing-indicator flex items-center gap-1">
+                <span>Jude écrit</span>
+                <span className="flex gap-0.5">
+                  <span className="animate-typing-wave" style={{ animationDelay: '0ms' }}>.</span>
+                  <span className="animate-typing-wave" style={{ animationDelay: '150ms' }}>.</span>
+                  <span className="animate-typing-wave" style={{ animationDelay: '300ms' }}>.</span>
+                </span>
               </div>
             )}
             
