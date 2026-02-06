@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { BatchQuizGenerator } from "./BatchQuizGenerator";
 import { BatchQuizContentValidator } from "./BatchQuizContentValidator";
 import { BatchActivitiesContentValidator } from "./BatchActivitiesContentValidator";
+import { BatchQuizRegenerator } from "./BatchQuizRegenerator";
+import { BatchActivitiesRegenerator } from "./BatchActivitiesRegenerator";
 import { ValidationDetailsPanel } from "./ValidationDetailsPanel";
 
 interface LessonBrowserProps {
@@ -453,6 +455,13 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
                  />
               </div>
             )}
+            {/* Batch Quiz Regenerator Button - for flagged quizzes */}
+            <BatchQuizRegenerator 
+              lessons={lessonsWithValidQuiz}
+              gradeLevel={gradeLevel}
+              onComplete={loadSubjects}
+              onDashboardRefresh={onDashboardRefresh}
+            />
             {/* Batch Activities Content Validator Button */}
             {lessonsWithValidActivities.length > 0 && (
               <div className="pt-2">
@@ -466,6 +475,13 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
                  />
               </div>
             )}
+            {/* Batch Activities Regenerator Button - for flagged activities */}
+            <BatchActivitiesRegenerator 
+              lessons={lessonsWithValidActivities}
+              gradeLevel={gradeLevel}
+              onComplete={loadSubjects}
+              onDashboardRefresh={onDashboardRefresh}
+            />
           </div>
         )}
       </CardHeader>
