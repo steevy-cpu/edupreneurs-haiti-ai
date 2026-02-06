@@ -8,6 +8,12 @@ import { generateConfirmationCode } from "@/utils/emailService";
 import { loginSchema } from "@/lib/authValidation";
 import { saveAuthFlow } from "../store/authFlow.store";
 import { isDeviceTrusted, createDeviceChallenge } from "./device-verify.service";
+import { 
+  checkLoginAllowed, 
+  recordFailedAttempt, 
+  clearLoginAttempts,
+  sendLockoutResetEmail 
+} from "./loginAttempts.service";
 
 export interface LoginCredentials {
   email: string;
@@ -18,6 +24,9 @@ export interface LoginResult {
   success: boolean;
   requiresVerification?: boolean;
   requiresDeviceVerification?: boolean;
+  requiresPasswordReset?: boolean;
+  resetEmailSent?: boolean;
+  remainingAttempts?: number;
   deviceChallengeId?: string;
   pendingUserId?: string;
   userId?: string;
@@ -45,18 +54,68 @@ export function validateLoginCredentials(credentials: LoginCredentials): { valid
  * Attempt login with Supabase
  */
 export async function loginWithEmail(credentials: LoginCredentials): Promise<LoginResult> {
+  // STEP 1: Check if login is allowed (before attempting auth)
+  const attemptStatus = await checkLoginAllowed(credentials.email);
+  
+  if (!attemptStatus.allowed) {
+    return {
+      success: false,
+      error: attemptStatus.lockMessage || "Trop de tentatives échouées. Veuillez réinitialiser votre mot de passe.",
+      requiresPasswordReset: true,
+      remainingAttempts: 0,
+    };
+  }
+
+  // STEP 2: Attempt actual login
   const { data: authData, error } = await supabase.auth.signInWithPassword({
     email: credentials.email,
     password: credentials.password,
   });
 
   if (error) {
-    return { success: false, error: error.message };
+    // STEP 3: Record failed attempt
+    const failResult = await recordFailedAttempt(credentials.email);
+    
+    if (failResult.isNowLocked) {
+      // Send auto-reset email if token was generated
+      if (failResult.resetToken) {
+        await sendLockoutResetEmail(
+          credentials.email,
+          failResult.fullName || 'Utilisateur',
+          failResult.resetToken
+        );
+      }
+      
+      return {
+        success: false,
+        error: "Trop de tentatives échouées. Un email de réinitialisation a été envoyé.",
+        requiresPasswordReset: true,
+        resetEmailSent: true,
+        remainingAttempts: 0,
+      };
+    }
+    
+    // Calculate remaining attempts
+    const remaining = 5 - failResult.newCount;
+    
+    // Include remaining attempts warning when getting low
+    if (remaining > 0 && remaining <= 3) {
+      return {
+        success: false,
+        error: `Mot de passe incorrect. ${remaining} tentative${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}.`,
+        remainingAttempts: remaining,
+      };
+    }
+    
+    return { success: false, error: error.message, remainingAttempts: remaining };
   }
 
   if (!authData.user) {
     return { success: false, error: "Échec de connexion" };
   }
+
+  // STEP 4: Successful login - clear attempts
+  await clearLoginAttempts(credentials.email);
 
   // Fetch profile to check email_confirmed
   const { data: profile, error: profileError } = await supabase

@@ -4084,6 +4084,7 @@ export type Database = {
         }[]
       }
       cleanup_expired_rate_limits: { Args: never; Returns: number }
+      cleanup_old_login_attempts: { Args: never; Returns: number }
       count_activities_in_html: {
         Args: { html_content: string }
         Returns: number

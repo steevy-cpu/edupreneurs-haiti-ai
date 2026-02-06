@@ -18,13 +18,17 @@ export default function LoginPage() {
   const location = useLocation();
   const { toast } = useToast();
   
-  // Form state (local - no context needed)
+  // Form state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberDevice, setRememberDevice] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showVisitorSelector, setShowVisitorSelector] = useState(false);
+  
+  // Lockout state
+  const [isLocked, setIsLocked] = useState(false);
+  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
   
   // Get returnTo URL from location state OR sessionStorage
   const returnTo = (location.state as { returnTo?: string })?.returnTo 
@@ -46,6 +50,27 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const result = await loginWithEmail({ email, password });
+      
+      // Handle lockout / password reset required
+      if (result.requiresPasswordReset) {
+        setIsLocked(true);
+        setRemainingAttempts(0);
+        toast({
+          title: "Compte bloqué",
+          description: result.resetEmailSent 
+            ? "Un email de réinitialisation a été envoyé à votre adresse."
+            : "Veuillez réinitialiser votre mot de passe.",
+          variant: "destructive",
+        });
+        // Auto-redirect to forgot password after 3 seconds
+        setTimeout(() => navigate('/auth/forgot-password'), 3000);
+        return;
+      }
+      
+      // Update remaining attempts for UI warning
+      if (result.remainingAttempts !== undefined) {
+        setRemainingAttempts(result.remainingAttempts);
+      }
       
       if (result.requiresVerification) {
         toast({
@@ -69,6 +94,10 @@ export default function LoginPage() {
       if (!result.success) {
         throw new Error(result.error);
       }
+
+      // Successful login - reset lockout state
+      setIsLocked(false);
+      setRemainingAttempts(null);
 
       // Handle device tracking with trust preference (non-blocking)
       if (result.userId) {
@@ -138,6 +167,24 @@ export default function LoginPage() {
 
       {/* Login Form */}
       <div className="auth-content p-5">
+        {/* Locked Account Warning */}
+        {isLocked && (
+          <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-4 text-sm text-destructive">
+            <div className="flex items-center gap-2 font-medium">
+              🔒 Compte temporairement bloqué
+            </div>
+            <p className="mt-1 text-destructive/80">
+              Vérifiez votre email pour réinitialiser votre mot de passe.
+            </p>
+          </div>
+        )}
+        
+        {/* Low Attempts Warning */}
+        {!isLocked && remainingAttempts !== null && remainingAttempts <= 3 && remainingAttempts > 0 && (
+          <div className="bg-warning/10 border border-warning/30 rounded-lg p-3 mb-4 text-sm text-warning-foreground">
+            ⚠️ Attention: {remainingAttempts} tentative{remainingAttempts > 1 ? 's' : ''} restante{remainingAttempts > 1 ? 's' : ''}
+          </div>
+        )}
         <form onSubmit={handleLogin} className="space-y-4" name="login-form" autoComplete="on">
           <div className="space-y-2">
             <Label htmlFor="login-email" className="text-sm text-muted-foreground">
