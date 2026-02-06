@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { signupSchema } from "@/lib/authValidation";
 import { generateConfirmationCode } from "@/utils/emailService";
 import { saveAuthFlow, clearSignupProgress, type SignupFormData } from "../store/authFlow.store";
+import { validateUserText } from "@/lib/textModeration";
 
 export interface SignupResult {
   success: boolean;
@@ -45,6 +46,21 @@ export function validateStep2(data: SignupFormData): { valid: boolean; error?: s
   if (!/^[a-zA-Z0-9_]+$/.test(data.nickname)) {
     return { valid: false, error: "Le pseudo ne peut contenir que des lettres, chiffres et underscores" };
   }
+  
+  // Content moderation for nickname
+  const nicknameCheck = validateUserText(data.nickname, 'nickname');
+  if (!nicknameCheck.valid) {
+    return { valid: false, error: nicknameCheck.error };
+  }
+  
+  // Content moderation for fullName (if provided)
+  if (data.fullName && data.fullName.trim().length > 0) {
+    const fullNameCheck = validateUserText(data.fullName, 'fullName');
+    if (!fullNameCheck.valid) {
+      return { valid: false, error: fullNameCheck.error };
+    }
+  }
+  
   if (!data.academicGrade) {
     return { valid: false, error: "Veuillez sélectionner votre niveau académique" };
   }
