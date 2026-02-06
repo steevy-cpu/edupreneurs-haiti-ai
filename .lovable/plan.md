@@ -1,333 +1,55 @@
 
 
-# Plan: Failed Login Attempt Lockout System
+# Complete Plan: Failed Login Attempt Lockout System
 
-## Problem Statement
-
-Currently, there's no limit on failed login attempts. An attacker (or even a user who forgot their password) can try unlimited password combinations without any protection. After 5 consecutive failed attempts for a specific email, we should:
-1. Block further login attempts
-2. Auto-trigger a password reset email
-3. Require the user to reset their password before logging in again
-
-## Current Architecture Analysis
-
-| Component | Current State | Relevance |
-|-----------|--------------|-----------|
-| `login.service.ts` | Handles login, returns error on wrong password | Entry point for tracking |
-| `LoginPage.tsx` | Displays errors, no attempt tracking | Needs attempt counter state |
-| `ForgotPasswordPage.tsx` | Already has password reset flow | Reuse for lockout recovery |
-| `rate_limits` table | Exists for IP-based throttling | Different use case (general throttling) |
-| `authFlow.store.ts` | Persistent localStorage-based flow state | Could extend for attempt tracking |
-| `generate_password_reset_token` RPC | Generates token, sends email | Reuse for auto-reset |
-
-## Design Decision: Where to Track Attempts?
-
-### Option A: Database Table (Recommended)
-**Pros:**
-- Persists across devices/browsers (attacker can't bypass by clearing localStorage)
-- Email-based tracking (5 attempts per email, not per device)
-- Server-side security
-- Survives tab closes, browser clears
-
-**Cons:**
-- Requires database migration
-
-### Option B: localStorage Only
-**Pros:**
-- No database changes
-
-**Cons:**
-- Easily bypassed (clear storage, use incognito)
-- Device-specific (attacker uses different device)
-- Not production-grade security
-
-**Decision:** Option A - Database table for security. Attacks happen from multiple devices/browsers, so tracking must be server-side.
+This plan addresses two critical requirements:
+1. **Missing Database Components** - Create the `login_attempts` table and all required RPC functions
+2. **Persistent Lockout State** - Ensure lockout persists across page refreshes and session restarts
 
 ---
 
-## Implementation Architecture
+## Current State Analysis
 
-```text
-+------------------+     +-------------------+     +------------------------+
-|   LoginPage.tsx  | --> | login.service.ts  | --> | login_attempts table   |
-|   (UI + State)   |     | (Track attempts)  |     | (DB - email based)     |
-+------------------+     +-------------------+     +------------------------+
-                                 |
-                                 | After 5th failed attempt:
-                                 v
-                    +------------------------+
-                    | Auto Password Reset    |
-                    | (generate_password_    |
-                    |  reset_token + email)  |
-                    +------------------------+
-```
+| Component | Status | Impact |
+|-----------|--------|--------|
+| `login_attempts` table | MISSING | No data storage for tracking |
+| `check_login_attempt` RPC | MISSING | 404 error on login check |
+| `record_failed_login` RPC | MISSING | 404 error on failed login |
+| `clear_login_attempts` RPC | MISSING | Would fail on successful login |
+| `cleanup_old_login_attempts` | EXISTS | Works, but nothing to clean |
+| `loginAttempts.service.ts` | EXISTS | Correctly implemented, just needs DB |
+| `login.service.ts` | EXISTS | Integration already done |
+| `LoginPage.tsx` | PARTIAL | Has lockout UI but no persistence |
 
 ---
 
-## Database Schema
+## Part 1: Database Migration (Required First)
 
-### New Table: `login_attempts`
+### 1.1 Create `login_attempts` Table
 
-| Column | Type | Nullable | Default | Description |
-|--------|------|----------|---------|-------------|
-| id | uuid | NO | gen_random_uuid() | Primary key |
-| email | text | NO | - | User's email (case-insensitive) |
-| failed_count | integer | NO | 0 | Consecutive failed attempts |
-| last_failed_at | timestamptz | YES | - | Timestamp of last failure |
-| locked_at | timestamptz | YES | - | When account was locked (5th failure) |
-| reset_requested_at | timestamptz | YES | - | When auto-reset was triggered |
-| created_at | timestamptz | NO | now() | Record creation |
-| updated_at | timestamptz | NO | now() | Last update |
+```sql
+CREATE TABLE IF NOT EXISTS public.login_attempts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email text NOT NULL,
+  failed_count integer NOT NULL DEFAULT 0,
+  last_failed_at timestamptz,
+  locked_at timestamptz,
+  reset_requested_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT login_attempts_email_key UNIQUE (email)
+);
 
-**Constraints:**
-- UNIQUE on email (one record per email)
-- Index on email for fast lookups
+CREATE INDEX IF NOT EXISTS idx_login_attempts_email 
+  ON public.login_attempts(email);
 
-**RLS Policies:**
-- No public access (service role only via edge function)
-- Users cannot query this table directly
-
----
-
-## File Changes
-
-### 1. Database Migration (New Table + RPC Functions)
-
-Create `login_attempts` table with:
-- `check_login_attempt(p_email text)` - Returns current attempt count and lock status
-- `record_failed_login(p_email text)` - Increments counter, returns new count + lock status
-- `clear_login_attempts(p_email text)` - Resets counter on successful login
-- `cleanup_old_login_attempts()` - Scheduled cleanup of old records
-
-### 2. New File: `src/auth/services/loginAttempts.service.ts`
-
-```typescript
-/**
- * Login Attempts Service - Tracks consecutive failed login attempts
- * 
- * Security: After 5 consecutive failures, user must reset password.
- */
-
-import { supabase } from "@/integrations/supabase/client";
-
-export interface AttemptStatus {
-  allowed: boolean;
-  remainingAttempts: number;
-  isLocked: boolean;
-  lockMessage?: string;
-}
-
-export interface FailedLoginResult {
-  newCount: number;
-  isNowLocked: boolean;
-  resetEmailSent: boolean;
-}
-
-const MAX_ATTEMPTS = 5;
-const LOCKOUT_DURATION_HOURS = 1; // Auto-unlock after 1 hour if no reset
-
-/**
- * Check if login is allowed for this email
- */
-export async function checkLoginAllowed(email: string): Promise<AttemptStatus> {
-  // Call RPC to check current attempt status
-  const { data, error } = await supabase.rpc('check_login_attempt', {
-    p_email: email.toLowerCase().trim()
-  });
-  
-  if (error) {
-    console.error('Failed to check login attempts:', error);
-    // On error, allow attempt (fail open for availability)
-    return { allowed: true, remainingAttempts: MAX_ATTEMPTS, isLocked: false };
-  }
-  
-  // Parse response
-  const { failed_count, locked_at } = data || { failed_count: 0, locked_at: null };
-  
-  // Check if locked
-  if (locked_at) {
-    const lockTime = new Date(locked_at);
-    const hoursSinceLock = (Date.now() - lockTime.getTime()) / (1000 * 60 * 60);
-    
-    if (hoursSinceLock < LOCKOUT_DURATION_HOURS) {
-      return {
-        allowed: false,
-        remainingAttempts: 0,
-        isLocked: true,
-        lockMessage: "Compte temporairement bloqué. Veuillez réinitialiser votre mot de passe.",
-      };
-    }
-    // Lock expired, will be cleared on next successful login
-  }
-  
-  const remaining = Math.max(0, MAX_ATTEMPTS - failed_count);
-  
-  return {
-    allowed: remaining > 0 || !locked_at,
-    remainingAttempts: remaining,
-    isLocked: !!locked_at,
-  };
-}
-
-/**
- * Record a failed login attempt
- * Returns new count and whether account is now locked
- */
-export async function recordFailedAttempt(email: string): Promise<FailedLoginResult> {
-  const { data, error } = await supabase.rpc('record_failed_login', {
-    p_email: email.toLowerCase().trim()
-  });
-  
-  if (error) {
-    console.error('Failed to record login attempt:', error);
-    return { newCount: 1, isNowLocked: false, resetEmailSent: false };
-  }
-  
-  const { new_count, is_locked, reset_sent } = data || {};
-  
-  return {
-    newCount: new_count || 1,
-    isNowLocked: is_locked || false,
-    resetEmailSent: reset_sent || false,
-  };
-}
-
-/**
- * Clear attempts on successful login
- */
-export async function clearLoginAttempts(email: string): Promise<void> {
-  await supabase.rpc('clear_login_attempts', {
-    p_email: email.toLowerCase().trim()
-  });
-}
+ALTER TABLE public.login_attempts ENABLE ROW LEVEL SECURITY;
+-- No public RLS policies = no direct access (security by design)
 ```
 
-### 3. Update: `src/auth/services/login.service.ts`
+### 1.2 Create `check_login_attempt` RPC
 
-Add attempt tracking to the login flow:
-
-```typescript
-// Add import at top
-import { checkLoginAllowed, recordFailedAttempt, clearLoginAttempts } from './loginAttempts.service';
-
-// Modify loginWithEmail function
-export async function loginWithEmail(credentials: LoginCredentials): Promise<LoginResult> {
-  // STEP 1: Check if login is allowed (before attempting auth)
-  const attemptStatus = await checkLoginAllowed(credentials.email);
-  
-  if (!attemptStatus.allowed) {
-    return {
-      success: false,
-      error: attemptStatus.lockMessage || "Trop de tentatives échouées. Veuillez réinitialiser votre mot de passe.",
-      requiresPasswordReset: true, // NEW field
-    };
-  }
-  
-  // STEP 2: Attempt actual login
-  const { data: authData, error } = await supabase.auth.signInWithPassword({
-    email: credentials.email,
-    password: credentials.password,
-  });
-
-  if (error) {
-    // STEP 3: Record failed attempt
-    const failResult = await recordFailedAttempt(credentials.email);
-    
-    if (failResult.isNowLocked) {
-      return {
-        success: false,
-        error: "Trop de tentatives échouées. Un email de réinitialisation a été envoyé.",
-        requiresPasswordReset: true,
-        resetEmailSent: true,
-      };
-    }
-    
-    // Include remaining attempts in error message
-    const remaining = 5 - failResult.newCount;
-    if (remaining > 0 && remaining <= 3) {
-      return {
-        success: false,
-        error: `Mot de passe incorrect. ${remaining} tentative${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}.`,
-      };
-    }
-    
-    return { success: false, error: error.message };
-  }
-
-  // STEP 4: Successful login - clear attempts
-  await clearLoginAttempts(credentials.email);
-  
-  // ... rest of existing login logic (email verification, device verification)
-}
-```
-
-### 4. Update: `src/auth/routes/LoginPage.tsx`
-
-Add UI feedback for lockout state:
-
-```typescript
-// Add new state
-const [isLocked, setIsLocked] = useState(false);
-const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
-
-// In handleLogin, update error handling
-if (result.requiresPasswordReset) {
-  setIsLocked(true);
-  toast({
-    title: "Compte bloqué",
-    description: result.resetEmailSent 
-      ? "Un email de réinitialisation a été envoyé à votre adresse."
-      : "Veuillez réinitialiser votre mot de passe.",
-    variant: "destructive",
-  });
-  
-  // Auto-redirect to forgot password after 3 seconds
-  setTimeout(() => navigate('/auth/forgot-password'), 3000);
-  return;
-}
-
-// Add visual warning when attempts are low
-{remainingAttempts !== null && remainingAttempts <= 3 && remainingAttempts > 0 && (
-  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
-    ⚠️ Attention: {remainingAttempts} tentative{remainingAttempts > 1 ? 's' : ''} restante{remainingAttempts > 1 ? 's' : ''}
-  </div>
-)}
-
-// Add locked state UI
-{isLocked && (
-  <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-800">
-    🔒 Compte temporairement bloqué pour des raisons de sécurité.
-    <br />
-    <span className="text-red-600 font-medium">
-      Vérifiez votre email pour réinitialiser votre mot de passe.
-    </span>
-  </div>
-)}
-```
-
-### 5. Update: `LoginResult` Interface
-
-```typescript
-export interface LoginResult {
-  success: boolean;
-  requiresVerification?: boolean;
-  requiresDeviceVerification?: boolean;
-  requiresPasswordReset?: boolean;  // NEW
-  resetEmailSent?: boolean;          // NEW
-  remainingAttempts?: number;        // NEW
-  deviceChallengeId?: string;
-  pendingUserId?: string;
-  userId?: string;
-  error?: string;
-  profile?: {...};
-}
-```
-
----
-
-## Database RPC Functions
-
-### `check_login_attempt(p_email text)`
+Returns current attempt status for an email.
 
 ```sql
 CREATE OR REPLACE FUNCTION public.check_login_attempt(p_email text)
@@ -356,7 +78,9 @@ END;
 $$;
 ```
 
-### `record_failed_login(p_email text)`
+### 1.3 Create `record_failed_login` RPC
+
+Increments counter, locks after 5 attempts, generates reset token.
 
 ```sql
 CREATE OR REPLACE FUNCTION public.record_failed_login(p_email text)
@@ -369,7 +93,6 @@ DECLARE
   v_email TEXT := LOWER(TRIM(p_email));
   v_new_count INTEGER;
   v_is_locked BOOLEAN := false;
-  v_reset_sent BOOLEAN := false;
   v_user_id UUID;
   v_full_name TEXT;
   v_token TEXT;
@@ -386,45 +109,49 @@ BEGIN
   
   -- Check if now locked (5 attempts)
   IF v_new_count >= 5 THEN
-    -- Lock the account
     UPDATE login_attempts 
     SET locked_at = now()
     WHERE email = v_email AND locked_at IS NULL;
     
     v_is_locked := true;
     
-    -- Auto-trigger password reset
     -- Find user and generate reset token
-    SELECT id INTO v_user_id FROM auth.users WHERE email = v_email;
+    SELECT id INTO v_user_id FROM auth.users WHERE LOWER(email) = v_email;
     
     IF v_user_id IS NOT NULL THEN
       SELECT full_name INTO v_full_name FROM profiles WHERE user_id = v_user_id;
       
-      -- Generate token (reuse existing function logic)
+      -- Generate token
       v_token := encode(extensions.gen_random_bytes(32), 'hex');
       
       DELETE FROM password_reset_tokens WHERE user_id = v_user_id;
       INSERT INTO password_reset_tokens (user_id, token, expires_at)
       VALUES (v_user_id, v_token, now() + interval '1 hour');
       
-      -- Mark reset as requested
       UPDATE login_attempts SET reset_requested_at = now() WHERE email = v_email;
       
-      v_reset_sent := true;
-      -- Note: Edge function will send the email (called from service layer)
+      RETURN jsonb_build_object(
+        'new_count', v_new_count,
+        'is_locked', v_is_locked,
+        'reset_token', v_token,
+        'full_name', v_full_name
+      );
     END IF;
   END IF;
   
   RETURN jsonb_build_object(
     'new_count', v_new_count,
     'is_locked', v_is_locked,
-    'reset_sent', v_reset_sent
+    'reset_token', NULL,
+    'full_name', NULL
   );
 END;
 $$;
 ```
 
-### `clear_login_attempts(p_email text)`
+### 1.4 Create `clear_login_attempts` RPC
+
+Removes tracking record on successful login.
 
 ```sql
 CREATE OR REPLACE FUNCTION public.clear_login_attempts(p_email text)
@@ -441,14 +168,244 @@ $$;
 
 ---
 
+## Part 2: Persistent Lockout State (UI Enhancements)
+
+### Problem
+
+Currently, lockout state is stored in React state only:
+- User fails 5 times, sees lockout UI
+- User refreshes page, lockout UI disappears
+- User has to fail again to see lockout (bad UX)
+
+### Solution: Two-Layer Persistence
+
+#### Layer 1: Extend AuthFlow Store
+
+Add `password-reset-required` flow type to survive page refreshes.
+
+**File: `src/auth/store/authFlow.store.ts`**
+
+Changes:
+1. Add `'password-reset-required'` to `AuthFlowType`
+2. Add `lockedEmail?: string` to `AuthFlowState`
+3. Add `LOCKOUT_TTL_MS` constant (60 minutes)
+4. Update `saveAuthFlow` to handle lockout TTL
+5. Add `hasPendingPasswordReset()` helper function
+
+```typescript
+// Add to AuthFlowType
+export type AuthFlowType = 'idle' | 'signup' | 'login' | 'verify' | 
+  'verify-device' | 'forgot-password' | 'password-reset-required';
+
+// Add to AuthFlowState interface
+lockedEmail?: string;
+
+// Add constant
+const LOCKOUT_TTL_MS = 60 * 60 * 1000; // 60 minutes
+
+// Add helper function
+export function hasPendingPasswordReset(): { pending: boolean; email?: string } {
+  const flow = getAuthFlow();
+  if (flow?.flow === 'password-reset-required' && flow.lockedEmail) {
+    return { pending: true, email: flow.lockedEmail };
+  }
+  return { pending: false };
+}
+```
+
+#### Layer 2: Save Lockout to AuthFlow Store
+
+**File: `src/auth/services/login.service.ts`**
+
+When lockout is detected (pre-check or 5th failure), persist to authFlow store:
+
+```typescript
+// When lockout detected pre-auth (line ~60-67):
+if (!attemptStatus.allowed) {
+  saveAuthFlow({
+    flow: 'password-reset-required',
+    email: credentials.email,
+    lockedEmail: credentials.email,
+  });
+  return { /* existing code */ };
+}
+
+// When 5th attempt fails (line ~79-96):
+if (failResult.isNowLocked) {
+  saveAuthFlow({
+    flow: 'password-reset-required',
+    email: credentials.email,
+    lockedEmail: credentials.email,
+  });
+  // ... rest of existing code
+}
+```
+
+#### Layer 3: Check Lockout on Page Load + Email Change
+
+**File: `src/auth/routes/LoginPage.tsx`**
+
+Add three enhancements:
+
+**A. Check lockout on component mount:**
+```typescript
+import { useEffect, useRef, useCallback } from "react";
+import { hasPendingPasswordReset } from "../store/authFlow.store";
+import { checkLoginAllowed } from "../services/loginAttempts.service";
+
+// Inside component
+useEffect(() => {
+  const resetState = hasPendingPasswordReset();
+  if (resetState.pending && resetState.email) {
+    setEmail(resetState.email);
+    setIsLocked(true);
+    setRemainingAttempts(0);
+  }
+}, []);
+```
+
+**B. Debounced email lockout check (3G optimized):**
+```typescript
+const lockCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+const handleEmailChange = useCallback((newEmail: string) => {
+  setEmail(newEmail);
+  
+  if (lockCheckTimeoutRef.current) {
+    clearTimeout(lockCheckTimeoutRef.current);
+  }
+  
+  // Skip check for invalid emails
+  if (!newEmail.includes('@') || newEmail.length < 5) return;
+  
+  // Debounce 500ms
+  lockCheckTimeoutRef.current = setTimeout(async () => {
+    const status = await checkLoginAllowed(newEmail);
+    if (!status.allowed && status.isLocked) {
+      setIsLocked(true);
+      setRemainingAttempts(0);
+    } else {
+      setIsLocked(false);
+      setRemainingAttempts(status.remainingAttempts);
+    }
+  }, 500);
+}, []);
+
+// Cleanup on unmount
+useEffect(() => {
+  return () => {
+    if (lockCheckTimeoutRef.current) {
+      clearTimeout(lockCheckTimeoutRef.current);
+    }
+  };
+}, []);
+```
+
+**C. Enhanced lockout UI with direct action:**
+```typescript
+{isLocked && (
+  <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-4">
+    <div className="flex items-center gap-2 font-medium text-destructive">
+      <Lock className="h-4 w-4" />
+      Compte temporairement bloque
+    </div>
+    <p className="mt-1 text-sm text-destructive/80">
+      Verifiez votre email pour reinitialiser votre mot de passe.
+    </p>
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className="mt-3 text-destructive border-destructive/30 hover:bg-destructive/10"
+      onClick={() => navigate('/auth/forgot-password', { state: { email } })}
+    >
+      Reinitialiser mon mot de passe
+    </Button>
+  </div>
+)}
+```
+
+**D. Disable form when locked:**
+```typescript
+<Input
+  value={email}
+  onChange={(e) => handleEmailChange(e.target.value)}
+  disabled={isLocked}
+/>
+
+<Button type="submit" disabled={isLoading || isLocked}>
+```
+
+#### Layer 4: Accept Pre-filled Email in ForgotPasswordPage
+
+**File: `src/auth/routes/ForgotPasswordPage.tsx`**
+
+```typescript
+import { useLocation } from "react-router-dom";
+
+// Inside component
+const location = useLocation();
+const prefilledEmail = (location.state as { email?: string })?.email;
+
+const [email, setEmail] = useState(prefilledEmail || "");
+```
+
+#### Layer 5: Clear Lockout After Successful Password Reset
+
+**File: `src/pages/ResetPassword.tsx`**
+
+```typescript
+import { clearAuthFlow } from "@/auth/store/authFlow.store";
+
+// After successful password reset (line ~159):
+toast({ title: "Mot de passe reinitialise" });
+
+// Clear lockout state
+clearAuthFlow();
+
+setTimeout(() => navigate("/auth/login"), 2000);
+```
+
+---
+
 ## Files Summary
 
 | File | Action | Purpose |
 |------|--------|---------|
-| Database Migration | **CREATE** | `login_attempts` table + RPC functions |
-| `src/auth/services/loginAttempts.service.ts` | **CREATE** | Attempt tracking business logic |
-| `src/auth/services/login.service.ts` | **UPDATE** | Integrate attempt checks into login flow |
-| `src/auth/routes/LoginPage.tsx` | **UPDATE** | UI for warnings and lockout state |
+| Database Migration | **CREATE** | `login_attempts` table + 3 RPCs |
+| `src/auth/store/authFlow.store.ts` | **UPDATE** | Add `password-reset-required` flow |
+| `src/auth/services/login.service.ts` | **UPDATE** | Save lockout to authFlow store |
+| `src/auth/routes/LoginPage.tsx` | **UPDATE** | Mount check + debounced email check |
+| `src/auth/routes/ForgotPasswordPage.tsx` | **UPDATE** | Accept pre-filled email |
+| `src/pages/ResetPassword.tsx` | **UPDATE** | Clear authFlow on success |
+
+---
+
+## User Experience Flow (After Implementation)
+
+```text
+Scenario A: User fails 5 times
+  1. Attempt 1-2: "Mot de passe incorrect"
+  2. Attempt 3: "Mot de passe incorrect. 2 tentatives restantes."
+  3. Attempt 4: "Mot de passe incorrect. 1 tentative restante."
+  4. Attempt 5: Account locked, email sent, lockout UI shown
+  5. User refreshes page: Lockout UI STILL shows (from authFlow store)
+  6. User closes browser, reopens: Lockout UI STILL shows
+
+Scenario B: User types locked email (fresh session)
+  1. Opens login page (fresh)
+  2. Types "locked@example.com"
+  3. (500ms debounce) → Database check
+  4. Lockout UI appears immediately (no need to submit)
+
+Scenario C: User resets password
+  1. Clicks "Reinitialiser mon mot de passe"
+  2. ForgotPasswordPage shows with email pre-filled
+  3. Receives reset email
+  4. Completes reset on ResetPasswordPage
+  5. authFlow cleared → login_attempts cleared
+  6. User can login normally
+```
 
 ---
 
@@ -456,29 +413,23 @@ $$;
 
 | Aspect | Implementation |
 |--------|---------------|
-| Tracking scope | Per email, not per device (prevents bypass) |
-| Storage | Database (not localStorage - prevents clearing) |
-| Auto-unlock | 1 hour timeout OR password reset clears lock |
-| Reset trigger | Automatic on 5th failure |
-| RLS | No public access, service role only |
-| Fail-open | On DB error, allow attempt (availability > lockout) |
-| Consecutive only | Successful login clears counter |
+| Tracking scope | Per email (not per device) |
+| Storage | Database = source of truth |
+| localStorage | UX only, not security |
+| RLS | No public access to table |
+| SECURITY DEFINER | RPCs bypass RLS safely |
+| Fail-open | On DB error, allow attempt |
+| Auto-unlock | 1 hour OR password reset |
 
 ---
 
-## User Experience Flow
+## 3G Performance Optimization
 
-```text
-Attempt 1: "Mot de passe incorrect"
-Attempt 2: "Mot de passe incorrect"
-Attempt 3: "Mot de passe incorrect. 2 tentatives restantes."
-Attempt 4: "Mot de passe incorrect. 1 tentative restante."
-Attempt 5: 
-  → Account locked
-  → Auto password reset email sent
-  → UI shows: "Compte bloqué. Un email de réinitialisation a été envoyé."
-  → Redirects to /auth/forgot-password after 3 seconds
-```
+| Operation | Strategy |
+|-----------|----------|
+| Email check | 500ms debounce (prevents spam) |
+| Mount check | Single localStorage read (instant) |
+| DB calls | Minimal (1 RPC per login attempt) |
 
 ---
 
@@ -486,10 +437,10 @@ Attempt 5:
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Backward compatible? | Yes | No changes to existing successful logins |
-| Breaks existing flows? | No | Only adds new tracking layer |
-| 3G performance? | Yes | Single RPC call per login attempt |
-| Works with email verification? | Yes | Attempt check happens before auth |
-| Works with device verification? | Yes | Same flow, tracking is earlier |
+| Backward compatible? | Yes | Adds new flow type |
+| Breaks existing flows? | No | verify, verify-device unchanged |
+| Works with email verification? | Yes | Lockout check is earlier |
+| Works with device verification? | Yes | Lockout check is earlier |
 | Existing users affected? | No | Fresh tracking for all |
+| Clear on password reset? | Yes | Both DB and authFlow cleared |
 
