@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { isChunkLoadError, handleChunkLoadError } from '@/utils/chunkLoadErrorHandler';
 
 interface Props {
   children: ReactNode;
@@ -13,6 +14,8 @@ interface State {
 /**
  * Global Error Boundary to catch runtime errors and display a user-friendly message
  * instead of showing a blank screen or infinite loading.
+ * 
+ * Also handles chunk loading errors (stale cache) by auto-reloading the page.
  */
 class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
@@ -26,6 +29,12 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+    
+    // Check if this is a chunk loading error (stale cache)
+    if (isChunkLoadError(error)) {
+      handleChunkLoadError(error);
+      return; // Page will reload, no need to continue
+    }
   }
 
   handleReload = () => {
@@ -34,6 +43,58 @@ class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      // Show loading state for chunk errors (page will auto-reload)
+      if (isChunkLoadError(this.state.error)) {
+        return (
+          <div
+            style={{
+              minHeight: '100vh',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              backgroundColor: '#1a1a2e',
+              color: '#ffffff',
+              textAlign: 'center',
+            }}
+          >
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                border: '3px solid rgba(99, 102, 241, 0.3)',
+                borderTopColor: '#6366f1',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+                marginBottom: '16px',
+              }}
+            />
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            <h2
+              style={{
+                fontSize: '18px',
+                fontWeight: 600,
+                marginBottom: '8px',
+                color: '#ffffff',
+              }}
+            >
+              Mise à jour en cours...
+            </h2>
+            <p
+              style={{
+                fontSize: '14px',
+                color: '#a0a0a0',
+                maxWidth: '300px',
+              }}
+            >
+              Une nouvelle version est disponible. Rechargement automatique...
+            </p>
+          </div>
+        );
+      }
+      
       if (this.props.fallback) {
         return this.props.fallback;
       }
