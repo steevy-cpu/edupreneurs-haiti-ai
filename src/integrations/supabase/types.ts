@@ -2062,6 +2062,39 @@ export type Database = {
           },
         ]
       }
+      login_attempts: {
+        Row: {
+          created_at: string
+          email: string
+          failed_count: number
+          id: string
+          last_failed_at: string | null
+          locked_at: string | null
+          reset_requested_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          failed_count?: number
+          id?: string
+          last_failed_at?: string | null
+          locked_at?: string | null
+          reset_requested_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          failed_count?: number
+          id?: string
+          last_failed_at?: string | null
+          locked_at?: string | null
+          reset_requested_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       message_reactions: {
         Row: {
           created_at: string
@@ -4071,6 +4104,7 @@ export type Database = {
         Args: { p_lesson_id: string }
         Returns: boolean
       }
+      check_login_attempt: { Args: { p_email: string }; Returns: Json }
       check_nickname_available: {
         Args: { nickname_input: string }
         Returns: boolean
@@ -4085,6 +4119,7 @@ export type Database = {
       }
       cleanup_expired_rate_limits: { Args: never; Returns: number }
       cleanup_old_login_attempts: { Args: never; Returns: number }
+      clear_login_attempts: { Args: { p_email: string }; Returns: undefined }
       count_activities_in_html: {
         Args: { html_content: string }
         Returns: number
@@ -4211,6 +4246,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      record_failed_login: { Args: { p_email: string }; Returns: Json }
       recover_verification_by_email: {
         Args: { p_email: string }
         Returns: Json

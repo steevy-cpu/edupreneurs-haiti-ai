@@ -58,6 +58,13 @@ export async function loginWithEmail(credentials: LoginCredentials): Promise<Log
   const attemptStatus = await checkLoginAllowed(credentials.email);
   
   if (!attemptStatus.allowed) {
+    // Persist lockout state for page refresh survival
+    saveAuthFlow({
+      flow: 'password-reset-required',
+      email: credentials.email,
+      lockedEmail: credentials.email,
+    });
+    
     return {
       success: false,
       error: attemptStatus.lockMessage || "Trop de tentatives échouées. Veuillez réinitialiser votre mot de passe.",
@@ -77,6 +84,13 @@ export async function loginWithEmail(credentials: LoginCredentials): Promise<Log
     const failResult = await recordFailedAttempt(credentials.email);
     
     if (failResult.isNowLocked) {
+      // Persist lockout state for page refresh survival
+      saveAuthFlow({
+        flow: 'password-reset-required',
+        email: credentials.email,
+        lockedEmail: credentials.email,
+      });
+      
       // Send auto-reset email if token was generated
       if (failResult.resetToken) {
         await sendLockoutResetEmail(

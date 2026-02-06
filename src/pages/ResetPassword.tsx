@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ProgressiveImage } from "@/components/ProgressiveImage";
 import { Loader2, Eye, EyeOff, Check, X } from "lucide-react";
+import { clearAuthFlow } from "@/auth/store/authFlow.store";
 
 // Use public paths for WebP optimization
 const edupreneursLogo = "/images/edupreneurs-new-logo.png";
@@ -160,6 +161,9 @@ export default function ResetPassword() {
         title: "Mot de passe réinitialisé ✅",
         description: "Votre mot de passe a été modifié avec succès. Vous pouvez maintenant vous connecter.",
       });
+
+      // Clear lockout state from authFlow store
+      clearAuthFlow();
 
       // Redirect to login
       setTimeout(() => {

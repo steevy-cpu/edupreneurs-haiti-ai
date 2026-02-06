@@ -1,16 +1,18 @@
 /**
- * LoginPage - Route-based login form
+ * LoginPage - Route-based login form with persistent lockout
  */
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Eye, EyeOff, KeyRound, Telescope, Shield } from "lucide-react";
+import { Loader2, Eye, EyeOff, KeyRound, Telescope, Shield, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { loginWithEmail, handleDeviceTracking, validateLoginCredentials } from "../services/login.service";
+import { checkLoginAllowed } from "../services/loginAttempts.service";
+import { hasPendingPasswordReset } from "../store/authFlow.store";
 import { VisitorTypeSelector } from "@/components/visitor";
 
 export default function LoginPage() {
@@ -30,12 +32,72 @@ export default function LoginPage() {
   const [isLocked, setIsLocked] = useState(false);
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
   
+  // Debounce ref for email lockout check
+  const lockCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
   // Get returnTo URL from location state OR sessionStorage
   const returnTo = (location.state as { returnTo?: string })?.returnTo 
     || sessionStorage.getItem('quiz_battle_return_url');
 
+  // Check for pending lockout on mount (survives page refresh)
+  useEffect(() => {
+    const resetState = hasPendingPasswordReset();
+    if (resetState.pending && resetState.email) {
+      setEmail(resetState.email);
+      setIsLocked(true);
+      setRemainingAttempts(0);
+    }
+  }, []);
+
+  // Cleanup debounce timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (lockCheckTimeoutRef.current) {
+        clearTimeout(lockCheckTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Debounced email lockout check (3G optimized - 500ms delay)
+  const handleEmailChange = useCallback((newEmail: string) => {
+    setEmail(newEmail);
+    
+    // Clear previous timeout
+    if (lockCheckTimeoutRef.current) {
+      clearTimeout(lockCheckTimeoutRef.current);
+    }
+    
+    // Skip check for invalid-looking emails
+    if (!newEmail.includes('@') || newEmail.length < 5) {
+      return;
+    }
+    
+    // Debounce database check
+    lockCheckTimeoutRef.current = setTimeout(async () => {
+      try {
+        const status = await checkLoginAllowed(newEmail);
+        if (!status.allowed && status.isLocked) {
+          setIsLocked(true);
+          setRemainingAttempts(0);
+        } else {
+          setIsLocked(false);
+          setRemainingAttempts(status.remainingAttempts);
+        }
+      } catch (error) {
+        // Fail open - don't block login on check errors
+        console.error('Lockout check failed:', error);
+      }
+    }, 500);
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Don't submit if locked
+    if (isLocked) {
+      navigate('/auth/forgot-password', { state: { email } });
+      return;
+    }
     
     const validation = validateLoginCredentials({ email, password });
     if (!validation.valid) {
@@ -62,8 +124,6 @@ export default function LoginPage() {
             : "Veuillez réinitialiser votre mot de passe.",
           variant: "destructive",
         });
-        // Auto-redirect to forgot password after 3 seconds
-        setTimeout(() => navigate('/auth/forgot-password'), 3000);
         return;
       }
       
@@ -167,15 +227,25 @@ export default function LoginPage() {
 
       {/* Login Form */}
       <div className="auth-content p-5">
-        {/* Locked Account Warning */}
+        {/* Locked Account Warning - Enhanced with direct action */}
         {isLocked && (
-          <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-4 text-sm text-destructive">
-            <div className="flex items-center gap-2 font-medium">
-              🔒 Compte temporairement bloqué
+          <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-4">
+            <div className="flex items-center gap-2 font-medium text-destructive">
+              <Lock className="h-4 w-4" />
+              Compte temporairement bloqué
             </div>
-            <p className="mt-1 text-destructive/80">
+            <p className="mt-1 text-sm text-destructive/80">
               Vérifiez votre email pour réinitialiser votre mot de passe.
             </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-3 text-destructive border-destructive/30 hover:bg-destructive/10"
+              onClick={() => navigate('/auth/forgot-password', { state: { email } })}
+            >
+              Réinitialiser mon mot de passe
+            </Button>
           </div>
         )}
         
@@ -196,13 +266,14 @@ export default function LoginPage() {
               required
               placeholder="ex: nom@domaine.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => handleEmailChange(e.target.value)}
               autoComplete="email"
               autoCapitalize="none"
               spellCheck="false"
               enterKeyHint="next"
               inputMode="email"
               className="auth-input"
+              disabled={isLocked}
             />
           </div>
           <div className="space-y-2">
@@ -221,6 +292,7 @@ export default function LoginPage() {
                 autoCapitalize="none"
                 enterKeyHint="done"
                 className="auth-input pr-10"
+                disabled={isLocked}
               />
               <button
                 type="button"
@@ -239,6 +311,7 @@ export default function LoginPage() {
               checked={rememberDevice}
               onCheckedChange={(checked) => setRememberDevice(checked === true)}
               className="mt-0.5"
+              disabled={isLocked}
             />
             <div className="flex-1">
               <Label 
@@ -256,7 +329,7 @@ export default function LoginPage() {
           
           <Button 
             type="submit" 
-            disabled={isLoading} 
+            disabled={isLoading || isLocked} 
             className="auth-btn-submit w-full mt-4 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
           >
             {isLoading ? (
@@ -264,6 +337,8 @@ export default function LoginPage() {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Connexion en cours...
               </>
+            ) : isLocked ? (
+              "Compte bloqué"
             ) : (
               "Se connecter"
             )}
@@ -271,7 +346,7 @@ export default function LoginPage() {
           
           <button
             type="button"
-            onClick={() => navigate('/auth/forgot-password')}
+            onClick={() => navigate('/auth/forgot-password', { state: { email } })}
             className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mt-4 w-full"
           >
             <KeyRound className="h-3.5 w-3.5" />

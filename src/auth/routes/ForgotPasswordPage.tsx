@@ -1,9 +1,9 @@
 /**
- * ForgotPasswordPage - Password reset request
+ * ForgotPasswordPage - Password reset request with pre-filled email support
  */
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,9 +13,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   
-  const [email, setEmail] = useState("");
+  // Get pre-filled email from location state (from lockout redirect)
+  const prefilledEmail = (location.state as { email?: string })?.email;
+  
+  const [email, setEmail] = useState(prefilledEmail || "");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
