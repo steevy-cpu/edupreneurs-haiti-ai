@@ -1,101 +1,97 @@
 
-
-# Plan: Add Background Blur When Jude Chat Opens
+# Plan: Add Background Blur to HomeChatbot
 
 ## Problem Statement
-When users click on Jude to open the chat, the background content can be distracting, especially on busy pages like `/matieres`. Adding a blur overlay will:
-- Improve text readability in the chat
-- Create visual focus on the conversation
-- Follow existing UI patterns in the codebase (modals, popups)
+The homepage chatbot (used on the landing page) has the same readability issue as the authenticated JudeChatbot. When users click on Jude to open the chat, the background text and hero section can be distracting.
+
+The user's screenshot shows Jude on the landing page with text like "Intelligence Artificielle" and course descriptions behind it - adding a blur will improve focus on the conversation.
 
 ---
 
-## Current Architecture
+## Current Structure
 
-### Z-Index Hierarchy (Relevant)
-```text
-z-[9999] - NavigationProgress, FirstTimeUserWelcome
-z-[9998] - AvatarGenerationStep  
-z-[1100] - Drawer component
-z-[1005] - Highlighted nav items
-z-[1004] - VisitorTour, FirstTimeUserTour
-z-[1002] - VisitorBanner, CookieConsent
-z-[1001] - AppSidebar mobile button, JudeChatbot ← Current
-z-[1000] - MobileBottomNav, AppSidebar
-```
+### HomeChatbot.tsx Analysis
+- **Location**: `src/components/HomeChatbot.tsx`
+- **State**: `isOpen` controls chat visibility (line 57)
+- **Hook**: Uses `useNetworkAwareLoading()` returning `{ isSlowConnection, shouldShowAnimations }` (line 71)
+- **Z-Index**: Container is at `zIndex: 1000` (line 150)
+- **No `cn` utility imported**: Needs to be added
 
-### JudeChatbot Structure
-- Location: `src/components/JudeChatbot.tsx`
-- State: `isOpen` controls chat visibility
-- Positioning: Fixed position with `zIndex: 1001`
-- FloatingLayer: Renders JudeChatbot via lazy loading
+### Key Difference from JudeChatbot
+- HomeChatbot uses `shouldShowAnimations` (not `shouldShowBlur`)
+- Both come from the same hook, but different property names
+- Need to check if the hook provides a blur-specific property or use the same logic
 
 ---
 
 ## Solution Design
 
-### Approach: Internal Backdrop within JudeChatbot
-
-Add a semi-transparent backdrop with blur effect that:
-1. Renders only when `isOpen === true`
-2. Positioned behind the chat but above page content
-3. Clicking the backdrop closes the chat (same as clicking Jude avatar)
-4. Respects 3G optimization (uses `shouldShowBlur` from existing hook)
-
-### Why Not FloatingLayer?
-The backdrop state is tightly coupled to `isOpen` in JudeChatbot. Keeping it in the same component:
-- Avoids prop drilling or new context
-- Uses existing `setIsOpen` callback
-- Follows single responsibility (Jude manages its own overlay)
+Apply the same pattern as JudeChatbot:
+1. Add backdrop element that renders when `isOpen === true`
+2. Use semi-transparent overlay with conditional blur
+3. Click backdrop to close chat
+4. Respect 3G performance (disable blur on slow connections)
 
 ---
 
 ## Implementation Details
 
-### File: `src/components/JudeChatbot.tsx`
+### File: `src/components/HomeChatbot.tsx`
 
-Add a backdrop element that renders when the chat is open:
-
-**New Backdrop Element (inside the return, before the main container):**
-```tsx
-{/* Backdrop overlay when chat is open */}
-{isOpen && (
-  <div 
-    className={cn(
-      "fixed inset-0 bg-black/40 transition-opacity duration-200",
-      shouldShowBlur ? "backdrop-blur-sm" : ""
-    )}
-    style={{ zIndex: 1000 }} // Below Jude (1001), above page content
-    onClick={() => setIsOpen(false)}
-    aria-hidden="true"
-  />
-)}
-```
-
-**Add Import:**
+**1. Add Import:**
 ```tsx
 import { cn } from "@/lib/utils";
 ```
 
-**Animation Enhancement (optional for smooth UX):**
-- The existing transition in `getContainerStyles()` handles smooth movement
-- Backdrop uses `transition-opacity duration-200` for fade effect
+**2. Update Hook Destructuring (line 71):**
+The `useNetworkAwareLoading` hook should provide blur optimization. We'll use `isSlowConnection` to determine if blur should be applied (blur disabled on slow connections).
+
+```tsx
+const { isSlowConnection, shouldShowAnimations } = useNetworkAwareLoading();
+const shouldShowBlur = !isSlowConnection; // Blur only on fast connections
+```
+
+**3. Add Backdrop Element (before the main container in return):**
+Wrap the return in a fragment and add the backdrop:
+
+```tsx
+return (
+  <>
+    {/* Backdrop overlay when chat is open */}
+    {isOpen && (
+      <div 
+        className={cn(
+          "fixed inset-0 bg-black/40 transition-opacity duration-200",
+          shouldShowBlur ? "backdrop-blur-sm" : ""
+        )}
+        style={{ zIndex: 999 }} // Below HomeChatbot (1000)
+        onClick={() => setIsOpen(false)}
+        aria-hidden="true"
+      />
+    )}
+    
+    <div 
+      ref={chatRef}
+      style={{
+        position: 'fixed',
+        right: '0.5rem',
+        bottom: '1rem',
+        zIndex: 1000,
+      }}
+      // ... rest unchanged
+    >
+```
 
 ---
 
-## Component Structure After Change
+## Z-Index Strategy
 
-```text
-JudeChatbot (fixed, z-1001)
-├── Backdrop (fixed, z-1000, inset-0) ← NEW
-│   └── Semi-transparent + blur
-│   └── onClick → close chat
-├── Avatar + Tooltip
-└── Chat Interface (when open)
-    ├── FAQ Quick Actions
-    ├── Messages Area
-    └── Input Area
-```
+| Layer | Z-Index | Component |
+|-------|---------|-----------|
+| HomeChatbot backdrop | 999 | New backdrop overlay |
+| HomeChatbot container | 1000 | Chat + avatar (existing) |
+
+This ensures the backdrop sits behind the chat but above all landing page content.
 
 ---
 
@@ -103,7 +99,7 @@ JudeChatbot (fixed, z-1001)
 
 | File | Action | Changes |
 |------|--------|---------|
-| `src/components/JudeChatbot.tsx` | UPDATE | Add backdrop element, import cn utility |
+| `src/components/HomeChatbot.tsx` | UPDATE | Add cn import, add shouldShowBlur, add backdrop element, wrap return in fragment |
 
 ---
 
@@ -111,11 +107,9 @@ JudeChatbot (fixed, z-1001)
 
 | Aspect | Solution |
 |--------|----------|
-| Blur performance | Conditional via `shouldShowBlur` (already available from `useNetworkAwareLoading`) |
-| Animation | Simple CSS transition (no JS animation library) |
-| Re-renders | Minimal - only state change on open/close |
-
-The codebase already has `shouldShowBlur` from `useNetworkAwareLoading()` hook (line 97), which returns `false` on slow connections. This is already used for message bubbles.
+| Blur performance | Uses `!isSlowConnection` from existing hook |
+| Animation | Simple CSS transition (no JS library) |
+| Re-renders | Minimal - only on open/close state change |
 
 ---
 
@@ -123,27 +117,26 @@ The codebase already has `shouldShowBlur` from `useNetworkAwareLoading()` hook (
 
 ```text
 Before (Current):
-1. User on /matieres with busy background
+1. User on landing page with hero text, course cards
 2. Clicks Jude avatar
-3. Chat opens, but background is distracting
-4. Text readability is reduced
+3. Chat opens, background text visible/distracting
 
 After (With Backdrop):
-1. User on /matieres with busy background
+1. User on landing page
 2. Clicks Jude avatar
 3. Background dims + blurs (on fast connection)
 4. Chat is clearly focused
-5. User can click backdrop OR avatar to close
+5. Click backdrop OR X button to close
 ```
 
 ---
 
-## Visual Reference
+## Code Changes Summary
 
-The user's screenshot shows:
-- Jude avatar with "Cliquez sur moi" tooltip
-- Busy background (course cards, images)
-- Need for visual focus when chat opens
+**Lines to modify in HomeChatbot.tsx:**
+- Line 1-9: Add `cn` import
+- Line 71: Add `shouldShowBlur` derived from `isSlowConnection`
+- Line 143-152: Wrap in fragment, add backdrop before container
 
 ---
 
@@ -152,27 +145,8 @@ The user's screenshot shows:
 | Check | Status | Notes |
 |-------|--------|-------|
 | Backward compatible? | Yes | Only adds optional overlay |
-| Breaks existing flows? | No | Click behavior preserved |
-| 3G optimized? | Yes | Uses existing shouldShowBlur |
+| Breaks existing flows? | No | Close button still works |
+| 3G optimized? | Yes | Uses existing isSlowConnection |
 | Accessibility? | Yes | aria-hidden on decorative overlay |
-| Mobile keyboard? | Yes | Backdrop behind chat, keyboard logic unchanged |
-| Draggable behavior? | Yes | Only applies when not dragging |
-| z-index conflicts? | No | z-1000 is correct layer |
-
----
-
-## Technical Notes
-
-### Z-Index Strategy
-- Backdrop at `z-1000` (same as MobileBottomNav/Sidebar)
-- Jude container at `z-1001` (above backdrop)
-- This ensures backdrop doesn't cover Jude's avatar or chat
-
-### Click Handler
-- Backdrop click calls `setIsOpen(false)` - same as clicking avatar when open
-- Prevents event propagation issues
-
-### Animation Timing
-- `duration-200` matches existing UI transitions
-- Complements `transition: 'all 0.2s ease-out'` in container styles
-
+| z-index conflicts? | No | 999 is below 1000 container |
+| Matches JudeChatbot pattern? | Yes | Same implementation approach |
