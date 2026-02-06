@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import { ChatMessageRenderer } from "@/components/ChatMessageRenderer";
+import { cn } from "@/lib/utils";
 import ericStudentDesk from "@/assets/eric-student-desk.png";
 
 interface Message {
@@ -69,6 +70,7 @@ const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const chatRef = useRef<HTMLDivElement>(null);
   const { isSlowConnection, shouldShowAnimations } = useNetworkAwareLoading();
+  const shouldShowBlur = !isSlowConnection;
 
   const faqSuggestions = [
     "Qu'est-ce qu'EDUPRENEURS ?",
@@ -141,16 +143,30 @@ const messagesEndRef = useRef<HTMLDivElement>(null);
   }, []);
 
   return (
-    <div 
-      ref={chatRef}
-      style={{
-        position: 'fixed',
-        right: '0.5rem',
-        bottom: '1rem',
-        zIndex: 1000,
-      }}
-      className="flex flex-row items-end gap-1 sm:gap-2"
-    >
+    <>
+      {/* Backdrop overlay when chat is open */}
+      {isOpen && (
+        <div 
+          className={cn(
+            "fixed inset-0 bg-black/40 transition-opacity duration-200",
+            shouldShowBlur ? "backdrop-blur-sm" : ""
+          )}
+          style={{ zIndex: 999 }}
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      
+      <div 
+        ref={chatRef}
+        style={{
+          position: 'fixed',
+          right: '0.5rem',
+          bottom: '1rem',
+          zIndex: 1000,
+        }}
+        className="flex flex-row items-end gap-1 sm:gap-2"
+      >
       {/* Chat content - only visible when open */}
       {isOpen && (
         <div className="flex flex-col w-[280px] xs:w-[300px] sm:w-[320px] md:w-[340px] max-h-[60vh] sm:max-h-[65vh]">
@@ -276,5 +292,6 @@ const messagesEndRef = useRef<HTMLDivElement>(null);
         />
       </div>
     </div>
+    </>
   );
 };
