@@ -4246,6 +4246,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      persist_last_seen: { Args: { p_user_id: string }; Returns: undefined }
       record_failed_login: { Args: { p_email: string }; Returns: Json }
       recover_verification_by_email: {
         Args: { p_email: string }

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef, useMemo, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
+import { persistLastSeen, persistLastSeenBeacon, HEARTBEAT_INTERVAL_MS } from '@/services/lastSeenService';
 
 // Jude (AI assistant) is always shown as online
 const JUDE_USER_ID = '68f2f959-e14a-47f9-8277-07df3a6fcd79';
@@ -184,6 +185,9 @@ export function PresenceProvider({ children }: PresenceProviderProps) {
           });
           console.log('[Presence] Track result:', trackResult, 'for user:', user.id);
           
+          // Persist last_seen to database on initial connection
+          persistLastSeen(user.id);
+          
           // Manually trigger a sync after tracking to ensure we get the updated state
           setTimeout(() => {
             const state = channel.presenceState();
@@ -213,6 +217,29 @@ export function PresenceProvider({ children }: PresenceProviderProps) {
       }
     };
   }, [user?.id, handleSync, handleUserOnline, handleUserOffline]);
+
+  // Heartbeat: Keep last_seen fresh while connected
+  useEffect(() => {
+    if (!user || !isConnected) return;
+    
+    const heartbeat = setInterval(() => {
+      persistLastSeen(user.id);
+    }, HEARTBEAT_INTERVAL_MS);
+    
+    return () => clearInterval(heartbeat);
+  }, [user?.id, isConnected]);
+
+  // Final last_seen on tab close
+  useEffect(() => {
+    if (!user) return;
+    
+    const handleUnload = () => {
+      persistLastSeenBeacon(user.id);
+    };
+    
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, [user?.id]);
 
   /**
    * Selector function - only causes re-render if THIS user's status changes
