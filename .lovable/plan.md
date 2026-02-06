@@ -1,229 +1,171 @@
 
-# Plan: Fix "Last Connected" Timestamp - Robust Architecture
+# Plan: Batch Regeneration for Already-Validated Lessons
 
 ## Problem Analysis
 
 ### Current State
-The community page displays stale "last connected" timestamps (all from January 26th or earlier) because:
+- **601 lessons** have completed quiz validation, **537 of which** are flagged for regeneration (`needs_quiz_regeneration = true`)
+- **399 lessons** have completed activities validation, **296 of which** are flagged for regeneration (`needs_activities_regeneration = true`)
 
-1. **No automatic `last_seen` updates**: The database has a trigger function `update_user_last_seen()` but **no trigger is attached** to call it
-2. **PresenceContext tracks real-time status in memory only**: When users come online/offline, the database is never notified
-3. **Data flow is broken**: The frontend reads `last_seen` from the database, but nothing writes to it
+### Current Workflow (Slow)
+1. User runs validation
+2. Validation flags lessons with `needs_*_regeneration = true`
+3. User must click each lesson individually to see the ValidationDetailsPanel
+4. User clicks "Regenerate" one by one
 
-### Database Evidence
-```text
-Most recent last_seen values:
-- Test:     2026-01-30 (10 days stale)
-- ley:      2026-01-29 
-- Djood:    2026-01-26
-- Steevy:   2026-01-26
-- Celestin: 2026-01-26
-```
-
----
-
-## Root Cause
-
-```text
-Current Flow (Broken):
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│  User opens app │───►│ PresenceContext  │───►│ Realtime channel│
-│                 │    │ tracks in memory │    │ shows "online"  │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                              │
-                              ╳ No database update!
-                              │
-                       ┌──────▼──────┐
-                       │  profiles   │ ← last_seen is NEVER updated
-                       │  last_seen  │
-                       └─────────────┘
-```
+### Desired Workflow (Fast)
+1. User runs validation
+2. Validation flags lessons with issues
+3. User clicks **one button** to regenerate ALL flagged content at once
 
 ---
 
 ## Solution Architecture
 
-### Design Principles (Structure-First)
-1. **Single Source of Truth**: Database `last_seen` column is the authoritative timestamp
-2. **Event-Driven Updates**: Update on presence lifecycle events, not polling
-3. **Graceful Degradation**: Handle network failures without breaking UI
-4. **Separation of Concerns**: Dedicated service layer for persistence
+### Design Principles
+1. **Super User Only**: Only admins/founders can trigger batch regeneration (safety gate)
+2. **Reuse Existing Infrastructure**: Use the existing regeneration functions from LessonBrowser
+3. **Progress Tracking**: Similar UX to BatchQuizGenerator with pause/resume
+4. **3G Optimization**: Rate-limited sequential processing with delays
 
 ### New Data Flow
 
 ```text
-Fixed Flow:
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│  User opens app │───►│ PresenceContext  │───►│ Realtime channel│
-│                 │    │                  │    │ shows "online"  │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                              │
-                              │ SUBSCRIBED event
-                              ▼
-                       ┌──────────────┐
-                       │ RPC:         │──────► profiles.last_seen = now()
-                       │ persist_     │
-                       │ last_seen()  │
-                       └──────────────┘
-                              │
-                              │ Heartbeat (every 5 min while connected)
-                              ▼
-                       ┌──────────────┐
-                       │ RPC:         │──────► profiles.last_seen = now()
-                       │ persist_     │
-                       │ last_seen()  │
-                       └──────────────┘
-                              │
-                              │ beforeunload / cleanup
-                              ▼
-                       ┌──────────────┐
-                       │ RPC/Beacon:  │──────► profiles.last_seen = now()
-                       │ persist_     │
-                       │ last_seen()  │
-                       └──────────────┘
+Validation → Flags lessons → New "Regenerate All Flagged" button
+                                        ↓
+                              BatchRegenerator component
+                                        ↓
+                         For each flagged lesson:
+                           1. Call edge function
+                           2. Update lesson
+                           3. Clear flags
+                                        ↓
+                              Dashboard refresh
 ```
 
 ---
 
 ## Implementation Details
 
-### Part 1: Database - Create Robust RPC Function
+### Part 1: Create BatchQuizRegenerator Component
 
-Create a dedicated RPC function (not a trigger) for explicit control:
+**New File: `src/components/content-editor/BatchQuizRegenerator.tsx`**
 
-```sql
-CREATE OR REPLACE FUNCTION public.persist_last_seen(p_user_id UUID)
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = 'public'
-AS $$
-BEGIN
-  UPDATE profiles 
-  SET last_seen = now() 
-  WHERE user_id = p_user_id;
-END;
-$$;
+This component will:
+- Query lessons with `needs_quiz_regeneration = true` AND `last_content_validated_at IS NOT NULL`
+- Show count of lessons needing regeneration
+- Provide "Regenerate All" button (super users only)
+- Process lessons sequentially with 2s delay
+- Save progress on each lesson
+- Support pause/cancel
 
--- Grant execute permission to authenticated users
-GRANT EXECUTE ON FUNCTION public.persist_last_seen(UUID) TO authenticated;
-```
-
-**Why RPC instead of trigger?**
-- Explicit control over when updates happen
-- Can handle edge cases (batch updates, manual calls)
-- Easier to test and debug
-- No interference with other profile updates
-
-### Part 2: Create Dedicated Service Layer
-
-Create a new service file for last_seen persistence logic:
-
-**New File: `src/services/lastSeenService.ts`**
-
+Key structure:
 ```typescript
-import { supabase } from '@/integrations/supabase/client';
-
-const HEARTBEAT_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
-
-/**
- * Persist the user's last_seen timestamp to the database.
- * Fire-and-forget pattern - does not block UI.
- */
-export async function persistLastSeen(userId: string): Promise<void> {
-  try {
-    const { error } = await supabase.rpc('persist_last_seen', { 
-      p_user_id: userId 
-    });
-    if (error) {
-      console.warn('[LastSeen] Failed to persist:', error.message);
-    }
-  } catch (err) {
-    // Silent fail - don't crash the app for timestamp updates
-    console.warn('[LastSeen] Network error:', err);
-  }
+interface BatchQuizRegeneratorProps {
+  lessons: any[];  // All lessons with valid quizzes
+  gradeLevel: string;
+  onComplete: () => void;
+  onDashboardRefresh?: () => void;
 }
-
-/**
- * Send final last_seen via beacon API for tab close scenarios.
- * More reliable than fetch in beforeunload.
- */
-export function persistLastSeenBeacon(userId: string): void {
-  const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/rpc/persist_last_seen`;
-  const payload = JSON.stringify({ p_user_id: userId });
-  
-  // sendBeacon is more reliable during page unload
-  const sent = navigator.sendBeacon(url, new Blob([payload], { 
-    type: 'application/json' 
-  }));
-  
-  if (!sent) {
-    // Fallback - try fetch with keepalive
-    fetch(url, {
-      method: 'POST',
-      body: payload,
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        'Authorization': `Bearer ${supabase.auth.session()?.access_token || ''}`
-      },
-      keepalive: true
-    }).catch(() => {/* silent */});
-  }
-}
-
-export { HEARTBEAT_INTERVAL_MS };
 ```
 
-### Part 3: Integrate into PresenceContext
+Button will show:
+- "Régénérer quizzes flaggés (X)"
+- Stats: "X/Y flaggés pour régénération"
 
-Update `src/contexts/PresenceContext.tsx` to call the service at key lifecycle points:
+### Part 2: Create BatchActivitiesRegenerator Component
 
-**Add imports:**
+**New File: `src/components/content-editor/BatchActivitiesRegenerator.tsx`**
+
+Same structure as BatchQuizRegenerator but for activities:
+- Query lessons with `needs_activities_regeneration = true` AND `last_activities_validated_at IS NOT NULL`
+- Call `generate-interactive-activities` edge function
+- Clear flags and alignment scores on success
+
+### Part 3: Update LessonBrowser to Include Regenerators
+
+**File: `src/components/content-editor/LessonBrowser.tsx`**
+
+Add the new batch regenerator components below the validation buttons:
+
 ```typescript
-import { 
-  persistLastSeen, 
-  persistLastSeenBeacon, 
-  HEARTBEAT_INTERVAL_MS 
-} from '@/services/lastSeenService';
+// After BatchQuizContentValidator
+{lessonsNeedingQuizRegen.length > 0 && (
+  <BatchQuizRegenerator 
+    lessons={lessonsNeedingQuizRegen}
+    gradeLevel={gradeLevel}
+    onComplete={loadSubjects}
+    onDashboardRefresh={onDashboardRefresh}
+  />
+)}
+
+// After BatchActivitiesContentValidator
+{lessonsNeedingActivitiesRegen.length > 0 && (
+  <BatchActivitiesRegenerator 
+    lessons={lessonsNeedingActivitiesRegen}
+    gradeLevel={gradeLevel}
+    onComplete={loadSubjects}
+    onDashboardRefresh={onDashboardRefresh}
+  />
+)}
 ```
 
-**Update the main useEffect (after channel subscribes):**
+Add computed arrays:
 ```typescript
-// Inside the subscription callback when status === 'SUBSCRIBED'
-// After calling channel.track():
+// Lessons already validated that need regeneration
+const lessonsNeedingQuizRegen = lessonsWithValidQuiz.filter(
+  l => l.needs_quiz_regeneration && l.last_content_validated_at
+);
 
-// Persist initial last_seen to database
-persistLastSeen(user.id);
+const lessonsNeedingActivitiesRegen = lessonsWithValidActivities.filter(
+  l => l.needs_activities_regeneration && l.last_activities_validated_at
+);
 ```
 
-**Add heartbeat effect (new useEffect):**
+### Part 4: Permission Check (Super Users Only)
+
+Use content editor roles or founder check:
+
 ```typescript
-// Heartbeat: Keep last_seen fresh while connected
-useEffect(() => {
-  if (!user || !isConnected) return;
-  
-  const heartbeat = setInterval(() => {
-    persistLastSeen(user.id);
-  }, HEARTBEAT_INTERVAL_MS);
-  
-  return () => clearInterval(heartbeat);
-}, [user?.id, isConnected]);
+import { useContentEditorPermissions } from "@/hooks/useContentEditorPermissions";
+
+// Inside component:
+const { role } = useContentEditorPermissions();
+const canBatchRegenerate = role === 'admin';
 ```
 
-**Add beforeunload handler (new useEffect):**
-```typescript
-// Final last_seen on tab close
-useEffect(() => {
-  if (!user) return;
-  
-  const handleUnload = () => {
-    persistLastSeenBeacon(user.id);
-  };
-  
-  window.addEventListener('beforeunload', handleUnload);
-  return () => window.removeEventListener('beforeunload', handleUnload);
-}, [user?.id]);
+---
+
+## UI Design
+
+### Button Appearance (in validation stats section)
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  Valider alignement contenu                                          │
+│  601/2832 déjà validés (21%)                                         │
+├──────────────────────────────────────────────────────────────────────┤
+│  🔄 Régénérer quizzes flaggés (537)                                  │ ← NEW
+│  537 quiz nécessitent régénération                                   │
+├──────────────────────────────────────────────────────────────────────┤
+│  Valider alignement activités                                        │
+│  399/2676 déjà validées (15%)                                        │
+├──────────────────────────────────────────────────────────────────────┤
+│  🔄 Régénérer activités flaggées (296)                               │ ← NEW
+│  296 activités nécessitent régénération                              │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### Progress View (during regeneration)
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  🔄 Régénération en cours...                     [Pause & Sauvegarder]│
+│  ───────────────────────────────────[======>     ]───── 142/537       │
+│  Les fractions décimales...                                          │
+│  ✓ 120 régénérés  ⚠ 22 erreurs                                       │
+│  📝 Sauvegarde automatique après chaque leçon                        │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -232,22 +174,38 @@ useEffect(() => {
 
 | File | Action | Description |
 |------|--------|-------------|
-| **Database Migration** | CREATE | Add `persist_last_seen` RPC function |
-| `src/services/lastSeenService.ts` | CREATE | New service with persist functions + heartbeat constant |
-| `src/contexts/PresenceContext.tsx` | UPDATE | Add 3 integration points (subscribe, heartbeat, unload) |
+| `src/components/content-editor/BatchQuizRegenerator.tsx` | CREATE | Batch regeneration for flagged quizzes |
+| `src/components/content-editor/BatchActivitiesRegenerator.tsx` | CREATE | Batch regeneration for flagged activities |
+| `src/components/content-editor/LessonBrowser.tsx` | UPDATE | Add regenerator components + computed arrays |
 
 ---
 
-## Event Timeline
+## Processing Logic
 
-| Event | Database Update | Timing |
-|-------|-----------------|--------|
-| User logs in / opens app | Yes | On SUBSCRIBED |
-| User actively using app | Yes | Every 5 minutes |
-| User switches tabs | No | (still connected) |
-| User closes tab/browser | Yes | On beforeunload |
-| User logs out | Yes | On cleanup |
-| Network disconnection | No | (will update on reconnect) |
+### For Each Lesson (Quiz):
+```typescript
+1. Fetch full lesson content (contenu, exemples_exercices, subjects)
+2. Call generate-quiz-final edge function
+3. Update lesson:
+   - quiz_final = generated content
+   - needs_quiz_regeneration = false
+   - content_alignment_score = null (reset for re-validation)
+   - last_content_validated_at = null (reset)
+   - validation_details_json = null or clear quiz portion
+4. Rate limit: wait 2 seconds before next
+```
+
+### For Each Lesson (Activities):
+```typescript
+1. Fetch full lesson content
+2. Call generate-interactive-activities edge function
+3. Update lesson:
+   - activites_interactives = generated content
+   - needs_activities_regeneration = false
+   - activities_alignment_score = null
+   - last_activities_validated_at = null
+4. Rate limit: wait 2 seconds before next
+```
 
 ---
 
@@ -255,24 +213,11 @@ useEffect(() => {
 
 | Aspect | Solution |
 |--------|----------|
-| RPC call overhead | Minimal - single UPDATE statement (< 50ms) |
-| Heartbeat frequency | 5 minutes - very low overhead |
-| Beacon payload | Tiny JSON object (< 100 bytes) |
-| Network failures | Silent fail - doesn't block UI or throw errors |
-| Offline resilience | Last successful timestamp persists in DB |
-
----
-
-## Edge Cases Handled
-
-| Case | Solution |
-|------|----------|
-| User closes tab abruptly | `beforeunload` + `sendBeacon` with `keepalive` fallback |
-| Network disconnect mid-session | Grace period in PresenceContext + eventual consistency |
-| Multiple tabs open | Each tab updates independently (latest timestamp wins) |
-| Visitor mode | Skip all RPC calls (no user ID) |
-| Auth token expired | Silent fail - will update on next valid session |
-| Browser doesn't support sendBeacon | Fallback to fetch with keepalive |
+| Edge function calls | 2-second delay between calls |
+| Batch size | Sequential (not parallel) to avoid timeouts |
+| Progress persistence | Update DB after each lesson |
+| Network failures | Logged as errors, continue with next |
+| Pause support | AbortRef pattern for clean cancellation |
 
 ---
 
@@ -280,47 +225,32 @@ useEffect(() => {
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Backward compatible? | Yes | No breaking changes to existing code |
-| RLS compatible? | Yes | SECURITY DEFINER bypasses RLS safely |
-| 3G optimized? | Yes | Minimal network overhead, fire-and-forget pattern |
-| Doesn't break online status? | No | Separate from real-time presence events |
-| Works with localStorage cache? | Yes | DB is source of truth, localStorage is display cache |
-| Handles auth expiry? | Yes | Silent fail prevents crashes |
-| Multiple tabs? | Yes | Each updates independently |
-| Service worker compatible? | Yes | Standard fetch/beacon patterns |
+| Super user only? | Yes | Admin role check before showing button |
+| Preserves original content? | Yes | Only regenerates quiz/activities |
+| Backward compatible? | Yes | New feature, no breaking changes |
+| Clears validation flags? | Yes | Resets for re-validation cycle |
+| Progress saved on cancel? | Yes | Each lesson saved immediately |
+| Works with existing dashboard? | Yes | Triggers onDashboardRefresh |
 
 ---
 
-## Technical Notes
+## Edge Cases Handled
 
-### Why Not Use the Existing Trigger Function?
-
-The `update_user_last_seen()` trigger function was designed to fire `ON UPDATE` of profiles. But:
-1. We don't want to update `last_seen` on every profile change (avatar, bio, etc.)
-2. We need explicit control over timing (presence events, not any update)
-3. An RPC gives us predictable, testable behavior
-
-### Service Layer Benefits
-
-Creating `lastSeenService.ts` instead of inline code in PresenceContext:
-1. **Testable**: Can unit test persistence logic in isolation
-2. **Reusable**: Could be called from other contexts if needed
-3. **Single Responsibility**: PresenceContext handles real-time, service handles persistence
-4. **Easy to Mock**: For testing components that depend on presence
-
-### Beacon API Choice
-
-`navigator.sendBeacon()` is specifically designed for analytics and heartbeat scenarios during page unload:
-- Queued and sent asynchronously
-- Doesn't block page close
-- Higher reliability than XHR/fetch in unload handlers
-- Falls back to fetch with `keepalive: true` for older browsers
+| Case | Solution |
+|------|----------|
+| No lessons need regeneration | Button hidden |
+| Lesson has no content to base generation on | Skip with error logged |
+| Edge function fails | Log error, continue to next lesson |
+| User navigates away | Already-regenerated lessons are saved |
+| Multiple tabs | Each operates independently |
+| Network disconnect | Resume from where it left off |
 
 ---
 
 ## Future Considerations
 
-This structure allows for easy extensions:
-- **Activity tracking**: Could add `last_active_page` column
-- **Session duration**: Could track total time online
-- **Presence history**: Could log to a separate table for analytics
+This architecture enables:
+1. **Filtering by confidence score**: Could add option to only regenerate lessons with confidence < 50%
+2. **Priority queue**: Could sort by how many off-content questions each has
+3. **Selective regeneration**: Could add checkboxes to pick specific lessons
+4. **Background processing**: Could move to job queue for overnight batch runs
