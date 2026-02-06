@@ -16,6 +16,7 @@ import {
 } from "@/components/shared/PageSkeletons";
 import { AppShell } from "@/shell";
 import { AuthMusicSync } from "@/components/auth/AuthMusicSync";
+import { VisitorMusicSync } from "@/components/visitor/VisitorMusicSync";
 
 /**
  * Wrap lazy import with automatic retry on chunk load failure.
@@ -130,6 +131,7 @@ const App = () => (
   <AppProviders>
     {/* Global music sync - must be outside AppShell to survive logout navigation */}
     <AuthMusicSync />
+    <VisitorMusicSync />
     
     <Routes>
                         {/* PUBLIC ROUTES - No shell */}
