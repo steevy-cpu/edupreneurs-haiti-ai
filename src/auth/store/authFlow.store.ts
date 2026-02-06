@@ -10,7 +10,7 @@
  * Fixes the OTP bypass issue by persisting verification state.
  */
 
-export type AuthFlowType = 'idle' | 'signup' | 'login' | 'verify' | 'verify-device' | 'forgot-password';
+export type AuthFlowType = 'idle' | 'signup' | 'login' | 'verify' | 'verify-device' | 'forgot-password' | 'password-reset-required';
 
 export interface AuthFlowState {
   flow: AuthFlowType;
@@ -23,6 +23,8 @@ export interface AuthFlowState {
   deviceChallengeId?: string;
   fullName?: string;
   rememberDevice?: boolean;
+  // Lockout fields
+  lockedEmail?: string;
 }
 
 const AUTH_FLOW_KEY = 'edupreneurs_auth_flow';
@@ -31,6 +33,7 @@ const SIGNUP_DATA_KEY = 'edupreneurs_signup_data';
 // TTL configurations
 const VERIFY_TTL_MS = 60 * 60 * 1000; // 60 minutes for verification (extended for 3G users)
 const SIGNUP_TTL_MS = 30 * 60 * 1000; // 30 minutes for signup flow
+const LOCKOUT_TTL_MS = 60 * 60 * 1000; // 60 minutes for lockout (matches database)
 
 /**
  * Save auth flow state to sessionStorage
@@ -41,9 +44,11 @@ export function saveAuthFlow(state: Partial<AuthFlowState>): void {
     const merged: AuthFlowState = {
       ...current,
       ...state,
-      // Set expiration based on flow type (verify and verify-device get 60min TTL)
+      // Set expiration based on flow type
       expiresAt: (state.flow === 'verify' || state.flow === 'verify-device')
         ? Date.now() + VERIFY_TTL_MS 
+        : state.flow === 'password-reset-required'
+        ? Date.now() + LOCKOUT_TTL_MS
         : Date.now() + SIGNUP_TTL_MS,
     };
     localStorage.setItem(AUTH_FLOW_KEY, JSON.stringify(merged));
@@ -109,6 +114,17 @@ export function hasPendingVerification(): boolean {
 export function hasPendingDeviceVerification(): boolean {
   const flow = getAuthFlow();
   return flow !== null && flow.flow === 'verify-device' && !!flow.deviceChallengeId;
+}
+
+/**
+ * Check if there's a pending password reset required (account locked)
+ */
+export function hasPendingPasswordReset(): { pending: boolean; email?: string } {
+  const flow = getAuthFlow();
+  if (flow?.flow === 'password-reset-required' && flow.lockedEmail) {
+    return { pending: true, email: flow.lockedEmail };
+  }
+  return { pending: false };
 }
 
 // ============= Signup Data Persistence =============
