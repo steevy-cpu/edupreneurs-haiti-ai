@@ -17,10 +17,12 @@ import { toast } from "sonner";
 import { Search, ChevronDown, ChevronRight, BookOpen, Calculator, FlaskConical, Book, RefreshCw, AlertCircle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BatchQuizGenerator } from "./BatchQuizGenerator";
-import { BatchQuizContentValidator } from "./BatchQuizContentValidator";
-import { BatchActivitiesContentValidator } from "./BatchActivitiesContentValidator";
-import { BatchQuizRegenerator } from "./BatchQuizRegenerator";
-import { BatchActivitiesRegenerator } from "./BatchActivitiesRegenerator";
+import { 
+  BatchQuizValidator, 
+  BatchActivitiesValidator,
+  BatchQuizRegenerator,
+  BatchActivitiesRegenerator 
+} from "@/features/content-editor/batch-operations";
 import { ValidationDetailsPanel } from "./ValidationDetailsPanel";
 
 interface LessonBrowserProps {
@@ -445,13 +447,11 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
             {/* Batch Quiz Content Validator Button */}
             {lessonsWithValidQuiz.length > 0 && (
               <div className="pt-2">
-                <BatchQuizContentValidator 
+                <BatchQuizValidator 
                    lessons={lessonsWithValidQuiz}
                    gradeLevel={gradeLevel}
                    onComplete={loadSubjects}
                    onDashboardRefresh={onDashboardRefresh}
-                   validatedCount={lessonsWithValidQuiz.filter(l => l.last_content_validated_at).length}
-                   totalWithQuiz={lessonsWithValidQuiz.length}
                  />
               </div>
             )}
@@ -465,13 +465,11 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
             {/* Batch Activities Content Validator Button */}
             {lessonsWithValidActivities.length > 0 && (
               <div className="pt-2">
-                <BatchActivitiesContentValidator 
+                <BatchActivitiesValidator 
                    lessons={lessonsWithValidActivities}
                    gradeLevel={gradeLevel}
                    onComplete={loadSubjects}
                    onDashboardRefresh={onDashboardRefresh}
-                   validatedCount={lessonsWithValidActivities.filter(l => l.last_activities_validated_at).length}
-                   totalWithActivities={lessonsWithValidActivities.length}
                  />
               </div>
             )}
