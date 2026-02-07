@@ -15,6 +15,7 @@ interface UseBatchOperationOptions {
   config: BatchOperationConfig;
   onComplete: () => void;
   onDashboardRefresh?: () => void;
+  onStart?: () => void;
 }
 
 export const useBatchOperation = ({
@@ -22,6 +23,7 @@ export const useBatchOperation = ({
   config,
   onComplete,
   onDashboardRefresh,
+  onStart,
 }: UseBatchOperationOptions): UseBatchOperationReturn => {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState<OperationProgress>({ current: 0, total: 0 });
@@ -57,6 +59,9 @@ export const useBatchOperation = ({
       toast.info(config.messages.empty);
       return;
     }
+
+    // Notify parent that operation is starting
+    onStart?.();
 
     abortRef.current = false;
     setIsRunning(true);
@@ -151,7 +156,7 @@ export const useBatchOperation = ({
 
     onComplete();
     onDashboardRefresh?.();
-  }, [itemsToProcess, config, onComplete, onDashboardRefresh]);
+  }, [itemsToProcess, config, onComplete, onDashboardRefresh, onStart]);
 
   return {
     isRunning,

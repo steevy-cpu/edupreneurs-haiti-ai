@@ -1,6 +1,6 @@
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2, BarChart3 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -97,10 +97,13 @@ export const BatchOperationDialog = ({
           <AlertDialogTitle>{dialogConfig.title}?</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-4">
-              {/* Stats bar */}
+            {/* Stats bar */}
               <div className="p-3 rounded-lg bg-muted/50 space-y-2">
                 <div className="flex items-center justify-between text-xs font-medium">
-                  <span>📊 Statistiques pour {gradeLevel}</span>
+                  <span className="flex items-center gap-1">
+                    <BarChart3 className="h-3 w-3" />
+                    Statistiques pour {gradeLevel}
+                  </span>
                   <span>{validatedCount}/{totalCount} {operationType === 'validate' ? 'validés' : 'traités'}</span>
                 </div>
                 <Progress value={percentage} className="h-1.5" />
