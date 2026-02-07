@@ -1179,7 +1179,7 @@ const Community = () => {
               // 2. This is NOT the currently selected conversation
               const shouldIncrementUnread = 
                 payload.new.sender_id !== user?.id && 
-                conversationId !== selectedConversation;
+                conversationId !== selectedConversationRef.current;
               
               return { 
                 ...conv, 
@@ -1200,7 +1200,7 @@ const Community = () => {
           
           // Show browser notification for messages in other conversations
           // (messages in the current conversation are handled by subscribeToConversationMessages)
-          if (payload.new.sender_id !== user?.id && conversationId !== selectedConversation) {
+          if (payload.new.sender_id !== user?.id && conversationId !== selectedConversationRef.current) {
           // Use cached profile for notification
           const senderProfile = await getCachedProfile(payload.new.sender_id);
 
