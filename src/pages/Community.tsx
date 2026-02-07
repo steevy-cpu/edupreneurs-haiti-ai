@@ -40,7 +40,8 @@ import {
   ChatComposer,
   ChatLayout,
   JudeBanner,
-  ConversationSidebar
+  ConversationSidebar,
+  JudeTypingIndicator
 } from "@/components/community";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { 
@@ -114,6 +115,11 @@ const Community = () => {
   const [typingUsers, setTypingUsers] = useState<Record<string, Record<string, any>>>({});
   // Use centralized presence from PresenceContext (event-driven, not polling)
   const onlineUsers = useOnlineUserIds();
+  
+  // Track pending Jude AI response for typing indicator
+  const [isAwaitingJudeResponse, setIsAwaitingJudeResponse] = useState(false);
+  // Track which message is currently showing typewriter effect
+  const [typewriterMessageId, setTypewriterMessageId] = useState<string | null>(null);
   
   /**
    * Fallback timestamps for OFFLINE users only.
@@ -437,6 +443,10 @@ const Community = () => {
       clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
     }
+    
+    // Clear Jude awaiting state when switching conversations
+    setIsAwaitingJudeResponse(false);
+    setTypewriterMessageId(null);
   }, [selectedConversation]);
 
   // Keep selectedConversationDetails in sync with conversations list updates
@@ -1042,6 +1052,12 @@ const Community = () => {
             return [...prev, newMessage];
           });
 
+          // Detect Jude's response - clear awaiting state and trigger typewriter effect
+          if (payload.new.sender_id === JUDE_USER_ID) {
+            setIsAwaitingJudeResponse(false);
+            setTypewriterMessageId(payload.new.id);
+          }
+
           // Check if this is a group message mentioning Eric
           const currentConversation = conversations.find(c => c.id === conversationId);
           const isGroupChat = currentConversation?.is_group;
@@ -1557,6 +1573,9 @@ const Community = () => {
         const senderName = cachedUserProfile?.nickname || cachedUserProfile?.full_name || user.email || 'Someone';
         
         if (conversation?.otherUser?.user_id === JUDE_USER_ID) {
+          // Set awaiting state for typing indicator
+          setIsAwaitingJudeResponse(true);
+          
           // Call Jude in background
           supabase.functions.invoke('eric-chat', {
             body: { 
@@ -1565,7 +1584,10 @@ const Community = () => {
               userId: user.id,
               userNickname: senderName
             }
-          }).catch(err => logger.error('Jude chat error:', err));
+          }).catch(err => {
+            logger.error('Jude chat error:', err);
+            setIsAwaitingJudeResponse(false); // Clear on error
+          });
         } else if (conversation?.otherUser) {
           // Send push notification in background
           const messagePreview = messageContent 
@@ -2200,11 +2222,18 @@ const Community = () => {
                           messageIndex={index}
                           shouldAnimate={shouldStaggerMessages}
                           shouldShowFloatingReactions={shouldShowFloatingReactions}
+                          isTypewriting={message.id === typewriterMessageId}
+                          onTypewriterComplete={() => setTypewriterMessageId(null)}
                         />
                       );
                     })}
                     
-                    {/* Typing Indicator */}
+                    {/* Jude AI Thinking Indicator */}
+                    {isJudeConversation && isAwaitingJudeResponse && (
+                      <JudeTypingIndicator isThinking={true} />
+                    )}
+                    
+                    {/* Regular User Typing Indicators */}
                     {(() => {
                       if (!selectedConversation) return null;
                       
