@@ -118,8 +118,8 @@ export const ValidationDetailsPanel = ({
                     {issues.map((issue, idx) => (
                       <div key={idx} className="text-xs space-y-1">
                         <p className="font-medium text-amber-900">
-                          Q{issue.index + 1}: {issue.question.substring(0, 60)}
-                          {issue.question.length > 60 ? "..." : ""}
+                          Q{issue.index + 1}: {issue.question?.substring(0, 60) || 'Question non disponible'}
+                          {issue.question && issue.question.length > 60 ? "..." : ""}
                         </p>
                         <p className="text-amber-700 italic">{issue.reason}</p>
                       </div>

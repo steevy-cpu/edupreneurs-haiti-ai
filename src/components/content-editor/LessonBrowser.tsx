@@ -52,9 +52,9 @@ const extractValidationDetails = (lesson: any) => {
   
   return {
     quiz: details.quiz?.offContentQuestions || [],
-    activities: (details.activities?.offContentActivities || []).map((issue: any) => ({
+activities: (details.activities?.offContentActivities || []).map((issue: any) => ({
       ...issue,
-      question: issue.activity, // Transform "activity" key to "question" for ValidationDetailsPanel
+      question: issue.content, // Transform "content" key to "question" for ValidationDetailsPanel
     })),
   };
 };
