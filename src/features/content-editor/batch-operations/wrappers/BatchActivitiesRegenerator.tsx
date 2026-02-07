@@ -14,6 +14,7 @@ interface BatchActivitiesRegeneratorProps {
   gradeLevel: string;
   onComplete: () => void;
   onDashboardRefresh?: () => void;
+  onStart?: () => void;
   disabled?: boolean;
 }
 
@@ -22,6 +23,7 @@ export const BatchActivitiesRegenerator = ({
   gradeLevel, 
   onComplete,
   onDashboardRefresh,
+  onStart,
   disabled = false,
 }: BatchActivitiesRegeneratorProps) => {
   const { role } = useContentEditorPermissions();
@@ -32,6 +34,7 @@ export const BatchActivitiesRegenerator = ({
     config,
     onComplete,
     onDashboardRefresh,
+    onStart,
   });
 
   // Only admin can batch regenerate

@@ -16,12 +16,12 @@ import {
 import { toast } from "sonner";
 import { Search, ChevronDown, ChevronRight, BookOpen, Calculator, FlaskConical, Book, RefreshCw, AlertCircle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { BatchQuizGenerator } from "./BatchQuizGenerator";
 import { 
   BatchQuizValidator, 
   BatchActivitiesValidator,
   BatchQuizRegenerator,
-  BatchActivitiesRegenerator 
+  BatchActivitiesRegenerator,
+  BatchQuizGeneratorNew 
 } from "@/features/content-editor/batch-operations";
 import { ValidationDetailsPanel } from "./ValidationDetailsPanel";
 
@@ -70,6 +70,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
   const [openSubjects, setOpenSubjects] = useState<Set<string>>(new Set());
   const [showOnlyMissingQuiz, setShowOnlyMissingQuiz] = useState(false);
   const [regeneratingLessonId, setRegeneratingLessonId] = useState<string | null>(null);
+  const [activeBatchOperation, setActiveBatchOperation] = useState<string | null>(null);
 
   const gradeLevels = [
     { value: "all", label: "Tous les niveaux" },
@@ -415,7 +416,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
 
         {/* Quiz Coverage Stats */}
         {gradeLevel !== "all" && totalLessons > 0 && (
-          <div className="mt-4 p-3 rounded-lg bg-muted/50 space-y-2">
+          <div className="mt-4 p-3 rounded-lg bg-muted/50 space-y-3">
             <div className="flex items-center justify-between text-sm">
               <span className="font-medium flex items-center gap-1">
                 {missingQuizzesTotal > 0 && <AlertCircle className="h-3.5 w-3.5 text-destructive" />}
@@ -434,51 +435,82 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
                 {missingQuizzesTotal} leçon{missingQuizzesTotal > 1 ? 's' : ''} sans quiz
               </p>
             )}
-            {/* Batch Quiz Generator Button */}
+
+            {/* Generation Section */}
             {missingQuizzesTotal > 0 && (
-              <div className="pt-2">
-                <BatchQuizGenerator 
+              <div className="space-y-1.5 pt-1">
+                <Label className="text-xs text-muted-foreground">Génération</Label>
+                <BatchQuizGeneratorNew 
                   lessons={lessonsMissingQuiz}
                   gradeLevel={gradeLevel}
-                  onComplete={loadSubjects}
+                  onComplete={() => {
+                    setActiveBatchOperation(null);
+                    loadSubjects();
+                  }}
+                  onStart={() => setActiveBatchOperation('quiz-generate')}
+                  onDashboardRefresh={onDashboardRefresh}
+                  disabled={activeBatchOperation !== null && activeBatchOperation !== 'quiz-generate'}
                 />
               </div>
             )}
-            {/* Batch Quiz Content Validator Button */}
-            {lessonsWithValidQuiz.length > 0 && (
-              <div className="pt-2">
-                <BatchQuizValidator 
-                   lessons={lessonsWithValidQuiz}
-                   gradeLevel={gradeLevel}
-                   onComplete={loadSubjects}
-                   onDashboardRefresh={onDashboardRefresh}
-                 />
+
+            {/* Validation Section */}
+            {(lessonsWithValidQuiz.length > 0 || lessonsWithValidActivities.length > 0) && (
+              <div className="space-y-1.5 pt-1">
+                <Label className="text-xs text-muted-foreground">Validation</Label>
+                <div className="space-y-1.5">
+                  {lessonsWithValidQuiz.length > 0 && (
+                    <BatchQuizValidator 
+                      lessons={lessonsWithValidQuiz}
+                      gradeLevel={gradeLevel}
+                      onComplete={() => {
+                        setActiveBatchOperation(null);
+                        loadSubjects();
+                      }}
+                      onStart={() => setActiveBatchOperation('quiz-validate')}
+                      onDashboardRefresh={onDashboardRefresh}
+                      disabled={activeBatchOperation !== null && activeBatchOperation !== 'quiz-validate'}
+                    />
+                  )}
+                  {lessonsWithValidActivities.length > 0 && (
+                    <BatchActivitiesValidator 
+                      lessons={lessonsWithValidActivities}
+                      gradeLevel={gradeLevel}
+                      onComplete={() => {
+                        setActiveBatchOperation(null);
+                        loadSubjects();
+                      }}
+                      onStart={() => setActiveBatchOperation('activities-validate')}
+                      onDashboardRefresh={onDashboardRefresh}
+                      disabled={activeBatchOperation !== null && activeBatchOperation !== 'activities-validate'}
+                    />
+                  )}
+                </div>
               </div>
             )}
-            {/* Batch Quiz Regenerator Button - for flagged quizzes */}
+
+            {/* Regeneration Section - only shows if flagged items exist */}
             <BatchQuizRegenerator 
               lessons={lessonsWithValidQuiz}
               gradeLevel={gradeLevel}
-              onComplete={loadSubjects}
+              onComplete={() => {
+                setActiveBatchOperation(null);
+                loadSubjects();
+              }}
+              onStart={() => setActiveBatchOperation('quiz-regenerate')}
               onDashboardRefresh={onDashboardRefresh}
+              disabled={activeBatchOperation !== null && activeBatchOperation !== 'quiz-regenerate'}
             />
-            {/* Batch Activities Content Validator Button */}
-            {lessonsWithValidActivities.length > 0 && (
-              <div className="pt-2">
-                <BatchActivitiesValidator 
-                   lessons={lessonsWithValidActivities}
-                   gradeLevel={gradeLevel}
-                   onComplete={loadSubjects}
-                   onDashboardRefresh={onDashboardRefresh}
-                 />
-              </div>
-            )}
-            {/* Batch Activities Regenerator Button - for flagged activities */}
             <BatchActivitiesRegenerator 
               lessons={lessonsWithValidActivities}
               gradeLevel={gradeLevel}
-              onComplete={loadSubjects}
+              onComplete={() => {
+                setActiveBatchOperation(null);
+                loadSubjects();
+              }}
+              onStart={() => setActiveBatchOperation('activities-regenerate')}
               onDashboardRefresh={onDashboardRefresh}
+              disabled={activeBatchOperation !== null && activeBatchOperation !== 'activities-regenerate'}
             />
           </div>
         )}

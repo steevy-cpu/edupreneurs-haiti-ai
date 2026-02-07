@@ -13,6 +13,7 @@ interface BatchActivitiesValidatorProps {
   gradeLevel: string;
   onComplete: () => void;
   onDashboardRefresh?: () => void;
+  onStart?: () => void;
   disabled?: boolean;
 }
 
@@ -21,6 +22,7 @@ export const BatchActivitiesValidator = ({
   gradeLevel, 
   onComplete,
   onDashboardRefresh,
+  onStart,
   disabled = false,
 }: BatchActivitiesValidatorProps) => {
   const config = useMemo(() => createActivitiesValidatorConfig(), []);
@@ -30,6 +32,7 @@ export const BatchActivitiesValidator = ({
     config,
     onComplete,
     onDashboardRefresh,
+    onStart,
   });
 
   // Calculate stats for display

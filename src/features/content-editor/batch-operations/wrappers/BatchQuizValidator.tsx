@@ -13,6 +13,7 @@ interface BatchQuizValidatorProps {
   gradeLevel: string;
   onComplete: () => void;
   onDashboardRefresh?: () => void;
+  onStart?: () => void;
   disabled?: boolean;
 }
 
@@ -21,6 +22,7 @@ export const BatchQuizValidator = ({
   gradeLevel, 
   onComplete,
   onDashboardRefresh,
+  onStart,
   disabled = false,
 }: BatchQuizValidatorProps) => {
   const config = useMemo(() => createQuizValidatorConfig(), []);
@@ -30,6 +32,7 @@ export const BatchQuizValidator = ({
     config,
     onComplete,
     onDashboardRefresh,
+    onStart,
   });
 
   // Calculate stats for display

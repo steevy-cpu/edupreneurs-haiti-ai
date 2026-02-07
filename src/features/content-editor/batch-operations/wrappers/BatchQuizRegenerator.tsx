@@ -14,6 +14,7 @@ interface BatchQuizRegeneratorProps {
   gradeLevel: string;
   onComplete: () => void;
   onDashboardRefresh?: () => void;
+  onStart?: () => void;
   disabled?: boolean;
 }
 
@@ -22,6 +23,7 @@ export const BatchQuizRegenerator = ({
   gradeLevel, 
   onComplete,
   onDashboardRefresh,
+  onStart,
   disabled = false,
 }: BatchQuizRegeneratorProps) => {
   const { role } = useContentEditorPermissions();
@@ -32,6 +34,7 @@ export const BatchQuizRegenerator = ({
     config,
     onComplete,
     onDashboardRefresh,
+    onStart,
   });
 
   // Only admin can batch regenerate

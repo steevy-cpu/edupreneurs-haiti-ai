@@ -36,8 +36,16 @@ export {
   activitiesRegeneratorDialogConfig 
 } from './regenerators/activitiesRegenerator';
 
+// Generators
+export { 
+  createQuizGeneratorConfig, 
+  quizGeneratorTheme, 
+  quizGeneratorDialogConfig 
+} from './generators/quizGenerator';
+
 // Wrapper components (ready to use)
 export { BatchQuizValidator } from './wrappers/BatchQuizValidator';
 export { BatchActivitiesValidator } from './wrappers/BatchActivitiesValidator';
 export { BatchQuizRegenerator } from './wrappers/BatchQuizRegenerator';
 export { BatchActivitiesRegenerator } from './wrappers/BatchActivitiesRegenerator';
+export { BatchQuizGeneratorNew } from './wrappers/BatchQuizGeneratorNew';
