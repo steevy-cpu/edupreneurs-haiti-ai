@@ -11,3 +11,5 @@ export { SystemMessage } from './SystemMessage';
 export { FloatingReaction, FloatingReactionsContainer } from './FloatingReaction';
 export { VisitorCommunityOverlay } from './VisitorCommunityOverlay';
 export { ConversationSidebar } from './ConversationSidebar';
+export { JudeTypingIndicator } from './JudeTypingIndicator';
+export { MessageTypewriter } from './MessageTypewriter';

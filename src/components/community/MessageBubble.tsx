@@ -9,6 +9,7 @@ import { getAvatarUrl } from "@/lib/avatarMap";
 import { Message, Reaction } from "@/types/community";
 import { FloatingReaction } from "./FloatingReaction";
 import { ChatMessageRenderer } from "@/components/ChatMessageRenderer";
+import { MessageTypewriter } from "./MessageTypewriter";
 
 interface MessageBubbleProps {
   message: Message;
@@ -32,6 +33,10 @@ interface MessageBubbleProps {
   messageIndex?: number;
   shouldAnimate?: boolean;
   shouldShowFloatingReactions?: boolean;
+  /** Enable typewriter effect for this message */
+  isTypewriting?: boolean;
+  /** Callback when typewriter animation completes */
+  onTypewriterComplete?: () => void;
 }
 
 const REACTION_EMOJIS = ['❤️', '😂', '😮', '😢', '😡', '👍', '👎', '🔥', '🎉'];
@@ -58,6 +63,8 @@ export function MessageBubble({
   messageIndex = 0,
   shouldAnimate = true,
   shouldShowFloatingReactions = true,
+  isTypewriting = false,
+  onTypewriterComplete,
 }: MessageBubbleProps) {
   const navigate = useNavigate();
   const [floatingReactions, setFloatingReactions] = useState<string[]>([]);
@@ -234,7 +241,14 @@ export function MessageBubble({
       >
         <div className={`flex items-start ${(message.image_url && !isDocument) ? 'justify-between' : 'justify-start'} gap-2`}>
           <div className="text-xs sm:text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere flex-1">
-            <ChatMessageRenderer content={message.content} />
+            {isTypewriting ? (
+              <MessageTypewriter 
+                content={message.content} 
+                onComplete={onTypewriterComplete}
+              />
+            ) : (
+              <ChatMessageRenderer content={message.content} />
+            )}
           </div>
           {message.image_url && !isDocument && (
             <Button
