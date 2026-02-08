@@ -4316,7 +4316,7 @@ export type Database = {
         Args: {
           p_challenge_id: string
           p_code: string
-          p_trust_device?: boolean
+          p_trust_device: boolean
         }
         Returns: Json
       }
