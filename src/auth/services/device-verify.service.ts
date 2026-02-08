@@ -6,6 +6,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { getFullDeviceIdentifier } from "@/utils/deviceFingerprint";
+import { logger } from "@/utils/logger";
 
 export interface DeviceChallengeResult {
   success: boolean;
@@ -25,29 +26,127 @@ export interface ResendDeviceCodeResult {
   error?: string;
 }
 
+interface DeviceTrustRecord {
+  trusted: boolean;
+  matchedBy: 'fingerprint' | 'hardware' | null;
+  existingDeviceId?: string;
+}
+
+/**
+ * Internal helper to get device trust record with fallback matching
+ * Matches by exact fingerprint first, then falls back to hardware fingerprint
+ */
+async function getDeviceTrustRecord(
+  userId: string,
+  deviceInfo: { fingerprint: string; hardwareFingerprint: string }
+): Promise<DeviceTrustRecord> {
+  try {
+    // Query trusted devices matching EITHER fingerprint OR hardware fingerprint
+    const { data, error } = await supabase
+      .from('user_trusted_devices')
+      .select('id, device_fingerprint, hardware_fingerprint, is_trusted')
+      .eq('user_id', userId)
+      .eq('is_trusted', true)
+      .or(`device_fingerprint.eq.${deviceInfo.fingerprint},hardware_fingerprint.eq.${deviceInfo.hardwareFingerprint}`);
+
+    if (error) {
+      logger.error('Error querying device trust:', error);
+      return { trusted: false, matchedBy: null };
+    }
+
+    if (!data || data.length === 0) {
+      logger.debug('[DeviceTrust] No trusted devices found for user');
+      return { trusted: false, matchedBy: null };
+    }
+
+    // Check for exact fingerprint match first (most reliable)
+    const exactMatch = data.find(d => d.device_fingerprint === deviceInfo.fingerprint);
+    if (exactMatch) {
+      logger.debug('[DeviceTrust] Matched by exact fingerprint');
+      return { trusted: true, matchedBy: 'fingerprint', existingDeviceId: exactMatch.id };
+    }
+
+    // Fall back to hardware fingerprint match
+    const hardwareMatch = data.find(d => d.hardware_fingerprint === deviceInfo.hardwareFingerprint);
+    if (hardwareMatch) {
+      logger.debug('[DeviceTrust] Matched by hardware fingerprint (will repair)');
+      return { trusted: true, matchedBy: 'hardware', existingDeviceId: hardwareMatch.id };
+    }
+
+    return { trusted: false, matchedBy: null };
+  } catch (error) {
+    logger.error('Error in getDeviceTrustRecord:', error);
+    return { trusted: false, matchedBy: null };
+  }
+}
+
+/**
+ * Repair trust for a device that matched by hardware but not exact fingerprint
+ * Creates/updates the trusted device entry with the current fingerprint
+ */
+async function repairDeviceTrust(
+  userId: string,
+  deviceInfo: { fingerprint: string; hardwareFingerprint: string; deviceName: string; browser: string; os: string }
+): Promise<void> {
+  try {
+    logger.debug('[DeviceTrust] Repairing trust for drifted fingerprint');
+    
+    // Upsert the current fingerprint as trusted
+    const { error } = await supabase
+      .from('user_trusted_devices')
+      .upsert({
+        user_id: userId,
+        device_fingerprint: deviceInfo.fingerprint,
+        hardware_fingerprint: deviceInfo.hardwareFingerprint,
+        device_name: deviceInfo.deviceName,
+        browser: deviceInfo.browser,
+        os: deviceInfo.os,
+        is_trusted: true,
+        last_login_at: new Date().toISOString(),
+      }, {
+        onConflict: 'user_id,device_fingerprint',
+      });
+
+    if (error) {
+      logger.error('Error repairing device trust:', error);
+    } else {
+      logger.debug('[DeviceTrust] Trust repaired successfully');
+    }
+  } catch (error) {
+    logger.error('Error in repairDeviceTrust:', error);
+  }
+}
+
 /**
  * Check if the current device is trusted for a user
+ * Uses hardware fingerprint fallback for resilience against fingerprint drift
  */
 export async function isDeviceTrusted(userId: string): Promise<boolean> {
   try {
     const deviceInfo = getFullDeviceIdentifier();
     
-    const { data, error } = await supabase
-      .from('user_trusted_devices')
-      .select('is_trusted')
-      .eq('user_id', userId)
-      .eq('device_fingerprint', deviceInfo.fingerprint)
-      .maybeSingle();
+    logger.debug('[DeviceTrust] Checking trust for device:', {
+      fingerprint: deviceInfo.fingerprint.substring(0, 8) + '...',
+      hardwareFingerprint: deviceInfo.hardwareFingerprint.substring(0, 8) + '...',
+    });
     
-    if (error) {
-      console.error('Error checking device trust:', error);
+    const trustRecord = await getDeviceTrustRecord(userId, deviceInfo);
+    
+    if (!trustRecord.trusted) {
+      logger.debug('[DeviceTrust] Device not trusted');
       return false;
     }
     
-    // Device is trusted only if explicitly marked as trusted
-    return data?.is_trusted === true;
+    // If matched by hardware (fingerprint drifted), repair the trust record
+    if (trustRecord.matchedBy === 'hardware') {
+      // Fire and forget - don't block the login flow
+      repairDeviceTrust(userId, deviceInfo);
+    }
+    
+    logger.debug('[DeviceTrust] Device is trusted via', trustRecord.matchedBy);
+    return true;
   } catch (error) {
-    console.error('Error in isDeviceTrusted:', error);
+    logger.error('Error in isDeviceTrusted:', error);
     return false;
   }
 }
@@ -67,13 +166,13 @@ export async function isDeviceKnown(userId: string): Promise<boolean> {
       .maybeSingle();
     
     if (error) {
-      console.error('Error checking device known:', error);
+      logger.error('Error checking device known:', error);
       return false;
     }
     
     return data !== null;
   } catch (error) {
-    console.error('Error in isDeviceKnown:', error);
+    logger.error('Error in isDeviceKnown:', error);
     return false;
   }
 }
