@@ -21,7 +21,7 @@ import { TeamSection } from "@/components/home/TeamSection";
 import { ContactSection } from "@/components/home/ContactSection";
 import { BlogSectionWrapper } from "@/components/home/BlogSectionWrapper";
 import { CTASection } from "@/components/home/CTASection";
-import { HomeFooter } from "@/components/home/HomeFooter";
+import { Footer } from "@/components/Footer";
 
 // Modals
 import { VisitorTypeSelector } from "@/components/visitor";
@@ -115,7 +115,7 @@ const Index = () => {
         </DeferredContent>
         
         <CTASection />
-        <HomeFooter />
+        <Footer />
       </div>
       
       {/* Floating Layer - deferred until scroll or idle */}
