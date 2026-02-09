@@ -52,7 +52,8 @@ export async function verifyEmailCode(userId: string, code: string): Promise<Ver
     // Get device info to auto-trust this device after email verification
     const deviceInfo = getFullDeviceIdentifier();
     
-    const { data, error } = await supabase.rpc('verify_email_code', {
+    // Cast to unknown to handle the updated RPC signature with device params
+    const { data, error } = await (supabase.rpc as any)('verify_email_code', {
       p_user_id: userId,
       p_code: code.trim(),
       p_device_fingerprint: deviceInfo.fingerprint,
