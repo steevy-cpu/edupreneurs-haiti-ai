@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, BookOpen, BookMarked, Zap, BarChart3, Sparkles, GraduationCap, Youtube, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, BookOpen, BookMarked, Zap, BarChart3, Sparkles, GraduationCap, Youtube, CheckCircle2, Music } from "lucide-react";
 import { LessonBrowser } from "@/components/content-editor/LessonBrowser";
 import { LessonPreview } from "@/components/content-editor/LessonPreview";
 import { YouTubeManager } from "@/components/content-editor/YouTubeManager";
@@ -22,6 +22,7 @@ import { BatchGenerationValidation } from "@/components/content-editor/BatchGene
 import { DailyWordsManager } from "@/components/content-editor/DailyWordsManager";
 import { EbookManager } from "@/components/content-editor/EbookManager";
 import { ContentQualityDashboard } from "@/components/content-editor/ContentQualityDashboard";
+import { StudyMusicManager } from "@/components/content-editor/StudyMusicManager";
 
 const CONTENT_EDITOR_STORAGE_KEY = 'content_editor_preferences';
 
@@ -277,6 +278,10 @@ const ContentEditor = () => {
                 <BookMarked className="h-4 w-4" />
                 <span className="hidden md:inline text-xs">Bibliothèque</span>
               </TabsTrigger>
+              <TabsTrigger value="study-music" className="flex-shrink-0 gap-1.5">
+                <Music className="h-4 w-4" />
+                <span className="hidden md:inline text-xs">Musique</span>
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="review" className="space-y-6">
@@ -412,6 +417,10 @@ const ContentEditor = () => {
 
             <TabsContent value="ebooks">
               <EbookManager />
+            </TabsContent>
+
+            <TabsContent value="study-music">
+              <StudyMusicManager />
             </TabsContent>
           </Tabs>
         </div>

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useRef, useEffect, useCallback, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PlaylistTrack {
   id: string;
@@ -94,33 +95,30 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchPlaylistTracks = async () => {
     setIsLoading(true);
-    const curatedTracks: PlaylistTrack[] = [
-      { id: "ViKbB7vbK7Q", title: "Lofi Hip Hop Radio", thumbnail: "https://i.ytimg.com/vi/ViKbB7vbK7Q/hqdefault.jpg" },
-      { id: "45Siu4EtXzE", title: "Musique Relaxante pour Étudier - Concentration", thumbnail: "https://i.ytimg.com/vi/45Siu4EtXzE/hqdefault.jpg" },
-      { id: "Rb0UmrCXxVA", title: "Mozart - Musique Classique pour Étudier", thumbnail: "https://i.ytimg.com/vi/Rb0UmrCXxVA/hqdefault.jpg" },
-      { id: "jgpJVI3tDbY", title: "Mozart - Concertos pour Piano Complets", thumbnail: "https://i.ytimg.com/vi/jgpJVI3tDbY/hqdefault.jpg" },
-      { id: "hOA-2hl1Vbc", title: "Mozart - Eine Kleine Nachtmusik", thumbnail: "https://i.ytimg.com/vi/hOA-2hl1Vbc/hqdefault.jpg" },
-      { id: "9E6b3swbnWg", title: "Chopin - Nocturne Op. 9 No. 2", thumbnail: "https://i.ytimg.com/vi/9E6b3swbnWg/hqdefault.jpg" },
-      { id: "wygy721nzRc", title: "Chopin - Nocturnes Complets", thumbnail: "https://i.ytimg.com/vi/wygy721nzRc/hqdefault.jpg" },
-      { id: "EhO_MrRfftU", title: "Chopin - Valses Célèbres", thumbnail: "https://i.ytimg.com/vi/EhO_MrRfftU/hqdefault.jpg" },
-      { id: "t3217H8JppI", title: "Beethoven - Symphonies pour Étudier", thumbnail: "https://i.ytimg.com/vi/t3217H8JppI/hqdefault.jpg" },
-      { id: "4Tr0otuiQuU", title: "Beethoven - Sonate au Clair de Lune", thumbnail: "https://i.ytimg.com/vi/4Tr0otuiQuU/hqdefault.jpg" },
-      { id: "rOjHhS5MtvA", title: "Beethoven - Symphonie No. 9", thumbnail: "https://i.ytimg.com/vi/rOjHhS5MtvA/hqdefault.jpg" },
-      { id: "6JQm5aSjX6g", title: "Bach - Le Clavier Bien Tempéré", thumbnail: "https://i.ytimg.com/vi/6JQm5aSjX6g/hqdefault.jpg" },
-      { id: "Nnuq9PXbywA", title: "Bach - Toccata et Fugue en Ré Mineur", thumbnail: "https://i.ytimg.com/vi/Nnuq9PXbywA/hqdefault.jpg" },
-      { id: "ho9rZjlsyYY", title: "Bach - Prélude en Do Majeur", thumbnail: "https://i.ytimg.com/vi/ho9rZjlsyYY/hqdefault.jpg" },
-      { id: "GRxofEmo3HA", title: "Vivaldi - Les Quatre Saisons Complet", thumbnail: "https://i.ytimg.com/vi/GRxofEmo3HA/hqdefault.jpg" },
-      { id: "l-dYNttdgl0", title: "Vivaldi - Meilleurs Concertos Baroque", thumbnail: "https://i.ytimg.com/vi/l-dYNttdgl0/hqdefault.jpg" },
-      { id: "CvFH_6DNRCY", title: "Debussy - Clair de Lune et Œuvres", thumbnail: "https://i.ytimg.com/vi/CvFH_6DNRCY/hqdefault.jpg" },
-      { id: "WNcsUNKlAKw", title: "Debussy - La Mer", thumbnail: "https://i.ytimg.com/vi/WNcsUNKlAKw/hqdefault.jpg" },
-      { id: "KpOtuoHL45Y", title: "Liszt - Rêve d'Amour", thumbnail: "https://i.ytimg.com/vi/KpOtuoHL45Y/hqdefault.jpg" },
-      { id: "H1Dvg2MxQn8", title: "Liszt - Rhapsodies Hongroises", thumbnail: "https://i.ytimg.com/vi/H1Dvg2MxQn8/hqdefault.jpg" },
-      { id: "2bosouX_d8Y", title: "Schubert - Ave Maria (Version Orchestrale)", thumbnail: "https://i.ytimg.com/vi/2bosouX_d8Y/hqdefault.jpg" },
-      { id: "jgpJVI3tDbY", title: "Mix Classique - 4h Concentration", thumbnail: "https://i.ytimg.com/vi/jgpJVI3tDbY/hqdefault.jpg" },
-      { id: "4PUHBL1vMNY", title: "Meilleure Musique Classique Étude", thumbnail: "https://i.ytimg.com/vi/4PUHBL1vMNY/hqdefault.jpg" },
-    ];
-    setTracks(curatedTracks);
-    setIsLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from('study_music_tracks')
+        .select('youtube_id, title, thumbnail_url')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching study music tracks:', error);
+        setTracks([]);
+      } else {
+        const mapped: PlaylistTrack[] = (data || []).map((t: any) => ({
+          id: t.youtube_id,
+          title: t.title,
+          thumbnail: t.thumbnail_url,
+        }));
+        setTracks(mapped);
+      }
+    } catch (err) {
+      console.error('Failed to fetch study music tracks:', err);
+      setTracks([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Volume handler
