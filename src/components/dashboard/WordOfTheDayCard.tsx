@@ -13,11 +13,11 @@ export const WordOfTheDayCard = () => {
     return (
       <Card className="overflow-hidden border-none rounded-xl shadow-md">
         <CardContent className="p-0">
-          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-purple-900 p-3 sm:p-4">
-            <div className="flex items-center gap-3">
-              <Skeleton className="h-6 w-24 bg-white/20" />
-              <Skeleton className="h-5 w-32 bg-white/20" />
-              <Skeleton className="h-4 w-48 bg-white/20 flex-1" />
+          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-purple-900 p-4">
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-20 bg-white/20" />
+              <Skeleton className="h-7 w-40 bg-white/20" />
+              <Skeleton className="h-4 w-full bg-white/20" />
             </div>
           </div>
         </CardContent>
@@ -30,46 +30,51 @@ export const WordOfTheDayCard = () => {
   return (
     <Card className="overflow-hidden border-none rounded-xl shadow-md">
       <CardContent className="p-0">
-        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-purple-900 p-3 sm:p-4">
-          {/* Desktop: single-line layout / Mobile: stacked */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-            {/* Word + phonetic + audio */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <BookOpen className="w-4 h-4 text-primary hidden sm:block" />
-              <h2 className="text-lg sm:text-xl font-bold text-white uppercase tracking-wider">
-                {word.word}
-              </h2>
-              <button
-                onClick={isPlaying ? stopAudio : playAudio}
-                disabled={isGenerating}
-                className={cn(
-                  "flex items-center gap-1.5 bg-white/10 hover:bg-white/20 rounded-full px-2.5 py-1 transition-colors",
-                  isGenerating && "opacity-70 cursor-wait"
-                )}
-                aria-label={isPlaying ? "Arrêter la lecture" : "Écouter la prononciation"}
-              >
-                <span className="text-white/90 font-mono text-xs">[{word.phonetic}]</span>
-                {isGenerating ? (
-                  <Loader2 className="w-3.5 h-3.5 text-white/80 animate-spin" />
-                ) : isPlaying ? (
-                  <VolumeX className="w-3.5 h-3.5 text-white/80" />
-                ) : (
-                  <Volume2 className="w-3.5 h-3.5 text-white/80" />
-                )}
-              </button>
-            </div>
-            {/* Definition */}
-            <p className="text-white/90 text-sm flex-1 min-w-0">
-              <span className="text-purple-300 font-medium">({word.part_of_speech})</span>{' '}
-              {word.definition}
-            </p>
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-purple-900 p-4 sm:p-5">
+          {/* Label */}
+          <div className="flex items-center gap-1.5 mb-2">
+            <BookOpen className="w-3.5 h-3.5 text-purple-300" />
+            <span className="text-white/60 text-xs font-medium uppercase tracking-wider">Mot du jour</span>
           </div>
+
+          {/* Word + phonetic row */}
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-white uppercase tracking-wider">
+              {word.word}
+            </h2>
+            <button
+              onClick={isPlaying ? stopAudio : playAudio}
+              disabled={isGenerating}
+              className={cn(
+                "inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 rounded-full px-2.5 py-1 transition-colors",
+                isGenerating && "opacity-70 cursor-wait"
+              )}
+              aria-label={isPlaying ? "Arrêter la lecture" : "Écouter la prononciation"}
+            >
+              <span className="text-white/80 font-mono text-xs">[{word.phonetic}]</span>
+              {isGenerating ? (
+                <Loader2 className="w-3.5 h-3.5 text-white/80 animate-spin" />
+              ) : isPlaying ? (
+                <VolumeX className="w-3.5 h-3.5 text-white/80" />
+              ) : (
+                <Volume2 className="w-3.5 h-3.5 text-white/80" />
+              )}
+            </button>
+          </div>
+
+          {/* Definition — always full width */}
+          <p className="text-white/90 text-sm sm:text-base leading-relaxed">
+            <span className="text-purple-300 font-medium">({word.part_of_speech})</span>{' '}
+            {word.definition}
+          </p>
+
           {/* Example */}
-          <p className="text-white/60 text-xs italic mt-1.5 line-clamp-1">
+          <p className="text-white/50 text-xs sm:text-sm italic mt-2">
             « {word.example} »
           </p>
+
           {isVisitor && (
-            <p className="text-white/40 text-[10px] mt-1">
+            <p className="text-white/40 text-[10px] mt-2">
               Créez un compte pour ne plus voir les mêmes mots
             </p>
           )}
