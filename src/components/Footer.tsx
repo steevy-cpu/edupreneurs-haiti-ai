@@ -44,6 +44,7 @@ export function Footer() {
             <h4 className="font-bold text-white mb-2 text-xs tracking-wide uppercase">Support</h4>
             <ul className="space-y-1">
               <li><a href="mailto:support@edupreneurs.com" className="text-slate-400 hover:text-primary transition-colors">Contact</a></li>
+              <li><Link to="/translate" className="text-slate-400 hover:text-primary transition-colors">Traducteur</Link></li>
               <li><span className="text-slate-500">FAQ (Bientôt)</span></li>
             </ul>
           </div>

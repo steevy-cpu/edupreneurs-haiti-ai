@@ -288,7 +288,8 @@ export const footerLinks = {
   support: [
     { href: "#faq", label: "FAQ" },
     { href: "#contact", label: "Contact" },
-    { to: "/resources", label: "Ressources" }
+    { to: "/resources", label: "Ressources" },
+    { to: "/translate", label: "Traducteur" }
   ],
   legal: [
     { to: "/privacy-policy", label: "Confidentialité" },

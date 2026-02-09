@@ -186,3 +186,6 @@ verify_jwt = true
 
 [functions.moncash-webhook]
 verify_jwt = false
+
+[functions.translate-text]
+verify_jwt = false

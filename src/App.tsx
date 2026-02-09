@@ -121,6 +121,9 @@ const TemplatesHomePage = lazy(() => import("./pages/templates/TemplatesHomePage
 const TemplatesCategoryPage = lazy(() => import("./pages/templates/TemplatesCategoryPage"));
 const TemplateEditorPage = lazy(() => import("./pages/templates/TemplateEditorPage"));
 
+// Translate (public, no auth)
+const Translate = lazy(() => import("./pages/Translate"));
+
 /**
  * Main App Component
  * 
@@ -180,6 +183,13 @@ const App = () => (
                         <Route path="/templates/edit/:slug" element={
                           <Suspense fallback={<GenericPageSkeleton />}>
                             <TemplateEditorPage />
+                          </Suspense>
+                        } />
+                        
+                        {/* Translate - Public, no auth */}
+                        <Route path="/translate" element={
+                          <Suspense fallback={<GenericPageSkeleton />}>
+                            <Translate />
                           </Suspense>
                         } />
                         
