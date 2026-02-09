@@ -84,6 +84,14 @@
     <priority>0.8</priority>
   </url>
   
+  <!-- Translation Tool -->
+  <url>
+    <loc>https://mon-edupreneur.com/translate</loc>
+    <lastmod>2026-02-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
   <!-- Individual Templates -->
   <url>
     <loc>https://mon-edupreneur.com/templates/edit/emploi-du-temps-primaire</loc>
