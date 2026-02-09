@@ -1,136 +1,97 @@
 
-# Lesson Feedback Module for Centre de Controle
+
+# Music Tracks Manager — Content Editor Tab
 
 ## Overview
 
-Add a new "Feedback" tab to the Control Center that lets super users review lesson feedback. Negative feedback shows the user's name, email, and comment. Positive feedback shows only name and email.
+Move the hardcoded music playlist from `MusicPlayerContext.tsx` into the database, and add a new "Musique" tab in the Content Editor so super users can add/delete tracks without code changes.
+
+## Current State
+
+The 23 study music tracks are **hardcoded** in `src/contexts/MusicPlayerContext.tsx` (lines 97-121). There is no database table for them. Adding or removing a track requires a code deployment.
 
 ## Architecture
 
-### 1. Database Function (Security Definer)
+### 1. Database: `study_music_tracks` table
 
-Since email lives in `auth.users` (not in `profiles`), we need a server-side function that joins the tables. This function will:
-- Only be callable by founders (using `is_founder()`)
-- Join `lesson_feedback` + `profiles` + `auth.users` + `lessons`
-- Return: rating, comment, user full_name, user nickname, user email, lesson title, created_at
-
-```sql
-CREATE OR REPLACE FUNCTION public.get_lesson_feedback_for_admin(
-  p_rating_filter TEXT DEFAULT NULL,
-  p_limit INTEGER DEFAULT 50,
-  p_offset INTEGER DEFAULT 0
-)
-RETURNS TABLE (
-  id UUID,
-  rating TEXT,
-  comment TEXT,
-  created_at TIMESTAMPTZ,
-  user_id UUID,
-  full_name TEXT,
-  nickname TEXT,
-  avatar_url TEXT,
-  email TEXT,
-  lesson_id UUID,
-  lesson_title TEXT,
-  lesson_slug TEXT
-)
-LANGUAGE plpgsql
-STABLE
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-BEGIN
-  IF NOT is_founder() THEN
-    RAISE EXCEPTION 'Unauthorized';
-  END IF;
-
-  RETURN QUERY
-  SELECT
-    lf.id, lf.rating, lf.comment, lf.created_at,
-    lf.user_id, p.full_name, p.nickname, p.avatar_url,
-    au.email::TEXT,
-    lf.lesson_id, l.title, l.slug
-  FROM lesson_feedback lf
-  JOIN profiles p ON p.user_id = lf.user_id
-  JOIN auth.users au ON au.id = lf.user_id
-  LEFT JOIN lessons l ON l.id = lf.lesson_id
-  WHERE (p_rating_filter IS NULL OR lf.rating = p_rating_filter)
-  ORDER BY lf.created_at DESC
-  LIMIT p_limit
-  OFFSET p_offset;
-END;
-$$;
+```text
+study_music_tracks
+  - id            UUID (PK, default gen_random_uuid())
+  - youtube_id    TEXT NOT NULL (the YouTube video ID)
+  - title         TEXT NOT NULL
+  - thumbnail_url TEXT NOT NULL
+  - sort_order    INTEGER NOT NULL DEFAULT 0
+  - is_active     BOOLEAN NOT NULL DEFAULT true
+  - created_at    TIMESTAMPTZ DEFAULT now()
+  - created_by    UUID REFERENCES profiles(user_id)
 ```
 
-A second function for the count (for pagination and badge):
+RLS Policy: 
+- SELECT: open to all authenticated users (the player needs to fetch tracks)
+- INSERT/UPDATE/DELETE: restricted to founders via `is_founder()` check
 
-```sql
-CREATE OR REPLACE FUNCTION public.count_lesson_feedback_for_admin(
-  p_rating_filter TEXT DEFAULT NULL
-)
-RETURNS INTEGER
-LANGUAGE plpgsql
-STABLE
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-DECLARE
-  result INTEGER;
-BEGIN
-  IF NOT is_founder() THEN
-    RAISE EXCEPTION 'Unauthorized';
-  END IF;
+Migration also seeds the 23 existing hardcoded tracks so nothing breaks.
 
-  SELECT COUNT(*)::INTEGER INTO result
-  FROM lesson_feedback lf
-  WHERE (p_rating_filter IS NULL OR lf.rating = p_rating_filter);
+### 2. Update `MusicPlayerContext.tsx`
 
-  RETURN result;
-END;
-$$;
+Replace the hardcoded `curatedTracks` array in `fetchPlaylistTracks()` with a Supabase query:
+
+```typescript
+const { data, error } = await supabase
+  .from('study_music_tracks')
+  .select('youtube_id, title, thumbnail_url')
+  .eq('is_active', true)
+  .order('sort_order', { ascending: true });
 ```
 
-### 2. New Module File: `src/pages/control-center/modules/FeedbackModule.tsx`
+Map `youtube_id` to `id`, `thumbnail_url` to `thumbnail` to keep the existing `PlaylistTrack` interface unchanged. Falls back to empty array on error (matches existing SAFE_DEFAULTS pattern).
 
-Following the exact same structural patterns as `ContactModule.tsx`:
-- Status filter (All / Positive / Negative)
-- Table with columns: User (avatar + name), Email, Lesson, Rating badge, Date
-- Click row to open detail Dialog
-- For negative feedback: show the comment in the detail view
-- For positive feedback: show just name + email
-- Pagination (15 items per page)
-- Loading skeleton states
+### 3. New Component: `StudyMusicManager.tsx`
 
-### 3. Register Module: `src/pages/control-center/modules.ts`
+Located at `src/components/content-editor/StudyMusicManager.tsx`, following the `DailyWordsManager` pattern exactly:
 
-Add a new entry to `CONTROL_CENTER_MODULES`:
-- id: `"feedback"`
-- label: `"Feedback Lecons"`
-- shortLabel: `"Feedback"`
-- icon: `MessageSquare` (already imported)
-- component: `lazy(() => import("./modules/FeedbackModule"))`
-- badge: count of negative ("down") feedback (calls `count_lesson_feedback_for_admin('down')`)
+- **Table view**: Shows all tracks with thumbnail, title, YouTube ID, active status, and sort order
+- **Add track dialog**: Form with YouTube URL/ID input (auto-extracts ID from URL), title, thumbnail (auto-generated from YouTube ID)
+- **Delete**: Confirmation dialog, then hard delete
+- **Toggle active**: Switch to enable/disable without deleting
+- **Sort order**: Simple numeric input (no drag-and-drop to keep it lightweight for 3G)
 
-### 4. Types Update: `src/pages/control-center/types.ts`
+### 4. Register Tab in `ContentEditor.tsx`
 
-Add `LessonFeedbackAdmin` interface and `FEEDBACK_RATING_OPTIONS` constant.
+Add a new tab trigger and content panel:
 
-## File Changes Summary
+```text
+Tab: "Musique" with Music icon
+Value: "study-music"
+Component: <StudyMusicManager />
+```
+
+Placed after "Bibliotheque" (last position) to avoid disrupting existing tab order.
+
+## File Changes
 
 | File | Action | Description |
 |------|--------|-------------|
-| Database migration | Create | Two security-definer functions for fetching feedback data with email |
-| `src/pages/control-center/modules/FeedbackModule.tsx` | Create | New module component following ContactModule pattern |
-| `src/pages/control-center/modules.ts` | Edit | Register new feedback module tab |
-| `src/pages/control-center/types.ts` | Edit | Add feedback-related types |
+| Migration SQL | Create | `study_music_tracks` table + RLS + seed 23 tracks |
+| `src/components/content-editor/StudyMusicManager.tsx` | Create | CRUD manager following DailyWordsManager pattern |
+| `src/pages/ContentEditor.tsx` | Edit | Add tab trigger + tab content + import |
+| `src/contexts/MusicPlayerContext.tsx` | Edit | Replace hardcoded array with database query |
+
+## Key Design Decisions
+
+1. **YouTube ID extraction**: The add form accepts both full URLs (`youtube.com/watch?v=xxx`) and raw IDs. A helper function parses either format.
+2. **Thumbnail auto-fill**: When a YouTube ID is entered, thumbnail URL auto-populates as `https://i.ytimg.com/vi/{id}/hqdefault.jpg`. Editable if needed.
+3. **Fallback**: If the database query fails (network issues on 3G), `MusicPlayerContext` returns an empty array — matching the current safe defaults. No crash.
+4. **No migration of user state**: `currentTrackIndex` in `localStorage` may point to a different position after reorder, but the player handles out-of-bounds indices gracefully (wraps around).
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- additive only |
-| Security: email access? | Protected by `is_founder()` check inside security-definer function |
-| Works with existing data? | Yes -- queries existing `lesson_feedback` table |
-| 3G optimized? | Yes -- paginated, no heavy assets |
-| Backward compatible? | Yes -- no schema changes to existing tables |
-| RLS respected? | Yes -- function uses security definer with founder check |
+| Breaks existing functionality? | No — seed data preserves all 23 current tracks |
+| Backward compatible? | Yes — same PlaylistTrack interface, same context API |
+| Works with existing data? | Yes — no existing table to conflict with |
+| 3G optimized? | Yes — single lightweight query, no heavy assets |
+| Edge cases handled? | Empty DB, failed query, duplicate YouTube IDs |
+| Security? | RLS: anyone reads, only founders write |
+
