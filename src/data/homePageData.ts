@@ -273,28 +273,25 @@ export const navLinks = [
 // Footer Links
 export const footerLinks = {
   navigation: [
-    { href: "#accueil", label: "Accueil" },
-    { href: "#comment-ca-marche", label: "Comment ça marche" },
-    { href: "#courses", label: "Nos Cours" },
+    { to: "/", label: "Accueil" },
     { to: "/blog", label: "Blog" },
-    { to: "/templates", label: "Templates" }
+    { to: "/templates", label: "Templates" },
+    { to: "/translate", label: "Traducteur" }
   ],
   about: [
-    { href: "#about", label: "Notre Mission" },
-    { href: "#team", label: "L'Équipe" },
-    { href: "#partners", label: "Nos Partenaires" },
+    { to: "/#about", label: "Notre Mission" },
+    { to: "/#team", label: "L'Équipe" },
     { to: "/examens-officiels", label: "Préparation au Bac" }
   ],
   support: [
-    { href: "#faq", label: "FAQ" },
-    { href: "#contact", label: "Contact" },
-    { to: "/resources", label: "Ressources" },
-    { to: "/translate", label: "Traducteur" }
+    { href: "mailto:support@edupreneurs.com", label: "Contact" },
+    { to: "/#faq", label: "FAQ" },
+    { to: "/resources", label: "Ressources" }
   ],
   legal: [
+    { to: "/terms", label: "Conditions" },
     { to: "/privacy-policy", label: "Confidentialité" },
-    { to: "/cookie-settings", label: "Paramètres Cookies" },
-    { to: "/auth/login", label: "Se connecter" }
+    { to: "/cookie-settings", label: "Paramètres Cookies" }
   ]
 } as const;
 
