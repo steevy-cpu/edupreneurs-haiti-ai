@@ -1,160 +1,121 @@
 
 
-# Music Player Feature Enhancements
+# Lesson Feedback Feature (Thumbs Up/Down)
 
-## New Features
+## Overview
 
-### 1. Volume Control (Slider)
-Add a volume slider to the expanded player so users can adjust volume up/down. The YouTube IFrame API exposes `setVolume(0-100)` and `getVolume()` methods, so this integrates cleanly.
+Add a feedback section at the bottom of each lesson page where users can rate content with thumbs up or thumbs down. Clicking thumbs down opens a popup asking the user to explain what went wrong. The vote is saved immediately on click; the optional comment is saved separately.
 
-- Add `volume` state and `setVolume` function to `MusicPlayerContext`
-- Render a horizontal slider in the expanded player controls row
-- Persist volume preference in `localStorage` so it's remembered across sessions
-- Show a mute/unmute toggle icon next to the slider
+## Database Design
 
-### 2. Previous Track Button
-Currently there's only "Next". Add a "Previous" button so users can go back to the last track.
+### New table: `lesson_feedback`
 
-- Add `prevTrack` to `MusicPlayerContext`
-- Render a `SkipBack` icon button in the controls
+| Column | Type | Nullable | Default | Purpose |
+|--------|------|----------|---------|---------|
+| id | uuid | NO | gen_random_uuid() | Primary key |
+| user_id | uuid | NO | - | References auth.users(id) ON DELETE CASCADE |
+| lesson_id | uuid | NO | - | References lessons(id) ON DELETE CASCADE |
+| rating | text | NO | - | 'up' or 'down' (checked via trigger) |
+| comment | text | YES | NULL | Optional feedback text (required UX for thumbs down, but not DB-enforced) |
+| created_at | timestamptz | NO | now() | When feedback was submitted |
+| updated_at | timestamptz | NO | now() | When feedback was last changed |
 
-### 3. Shuffle Toggle
-Let users randomize the playlist order instead of sequential playback.
+**Unique constraint**: `(user_id, lesson_id)` -- one rating per user per lesson. If they change their mind, it updates via upsert.
 
-- Add `shuffle` state and `toggleShuffle` to context
-- When shuffle is on, `nextTrack` picks a random index instead of `+1`
-- Show a shuffle icon button in the controls
+### RLS Policies
 
-### 4. Repeat/Loop Toggle
-Allow looping the current track or the entire playlist.
+Following the existing `lesson_completions` pattern:
 
-- Add `repeatMode` (`off` | `one` | `all`) to context
-- When `one`: replay same track on end. When `all`: wrap around (already default). When `off`: stop at end of playlist
-- Show a repeat icon button with visual indicator for mode
+| Policy | Command | Rule |
+|--------|---------|------|
+| Users can view own feedback | SELECT | `auth.uid() = user_id` |
+| Users can insert own feedback | INSERT | `auth.uid() = user_id` (WITH CHECK) |
+| Users can update own feedback | UPDATE | `auth.uid() = user_id` |
+| Founders can view all feedback | SELECT | `public.is_founder()` (for analytics) |
 
----
+This avoids any recursion risk since policies reference `auth.uid()` directly and use the existing `is_founder()` security definer function.
 
-## Technical Details
+### Migration SQL
 
-### MusicPlayerContext Changes
+```sql
+CREATE TABLE public.lesson_feedback (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  lesson_id uuid NOT NULL REFERENCES public.lessons(id) ON DELETE CASCADE,
+  rating text NOT NULL CHECK (rating IN ('up', 'down')),
+  comment text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (user_id, lesson_id)
+);
 
+ALTER TABLE public.lesson_feedback ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies
+CREATE POLICY "Users can view own feedback"
+  ON public.lesson_feedback FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own feedback"
+  ON public.lesson_feedback FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own feedback"
+  ON public.lesson_feedback FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Founders can view all feedback"
+  ON public.lesson_feedback FOR SELECT
+  USING (public.is_founder());
+
+-- Auto-update updated_at
+CREATE TRIGGER update_lesson_feedback_updated_at
+  BEFORE UPDATE ON public.lesson_feedback
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_updated_at();
+```
+
+## Frontend Implementation
+
+### New component: `LessonFeedback`
+
+Location: `src/components/lesson/LessonFeedback.tsx`
+
+**Behavior:**
+1. Renders at the bottom of the lesson page (after AI Practice section, before the "Next Lesson" CTA)
+2. Shows a card with "Cette lecon vous a-t-elle ete utile?" and two buttons (ThumbsUp / ThumbsDown)
+3. On click: immediately upserts the rating to `lesson_feedback`
+4. If thumbs down: opens a Dialog/Popover with a textarea asking "Qu'est-ce qui pourrait etre ameliore?" with a submit button
+5. If the user already submitted feedback, shows their current selection highlighted
+6. Unauthenticated users see a prompt to sign in instead
+
+**Props:**
 ```typescript
-// New state
-const [volume, setVolumeState] = useState(() => {
-  const saved = localStorage.getItem('music-player-volume');
-  return saved ? parseInt(saved) : 70;
-});
-const [isMuted, setIsMuted] = useState(false);
-const [shuffle, setShuffle] = useState(false);
-const [repeatMode, setRepeatMode] = useState<'off' | 'one' | 'all'>('all');
-
-// Volume handler
-const setVolume = useCallback((vol: number) => {
-  setVolumeState(vol);
-  localStorage.setItem('music-player-volume', String(vol));
-  if (playerRef.current?.setVolume) {
-    playerRef.current.setVolume(vol);
-  }
-}, []);
-
-// Apply volume when player becomes ready
-// In onReady callback: event.target.setVolume(volume);
-
-// Mute toggle
-const toggleMute = useCallback(() => {
-  if (playerRef.current) {
-    if (isMuted) {
-      playerRef.current.unMute();
-      playerRef.current.setVolume(volume);
-    } else {
-      playerRef.current.mute();
-    }
-  }
-  setIsMuted(prev => !prev);
-}, [isMuted, volume]);
-
-// Previous track
-const prevTrack = useCallback(() => {
-  const currentIndex = currentTrackIndexRef.current;
-  const prevIndex = (currentIndex - 1 + tracks.length) % tracks.length;
-  playTrack(prevIndex);
-}, [tracks.length, playTrack]);
-
-// Shuffle-aware nextTrack
-const nextTrack = useCallback(() => {
-  const currentIndex = currentTrackIndexRef.current;
-  if (repeatMode === 'one') {
-    playTrack(currentIndex); // replay same
-    return;
-  }
-  let nextIndex;
-  if (shuffle) {
-    do { nextIndex = Math.floor(Math.random() * tracks.length); }
-    while (nextIndex === currentIndex && tracks.length > 1);
-  } else {
-    nextIndex = (currentIndex + 1) % tracks.length;
-  }
-  if (repeatMode === 'off' && nextIndex === 0 && !shuffle) {
-    stopMusic(); // end of playlist
-    return;
-  }
-  playTrack(nextIndex);
-}, [tracks.length, playTrack, shuffle, repeatMode, stopMusic]);
+interface LessonFeedbackProps {
+  lessonId: string;
+}
 ```
 
-### GlobalMusicPlayer UI Changes
+### Integration in `LessonPageTemplate.tsx`
 
-```tsx
-{/* Controls row - add SkipBack, volume slider, shuffle, repeat */}
-<div className="flex items-center justify-center gap-2">
-  <Button variant="ghost" size="icon" onClick={toggleShuffle}>
-    <Shuffle className={cn("w-4 h-4", shuffle && "text-primary")} />
-  </Button>
-  <Button variant="outline" size="icon" onClick={prevTrack}>
-    <SkipBack className="w-4 h-4" />
-  </Button>
-  <Button variant="outline" size="icon" onClick={playPause}>
-    {isPlaying ? <Pause /> : <Play />}
-  </Button>
-  <Button variant="outline" size="icon" onClick={nextTrack}>
-    <SkipForward className="w-4 h-4" />
-  </Button>
-  <Button variant="ghost" size="icon" onClick={toggleRepeat}>
-    <Repeat className={cn("w-4 h-4", repeatMode !== 'off' && "text-primary")} />
-    {repeatMode === 'one' && <span className="absolute text-[8px]">1</span>}
-  </Button>
-</div>
+Add `<LessonFeedback lessonId={lesson.id} />` between the AI Practice section and the "Next Lesson" CTA card (around line 485).
 
-{/* Volume row */}
-<div className="flex items-center gap-2 mt-2 px-1">
-  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={toggleMute}>
-    {isMuted || volume === 0 ? <VolumeX /> : volume < 50 ? <Volume1 /> : <Volume2 />}
-  </Button>
-  <Slider value={[isMuted ? 0 : volume]} max={100} step={1}
-    onValueChange={([v]) => { setVolume(v); if (v > 0) setIsMuted(false); }}
-    className="flex-1"
-  />
-</div>
-```
-
----
-
-## Files Changed
+### File Changes Summary
 
 | File | Change |
 |------|--------|
-| `src/contexts/MusicPlayerContext.tsx` | Add volume, mute, prevTrack, shuffle, repeatMode state + handlers |
-| `src/components/GlobalMusicPlayer.tsx` | Add volume slider, prev/shuffle/repeat buttons to expanded UI |
-
----
+| **Migration** | Create `lesson_feedback` table with RLS |
+| `src/components/lesson/LessonFeedback.tsx` | **New file** -- feedback UI component |
+| `src/components/LessonPageTemplate.tsx` | Import and render `LessonFeedback` at bottom |
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- all new features are additive |
-| Works with existing data? | Yes -- no DB changes |
-| 3G performance impact? | None -- no new network requests |
-| Backward compatible? | Yes -- safe defaults match current behavior (volume 70, repeat all, shuffle off) |
-| Edge cases? | Mute state synced with slider; volume persisted in localStorage |
+| Breaks existing functionality? | No -- purely additive |
+| RLS conflicts? | No -- uses direct auth.uid() checks + existing is_founder() |
+| Works with existing data? | Yes -- new table, no data migration needed |
+| 3G performance impact? | Minimal -- single small query to check existing feedback |
+| Backward compatible? | Yes -- unauthenticated users simply see a sign-in nudge |
+| Edge cases? | User changes vote (upsert handles it); comment is optional in DB |
 
