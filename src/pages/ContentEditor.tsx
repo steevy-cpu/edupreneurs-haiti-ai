@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 // Content Editor - Lesson Review & Management
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
@@ -207,83 +207,82 @@ const ContentEditor = () => {
       <div className="max-w-[1920px] mx-auto space-y-6">
         {/* Header */}
         <div className="max-w-[1600px] mx-auto">
-          <div className="flex items-center justify-between mb-4">
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/dashboard")}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour
-            </Button>
+          <div className="flex items-center justify-between gap-2 py-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/dashboard")}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <BookOpen className="text-primary h-6 w-6 shrink-0" />
+              <div className="min-w-0">
+                <h1 className="text-lg font-semibold truncate">Révision des Leçons</h1>
+                <p className="text-xs text-muted-foreground hidden sm:block truncate">
+                  Révisez le contenu, ajoutez des vidéos YouTube et laissez des commentaires
+                </p>
+              </div>
+            </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <Button
                 onClick={() => setShowCreateMatiere(true)}
+                size="sm"
               >
-                <Sparkles className="mr-2 h-4 w-4" />
-                Créer une matière (IA)
+                <Sparkles className="h-4 w-4 lg:mr-2" />
+                <span className="hidden lg:inline">Créer une matière (IA)</span>
               </Button>
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => navigate("/ai-analytics")}
               >
-                <BarChart3 className="mr-2 h-4 w-4" />
-                Analytics IA
+                <BarChart3 className="h-4 w-4 lg:mr-2" />
+                <span className="hidden lg:inline">Analytics IA</span>
               </Button>
             </div>
           </div>
-          
-          <Card className="bg-gradient-to-r from-primary/10 to-purple-500/10 border-none">
-            <CardHeader className="p-6 md:p-8">
-              <CardTitle className="text-2xl md:text-3xl lg:text-4xl flex items-center gap-3">
-                <BookOpen className="text-primary h-8 w-8" />
-                Révision des Leçons
-              </CardTitle>
-              <p className="text-sm md:text-base text-muted-foreground mt-2">
-                Révisez le contenu, ajoutez des vidéos YouTube et laissez des commentaires
-              </p>
-            </CardHeader>
-          </Card>
         </div>
 
         {/* Main Content with Tabs */}
         <div className="max-w-[1600px] mx-auto">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-7 lg:w-[1400px]">
-              <TabsTrigger value="review">
-                <BookOpen className="mr-2 h-4 w-4" />
-                Révision
+            <TabsList className="flex w-full overflow-x-auto">
+              <TabsTrigger value="review" className="flex-shrink-0 gap-1.5">
+                <BookOpen className="h-4 w-4" />
+                <span className="hidden md:inline text-xs">Révision</span>
               </TabsTrigger>
-              <TabsTrigger value="quality">
-                <BarChart3 className="mr-2 h-4 w-4" />
-                Qualité
+              <TabsTrigger value="quality" className="flex-shrink-0 gap-1.5">
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden md:inline text-xs">Qualité</span>
               </TabsTrigger>
-              <TabsTrigger value="batch">
-                <Zap className="mr-2 h-4 w-4" />
-                Génération
+              <TabsTrigger value="batch" className="flex-shrink-0 gap-1.5">
+                <Zap className="h-4 w-4" />
+                <span className="hidden md:inline text-xs">Génération</span>
               </TabsTrigger>
-              <TabsTrigger value="exams">
-                <GraduationCap className="mr-2 h-4 w-4" />
-                Examens
+              <TabsTrigger value="exams" className="flex-shrink-0 gap-1.5">
+                <GraduationCap className="h-4 w-4" />
+                <span className="hidden md:inline text-xs">Examens</span>
               </TabsTrigger>
-              <TabsTrigger value="passion-videos">
-                <Youtube className="mr-2 h-4 w-4" />
-                Passions
+              <TabsTrigger value="passion-videos" className="flex-shrink-0 gap-1.5">
+                <Youtube className="h-4 w-4" />
+                <span className="hidden md:inline text-xs">Passions</span>
               </TabsTrigger>
-              <TabsTrigger value="daily-words">
-                <Sparkles className="mr-2 h-4 w-4" />
-                Mots du Jour
+              <TabsTrigger value="daily-words" className="flex-shrink-0 gap-1.5">
+                <Sparkles className="h-4 w-4" />
+                <span className="hidden md:inline text-xs">Mots du Jour</span>
               </TabsTrigger>
-              <TabsTrigger value="ebooks">
-                <BookMarked className="mr-2 h-4 w-4" />
-                Bibliothèque
+              <TabsTrigger value="ebooks" className="flex-shrink-0 gap-1.5">
+                <BookMarked className="h-4 w-4" />
+                <span className="hidden md:inline text-xs">Bibliothèque</span>
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="review" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-6">
                 {/* Lesson Browser - Left Sidebar */}
-                <div className="lg:col-span-4 h-[calc(100vh-280px)] min-h-[600px] max-h-[800px]">
+                <div className="md:col-span-5 lg:col-span-4 h-[calc(100vh-200px)]">
                   <LessonBrowser
                     onSelectLesson={async (lesson) => {
                       console.log('✅ Lesson selected:', lesson);
@@ -318,7 +317,7 @@ const ContentEditor = () => {
                 </div>
 
                 {/* Content - Right Column */}
-                <div className="lg:col-span-8 space-y-4">
+                <div className="md:col-span-7 lg:col-span-8 space-y-4">
                   {/* Curriculum Analyzer - Subject Level */}
                   {selectedLesson?.subjects && (
                     <CurriculumAnalyzer
