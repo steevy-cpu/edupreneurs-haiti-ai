@@ -26,7 +26,8 @@ export const activitiesRegeneratorDialogConfig: BatchDialogConfig = {
 export const createActivitiesRegeneratorConfig = (): BatchOperationConfig => ({
   operationType: 'regenerate',
   contentType: 'activities',
-  rateLimit: 2000,
+  rateLimit: 1500,
+  concurrency: 2,
   theme: activitiesRegeneratorTheme,
   messages: {
     empty: "Aucune activité à régénérer!",

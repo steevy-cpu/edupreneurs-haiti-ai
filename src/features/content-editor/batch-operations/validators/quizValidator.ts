@@ -27,7 +27,8 @@ export const quizValidatorDialogConfig: BatchDialogConfig = {
 export const createQuizValidatorConfig = (): BatchOperationConfig => ({
   operationType: 'validate',
   contentType: 'quiz',
-  rateLimit: 2000,
+  rateLimit: 1000,
+  concurrency: 3,
   theme: quizValidatorTheme,
   messages: {
     empty: "Aucun quiz à valider (tous déjà validés ou liste vide)!",

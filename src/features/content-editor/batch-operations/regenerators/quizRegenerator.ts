@@ -26,7 +26,8 @@ export const quizRegeneratorDialogConfig: BatchDialogConfig = {
 export const createQuizRegeneratorConfig = (): BatchOperationConfig => ({
   operationType: 'regenerate',
   contentType: 'quiz',
-  rateLimit: 2000,
+  rateLimit: 1500,
+  concurrency: 2,
   theme: quizRegeneratorTheme,
   messages: {
     empty: "Aucun quiz à régénérer!",

@@ -47,8 +47,9 @@ export const useBatchOperation = ({
     };
   }, [results]);
 
+  const concurrency = config.concurrency ?? 1;
   const canStart = itemsToProcess.length > 0;
-  const estimatedMinutes = Math.ceil(itemsToProcess.length * 3 / 60);
+  const estimatedMinutes = Math.ceil((itemsToProcess.length / concurrency) * (config.rateLimit / 1000 + 2) / 60);
 
   const pause = useCallback(() => {
     abortRef.current = true;
@@ -69,56 +70,66 @@ export const useBatchOperation = ({
     setResults([]);
 
     const operationResults: OperationResult[] = [];
+    let completedCount = 0;
+    let queueIndex = 0;
 
-    for (let i = 0; i < itemsToProcess.length; i++) {
-      if (abortRef.current) {
-        toast.info(config.messages.pauseInfo);
-        break;
+    const worker = async () => {
+      while (!abortRef.current) {
+        const idx = queueIndex++;
+        if (idx >= itemsToProcess.length) break;
+
+        const lesson = itemsToProcess[idx];
+        setCurrentItem(lesson.title);
+
+        try {
+          const result = await config.processLesson(lesson);
+
+          // Fetch existing validation_details_json for merge
+          const { data: existing } = await supabase
+            .from('lessons')
+            .select('validation_details_json')
+            .eq('id', lesson.id)
+            .single();
+
+          await config.updateLesson(lesson.id, result, existing?.validation_details_json);
+
+          operationResults.push({
+            lessonId: lesson.id,
+            lessonTitle: lesson.title,
+            success: result.success,
+            aligned: result.aligned,
+            confidence: result.confidence,
+            offContentCount: result.offContentCount,
+          });
+        } catch (error) {
+          console.error(`Error processing ${lesson.title}:`, error);
+          operationResults.push({
+            lessonId: lesson.id,
+            lessonTitle: lesson.title,
+            success: false,
+            error: error instanceof Error ? error.message : 'Erreur inconnue',
+          });
+        }
+
+        completedCount++;
+        setProgress({ current: completedCount, total: itemsToProcess.length });
+        setResults([...operationResults]);
+
+        // Rate limiting delay before next item
+        if (queueIndex < itemsToProcess.length && !abortRef.current) {
+          await new Promise(resolve => setTimeout(resolve, config.rateLimit));
+        }
       }
+    };
 
-      const lesson = itemsToProcess[i];
-      setCurrentItem(lesson.title);
-      setProgress({ current: i, total: itemsToProcess.length });
+    // Spawn concurrent workers
+    const workerCount = Math.min(concurrency, itemsToProcess.length);
+    await Promise.all(
+      Array.from({ length: workerCount }, () => worker())
+    );
 
-      try {
-        // Process the lesson
-        const result = await config.processLesson(lesson);
-
-        // Fetch existing validation_details_json for merge
-        const { data: existing } = await supabase
-          .from('lessons')
-          .select('validation_details_json')
-          .eq('id', lesson.id)
-          .single();
-
-        // Update with merge logic
-        await config.updateLesson(lesson.id, result, existing?.validation_details_json);
-
-        operationResults.push({
-          lessonId: lesson.id,
-          lessonTitle: lesson.title,
-          success: result.success,
-          aligned: result.aligned,
-          confidence: result.confidence,
-          offContentCount: result.offContentCount,
-        });
-
-      } catch (error) {
-        console.error(`Error processing ${lesson.title}:`, error);
-        operationResults.push({
-          lessonId: lesson.id,
-          lessonTitle: lesson.title,
-          success: false,
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        });
-      }
-
-      setResults([...operationResults]);
-
-      // Rate limiting delay
-      if (i < itemsToProcess.length - 1 && !abortRef.current) {
-        await new Promise(resolve => setTimeout(resolve, config.rateLimit));
-      }
+    if (abortRef.current) {
+      toast.info(config.messages.pauseInfo);
     }
 
     setProgress({ current: itemsToProcess.length, total: itemsToProcess.length });

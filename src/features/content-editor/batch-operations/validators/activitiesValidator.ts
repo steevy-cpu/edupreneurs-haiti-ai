@@ -27,7 +27,8 @@ export const activitiesValidatorDialogConfig: BatchDialogConfig = {
 export const createActivitiesValidatorConfig = (): BatchOperationConfig => ({
   operationType: 'validate',
   contentType: 'activities',
-  rateLimit: 2000,
+  rateLimit: 1000,
+  concurrency: 3,
   theme: activitiesValidatorTheme,
   messages: {
     empty: "Toutes les activités sont déjà validées ou liste vide!",
