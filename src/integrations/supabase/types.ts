@@ -4162,6 +4162,10 @@ export type Database = {
         Args: { html_content: string }
         Returns: number
       }
+      count_lesson_feedback_for_admin: {
+        Args: { p_rating_filter?: string }
+        Returns: number
+      }
       count_quiz_in_html: { Args: { html_content: string }; Returns: number }
       create_conversation: { Args: never; Returns: string }
       create_device_challenge: {
@@ -4213,6 +4217,23 @@ export type Database = {
           nickname: string
           user_id: string
           verified: boolean
+        }[]
+      }
+      get_lesson_feedback_for_admin: {
+        Args: { p_limit?: number; p_offset?: number; p_rating_filter?: string }
+        Returns: {
+          avatar_url: string
+          comment: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          lesson_id: string
+          lesson_slug: string
+          lesson_title: string
+          nickname: string
+          rating: string
+          user_id: string
         }[]
       }
       get_new_feed_posts_count: { Args: { p_user_id: string }; Returns: number }

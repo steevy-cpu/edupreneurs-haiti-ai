@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { Users, AlertTriangle, BarChart3, CreditCard, Megaphone, BookOpen, Newspaper, MessageSquare } from "lucide-react";
+import { Users, AlertTriangle, BarChart3, CreditCard, Megaphone, BookOpen, Newspaper, MessageSquare, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ControlCenterModule } from "./types";
 
@@ -102,6 +102,20 @@ export const CONTROL_CENTER_MODULES: ControlCenterModule[] = [
         .select("id", { count: "exact", head: true })
         .eq("status", "new");
       return count || 0;
+    },
+  },
+  {
+    id: "feedback",
+    label: "Feedback Leçons",
+    shortLabel: "Feedback",
+    icon: MessageCircle,
+    component: lazy(() => import("./modules/FeedbackModule")),
+    badge: async () => {
+      const { data, error } = await supabase.rpc("count_lesson_feedback_for_admin", {
+        p_rating_filter: "down",
+      });
+      if (error) return 0;
+      return typeof data === "number" ? data : 0;
     },
   },
 ];

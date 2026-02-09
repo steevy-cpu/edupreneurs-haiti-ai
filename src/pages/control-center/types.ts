@@ -109,3 +109,23 @@ export const CONTACT_STATUS = [
   { value: 'resolved', label: 'Résolu', color: 'bg-green-500' },
   { value: 'spam', label: 'Spam', color: 'bg-red-500' },
 ] as const;
+
+export interface LessonFeedbackAdmin {
+  id: string;
+  rating: string;
+  comment: string | null;
+  created_at: string;
+  user_id: string;
+  full_name: string;
+  nickname: string;
+  avatar_url: string | null;
+  email: string;
+  lesson_id: string;
+  lesson_title: string | null;
+  lesson_slug: string | null;
+}
+
+export const FEEDBACK_RATING_OPTIONS = [
+  { value: 'up', label: 'Positif' },
+  { value: 'down', label: 'Négatif' },
+] as const;
