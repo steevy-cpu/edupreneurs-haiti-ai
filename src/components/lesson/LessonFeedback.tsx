@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { ThumbsUp, ThumbsDown, Send } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Send, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -123,12 +123,15 @@ export const LessonFeedback = ({ lessonId }: LessonFeedbackProps) => {
 
   return (
     <>
-      <Card className="border-border/50 bg-card/50">
+      <Card className="border-l-4 border-l-primary border-border/30 bg-primary/5">
         <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-sm sm:text-base text-muted-foreground font-medium text-center sm:text-left">
-              Cette leçon vous a-t-elle été utile?
-            </p>
+            <div className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-primary shrink-0" />
+              <p className="text-sm sm:text-base text-foreground font-medium text-center sm:text-left">
+                Votre avis compte — cette leçon vous a-t-elle été utile?
+              </p>
+            </div>
             <div className="flex items-center gap-3">
               <Button
                 variant={rating === "up" ? "default" : "outline"}
