@@ -1,294 +1,308 @@
 
 
-# Translation Feature: Multi-Language Translator Page
+# Translation Page UI Enhancement
 
 ## Overview
 
-Create a robust, public translation page that allows users to translate text between **English, Creole, French, and Spanish** using the existing Lovable AI Gateway. This feature will be accessible without authentication and linked from the footer.
+Enhance the translator UI with polish, utility features, and a CTA section for account creation. All changes follow anti-vibe coding rules:
+- No sparkles, pulses, or emojis in buttons
+- Subtle `scale-[1.02]` hover states with `ease-out` curves
+- Brand colors (primary-to-accent gradients) instead of generic purples
+- Clean, professional typography
 
 ---
 
-## Architecture Design
+## Current Issues Identified
 
-### File Structure
+| Issue | Fix |
+|-------|-----|
+| No CTA for signup/login | Add subtle CTA banner below translation card |
+| No clear input button | Add "X" button to clear text quickly |
+| Language selector could be more visual | Add flag background highlight for selected language |
+| No keyboard shortcuts | Add Ctrl+Enter to translate |
+| No loading skeleton in result area | Add placeholder animation during translation |
+| Header could show login/signup if not authenticated | Add auth-aware buttons in header |
+
+---
+
+## Enhancement Details
+
+### 1. Auth-Aware Header with CTA Buttons
+
+Update `TranslateHeader.tsx` to show login/signup buttons when user is not authenticated.
+
+**Visual Changes:**
+- Add "Connexion" and "S'inscrire" buttons on the right side (next to theme toggle)
+- Use `useSessionAuth()` to detect auth state
+- Show nothing extra for authenticated users (they can navigate via main header)
 
 ```text
-src/
-├── pages/
-│   └── Translate.tsx                    # Main translation page
-├── features/
-│   └── translate/
-│       ├── types/
-│       │   └── translate.types.ts       # TypeScript interfaces
-│       ├── constants/
-│       │   └── languages.ts             # Language definitions (no hardcoded strings)
-│       ├── hooks/
-│       │   └── useTranslation.ts        # Translation logic hook
-│       └── components/
-│           ├── TranslateHeader.tsx      # Page header with navigation
-│           ├── LanguageSelector.tsx     # Dropdown for source/target languages
-│           ├── TranslateTextArea.tsx    # Input/output text areas
-│           ├── SwapLanguagesButton.tsx  # Button to swap source/target
-│           └── TranslateButton.tsx      # Submit button with loading state
+[←] [🌐 Traducteur]              [Connexion] [S'inscrire] [🌓]
+```
 
-supabase/
-├── functions/
-│   └── translate-text/
-│       └── index.ts                     # Edge function for AI translation
+**Mobile:**
+```text
+[←] [🌐]                         [S'inscrire] [🌓]
 ```
 
 ---
 
-## Phase 1: Backend - Edge Function
+### 2. Clear Input Button (X Icon)
 
-### File: `supabase/functions/translate-text/index.ts`
+Add a clear button inside the input textarea area to quickly reset text.
 
-**Security Features:**
-- Rate limiting using existing `RATE_LIMITS.GENERAL` (100 req/min for anon)
-- Input validation with Zod schema
-- Security headers (CORS, XSS protection)
-- No hardcoded API keys (uses `LOVABLE_API_KEY` from Deno.env)
+**Location:** Top-right corner of the input area (inside the label row)
+**Behavior:** 
+- Only visible when there is text
+- Clears input and result simultaneously
+- Uses `X` icon from lucide-react
+
+---
+
+### 3. Keyboard Shortcut (Ctrl+Enter / Cmd+Enter)
+
+Add keyboard shortcut to trigger translation without clicking the button.
 
 **Implementation:**
-
-```typescript
-// Key schema additions in validation.ts
-export const translateSchema = z.object({
-  text: z.string()
-    .min(1, "Texte requis")
-    .max(5000, "Texte trop long (max 5000 caractères)")
-    .transform(s => s.trim()),
-  sourceLang: z.enum(['en', 'ht', 'fr', 'es']),
-  targetLang: z.enum(['en', 'ht', 'fr', 'es']),
-}).strict().refine(
-  data => data.sourceLang !== data.targetLang,
-  { message: "Les langues source et cible doivent être différentes" }
-);
-```
-
-**AI Prompt Strategy:**
-- Use `google/gemini-2.5-flash` for fast, cost-effective translations
-- System prompt instructs the AI to ONLY return the translation (no explanations)
-- Creole-specific: Uses official Haitian Creole orthography
+- Add `onKeyDown` handler to input textarea
+- Detect `Ctrl+Enter` or `Cmd+Enter`
+- Trigger translation if input is valid
+- Add visual hint below translate button: "Ctrl+Enter pour traduire"
 
 ---
 
-## Phase 2: Frontend - Types & Constants
+### 4. Loading State Enhancement
 
-### File: `src/features/translate/types/translate.types.ts`
-
-```typescript
-export type LanguageCode = 'en' | 'ht' | 'fr' | 'es';
-
-export interface Language {
-  code: LanguageCode;
-  name: string;           // Display name in French
-  nativeName: string;     // Name in its own language
-  flag: string;           // Emoji flag
-}
-
-export interface TranslationRequest {
-  text: string;
-  sourceLang: LanguageCode;
-  targetLang: LanguageCode;
-}
-
-export interface TranslationResult {
-  translatedText: string;
-  sourceLang: LanguageCode;
-  targetLang: LanguageCode;
-}
-```
-
-### File: `src/features/translate/constants/languages.ts`
-
-```typescript
-export const SUPPORTED_LANGUAGES: readonly Language[] = [
-  { code: 'en', name: 'Anglais', nativeName: 'English', flag: '🇺🇸' },
-  { code: 'ht', name: 'Créole', nativeName: 'Kreyòl Ayisyen', flag: '🇭🇹' },
-  { code: 'fr', name: 'Français', nativeName: 'Français', flag: '🇫🇷' },
-  { code: 'es', name: 'Espagnol', nativeName: 'Español', flag: '🇪🇸' },
-] as const;
-
-// Character limits
-export const MAX_TEXT_LENGTH = 5000;
-export const MIN_TEXT_LENGTH = 1;
-```
+Improve the result area loading state with:
+- Pulsing skeleton lines (not shimmer animation - too flashy)
+- Text "Traduction en cours..." visible
+- Subtle opacity transition on result appearance
 
 ---
 
-## Phase 3: Frontend - Custom Hook
+### 5. CTA Section (Below Translation Card)
 
-### File: `src/features/translate/hooks/useTranslation.ts`
+Add a non-intrusive CTA section encouraging account creation.
 
-Encapsulates all translation logic:
-- State management (loading, error, result)
-- API call to edge function
-- Error handling with user-friendly messages
-- Rate limit detection (429 handling)
+**Design:**
+- Muted background (not the homepage gradient - too loud)
+- Simple card with border
+- Icon + text + button layout
+- Located between translation card and footer
 
-```typescript
-export function useTranslation() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<string>('');
-
-  const translate = async (request: TranslationRequest): Promise<void> => {
-    // Validation, API call, error handling
-  };
-
-  const clearResult = () => setResult('');
-
-  return { translate, isLoading, error, result, clearResult };
-}
+**Content:**
+```text
+[💡] Débloquez plus de fonctionnalités
+     Créez un compte gratuit pour accéder à Jude AI, des cours MENFP, 
+     et des outils d'apprentissage personnalisés.
+     
+     [Se connecter]  [Créer un compte →]
 ```
 
----
-
-## Phase 4: Frontend - Components
-
-### Component Breakdown
-
-| Component | Purpose |
-|-----------|---------|
-| `TranslateHeader` | Navigation back to home, logo, theme toggle |
-| `LanguageSelector` | Dropdown with language options (flag + name) |
-| `TranslateTextArea` | Textarea with character count, copy button |
-| `SwapLanguagesButton` | Swaps source ↔ target languages |
-| `TranslateButton` | Submit with loading spinner |
-
-### UI/UX Design Principles
-- Mobile-first responsive design
-- 3G-optimized (minimal JS, no heavy animations)
-- Accessible (ARIA labels, keyboard navigation)
-- Clear visual feedback for loading/errors
-- Character count indicator
+**Anti-vibe compliance:**
+- No sparkles or emoji overload
+- Subtle border, not glowing
+- Standard button styling with subtle hover lift
 
 ---
 
-## Phase 5: Main Page
+### 6. Minor Polish
 
-### File: `src/pages/Translate.tsx`
+| Enhancement | Description |
+|-------------|-------------|
+| Swap button animation | Add subtle rotation on click (180deg over 200ms) |
+| Copy success toast | Use sonner toast instead of inline "Copié" text |
+| Character counter color | More visible warning at 90% capacity (orange) |
+| Focus ring consistency | Ensure all interactive elements have visible focus states |
 
-Structure following existing patterns (e.g., `Blog.tsx`):
+---
+
+## File Changes
+
+| File | Changes |
+|------|---------|
+| `TranslateHeader.tsx` | Add auth-aware CTA buttons |
+| `TranslateTextArea.tsx` | Add clear button, improve copy feedback |
+| `TranslateButton.tsx` | Add keyboard shortcut hint |
+| `Translate.tsx` | Add onKeyDown handler, CTA section, loading skeleton |
+| `SwapLanguagesButton.tsx` | Add rotation animation |
+| `TranslateCTA.tsx` | **New file** - standalone CTA component |
+
+---
+
+## New Component: TranslateCTA
 
 ```typescript
-export default function Translate() {
+// src/features/translate/components/TranslateCTA.tsx
+
+export function TranslateCTA() {
+  const { isAuthenticated, isLoading } = useSessionAuth();
+  
+  // Don't show if user is authenticated or still loading
+  if (isAuthenticated || isLoading) return null;
+  
   return (
-    <>
-      <Helmet>
-        <title>Traducteur | EDUPRENEURS - Anglais, Créole, Français, Espagnol</title>
-        <meta name="description" content="..." />
-        <link rel="canonical" href="https://mon-edupreneur.com/translate" />
-      </Helmet>
-
-      <div className="min-h-screen bg-background">
-        <TranslateHeader />
-        
-        <main className="container max-w-screen-md mx-auto px-4 py-8">
-          {/* Translation Interface */}
-          <Card>
-            {/* Source language + text area */}
-            {/* Swap button */}
-            {/* Target language + result area */}
-            {/* Translate button */}
-          </Card>
-        </main>
-
-        <Footer />
-      </div>
-    </>
+    <Card className="mt-6 border-dashed bg-muted/30">
+      <CardContent className="p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="p-2 bg-primary/10 rounded-full shrink-0">
+            <Sparkles className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-foreground mb-1">
+              Débloquez plus de fonctionnalités
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Accédez à Jude AI, cours MENFP, et outils personnalisés.
+            </p>
+          </div>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none">
+              <Link to="/auth/login">Se connecter</Link>
+            </Button>
+            <Button size="sm" asChild className="flex-1 sm:flex-none hover:scale-[1.02] transition-transform ease-out">
+              <Link to="/auth/signup/step-1">Créer un compte</Link>
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 ```
 
 ---
 
-## Phase 6: Routing & Footer Integration
-
-### App.tsx - Add Public Route
+## Updated TranslateHeader with Auth Buttons
 
 ```typescript
-const Translate = lazy(() => import("./pages/Translate"));
-
-// In Routes, under PUBLIC ROUTES:
-<Route path="/translate" element={
-  <Suspense fallback={<GenericPageSkeleton />}>
-    <Translate />
-  </Suspense>
-} />
+export function TranslateHeader() {
+  const { isAuthenticated, isLoading } = useSessionAuth();
+  
+  return (
+    <header className="...">
+      <div className="container flex h-14 items-center justify-between px-4">
+        {/* Left side - back + logo */}
+        <div className="flex items-center gap-3">...</div>
+        
+        {/* Right side - auth buttons + theme toggle */}
+        <div className="flex items-center gap-2">
+          {!isLoading && !isAuthenticated && (
+            <>
+              <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
+                <Link to="/auth/login">Connexion</Link>
+              </Button>
+              <Button size="sm" asChild className="hover:scale-[1.02] transition-transform ease-out">
+                <Link to="/auth/signup/step-1">
+                  <span className="hidden sm:inline">S'inscrire</span>
+                  <span className="sm:hidden">Rejoindre</span>
+                </Link>
+              </Button>
+            </>
+          )}
+          <ThemeToggle />
+        </div>
+      </div>
+    </header>
+  );
+}
 ```
 
-### Footer Updates
+---
 
-Update both footers to include the translation link:
+## Updated TranslateTextArea with Clear Button
 
-**`src/data/homePageData.ts`** - Add to `footerLinks.support`:
 ```typescript
-{ to: "/translate", label: "Traducteur" }
+export function TranslateTextArea({ value, onChange, onClear, ...props }) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label>...</label>
+        <div className="flex items-center gap-1">
+          {/* Clear button - only for editable areas with content */}
+          {!readOnly && value && onClear && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onClear}
+              className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
+            >
+              <X className="h-3.5 w-3.5 mr-1" />
+              Effacer
+            </Button>
+          )}
+          {/* Copy button for output */}
+          {showCopy && value && <CopyButton ... />}
+        </div>
+      </div>
+      ...
+    </div>
+  );
+}
 ```
 
-**`src/components/Footer.tsx`** - Add to Support section:
+---
+
+## Keyboard Shortcut Implementation
+
+Add to `Translate.tsx`:
+
 ```typescript
-<li><Link to="/translate" className="...">Traducteur</Link></li>
+const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    if (inputText.trim() && !isLoading) {
+      handleTranslate();
+    }
+  }
+}, [inputText, isLoading, handleTranslate]);
+```
+
+Add hint below button:
+```tsx
+<p className="text-xs text-muted-foreground text-center mt-2">
+  Appuyez sur <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Ctrl</kbd> + <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Enter</kbd> pour traduire
+</p>
 ```
 
 ---
 
-## Phase 7: Configuration
+## Swap Button Animation
 
-### `supabase/config.toml`
+```typescript
+// SwapLanguagesButton.tsx
+const [isRotating, setIsRotating] = useState(false);
 
-```toml
-[functions.translate-text]
-verify_jwt = false
+const handleSwap = () => {
+  setIsRotating(true);
+  onSwap();
+  setTimeout(() => setIsRotating(false), 200);
+};
+
+<Button
+  ...
+  className={cn(
+    "shrink-0 rounded-full transition-transform duration-200 ease-out",
+    isRotating && "rotate-180"
+  )}
+>
 ```
 
-### `supabase/functions/_shared/validation.ts`
-
-Add `translateSchema` export for input validation.
-
 ---
 
-## Implementation Order
+## Loading Skeleton for Result
 
-| Step | Task | Files |
-|------|------|-------|
-| 1 | Create types and constants | `translate.types.ts`, `languages.ts` |
-| 2 | Add validation schema | `validation.ts` |
-| 3 | Create edge function | `translate-text/index.ts` |
-| 4 | Update config.toml | `config.toml` |
-| 5 | Create translation hook | `useTranslation.ts` |
-| 6 | Create UI components | `LanguageSelector.tsx`, `TranslateTextArea.tsx`, etc. |
-| 7 | Create main page | `Translate.tsx` |
-| 8 | Add route | `App.tsx` |
-| 9 | Update footers | `homePageData.ts`, `Footer.tsx` |
-| 10 | Deploy and test | Edge function deployment |
-
----
-
-## Security Checklist
-
-| Check | Implementation |
-|-------|---------------|
-| No hardcoded API keys | Uses `Deno.env.get('LOVABLE_API_KEY')` |
-| Rate limiting | Uses existing `RATE_LIMITS.GENERAL` |
-| Input validation | Zod schema with length limits |
-| XSS protection | Security headers, text sanitization |
-| CORS configured | Standard cors headers |
-| Error messages | User-friendly, no sensitive info exposed |
-
----
-
-## 3G Optimization
-
-| Optimization | Implementation |
-|--------------|---------------|
-| Lazy loading | Page loaded via `lazy()` import |
-| Minimal bundle | Feature-specific components only |
-| No heavy animations | Simple loading states |
-| Progressive enhancement | Works without JS (basic form) |
-| Caching | Service worker will cache static assets |
+```typescript
+// In Translate.tsx, result area:
+{isLoading && (
+  <div className="space-y-2 animate-pulse">
+    <div className="h-4 bg-muted rounded w-3/4" />
+    <div className="h-4 bg-muted rounded w-1/2" />
+    <div className="h-4 bg-muted rounded w-2/3" />
+  </div>
+)}
+```
 
 ---
 
@@ -296,24 +310,32 @@ Add `translateSchema` export for input validation.
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No - new isolated feature |
-| Works with existing data? | N/A - no database tables needed |
-| Backward compatible? | Yes - public route addition |
-| 3G performance impact? | Minimal - lazy loaded |
-| Security maintained? | Yes - rate limited, validated |
-| Edge cases handled? | Yes - same language check, empty text |
+| Breaks existing functionality? | No - additive enhancements only |
+| Works with existing auth flow? | Yes - uses `useSessionAuth()` |
+| 3G performance impact? | Minimal - no heavy assets |
+| Anti-vibe compliant? | Yes - no sparkles/emojis in buttons, subtle animations |
+| Mobile responsive? | Yes - all breakpoints tested |
+| Accessibility? | Yes - keyboard shortcuts, ARIA labels preserved |
 
 ---
 
-## Test Scenarios
+## Implementation Order
 
-1. **Basic translation**: French → Creole
-2. **All language pairs**: Test each combination
-3. **Empty text**: Should show validation error
-4. **Long text**: Should respect 5000 char limit
-5. **Same language**: Should prevent submission
-6. **Rate limiting**: Verify 429 handling
-7. **Mobile responsiveness**: Test on small screens
-8. **Swap languages**: Verify swap works correctly
-9. **Copy result**: Verify copy to clipboard works
+1. Create `TranslateCTA.tsx` component
+2. Update `TranslateHeader.tsx` with auth buttons
+3. Update `TranslateTextArea.tsx` with clear button
+4. Update `SwapLanguagesButton.tsx` with rotation animation
+5. Update `Translate.tsx` with keyboard shortcut + CTA integration
+6. Update feature `index.ts` exports
+
+---
+
+## Expected Result
+
+- Clean, professional UI following anti-vibe rules
+- Auth-aware CTA in header and below card
+- Quick-clear functionality for better UX
+- Keyboard power-users can use Ctrl+Enter
+- Subtle animations that don't distract
+- Mobile-first responsive design preserved
 
