@@ -1,63 +1,150 @@
 
 
-# Fix Missing Lessons on Course Pages (Français + Others)
+# Music Player Feature Enhancements
 
-## Root Cause
+## New Features
 
-The `groupLessonsByMonth` function groups lessons by their exact `mois` value, and the rendering in `DynamicCoursePage.tsx` iterates `MONTH_ORDER` looking for exact matches like "Décembre". But some subjects use different `mois` formats:
+### 1. Volume Control (Slider)
+Add a volume slider to the expanded player so users can adjust volume up/down. The YouTube IFrame API exposes `setVolume(0-100)` and `getVolume()` methods, so this integrates cleanly.
 
-| Subject | Lesson Count | mois format | Currently displays? |
-|---------|-------------|-------------|-------------------|
-| Français | 34 | "Décembre - Semaine 1" (weekly) | NO - no match in MONTH_ORDER |
-| Kreyòl Ayisyen | 30 | NULL | NO - grouped as "Sans mois", rendered separately BUT only if `hasMonthlyOrganization` is true, which requires at least 1 lesson to have a non-null, non-"Sans mois" mois |
-| Mathématiques | 19 | NULL | NO - same issue |
-| Sciences Expérimentales | 23 | NULL | NO - same issue |
-| Anglais | 23 | Plain months | YES |
-| Espagnol | 19 | Plain months | YES |
-| Others | varies | Plain months | YES |
+- Add `volume` state and `setVolume` function to `MusicPlayerContext`
+- Render a horizontal slider in the expanded player controls row
+- Persist volume preference in `localStorage` so it's remembered across sessions
+- Show a mute/unmute toggle icon next to the slider
 
-Two distinct bugs:
+### 2. Previous Track Button
+Currently there's only "Next". Add a "Previous" button so users can go back to the last track.
 
-**Bug 1 (Français):** Weekly format "Décembre - Semaine 1" doesn't match MONTH_ORDER entry "Décembre". Lessons are grouped but never rendered.
+- Add `prevTrack` to `MusicPlayerContext`
+- Render a `SkipBack` icon button in the controls
 
-**Bug 2 (Kreyòl, Maths, Sciences Exp):** All lessons have `mois = NULL`. `hasMonthlyOrganization` is `false` (no lesson has a non-null mois), so the code takes the simple grid path at line 238. This should actually work -- let me re-check...
+### 3. Shuffle Toggle
+Let users randomize the playlist order instead of sequential playback.
 
-Actually, re-reading the code: when `hasMonthlyOrganization` is `false`, it falls through to the simple grid at line 238 which renders ALL lessons. So Kreyòl/Maths/SciExp should render fine. The main bug is only Français.
+- Add `shuffle` state and `toggleShuffle` to context
+- When shuffle is on, `nextTrack` picks a random index instead of `+1`
+- Show a shuffle icon button in the controls
 
-## Fix
+### 4. Repeat/Loop Toggle
+Allow looping the current track or the entire playlist.
 
-Update `groupLessonsByMonth` to normalize weekly formats ("Décembre - Semaine 1") to their parent month ("Décembre") so they match MONTH_ORDER.
+- Add `repeatMode` (`off` | `one` | `all`) to context
+- When `one`: replay same track on end. When `all`: wrap around (already default). When `off`: stop at end of playlist
+- Show a repeat icon button with visual indicator for mode
 
-### File: `src/utils/courseHelpers.ts`
+---
 
-In the `groupLessonsByMonth` function, extract the base month from weekly-format strings:
+## Technical Details
+
+### MusicPlayerContext Changes
 
 ```typescript
-export const groupLessonsByMonth = <T extends { mois?: string | null }>(
-  lessons: T[]
-): Record<string, T[]> => {
-  return lessons.reduce((acc, lesson) => {
-    let month = lesson.mois || "Sans mois";
-    
-    // Normalize weekly format: "Décembre - Semaine 1" -> "Décembre"
-    // Also handles: "Mars - Semaines 1-2" -> "Mars"
-    const weeklyMatch = month.match(/^(\S+)\s*-\s*Semaines?\b/);
-    if (weeklyMatch) {
-      month = weeklyMatch[1];
+// New state
+const [volume, setVolumeState] = useState(() => {
+  const saved = localStorage.getItem('music-player-volume');
+  return saved ? parseInt(saved) : 70;
+});
+const [isMuted, setIsMuted] = useState(false);
+const [shuffle, setShuffle] = useState(false);
+const [repeatMode, setRepeatMode] = useState<'off' | 'one' | 'all'>('all');
+
+// Volume handler
+const setVolume = useCallback((vol: number) => {
+  setVolumeState(vol);
+  localStorage.setItem('music-player-volume', String(vol));
+  if (playerRef.current?.setVolume) {
+    playerRef.current.setVolume(vol);
+  }
+}, []);
+
+// Apply volume when player becomes ready
+// In onReady callback: event.target.setVolume(volume);
+
+// Mute toggle
+const toggleMute = useCallback(() => {
+  if (playerRef.current) {
+    if (isMuted) {
+      playerRef.current.unMute();
+      playerRef.current.setVolume(volume);
+    } else {
+      playerRef.current.mute();
     }
-    
-    if (!acc[month]) {
-      acc[month] = [];
-    }
-    acc[month].push(lesson);
-    return acc;
-  }, {} as Record<string, T[]>);
-};
+  }
+  setIsMuted(prev => !prev);
+}, [isMuted, volume]);
+
+// Previous track
+const prevTrack = useCallback(() => {
+  const currentIndex = currentTrackIndexRef.current;
+  const prevIndex = (currentIndex - 1 + tracks.length) % tracks.length;
+  playTrack(prevIndex);
+}, [tracks.length, playTrack]);
+
+// Shuffle-aware nextTrack
+const nextTrack = useCallback(() => {
+  const currentIndex = currentTrackIndexRef.current;
+  if (repeatMode === 'one') {
+    playTrack(currentIndex); // replay same
+    return;
+  }
+  let nextIndex;
+  if (shuffle) {
+    do { nextIndex = Math.floor(Math.random() * tracks.length); }
+    while (nextIndex === currentIndex && tracks.length > 1);
+  } else {
+    nextIndex = (currentIndex + 1) % tracks.length;
+  }
+  if (repeatMode === 'off' && nextIndex === 0 && !shuffle) {
+    stopMusic(); // end of playlist
+    return;
+  }
+  playTrack(nextIndex);
+}, [tracks.length, playTrack, shuffle, repeatMode, stopMusic]);
 ```
 
-This single change fixes Français by collapsing all weekly entries under their parent month. The regex handles both "Semaine 1" and "Semaines 1-2" variants.
+### GlobalMusicPlayer UI Changes
 
-No other files need changes -- the rendering logic in DynamicCoursePage.tsx already handles the normalized month names correctly.
+```tsx
+{/* Controls row - add SkipBack, volume slider, shuffle, repeat */}
+<div className="flex items-center justify-center gap-2">
+  <Button variant="ghost" size="icon" onClick={toggleShuffle}>
+    <Shuffle className={cn("w-4 h-4", shuffle && "text-primary")} />
+  </Button>
+  <Button variant="outline" size="icon" onClick={prevTrack}>
+    <SkipBack className="w-4 h-4" />
+  </Button>
+  <Button variant="outline" size="icon" onClick={playPause}>
+    {isPlaying ? <Pause /> : <Play />}
+  </Button>
+  <Button variant="outline" size="icon" onClick={nextTrack}>
+    <SkipForward className="w-4 h-4" />
+  </Button>
+  <Button variant="ghost" size="icon" onClick={toggleRepeat}>
+    <Repeat className={cn("w-4 h-4", repeatMode !== 'off' && "text-primary")} />
+    {repeatMode === 'one' && <span className="absolute text-[8px]">1</span>}
+  </Button>
+</div>
+
+{/* Volume row */}
+<div className="flex items-center gap-2 mt-2 px-1">
+  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={toggleMute}>
+    {isMuted || volume === 0 ? <VolumeX /> : volume < 50 ? <Volume1 /> : <Volume2 />}
+  </Button>
+  <Slider value={[isMuted ? 0 : volume]} max={100} step={1}
+    onValueChange={([v]) => { setVolume(v); if (v > 0) setIsMuted(false); }}
+    className="flex-1"
+  />
+</div>
+```
+
+---
+
+## Files Changed
+
+| File | Change |
+|------|--------|
+| `src/contexts/MusicPlayerContext.tsx` | Add volume, mute, prevTrack, shuffle, repeatMode state + handlers |
+| `src/components/GlobalMusicPlayer.tsx` | Add volume slider, prev/shuffle/repeat buttons to expanded UI |
 
 ---
 
@@ -65,10 +152,9 @@ No other files need changes -- the rendering logic in DynamicCoursePage.tsx alre
 
 | Check | Status |
 |-------|--------|
-| Breaks existing subjects? | No -- subjects with plain month names are unaffected (no " - Semaine" match) |
-| Breaks NULL mois subjects? | No -- NULL stays "Sans mois", no regex match |
-| Works with existing data? | Yes -- tested against actual DB values |
-| Ordering preserved? | Yes -- lessons within a month keep their order_index sorting |
-| 3G impact? | None -- purely string parsing, no extra queries |
-| Edge cases? | "Sans mois" lessons still handled separately at line 262 |
+| Breaks existing functionality? | No -- all new features are additive |
+| Works with existing data? | Yes -- no DB changes |
+| 3G performance impact? | None -- no new network requests |
+| Backward compatible? | Yes -- safe defaults match current behavior (volume 70, repeat all, shuffle off) |
+| Edge cases? | Mute state synced with slider; volume persisted in localStorage |
 
