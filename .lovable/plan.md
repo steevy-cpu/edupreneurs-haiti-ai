@@ -1,180 +1,294 @@
 
 
-# Fix: Time-Aware Greetings for HomeChatbot
+# Translation Feature: Multi-Language Translator Page
 
-## Problem Statement
+## Overview
 
-Jude greets users with "Bonjour" at 9PM, which is contextually incorrect. The greeting should adapt to the time of day to feel more natural and personalized.
-
-**Current behavior:**
-- Frontend: Hardcoded "Bonjour ! Je suis Jude..."
-- Backend AI: No time context in system prompt → generates "Bonjour" responses
-
-**Desired behavior:**
-- Morning (6:00-11:59): "Bonjour" (Good morning)
-- Afternoon (12:00-17:59): "Bon après-midi" (Good afternoon)  
-- Evening (18:00-21:59): "Bonsoir" (Good evening)
-- Night (22:00-5:59): "Bonsoir" (Good evening - appropriate for late night)
+Create a robust, public translation page that allows users to translate text between **English, Creole, French, and Spanish** using the existing Lovable AI Gateway. This feature will be accessible without authentication and linked from the footer.
 
 ---
 
-## Implementation Approach
+## Architecture Design
 
-### Phase 1: Create Time-Based Greeting Utility
-
-Create a shared utility that returns the appropriate French greeting based on the current hour.
-
-**New file:** `src/utils/getTimeBasedGreeting.ts`
-
-```typescript
-export type TimePeriod = 'morning' | 'afternoon' | 'evening' | 'night';
-
-export interface TimeGreeting {
-  greeting: string;
-  period: TimePeriod;
-  hour: number;
-}
-
-export function getTimeBasedGreeting(): TimeGreeting {
-  const hour = new Date().getHours();
-  
-  // Morning (6-12): Bonjour
-  if (hour >= 6 && hour < 12) {
-    return { greeting: 'Bonjour', period: 'morning', hour };
-  }
-  
-  // Afternoon (12-18): Bon après-midi
-  if (hour >= 12 && hour < 18) {
-    return { greeting: 'Bon après-midi', period: 'afternoon', hour };
-  }
-  
-  // Evening & Night (18-6): Bonsoir
-  return { greeting: 'Bonsoir', period: hour >= 18 ? 'evening' : 'night', hour };
-}
-```
-
----
-
-### Phase 2: Update HomeChatbot Initial Message
-
-Modify `HomeChatbot.tsx` to use the dynamic greeting in the initial message.
-
-**File:** `src/components/HomeChatbot.tsx`
-
-```typescript
-// Import the utility
-import { getTimeBasedGreeting } from "@/utils/getTimeBasedGreeting";
-
-// Inside the component, compute initial message dynamically
-const getInitialMessage = (): Message => {
-  const { greeting } = getTimeBasedGreeting();
-  return {
-    content: `${greeting} ! Je suis Jude, votre assistant IA sur EDUPRENEURS. Comment puis-je vous aider à découvrir notre plateforme ? 😊`,
-    sender: "eric"
-  };
-};
-
-// Use useMemo or useState with initializer function
-const [messages, setMessages] = useState<Message[]>(() => [getInitialMessage()]);
-```
-
----
-
-### Phase 3: Update Backend Edge Function
-
-Pass the current time context to the AI so Jude's generated responses also use appropriate greetings.
-
-**File:** `supabase/functions/home-eric-chat/index.ts`
-
-**Changes:**
-1. Add time context to the system prompt
-2. The frontend will pass the user's local hour
-
-**Frontend change (in HomeChatbot.tsx):**
-```typescript
-const { data, error } = await supabase.functions.invoke('home-eric-chat', {
-  body: {
-    message: userMessage,
-    chatHistory: ...,
-    localHour: new Date().getHours() // Pass current hour
-  }
-});
-```
-
-**Backend change (in edge function):**
-```typescript
-const { message, chatHistory, localHour } = validation.data;
-
-// Determine greeting based on passed hour
-const getGreetingFromHour = (hour: number) => {
-  if (hour >= 6 && hour < 12) return { greeting: 'Bonjour', period: 'le matin' };
-  if (hour >= 12 && hour < 18) return { greeting: 'Bon après-midi', period: 'l\'après-midi' };
-  return { greeting: 'Bonsoir', period: 'le soir' };
-};
-
-const timeContext = getGreetingFromHour(localHour ?? new Date().getHours());
-
-// Add to system prompt:
-const systemPrompt = `Tu es Jude...
-
-⏰ CONTEXTE TEMPOREL :
-- Il est actuellement ${timeContext.period} chez l'utilisateur
-- Utilise "${timeContext.greeting}" comme salutation (pas "Bonjour" s'il fait nuit !)
-- Adapte ton ton au moment de la journée
-
-...rest of prompt`;
-```
-
----
-
-## Files to Modify
-
-| File | Change |
-|------|--------|
-| `src/utils/getTimeBasedGreeting.ts` | **New file** - shared greeting utility |
-| `src/components/HomeChatbot.tsx` | Use dynamic greeting for initial message + pass `localHour` to backend |
-| `supabase/functions/home-eric-chat/index.ts` | Add time context to system prompt |
-| `supabase/functions/_shared/validation.ts` | Add `localHour` to schema (optional) |
-
----
-
-## Expected Result
+### File Structure
 
 ```text
-At 9PM:
-  - Initial message: "Bonsoir ! Je suis Jude..."
-  - AI responses: Uses "Bonsoir" appropriately
+src/
+├── pages/
+│   └── Translate.tsx                    # Main translation page
+├── features/
+│   └── translate/
+│       ├── types/
+│       │   └── translate.types.ts       # TypeScript interfaces
+│       ├── constants/
+│       │   └── languages.ts             # Language definitions (no hardcoded strings)
+│       ├── hooks/
+│       │   └── useTranslation.ts        # Translation logic hook
+│       └── components/
+│           ├── TranslateHeader.tsx      # Page header with navigation
+│           ├── LanguageSelector.tsx     # Dropdown for source/target languages
+│           ├── TranslateTextArea.tsx    # Input/output text areas
+│           ├── SwapLanguagesButton.tsx  # Button to swap source/target
+│           └── TranslateButton.tsx      # Submit button with loading state
 
-At 10AM:
-  - Initial message: "Bonjour ! Je suis Jude..."
-  - AI responses: Uses "Bonjour" appropriately
-
-At 2PM:
-  - Initial message: "Bon après-midi ! Je suis Jude..."
-  - AI responses: Uses "Bon après-midi" appropriately
+supabase/
+├── functions/
+│   └── translate-text/
+│       └── index.ts                     # Edge function for AI translation
 ```
 
 ---
 
-## Technical Details
+## Phase 1: Backend - Edge Function
 
-### Validation Schema Update
+### File: `supabase/functions/translate-text/index.ts`
 
-The `ericChatSchema` in `_shared/validation.ts` needs to accept the optional `localHour` parameter:
+**Security Features:**
+- Rate limiting using existing `RATE_LIMITS.GENERAL` (100 req/min for anon)
+- Input validation with Zod schema
+- Security headers (CORS, XSS protection)
+- No hardcoded API keys (uses `LOVABLE_API_KEY` from Deno.env)
+
+**Implementation:**
 
 ```typescript
-export const ericChatSchema = z.object({
-  message: z.string().min(1).max(2000),
-  chatHistory: z.array(...).optional(),
-  localHour: z.number().min(0).max(23).optional() // Add this
-});
+// Key schema additions in validation.ts
+export const translateSchema = z.object({
+  text: z.string()
+    .min(1, "Texte requis")
+    .max(5000, "Texte trop long (max 5000 caractères)")
+    .transform(s => s.trim()),
+  sourceLang: z.enum(['en', 'ht', 'fr', 'es']),
+  targetLang: z.enum(['en', 'ht', 'fr', 'es']),
+}).strict().refine(
+  data => data.sourceLang !== data.targetLang,
+  { message: "Les langues source et cible doivent être différentes" }
+);
 ```
 
-### Why Pass Hour from Frontend?
+**AI Prompt Strategy:**
+- Use `google/gemini-2.5-flash` for fast, cost-effective translations
+- System prompt instructs the AI to ONLY return the translation (no explanations)
+- Creole-specific: Uses official Haitian Creole orthography
 
-- The edge function runs in Deno, which doesn't know the user's timezone
-- Haiti uses Eastern Time (America/Port-au-Prince)
-- Passing `localHour` from the browser ensures accurate time context
+---
+
+## Phase 2: Frontend - Types & Constants
+
+### File: `src/features/translate/types/translate.types.ts`
+
+```typescript
+export type LanguageCode = 'en' | 'ht' | 'fr' | 'es';
+
+export interface Language {
+  code: LanguageCode;
+  name: string;           // Display name in French
+  nativeName: string;     // Name in its own language
+  flag: string;           // Emoji flag
+}
+
+export interface TranslationRequest {
+  text: string;
+  sourceLang: LanguageCode;
+  targetLang: LanguageCode;
+}
+
+export interface TranslationResult {
+  translatedText: string;
+  sourceLang: LanguageCode;
+  targetLang: LanguageCode;
+}
+```
+
+### File: `src/features/translate/constants/languages.ts`
+
+```typescript
+export const SUPPORTED_LANGUAGES: readonly Language[] = [
+  { code: 'en', name: 'Anglais', nativeName: 'English', flag: '🇺🇸' },
+  { code: 'ht', name: 'Créole', nativeName: 'Kreyòl Ayisyen', flag: '🇭🇹' },
+  { code: 'fr', name: 'Français', nativeName: 'Français', flag: '🇫🇷' },
+  { code: 'es', name: 'Espagnol', nativeName: 'Español', flag: '🇪🇸' },
+] as const;
+
+// Character limits
+export const MAX_TEXT_LENGTH = 5000;
+export const MIN_TEXT_LENGTH = 1;
+```
+
+---
+
+## Phase 3: Frontend - Custom Hook
+
+### File: `src/features/translate/hooks/useTranslation.ts`
+
+Encapsulates all translation logic:
+- State management (loading, error, result)
+- API call to edge function
+- Error handling with user-friendly messages
+- Rate limit detection (429 handling)
+
+```typescript
+export function useTranslation() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<string>('');
+
+  const translate = async (request: TranslationRequest): Promise<void> => {
+    // Validation, API call, error handling
+  };
+
+  const clearResult = () => setResult('');
+
+  return { translate, isLoading, error, result, clearResult };
+}
+```
+
+---
+
+## Phase 4: Frontend - Components
+
+### Component Breakdown
+
+| Component | Purpose |
+|-----------|---------|
+| `TranslateHeader` | Navigation back to home, logo, theme toggle |
+| `LanguageSelector` | Dropdown with language options (flag + name) |
+| `TranslateTextArea` | Textarea with character count, copy button |
+| `SwapLanguagesButton` | Swaps source ↔ target languages |
+| `TranslateButton` | Submit with loading spinner |
+
+### UI/UX Design Principles
+- Mobile-first responsive design
+- 3G-optimized (minimal JS, no heavy animations)
+- Accessible (ARIA labels, keyboard navigation)
+- Clear visual feedback for loading/errors
+- Character count indicator
+
+---
+
+## Phase 5: Main Page
+
+### File: `src/pages/Translate.tsx`
+
+Structure following existing patterns (e.g., `Blog.tsx`):
+
+```typescript
+export default function Translate() {
+  return (
+    <>
+      <Helmet>
+        <title>Traducteur | EDUPRENEURS - Anglais, Créole, Français, Espagnol</title>
+        <meta name="description" content="..." />
+        <link rel="canonical" href="https://mon-edupreneur.com/translate" />
+      </Helmet>
+
+      <div className="min-h-screen bg-background">
+        <TranslateHeader />
+        
+        <main className="container max-w-screen-md mx-auto px-4 py-8">
+          {/* Translation Interface */}
+          <Card>
+            {/* Source language + text area */}
+            {/* Swap button */}
+            {/* Target language + result area */}
+            {/* Translate button */}
+          </Card>
+        </main>
+
+        <Footer />
+      </div>
+    </>
+  );
+}
+```
+
+---
+
+## Phase 6: Routing & Footer Integration
+
+### App.tsx - Add Public Route
+
+```typescript
+const Translate = lazy(() => import("./pages/Translate"));
+
+// In Routes, under PUBLIC ROUTES:
+<Route path="/translate" element={
+  <Suspense fallback={<GenericPageSkeleton />}>
+    <Translate />
+  </Suspense>
+} />
+```
+
+### Footer Updates
+
+Update both footers to include the translation link:
+
+**`src/data/homePageData.ts`** - Add to `footerLinks.support`:
+```typescript
+{ to: "/translate", label: "Traducteur" }
+```
+
+**`src/components/Footer.tsx`** - Add to Support section:
+```typescript
+<li><Link to="/translate" className="...">Traducteur</Link></li>
+```
+
+---
+
+## Phase 7: Configuration
+
+### `supabase/config.toml`
+
+```toml
+[functions.translate-text]
+verify_jwt = false
+```
+
+### `supabase/functions/_shared/validation.ts`
+
+Add `translateSchema` export for input validation.
+
+---
+
+## Implementation Order
+
+| Step | Task | Files |
+|------|------|-------|
+| 1 | Create types and constants | `translate.types.ts`, `languages.ts` |
+| 2 | Add validation schema | `validation.ts` |
+| 3 | Create edge function | `translate-text/index.ts` |
+| 4 | Update config.toml | `config.toml` |
+| 5 | Create translation hook | `useTranslation.ts` |
+| 6 | Create UI components | `LanguageSelector.tsx`, `TranslateTextArea.tsx`, etc. |
+| 7 | Create main page | `Translate.tsx` |
+| 8 | Add route | `App.tsx` |
+| 9 | Update footers | `homePageData.ts`, `Footer.tsx` |
+| 10 | Deploy and test | Edge function deployment |
+
+---
+
+## Security Checklist
+
+| Check | Implementation |
+|-------|---------------|
+| No hardcoded API keys | Uses `Deno.env.get('LOVABLE_API_KEY')` |
+| Rate limiting | Uses existing `RATE_LIMITS.GENERAL` |
+| Input validation | Zod schema with length limits |
+| XSS protection | Security headers, text sanitization |
+| CORS configured | Standard cors headers |
+| Error messages | User-friendly, no sensitive info exposed |
+
+---
+
+## 3G Optimization
+
+| Optimization | Implementation |
+|--------------|---------------|
+| Lazy loading | Page loaded via `lazy()` import |
+| Minimal bundle | Feature-specific components only |
+| No heavy animations | Simple loading states |
+| Progressive enhancement | Works without JS (basic form) |
+| Caching | Service worker will cache static assets |
 
 ---
 
@@ -182,26 +296,24 @@ export const ericChatSchema = z.object({
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No - `localHour` is optional with fallback |
-| Works with existing data? | Yes - no data changes |
-| Backward compatible? | Yes - old clients work without `localHour` |
-| 3G performance impact? | None - single number added to request |
-| Edge cases handled? | Yes - fallback to server time if not provided |
+| Breaks existing functionality? | No - new isolated feature |
+| Works with existing data? | N/A - no database tables needed |
+| Backward compatible? | Yes - public route addition |
+| 3G performance impact? | Minimal - lazy loaded |
+| Security maintained? | Yes - rate limited, validated |
+| Edge cases handled? | Yes - same language check, empty text |
 
 ---
 
 ## Test Scenarios
 
-1. **Open chatbot at different times:**
-   - Morning → "Bonjour"
-   - Afternoon → "Bon après-midi"
-   - Evening/Night → "Bonsoir"
-
-2. **AI response greetings:**
-   - Ask a question at 9PM → AI should use "Bonsoir" in response
-   - Ask at 10AM → AI should use "Bonjour"
-
-3. **Regression test:**
-   - FAQ button clicks still return instant cached responses
-   - Rate limiting still works
+1. **Basic translation**: French → Creole
+2. **All language pairs**: Test each combination
+3. **Empty text**: Should show validation error
+4. **Long text**: Should respect 5000 char limit
+5. **Same language**: Should prevent submission
+6. **Rate limiting**: Verify 429 handling
+7. **Mobile responsiveness**: Test on small screens
+8. **Swap languages**: Verify swap works correctly
+9. **Copy result**: Verify copy to clipboard works
 
