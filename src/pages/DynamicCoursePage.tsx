@@ -14,7 +14,7 @@ import {
   AIPracticeSection
 } from "@/components/course";
 import { groupLessonsByMonth, MONTH_ORDER } from "@/utils/courseHelpers";
-import { JudeChatbot } from "@/components/JudeChatbot";
+
 import { useUserGrade, GRADE_LABELS } from "@/hooks/useUserGrade";
 import { useCourseData } from "@/hooks/useCourseData";
 import { Lock } from "lucide-react";
@@ -291,7 +291,7 @@ export default function DynamicCoursePage() {
         </Card>
       )}
 
-      <JudeChatbot />
+      
     </CourseLayout>
   );
 }
