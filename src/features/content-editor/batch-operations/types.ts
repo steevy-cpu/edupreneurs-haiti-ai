@@ -84,6 +84,9 @@ export interface BatchOperationConfig<TResult = OperationResult> {
   
   // Rate limiting (ms between requests)
   rateLimit: number;
+  
+  // Concurrency (number of parallel workers, default: 1)
+  concurrency?: number;
 }
 
 export interface BatchDialogConfig {
