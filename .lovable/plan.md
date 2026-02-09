@@ -1,97 +1,104 @@
 
+# Dashboard Reorganization — Tab-Based Layout
 
-# Music Tracks Manager — Content Editor Tab
+## Problem
 
-## Overview
+The current dashboard has 9+ sections stacked vertically, making it feel cluttered and generic. Collapsible sections hide content rather than organize it. It doesn't feel like a focused educational platform.
 
-Move the hardcoded music playlist from `MusicPlayerContext.tsx` into the database, and add a new "Musique" tab in the Content Editor so super users can add/delete tracks without code changes.
+## Solution
 
-## Current State
+Reorganize the dashboard into a **tab-based layout** with 3 clear tabs, keeping the welcome header and Word of the Day always visible above the tabs. This reduces visual noise while keeping all content accessible.
 
-The 23 study music tracks are **hardcoded** in `src/contexts/MusicPlayerContext.tsx` (lines 97-121). There is no database table for them. Adding or removing a track requires a code deployment.
+```text
++------------------------------------------+
+|  Welcome Header (always visible)         |
++------------------------------------------+
+|  Word of the Day (always visible)        |
++------------------------------------------+
+| [ Apercu ] [ Progression ] [ Communaute ]|
++------------------------------------------+
+|                                          |
+|  Tab content here                        |
+|                                          |
++------------------------------------------+
+```
+
+### Tab Structure
+
+**Tab 1: "Apercu" (Overview)** — What students see first
+- Quick Actions (4-button grid)
+- Continue Learning (recent subjects with progress)
+- Weekly Goal widget + Learning Streak widget (side by side)
+- Banners (PWA, Passion discovery)
+- Content Editor link (if applicable)
+
+**Tab 2: "Progression" (Progress)** — Detailed analytics
+- KPI Cards (Gold, Lessons, Score, Study Time) — no longer collapsible, just shown directly
+- Weekly Activity Chart + Subject Progress Chart (side by side on desktop)
+- Learning Insights Panel
+- Achievements / Badges
+
+**Tab 3: "Communaute" (Community)** — Social + notes
+- Leaderboard (top 5)
+- Recent Notes
 
 ## Architecture
 
-### 1. Database: `study_music_tracks` table
+### New Files
+- `src/components/dashboard/DashboardTabs.tsx` — Tab container managing active tab state (persisted to localStorage)
+- `src/components/dashboard/tabs/OverviewTab.tsx` — Renders Quick Actions, Continue Learning, Goals, Banners
+- `src/components/dashboard/tabs/ProgressTab.tsx` — Renders KPIs, Charts, Insights, Achievements
+- `src/components/dashboard/tabs/CommunityTab.tsx` — Renders Leaderboard, Notes
 
-```text
-study_music_tracks
-  - id            UUID (PK, default gen_random_uuid())
-  - youtube_id    TEXT NOT NULL (the YouTube video ID)
-  - title         TEXT NOT NULL
-  - thumbnail_url TEXT NOT NULL
-  - sort_order    INTEGER NOT NULL DEFAULT 0
-  - is_active     BOOLEAN NOT NULL DEFAULT true
-  - created_at    TIMESTAMPTZ DEFAULT now()
-  - created_by    UUID REFERENCES profiles(user_id)
-```
+### Modified Files
+- `src/pages/Dashboard.tsx` — Significantly simplified. The 922-line file becomes a ~200-line orchestrator that handles data fetching and passes props to `DashboardTabs`
 
-RLS Policy: 
-- SELECT: open to all authenticated users (the player needs to fetch tracks)
-- INSERT/UPDATE/DELETE: restricted to founders via `is_founder()` check
+### Removed / Deprecated
+- `CollapsibleSection` usage removed from Dashboard (sections are now organized by tabs, not collapsed/expanded)
+- The `CollapsibleSection` component itself stays since other pages may use it
 
-Migration also seeds the 23 existing hardcoded tracks so nothing breaks.
+## Technical Details
 
-### 2. Update `MusicPlayerContext.tsx`
+### Tab persistence
+Active tab stored in `localStorage` under key `dashboard-active-tab`. Default: `"overview"`.
 
-Replace the hardcoded `curatedTracks` array in `fetchPlaylistTracks()` with a Supabase query:
+### Lazy loading preserved
+- Charts and heavy widgets in the "Progression" tab remain lazy-loaded with `Suspense`
+- The "Communaute" tab content only renders when active (React conditionally renders tab content)
 
-```typescript
-const { data, error } = await supabase
-  .from('study_music_tracks')
-  .select('youtube_id, title, thumbnail_url')
-  .eq('is_active', true)
-  .order('sort_order', { ascending: true });
-```
+### Data fetching unchanged
+- The existing two-phase loading (critical then non-critical) stays exactly as-is
+- `useDashboardAnalytics` hook continues to defer by 2 seconds
+- Feature-level `FeatureState` pattern stays — each section still has independent loading/error
+- No new database queries needed
 
-Map `youtube_id` to `id`, `thumbnail_url` to `thumbnail` to keep the existing `PlaylistTrack` interface unchanged. Falls back to empty array on error (matches existing SAFE_DEFAULTS pattern).
+### Mobile-first tab design
+- Tabs use Radix `Tabs` component (already installed) with horizontal scroll on mobile
+- Tab indicators are icon + label on desktop, icon-only on small mobile
+- Content area gets the scroll isolation pattern: `flex-1 overflow-y-auto`
 
-### 3. New Component: `StudyMusicManager.tsx`
+### 3G Optimization
+- Only the active tab's content renders (no hidden tabs loading charts in background)
+- Tab switch is instant since data is already fetched and held in state
+- No additional network requests from tab switching
 
-Located at `src/components/content-editor/StudyMusicManager.tsx`, following the `DailyWordsManager` pattern exactly:
-
-- **Table view**: Shows all tracks with thumbnail, title, YouTube ID, active status, and sort order
-- **Add track dialog**: Form with YouTube URL/ID input (auto-extracts ID from URL), title, thumbnail (auto-generated from YouTube ID)
-- **Delete**: Confirmation dialog, then hard delete
-- **Toggle active**: Switch to enable/disable without deleting
-- **Sort order**: Simple numeric input (no drag-and-drop to keep it lightweight for 3G)
-
-### 4. Register Tab in `ContentEditor.tsx`
-
-Add a new tab trigger and content panel:
-
-```text
-Tab: "Musique" with Music icon
-Value: "study-music"
-Component: <StudyMusicManager />
-```
-
-Placed after "Bibliotheque" (last position) to avoid disrupting existing tab order.
-
-## File Changes
+## File Changes Summary
 
 | File | Action | Description |
 |------|--------|-------------|
-| Migration SQL | Create | `study_music_tracks` table + RLS + seed 23 tracks |
-| `src/components/content-editor/StudyMusicManager.tsx` | Create | CRUD manager following DailyWordsManager pattern |
-| `src/pages/ContentEditor.tsx` | Edit | Add tab trigger + tab content + import |
-| `src/contexts/MusicPlayerContext.tsx` | Edit | Replace hardcoded array with database query |
-
-## Key Design Decisions
-
-1. **YouTube ID extraction**: The add form accepts both full URLs (`youtube.com/watch?v=xxx`) and raw IDs. A helper function parses either format.
-2. **Thumbnail auto-fill**: When a YouTube ID is entered, thumbnail URL auto-populates as `https://i.ytimg.com/vi/{id}/hqdefault.jpg`. Editable if needed.
-3. **Fallback**: If the database query fails (network issues on 3G), `MusicPlayerContext` returns an empty array — matching the current safe defaults. No crash.
-4. **No migration of user state**: `currentTrackIndex` in `localStorage` may point to a different position after reorder, but the player handles out-of-bounds indices gracefully (wraps around).
+| `src/components/dashboard/DashboardTabs.tsx` | Create | Tab container with localStorage persistence |
+| `src/components/dashboard/tabs/OverviewTab.tsx` | Create | Quick Actions, Continue Learning, Goals, Banners |
+| `src/components/dashboard/tabs/ProgressTab.tsx` | Create | KPIs, Charts, Insights, Achievements |
+| `src/components/dashboard/tabs/CommunityTab.tsx` | Create | Leaderboard, Notes |
+| `src/pages/Dashboard.tsx` | Edit | Simplify from 922 lines to ~200 lines orchestrator |
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No — seed data preserves all 23 current tracks |
-| Backward compatible? | Yes — same PlaylistTrack interface, same context API |
-| Works with existing data? | Yes — no existing table to conflict with |
-| 3G optimized? | Yes — single lightweight query, no heavy assets |
-| Edge cases handled? | Empty DB, failed query, duplicate YouTube IDs |
-| Security? | RLS: anyone reads, only founders write |
-
+| Breaks existing functionality? | No — all sections preserved, just reorganized |
+| Data fetching changes? | None — same hooks, same queries |
+| Backward compatible? | Yes — localStorage for collapsed sections ignored gracefully |
+| 3G optimized? | Yes — only active tab renders; lazy loading preserved |
+| Edge cases? | Empty states, error states, visitor mode all pass through unchanged |
+| Visitor mode? | Works — tabs still show demo data via existing visitor pattern |
