@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Play, ArrowRight, Edit3, Sparkles, X, Flame, Target } from "lucide-react";
+import { Play, ArrowRight, Edit3, Sparkles, X, Flame, Target, Trophy, BookOpen, Award, Clock } from "lucide-react";
 import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
 import { QuickActionsCard } from "@/components/dashboard/QuickActionsCard";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
@@ -55,6 +55,11 @@ export interface OverviewTabProps {
   analytics: {
     streak: number;
     weeklyGoal: { current: number; target: number };
+    gold: number;
+    totalLessonsCompleted: number;
+    weeklyLessons: number;
+    averageScore: number;
+    studyTimeThisWeek: number;
   };
   // Banners
   activeBanner: string | null;
@@ -91,10 +96,49 @@ export const OverviewTab = ({
 
   const goalPercentage = Math.min((analytics.weeklyGoal.current / analytics.weeklyGoal.target) * 100, 100);
 
+  const studyHours = Math.floor(analytics.studyTimeThisWeek / 60);
+
   return (
     <>
       {/* Quick Actions — compact inline row */}
       <QuickActionsCard />
+
+      {/* KPI Stats Strip */}
+      <Card className="border-none rounded-xl shadow-sm">
+        <CardContent className="p-4">
+          <div className="grid grid-cols-4 gap-3">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center mb-1.5">
+                <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500" />
+              </div>
+              <span className="text-lg sm:text-xl font-bold text-foreground">{analytics.gold}</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground">Gold</span>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center mb-1.5">
+                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
+              </div>
+              <span className="text-lg sm:text-xl font-bold text-foreground">{analytics.totalLessonsCompleted}</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground">Leçons</span>
+              <span className="text-[9px] sm:text-[10px] text-green-500 font-medium">+{analytics.weeklyLessons}</span>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-100 dark:bg-green-500/20 flex items-center justify-center mb-1.5">
+                <Award className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
+              </div>
+              <span className="text-lg sm:text-xl font-bold text-foreground">{analytics.averageScore}%</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground">Score</span>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center mb-1.5">
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" />
+              </div>
+              <span className="text-lg sm:text-xl font-bold text-foreground">{studyHours}h</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground">Étude</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Today's Focus — combined Goal + Streak */}
       <Card className="border-none rounded-xl shadow-sm">
