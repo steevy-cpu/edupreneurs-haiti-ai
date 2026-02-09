@@ -1,45 +1,80 @@
 
 
-# Lesson Feedback UI -- Anti-Vibe Compliance Polish
+# Highlight the Lesson Feedback Section
 
-## Current State
+## Goal
 
-The `LessonFeedback` component is already built and functional. The structure is clean: a Card with two thumb buttons, a Dialog for comments on thumbs-down. However, there are a few anti-vibe violations to fix.
+Make the feedback card visually distinct so users don't scroll past it, while staying within anti-vibe standards (no sparkles, no pulses, no emojis -- just a clean, intentional visual accent).
 
-## Changes Required
+## Approach
 
-### 1. Remove Emojis from Toast Messages
+### 1. Add a subtle left accent border
 
-Current:
-- `"Merci pour votre retour! 🎉"` (line 81)
-- `"Merci pour vos commentaires! On va s'améliorer 💪"` (line 111)
+Replace the generic `border-border/50` with a left-side accent stripe using `border-l-4 border-l-primary`. This draws the eye without being flashy -- similar to how callout boxes work in documentation.
 
-Replace with clean, professional text:
-- `"Merci pour votre retour."`
-- `"Merci pour vos commentaires."`
+### 2. Slightly stronger background
 
-### 2. Add `ease-out` to Transitions
+Change `bg-card/50` to `bg-primary/5` -- a faint primary tint that differentiates this card from all other lesson content cards. Subtle but noticeable.
 
-Current buttons use `transition-all` without a timing curve. Per anti-vibe standards, all transitions should include `ease-out`.
+### 3. Add a small icon header
 
-Change: `"gap-2 transition-all"` to `"gap-2 transition-all ease-out"`
+Add a `MessageSquare` icon next to the question text to give the section a visual anchor. This signals "feedback" at a glance before reading the text.
 
-### 3. Subtle Hover States
+### 4. Bolder question text
 
-The green/destructive button active states are fine (functional color coding), but the outline buttons should have a controlled hover lift. Add `hover:scale-[1.02]` to the thumb buttons for a subtle, non-flashy interaction feel.
+Change the question from `text-muted-foreground` to `text-foreground` so it reads as a real prompt, not a footnote.
 
-## File Changes
+## What This Looks Like
+
+```
+|  [MessageSquare icon]  Cette lecon vous a-t-elle ete utile?    [ThumbsUp] [ThumbsDown]
+```
+
+The card will have a faint primary-tinted background with a solid primary-colored left border stripe -- clean, professional, impossible to miss.
+
+## Technical Details
+
+### File: `src/components/lesson/LessonFeedback.tsx`
+
+**Card styling** (line 126):
+```tsx
+// From:
+<Card className="border-border/50 bg-card/50">
+
+// To:
+<Card className="border-l-4 border-l-primary border-border/30 bg-primary/5">
+```
+
+**Question text** (lines 129-131):
+```tsx
+// From:
+<p className="text-sm sm:text-base text-muted-foreground font-medium ...">
+  Cette lecon vous a-t-elle ete utile?
+</p>
+
+// To:
+<div className="flex items-center gap-2">
+  <MessageSquare className="h-4 w-4 text-primary shrink-0" />
+  <p className="text-sm sm:text-base text-foreground font-medium ...">
+    Votre avis compte -- cette lecon vous a-t-elle ete utile?
+  </p>
+</div>
+```
+
+**Import**: Add `MessageSquare` to the lucide-react import.
+
+## Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/lesson/LessonFeedback.tsx` | Remove emojis from toasts, add `ease-out` to transitions, add subtle `hover:scale-[1.02]` to buttons |
+| `src/components/lesson/LessonFeedback.tsx` | Card accent border + tinted bg, icon + bolder text |
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- purely visual tweaks |
-| Logical errors? | None -- text and CSS class changes only |
+| Breaks existing functionality? | No -- CSS and text only |
+| Anti-vibe compliant? | Yes -- no sparkles, pulses, emojis, or purple gradients |
 | 3G impact? | None |
 | Backward compatible? | Yes |
 
