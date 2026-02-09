@@ -340,6 +340,23 @@ export const ttsSchema = z.object({
 }).strict();
 
 /**
+ * Translation validation
+ * - Supports: en, ht (Haitian Creole), fr, es
+ * - Ensures source and target languages are different
+ */
+export const translateSchema = z.object({
+  text: z.string()
+    .min(1, "Texte requis")
+    .max(5000, "Texte trop long (max 5000 caractères)")
+    .transform(s => s.trim()),
+  sourceLang: z.enum(['en', 'ht', 'fr', 'es']),
+  targetLang: z.enum(['en', 'ht', 'fr', 'es']),
+}).strict().refine(
+  data => data.sourceLang !== data.targetLang,
+  { message: "Les langues source et cible doivent être différentes" }
+);
+
+/**
  * YouTube search validation
  */
 export const youtubeSearchSchema = z.object({
