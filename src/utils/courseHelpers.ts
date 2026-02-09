@@ -51,7 +51,14 @@ export const groupLessonsByMonth = <T extends { mois?: string | null }>(
   lessons: T[]
 ): Record<string, T[]> => {
   return lessons.reduce((acc, lesson) => {
-    const month = lesson.mois || "Sans mois";
+    let month = lesson.mois || "Sans mois";
+    
+    // Normalize weekly format: "Décembre - Semaine 1" -> "Décembre"
+    const weeklyMatch = month.match(/^(\S+)\s*-\s*Semaines?\b/);
+    if (weeklyMatch) {
+      month = weeklyMatch[1];
+    }
+    
     if (!acc[month]) {
       acc[month] = [];
     }
