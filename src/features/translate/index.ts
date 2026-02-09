@@ -5,6 +5,7 @@ export { SwapLanguagesButton } from './components/SwapLanguagesButton';
 export { TranslateButton } from './components/TranslateButton';
 export { TranslateHeader } from './components/TranslateHeader';
 export { TranslateCTA } from './components/TranslateCTA';
+export { JudeTranslatingOverlay } from './components/JudeTranslatingOverlay';
 export { useTranslation } from './hooks/useTranslation';
 export * from './types/translate.types';
 export * from './constants/languages';
