@@ -1,104 +1,95 @@
 
-# Dashboard Reorganization — Tab-Based Layout
 
-## Problem
+# Dashboard UX Polish — Focused Educational Experience
 
-The current dashboard has 9+ sections stacked vertically, making it feel cluttered and generic. Collapsible sections hide content rather than organize it. It doesn't feel like a focused educational platform.
+## What's Changing
 
-## Solution
+This plan improves the visual hierarchy, spacing, and information density across all three tabs without changing any data fetching or architecture. The goal: make it feel like a purpose-built learning platform, not a generic admin dashboard.
 
-Reorganize the dashboard into a **tab-based layout** with 3 clear tabs, keeping the welcome header and Word of the Day always visible above the tabs. This reduces visual noise while keeping all content accessible.
+## Changes by Area
 
-```text
-+------------------------------------------+
-|  Welcome Header (always visible)         |
-+------------------------------------------+
-|  Word of the Day (always visible)        |
-+------------------------------------------+
-| [ Apercu ] [ Progression ] [ Communaute ]|
-+------------------------------------------+
-|                                          |
-|  Tab content here                        |
-|                                          |
-+------------------------------------------+
-```
+### 1. Overview Tab — Prioritize Learning Actions
 
-### Tab Structure
+**Current issues:**
+- QuickActionsCard has equal visual weight for all 4 items, but "Continuer" (learning) should dominate
+- "Continue Learning" cards are plain white boxes with just a progress bar — no subject color identity
+- Goal/Streak widgets are tall cards with large icons but little information density
 
-**Tab 1: "Apercu" (Overview)** — What students see first
-- Quick Actions (4-button grid)
-- Continue Learning (recent subjects with progress)
-- Weekly Goal widget + Learning Streak widget (side by side)
-- Banners (PWA, Passion discovery)
-- Content Editor link (if applicable)
+**Changes:**
+- **Merge Quick Actions into a compact inline row** (icon buttons, no card wrapper) to reduce vertical space — the tab content below IS the action
+- **Add subject color coding** to "Continue Learning" cards — each subject gets a left-border accent (Math = blue, French = green, etc.) for instant visual recognition
+- **Combine Goal + Streak into a single compact "Today's Focus" card** — one row showing streak flame + count, goal progress bar, and lessons remaining. This cuts vertical space in half while keeping the same data
+- **Move the "Voir toutes les matieres" CTA** into the Quick Actions row as a primary button
 
-**Tab 2: "Progression" (Progress)** — Detailed analytics
-- KPI Cards (Gold, Lessons, Score, Study Time) — no longer collapsible, just shown directly
-- Weekly Activity Chart + Subject Progress Chart (side by side on desktop)
-- Learning Insights Panel
-- Achievements / Badges
+### 2. Progress Tab — Less Decoration, More Data
 
-**Tab 3: "Communaute" (Community)** — Social + notes
-- Leaderboard (top 5)
-- Recent Notes
+**Current issues:**
+- KPI cards use large gradient icons (48px) and gradient text that's hard to read — style over substance
+- 4 KPI cards take the entire viewport width but each shows only one number
+- Charts section works well but has no summary text
 
-## Architecture
+**Changes:**
+- **Compact KPI strip**: Replace 4 separate cards with a single card containing a 4-column grid of stat items (icon + number + label on one line each). Cuts height by ~60%
+- **Remove gradient text on numbers** — use `font-bold text-foreground` for readability
+- **Add a one-line summary above charts**: "Tu as complete X lecons cette semaine" — gives context before the chart
+- **Keep charts and achievements as-is** — they work well
 
-### New Files
-- `src/components/dashboard/DashboardTabs.tsx` — Tab container managing active tab state (persisted to localStorage)
-- `src/components/dashboard/tabs/OverviewTab.tsx` — Renders Quick Actions, Continue Learning, Goals, Banners
-- `src/components/dashboard/tabs/ProgressTab.tsx` — Renders KPIs, Charts, Insights, Achievements
-- `src/components/dashboard/tabs/CommunityTab.tsx` — Renders Leaderboard, Notes
+### 3. Community Tab — Better Leaderboard Density
 
-### Modified Files
-- `src/pages/Dashboard.tsx` — Significantly simplified. The 922-line file becomes a ~200-line orchestrator that handles data fetching and passes props to `DashboardTabs`
+**Current issues:**
+- Each leaderboard entry is a tall card with gradient background — takes too much space for 5 entries
+- Notes section works fine
 
-### Removed / Deprecated
-- `CollapsibleSection` usage removed from Dashboard (sections are now organized by tabs, not collapsed/expanded)
-- The `CollapsibleSection` component itself stays since other pages may use it
+**Changes:**
+- **Tighten leaderboard rows**: Reduce padding from `p-4` to `p-2.5`, reduce avatar size from 48px to 36px. Same info, 30% less height
+- **Add rank numbers as text** instead of only icons — "#1, #2, #3" is clearer than crown/medal icons alone
+- **Keep notes section unchanged** — it's clean and functional
 
-## Technical Details
+### 4. Word of the Day — Slim Down
 
-### Tab persistence
-Active tab stored in `localStorage` under key `dashboard-active-tab`. Default: `"overview"`.
+**Current issue:** The dark gradient card is visually heavy and takes significant vertical space above the tabs.
 
-### Lazy loading preserved
-- Charts and heavy widgets in the "Progression" tab remain lazy-loaded with `Suspense`
-- The "Communaute" tab content only renders when active (React conditionally renders tab content)
+**Changes:**
+- **Reduce padding** from `p-4 sm:p-5` to `p-3 sm:p-4`
+- **Single-line layout on desktop**: Word + phonetic + audio button on one line, definition below. Saves ~30px height
+- **Remove the Sparkles icon** from the header (per anti-vibe-code rules)
 
-### Data fetching unchanged
-- The existing two-phase loading (critical then non-critical) stays exactly as-is
-- `useDashboardAnalytics` hook continues to defer by 2 seconds
-- Feature-level `FeatureState` pattern stays — each section still has independent loading/error
-- No new database queries needed
+### 5. Tab Bar — Add Active State Labels
 
-### Mobile-first tab design
-- Tabs use Radix `Tabs` component (already installed) with horizontal scroll on mobile
-- Tab indicators are icon + label on desktop, icon-only on small mobile
-- Content area gets the scroll isolation pattern: `flex-1 overflow-y-auto`
+**Current issue:** On mobile, tabs show only icons with no text, which is ambiguous.
 
-### 3G Optimization
-- Only the active tab's content renders (no hidden tabs loading charts in background)
-- Tab switch is instant since data is already fetched and held in state
-- No additional network requests from tab switching
+**Changes:**
+- **Always show short labels** even on mobile: use 3-letter abbreviations on small screens ("Vue", "Stat", "Club") via responsive classes
 
-## File Changes Summary
+## Files Modified
 
-| File | Action | Description |
-|------|--------|-------------|
-| `src/components/dashboard/DashboardTabs.tsx` | Create | Tab container with localStorage persistence |
-| `src/components/dashboard/tabs/OverviewTab.tsx` | Create | Quick Actions, Continue Learning, Goals, Banners |
-| `src/components/dashboard/tabs/ProgressTab.tsx` | Create | KPIs, Charts, Insights, Achievements |
-| `src/components/dashboard/tabs/CommunityTab.tsx` | Create | Leaderboard, Notes |
-| `src/pages/Dashboard.tsx` | Edit | Simplify from 922 lines to ~200 lines orchestrator |
+| File | Change |
+|------|--------|
+| `src/components/dashboard/tabs/OverviewTab.tsx` | Merge Quick Actions inline, add subject colors to Continue Learning, combine Goal+Streak |
+| `src/components/dashboard/tabs/ProgressTab.tsx` | Compact KPI strip, remove gradient text, add summary line |
+| `src/components/dashboard/tabs/CommunityTab.tsx` | Tighter leaderboard rows, add rank numbers |
+| `src/components/dashboard/DashboardTabs.tsx` | Always show tab labels (short on mobile) |
+| `src/components/dashboard/WordOfTheDayCard.tsx` | Reduce padding, remove Sparkles icon |
+| `src/components/dashboard/QuickActionsCard.tsx` | Refactor to inline compact layout |
+| `src/components/dashboard/WeeklyGoalWidget.tsx` | No longer used standalone — merged into OverviewTab |
+| `src/components/dashboard/LearningStreakWidget.tsx` | No longer used standalone — merged into OverviewTab |
+
+## Technical Notes
+
+- No new dependencies
+- No database changes
+- No new components created — only refactoring existing ones
+- All changes are CSS/layout only (className changes, JSX restructuring)
+- Lazy loading and error boundaries remain unchanged
+- The `WeeklyGoalWidget` and `LearningStreakWidget` components stay in the codebase (other pages may reference them) — they're just inlined in the OverviewTab instead of imported
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No — all sections preserved, just reorganized |
-| Data fetching changes? | None — same hooks, same queries |
-| Backward compatible? | Yes — localStorage for collapsed sections ignored gracefully |
-| 3G optimized? | Yes — only active tab renders; lazy loading preserved |
-| Edge cases? | Empty states, error states, visitor mode all pass through unchanged |
-| Visitor mode? | Works — tabs still show demo data via existing visitor pattern |
+| Breaks existing functionality? | No — layout-only changes |
+| Data fetching changes? | None |
+| 3G optimized? | Yes — reduces DOM nodes and card wrappers |
+| Backward compatible? | Yes — same props, same data flow |
+| Edge cases? | Empty states unchanged, visitor mode unchanged |
+
