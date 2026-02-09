@@ -36,7 +36,7 @@ export function LanguageSelector({
         {label}
       </label>
       <Select value={value} onValueChange={(v) => onChange(v as LanguageCode)}>
-        <SelectTrigger id={id} className="w-full">
+        <SelectTrigger id={id} className="w-full min-w-0">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -48,8 +48,8 @@ export function LanguageSelector({
             >
               <span className="flex items-center gap-2">
                 <span className="text-lg">{lang.flag}</span>
-                <span>{lang.name}</span>
-                <span className="text-muted-foreground text-xs">({lang.nativeName})</span>
+                <span className="truncate">{lang.name}</span>
+                <span className="text-muted-foreground text-xs hidden sm:inline">({lang.nativeName})</span>
               </span>
             </SelectItem>
           ))}

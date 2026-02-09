@@ -217,7 +217,7 @@ export default function Translate() {
                   isLoading={isLoading}
                   disabled={!inputText.trim()}
                 />
-                <p className="text-xs text-muted-foreground text-center">
+                <p className="text-xs text-muted-foreground text-center hidden sm:block">
                   Appuyez sur{" "}
                   <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Ctrl</kbd>
                   {" + "}
