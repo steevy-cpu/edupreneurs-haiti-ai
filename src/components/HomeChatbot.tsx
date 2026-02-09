@@ -7,8 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import { ChatMessageRenderer } from "@/components/ChatMessageRenderer";
 import { cn } from "@/lib/utils";
+import { getTimeBasedGreeting } from "@/utils/getTimeBasedGreeting";
 import ericStudentDesk from "@/assets/eric-student-desk.png";
-
 interface Message {
   content: string;
   sender: "user" | "eric";
@@ -54,14 +54,18 @@ const TypewriterText = ({
   );
 };
 
+// Generate initial message with time-aware greeting
+const getInitialMessage = (): Message => {
+  const { greeting } = getTimeBasedGreeting();
+  return {
+    content: `${greeting} ! Je suis Jude, votre assistant IA sur EDUPRENEURS. Comment puis-je vous aider à découvrir notre plateforme ? 😊`,
+    sender: "eric"
+  };
+};
+
 export const HomeChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
-const [messages, setMessages] = useState<Message[]>([
-    {
-      content: "Bonjour ! Je suis Jude, votre assistant IA sur EDUPRENEURS. Comment puis-je vous aider à découvrir notre plateforme ? 😊",
-      sender: "eric"
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>(() => [getInitialMessage()]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
@@ -103,7 +107,8 @@ const messagesEndRef = useRef<HTMLDivElement>(null);
           chatHistory: messages.map(m => ({
             role: m.sender === "user" ? "user" : "assistant",
             content: m.content
-          }))
+          })),
+          localHour: new Date().getHours()
         }
       });
 

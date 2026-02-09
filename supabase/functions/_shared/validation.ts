@@ -118,6 +118,7 @@ export const ericChatSchema = z.object({
   userGrade: z.string().max(50).optional(),
   currentPage: z.string().max(200).optional(),
   enableVoice: z.boolean().optional().default(true),
+  localHour: z.number().int().min(0).max(23).optional(),
 }).passthrough();
 
 /**

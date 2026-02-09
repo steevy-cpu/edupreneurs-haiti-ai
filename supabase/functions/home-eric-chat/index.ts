@@ -47,10 +47,24 @@ serve(async (req) => {
       );
     }
 
-    const { message, chatHistory } = validation.data;
+    const { message, chatHistory, localHour } = validation.data;
     const lowerMessage = message.toLowerCase().trim();
 
-    console.log('Home Eric chat request:', { message: message.substring(0, 100), historyLength: chatHistory?.length || 0 });
+    // Determine time-based greeting context
+    const getGreetingFromHour = (hour: number): { greeting: string; periodFr: string } => {
+      if (hour >= 6 && hour < 12) {
+        return { greeting: 'Bonjour', periodFr: 'le matin' };
+      }
+      if (hour >= 12 && hour < 18) {
+        return { greeting: 'Bon après-midi', periodFr: "l'après-midi" };
+      }
+      return { greeting: 'Bonsoir', periodFr: 'le soir' };
+    };
+    
+    const currentHour = localHour ?? new Date().getHours();
+    const timeContext = getGreetingFromHour(currentHour);
+
+    console.log('Home Eric chat request:', { message: message.substring(0, 100), historyLength: chatHistory?.length || 0, localHour: currentHour });
 
     // FAQ exact-match responses for instant replies (from button clicks)
     const FAQ_EXACT_RESPONSES: Record<string, string> = {
@@ -155,6 +169,12 @@ Rendre l'éducation de qualité accessible à tous les étudiants haïtiens en u
     }
 
 const systemPrompt = `Tu es Jude, l'assistant IA de la plateforme EDUPRENEURS, une plateforme éducative haïtienne révolutionnaire.
+
+⏰ CONTEXTE TEMPOREL (TRÈS IMPORTANT) :
+- Il est actuellement ${timeContext.periodFr} chez l'utilisateur
+- Utilise "${timeContext.greeting}" comme salutation principale
+- N'utilise PAS "Bonjour" s'il fait soir ou nuit - utilise "Bonsoir" à la place !
+- Adapte ton ton au moment de la journée (plus calme le soir, plus énergique le matin)
 
 🎯 À propos d'EDUPRENEURS :
 - Plateforme créée pour révolutionner l'éducation haïtienne avec l'IA
