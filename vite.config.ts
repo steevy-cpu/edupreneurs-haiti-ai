@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => ({
   },
   // Force a fresh Vite dependency cache to avoid stale prebundled deps (e.g. react-chessboard)
   // Force fresh cache rebuild to clear stale React references
-  cacheDir: "node_modules/.vite-edupreneurs-v3",
+  cacheDir: "node_modules/.vite-edupreneurs-v4",
   optimizeDeps: {
     // Avoid using any previously prebundled react-chessboard that may require React 19's `use`
     exclude: ["react-chessboard"],
