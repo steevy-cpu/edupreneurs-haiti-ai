@@ -34,16 +34,19 @@ export const DashboardTabs = ({ overview, progress, community }: DashboardTabsPr
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
       <TabsList className="w-full grid grid-cols-3 h-12 rounded-xl bg-muted/70 p-1">
-        <TabsTrigger value="overview" className="rounded-lg data-[state=active]:shadow-md text-xs sm:text-sm gap-1.5">
+        <TabsTrigger value="overview" className="rounded-lg data-[state=active]:shadow-md text-xs sm:text-sm gap-1">
           <LayoutDashboard className="w-4 h-4" />
+          <span className="sm:hidden">Vue</span>
           <span className="hidden sm:inline">Aperçu</span>
         </TabsTrigger>
-        <TabsTrigger value="progress" className="rounded-lg data-[state=active]:shadow-md text-xs sm:text-sm gap-1.5">
+        <TabsTrigger value="progress" className="rounded-lg data-[state=active]:shadow-md text-xs sm:text-sm gap-1">
           <TrendingUp className="w-4 h-4" />
+          <span className="sm:hidden">Stats</span>
           <span className="hidden sm:inline">Progression</span>
         </TabsTrigger>
-        <TabsTrigger value="community" className="rounded-lg data-[state=active]:shadow-md text-xs sm:text-sm gap-1.5">
+        <TabsTrigger value="community" className="rounded-lg data-[state=active]:shadow-md text-xs sm:text-sm gap-1">
           <Users className="w-4 h-4" />
+          <span className="sm:hidden">Club</span>
           <span className="hidden sm:inline">Communauté</span>
         </TabsTrigger>
       </TabsList>

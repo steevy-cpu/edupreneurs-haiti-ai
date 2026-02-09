@@ -1,20 +1,15 @@
-import { ReactNode, Suspense, lazy } from "react";
+import { Suspense, lazy } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Play, ArrowRight, Edit3, Sparkles, X } from "lucide-react";
+import { Play, ArrowRight, Edit3, Sparkles, X, Flame, Target } from "lucide-react";
 import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
 import { QuickActionsCard } from "@/components/dashboard/QuickActionsCard";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { AnalyticsWidgetSkeleton } from "@/components/shared/SkeletonLoaders";
-import { WeeklyGoalWidget } from "@/components/dashboard/WeeklyGoalWidget";
-
-const LearningStreakWidget = lazy(() =>
-  import("@/components/dashboard/LearningStreakWidget").then(m => ({ default: m.LearningStreakWidget }))
-);
 
 interface RecentSubjectProgress {
   subject: string;
@@ -29,6 +24,29 @@ interface FeatureState<T> {
   data: T;
   loading: boolean;
   error: Error | null;
+}
+
+const SUBJECT_COLORS: Record<string, string> = {
+  mathematiques: "border-l-blue-500",
+  francais: "border-l-green-500",
+  anglais: "border-l-violet-500",
+  sciences: "border-l-cyan-500",
+  histoire: "border-l-amber-500",
+  geographie: "border-l-emerald-500",
+  physique: "border-l-red-500",
+  chimie: "border-l-orange-500",
+  biologie: "border-l-lime-500",
+  philosophie: "border-l-indigo-500",
+  creole: "border-l-pink-500",
+  espagnol: "border-l-yellow-500",
+};
+
+function getSubjectColor(slug: string): string {
+  const key = slug.toLowerCase().replace(/[-_]/g, "");
+  for (const [k, v] of Object.entries(SUBJECT_COLORS)) {
+    if (key.includes(k)) return v;
+  }
+  return "border-l-primary";
 }
 
 export interface OverviewTabProps {
@@ -71,26 +89,57 @@ export const OverviewTab = ({
   const navigate = useNavigate();
   const { shouldAnimate } = useNetworkAwareAnimations();
 
+  const goalPercentage = Math.min((analytics.weeklyGoal.current / analytics.weeklyGoal.target) * 100, 100);
+
   return (
     <>
-      {/* Quick Actions */}
+      {/* Quick Actions — compact inline row */}
       <QuickActionsCard />
+
+      {/* Today's Focus — combined Goal + Streak */}
+      <Card className="border-none rounded-xl shadow-sm">
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex items-center gap-4 sm:gap-6">
+            {/* Streak */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Flame className="w-5 h-5 text-orange-500" />
+              <div>
+                <span className="text-lg font-bold text-foreground">{analytics.streak}</span>
+                <span className="text-xs text-muted-foreground ml-1">{analytics.streak === 1 ? "jour" : "jours"}</span>
+              </div>
+            </div>
+            {/* Divider */}
+            <div className="w-px h-8 bg-border" />
+            {/* Weekly Goal */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-1.5">
+                  <Target className="w-4 h-4 text-blue-500" />
+                  <span className="text-xs font-medium text-muted-foreground">Objectif</span>
+                </div>
+                <span className="text-xs font-semibold text-foreground">{analytics.weeklyGoal.current}/{analytics.weeklyGoal.target}</span>
+              </div>
+              <Progress value={goalPercentage} className="h-1.5" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Continue Learning */}
       {recentSubjectsFeature.loading ? (
-        <Card className="border-none rounded-[20px] shadow-md bg-gradient-to-br from-primary/5 to-success/5">
-          <CardHeader className="pb-3 px-4 sm:px-6">
-            <Skeleton className="h-6 w-48" />
+        <Card className="border-none rounded-xl shadow-sm">
+          <CardHeader className="pb-2 px-4">
+            <Skeleton className="h-5 w-44" />
           </CardHeader>
-          <CardContent className="px-4 sm:px-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {[1, 2, 3].map((i) => <Skeleton key={i} className="h-32 rounded-xl" />)}
+          <CardContent className="px-4">
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 rounded-lg" />)}
             </div>
           </CardContent>
         </Card>
       ) : recentSubjectsFeature.error ? (
-        <Card className="border-none rounded-[20px] shadow-md">
-          <CardContent>
+        <Card className="border-none rounded-xl shadow-sm">
+          <CardContent className="p-4">
             <ErrorState
               message="Impossible de charger vos matières récentes"
               onRetry={onRetryRecentSubjects}
@@ -99,44 +148,40 @@ export const OverviewTab = ({
           </CardContent>
         </Card>
       ) : recentSubjectsFeature.data.length > 0 && (
-        <Card className="border-none rounded-[20px] shadow-md bg-gradient-to-br from-primary/5 to-success/5">
-          <CardHeader className="pb-3 px-4 sm:px-6">
-            <CardTitle className="font-semibold tracking-tight text-lg sm:text-xl flex items-center gap-2">
-              <Play className="w-5 h-5 text-primary" />
+        <Card className="border-none rounded-xl shadow-sm">
+          <CardHeader className="pb-2 px-4">
+            <CardTitle className="font-semibold text-base flex items-center gap-2">
+              <Play className="w-4 h-4 text-primary" />
               Continuer l'apprentissage
             </CardTitle>
-            <p className="text-muted-foreground text-xs sm:text-sm">
-              Reprends là où tu t'es arrêté
-            </p>
           </CardHeader>
-          <CardContent className="px-4 sm:px-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <CardContent className="px-4 pb-3">
+            <div className="space-y-2">
               {recentSubjectsFeature.data.map((subject) => (
                 <div
                   key={subject.subjectSlug}
                   onClick={() => navigate(`/course/${subject.subjectSlug}`)}
-                  className={`group p-4 bg-background rounded-xl border border-border cursor-pointer tap-highlight-none touch-target active:scale-[0.98] ${
+                  className={`group flex items-center gap-3 p-3 bg-muted/40 rounded-lg border-l-[3px] ${getSubjectColor(subject.subjectSlug)} cursor-pointer tap-highlight-none active:scale-[0.98] ${
                     shouldAnimate
-                      ? 'hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300'
+                      ? 'hover:bg-muted/70 transition-all duration-200'
                       : 'transition-colors duration-150'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold text-foreground text-sm sm:text-base">{subject.subject}</h4>
-                    <ArrowRight className={`w-4 h-4 text-muted-foreground ${shouldAnimate ? 'group-hover:text-primary transition-colors' : ''}`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-foreground text-sm truncate">{subject.subject}</h4>
+                      <span className="text-xs font-medium text-muted-foreground ml-2 flex-shrink-0">{subject.progress}%</span>
+                    </div>
+                    <Progress value={subject.progress} className="h-1 mt-1.5" />
                   </div>
-                  <div className="mb-2">
-                    <Progress value={subject.progress} className="h-2" />
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {subject.progress}% complété
-                  </p>
+                  <ArrowRight className={`w-4 h-4 text-muted-foreground flex-shrink-0 ${shouldAnimate ? 'group-hover:text-primary transition-colors' : ''}`} />
                 </div>
               ))}
             </div>
             <Button
               variant="ghost"
-              className="w-full mt-4 text-primary hover:text-primary/80 touch-target"
+              size="sm"
+              className="w-full mt-2 text-primary hover:text-primary/80 touch-target text-xs"
               onClick={() => navigate("/matieres")}
             >
               Voir toutes les matières →
@@ -144,14 +189,6 @@ export const OverviewTab = ({
           </CardContent>
         </Card>
       )}
-
-      {/* Goals & Streak side by side */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <WeeklyGoalWidget current={analytics.weeklyGoal.current} target={analytics.weeklyGoal.target} />
-        <Suspense fallback={<AnalyticsWidgetSkeleton />}>
-          <LearningStreakWidget streak={analytics.streak} />
-        </Suspense>
-      </div>
 
       {/* Banners */}
       {activeBanner === 'pwa' && (
@@ -167,29 +204,25 @@ export const OverviewTab = ({
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-2 right-2 z-10 h-8 w-8 rounded-full bg-background/50 hover:bg-background/80"
+            className="absolute top-2 right-2 z-10 h-7 w-7 rounded-full bg-background/50 hover:bg-background/80"
             onClick={(e) => {
               e.preventDefault();
               dismissBanner('passion', 7);
             }}
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" />
           </Button>
           <Link to="/passion-discovery">
-            <Card className="border-2 border-purple-500 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-xl hover:border-purple-500/70 transition-all">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="flex-shrink-0 text-4xl">🎨</div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg mb-1">
-                    Découvre ta passion & Développement personnel
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Explore la musique, les arts, les échecs, l'éducation civique et le développement personnel avec Jude en IA
+            <Card className="border border-purple-500/30 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-xl hover:border-purple-500/50 transition-colors">
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className="flex-shrink-0 text-3xl">🎨</div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-sm mb-0.5">Découvre ta passion</h3>
+                  <p className="text-xs text-muted-foreground line-clamp-1">
+                    Musique, arts, échecs, développement personnel avec Jude en IA
                   </p>
-                  <button className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-md text-sm font-medium hover:opacity-90 transition-opacity">
-                    Découvrir mes passions →
-                  </button>
                 </div>
+                <ArrowRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               </CardContent>
             </Card>
           </Link>
@@ -199,16 +232,14 @@ export const OverviewTab = ({
       {/* Content Editor link */}
       {isContentEditor && (
         <Link to="/content-editor">
-          <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:border-purple-500/40 transition-all cursor-pointer">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-purple-500/20 rounded-full">
-                  <Edit3 className="w-6 h-6 sm:w-8 sm:h-8 text-purple-500" />
-                </div>
-                <div>
-                  <h3 className="text-base sm:text-lg font-semibold text-foreground">Éditeur de Contenu</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Gérer et créer du contenu</p>
-                </div>
+          <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:border-purple-500/40 transition-colors cursor-pointer rounded-xl">
+            <CardContent className="p-3 flex items-center gap-3">
+              <div className="p-2 bg-purple-500/20 rounded-full">
+                <Edit3 className="w-5 h-5 text-purple-500" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">Éditeur de Contenu</h3>
+                <p className="text-xs text-muted-foreground">Gérer et créer du contenu</p>
               </div>
             </CardContent>
           </Card>
@@ -217,18 +248,18 @@ export const OverviewTab = ({
 
       {/* Onboarding test button */}
       {showOnboardingTest && (
-        <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
-          <CardContent className="p-4 sm:p-6">
+        <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 rounded-xl">
+          <CardContent className="p-3">
             <button
               onClick={restartTour}
-              className="w-full flex items-center gap-4 text-left hover:opacity-80 transition-opacity"
+              className="w-full flex items-center gap-3 text-left hover:opacity-80 transition-opacity"
             >
-              <div className="p-3 bg-blue-500/20 rounded-full">
-                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" />
+              <div className="p-2 bg-blue-500/20 rounded-full">
+                <Sparkles className="w-5 h-5 text-blue-500" />
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-semibold text-foreground">🎓 Tester le guide</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground">Relancer la visite guidée</p>
+                <h3 className="text-sm font-semibold text-foreground">🎓 Tester le guide</h3>
+                <p className="text-xs text-muted-foreground">Relancer la visite guidée</p>
               </div>
             </button>
           </CardContent>
