@@ -78,7 +78,7 @@ export const LessonFeedback = ({ lessonId }: LessonFeedbackProps) => {
       if (newRating === "down") {
         setShowCommentDialog(true);
       } else {
-        toast.success("Merci pour votre retour! 🎉");
+        toast.success("Merci pour votre retour.");
       }
     } catch (error) {
       console.error("Error saving feedback:", error);
@@ -108,7 +108,7 @@ export const LessonFeedback = ({ lessonId }: LessonFeedbackProps) => {
       if (error) throw error;
 
       setShowCommentDialog(false);
-      toast.success("Merci pour vos commentaires! On va s'améliorer 💪");
+      toast.success("Merci pour vos commentaires.");
     } catch (error) {
       console.error("Error saving comment:", error);
       toast.error("Erreur lors de la sauvegarde");
@@ -136,7 +136,7 @@ export const LessonFeedback = ({ lessonId }: LessonFeedbackProps) => {
                 disabled={isSaving}
                 onClick={() => upsertRating("up")}
                 className={cn(
-                  "gap-2 transition-all",
+                  "gap-2 transition-all ease-out hover:scale-[1.02]",
                   rating === "up" && "bg-green-600 hover:bg-green-700 text-white border-green-600"
                 )}
               >
@@ -149,7 +149,7 @@ export const LessonFeedback = ({ lessonId }: LessonFeedbackProps) => {
                 disabled={isSaving}
                 onClick={() => upsertRating("down")}
                 className={cn(
-                  "gap-2 transition-all",
+                  "gap-2 transition-all ease-out hover:scale-[1.02]",
                   rating === "down" && "bg-destructive hover:bg-destructive/90 text-destructive-foreground border-destructive"
                 )}
               >
