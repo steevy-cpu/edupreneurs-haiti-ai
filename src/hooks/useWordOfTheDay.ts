@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useVisitor } from '@/contexts/VisitorContext';
 import { useNetworkAwareLoading } from '@/hooks/useNetworkAwareLoading';
 import { toast } from 'sonner';
 
@@ -28,16 +27,25 @@ interface UseWordOfTheDayReturn {
 }
 
 const CACHED_WORD_KEY = 'cached_daily_word_v3';
+const REFERENCE_DATE = new Date('2026-01-01T00:00:00');
 
-// Get today's date in Haiti timezone (YYYY-MM-DD format)
+/** Get today's date in Haiti timezone (YYYY-MM-DD) */
 const getHaitiDate = (): string => {
-  return new Date().toLocaleDateString('en-CA', { 
-    timeZone: 'America/Port-au-Prince' 
+  return new Date().toLocaleDateString('en-CA', {
+    timeZone: 'America/Port-au-Prince',
   });
 };
 
+/** Pure deterministic function: same date + same word count = same display_order */
+const computeDisplayOrder = (haitiDate: string, totalWords: number): number => {
+  const today = new Date(haitiDate + 'T00:00:00');
+  const daysSince = Math.floor(
+    (today.getTime() - REFERENCE_DATE.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  return (((daysSince % totalWords) + totalWords) % totalWords) + 1;
+};
+
 export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
-  const { isVisitor } = useVisitor();
   const { isSlowConnection, loadingStrategy } = useNetworkAwareLoading();
   const [word, setWord] = useState<DailyWord | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,10 +54,8 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
   const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Defer audio on slow connections
   const shouldDeferAudio = isSlowConnection || loadingStrategy === 'minimal';
 
-  // Fetch word of the day using sequential rotation
   useEffect(() => {
     const fetchWord = async () => {
       try {
@@ -57,8 +63,8 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
         setError(null);
 
         const haitiDate = getHaitiDate();
-        
-        // Check localStorage cache first (for ALL users - 3G optimization)
+
+        // 1. Check localStorage cache
         const cached = localStorage.getItem(CACHED_WORD_KEY);
         if (cached) {
           try {
@@ -66,53 +72,39 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
             if (date === haitiDate && cachedWord) {
               setWord(cachedWord);
               setIsLoading(false);
-              // Don't return yet for authenticated users - validate in background
-              if (isVisitor) return;
+              // Still track for authenticated users in background
+              trackWordView(cachedWord, haitiDate);
+              return;
             }
           } catch {
-            // Invalid cache, continue to fetch
+            // Invalid cache, continue
           }
         }
 
-        // Get current rotation state from app_settings
-        const { data: settings } = await supabase
-          .from('app_settings')
-          .select('value')
-          .eq('key', 'word_of_day')
-          .maybeSingle();
+        // 2. Get count of active words
+        const { count, error: countError } = await supabase
+          .from('daily_words')
+          .select('*', { count: 'exact', head: true })
+          .eq('is_active', true);
 
-        const settingsValue = settings?.value as { last_date?: string; last_order?: number } | null;
-        const lastDate = settingsValue?.last_date;
-        const lastOrder = settingsValue?.last_order || 0;
-        
-        let currentOrder = lastOrder;
-        let needsUpdate = false;
-
-        // If it's a new day, advance to next word
-        if (lastDate !== haitiDate) {
-          // Get max display_order
-          const { data: maxData } = await supabase
-            .from('daily_words')
-            .select('display_order')
-            .eq('is_active', true)
-            .order('display_order', { ascending: false })
-            .limit(1)
-            .single();
-
-          const maxOrder = maxData?.display_order || 1;
-          currentOrder = (lastOrder % maxOrder) + 1;
-          needsUpdate = true;
+        if (countError || !count || count === 0) {
+          setError('Aucun mot disponible');
+          setIsLoading(false);
+          return;
         }
 
-        // Fetch the word with this display_order
-        const { data: wordData, error: wordError } = await supabase
+        // 3. Compute deterministic display_order
+        const displayOrder = computeDisplayOrder(haitiDate, count);
+
+        // 4. Fetch the word
+        const { data: wordData } = await supabase
           .from('daily_words')
           .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category, display_order')
           .eq('is_active', true)
-          .eq('display_order', currentOrder)
+          .eq('display_order', displayOrder)
           .maybeSingle();
 
-        // Fallback to first active word if display_order not found
+        // Fallback if display_order gap exists
         let finalWord: DailyWord | null = wordData;
         if (!wordData) {
           const { data: fallbackWord } = await supabase
@@ -121,54 +113,28 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
             .eq('is_active', true)
             .order('display_order', { ascending: true })
             .limit(1)
-            .single();
-          
+            .maybeSingle();
           finalWord = fallbackWord;
-          if (fallbackWord) {
-            currentOrder = fallbackWord.display_order || 1;
-          }
         }
 
-        // On slow connections, clear audio_url to defer loading
+        // Defer audio on slow connections
         if (finalWord && shouldDeferAudio) {
           finalWord = { ...finalWord, audio_url: null };
         }
 
-        // Update rotation state if it's a new day (only for authenticated users)
-        if (needsUpdate && !isVisitor) {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            // Use RPC to update (security definer function)
-            await supabase.rpc('update_app_setting', {
-              _key: 'word_of_day',
-              _value: { last_date: haitiDate, last_order: currentOrder }
-            });
-          }
-        }
-
-        // Track for authenticated users (analytics)
-        if (finalWord && !isVisitor) {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            // Track which word was shown today (fire and forget)
-            supabase
-              .from('user_daily_word')
-              .upsert(
-                { user_id: user.id, word_id: finalWord.id, date: haitiDate },
-                { onConflict: 'user_id,date', ignoreDuplicates: true }
-              )
-              .then(() => {});
-          }
-        }
-
         setWord(finalWord);
 
-        // Cache the word for future instant loads (3G optimization)
+        // 5. Cache
         if (finalWord) {
           localStorage.setItem(CACHED_WORD_KEY, JSON.stringify({
             word: finalWord,
-            date: haitiDate
+            date: haitiDate,
           }));
+        }
+
+        // 6. Track (authenticated only, fire-and-forget)
+        if (finalWord) {
+          trackWordView(finalWord, haitiDate);
         }
       } catch (err) {
         console.error('Error fetching word of the day:', err);
@@ -179,7 +145,7 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
     };
 
     fetchWord();
-  }, [isVisitor, shouldDeferAudio]);
+  }, [shouldDeferAudio]);
 
   // Cleanup audio on unmount
   useEffect(() => {
@@ -194,34 +160,22 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
   const playAudio = useCallback(async () => {
     if (!word) return;
 
-    // Stop any currently playing audio
     if (audioRef.current) {
       audioRef.current.pause();
     }
 
-    // If audio exists, play it directly
     if (word.audio_url) {
       const audio = new Audio(word.audio_url);
       audioRef.current = audio;
-
       audio.onplay = () => setIsPlaying(true);
       audio.onended = () => setIsPlaying(false);
-      audio.onerror = () => {
-        setIsPlaying(false);
-        console.error('Error playing audio');
-      };
-
-      audio.play().catch(err => {
-        console.error('Error starting playback:', err);
-        setIsPlaying(false);
-      });
+      audio.onerror = () => { setIsPlaying(false); };
+      audio.play().catch(() => setIsPlaying(false));
       return;
     }
 
-    // Otherwise, fetch audio URL first (for deferred loading) or generate on-demand
     setIsGenerating(true);
     try {
-      // First try to fetch the audio_url if we deferred it
       if (shouldDeferAudio) {
         const { data: wordWithAudio } = await supabase
           .from('daily_words')
@@ -231,47 +185,30 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
 
         if (wordWithAudio?.audio_url) {
           setWord(prev => prev ? { ...prev, audio_url: wordWithAudio.audio_url } : null);
-          
           const audio = new Audio(wordWithAudio.audio_url);
           audioRef.current = audio;
-
           audio.onplay = () => setIsPlaying(true);
           audio.onended = () => setIsPlaying(false);
-          audio.onerror = () => {
-            setIsPlaying(false);
-            console.error('Error playing audio');
-          };
-
+          audio.onerror = () => { setIsPlaying(false); };
           await audio.play();
           setIsGenerating(false);
           return;
         }
       }
 
-      // Generate audio on-demand if none exists (founders only - will fail for regular users)
       const response = await supabase.functions.invoke('generate-word-audio', {
-        body: { wordId: word.id, word: word.word }
+        body: { wordId: word.id, word: word.word },
       });
 
-      if (response.error) {
-        throw response.error;
-      }
+      if (response.error) throw response.error;
 
       if (response.data?.audioUrl) {
-        // Update local state with new audio URL
         setWord(prev => prev ? { ...prev, audio_url: response.data.audioUrl } : null);
-
-        // Play the newly generated audio
         const audio = new Audio(response.data.audioUrl);
         audioRef.current = audio;
-
         audio.onplay = () => setIsPlaying(true);
         audio.onended = () => setIsPlaying(false);
-        audio.onerror = () => {
-          setIsPlaying(false);
-          console.error('Error playing generated audio');
-        };
-
+        audio.onerror = () => { setIsPlaying(false); };
         await audio.play();
       }
     } catch (err) {
@@ -290,14 +227,20 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
     }
   }, []);
 
-  return {
-    word,
-    isLoading,
-    isPlaying,
-    isGenerating,
-    playAudio,
-    stopAudio,
-    error,
-    shouldDeferAudio,
-  };
+  return { word, isLoading, isPlaying, isGenerating, playAudio, stopAudio, error, shouldDeferAudio };
 };
+
+/** Fire-and-forget tracking for authenticated users */
+function trackWordView(word: DailyWord, haitiDate: string) {
+  supabase.auth.getUser().then(({ data: { user } }) => {
+    if (user) {
+      supabase
+        .from('user_daily_word')
+        .upsert(
+          { user_id: user.id, word_id: word.id, date: haitiDate },
+          { onConflict: 'user_id,date', ignoreDuplicates: true }
+        )
+        .then(() => {});
+    }
+  });
+}
