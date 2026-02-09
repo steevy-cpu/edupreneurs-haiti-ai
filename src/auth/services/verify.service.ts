@@ -5,6 +5,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { verificationCodeSchema } from "@/lib/authValidation";
 import { clearAuthFlow, saveAuthFlow } from "../store/authFlow.store";
+import { getFullDeviceIdentifier } from "@/utils/deviceFingerprint";
 
 export interface VerifyResult {
   success: boolean;
@@ -48,9 +49,17 @@ export async function verifyEmailCode(userId: string, code: string): Promise<Ver
   }
 
   try {
+    // Get device info to auto-trust this device after email verification
+    const deviceInfo = getFullDeviceIdentifier();
+    
     const { data, error } = await supabase.rpc('verify_email_code', {
       p_user_id: userId,
-      p_code: code.trim()
+      p_code: code.trim(),
+      p_device_fingerprint: deviceInfo.fingerprint,
+      p_hardware_fingerprint: deviceInfo.hardwareFingerprint,
+      p_device_name: deviceInfo.deviceName,
+      p_browser: deviceInfo.browser,
+      p_os: deviceInfo.os,
     });
 
     if (error) throw error;
