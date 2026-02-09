@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Music, Play, Pause, SkipForward, Loader2, Volume2, X } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Music, Play, Pause, SkipForward, SkipBack, Loader2, Volume2, Volume1, VolumeX, Shuffle, Repeat, Repeat1, X } from "lucide-react";
 import { useMusicPlayer } from "@/contexts/MusicPlayerContext";
 import { useState, useEffect, useRef } from "react";
 import { useSessionAuth } from "@/contexts/SessionAuthContext";
@@ -20,11 +21,18 @@ export const GlobalMusicPlayer = () => {
     playTrack,
     playPause,
     nextTrack,
+    prevTrack,
+    volume,
+    isMuted,
+    shuffle,
+    repeatMode,
+    setVolume,
+    toggleMute,
+    toggleShuffle,
+    cycleRepeatMode,
   } = useMusicPlayer();
   
   const { isSlowConnection, shouldShowAnimations, shouldShowBlur } = useNetworkAwareLoading();
-  
-  // Use centralized session auth - eliminates duplicate getSession() call
   const { isAuthenticated } = useSessionAuth();
 
   const [playlistOpen, setPlaylistOpen] = useState(false);
@@ -37,26 +45,21 @@ export const GlobalMusicPlayer = () => {
   const [hasDragStarted, setHasDragStarted] = useState(false);
   const playerRef = useRef<HTMLDivElement>(null);
   
-  const DRAG_THRESHOLD = 8; // pixels before drag starts
+  const DRAG_THRESHOLD = 8;
 
   // Unified Pointer Events handler for drag
   useEffect(() => {
     const handlePointerMove = (e: PointerEvent) => {
       if (!isDragging) return;
       
-      // Check if we've passed the drag threshold
       if (!hasDragStarted) {
         const dx = Math.abs(e.clientX - dragStartPos.x);
         const dy = Math.abs(e.clientY - dragStartPos.y);
-        if (dx < DRAG_THRESHOLD && dy < DRAG_THRESHOLD) {
-          return; // Don't start dragging yet
-        }
+        if (dx < DRAG_THRESHOLD && dy < DRAG_THRESHOLD) return;
         setHasDragStarted(true);
       }
       
-      // Prevent default to stop scroll/pan on touch devices
       e.preventDefault();
-      
       setHasMoved(true);
       
       let newX = e.clientX - dragOffset.x;
@@ -88,16 +91,10 @@ export const GlobalMusicPlayer = () => {
     };
   }, [isDragging, dragOffset, hasDragStarted, dragStartPos]);
 
-  // Unified Pointer Event handler for drag start
   const handleDragStart = (e: React.PointerEvent) => {
     if (!playerRef.current) return;
-    
     const rect = playerRef.current.getBoundingClientRect();
-    
-    setDragOffset({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
+    setDragOffset({ x: e.clientX - rect.left, y: e.clientY - rect.top });
     setDragStartPos({ x: e.clientX, y: e.clientY });
     setHasDragStarted(false);
     setHasMoved(false);
@@ -105,9 +102,7 @@ export const GlobalMusicPlayer = () => {
   };
 
   const handlePlayerClick = () => {
-    if (!hasMoved) {
-      setMinimized(false);
-    }
+    if (!hasMoved) setMinimized(false);
   };
 
   const handleOpenPlaylist = (e: React.MouseEvent) => {
@@ -116,34 +111,24 @@ export const GlobalMusicPlayer = () => {
     setPlaylistOpen(true);
   };
 
-  // Style for expanded player - centered on desktop, bottom on mobile
   const getExpandedPlayerStyle = (): React.CSSProperties => {
     const isMobile = window.innerWidth < 640;
-    
     if (isMobile) {
-      // Mobile: fixed at bottom
       return {
         position: 'fixed' as const,
-        left: '16px',
-        right: '16px',
+        left: '16px', right: '16px',
         bottom: 'calc(100px + env(safe-area-inset-bottom, 0px))',
-        top: 'auto',
-        transform: 'none',
+        top: 'auto', transform: 'none',
       };
     }
-    
-    // Desktop/tablet: centered on page
     return {
       position: 'fixed' as const,
-      left: '50%',
-      top: '50%',
+      left: '50%', top: '50%',
       transform: 'translate(-50%, -50%)',
-      right: 'auto',
-      bottom: 'auto',
+      right: 'auto', bottom: 'auto',
     };
   };
 
-  // Create the YouTube player container outside React's control
   useEffect(() => {
     let playerDiv = document.getElementById("global-music-player");
     if (!playerDiv) {
@@ -152,25 +137,21 @@ export const GlobalMusicPlayer = () => {
       playerDiv.style.display = "none";
       document.body.appendChild(playerDiv);
     }
-    
-    // Cleanup on unmount - but don't remove if player is active
-    return () => {
-      // We intentionally don't remove the div here to prevent React DOM conflicts
-      // The YouTube player manages its own lifecycle
-    };
+    return () => {};
   }, []);
 
-  // Hide on public pages - only show for authenticated users on internal routes
   const isPublicPage = location.pathname === '/' || 
                        location.pathname.startsWith('/auth') || 
                        location.pathname.startsWith('/blog');
   
   if (!isAuthenticated || tracks.length === 0 || isPublicPage) return null;
 
+  const VolumeIcon = isMuted || volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2;
+  const RepeatIcon = repeatMode === 'one' ? Repeat1 : Repeat;
+
   return (
     <>
-
-      {/* Playlist Dialog - always mounted, independent of Card */}
+      {/* Playlist Dialog */}
       <Dialog open={playlistOpen} onOpenChange={setPlaylistOpen}>
         <DialogContent className="w-[calc(100vw-32px)] max-w-2xl max-h-[80vh]">
           <DialogHeader>
@@ -316,6 +297,7 @@ export const GlobalMusicPlayer = () => {
                 <>
                   {tracks.length > 0 && (
                     <div className="p-3 sm:p-4">
+                      {/* Track info */}
                       <div className="flex items-start gap-2 sm:gap-3 mb-3">
                         <img
                           src={isSlowConnection 
@@ -337,34 +319,76 @@ export const GlobalMusicPlayer = () => {
                         </div>
                       </div>
                       
-                      {/* Controls */}
-                      <div className="flex items-center justify-center gap-2">
+                      {/* Playback Controls */}
+                      <div className="flex items-center justify-center gap-1">
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="icon"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            playPause();
-                          }}
-                          className="h-9 w-9 sm:h-10 sm:w-10"
+                          onClick={(e) => { e.stopPropagation(); toggleShuffle(); }}
+                          className={cn("h-8 w-8", shuffle && "text-primary")}
+                          title="Lecture aléatoire"
                         >
-                          {isPlaying ? (
-                            <Pause className="w-4 h-4" />
-                          ) : (
-                            <Play className="w-4 h-4" />
-                          )}
+                          <Shuffle className="w-3.5 h-3.5" />
                         </Button>
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            nextTrack();
-                          }}
+                          onClick={(e) => { e.stopPropagation(); prevTrack(); }}
+                          className="h-9 w-9 sm:h-10 sm:w-10"
+                        >
+                          <SkipBack className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={(e) => { e.stopPropagation(); playPause(); }}
+                          className="h-9 w-9 sm:h-10 sm:w-10"
+                        >
+                          {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={(e) => { e.stopPropagation(); nextTrack(); }}
                           className="h-9 w-9 sm:h-10 sm:w-10"
                         >
                           <SkipForward className="w-4 h-4" />
                         </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => { e.stopPropagation(); cycleRepeatMode(); }}
+                          className={cn("h-8 w-8", repeatMode !== 'off' && "text-primary")}
+                          title={repeatMode === 'one' ? 'Répéter la piste' : repeatMode === 'all' ? 'Répéter tout' : 'Répétition désactivée'}
+                        >
+                          <RepeatIcon className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+
+                      {/* Volume Control */}
+                      <div className="flex items-center gap-2 mt-3 px-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 shrink-0"
+                          onClick={(e) => { e.stopPropagation(); toggleMute(); }}
+                        >
+                          <VolumeIcon className="w-3.5 h-3.5" />
+                        </Button>
+                        <Slider
+                          value={[isMuted ? 0 : volume]}
+                          max={100}
+                          step={1}
+                          onValueChange={([v]) => {
+                            setVolume(v);
+                            if (v > 0 && isMuted) toggleMute();
+                          }}
+                          className="flex-1"
+                        />
+                      </div>
+
+                      {/* Playlist button */}
+                      <div className="flex justify-center mt-3">
                         <Button 
                           variant="outline" 
                           size="sm" 

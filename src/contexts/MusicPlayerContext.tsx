@@ -6,19 +6,30 @@ interface PlaylistTrack {
   thumbnail: string;
 }
 
+type RepeatMode = 'off' | 'one' | 'all';
+
 interface MusicPlayerContextType {
   tracks: PlaylistTrack[];
   currentTrackIndex: number;
   isPlaying: boolean;
   isLoading: boolean;
   playerReady: boolean;
+  volume: number;
+  isMuted: boolean;
+  shuffle: boolean;
+  repeatMode: RepeatMode;
   setCurrentTrackIndex: (index: number) => void;
   setIsPlaying: (playing: boolean) => void;
   playTrack: (index: number) => void;
   playPause: () => void;
   nextTrack: () => void;
+  prevTrack: () => void;
   initPlayer: (trackIndex?: number) => void;
   stopMusic: () => void;
+  setVolume: (vol: number) => void;
+  toggleMute: () => void;
+  toggleShuffle: () => void;
+  cycleRepeatMode: () => void;
 }
 
 const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(undefined);
@@ -30,15 +41,29 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
   const [youtubeApiLoaded, setYoutubeApiLoaded] = useState(false);
+  
+  // New state for enhanced features
+  const [volume, setVolumeState] = useState(() => {
+    const saved = localStorage.getItem('music-player-volume');
+    return saved ? parseInt(saved) : 70;
+  });
+  const [isMuted, setIsMuted] = useState(false);
+  const [shuffle, setShuffle] = useState(false);
+  const [repeatMode, setRepeatMode] = useState<RepeatMode>('all');
+
   const playerRef = useRef<any>(null);
   const currentTrackIndexRef = useRef(currentTrackIndex);
   const nextTrackRef = useRef<() => void>(() => {});
+  const volumeRef = useRef(volume);
 
-  // Keep ref in sync for use in callbacks (avoids stale closure)
+  // Keep refs in sync
   useEffect(() => {
     currentTrackIndexRef.current = currentTrackIndex;
   }, [currentTrackIndex]);
 
+  useEffect(() => {
+    volumeRef.current = volume;
+  }, [volume]);
 
   // Check if on slow connection
   const isSlowConnection = useCallback(() => {
@@ -50,8 +75,6 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     fetchPlaylistTracks();
-    
-    // Defer YouTube API loading on slow connections
     if (!isSlowConnection()) {
       loadYouTubeAPI();
     }
@@ -62,7 +85,6 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
       setYoutubeApiLoaded(true);
       return;
     }
-    
     const tag = document.createElement("script");
     tag.src = "https://www.youtube.com/iframe_api";
     const firstScriptTag = document.getElementsByTagName("script")[0];
@@ -72,80 +94,83 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchPlaylistTracks = async () => {
     setIsLoading(true);
-    // Curated classical music for studying - all with valid thumbnails
     const curatedTracks: PlaylistTrack[] = [
-      // User Requested
       { id: "ViKbB7vbK7Q", title: "Lofi Hip Hop Radio", thumbnail: "https://i.ytimg.com/vi/ViKbB7vbK7Q/hqdefault.jpg" },
-      
-      // Special Relaxation Music
       { id: "45Siu4EtXzE", title: "Musique Relaxante pour Étudier - Concentration", thumbnail: "https://i.ytimg.com/vi/45Siu4EtXzE/hqdefault.jpg" },
-      
-      // Mozart - Perfect for Focus
       { id: "Rb0UmrCXxVA", title: "Mozart - Musique Classique pour Étudier", thumbnail: "https://i.ytimg.com/vi/Rb0UmrCXxVA/hqdefault.jpg" },
       { id: "jgpJVI3tDbY", title: "Mozart - Concertos pour Piano Complets", thumbnail: "https://i.ytimg.com/vi/jgpJVI3tDbY/hqdefault.jpg" },
       { id: "hOA-2hl1Vbc", title: "Mozart - Eine Kleine Nachtmusik", thumbnail: "https://i.ytimg.com/vi/hOA-2hl1Vbc/hqdefault.jpg" },
-      
-      // Chopin - Peaceful Piano
       { id: "9E6b3swbnWg", title: "Chopin - Nocturne Op. 9 No. 2", thumbnail: "https://i.ytimg.com/vi/9E6b3swbnWg/hqdefault.jpg" },
       { id: "wygy721nzRc", title: "Chopin - Nocturnes Complets", thumbnail: "https://i.ytimg.com/vi/wygy721nzRc/hqdefault.jpg" },
       { id: "EhO_MrRfftU", title: "Chopin - Valses Célèbres", thumbnail: "https://i.ytimg.com/vi/EhO_MrRfftU/hqdefault.jpg" },
-      
-      // Beethoven - Power & Concentration
       { id: "t3217H8JppI", title: "Beethoven - Symphonies pour Étudier", thumbnail: "https://i.ytimg.com/vi/t3217H8JppI/hqdefault.jpg" },
       { id: "4Tr0otuiQuU", title: "Beethoven - Sonate au Clair de Lune", thumbnail: "https://i.ytimg.com/vi/4Tr0otuiQuU/hqdefault.jpg" },
       { id: "rOjHhS5MtvA", title: "Beethoven - Symphonie No. 9", thumbnail: "https://i.ytimg.com/vi/rOjHhS5MtvA/hqdefault.jpg" },
-      
-      // Bach - Deep Focus
       { id: "6JQm5aSjX6g", title: "Bach - Le Clavier Bien Tempéré", thumbnail: "https://i.ytimg.com/vi/6JQm5aSjX6g/hqdefault.jpg" },
       { id: "Nnuq9PXbywA", title: "Bach - Toccata et Fugue en Ré Mineur", thumbnail: "https://i.ytimg.com/vi/Nnuq9PXbywA/hqdefault.jpg" },
       { id: "ho9rZjlsyYY", title: "Bach - Prélude en Do Majeur", thumbnail: "https://i.ytimg.com/vi/ho9rZjlsyYY/hqdefault.jpg" },
-      
-      // Vivaldi - Energizing Baroque
       { id: "GRxofEmo3HA", title: "Vivaldi - Les Quatre Saisons Complet", thumbnail: "https://i.ytimg.com/vi/GRxofEmo3HA/hqdefault.jpg" },
       { id: "l-dYNttdgl0", title: "Vivaldi - Meilleurs Concertos Baroque", thumbnail: "https://i.ytimg.com/vi/l-dYNttdgl0/hqdefault.jpg" },
-      
-      // Debussy - Calm & Peaceful
       { id: "CvFH_6DNRCY", title: "Debussy - Clair de Lune et Œuvres", thumbnail: "https://i.ytimg.com/vi/CvFH_6DNRCY/hqdefault.jpg" },
       { id: "WNcsUNKlAKw", title: "Debussy - La Mer", thumbnail: "https://i.ytimg.com/vi/WNcsUNKlAKw/hqdefault.jpg" },
-      
-      // Liszt - Virtuoso Piano
       { id: "KpOtuoHL45Y", title: "Liszt - Rêve d'Amour", thumbnail: "https://i.ytimg.com/vi/KpOtuoHL45Y/hqdefault.jpg" },
       { id: "H1Dvg2MxQn8", title: "Liszt - Rhapsodies Hongroises", thumbnail: "https://i.ytimg.com/vi/H1Dvg2MxQn8/hqdefault.jpg" },
-      
-      // Schubert - Gentle & Melodic
       { id: "2bosouX_d8Y", title: "Schubert - Ave Maria (Version Orchestrale)", thumbnail: "https://i.ytimg.com/vi/2bosouX_d8Y/hqdefault.jpg" },
-      
-      // Mixed Study Compilations
       { id: "jgpJVI3tDbY", title: "Mix Classique - 4h Concentration", thumbnail: "https://i.ytimg.com/vi/jgpJVI3tDbY/hqdefault.jpg" },
       { id: "4PUHBL1vMNY", title: "Meilleure Musique Classique Étude", thumbnail: "https://i.ytimg.com/vi/4PUHBL1vMNY/hqdefault.jpg" },
     ];
-    
     setTracks(curatedTracks);
     setIsLoading(false);
   };
 
+  // Volume handler
+  const setVolume = useCallback((vol: number) => {
+    setVolumeState(vol);
+    localStorage.setItem('music-player-volume', String(vol));
+    if (playerRef.current?.setVolume) {
+      playerRef.current.setVolume(vol);
+    }
+  }, []);
+
+  // Mute toggle
+  const toggleMute = useCallback(() => {
+    if (playerRef.current) {
+      if (isMuted) {
+        playerRef.current.unMute?.();
+        playerRef.current.setVolume?.(volume);
+      } else {
+        playerRef.current.mute?.();
+      }
+    }
+    setIsMuted(prev => !prev);
+  }, [isMuted, volume]);
+
+  // Shuffle toggle
+  const toggleShuffle = useCallback(() => {
+    setShuffle(prev => !prev);
+  }, []);
+
+  // Repeat mode cycle: all -> one -> off -> all
+  const cycleRepeatMode = useCallback(() => {
+    setRepeatMode(prev => {
+      if (prev === 'all') return 'one';
+      if (prev === 'one') return 'off';
+      return 'all';
+    });
+  }, []);
+
   const initPlayer = useCallback((trackIndex?: number) => {
     if (tracks.length === 0) return;
-
-    // Use provided index or fall back to currentTrackIndex
     const indexToPlay = trackIndex ?? currentTrackIndex;
 
-    // Destroy existing player if any
     if (playerRef.current && typeof playerRef.current.destroy === 'function') {
-      try {
-        playerRef.current.destroy();
-      } catch (e) {
-        console.warn('Could not destroy player:', e);
-      }
+      try { playerRef.current.destroy(); } catch (e) { console.warn('Could not destroy player:', e); }
       playerRef.current = null;
     }
 
     const initialize = () => {
       if (window.YT && window.YT.Player) {
         try {
-          console.log('🎵 Initializing YouTube player with track:', tracks[indexToPlay].title);
-          
-          // Create a new div for the player if it doesn't exist
           let playerDiv = document.getElementById("global-music-player");
           if (!playerDiv) {
             playerDiv = document.createElement("div");
@@ -157,22 +182,16 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
             height: "0",
             width: "0",
             videoId: tracks[indexToPlay].id,
-            playerVars: {
-              autoplay: 1,
-              controls: 0,
-              enablejsapi: 1,
-              origin: window.location.origin,
-            },
+            playerVars: { autoplay: 1, controls: 0, enablejsapi: 1, origin: window.location.origin },
             events: {
               onReady: (event: any) => {
-                console.log('✅ Player ready');
                 setPlayerReady(true);
+                event.target.setVolume(volumeRef.current);
                 event.target.playVideo();
                 setIsPlaying(true);
               },
               onStateChange: (event: any) => {
-                console.log('🎵 Player state changed:', event.data);
-              if (event.data === window.YT.PlayerState.ENDED) {
+                if (event.data === window.YT.PlayerState.ENDED) {
                   nextTrackRef.current();
                 }
                 if (event.data === window.YT.PlayerState.PLAYING) {
@@ -183,13 +202,9 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
               },
               onError: (event: any) => {
                 console.error('❌ YouTube player error:', event.data);
-                console.error('❌ Error occurred for video:', tracks[indexToPlay].id);
-                // Destroy and reinitialize on error
                 setPlayerReady(false);
                 playerRef.current = null;
-                setTimeout(() => {
-                  nextTrackRef.current();
-                }, 1000);
+                setTimeout(() => { nextTrackRef.current(); }, 1000);
               },
             },
           });
@@ -202,34 +217,24 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
         setTimeout(initialize, 100);
       }
     };
-
     initialize();
   }, [tracks, currentTrackIndex]);
 
   const playTrack = useCallback((index: number) => {
-    console.log('▶️ Playing track:', index, tracks[index]?.title);
     setCurrentTrackIndex(index);
-    
-    // Ensure YouTube API is loaded on first play (for slow connections)
-    if (!youtubeApiLoaded) {
-      loadYouTubeAPI();
-    }
+    if (!youtubeApiLoaded) { loadYouTubeAPI(); }
     
     if (playerRef.current && playerReady && typeof playerRef.current.loadVideoById === 'function') {
       try {
-        console.log('🎵 Loading video:', tracks[index].id);
         playerRef.current.loadVideoById(tracks[index].id);
         playerRef.current.playVideo();
         setIsPlaying(true);
       } catch (error) {
-        console.error('❌ Error playing track:', error);
-        // Reinitialize player on error
         setPlayerReady(false);
         playerRef.current = null;
         initPlayer(index);
       }
     } else {
-      console.log('⏳ Player not ready, reinitializing...');
       setPlayerReady(false);
       playerRef.current = null;
       initPlayer(index);
@@ -238,13 +243,10 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
 
   const playPause = () => {
     if (!playerRef.current || !playerReady || typeof playerRef.current.pauseVideo !== 'function') {
-      console.log('⏳ Player not ready, initializing...');
-      // Set playing state optimistically - initPlayer has autoplay: 1
       setIsPlaying(true);
       initPlayer();
       return;
     }
-
     try {
       if (isPlaying) {
         playerRef.current.pauseVideo();
@@ -254,7 +256,6 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
         setIsPlaying(true);
       }
     } catch (error) {
-      console.error('❌ Error toggling playback:', error);
       setPlayerReady(false);
       playerRef.current = null;
       initPlayer();
@@ -262,67 +263,63 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const nextTrack = useCallback(() => {
-    // Use ref to always get the latest index (avoids stale closure in onStateChange)
     const currentIndex = currentTrackIndexRef.current;
-    const nextIndex = (currentIndex + 1) % tracks.length;
-    console.log('⏭️ Moving to next track:', nextIndex, 'from', currentIndex);
+    if (repeatMode === 'one') {
+      playTrack(currentIndex);
+      return;
+    }
+    let nextIndex: number;
+    if (shuffle) {
+      do { nextIndex = Math.floor(Math.random() * tracks.length); }
+      while (nextIndex === currentIndex && tracks.length > 1);
+    } else {
+      nextIndex = (currentIndex + 1) % tracks.length;
+    }
+    if (repeatMode === 'off' && nextIndex === 0 && !shuffle) {
+      stopMusic();
+      return;
+    }
     playTrack(nextIndex);
+  }, [tracks.length, playTrack, shuffle, repeatMode]);
+
+  const prevTrack = useCallback(() => {
+    const currentIndex = currentTrackIndexRef.current;
+    const prevIndex = (currentIndex - 1 + tracks.length) % tracks.length;
+    playTrack(prevIndex);
   }, [tracks.length, playTrack]);
 
-  // Keep nextTrackRef in sync to avoid stale closure in YouTube callbacks
+  // Keep nextTrackRef in sync
   useEffect(() => {
     nextTrackRef.current = nextTrack;
   }, [nextTrack]);
 
-  const stopMusic = () => {
-    console.log('🛑 stopMusic called, playerRef:', !!playerRef.current);
-    
+  const stopMusic = useCallback(() => {
     try {
       if (playerRef.current) {
-        // Try pause first
-        if (typeof playerRef.current.pauseVideo === 'function') {
-          playerRef.current.pauseVideo();
-        }
-        
-        // Also try stopVideo for stronger guarantee
-        if (typeof playerRef.current.stopVideo === 'function') {
-          playerRef.current.stopVideo();
-        }
-        
-        // Destroy the player entirely to guarantee audio stops
+        if (typeof playerRef.current.pauseVideo === 'function') playerRef.current.pauseVideo();
+        if (typeof playerRef.current.stopVideo === 'function') playerRef.current.stopVideo();
         if (typeof playerRef.current.destroy === 'function') {
           playerRef.current.destroy();
           playerRef.current = null;
           setPlayerReady(false);
         }
       }
-      
       setIsPlaying(false);
-      console.log('🛑 Music stopped and player destroyed');
     } catch (error) {
-      console.error('Error stopping music:', error);
-      // Force cleanup even on error
       playerRef.current = null;
       setPlayerReady(false);
       setIsPlaying(false);
     }
-  };
+  }, []);
 
   return (
     <MusicPlayerContext.Provider
       value={{
-        tracks,
-        currentTrackIndex,
-        isPlaying,
-        isLoading,
-        playerReady,
-        setCurrentTrackIndex,
-        setIsPlaying,
-        playTrack,
-        playPause,
-        nextTrack,
-        initPlayer,
-        stopMusic,
+        tracks, currentTrackIndex, isPlaying, isLoading, playerReady,
+        volume, isMuted, shuffle, repeatMode,
+        setCurrentTrackIndex, setIsPlaying, playTrack, playPause,
+        nextTrack, prevTrack, initPlayer, stopMusic,
+        setVolume, toggleMute, toggleShuffle, cycleRepeatMode,
       }}
     >
       {children}
@@ -330,28 +327,19 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Safe defaults when context is unavailable (prevents React error #310)
+// Safe defaults when context is unavailable
 const SAFE_MUSIC_DEFAULTS: MusicPlayerContextType = {
-  tracks: [],
-  currentTrackIndex: 0,
-  isPlaying: false,
-  isLoading: false,
-  playerReady: false,
-  setCurrentTrackIndex: () => {},
-  setIsPlaying: () => {},
-  playTrack: () => {},
-  playPause: () => {},
-  nextTrack: () => {},
-  initPlayer: () => {},
-  stopMusic: () => {},
+  tracks: [], currentTrackIndex: 0, isPlaying: false, isLoading: false, playerReady: false,
+  volume: 70, isMuted: false, shuffle: false, repeatMode: 'all',
+  setCurrentTrackIndex: () => {}, setIsPlaying: () => {}, playTrack: () => {},
+  playPause: () => {}, nextTrack: () => {}, prevTrack: () => {}, initPlayer: () => {},
+  stopMusic: () => {}, setVolume: () => {}, toggleMute: () => {}, toggleShuffle: () => {},
+  cycleRepeatMode: () => {},
 };
 
 export const useMusicPlayer = (): MusicPlayerContextType => {
   const context = useContext(MusicPlayerContext);
-  // Return safe defaults if used outside provider (prevents React error #310)
-  if (!context) {
-    return SAFE_MUSIC_DEFAULTS;
-  }
+  if (!context) return SAFE_MUSIC_DEFAULTS;
   return context;
 };
 
