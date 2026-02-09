@@ -9,6 +9,7 @@
  * - Mobile-first responsive design
  * - 3G optimized (lazy loaded, minimal JS)
  * - Accessible (ARIA labels, keyboard navigation)
+ * - Keyboard shortcut (Ctrl+Enter to translate)
  */
 
 import { useState, useCallback } from "react";
@@ -23,6 +24,7 @@ import {
   TranslateTextArea,
   SwapLanguagesButton,
   TranslateButton,
+  TranslateCTA,
   useTranslation,
   DEFAULT_SOURCE_LANG,
   DEFAULT_TARGET_LANG,
@@ -38,7 +40,7 @@ export default function Translate() {
   const [inputText, setInputText] = useState("");
   
   // Translation hook
-  const { translate, isLoading, error, result, clearError } = useTranslation();
+  const { translate, isLoading, error, result, clearError, clearResult } = useTranslation();
 
   // Handle language swap
   const handleSwap = useCallback(() => {
@@ -59,6 +61,23 @@ export default function Translate() {
       targetLang,
     });
   }, [inputText, sourceLang, targetLang, translate, clearError]);
+
+  // Handle keyboard shortcut (Ctrl+Enter or Cmd+Enter)
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      if (inputText.trim() && !isLoading) {
+        handleTranslate();
+      }
+    }
+  }, [inputText, isLoading, handleTranslate]);
+
+  // Handle clear input
+  const handleClear = useCallback(() => {
+    setInputText("");
+    clearResult();
+    clearError();
+  }, [clearResult, clearError]);
 
   // Handle source language change
   const handleSourceChange = (lang: LanguageCode) => {
@@ -144,6 +163,8 @@ export default function Translate() {
                 label="Texte à traduire"
                 value={inputText}
                 onChange={setInputText}
+                onClear={handleClear}
+                onKeyDown={handleKeyDown}
                 placeholder="Entrez le texte à traduire..."
               />
 
@@ -156,27 +177,55 @@ export default function Translate() {
               )}
 
               {/* Translate Button */}
-              <div className="flex justify-center">
+              <div className="flex flex-col items-center gap-2">
                 <TranslateButton
                   onClick={handleTranslate}
                   isLoading={isLoading}
                   disabled={!inputText.trim()}
                 />
+                <p className="text-xs text-muted-foreground text-center">
+                  Appuyez sur{" "}
+                  <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Ctrl</kbd>
+                  {" + "}
+                  <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Enter</kbd>
+                  {" "}pour traduire
+                </p>
               </div>
 
-              {/* Result Text Area */}
+              {/* Result Text Area with Loading Skeleton */}
               {(result || isLoading) && (
-                <TranslateTextArea
-                  id="output-text"
-                  label="Traduction"
-                  value={isLoading ? "" : result}
-                  placeholder={isLoading ? "Traduction en cours..." : "La traduction apparaîtra ici..."}
-                  readOnly
-                  showCopy
-                />
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Traduction
+                  </label>
+                  {isLoading ? (
+                    <div className="min-h-[160px] p-3 border rounded-md bg-muted/50">
+                      <div className="space-y-3 animate-pulse">
+                        <div className="h-4 bg-muted rounded w-3/4" />
+                        <div className="h-4 bg-muted rounded w-1/2" />
+                        <div className="h-4 bg-muted rounded w-2/3" />
+                        <p className="text-sm text-muted-foreground mt-4">
+                          Traduction en cours...
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <TranslateTextArea
+                      id="output-text"
+                      label=""
+                      value={result}
+                      placeholder="La traduction apparaîtra ici..."
+                      readOnly
+                      showCopy
+                    />
+                  )}
+                </div>
               )}
             </CardContent>
           </Card>
+
+          {/* CTA for unauthenticated users */}
+          <TranslateCTA />
 
           {/* Info Text */}
           <p className="text-center text-xs text-muted-foreground mt-4">
