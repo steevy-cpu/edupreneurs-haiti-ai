@@ -125,14 +125,14 @@ export const LessonFeedback = ({ lessonId }: LessonFeedbackProps) => {
     <>
       <Card className="border-l-4 border-l-primary border-border/30 bg-primary/5">
         <CardContent className="p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-primary shrink-0" />
-              <p className="text-sm sm:text-base text-foreground font-medium text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-start sm:items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-primary shrink-0 mt-0.5 sm:mt-0" />
+              <p className="text-sm text-foreground font-medium">
                 Votre avis compte — cette leçon vous a-t-elle été utile?
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
               <Button
                 variant={rating === "up" ? "default" : "outline"}
                 size="sm"
