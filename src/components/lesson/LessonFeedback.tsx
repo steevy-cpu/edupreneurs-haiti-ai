@@ -129,7 +129,7 @@ export const LessonFeedback = ({ lessonId }: LessonFeedbackProps) => {
             <div className="flex items-start sm:items-center gap-2">
               <MessageSquare className="h-4 w-4 text-primary shrink-0 mt-0.5 sm:mt-0" />
               <p className="text-sm text-foreground font-medium">
-                Votre avis compte — cette leçon vous a-t-elle été utile?
+                Cette leçon vous a-t-elle été utile?
               </p>
             </div>
             <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
