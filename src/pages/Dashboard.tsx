@@ -278,6 +278,11 @@ const Dashboard = () => {
               analytics: {
                 streak: analytics.streak,
                 weeklyGoal: analytics.weeklyGoal,
+                gold: profileFeature.data.gold,
+                totalLessonsCompleted: analytics.totalLessonsCompleted,
+                weeklyLessons: analytics.weeklyLessons,
+                averageScore: analytics.averageScore,
+                studyTimeThisWeek: analytics.studyTimeThisWeek,
               },
               activeBanner,
               showPrompt,
