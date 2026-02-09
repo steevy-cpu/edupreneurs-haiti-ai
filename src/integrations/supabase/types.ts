@@ -1797,6 +1797,44 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_feedback: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          lesson_id: string
+          rating: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          lesson_id: string
+          rating: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          rating?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_feedback_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_notes: {
         Row: {
           created_at: string

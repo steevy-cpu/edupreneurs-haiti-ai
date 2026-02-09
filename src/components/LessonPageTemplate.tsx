@@ -13,6 +13,7 @@ import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { LessonAIPracticeSection } from "@/components/lesson/LessonAIPracticeSection";
 import { LessonQuickStats } from "@/components/lesson/LessonQuickStats";
 import { LessonNavigation } from "@/components/lesson/LessonNavigation";
+import { LessonFeedback } from "@/components/lesson/LessonFeedback";
 import { LessonAudioPlayerSimple } from "@/components/LessonAudioPlayerSimple";
 import { MathContent, isMathSubject } from "@/components/MathContent";
 
@@ -481,6 +482,11 @@ export const LessonPageTemplate = ({
             lessonSlug={lessonSlug}
             gradeLevel={gradeLevel}
           />
+        </div>
+
+        {/* Lesson Feedback */}
+        <div className="mt-6 sm:mt-8">
+          <LessonFeedback lessonId={lesson.id} />
         </div>
 
         {/* Next Lesson CTA when completed */}
