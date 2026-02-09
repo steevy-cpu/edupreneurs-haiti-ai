@@ -1,158 +1,207 @@
 
-# Fix: Auto-Trust Device After Email Verification
+
+# Fix: Time-Aware Greetings for HomeChatbot
 
 ## Problem Statement
 
-When a new user creates an account and verifies their email, they are immediately prompted with "Nouvel appareil détecté" on their first login attempt. This creates a poor user experience with **two consecutive OTP verifications**.
+Jude greets users with "Bonjour" at 9PM, which is contextually incorrect. The greeting should adapt to the time of day to feel more natural and personalized.
 
-### Current Flow (Problematic)
+**Current behavior:**
+- Frontend: Hardcoded "Bonjour ! Je suis Jude..."
+- Backend AI: No time context in system prompt → generates "Bonjour" responses
 
-```text
-1. User signs up on Device A
-2. User enters email OTP to verify email
-3. User is redirected to login
-4. User logs in
-5. System checks isDeviceTrusted(userId) → FALSE (no device saved!)
-6. User gets SECOND OTP for device verification
-```
+**Desired behavior:**
+- Morning (6:00-11:59): "Bonjour" (Good morning)
+- Afternoon (12:00-17:59): "Bon après-midi" (Good afternoon)  
+- Evening (18:00-21:59): "Bonsoir" (Good evening)
+- Night (22:00-5:59): "Bonsoir" (Good evening - appropriate for late night)
 
-### Why This Happens
+---
 
-- During signup, the device is **never registered** in `user_trusted_devices`
-- After email verification, the user is redirected to `/auth/login`
-- On first login, `isDeviceTrusted()` returns `false` → triggers device verification flow
+## Implementation Approach
 
-## Solution
+### Phase 1: Create Time-Based Greeting Utility
 
-**Auto-trust the signup device immediately after email verification is confirmed.**
+Create a shared utility that returns the appropriate French greeting based on the current hour.
 
-The device the user verified their email on is implicitly trusted because:
-1. They just proved ownership of the email on that device
-2. They were physically present on that device during signup
-3. Requiring another verification is redundant and frustrating
-
-### Implementation Approach
-
-We have two options for where to implement this:
-
-| Option | Location | Pros | Cons |
-|--------|----------|------|------|
-| **A** | Frontend: `verify.service.ts` after `verifyEmailCode()` succeeds | Simple, immediate | Requires authenticated session (we don't have one) |
-| **B** | Backend: `verify_email_code` RPC | Atomic, single transaction | Requires passing device info |
-
-**Chosen: Option B (Backend RPC)**
-
-Why? After email verification, the user is not authenticated (we signed them out during signup). Inserting into `user_trusted_devices` requires the user_id, which the RPC already has access to.
-
-## Technical Implementation
-
-### Phase 1: Modify Frontend to Pass Device Info
-
-**File:** `src/auth/services/verify.service.ts`
-
-Update `verifyEmailCode()` to:
-1. Get the current device fingerprint
-2. Pass it to the RPC call
+**New file:** `src/utils/getTimeBasedGreeting.ts`
 
 ```typescript
-// Before
-const { data, error } = await supabase.rpc('verify_email_code', {
-  p_user_id: userId,
-  p_code: code.trim()
-});
+export type TimePeriod = 'morning' | 'afternoon' | 'evening' | 'night';
 
-// After
-const deviceInfo = getFullDeviceIdentifier();
+export interface TimeGreeting {
+  greeting: string;
+  period: TimePeriod;
+  hour: number;
+}
 
-const { data, error } = await supabase.rpc('verify_email_code', {
-  p_user_id: userId,
-  p_code: code.trim(),
-  p_device_fingerprint: deviceInfo.fingerprint,
-  p_hardware_fingerprint: deviceInfo.hardwareFingerprint,
-  p_device_name: deviceInfo.deviceName,
-  p_browser: deviceInfo.browser,
-  p_os: deviceInfo.os,
+export function getTimeBasedGreeting(): TimeGreeting {
+  const hour = new Date().getHours();
+  
+  // Morning (6-12): Bonjour
+  if (hour >= 6 && hour < 12) {
+    return { greeting: 'Bonjour', period: 'morning', hour };
+  }
+  
+  // Afternoon (12-18): Bon après-midi
+  if (hour >= 12 && hour < 18) {
+    return { greeting: 'Bon après-midi', period: 'afternoon', hour };
+  }
+  
+  // Evening & Night (18-6): Bonsoir
+  return { greeting: 'Bonsoir', period: hour >= 18 ? 'evening' : 'night', hour };
+}
+```
+
+---
+
+### Phase 2: Update HomeChatbot Initial Message
+
+Modify `HomeChatbot.tsx` to use the dynamic greeting in the initial message.
+
+**File:** `src/components/HomeChatbot.tsx`
+
+```typescript
+// Import the utility
+import { getTimeBasedGreeting } from "@/utils/getTimeBasedGreeting";
+
+// Inside the component, compute initial message dynamically
+const getInitialMessage = (): Message => {
+  const { greeting } = getTimeBasedGreeting();
+  return {
+    content: `${greeting} ! Je suis Jude, votre assistant IA sur EDUPRENEURS. Comment puis-je vous aider à découvrir notre plateforme ? 😊`,
+    sender: "eric"
+  };
+};
+
+// Use useMemo or useState with initializer function
+const [messages, setMessages] = useState<Message[]>(() => [getInitialMessage()]);
+```
+
+---
+
+### Phase 3: Update Backend Edge Function
+
+Pass the current time context to the AI so Jude's generated responses also use appropriate greetings.
+
+**File:** `supabase/functions/home-eric-chat/index.ts`
+
+**Changes:**
+1. Add time context to the system prompt
+2. The frontend will pass the user's local hour
+
+**Frontend change (in HomeChatbot.tsx):**
+```typescript
+const { data, error } = await supabase.functions.invoke('home-eric-chat', {
+  body: {
+    message: userMessage,
+    chatHistory: ...,
+    localHour: new Date().getHours() // Pass current hour
+  }
 });
 ```
 
-### Phase 2: Update Database RPC
+**Backend change (in edge function):**
+```typescript
+const { message, chatHistory, localHour } = validation.data;
 
-**File:** New migration
+// Determine greeting based on passed hour
+const getGreetingFromHour = (hour: number) => {
+  if (hour >= 6 && hour < 12) return { greeting: 'Bonjour', period: 'le matin' };
+  if (hour >= 12 && hour < 18) return { greeting: 'Bon après-midi', period: 'l\'après-midi' };
+  return { greeting: 'Bonsoir', period: 'le soir' };
+};
 
-Update `public.verify_email_code` to:
-1. Accept optional device parameters
-2. After marking email as confirmed, upsert the device as trusted
+const timeContext = getGreetingFromHour(localHour ?? new Date().getHours());
 
-```sql
--- Updated function signature
-CREATE OR REPLACE FUNCTION public.verify_email_code(
-  p_user_id uuid,
-  p_code text,
-  p_device_fingerprint text DEFAULT NULL,
-  p_hardware_fingerprint text DEFAULT NULL,
-  p_device_name text DEFAULT NULL,
-  p_browser text DEFAULT NULL,
-  p_os text DEFAULT NULL
-)
-...
-  -- After email confirmation succeeds:
-  IF p_device_fingerprint IS NOT NULL THEN
-    INSERT INTO public.user_trusted_devices (
-      user_id, device_fingerprint, hardware_fingerprint,
-      device_name, browser, os, is_trusted, last_login_at
-    ) VALUES (
-      p_user_id, p_device_fingerprint, p_hardware_fingerprint,
-      p_device_name, p_browser, p_os, true, now()
-    )
-    ON CONFLICT (user_id, device_fingerprint) 
-    DO UPDATE SET
-      is_trusted = true,
-      last_login_at = now();
-  END IF;
+// Add to system prompt:
+const systemPrompt = `Tu es Jude...
+
+⏰ CONTEXTE TEMPOREL :
+- Il est actuellement ${timeContext.period} chez l'utilisateur
+- Utilise "${timeContext.greeting}" comme salutation (pas "Bonjour" s'il fait nuit !)
+- Adapte ton ton au moment de la journée
+
+...rest of prompt`;
 ```
+
+---
 
 ## Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/auth/services/verify.service.ts` | Pass device info to RPC |
-| New migration | Update `verify_email_code` RPC to accept device params and auto-trust |
+| `src/utils/getTimeBasedGreeting.ts` | **New file** - shared greeting utility |
+| `src/components/HomeChatbot.tsx` | Use dynamic greeting for initial message + pass `localHour` to backend |
+| `supabase/functions/home-eric-chat/index.ts` | Add time context to system prompt |
+| `supabase/functions/_shared/validation.ts` | Add `localHour` to schema (optional) |
 
-## Expected Result After Fix
+---
+
+## Expected Result
 
 ```text
-1. User signs up on Device A
-2. User enters email OTP to verify email
-3. Backend: Device A is saved as trusted (is_trusted = true)
-4. User is redirected to login
-5. User logs in
-6. System checks isDeviceTrusted(userId) → TRUE
-7. User goes directly to dashboard (no second OTP!)
+At 9PM:
+  - Initial message: "Bonsoir ! Je suis Jude..."
+  - AI responses: Uses "Bonsoir" appropriately
+
+At 10AM:
+  - Initial message: "Bonjour ! Je suis Jude..."
+  - AI responses: Uses "Bonjour" appropriately
+
+At 2PM:
+  - Initial message: "Bon après-midi ! Je suis Jude..."
+  - AI responses: Uses "Bon après-midi" appropriately
 ```
+
+---
+
+## Technical Details
+
+### Validation Schema Update
+
+The `ericChatSchema` in `_shared/validation.ts` needs to accept the optional `localHour` parameter:
+
+```typescript
+export const ericChatSchema = z.object({
+  message: z.string().min(1).max(2000),
+  chatHistory: z.array(...).optional(),
+  localHour: z.number().min(0).max(23).optional() // Add this
+});
+```
+
+### Why Pass Hour from Frontend?
+
+- The edge function runs in Deno, which doesn't know the user's timezone
+- Haiti uses Eastern Time (America/Port-au-Prince)
+- Passing `localHour` from the browser ensures accurate time context
+
+---
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No - device params are optional (DEFAULT NULL) |
-| Works with existing data? | Yes - existing verified users unaffected |
-| Backward compatible? | Yes - old clients without device params still work |
-| 3G performance impact? | Minimal - one extra upsert during verification |
-| Security maintained? | Yes - device is only trusted after email is proven |
-| Edge cases handled? | Yes - ON CONFLICT handles repeat verifications |
+| Breaks existing functionality? | No - `localHour` is optional with fallback |
+| Works with existing data? | Yes - no data changes |
+| Backward compatible? | Yes - old clients work without `localHour` |
+| 3G performance impact? | None - single number added to request |
+| Edge cases handled? | Yes - fallback to server time if not provided |
 
-## Test Plan
+---
 
-1. **New Signup Flow:**
-   - Create new account
-   - Verify email
-   - Login → should NOT see "Nouvel appareil détecté"
-   - Check database: `user_trusted_devices` should have device with `is_trusted = true`
+## Test Scenarios
 
-2. **Login from Different Device:**
-   - After signup + verification on Device A
-   - Login from Device B → SHOULD see device verification (expected behavior)
+1. **Open chatbot at different times:**
+   - Morning → "Bonjour"
+   - Afternoon → "Bon après-midi"
+   - Evening/Night → "Bonsoir"
 
-3. **Existing Users (Regression):**
-   - Already verified user with no device saved
-   - First login triggers device verification (unchanged behavior)
+2. **AI response greetings:**
+   - Ask a question at 9PM → AI should use "Bonsoir" in response
+   - Ask at 10AM → AI should use "Bonjour"
+
+3. **Regression test:**
+   - FAQ button clicks still return instant cached responses
+   - Rate limiting still works
+
