@@ -1,79 +1,73 @@
 
 
-# Mobile Responsiveness Fixes for Translate Page
+# Footer Reorganization
 
 ## Overview
 
-The translate page is mostly responsive, but there are several small issues that affect the mobile experience on 375px and smaller screens.
+Unify and properly organize both footers (`Footer.tsx` for inner pages and `HomeFooter.tsx` for homepage) so they share the same well-structured link data and consistent categorization.
 
 ---
 
-## Issues Found
+## Current Problems
 
-| Issue | Component | Fix |
-|-------|-----------|-----|
-| Language selector text overflows on small screens | `LanguageSelector.tsx` | Hide native name on mobile, truncate trigger text |
-| Ctrl+Enter hint is irrelevant on mobile | `Translate.tsx` | Hide keyboard shortcut hint on mobile |
-| Language selectors + swap button cramped | `Translate.tsx` | Reduce gap on mobile |
-| Select trigger text truncation | `LanguageSelector.tsx` | Add `truncate` class and `min-w-0` |
+| Problem | Where |
+|---------|-------|
+| "Se connecter" placed under "Legal" | `homePageData.ts` footerLinks |
+| Missing "Conditions" (Terms) link | `homePageData.ts` footerLinks |
+| Anchor links like `href="#accueil"` don't work from inner pages | `homePageData.ts` footerLinks |
+| "Paramètres Cookies" in HomeFooter but not in Footer | Both footers |
+| Hardcoded `2025` year | `HomeFooter.tsx` |
+| Two completely separate link sets | `Footer.tsx` vs `homePageData.ts` |
 
 ---
 
-## Detailed Changes
+## Proposed Link Organization
 
-### 1. LanguageSelector - Hide native name on mobile
+### Navigation
+- Accueil (`/`)
+- Blog (`/blog`)
+- Templates (`/templates`)
+- Traducteur (`/translate`)
 
-The dropdown items show "Flag + Name + (NativeName)" which is fine in the dropdown list, but the **trigger** (selected value display) can overflow on small screens.
+### A Propos
+- Notre Mission (`/#about`)
+- L'Equipe (`/#team`)
+- Preparation au Bac (`/examens-officiels`)
 
-**Fix:**
-- Add `truncate` to the `SelectTrigger` so text doesn't overflow
-- Hide the native name `(nativeName)` on mobile in dropdown items using `hidden sm:inline`
+### Support
+- Contact (`mailto:support@edupreneurs.com`)
+- FAQ (`/#faq`)
+- Ressources (`/resources`)
 
-**File:** `src/features/translate/components/LanguageSelector.tsx`
+### Legal
+- Conditions (`/terms`)
+- Confidentialite (`/privacy-policy`)
+- Parametres Cookies (`/cookie-settings`)
 
-```tsx
-<SelectTrigger id={id} className="w-full min-w-0">
-  <SelectValue />
-</SelectTrigger>
-```
+---
 
-For dropdown items:
-```tsx
-<span className="flex items-center gap-2">
-  <span className="text-lg">{lang.flag}</span>
-  <span className="truncate">{lang.name}</span>
-  <span className="text-muted-foreground text-xs hidden sm:inline">({lang.nativeName})</span>
-</span>
-```
+## Changes
 
-### 2. Hide Ctrl+Enter hint on mobile
+### 1. Update `footerLinks` in `homePageData.ts`
 
-Mobile users don't have a Ctrl key. This hint wastes vertical space on small screens.
+Reorganize the data with proper route-based links (use `to` instead of `href` for internal links) and correct categorization:
 
-**Fix:** Add `hidden sm:block` to the hint paragraph.
+- Move "Traducteur" to Navigation (it's a tool, not support)
+- Remove "Se connecter" from Legal (it's not a legal page)
+- Add "Conditions" (`/terms`) to Legal
+- Keep "Parametres Cookies" in Legal
+- Replace all anchor `href="#section"` with `to="/#section"` so they work from any page
+- Add Contact email to Support
 
-**File:** `src/pages/Translate.tsx` (line 220)
+### 2. Update `HomeFooter.tsx`
 
-```tsx
-<p className="text-xs text-muted-foreground text-center hidden sm:block">
-  Appuyez sur Ctrl + Enter pour traduire
-</p>
-```
+- Use dynamic `new Date().getFullYear()` instead of hardcoded `2025`
 
-### 3. Ensure textarea minimum height is appropriate
+### 3. Update `Footer.tsx` to use shared `footerLinks` data
 
-The textarea has `min-h-[160px]` which is fine on mobile but could be slightly reduced for better viewport usage.
-
-**Fix:** Use `min-h-[120px] sm:min-h-[160px]` in TranslateTextArea.
-
-**File:** `src/features/translate/components/TranslateTextArea.tsx`
-
-```tsx
-className={cn(
-  "min-h-[120px] sm:min-h-[160px] resize-none",
-  ...
-)}
-```
+- Import `footerLinks` from `homePageData.ts` instead of hardcoding links
+- Reuse the same `FooterLinkSection` pattern (or a shared helper)
+- This ensures both footers always stay in sync
 
 ---
 
@@ -81,9 +75,9 @@ className={cn(
 
 | File | Change |
 |------|--------|
-| `src/features/translate/components/LanguageSelector.tsx` | Add `min-w-0` to trigger, hide native name on mobile, add `truncate` |
-| `src/pages/Translate.tsx` | Hide Ctrl+Enter hint on mobile |
-| `src/features/translate/components/TranslateTextArea.tsx` | Responsive min-height for textarea |
+| `src/data/homePageData.ts` | Reorganize `footerLinks` with correct categories and route-based links |
+| `src/components/home/HomeFooter.tsx` | Dynamic year |
+| `src/components/Footer.tsx` | Import and use shared `footerLinks` data instead of hardcoded links |
 
 ---
 
@@ -91,9 +85,8 @@ className={cn(
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No - CSS-only changes |
-| Works with existing data? | N/A |
-| 3G performance impact? | None - no new assets |
-| Backward compatible? | Yes - desktop unchanged |
-| Edge cases? | Tested at 375px (iPhone SE) width |
+| Breaks existing functionality? | No - same links, better organized |
+| Works with existing data? | N/A - no database changes |
+| 3G performance impact? | None |
+| Backward compatible? | Yes - all links preserved, just reorganized |
 
