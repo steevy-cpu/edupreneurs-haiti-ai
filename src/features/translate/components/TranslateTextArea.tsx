@@ -94,7 +94,7 @@ export function TranslateTextArea({
           placeholder={placeholder}
           readOnly={readOnly}
           className={cn(
-            "min-h-[160px] resize-none",
+            "min-h-[120px] sm:min-h-[160px] resize-none",
             readOnly && "bg-muted/50 cursor-default",
             isOverLimit && "border-destructive focus-visible:ring-destructive"
           )}
