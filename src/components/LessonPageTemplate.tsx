@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { BookOpen, FileText, Gamepad2, Target, ArrowLeft, GraduationCap, Sparkles } from "lucide-react";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
-import { JudeChatbot } from "@/components/JudeChatbot";
+
 import { LessonAIPracticeSection } from "@/components/lesson/LessonAIPracticeSection";
 import { LessonQuickStats } from "@/components/lesson/LessonQuickStats";
 import { LessonNavigation } from "@/components/lesson/LessonNavigation";
@@ -507,8 +507,6 @@ export const LessonPageTemplate = ({
         )}
       </div>
 
-      {/* Jude Chatbot */}
-      <JudeChatbot />
     </div>
   );
 };
