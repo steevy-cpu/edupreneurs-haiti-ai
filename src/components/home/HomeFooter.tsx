@@ -46,7 +46,7 @@ export const HomeFooter = memo(function HomeFooter() {
         {/* Bottom Bar */}
         <div className="border-t border-slate-700/50 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-slate-400 text-sm font-medium">
-            © 2025 EDUPRENEURS. Éducation de qualité pour Haïti 🇭🇹
+            © {new Date().getFullYear()} EDUPRENEURS. Éducation de qualité pour Haïti 🇭🇹
           </p>
           <p className="text-slate-500 text-xs">
             Fait avec ❤️ en Haïti

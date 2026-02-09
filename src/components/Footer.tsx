@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
+import { footerLinks } from "@/data/homePageData";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -20,43 +21,10 @@ export function Footer() {
         
         {/* Links Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-xs">
-          {/* Navigation */}
-          <div className="text-center md:text-left">
-            <h4 className="font-bold text-white mb-2 text-xs tracking-wide uppercase">Navigation</h4>
-            <ul className="space-y-1">
-              <li><Link to="/" className="text-slate-400 hover:text-primary transition-colors">Accueil</Link></li>
-              <li><Link to="/blog" className="text-slate-400 hover:text-primary transition-colors">Blog</Link></li>
-              <li><Link to="/templates" className="text-slate-400 hover:text-primary transition-colors">Templates</Link></li>
-            </ul>
-          </div>
-          
-          {/* À Propos */}
-          <div className="text-center md:text-left">
-            <h4 className="font-bold text-white mb-2 text-xs tracking-wide uppercase">À Propos</h4>
-            <ul className="space-y-1">
-              <li><Link to="/#about" className="text-slate-400 hover:text-primary transition-colors">Notre Mission</Link></li>
-              <li><Link to="/#team" className="text-slate-400 hover:text-primary transition-colors">L'Équipe</Link></li>
-            </ul>
-          </div>
-          
-          {/* Support */}
-          <div className="text-center md:text-left">
-            <h4 className="font-bold text-white mb-2 text-xs tracking-wide uppercase">Support</h4>
-            <ul className="space-y-1">
-              <li><a href="mailto:support@edupreneurs.com" className="text-slate-400 hover:text-primary transition-colors">Contact</a></li>
-              <li><Link to="/translate" className="text-slate-400 hover:text-primary transition-colors">Traducteur</Link></li>
-              <li><span className="text-slate-500">FAQ (Bientôt)</span></li>
-            </ul>
-          </div>
-          
-          {/* Légal */}
-          <div className="text-center md:text-left">
-            <h4 className="font-bold text-white mb-2 text-xs tracking-wide uppercase">Légal</h4>
-            <ul className="space-y-1">
-              <li><Link to="/terms" className="text-slate-400 hover:text-primary transition-colors">Conditions</Link></li>
-              <li><Link to="/privacy-policy" className="text-slate-400 hover:text-primary transition-colors">Confidentialité</Link></li>
-            </ul>
-          </div>
+          <FooterSection title="Navigation" links={footerLinks.navigation} />
+          <FooterSection title="À Propos" links={footerLinks.about} />
+          <FooterSection title="Support" links={footerLinks.support} />
+          <FooterSection title="Légal" links={footerLinks.legal} />
         </div>
         
         {/* Bottom Bar */}
@@ -72,5 +40,34 @@ export function Footer() {
         </div>
       </div>
     </footer>
+  );
+}
+
+function FooterSection({
+  title,
+  links,
+}: {
+  title: string;
+  links: ReadonlyArray<{ href?: string; to?: string; label: string }>;
+}) {
+  return (
+    <div className="text-center md:text-left">
+      <h4 className="font-bold text-white mb-2 text-xs tracking-wide uppercase">{title}</h4>
+      <ul className="space-y-1">
+        {links.map((link, idx) => (
+          <li key={idx}>
+            {link.to ? (
+              <Link to={link.to} className="text-slate-400 hover:text-primary transition-colors">
+                {link.label}
+              </Link>
+            ) : (
+              <a href={link.href} className="text-slate-400 hover:text-primary transition-colors">
+                {link.label}
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
