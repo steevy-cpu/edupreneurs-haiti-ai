@@ -1,170 +1,57 @@
 
 
-# Unified Footer UI Improvement
+# Fix React Null Dispatcher Errors & Badge Ref Warning
 
-## Overview
+## Problem Diagnosis
 
-Replace both `HomeFooter.tsx` and `Footer.tsx` with a single shared `Footer.tsx` component that has a clean, consistent design. The homepage and inner pages will use the same footer.
+There are two issues causing problems on the `/content-editor` page:
 
----
+### 1. React "null dispatcher" crashes (causes error page)
+The runtime errors show `Cannot read properties of null (reading 'useState')` and `Cannot read properties of null (reading 'useContext')`. These originate from a **stale Vite dependency cache** where React gets pre-bundled into multiple chunks (`chunk-ZMLY2J2T.js` vs `chunk-6RFYUUFA.js`), creating two separate React instances. Components in one instance can't use hooks from the other.
 
-## Current Issues
+**Affected components:**
+- `FirstTimeUserWelcome.tsx` (useState null)
+- `CreateMatiereDialog.tsx` (useState null)
+- `@radix-ui/react-tabs` (useContext null)
 
-| Issue | Detail |
-|-------|--------|
-| Two separate components | `HomeFooter.tsx` (homepage) and `Footer.tsx` (inner pages) doing the same job |
-| Inconsistent sizing | HomeFooter: `py-16`, `text-lg`, `h-14` logo vs Footer: `py-8`, `text-xs`, `h-10` logo |
-| Arrow hover animation | Causes layout shift and feels unprofessional |
-| Single column on mobile | HomeFooter stacks all 4 sections vertically instead of 2x2 grid |
-| Overly heavy typography | `font-black text-lg` section headers are too loud for a footer |
-
----
-
-## Design Decisions
-
-- **One footer for everything** -- delete `HomeFooter.tsx`, update all imports to use `Footer.tsx`
-- **Clean, balanced sizing** -- `py-10`, `text-sm` links, `text-xs font-semibold uppercase` headers
-- **2-column mobile grid** -- `grid-cols-2 md:grid-cols-4` so links use space efficiently on phones
-- **Simple hover** -- just color transition, no arrows, no translate
-- **Compact logo section** -- `h-10` logo, single tagline line
+### 2. Badge ref warning (non-crashing)
+The `Badge` component is used inside Radix UI's `CollapsibleTrigger` in `LessonBrowser.tsx`. Radix tries to pass a ref, but `Badge` is a plain function component that doesn't support `forwardRef`.
 
 ---
 
-## Changes
+## Fix
 
-### 1. Rewrite `src/components/Footer.tsx`
+### 1. Bump Vite cache directory
 
-Unified component with:
-- `py-10 px-4` padding (balanced between current 8 and 16)
-- `h-10` logo with `mb-3` spacing
-- `text-xs` tagline
-- `grid-cols-2 md:grid-cols-4 gap-6 mb-8` links grid
-- Section headers: `text-xs font-semibold uppercase tracking-wider text-slate-300 mb-3`
-- Links: `text-sm text-slate-400 hover:text-primary transition-colors` (no arrows, no translate)
-- `space-y-2` between links (not 1 or 3)
-- Bottom bar: `pt-6 border-t`, consistent `text-xs`
-- Memoized with `memo()`
+Force a clean pre-bundle by renaming the cache directory from `.vite-edupreneurs-v3` to `.vite-edupreneurs-v4` in `vite.config.ts`. This eliminates the stale duplicate React chunks.
 
-### 2. Delete `src/components/home/HomeFooter.tsx`
-
-No longer needed since `Footer.tsx` handles everything.
-
-### 3. Update imports
-
-Pages currently importing `HomeFooter`:
-- Find and replace all `HomeFooter` imports to use `Footer` from `@/components/Footer`
-
-Pages already using `Footer`:
-- `src/pages/BlogPost.tsx`
-- `src/pages/Blog.tsx`
-- `src/pages/Translate.tsx`
-- (these stay as-is)
-
----
-
-## Final Footer Structure
-
-```text
-+--------------------------------------------------+
-|  [gradient accent line]                          |
-|                                                  |
-|              [Logo - h-10]                       |
-|     Revolutionner l'education haitienne...       |
-|                                                  |
-|  Navigation    A Propos    Support     Legal      |
-|  ----------    --------    -------    -----      |
-|  Accueil       Mission     Contact    Conditions |
-|  Blog          L'Equipe    FAQ        Confid.    |
-|  Templates     Prep Bac    Ressources Cookies    |
-|  Traducteur                                      |
-|                                                  |
-|  ----------------------------------------------- |
-|  (c) 2026 EDUPRENEURS Haiti    Fait avec <3      |
-+--------------------------------------------------+
+**File:** `vite.config.ts` (line 15)
+```
+cacheDir: "node_modules/.vite-edupreneurs-v4"
 ```
 
-On mobile (2-column):
-```text
-|  Navigation    A Propos   |
-|  Support       Legal      |
-```
+### 2. Add `forwardRef` to Badge component
 
----
+Wrap the `Badge` component with `React.forwardRef` so Radix UI components can properly pass refs to it.
 
-## Technical Details
-
-### New Footer.tsx structure
-
+**File:** `src/components/ui/badge.tsx`
 ```tsx
-import { memo } from "react";
-import { Link } from "react-router-dom";
-import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
-import { footerLinks } from "@/data/homePageData";
-
-const sections = [
-  { title: "Navigation", links: footerLinks.navigation },
-  { title: "A Propos", links: footerLinks.about },
-  { title: "Support", links: footerLinks.support },
-  { title: "Legal", links: footerLinks.legal },
-];
-
-export const Footer = memo(function Footer() {
-  return (
-    <footer className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-10 px-4 overflow-hidden">
-      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary via-accent to-primary" />
-      <div className="container mx-auto relative z-10">
-        {/* Logo */}
-        ...h-10, text-xs tagline...
-        
-        {/* Grid: 2 cols mobile, 4 cols desktop */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-          {sections.map(section => <FooterSection ... />)}
-        </div>
-        
-        {/* Bottom */}
-        ...text-xs, dynamic year...
-      </div>
-    </footer>
-  );
-});
-```
-
-### FooterSection -- clean links
-
-```tsx
-function FooterSection({ title, links }) {
-  return (
-    <div>
-      <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-3">{title}</h4>
-      <ul className="space-y-2">
-        {links.map(link => (
-          <li>
-            {link.to ? (
-              <Link to={link.to} className="text-sm text-slate-400 hover:text-primary transition-colors">
-                {link.label}
-              </Link>
-            ) : (
-              <a href={link.href} className="text-sm text-slate-400 hover:text-primary transition-colors">
-                {link.label}
-              </a>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
+const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
+  ({ className, variant, ...props }, ref) => {
+    return <div ref={ref} className={cn(badgeVariants({ variant }), className)} {...props} />;
+  }
+);
+Badge.displayName = "Badge";
 ```
 
 ---
 
-## Files Summary
+## File Changes Summary
 
-| File | Action |
+| File | Change |
 |------|--------|
-| `src/components/Footer.tsx` | Rewrite with unified design |
-| `src/components/home/HomeFooter.tsx` | Delete |
-| Homepage and any pages importing HomeFooter | Update imports to `Footer` |
+| `vite.config.ts` | Bump cacheDir to `.vite-edupreneurs-v4` |
+| `src/components/ui/badge.tsx` | Add `forwardRef` to Badge |
 
 ---
 
@@ -172,9 +59,9 @@ function FooterSection({ title, links }) {
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- same links, improved layout |
+| Breaks existing functionality? | No - cache bump just forces clean rebuild |
 | Works with existing data? | N/A |
-| 3G performance impact? | Slightly better -- one fewer component to load |
-| Backward compatible? | Yes -- all links preserved |
-| Edge cases? | mailto: links still use `<a>`, router links use `<Link>` |
+| 3G performance impact? | None |
+| Backward compatible? | Yes - Badge API unchanged, just now supports refs |
+| Edge cases? | Cache bump is the established pattern per project history |
 
