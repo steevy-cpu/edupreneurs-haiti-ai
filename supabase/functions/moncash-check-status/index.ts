@@ -84,9 +84,17 @@ serve(async (req) => {
       .select('*')
       .eq('order_id', orderId)
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
-    if (fetchError || !transaction) {
+    if (fetchError) {
+      console.error('Error fetching transaction:', fetchError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Failed to check transaction' }),
+        { status: 500, headers: responseHeaders }
+      );
+    }
+
+    if (!transaction) {
       return new Response(
         JSON.stringify({ success: false, error: 'Transaction not found' }),
         { status: 404, headers: responseHeaders }
