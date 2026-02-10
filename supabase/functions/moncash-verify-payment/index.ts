@@ -1,10 +1,8 @@
 /**
- * Security-Hardened: MonCash Verify Payment
+ * Security-Hardened: MonCash Verify Payment via Bazik.io
  * 
- * Features:
- * - Rate limiting
- * - Input validation
- * - Security headers
+ * Verifies payment status through Bazik.io API first,
+ * falls back to direct MonCash API if needed.
  */
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
@@ -13,98 +11,73 @@ import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../
 import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-// Validation schema
+const BAZIK_API_BASE = 'https://api.bazik.io';
+
+// Validation schema - accepts our internal orderId and optionally Bazik's orderId
 const verifySchema = z.object({
   orderId: z.string().max(100).optional(),
+  bazikOrderId: z.string().max(100).optional(),
   transactionId: z.string().max(100).optional(),
-}).refine(data => data.orderId || data.transactionId, {
-  message: "orderId or transactionId required"
+}).refine(data => data.orderId || data.transactionId || data.bazikOrderId, {
+  message: "orderId, bazikOrderId, or transactionId required"
 });
 
-// MonCash API endpoints
-const MONCASH_ENDPOINTS = {
-  sandbox: {
-    auth: 'https://sandbox.moncashbutton.digicelgroup.com/Api/oauth/token',
-    retrieveByOrderId: 'https://sandbox.moncashbutton.digicelgroup.com/Api/v1/RetrieveOrderPayment',
-    retrieveByTransactionId: 'https://sandbox.moncashbutton.digicelgroup.com/Api/v1/RetrieveTransactionPayment',
-  },
-  live: {
-    auth: 'https://moncashbutton.digicelgroup.com/Api/oauth/token',
-    retrieveByOrderId: 'https://moncashbutton.digicelgroup.com/Api/v1/RetrieveOrderPayment',
-    retrieveByTransactionId: 'https://moncashbutton.digicelgroup.com/Api/v1/RetrieveTransactionPayment',
-  }
-};
-
-// Get OAuth token from MonCash
-async function getMonCashToken(clientId: string, clientSecret: string, mode: string): Promise<string> {
-  const endpoints = mode === 'live' ? MONCASH_ENDPOINTS.live : MONCASH_ENDPOINTS.sandbox;
-  
-  const credentials = btoa(`${clientId}:${clientSecret}`);
-  
-  const response = await fetch(endpoints.auth, {
+// Get Bazik.io access token
+async function getBazikToken(userID: string, secretKey: string): Promise<string> {
+  const response = await fetch(`${BAZIK_API_BASE}/token`, {
     method: 'POST',
     headers: {
-      'Authorization': `Basic ${credentials}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
-    body: 'scope=read,write&grant_type=client_credentials',
+    body: JSON.stringify({ userID, secretKey }),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('MonCash auth error:', errorText);
-    throw new Error(`Failed to authenticate with MonCash: ${response.status}`);
+    console.error('Bazik auth error:', response.status, errorText);
+    throw new Error(`Failed to authenticate with Bazik.io: ${response.status}`);
   }
 
   const data = await response.json();
-  return data.access_token;
+  return data.access_token || data.token;
 }
 
-// Retrieve payment by order ID
-async function retrievePaymentByOrderId(token: string, orderId: string, mode: string) {
-  const endpoints = mode === 'live' ? MONCASH_ENDPOINTS.live : MONCASH_ENDPOINTS.sandbox;
+// Verify payment via Bazik.io
+async function verifyViaBazik(
+  token: string,
+  referenceId: string
+): Promise<{ success: boolean; status: string; payment?: Record<string, unknown> }> {
+  console.log(`Verifying payment via Bazik.io: referenceId=${referenceId}`);
   
-  const response = await fetch(endpoints.retrieveByOrderId, {
-    method: 'POST',
+  const response = await fetch(`${BAZIK_API_BASE}/moncash/verify/${referenceId}`, {
+    method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
-    body: JSON.stringify({ orderId }),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('MonCash retrieve error:', errorText);
-    throw new Error(`Failed to retrieve payment: ${response.status}`);
+    console.error('Bazik verify error:', response.status, errorText);
+    return { success: false, status: 'unknown' };
   }
 
-  return await response.json();
-}
-
-// Retrieve payment by transaction ID
-async function retrievePaymentByTransactionId(token: string, transactionId: string, mode: string) {
-  const endpoints = mode === 'live' ? MONCASH_ENDPOINTS.live : MONCASH_ENDPOINTS.sandbox;
+  const responseData = await response.json();
+  console.log('Bazik verify response:', JSON.stringify(responseData));
   
-  const response = await fetch(endpoints.retrieveByTransactionId, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-    body: JSON.stringify({ transactionId }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('MonCash retrieve error:', errorText);
-    throw new Error(`Failed to retrieve payment: ${response.status}`);
-  }
-
-  return await response.json();
+  const paymentData = responseData.data || responseData;
+  
+  // Bazik returns status like 'completed', 'pending', 'failed'
+  const paymentStatus = paymentData.status || paymentData.message;
+  
+  return {
+    success: true,
+    status: paymentStatus === 'successful' || paymentStatus === 'completed' ? 'completed' : 
+            paymentStatus === 'pending' ? 'pending' : 'failed',
+    payment: paymentData,
+  };
 }
 
 serve(async (req) => {
@@ -115,7 +88,7 @@ serve(async (req) => {
   const responseHeaders = { ...corsHeaders, ...securityHeaders, ...noCacheHeaders, 'Content-Type': 'application/json' };
 
   try {
-    // Determine mode and select credentials accordingly
+    // Determine mode and select credentials
     const mode = Deno.env.get('MONCASH_MODE') || 'sandbox';
     const clientId = mode === 'sandbox'
       ? Deno.env.get('MONCASH_SANDBOX_CLIENT_ID')
@@ -158,72 +131,128 @@ serve(async (req) => {
       );
     }
 
-    const { orderId, transactionId } = validation.data;
+    const { orderId, bazikOrderId, transactionId } = validation.data;
+    // orderId here is our internal EDU-xxx ID
+    const internalOrderId = orderId;
 
-    console.log(`Verifying MonCash payment: orderId=${orderId}, transactionId=${transactionId}, mode=${mode}`);
+    console.log(`Verifying MonCash payment: internalOrderId=${internalOrderId}, bazikOrderId=${bazikOrderId}, transactionId=${transactionId}, mode=${mode}`);
 
-    // Get OAuth token
-    const token = await getMonCashToken(clientId, clientSecret, mode);
-    console.log('MonCash authentication successful');
+    // Strategy: Try Bazik.io verification first (since payment was created via Bazik)
+    let paymentStatus = 'unknown';
+    let paymentDetails: Record<string, unknown> = {};
 
-    // Retrieve payment details
-    let paymentData;
-    if (orderId) {
-      paymentData = await retrievePaymentByOrderId(token, orderId, mode);
-    } else {
-      paymentData = await retrievePaymentByTransactionId(token, transactionId!, mode);
+    if (internalOrderId) {
+      try {
+        const bazikToken = await getBazikToken(clientId, clientSecret);
+        // Use our internal orderId (which was sent as referenceId to Bazik)
+        const bazikResult = await verifyViaBazik(bazikToken, internalOrderId);
+        
+        if (bazikResult.success) {
+          paymentStatus = bazikResult.status;
+          paymentDetails = bazikResult.payment || {};
+          console.log(`Bazik verification result: status=${paymentStatus}`);
+        }
+      } catch (bazikError) {
+        console.warn('Bazik verification failed, will try direct MonCash:', bazikError);
+      }
     }
 
-    console.log('Payment data received:', JSON.stringify(paymentData));
+    // Fallback: Try direct MonCash API if Bazik didn't give a definitive answer
+    if (paymentStatus === 'unknown' && (internalOrderId || transactionId)) {
+      try {
+        const credentials = btoa(`${clientId}:${clientSecret}`);
+        const endpoints = mode === 'live' 
+          ? { auth: 'https://moncashbutton.digicelgroup.com/Api/oauth/token', retrieve: 'https://moncashbutton.digicelgroup.com/Api/v1/RetrieveOrderPayment' }
+          : { auth: 'https://sandbox.moncashbutton.digicelgroup.com/Api/oauth/token', retrieve: 'https://sandbox.moncashbutton.digicelgroup.com/Api/v1/RetrieveOrderPayment' };
 
-    // Check if payment was successful
-    if (paymentData.status !== 'Success') {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: paymentData.message || 'Payment verification failed',
-          data: paymentData,
-        }),
-        { headers: responseHeaders }
-      );
+        const authResponse = await fetch(endpoints.auth, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${credentials}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
+          },
+          body: 'scope=read,write&grant_type=client_credentials',
+        });
+
+        if (authResponse.ok) {
+          const authData = await authResponse.json();
+          const token = authData.access_token;
+
+          const lookupId = transactionId || internalOrderId;
+          const endpoint = transactionId 
+            ? (mode === 'live' ? 'https://moncashbutton.digicelgroup.com/Api/v1/RetrieveTransactionPayment' : 'https://sandbox.moncashbutton.digicelgroup.com/Api/v1/RetrieveTransactionPayment')
+            : endpoints.retrieve;
+          const body = transactionId ? { transactionId } : { orderId: lookupId };
+
+          const retrieveResponse = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: JSON.stringify(body),
+          });
+
+          if (retrieveResponse.ok) {
+            const retrieveData = await retrieveResponse.json();
+            console.log('Direct MonCash verify response:', JSON.stringify(retrieveData));
+            
+            if (retrieveData.status === 'Success') {
+              const payment = retrieveData.payment;
+              paymentStatus = payment?.message === 'successful' ? 'completed' : 'failed';
+              paymentDetails = {
+                transactionId: payment?.transactionId,
+                orderId: payment?.orderId,
+                amount: payment?.cost,
+                payer: payment?.payer,
+                message: payment?.message,
+              };
+            }
+          }
+        }
+      } catch (moncashError) {
+        console.warn('Direct MonCash verification also failed:', moncashError);
+      }
     }
 
-    const payment = paymentData.payment;
-    const paymentStatus = payment?.message === 'successful' ? 'completed' : 'failed';
+    // Update transaction in database using our internal order ID
+    const dbOrderId = internalOrderId || (paymentDetails as Record<string, unknown>)?.orderId as string;
+    
+    if (dbOrderId && paymentStatus !== 'unknown') {
+      const updateData: Record<string, unknown> = {
+        status: paymentStatus,
+        updated_at: new Date().toISOString(),
+      };
 
-    // Update transaction in database
-    const updateData: Record<string, unknown> = {
-      status: paymentStatus,
-      transaction_id: payment?.transactionId?.toString(),
-      payer_phone: payment?.payer,
-      updated_at: new Date().toISOString(),
-    };
+      if (paymentDetails.transactionId) {
+        updateData.transaction_id = String(paymentDetails.transactionId);
+      }
+      if (paymentDetails.payer) {
+        updateData.payer_phone = String(paymentDetails.payer);
+      }
+      if (paymentStatus === 'completed') {
+        updateData.completed_at = new Date().toISOString();
+      }
 
-    if (paymentStatus === 'completed') {
-      updateData.completed_at = new Date().toISOString();
-    }
+      const { error: updateError } = await supabase
+        .from('payment_transactions')
+        .update(updateData)
+        .eq('order_id', dbOrderId);
 
-    const { error: updateError } = await supabase
-      .from('payment_transactions')
-      .update(updateData)
-      .eq('order_id', orderId || payment?.orderId);
-
-    if (updateError) {
-      console.error('Error updating transaction:', updateError);
-      // Don't fail - the payment is verified, just log the error
+      if (updateError) {
+        console.error('Error updating transaction:', updateError);
+      } else {
+        console.log(`Transaction ${dbOrderId} updated to status: ${paymentStatus}`);
+      }
     }
 
     return new Response(
       JSON.stringify({
-        success: true,
+        success: paymentStatus === 'completed',
         status: paymentStatus,
-        payment: {
-          transactionId: payment?.transactionId,
-          orderId: payment?.orderId,
-          amount: payment?.cost,
-          payer: payment?.payer,
-          message: payment?.message,
-        },
+        payment: paymentDetails,
       }),
       { headers: responseHeaders }
     );
