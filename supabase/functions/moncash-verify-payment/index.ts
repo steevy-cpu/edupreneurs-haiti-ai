@@ -115,10 +115,16 @@ serve(async (req) => {
   const responseHeaders = { ...corsHeaders, ...securityHeaders, ...noCacheHeaders, 'Content-Type': 'application/json' };
 
   try {
-    // Get MonCash credentials from secrets
-    const clientId = Deno.env.get('MONCASH_CLIENT_ID');
-    const clientSecret = Deno.env.get('MONCASH_SECRET_KEY');
+    // Determine mode and select credentials accordingly
     const mode = Deno.env.get('MONCASH_MODE') || 'sandbox';
+    const clientId = mode === 'sandbox'
+      ? Deno.env.get('MONCASH_SANDBOX_CLIENT_ID')
+      : Deno.env.get('MONCASH_CLIENT_ID');
+    const clientSecret = mode === 'sandbox'
+      ? Deno.env.get('MONCASH_SANDBOX_SECRET_KEY')
+      : Deno.env.get('MONCASH_SECRET_KEY');
+
+    console.log(`MonCash verify mode: ${mode}`);
 
     if (!clientId || !clientSecret) {
       console.error('MonCash credentials not configured');

@@ -119,11 +119,16 @@ serve(async (req) => {
   };
 
   try {
-    // Get Bazik.io credentials from secrets
-    // MONCASH_CLIENT_ID should contain Bazik userID (e.g., bzk_xxx)
-    // MONCASH_CLIENT_SECRET should contain Bazik secretKey (e.g., sk_xxx)
-    const userID = Deno.env.get('MONCASH_CLIENT_ID');
-    const secretKey = Deno.env.get('MONCASH_SECRET_KEY');
+    // Determine mode and select credentials accordingly
+    const mode = Deno.env.get('MONCASH_MODE') || 'sandbox';
+    const userID = mode === 'sandbox'
+      ? Deno.env.get('MONCASH_SANDBOX_CLIENT_ID')
+      : Deno.env.get('MONCASH_CLIENT_ID');
+    const secretKey = mode === 'sandbox'
+      ? Deno.env.get('MONCASH_SANDBOX_SECRET_KEY')
+      : Deno.env.get('MONCASH_SECRET_KEY');
+
+    console.log(`MonCash mode: ${mode}`);
 
     if (!userID || !secretKey) {
       console.error('Bazik.io credentials not configured');
