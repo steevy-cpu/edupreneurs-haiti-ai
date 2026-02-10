@@ -129,6 +129,19 @@ export const UI_VISIBILITY: Record<string, VisibilityConfig> = {
       /^\/quiz-battle\//,
     ],
   },
+  
+  subscriptionBanner: {
+    hideOn: [
+      '/onboarding',
+      '/payment-demo',
+    ],
+    hideOnPatterns: [
+      /^\/auth/,
+      /-lesson\//,
+      /^\/quiz-battle\//,
+    ],
+    requiresAuth: true,
+  },
 };
 
 export interface VisibilityOptions {
@@ -200,5 +213,6 @@ export function createVisibilityChecker(pathname: string, options: VisibilityOpt
     showSidebar: shouldShowComponent('sidebar', pathname, options),
     showNotificationBanner: shouldShowComponent('notificationBanner', pathname, options),
     showPWAPrompt: shouldShowComponent('pwaPrompt', pathname, options),
+    showSubscriptionBanner: shouldShowComponent('subscriptionBanner', pathname, options),
   };
 }
