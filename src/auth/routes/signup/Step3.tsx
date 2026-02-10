@@ -243,10 +243,10 @@ export default function SignupStep3() {
               <span className="text-sm font-medium text-green-700">Paiement confirmé !</span>
             </div>
           ) : (
-            <Button
+             <Button
               type="button"
               onClick={handleMonCashPayment}
-              disabled={isCreatingPayment}
+              disabled={isCreatingPayment || !privacy}
               className="w-full"
               size="lg"
             >

@@ -38,6 +38,7 @@ import { VisitorBanner, JudeWelcomePopup } from '@/components/visitor';
 import { QuizInvitationHandler } from '@/components/quiz-battle/QuizInvitationHandler';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { NavigationProgress } from './components/NavigationProgress';
+import { SubscriptionGate } from '@/components/SubscriptionGate';
 
 interface AppShellProps {
   /** Optional children - if not provided, uses <Outlet /> */
@@ -245,7 +246,9 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
             visibility.showBottomNav && 'pb-16 lg:pb-0'
           )}
         >
-          {children || <Outlet />}
+          <SubscriptionGate>
+            {children || <Outlet />}
+          </SubscriptionGate>
         </main>
 
         {/* Mobile Bottom Navigation */}

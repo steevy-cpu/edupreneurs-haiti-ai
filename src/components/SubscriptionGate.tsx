@@ -5,7 +5,7 @@
  * Expired users see a full-screen renewal prompt.
  */
 
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -54,9 +54,22 @@ export function SubscriptionGate({ children }: SubscriptionGateProps) {
 }
 
 function RenewalPrompt() {
+  const [isLoading, setIsLoading] = React.useState(false);
+
   const handleRenew = async () => {
-    // Navigate to payment demo for now - will be replaced with direct MonCash flow
-    window.location.href = '/payment-demo';
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('moncash-create-payment', {
+        body: { amount: 200, description: 'Renouvellement Edupreneurs - 30 jours' },
+      });
+      if (error || !data?.redirectUrl) {
+        setIsLoading(false);
+        return;
+      }
+      window.location.href = data.redirectUrl;
+    } catch {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -78,9 +91,12 @@ function RenewalPrompt() {
           <div className="text-sm text-muted-foreground">/ 30 jours</div>
         </div>
 
-        <Button size="lg" className="w-full" onClick={handleRenew}>
-          <CreditCard className="mr-2 h-5 w-5" />
-          Renouveler mon abonnement
+        <Button size="lg" className="w-full" onClick={handleRenew} disabled={isLoading}>
+          {isLoading ? (
+            <><span className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />Préparation...</>
+          ) : (
+            <><CreditCard className="mr-2 h-5 w-5" />Renouveler mon abonnement</>
+          )}
         </Button>
       </div>
     </div>
