@@ -13,6 +13,7 @@ import {
   Loader2, ExternalLink, CheckCircle2
 } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 type Step = 'signup' | 'plan' | 'payment' | 'processing' | 'success';
@@ -70,9 +71,11 @@ const plans: Plan[] = [
 ];
 
 export default function PaymentDemo() {
+  const navigate = useNavigate();
   const [step, setStep] = useState<Step>('signup');
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -139,9 +142,9 @@ export default function PaymentDemo() {
         return;
       }
 
-      // Store orderId for callback verification
+      // Store orderId for "I already paid" flow
       const orderId = data.orderId;
-      
+      setPendingOrderId(orderId);
       // Redirect to MonCash payment portal
       // The return URL is configured in the MonCash dashboard
       // After payment, user will be redirected to /payment/callback?orderId=XXX
@@ -427,18 +430,26 @@ export default function PaymentDemo() {
         <div>
           <h3 className="text-xl font-semibold mb-2">Traitement en cours...</h3>
           <p className="text-muted-foreground">
-            Veuillez confirmer la transaction sur votre téléphone MonCash
+            Complétez le paiement sur la page MonCash, puis revenez ici.
           </p>
         </div>
         <div className="bg-muted/50 rounded-lg p-4 text-sm">
           <p className="font-medium mb-2">Étapes:</p>
           <ol className="list-decimal list-inside space-y-1 text-left text-muted-foreground">
-            <li>Ouvrez l'application MonCash sur votre téléphone</li>
-            <li>Confirmez la notification de paiement</li>
+            <li>Confirmez le paiement sur la page MonCash</li>
             <li>Entrez votre code PIN MonCash</li>
-            <li>Attendez la confirmation</li>
+            <li>Une fois terminé, cliquez sur le bouton ci-dessous</li>
           </ol>
         </div>
+        {pendingOrderId && (
+          <Button 
+            className="w-full bg-green-600 hover:bg-green-700"
+            onClick={() => navigate(`/payment/callback?orderId=${pendingOrderId}`)}
+          >
+            <CheckCircle2 className="mr-2 h-4 w-4" />
+            J'ai déjà payé — Vérifier mon paiement
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
