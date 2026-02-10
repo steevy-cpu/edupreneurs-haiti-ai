@@ -48,7 +48,7 @@ async function getBazikToken(userID: string, secretKey: string): Promise<string>
 
   const data = await response.json();
   
-  const accessToken = data.token || data.access_token;
+  const accessToken = data.access_token || data.token;
   if (!accessToken) {
     console.error('No token in Bazik response:', data);
     throw new Error('No access token received from Bazik.io');
@@ -63,13 +63,9 @@ async function createBazikPayment(
   token: string,
   amount: number,
   orderId: string,
-  description: string,
-  successUrl: string,
-  errorUrl: string
-): Promise<{ redirectUrl: string; bazikOrderId?: string; transactionId?: string }> {
+  description: string
+): Promise<{ redirectUrl: string; bazikOrderId?: string }> {
   console.log(`Creating Bazik MonCash payment: amount=${amount}, orderId=${orderId}`);
-  console.log(`Success URL: ${successUrl}`);
-  console.log(`Error URL: ${errorUrl}`);
   
   const response = await fetch(`${BAZIK_API_BASE}/moncash/token`, {
     method: 'POST',
@@ -82,8 +78,6 @@ async function createBazikPayment(
       gdes: amount,
       description: description,
       referenceId: orderId,
-      successUrl: successUrl,
-      errorUrl: errorUrl,
     }),
   });
 
@@ -93,21 +87,22 @@ async function createBazikPayment(
     throw new Error(`Failed to create payment via Bazik.io: ${response.status}`);
   }
 
-  const data = await response.json();
-  console.log('Bazik payment response:', JSON.stringify(data));
+  const responseData = await response.json();
+  console.log('Bazik payment response:', JSON.stringify(responseData));
   
-  // Handle Bazik.io response format
-  const redirectUrl = data.redirectUrl || data.redirect_url || data.payment_url;
+  // Bazik.io nests payment data inside a `data` object:
+  // { success: true, data: { redirectUrl, orderId, referenceId, ... } }
+  const paymentData = responseData.data || responseData;
+  const redirectUrl = paymentData.redirectUrl || paymentData.redirect_url;
   
   if (!redirectUrl) {
-    console.error('No redirect URL in Bazik response:', data);
+    console.error('No redirect URL in Bazik response:', responseData);
     throw new Error('No redirect URL received from Bazik.io');
   }
 
   return {
     redirectUrl,
-    bazikOrderId: data.orderId,
-    transactionId: data.transactionId,
+    bazikOrderId: paymentData.orderId,
   };
 }
 
@@ -199,19 +194,12 @@ serve(async (req) => {
     // Step 1: Get Bazik.io access token
     const bazikToken = await getBazikToken(userID, secretKey);
 
-    // Build callback URLs using the published app URL
-    const baseUrl = 'https://edupreneurs-haiti-ai.lovable.app';
-    const successUrl = `${baseUrl}/payment/callback?orderId=${finalOrderId}`;
-    const errorUrl = `${baseUrl}/payment/callback?orderId=${finalOrderId}&error=true`;
-
-    // Step 2: Create payment via Bazik.io with callback URLs
-    const { redirectUrl, bazikOrderId, transactionId } = await createBazikPayment(
+    // Step 2: Create payment via Bazik.io
+    const { redirectUrl, bazikOrderId } = await createBazikPayment(
       bazikToken,
       amount,
       finalOrderId,
-      description || 'Edupreneurs Payment',
-      successUrl,
-      errorUrl
+      description || 'Edupreneurs Payment'
     );
     
     console.log('Payment created successfully, redirectUrl:', redirectUrl);
@@ -226,12 +214,11 @@ serve(async (req) => {
         currency: 'HTG',
         provider: 'moncash',
         status: 'pending',
-        payment_token: transactionId || finalOrderId,
+        payment_token: finalOrderId,
         description: description || 'Edupreneurs Payment',
         metadata: { 
           gateway: 'bazik.io',
-          bazikOrderId,  // Store Bazik's internal orderId
-          transactionId,
+          bazikOrderId,
         },
       });
 
