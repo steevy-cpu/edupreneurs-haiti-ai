@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,40 +20,29 @@ export default function PaymentCallback() {
   const [status, setStatus] = useState<PaymentStatus>('checking');
   const [attempts, setAttempts] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const verifiedRef = useRef(false);
+  const attemptsRef = useRef(0);
   
-  const orderId = searchParams.get('orderId');
+  // Bazik overwrites orderId with its own ID and puts our internal ID in referenceId
+  const internalOrderId = searchParams.get('referenceId') || searchParams.get('orderId');
+  const bazikOrderId = searchParams.get('orderId');
   const hasError = searchParams.get('error') === 'true';
   const maxAttempts = 10;
   const pollInterval = 3000; // 3 seconds
 
-  useEffect(() => {
-    if (!orderId) {
-      setStatus('error');
-      setErrorMessage('Aucun identifiant de commande trouvé');
-      return;
-    }
-
-    // Check if MonCash redirected with an error (user cancelled or gateway error)
-    if (hasError) {
-      setStatus('failed');
-      setErrorMessage('Le paiement a été annulé ou a échoué sur MonCash. Veuillez réessayer.');
-      return;
-    }
-
-    checkPaymentStatus();
-  }, [orderId, hasError]);
-
-  const checkPaymentStatus = async () => {
-    if (!orderId) return;
+  const checkPaymentStatus = useCallback(async () => {
+    if (!internalOrderId) return;
     
     try {
-      setAttempts(prev => prev + 1);
+      attemptsRef.current += 1;
+      setAttempts(attemptsRef.current);
 
-      // First, trigger verification with MonCash/Bazik API to update DB status
-      if (attempts === 0) {
-        console.log('Triggering payment verification with MonCash API...');
+      // First attempt only: trigger verification with Bazik/MonCash API to update DB status
+      if (!verifiedRef.current) {
+        verifiedRef.current = true;
+        console.log('Triggering payment verification with Bazik API...');
         const { error: verifyError } = await supabase.functions.invoke('moncash-verify-payment', {
-          body: { orderId }
+          body: { orderId: internalOrderId, bazikOrderId }
         });
         if (verifyError) {
           console.warn('Verification call failed, falling back to status check:', verifyError);
@@ -62,17 +51,16 @@ export default function PaymentCallback() {
 
       // Then check the status from DB
       const { data, error } = await supabase.functions.invoke('moncash-check-status', {
-        body: { orderId }
+        body: { orderId: internalOrderId }
       });
 
       if (error) {
         console.error('Status check error:', error);
-        if (attempts >= maxAttempts) {
+        if (attemptsRef.current >= maxAttempts) {
           setStatus('error');
           setErrorMessage('Impossible de vérifier le statut du paiement');
           return;
         }
-        // Retry after interval
         setTimeout(checkPaymentStatus, pollInterval);
         return;
       }
@@ -85,12 +73,10 @@ export default function PaymentCallback() {
         setStatus('failed');
         setErrorMessage(data?.transaction?.description || data?.error || 'Le paiement a échoué');
       } else if (paymentStatus === 'pending') {
-        // Still pending, continue polling if we haven't exceeded max attempts
-        if (attempts < maxAttempts) {
+        if (attemptsRef.current < maxAttempts) {
           setStatus('pending');
           setTimeout(checkPaymentStatus, pollInterval);
         } else {
-          // Max attempts reached, show pending state
           setStatus('pending');
         }
       } else {
@@ -99,18 +85,36 @@ export default function PaymentCallback() {
       }
     } catch (err) {
       console.error('Payment status check failed:', err);
-      if (attempts >= maxAttempts) {
+      if (attemptsRef.current >= maxAttempts) {
         setStatus('error');
         setErrorMessage('Erreur lors de la vérification du paiement');
       } else {
         setTimeout(checkPaymentStatus, pollInterval);
       }
     }
-  };
+  }, [internalOrderId, bazikOrderId]);
+
+  useEffect(() => {
+    if (!internalOrderId) {
+      setStatus('error');
+      setErrorMessage('Aucun identifiant de commande trouvé');
+      return;
+    }
+
+    if (hasError) {
+      setStatus('failed');
+      setErrorMessage('Le paiement a été annulé ou a échoué sur MonCash. Veuillez réessayer.');
+      return;
+    }
+
+    checkPaymentStatus();
+  }, [internalOrderId, hasError, checkPaymentStatus]);
 
   const handleRetry = () => {
     setStatus('checking');
+    attemptsRef.current = 0;
     setAttempts(0);
+    verifiedRef.current = false;
     setErrorMessage(null);
     checkPaymentStatus();
   };
