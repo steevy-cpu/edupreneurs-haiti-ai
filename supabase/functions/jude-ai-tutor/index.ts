@@ -8,7 +8,7 @@
  * 
  * OWASP: API4:2023 - Unrestricted Resource Consumption
  */
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
