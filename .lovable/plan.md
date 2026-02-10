@@ -1,107 +1,145 @@
 
 
-# Integrate Quizgecko API for Quiz and Activity Regeneration
+# Implement Quizgecko Integration (Ready for API Key)
 
 ## Overview
 
-Quizgecko's V2 API can generate quizzes from lesson text with French language support. We'll create a new edge function that acts as a Quizgecko adapter, and wire it into the existing batch regeneration system as an **alternative provider** alongside the current Lovable AI gateway.
+Build the complete Quizgecko integration now so everything is ready to use the moment you receive your API key. The system adds Quizgecko as an **opt-in alternative provider** alongside the existing Lovable AI for quiz generation/regeneration.
 
-## How Quizgecko API Works
+## What Gets Built
 
-The V2 API is **asynchronous**:
-1. `POST /api/v2/generate` -- sends lesson text, returns a course shell with an ID
-2. `GET /api/v2/courses/{id}/generation-status` -- poll until `completed`
-3. `GET /api/v2/quizzes/{quizId}` -- fetch the generated quiz with questions
+### 1. New Edge Function: `generate-quiz-quizgecko`
 
-Key options: `language: "fr"`, `question_type: "multiple_choice"`, `difficulty`, `number_of_questions`.
+**File:** `supabase/functions/generate-quiz-quizgecko/index.ts`
 
-## Prerequisites
+- Accepts the same input shape as `generate-quiz-final` (lessonTitle, contenu, exemplesExercices, gradeLevel, subject)
+- Calls Quizgecko V2 API:
+  1. `POST https://quizgecko.com/api/v2/generate` with lesson text, `language: "fr"`, `question_type: "multiple_choice"`
+  2. Polls `GET /api/v2/courses/{id}/generation-status` every 2s until `completed` (max 60s timeout)
+  3. Fetches quiz via `GET /api/v2/quizzes/{quizId}`
+- Transforms Quizgecko's JSON response into your canonical HTML format (`quiz-container` / `quiz-question` / `data-correct`)
+- Returns `{ quizContent: string }` -- identical to `generate-quiz-final`
+- Uses `QUIZGECKO_API_KEY` from secrets (graceful error if not set)
+- Includes input validation with Zod, CORS headers, security headers from `_shared/securityHeaders.ts`
 
-1. **Quizgecko Account with API Access** -- You need to sign up at quizgecko.com and contact them for API access (their page says "Please contact us to get access"). API access appears to require a paid plan (Premium at $10/mo or Ultra at $23/mo).
-2. **API Key** -- Once approved, you generate a Bearer token from your Quizgecko dashboard.
-3. **Secret Storage** -- The API key will be stored as a backend secret (`QUIZGECKO_API_KEY`).
+**Config:** Add `[functions.generate-quiz-quizgecko]` with `verify_jwt = false` to `supabase/config.toml`
 
-## Implementation Plan
+### 2. Add `QuizProvider` Type
 
-### Step 1: Store the Quizgecko API Key
-- Use the secret storage system to securely save the `QUIZGECKO_API_KEY`
+**File:** `src/features/content-editor/batch-operations/types.ts`
 
-### Step 2: Create `generate-quiz-quizgecko` Edge Function
-A new edge function that:
-- Receives the same inputs as `generate-quiz-final` (lesson title, content, grade level, subject, language)
-- Calls Quizgecko's `POST /api/v2/generate` with the lesson content as `text`, setting `options.language = "fr"` and `options.question_type = "multiple_choice"`
-- Polls `GET /api/v2/courses/{id}/generation-status` until complete (with timeout)
-- Fetches the generated quiz via `GET /api/v2/quizzes/{quizId}`
-- **Transforms** the Quizgecko response into your existing HTML quiz format (`quiz-container` / `quiz-question` / `data-correct` structure)
-- Returns `{ quizContent: string }` -- identical shape to `generate-quiz-final`
-
-### Step 3: Update Quiz Regenerator Config
-Modify `quizRegenerator.ts` to accept a `provider` parameter:
-- `provider: 'lovable'` (default) -- uses current `generate-quiz-final`
-- `provider: 'quizgecko'` -- uses new `generate-quiz-quizgecko`
-
-The `processLesson` function will call the appropriate edge function based on the selected provider.
-
-### Step 4: Update Quiz Generator Config
-Same provider toggle for `quizGenerator.ts` (missing quiz generation).
-
-### Step 5: Add Provider Selection to Batch Dialog UI
-Add a simple radio toggle in `BatchOperationDialog` when the operation is quiz-related:
-- "Lovable AI" (default)
-- "Quizgecko"
-
-This selection is passed down to the config's `processLesson`.
-
-### Step 6: Update `SectionGenerator` (Optional)
-Add the same provider choice to the single-lesson quiz generation dialog for consistency.
-
-## Quizgecko Response to Your HTML Format -- Transformation
-
-Quizgecko returns structured question data. The edge function will map it:
-
-```text
-Quizgecko question -> Your HTML format:
-{
-  "question": "...",           ->  <div class="quiz-question" data-number="N">
-  "answers": [                 ->    <div class="quiz-options">
-    {"text": "...", correct}   ->      <div class="option" data-answer="A">A) ...</div>
-  ]                            ->    </div>
-  "explanation": "..."         ->    <div class="correct-answer" data-correct="X">...</div>
-}                              ->  </div>
+Add a new type:
+```typescript
+export type QuizProvider = 'lovable' | 'quizgecko';
 ```
 
-## Rate Limiting Considerations
+Update `BatchOperationConfig` to accept an optional provider, and update factory function signatures to accept `provider` parameter.
 
-- Quizgecko API has its own rate limits tied to your plan
-- The async polling model adds latency (~5-15s per quiz generation)
-- Batch operations will use `rateLimit: 3000` (3s) for Quizgecko to avoid hitting their limits
-- Concurrency stays at 1 for Quizgecko provider to be safe
+### 3. Update Quiz Regenerator
 
-## Files to Create/Modify
+**File:** `src/features/content-editor/batch-operations/regenerators/quizRegenerator.ts`
 
-| File | Action | Description |
-|------|--------|-------------|
-| `supabase/functions/generate-quiz-quizgecko/index.ts` | Create | New edge function wrapping Quizgecko API |
-| `src/features/content-editor/batch-operations/regenerators/quizRegenerator.ts` | Modify | Add provider parameter support |
-| `src/features/content-editor/batch-operations/generators/quizGenerator.ts` | Modify | Add provider parameter support |
-| `src/features/content-editor/batch-operations/types.ts` | Modify | Add `provider` field to config/context |
-| `src/features/content-editor/batch-operations/BatchOperationDialog.tsx` | Modify | Add provider toggle UI for quiz operations |
+- `createQuizRegeneratorConfig` accepts `provider: QuizProvider = 'lovable'`
+- When `provider === 'quizgecko'`, `processLesson` calls `generate-quiz-quizgecko` instead of `generate-quiz-final`
+- Rate limit increases from 1500ms to 3000ms for Quizgecko
+- Concurrency drops from 2 to 1 for Quizgecko
+
+### 4. Update Quiz Generator
+
+**File:** `src/features/content-editor/batch-operations/generators/quizGenerator.ts`
+
+- Same provider parameter pattern as the regenerator
+- `createQuizGeneratorConfig(provider)` routes to appropriate edge function
+
+### 5. Update Wrapper Components with Provider State
+
+**Files:**
+- `src/features/content-editor/batch-operations/wrappers/BatchQuizRegenerator.tsx`
+- `src/features/content-editor/batch-operations/wrappers/BatchQuizGeneratorNew.tsx`
+
+- Add `useState<QuizProvider>('lovable')` for provider selection
+- Pass provider to `createQuizRegeneratorConfig(provider)` / `createQuizGeneratorConfig(provider)`
+- Rebuild config with `useMemo` when provider changes
+
+### 6. Add Provider Toggle to Batch Dialog
+
+**File:** `src/features/content-editor/batch-operations/components/BatchOperationDialog.tsx`
+
+- Add optional `provider` / `onProviderChange` props
+- When `contentType === 'quiz'` and props are provided, show a simple radio group in the dialog:
+  - "Lovable AI" (default)
+  - "Quizgecko"
+- Compact UI using existing Radix RadioGroup, placed above the stats bar
+
+### 7. Export Updates
+
+**File:** `src/features/content-editor/batch-operations/index.ts`
+
+- Export `QuizProvider` type
+
+## HTML Transformation Logic (Edge Function)
+
+```text
+Quizgecko API response:
+{
+  "questions": [
+    {
+      "question_text": "...",
+      "answer_options": [
+        { "option_text": "...", "is_correct": true/false }
+      ],
+      "explanation": "..."
+    }
+  ]
+}
+
+Transforms to:
+<div class="quiz-container">
+  <div class="quiz-question" data-number="1">
+    <h3>Question 1</h3>
+    <p>{question_text}</p>
+    <div class="quiz-options">
+      <div class="option" data-answer="A">A) {option_text}</div>
+      <div class="option" data-answer="B">B) {option_text}</div>
+      <div class="option" data-answer="C">C) {option_text}</div>
+      <div class="option" data-answer="D">D) {option_text}</div>
+    </div>
+    <div class="correct-answer" data-correct="{correct_letter}">
+      <p><strong>Reponse correcte: {correct_letter}</strong></p>
+      <p>{explanation}</p>
+    </div>
+  </div>
+</div>
+```
+
+## Files Summary
+
+| File | Action |
+|------|--------|
+| `supabase/functions/generate-quiz-quizgecko/index.ts` | Create |
+| `supabase/config.toml` | Add function config entry |
+| `src/features/content-editor/batch-operations/types.ts` | Add `QuizProvider` type |
+| `src/features/content-editor/batch-operations/regenerators/quizRegenerator.ts` | Add provider param |
+| `src/features/content-editor/batch-operations/generators/quizGenerator.ts` | Add provider param |
+| `src/features/content-editor/batch-operations/wrappers/BatchQuizRegenerator.tsx` | Add provider state |
+| `src/features/content-editor/batch-operations/wrappers/BatchQuizGeneratorNew.tsx` | Add provider state |
+| `src/features/content-editor/batch-operations/components/BatchOperationDialog.tsx` | Add provider toggle UI |
+| `src/features/content-editor/batch-operations/index.ts` | Export QuizProvider |
+
+## When You Get the API Key
+
+Once Quizgecko approves your access:
+1. We store the `QUIZGECKO_API_KEY` as a backend secret
+2. The toggle in the batch dialog immediately becomes functional
+3. No code changes needed -- everything is already wired up
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- Lovable AI remains the default; Quizgecko is opt-in |
-| Works with existing HTML quiz format? | Yes -- transformation layer maps to canonical structure |
-| 3G optimized? | Yes -- polling happens server-side in edge function, client gets single response |
-| Backward compatible? | Yes -- no changes to database schema, same `quiz_final` field |
-| Handles API failures? | Yes -- falls back gracefully with error messages |
-| Rate limit safe? | Yes -- increased delay and concurrency=1 for Quizgecko |
-
-## Important Note
-
-Before implementation, you need to:
-1. Create a Quizgecko account at quizgecko.com
-2. Contact them to request API access (their docs say "Please contact us to get access")
-3. Once you have the API key, we'll store it securely and proceed with the implementation
+| Breaks existing functionality? | No -- Lovable AI is default, Quizgecko is opt-in toggle |
+| Works with existing data? | Yes -- same `quiz_final` HTML field, same format |
+| 3G optimized? | Yes -- polling is server-side, client gets single response |
+| Backward compatible? | Yes -- no DB schema changes |
+| Edge cases? | API key missing = clear error; timeout = graceful failure; empty response = handled |
 
