@@ -5,7 +5,8 @@ import type {
   BatchOperationTheme, 
   BatchDialogConfig,
   BatchLesson,
-  OperationResult
+  OperationResult,
+  QuizProvider
 } from "../types";
 
 // Theme for quiz generation
@@ -29,8 +30,8 @@ export const quizGeneratorDialogConfig: BatchDialogConfig = {
 };
 
 // Factory function for quiz generator config
-export const createQuizGeneratorConfig = (): BatchOperationConfig => ({
-  operationType: 'regenerate', // Generation is similar to regeneration
+export const createQuizGeneratorConfig = (provider: QuizProvider = 'lovable'): BatchOperationConfig => ({
+  operationType: 'regenerate',
   contentType: 'quiz',
   
   filterLesson: (lesson: BatchLesson, _skipCompleted: boolean) => {
@@ -50,8 +51,9 @@ export const createQuizGeneratorConfig = (): BatchOperationConfig => ({
       throw new Error('Erreur de chargement');
     }
 
-    // Call the generate-quiz-final edge function
-    const { data, error } = await supabase.functions.invoke('generate-quiz-final', {
+    const edgeFunctionName = provider === 'quizgecko' ? 'generate-quiz-quizgecko' : 'generate-quiz-final';
+
+    const { data, error } = await supabase.functions.invoke(edgeFunctionName, {
       body: {
         lessonTitle: lesson.title,
         lessonSlug: lesson.slug,
@@ -110,7 +112,7 @@ export const createQuizGeneratorConfig = (): BatchOperationConfig => ({
     pauseInfo: "Génération annulée. Progrès sauvegardé.",
   },
   
-  rateLimit: 1500, // 1.5s delay for 3G optimization
+  rateLimit: provider === 'quizgecko' ? 3000 : 1500,
 });
 
 // Helper function to check if a lesson has a valid quiz

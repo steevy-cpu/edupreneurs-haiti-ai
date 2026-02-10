@@ -1,6 +1,6 @@
 import { RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import type { BatchOperationConfig, BatchLesson, OperationResult, BatchOperationTheme, BatchDialogConfig } from "../types";
+import type { BatchOperationConfig, BatchLesson, OperationResult, BatchOperationTheme, BatchDialogConfig, QuizProvider } from "../types";
 
 // Quiz regenerator theme
 export const quizRegeneratorTheme: BatchOperationTheme = {
@@ -23,11 +23,11 @@ export const quizRegeneratorDialogConfig: BatchDialogConfig = {
 };
 
 // Create quiz regenerator config
-export const createQuizRegeneratorConfig = (): BatchOperationConfig => ({
+export const createQuizRegeneratorConfig = (provider: QuizProvider = 'lovable'): BatchOperationConfig => ({
   operationType: 'regenerate',
   contentType: 'quiz',
-  rateLimit: 1500,
-  concurrency: 2,
+  rateLimit: provider === 'quizgecko' ? 3000 : 1500,
+  concurrency: provider === 'quizgecko' ? 1 : 2,
   theme: quizRegeneratorTheme,
   messages: {
     empty: "Aucun quiz à régénérer!",
@@ -53,8 +53,9 @@ export const createQuizRegeneratorConfig = (): BatchOperationConfig => ({
 
     if (fetchError) throw new Error('Erreur de chargement');
 
-    // Call quiz generation edge function
-    const { data, error } = await supabase.functions.invoke('generate-quiz-final', {
+    const edgeFunctionName = provider === 'quizgecko' ? 'generate-quiz-quizgecko' : 'generate-quiz-final';
+
+    const { data, error } = await supabase.functions.invoke(edgeFunctionName, {
       body: {
         lessonTitle: lesson.title,
         contenu: fullLesson.contenu || '',

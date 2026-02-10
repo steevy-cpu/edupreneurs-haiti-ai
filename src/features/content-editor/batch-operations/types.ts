@@ -44,6 +44,7 @@ export interface OperationStats {
 
 export type OperationType = 'validate' | 'regenerate';
 export type ContentType = 'quiz' | 'activities';
+export type QuizProvider = 'lovable' | 'quizgecko';
 
 export interface BatchOperationTheme {
   color: 'amber' | 'purple' | 'primary' | 'destructive';
