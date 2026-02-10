@@ -1,102 +1,73 @@
 
 
-# Critical Bugs in MonCash Post-Payment Flow
+# Payment System Structural Hardening
 
 ## Issues Found
 
-### Bug 1: Wrong `orderId` from redirect URL (CRITICAL)
+### Issue 1: `.single()` crash risk in `moncash-check-status` (HIGH)
+`moncash-check-status/index.ts` line 87 uses `.single()` which throws an error if no row is found. Per project rules, this must be `.maybeSingle()`. If a user lands on the callback with a mismatched orderId, the function crashes with a Postgres error instead of returning a clean 404.
 
-From your test, Bazik.io redirected to:
-```
-https://...supabase.co/?orderId=BZK_production_73ec3c80_...&referenceId=EDU-MLH1DIAF-F9NIVC
-```
+**Fix:** Replace `.single()` with `.maybeSingle()` and handle `null` result gracefully.
 
-Bazik **overwrites** the query parameters in the returnUrl with its own:
-- `orderId` = Bazik's internal ID (`BZK_production_...`)
-- `referenceId` = Our internal ID (`EDU-...`)
+### Issue 2: Dead MonCash fallback code in `moncash-verify-payment` (MEDIUM)
+Lines 160-218 of `moncash-verify-payment` attempt a "direct MonCash API" fallback using `clientId`/`clientSecret`. But these are **Bazik.io credentials**, not MonCash credentials. The MonCash API requires separate `client_id`/`client_secret` from the Digicel portal. This fallback will silently fail every time -- it is dead code that adds complexity and false confidence.
 
-But `PaymentCallback.tsx` reads `orderId` from the URL:
-```typescript
-const orderId = searchParams.get('orderId');
-// Gets: "BZK_production_73ec3c80_..." (Bazik's ID)
-// Expected: "EDU-MLH1DIAF-F9NIVC" (our internal ID)
-```
+**Fix:** Remove the entire direct MonCash fallback block. Bazik.io is the sole payment gateway; the verify function should only use Bazik's API. If Bazik fails, return `unknown` and let the polling retry.
 
-Then it passes this Bazik orderId to `moncash-check-status`, which looks up:
-```typescript
-.eq('order_id', orderId)  // Looking for "BZK_production_..."
-// But our DB stores "EDU-MLH1DIAF-F9NIVC"
-// Result: Transaction NOT FOUND
-```
+### Issue 3: Duplicated `getBazikToken` function (LOW)
+`getBazikToken` is copy-pasted identically in `moncash-create-payment` and `moncash-verify-payment`. This violates DRY and means any future fix must be applied in two places.
 
-**Fix:** Read `referenceId` as fallback (that's our internal ID):
-```typescript
-const orderId = searchParams.get('referenceId') || searchParams.get('orderId');
-```
+**Fix:** Extract to `_shared/bazik.ts` and import from both functions.
 
----
+### Issue 4: `moncash-verify-payment` has no authentication (MEDIUM)
+The verify function uses `SUPABASE_SERVICE_ROLE_KEY` (admin access) and has no auth check. Any unauthenticated request can trigger payment verification and update transaction statuses. While the damage is limited (it can only mark things as completed if Bazik confirms), it's an unnecessary attack surface.
 
-### Bug 2: Stale closure on `attempts` causes repeated verification calls
+**Fix:** Add optional auth validation -- if an auth header is present, validate it. If not, still allow the call (needed for the redirect flow where the session may not be attached), but log it.
 
-In `PaymentCallback.tsx`:
-```typescript
-const checkPaymentStatus = async () => {
-  setAttempts(prev => prev + 1);
-  if (attempts === 0) {  // <-- stale closure!
-    // Triggers moncash-verify-payment
-  }
-  // ...
-  setTimeout(checkPaymentStatus, pollInterval); // same closure, attempts still 0
-};
-```
+### Issue 5: Console logs left in production paths (LOW)
+Both edge functions have `console.log` statements logging full payment responses including potentially sensitive data (payer phone, amounts). Per project rules, production-critical paths should minimize logging.
 
-Every retry call reuses the same function closure where `attempts` is always `0`. This means `moncash-verify-payment` gets called on **every single retry** (up to 10 times), not just once. This wastes API calls and could trigger rate limiting.
-
-**Fix:** Use a ref to track whether verification has been triggered:
-```typescript
-const verifiedRef = useRef(false);
-// ...
-if (!verifiedRef.current) {
-  verifiedRef.current = true;
-  // call moncash-verify-payment
-}
-```
-
----
-
-### Bug 3: Verify function uses wrong API for Bazik-created payments (RISK)
-
-The `moncash-verify-payment` function talks directly to MonCash's API (`moncashbutton.digicelgroup.com/Api/v1/RetrieveOrderPayment`), but the payment was created through Bazik.io. MonCash may not recognize the orderId (whether it's our `EDU-...` or Bazik's `BZK_...`).
-
-**Fix:** The verify function should also check Bazik.io's API for payment status, or at minimum, we should confirm whether MonCash recognizes the Bazik-assigned orderId. For now, we should add a Bazik verification fallback.
+**Fix:** Reduce to essential status logs only, remove response body dumps.
 
 ---
 
 ## Plan
 
-### File 1: `src/pages/PaymentCallback.tsx`
-1. Read `referenceId` from URL as primary source (our internal ID), fall back to `orderId`
-2. Replace stale closure with a `useRef` to ensure verification only triggers once
-3. Pass both `orderId` (Bazik's) and `referenceId` (ours) to verify function for maximum compatibility
+### File 1: `supabase/functions/_shared/bazik.ts` (NEW)
+Extract shared Bazik utilities:
+- `BAZIK_API_BASE` constant
+- `getBazikToken(userID, secretKey)` function
+- `getMonCashCredentials(mode)` helper that returns the correct client ID and secret key based on mode
 
-### File 2: `supabase/functions/moncash-verify-payment/index.ts`
-1. Accept both `orderId` and `bazikOrderId` parameters
-2. Try Bazik.io verification endpoint first (since payment was created via Bazik)
-3. Fall back to direct MonCash API if Bazik doesn't provide status
-4. Look up the transaction in DB using our internal `referenceId`/`order_id`
+### File 2: `supabase/functions/moncash-create-payment/index.ts`
+- Import `getBazikToken` and `getMonCashCredentials` from `_shared/bazik.ts`
+- Remove local `getBazikToken` function
+- Remove local credential selection logic (replaced by shared helper)
 
-### File 3: `supabase/functions/moncash-create-payment/index.ts`
-No changes needed -- the `returnUrl` fix is already in place.
+### File 3: `supabase/functions/moncash-verify-payment/index.ts`
+- Import `getBazikToken` and `getMonCashCredentials` from `_shared/bazik.ts`
+- Remove local `getBazikToken` function
+- **Remove the entire direct MonCash API fallback block** (lines 160-218) -- dead code
+- Remove local credential selection logic
+- Clean up excessive console.log statements
+
+### File 4: `supabase/functions/moncash-check-status/index.ts`
+- Change `.single()` to `.maybeSingle()` on line 87
+- Handle `null` transaction with a proper 404 response
+
+### No changes needed:
+- `PaymentCallback.tsx` -- the recent fixes (referenceId priority, useRef for single verification) are solid
+- `PaymentDemo.tsx` -- the "J'ai deja paye" button correctly passes our internal `orderId` which PaymentCallback reads via the fallback path
 
 ---
 
 ## Safety Verification
 
-| Check | Status |
+| Check | Result |
 |-------|--------|
-| Breaks existing functionality? | No -- "J'ai deja paye" manual flow unaffected |
-| Works with existing data? | Yes -- pending transactions use our internal EDU- orderId |
+| Breaks existing functionality? | No -- only removing dead code and fixing crash risk |
+| Works with existing data? | Yes -- no schema changes |
 | Backward compatible? | Yes |
-| 3G optimized? | Yes -- eliminates 9 unnecessary API calls from retry bug |
-| Edge cases handled? | Yes -- falls back gracefully if Bazik params missing |
+| 3G optimized? | Yes -- removing dead fallback code reduces edge function execution time |
+| Edge cases handled? | Yes -- `.maybeSingle()` handles missing transactions gracefully |
 
