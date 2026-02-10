@@ -30,6 +30,17 @@ interface Plan {
 
 const plans: Plan[] = [
   {
+    id: 'test',
+    name: 'Test',
+    price: 25,
+    period: 'unique',
+    features: [
+      'Plan de test (25 HTG)',
+      'Vérifier le flux de paiement',
+      'Aucun abonnement'
+    ]
+  },
+  {
     id: 'starter',
     name: 'Starter',
     price: 0,
