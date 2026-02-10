@@ -1,92 +1,107 @@
 
 
-# Fix Word of the Day — Deterministic Date-Based Rotation
+# Integrate Quizgecko API for Quiz and Activity Regeneration
 
-## Root Cause
+## Overview
 
-The current system relies on a **mutable global counter** (`app_settings.word_of_day`) that every authenticated client can overwrite. This causes:
+Quizgecko's V2 API can generate quizzes from lesson text with French language support. We'll create a new edge function that acts as a Quizgecko adapter, and wire it into the existing batch regeneration system as an **alternative provider** alongside the current Lovable AI gateway.
 
-1. **Race condition**: Multiple users logging in on the same day each independently compute and write the "next word," overwriting each other
-2. **Login/logout instability**: The `useEffect` depends on `isVisitor`, so every auth state change re-triggers the rotation logic, potentially writing a different order
-3. **Evidence**: Today's `app_settings` says `last_order: 1` (Ephemere), but `user_daily_word` tracking shows users saw words at order 3 and 4 — the counter was overwritten multiple times
+## How Quizgecko API Works
 
-## Solution: Deterministic Rotation (Zero Writes)
+The V2 API is **asynchronous**:
+1. `POST /api/v2/generate` -- sends lesson text, returns a course shell with an ID
+2. `GET /api/v2/courses/{id}/generation-status` -- poll until `completed`
+3. `GET /api/v2/quizzes/{quizId}` -- fetch the generated quiz with questions
 
-Replace the mutable counter with a **pure math formula**. Every client computes the same word for the same date, with zero database writes needed:
+Key options: `language: "fr"`, `question_type: "multiple_choice"`, `difficulty`, `number_of_questions`.
+
+## Prerequisites
+
+1. **Quizgecko Account with API Access** -- You need to sign up at quizgecko.com and contact them for API access (their page says "Please contact us to get access"). API access appears to require a paid plan (Premium at $10/mo or Ultra at $23/mo).
+2. **API Key** -- Once approved, you generate a Bearer token from your Quizgecko dashboard.
+3. **Secret Storage** -- The API key will be stored as a backend secret (`QUIZGECKO_API_KEY`).
+
+## Implementation Plan
+
+### Step 1: Store the Quizgecko API Key
+- Use the secret storage system to securely save the `QUIZGECKO_API_KEY`
+
+### Step 2: Create `generate-quiz-quizgecko` Edge Function
+A new edge function that:
+- Receives the same inputs as `generate-quiz-final` (lesson title, content, grade level, subject, language)
+- Calls Quizgecko's `POST /api/v2/generate` with the lesson content as `text`, setting `options.language = "fr"` and `options.question_type = "multiple_choice"`
+- Polls `GET /api/v2/courses/{id}/generation-status` until complete (with timeout)
+- Fetches the generated quiz via `GET /api/v2/quizzes/{quizId}`
+- **Transforms** the Quizgecko response into your existing HTML quiz format (`quiz-container` / `quiz-question` / `data-correct` structure)
+- Returns `{ quizContent: string }` -- identical shape to `generate-quiz-final`
+
+### Step 3: Update Quiz Regenerator Config
+Modify `quizRegenerator.ts` to accept a `provider` parameter:
+- `provider: 'lovable'` (default) -- uses current `generate-quiz-final`
+- `provider: 'quizgecko'` -- uses new `generate-quiz-quizgecko`
+
+The `processLesson` function will call the appropriate edge function based on the selected provider.
+
+### Step 4: Update Quiz Generator Config
+Same provider toggle for `quizGenerator.ts` (missing quiz generation).
+
+### Step 5: Add Provider Selection to Batch Dialog UI
+Add a simple radio toggle in `BatchOperationDialog` when the operation is quiz-related:
+- "Lovable AI" (default)
+- "Quizgecko"
+
+This selection is passed down to the config's `processLesson`.
+
+### Step 6: Update `SectionGenerator` (Optional)
+Add the same provider choice to the single-lesson quiz generation dialog for consistency.
+
+## Quizgecko Response to Your HTML Format -- Transformation
+
+Quizgecko returns structured question data. The edge function will map it:
 
 ```text
-word_index = (days_since_reference_date % total_word_count) + 1
+Quizgecko question -> Your HTML format:
+{
+  "question": "...",           ->  <div class="quiz-question" data-number="N">
+  "answers": [                 ->    <div class="quiz-options">
+    {"text": "...", correct}   ->      <div class="option" data-answer="A">A) ...</div>
+  ]                            ->    </div>
+  "explanation": "..."         ->    <div class="correct-answer" data-correct="X">...</div>
+}                              ->  </div>
 ```
 
-- Reference date: a fixed date (e.g., 2026-01-01)
-- Total word count: 15 (current active words)
-- Feb 9 = day 39 since Jan 1 -> 39 % 15 = 9 -> display_order 10 (Apotheose)
-- Feb 10 = day 40 -> 40 % 15 = 10 -> display_order 11
+## Rate Limiting Considerations
 
-This is deterministic: same date always produces the same word, regardless of who logs in first, how many times, or in what order.
+- Quizgecko API has its own rate limits tied to your plan
+- The async polling model adds latency (~5-15s per quiz generation)
+- Batch operations will use `rateLimit: 3000` (3s) for Quizgecko to avoid hitting their limits
+- Concurrency stays at 1 for Quizgecko provider to be safe
 
-## What Changes
+## Files to Create/Modify
 
-### `src/hooks/useWordOfTheDay.ts` — Major refactor
-
-**Remove:**
-- All `app_settings` reads (the `word_of_day` key query)
-- The `update_app_setting` RPC call
-- The `needsUpdate` / `lastDate` / `lastOrder` tracking logic
-- The max display_order query
-- The `isVisitor` dependency from useEffect (word selection no longer depends on auth state)
-
-**Add:**
-- A `computeDisplayOrder(haitiDate, totalWords)` pure function that returns the display_order for today
-- A single query to get `count(*)` of active words (cacheable, rarely changes)
-
-**Keep:**
-- localStorage cache for 3G optimization (same key, same logic)
-- Audio playback (unchanged)
-- `user_daily_word` tracking for analytics (unchanged, still authenticated-only)
-- Deferred audio for slow connections (unchanged)
-
-### Simplified Flow
-
-```text
-1. Check localStorage cache -> if today's date matches, use cached word
-2. Query: SELECT count(*) FROM daily_words WHERE is_active = true
-3. Compute: display_order = (daysSince(2026-01-01, haitiDate) % count) + 1
-4. Query: SELECT * FROM daily_words WHERE display_order = {computed} AND is_active = true
-5. Cache result in localStorage
-6. (Authenticated only) Track in user_daily_word
-```
-
-### useEffect Dependencies
-
-Current: `[isVisitor, shouldDeferAudio]` — causes re-runs on login/logout
-
-New: `[shouldDeferAudio]` — only re-runs if network conditions change. Auth state is checked inside the effect for the tracking step, not as a trigger.
-
-## Files Modified
-
-| File | Change |
-|------|--------|
-| `src/hooks/useWordOfTheDay.ts` | Replace mutable counter with deterministic date formula; remove `app_settings` dependency; remove `isVisitor` from useEffect deps |
-
-## What We Do NOT Change
-
-- `app_settings` table stays (other features may use it)
-- `update_app_setting` RPC stays (other settings may need it)
-- `user_daily_word` tracking stays (analytics)
-- Audio playback logic stays (working correctly)
-- `WordOfTheDayCard.tsx` stays (no prop changes)
-- localStorage cache key stays (`cached_daily_word_v3`)
+| File | Action | Description |
+|------|--------|-------------|
+| `supabase/functions/generate-quiz-quizgecko/index.ts` | Create | New edge function wrapping Quizgecko API |
+| `src/features/content-editor/batch-operations/regenerators/quizRegenerator.ts` | Modify | Add provider parameter support |
+| `src/features/content-editor/batch-operations/generators/quizGenerator.ts` | Modify | Add provider parameter support |
+| `src/features/content-editor/batch-operations/types.ts` | Modify | Add `provider` field to config/context |
+| `src/features/content-editor/batch-operations/BatchOperationDialog.tsx` | Modify | Add provider toggle UI for quiz operations |
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No — same word displayed, same UI, same audio |
-| Race conditions? | Eliminated — pure math, no writes for rotation |
-| Login/logout stability? | Fixed — word computation no longer depends on auth state |
-| Works with existing 15 words? | Yes — `(daysSince % 15) + 1` covers all display_orders 1-15 |
-| 3G optimized? | Better — removed 1 query (app_settings) and 1 RPC call (update_app_setting) |
-| Backward compatible? | Yes — localStorage cache from previous version gracefully handled |
-| Visitor mode? | Still works — visitors see the same deterministic word, just no tracking |
+| Breaks existing functionality? | No -- Lovable AI remains the default; Quizgecko is opt-in |
+| Works with existing HTML quiz format? | Yes -- transformation layer maps to canonical structure |
+| 3G optimized? | Yes -- polling happens server-side in edge function, client gets single response |
+| Backward compatible? | Yes -- no changes to database schema, same `quiz_final` field |
+| Handles API failures? | Yes -- falls back gracefully with error messages |
+| Rate limit safe? | Yes -- increased delay and concurrency=1 for Quizgecko |
+
+## Important Note
+
+Before implementation, you need to:
+1. Create a Quizgecko account at quizgecko.com
+2. Contact them to request API access (their docs say "Please contact us to get access")
+3. Once you have the API key, we'll store it securely and proceed with the implementation
 
