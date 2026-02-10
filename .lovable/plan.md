@@ -1,145 +1,87 @@
 
 
-# Implement Quizgecko Integration (Ready for API Key)
+# Fix MonCash/Bazik.io Integration Bugs
 
-## Overview
+## Critical Issues Found
 
-Build the complete Quizgecko integration now so everything is ready to use the moment you receive your API key. The system adds Quizgecko as an **opt-in alternative provider** alongside the existing Lovable AI for quiz generation/regeneration.
+Comparing the current code against the Bazik API documentation you provided, there are **2 critical bugs** that would prevent payments from working:
 
-## What Gets Built
+### Bug 1: Payment Response Parsing (CRITICAL)
 
-### 1. New Edge Function: `generate-quiz-quizgecko`
-
-**File:** `supabase/functions/generate-quiz-quizgecko/index.ts`
-
-- Accepts the same input shape as `generate-quiz-final` (lessonTitle, contenu, exemplesExercices, gradeLevel, subject)
-- Calls Quizgecko V2 API:
-  1. `POST https://quizgecko.com/api/v2/generate` with lesson text, `language: "fr"`, `question_type: "multiple_choice"`
-  2. Polls `GET /api/v2/courses/{id}/generation-status` every 2s until `completed` (max 60s timeout)
-  3. Fetches quiz via `GET /api/v2/quizzes/{quizId}`
-- Transforms Quizgecko's JSON response into your canonical HTML format (`quiz-container` / `quiz-question` / `data-correct`)
-- Returns `{ quizContent: string }` -- identical to `generate-quiz-final`
-- Uses `QUIZGECKO_API_KEY` from secrets (graceful error if not set)
-- Includes input validation with Zod, CORS headers, security headers from `_shared/securityHeaders.ts`
-
-**Config:** Add `[functions.generate-quiz-quizgecko]` with `verify_jwt = false` to `supabase/config.toml`
-
-### 2. Add `QuizProvider` Type
-
-**File:** `src/features/content-editor/batch-operations/types.ts`
-
-Add a new type:
-```typescript
-export type QuizProvider = 'lovable' | 'quizgecko';
-```
-
-Update `BatchOperationConfig` to accept an optional provider, and update factory function signatures to accept `provider` parameter.
-
-### 3. Update Quiz Regenerator
-
-**File:** `src/features/content-editor/batch-operations/regenerators/quizRegenerator.ts`
-
-- `createQuizRegeneratorConfig` accepts `provider: QuizProvider = 'lovable'`
-- When `provider === 'quizgecko'`, `processLesson` calls `generate-quiz-quizgecko` instead of `generate-quiz-final`
-- Rate limit increases from 1500ms to 3000ms for Quizgecko
-- Concurrency drops from 2 to 1 for Quizgecko
-
-### 4. Update Quiz Generator
-
-**File:** `src/features/content-editor/batch-operations/generators/quizGenerator.ts`
-
-- Same provider parameter pattern as the regenerator
-- `createQuizGeneratorConfig(provider)` routes to appropriate edge function
-
-### 5. Update Wrapper Components with Provider State
-
-**Files:**
-- `src/features/content-editor/batch-operations/wrappers/BatchQuizRegenerator.tsx`
-- `src/features/content-editor/batch-operations/wrappers/BatchQuizGeneratorNew.tsx`
-
-- Add `useState<QuizProvider>('lovable')` for provider selection
-- Pass provider to `createQuizRegeneratorConfig(provider)` / `createQuizGeneratorConfig(provider)`
-- Rebuild config with `useMemo` when provider changes
-
-### 6. Add Provider Toggle to Batch Dialog
-
-**File:** `src/features/content-editor/batch-operations/components/BatchOperationDialog.tsx`
-
-- Add optional `provider` / `onProviderChange` props
-- When `contentType === 'quiz'` and props are provided, show a simple radio group in the dialog:
-  - "Lovable AI" (default)
-  - "Quizgecko"
-- Compact UI using existing Radix RadioGroup, placed above the stats bar
-
-### 7. Export Updates
-
-**File:** `src/features/content-editor/batch-operations/index.ts`
-
-- Export `QuizProvider` type
-
-## HTML Transformation Logic (Edge Function)
+The Bazik API returns payment data nested inside a `data` object:
 
 ```text
-Quizgecko API response:
+Actual Bazik response:
 {
-  "questions": [
-    {
-      "question_text": "...",
-      "answer_options": [
-        { "option_text": "...", "is_correct": true/false }
-      ],
-      "explanation": "..."
-    }
-  ]
+  "success": true,
+  "data": {
+    "userID": "bzk_...",
+    "referenceId": "...",
+    "orderId": "BZK_production_...",
+    "redirectUrl": "https://moncashbutton.digicelgroup.com/...",
+    "receiver": "95"
+  }
 }
 
-Transforms to:
-<div class="quiz-container">
-  <div class="quiz-question" data-number="1">
-    <h3>Question 1</h3>
-    <p>{question_text}</p>
-    <div class="quiz-options">
-      <div class="option" data-answer="A">A) {option_text}</div>
-      <div class="option" data-answer="B">B) {option_text}</div>
-      <div class="option" data-answer="C">C) {option_text}</div>
-      <div class="option" data-answer="D">D) {option_text}</div>
-    </div>
-    <div class="correct-answer" data-correct="{correct_letter}">
-      <p><strong>Reponse correcte: {correct_letter}</strong></p>
-      <p>{explanation}</p>
-    </div>
-  </div>
-</div>
+Current code reads:  data.redirectUrl        --> undefined
+Should read:         data.data.redirectUrl   --> correct URL
 ```
 
-## Files Summary
+This means **every payment attempt fails** with "No redirect URL received from Bazik.io".
 
-| File | Action |
-|------|--------|
-| `supabase/functions/generate-quiz-quizgecko/index.ts` | Create |
-| `supabase/config.toml` | Add function config entry |
-| `src/features/content-editor/batch-operations/types.ts` | Add `QuizProvider` type |
-| `src/features/content-editor/batch-operations/regenerators/quizRegenerator.ts` | Add provider param |
-| `src/features/content-editor/batch-operations/generators/quizGenerator.ts` | Add provider param |
-| `src/features/content-editor/batch-operations/wrappers/BatchQuizRegenerator.tsx` | Add provider state |
-| `src/features/content-editor/batch-operations/wrappers/BatchQuizGeneratorNew.tsx` | Add provider state |
-| `src/features/content-editor/batch-operations/components/BatchOperationDialog.tsx` | Add provider toggle UI |
-| `src/features/content-editor/batch-operations/index.ts` | Export QuizProvider |
+### Bug 2: Token Response Field Order (Minor)
 
-## When You Get the API Key
+The docs show the token comes as `access_token`. Current code checks `data.token || data.access_token` -- should prioritize `access_token` first.
 
-Once Quizgecko approves your access:
-1. We store the `QUIZGECKO_API_KEY` as a backend secret
-2. The toggle in the batch dialog immediately becomes functional
-3. No code changes needed -- everything is already wired up
+### Bug 3: Unsupported Parameters
+
+The code sends `successUrl` and `errorUrl` to `/moncash/token`, but the Bazik docs only show `gdes`, `description`, and `referenceId` as accepted fields. These extra params are likely silently ignored by Bazik.
+
+This means **after payment on MonCash, the user won't be redirected back to your app** -- they'll stay on the MonCash page. We need to handle this differently.
+
+## Fix Plan
+
+### File: `supabase/functions/moncash-create-payment/index.ts`
+
+**Change 1 -- Fix `getBazikToken` (line 51):**
+- Change token extraction order to `data.access_token || data.token`
+
+**Change 2 -- Fix `createBazikPayment` function:**
+- Remove `successUrl` and `errorUrl` parameters (not supported by Bazik API)
+- Only send `gdes`, `description`, `referenceId` in the request body
+- Fix response parsing to read from `data.data.redirectUrl` (nested `data` object)
+- Extract `data.data.orderId` for the Bazik order ID
+
+**Change 3 -- Remove callback URL construction (lines 202-205):**
+- Remove the `successUrl`/`errorUrl` building code since Bazik doesn't support them
+
+### File: `src/pages/PaymentDemo.tsx`
+
+**Change 4 -- Add post-redirect instructions:**
+- Since MonCash won't redirect back automatically, update the processing step text to tell users to return to the app after paying
+- Add a "J'ai deja paye" (I already paid) button that navigates to `/payment/callback?orderId=XXX`
+- Store the orderId in state when payment is created so we can build the callback URL
+
+### File: `src/pages/PaymentCallback.tsx`
+
+No changes needed -- it already polls the database correctly.
+
+## Summary of Changes
+
+| File | Change | Impact |
+|------|--------|--------|
+| `moncash-create-payment/index.ts` | Fix `data.data.redirectUrl` parsing | Payments will actually get redirect URLs |
+| `moncash-create-payment/index.ts` | Remove unsupported `successUrl`/`errorUrl` params | Cleaner API call |
+| `moncash-create-payment/index.ts` | Fix token field priority | Correct token extraction |
+| `PaymentDemo.tsx` | Add "I already paid" return flow | Users can verify payment after MonCash |
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- Lovable AI is default, Quizgecko is opt-in toggle |
-| Works with existing data? | Yes -- same `quiz_final` HTML field, same format |
-| 3G optimized? | Yes -- polling is server-side, client gets single response |
-| Backward compatible? | Yes -- no DB schema changes |
-| Edge cases? | API key missing = clear error; timeout = graceful failure; empty response = handled |
+| Breaks existing functionality? | No -- fixes broken functionality |
+| Works with existing data? | Yes -- no DB changes |
+| 3G optimized? | Yes -- no new network calls |
+| Backward compatible? | Yes -- same DB schema |
+| Edge cases? | MonCash redirect handled; user can manually return |
 
