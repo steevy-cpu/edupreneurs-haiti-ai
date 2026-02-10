@@ -55,6 +55,7 @@ const SignupLayout = lazy(() => import("./auth/routes/signup/SignupLayout"));
 const SignupStep1 = lazy(() => import("./auth/routes/signup/Step1"));
 const SignupStep2 = lazy(() => import("./auth/routes/signup/Step2"));
 const SignupStep3 = lazy(() => import("./auth/routes/signup/Step3"));
+const SignupPaymentCallback = lazy(() => import("./auth/routes/signup/SignupPaymentCallback"));
 const VerifyEmailPage = lazy(() => import("./auth/routes/VerifyEmailPage"));
 const VerifyDevicePage = lazy(() => import("./auth/routes/VerifyDevicePage"));
 const ForgotPasswordPage = lazy(() => import("./auth/routes/ForgotPasswordPage"));
@@ -207,6 +208,7 @@ const App = () => (
                             <Route path="step-2" element={<SignupStep2 />} />
                             <Route path="step-3" element={<SignupStep3 />} />
                           </Route>
+                          <Route path="signup/payment-callback" element={<SignupPaymentCallback />} />
                           <Route path="verify-email" element={<VerifyEmailPage />} />
                           <Route path="verify-device" element={<VerifyDevicePage />} />
                           <Route path="forgot-password" element={<ForgotPasswordPage />} />

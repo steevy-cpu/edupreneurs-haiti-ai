@@ -79,9 +79,18 @@ export function validateStep2(data: SignupFormData): { valid: boolean; error?: s
  * Validate step 3 data (finalization)
  */
 export function validateStep3(data: SignupFormData): { valid: boolean; error?: string } {
-  if (!data.promoCodeValid) {
-    return { valid: false, error: "Veuillez entrer un code promotionnel valide" };
+  const accessMethod = data.accessMethod || 'promo';
+  
+  if (accessMethod === 'promo') {
+    if (!data.promoCodeValid) {
+      return { valid: false, error: "Veuillez entrer un code promotionnel valide" };
+    }
+  } else if (accessMethod === 'moncash') {
+    if (!data.paymentCompleted) {
+      return { valid: false, error: "Veuillez compléter le paiement MonCash" };
+    }
   }
+  
   if (!data.privacy) {
     return { valid: false, error: "Vous devez accepter les politiques de confidentialité" };
   }
@@ -128,14 +137,18 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
 
     const confirmationCode = generateConfirmationCode();
 
+    // Determine subscription fields based on access method
+    const accessMethod = data.accessMethod || 'promo';
+    const isMonCash = accessMethod === 'moncash' && data.paymentCompleted;
+    
     // Create profile
     const { error: profileError } = await supabase
       .from('profiles')
       .insert({
         user_id: authData.user.id,
-        full_name: data.fullName || data.nickname,
+        full_name: data.fullName || data.nickname!,
         nickname: data.nickname,
-        academic_grade: data.academicGrade,
+        academic_grade: data.academicGrade!,
         phone_number: data.phoneNumber,
         school: data.school,
         gender: data.gender,
@@ -146,7 +159,11 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
         promo_code_used: data.promoCode?.toUpperCase().trim() || null,
         promo_code_used_at: data.promoCode ? new Date().toISOString() : null,
         has_free_access: data.promoGrantsFreeAccess || false,
-      });
+        // Subscription fields for MonCash users
+        subscription_status: isMonCash ? 'active' : 'none',
+        subscription_end_date: isMonCash ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() : null,
+        payment_order_id: isMonCash ? data.paymentOrderId : null,
+      } as any);
 
     if (profileError) throw profileError;
 

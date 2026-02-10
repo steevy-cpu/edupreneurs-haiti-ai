@@ -145,6 +145,10 @@ export interface SignupFormData {
   promoCode?: string;
   promoCodeValid?: boolean;
   promoGrantsFreeAccess?: boolean;
+  // Payment fields for MonCash signup
+  accessMethod?: 'promo' | 'moncash';
+  paymentCompleted?: boolean;
+  paymentOrderId?: string;
 }
 
 /**

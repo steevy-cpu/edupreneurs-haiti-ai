@@ -28,6 +28,7 @@ const FirstTimeUserTour = lazy(() => import('@/components/firsttime/FirstTimeUse
 // Wrapper components that handle their own props/logic
 import { NotificationBannerWrapper } from './wrappers/NotificationBannerWrapper';
 import { PWAPromptWrapper } from './wrappers/PWAPromptWrapper';
+import { SubscriptionExpiryBannerWrapper } from './wrappers/SubscriptionExpiryBannerWrapper';
 
 /**
  * Centralized floating UI layer.
@@ -62,6 +63,9 @@ export function FloatingLayer() {
       
       {/* Notification Permission Banner - has internal userId logic */}
       {visibility.showNotificationBanner && <NotificationBannerWrapper />}
+      
+      {/* Subscription Expiry Warning Banner */}
+      {visibility.showSubscriptionBanner && <SubscriptionExpiryBannerWrapper />}
       
       {/* PWA Install Prompt - has internal hook logic */}
       {visibility.showPWAPrompt && <PWAPromptWrapper />}

@@ -1,6 +1,7 @@
 /**
  * MonCash Create Payment via Bazik.io
  * 
+ * Supports both authenticated payments and unauthenticated signup payments.
  * Uses shared Bazik utilities for authentication and credentials.
  */
 
@@ -81,38 +82,56 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Auth check
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Non authentifié' }),
-        { status: 401, headers: responseHeaders }
+    const rawBody = await req.json();
+    const isSignupPayment = rawBody.isSignupPayment === true;
+
+    let userId: string;
+
+    if (isSignupPayment) {
+      // Signup payments don't require auth - use a system placeholder
+      // Rate limit by IP instead
+      const clientIp = getClientIp(req);
+      const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.PAYMENT, `signup-${clientIp}`, clientIp);
+      if (!rateCheck.allowed) {
+        return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
+      }
+      // Use a system UUID as placeholder - will be updated after account creation
+      userId = '00000000-0000-0000-0000-000000000000';
+    } else {
+      // Standard authenticated payment
+      const authHeader = req.headers.get('Authorization');
+      if (!authHeader) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Non authentifié' }),
+          { status: 401, headers: responseHeaders }
+        );
+      }
+
+      const supabaseAnon = createClient(
+        supabaseUrl,
+        Deno.env.get('SUPABASE_ANON_KEY')!,
+        { global: { headers: { Authorization: authHeader } } }
       );
-    }
 
-    const supabaseAnon = createClient(
-      supabaseUrl,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+      const { data: { user }, error: userError } = await supabaseAnon.auth.getUser();
+      if (userError || !user) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Authentification invalide' }),
+          { status: 401, headers: responseHeaders }
+        );
+      }
 
-    const { data: { user }, error: userError } = await supabaseAnon.auth.getUser();
-    if (userError || !user) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Authentification invalide' }),
-        { status: 401, headers: responseHeaders }
-      );
-    }
+      // Rate limiting for authenticated users
+      const clientIp = getClientIp(req);
+      const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.PAYMENT, user.id, clientIp);
+      if (!rateCheck.allowed) {
+        return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
+      }
 
-    // Rate limiting
-    const clientIp = getClientIp(req);
-    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.PAYMENT, user.id, clientIp);
-    if (!rateCheck.allowed) {
-      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
+      userId = user.id;
     }
 
     // Validate input
-    const rawBody = await req.json();
     const validation = validateInput(paymentSchema, rawBody);
     if (!validation.success) {
       return validationErrorResponse(validation.errors, responseHeaders);
@@ -122,9 +141,11 @@ serve(async (req) => {
     const finalOrderId = rawBody.orderId || generateOrderId();
 
     const siteUrl = Deno.env.get('SITE_URL') || 'https://edupreneurs-haiti-ai.lovable.app';
-    const returnUrl = `${siteUrl}/payment/callback?orderId=${finalOrderId}`;
+    const returnUrl = isSignupPayment
+      ? `${siteUrl}/auth/signup/payment-callback?orderId=${finalOrderId}`
+      : `${siteUrl}/payment/callback?orderId=${finalOrderId}`;
 
-    console.log(`Creating payment: amount=${amount}, orderId=${finalOrderId}, mode=${mode}`);
+    console.log(`Creating payment: amount=${amount}, orderId=${finalOrderId}, mode=${mode}, isSignup=${isSignupPayment}`);
 
     const bazikToken = await getBazikToken(userID, secretKey);
     const { redirectUrl, bazikOrderId } = await createBazikPayment(
@@ -136,7 +157,7 @@ serve(async (req) => {
     await supabase
       .from('payment_transactions')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         order_id: finalOrderId,
         amount,
         currency: 'HTG',
@@ -144,7 +165,12 @@ serve(async (req) => {
         status: 'pending',
         payment_token: finalOrderId,
         description: description || 'Edupreneurs Payment',
-        metadata: { gateway: 'bazik.io', bazikOrderId },
+        metadata: { 
+          gateway: 'bazik.io', 
+          bazikOrderId,
+          isSignupPayment,
+          signupEmail: isSignupPayment ? rawBody.email : undefined,
+        },
       });
 
     return new Response(

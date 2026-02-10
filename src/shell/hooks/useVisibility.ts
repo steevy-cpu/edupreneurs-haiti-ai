@@ -21,6 +21,7 @@ export interface UseVisibilityResult {
   showSidebar: boolean;
   showNotificationBanner: boolean;
   showPWAPrompt: boolean;
+  showSubscriptionBanner: boolean;
   /** Check visibility for a specific component */
   isVisible: (componentKey: string) => boolean;
 }

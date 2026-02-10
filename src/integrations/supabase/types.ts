@@ -2761,6 +2761,7 @@ export type Database = {
           nickname: string
           onboarding_tour_completed: boolean | null
           onboarding_tour_completed_at: string | null
+          payment_order_id: string | null
           phone_confirmed: boolean | null
           phone_number: string
           phone_verification_request_id: string | null
@@ -2770,6 +2771,8 @@ export type Database = {
           referral_code: string | null
           referred_by: string | null
           school: string | null
+          subscription_end_date: string | null
+          subscription_status: string
           updated_at: string | null
           user_id: string
           verified: boolean | null
@@ -2795,6 +2798,7 @@ export type Database = {
           nickname: string
           onboarding_tour_completed?: boolean | null
           onboarding_tour_completed_at?: string | null
+          payment_order_id?: string | null
           phone_confirmed?: boolean | null
           phone_number: string
           phone_verification_request_id?: string | null
@@ -2804,6 +2808,8 @@ export type Database = {
           referral_code?: string | null
           referred_by?: string | null
           school?: string | null
+          subscription_end_date?: string | null
+          subscription_status?: string
           updated_at?: string | null
           user_id: string
           verified?: boolean | null
@@ -2829,6 +2835,7 @@ export type Database = {
           nickname?: string
           onboarding_tour_completed?: boolean | null
           onboarding_tour_completed_at?: string | null
+          payment_order_id?: string | null
           phone_confirmed?: boolean | null
           phone_number?: string
           phone_verification_request_id?: string | null
@@ -2838,6 +2845,8 @@ export type Database = {
           referral_code?: string | null
           referred_by?: string | null
           school?: string | null
+          subscription_end_date?: string | null
+          subscription_status?: string
           updated_at?: string | null
           user_id?: string
           verified?: boolean | null
