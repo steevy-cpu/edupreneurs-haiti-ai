@@ -48,7 +48,19 @@ export default function PaymentCallback() {
     
     try {
       setAttempts(prev => prev + 1);
-      
+
+      // First, trigger verification with MonCash/Bazik API to update DB status
+      if (attempts === 0) {
+        console.log('Triggering payment verification with MonCash API...');
+        const { error: verifyError } = await supabase.functions.invoke('moncash-verify-payment', {
+          body: { orderId }
+        });
+        if (verifyError) {
+          console.warn('Verification call failed, falling back to status check:', verifyError);
+        }
+      }
+
+      // Then check the status from DB
       const { data, error } = await supabase.functions.invoke('moncash-check-status', {
         body: { orderId }
       });

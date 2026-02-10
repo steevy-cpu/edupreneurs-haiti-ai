@@ -63,9 +63,10 @@ async function createBazikPayment(
   token: string,
   amount: number,
   orderId: string,
-  description: string
+  description: string,
+  returnUrl: string
 ): Promise<{ redirectUrl: string; bazikOrderId?: string }> {
-  console.log(`Creating Bazik MonCash payment: amount=${amount}, orderId=${orderId}`);
+  console.log(`Creating Bazik MonCash payment: amount=${amount}, orderId=${orderId}, returnUrl=${returnUrl}`);
   
   const response = await fetch(`${BAZIK_API_BASE}/moncash/token`, {
     method: 'POST',
@@ -78,6 +79,7 @@ async function createBazikPayment(
       gdes: amount,
       description: description,
       referenceId: orderId,
+      returnUrl: returnUrl,
     }),
   });
 
@@ -194,7 +196,11 @@ serve(async (req) => {
     // Generate or use provided order ID
     const finalOrderId = orderId || generateOrderId();
 
-    console.log(`Processing payment request: amount=${amount}, orderId=${finalOrderId}`);
+    // Construct return URL for post-payment redirect
+    const siteUrl = Deno.env.get('SITE_URL') || 'https://edupreneurs-haiti-ai.lovable.app';
+    const returnUrl = `${siteUrl}/payment/callback?orderId=${finalOrderId}`;
+
+    console.log(`Processing payment request: amount=${amount}, orderId=${finalOrderId}, returnUrl=${returnUrl}`);
 
     // Step 1: Get Bazik.io access token
     const bazikToken = await getBazikToken(userID, secretKey);
@@ -204,7 +210,8 @@ serve(async (req) => {
       bazikToken,
       amount,
       finalOrderId,
-      description || 'Edupreneurs Payment'
+      description || 'Edupreneurs Payment',
+      returnUrl
     );
     
     console.log('Payment created successfully, redirectUrl:', redirectUrl);
