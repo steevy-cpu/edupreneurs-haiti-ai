@@ -12,31 +12,30 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { BatchOperationButton } from "./BatchOperationButton";
 import { BatchOperationProgress } from "./BatchOperationProgress";
 import type { 
   BatchDialogConfig, 
   BatchOperationTheme, 
   UseBatchOperationReturn,
-  OperationType 
+  OperationType,
+  QuizProvider
 } from "../types";
 
 interface BatchOperationDialogProps {
-  // Config
   dialogConfig: BatchDialogConfig;
   theme: BatchOperationTheme;
   operationType: OperationType;
   gradeLevel: string;
-  
-  // Stats for button sublabel
   validatedCount: number;
   totalCount: number;
-  
-  // Operation state from hook
   operation: UseBatchOperationReturn;
-  
-  // Disabled state for concurrent operation guard
   disabled?: boolean;
+  // Optional provider selection for quiz operations
+  provider?: QuizProvider;
+  onProviderChange?: (provider: QuizProvider) => void;
 }
 
 export const BatchOperationDialog = ({
@@ -48,6 +47,8 @@ export const BatchOperationDialog = ({
   totalCount,
   operation,
   disabled = false,
+  provider,
+  onProviderChange,
 }: BatchOperationDialogProps) => {
   const {
     isRunning,
@@ -62,7 +63,6 @@ export const BatchOperationDialog = ({
     estimatedMinutes,
   } = operation;
 
-  // Show progress view when running
   if (isRunning) {
     return (
       <BatchOperationProgress
@@ -82,6 +82,8 @@ export const BatchOperationDialog = ({
     ? `${validatedCount}/${totalCount} déjà ${operationType === 'validate' ? 'validés' : 'régénérés'} (${percentage}%)`
     : undefined;
 
+  const showProviderToggle = provider !== undefined && onProviderChange !== undefined;
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -97,7 +99,37 @@ export const BatchOperationDialog = ({
           <AlertDialogTitle>{dialogConfig.title}?</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-4">
-            {/* Stats bar */}
+              {/* Provider selection for quiz operations */}
+              {showProviderToggle && (
+                <div className="p-3 rounded-lg bg-muted/50 space-y-2">
+                  <p className="text-xs font-medium">Fournisseur de quiz</p>
+                  <RadioGroup
+                    value={provider}
+                    onValueChange={(val) => onProviderChange(val as QuizProvider)}
+                    className="flex gap-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="lovable" id="provider-lovable" />
+                      <Label htmlFor="provider-lovable" className="text-xs cursor-pointer">
+                        Lovable AI
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="quizgecko" id="provider-quizgecko" />
+                      <Label htmlFor="provider-quizgecko" className="text-xs cursor-pointer">
+                        Quizgecko
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                  {provider === 'quizgecko' && (
+                    <p className="text-[10px] text-muted-foreground">
+                      ⚠️ Nécessite une clé API Quizgecko configurée. Plus lent (1 à la fois).
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Stats bar */}
               <div className="p-3 rounded-lg bg-muted/50 space-y-2">
                 <div className="flex items-center justify-between text-xs font-medium">
                   <span className="flex items-center gap-1">

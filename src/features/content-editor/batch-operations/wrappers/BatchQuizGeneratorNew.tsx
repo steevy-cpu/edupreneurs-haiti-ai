@@ -1,9 +1,10 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { 
   useBatchOperation, 
   BatchOperationDialog,
   BatchLesson
 } from "@/features/content-editor/batch-operations";
+import type { QuizProvider } from "@/features/content-editor/batch-operations";
 import { 
   createQuizGeneratorConfig,
   quizGeneratorTheme,
@@ -27,7 +28,8 @@ export const BatchQuizGeneratorNew = ({
   onStart,
   disabled = false,
 }: BatchQuizGeneratorProps) => {
-  const config = useMemo(() => createQuizGeneratorConfig(), []);
+  const [provider, setProvider] = useState<QuizProvider>('lovable');
+  const config = useMemo(() => createQuizGeneratorConfig(provider), [provider]);
   
   const operation = useBatchOperation({
     lessons,
@@ -37,7 +39,6 @@ export const BatchQuizGeneratorNew = ({
     onStart,
   });
 
-  // Only show if there are lessons to generate
   if (lessons.length === 0) return null;
 
   return (
@@ -53,6 +54,8 @@ export const BatchQuizGeneratorNew = ({
       totalCount={lessons.length}
       operation={operation}
       disabled={disabled}
+      provider={provider}
+      onProviderChange={setProvider}
     />
   );
 };

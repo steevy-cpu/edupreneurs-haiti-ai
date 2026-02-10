@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { 
   useBatchOperation, 
   BatchOperationDialog,
@@ -7,6 +7,7 @@ import {
   quizRegeneratorDialogConfig,
   BatchLesson
 } from "@/features/content-editor/batch-operations";
+import type { QuizProvider } from "@/features/content-editor/batch-operations";
 import { useContentEditorPermissions } from "@/hooks/useContentEditorPermissions";
 
 interface BatchQuizRegeneratorProps {
@@ -27,7 +28,8 @@ export const BatchQuizRegenerator = ({
   disabled = false,
 }: BatchQuizRegeneratorProps) => {
   const { role } = useContentEditorPermissions();
-  const config = useMemo(() => createQuizRegeneratorConfig(), []);
+  const [provider, setProvider] = useState<QuizProvider>('lovable');
+  const config = useMemo(() => createQuizRegeneratorConfig(provider), [provider]);
   
   const operation = useBatchOperation({
     lessons,
@@ -37,10 +39,8 @@ export const BatchQuizRegenerator = ({
     onStart,
   });
 
-  // Only admin can batch regenerate
   const canBatchRegenerate = role === 'admin';
   
-  // Filter to only lessons that need regeneration
   const lessonsToRegenerate = lessons.filter(
     l => l.needs_quiz_regeneration && l.last_content_validated_at
   );
@@ -62,6 +62,8 @@ export const BatchQuizRegenerator = ({
       totalCount={lessonsToRegenerate.length}
       operation={operation}
       disabled={disabled}
+      provider={provider}
+      onProviderChange={setProvider}
     />
   );
 };
