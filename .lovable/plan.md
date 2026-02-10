@@ -1,63 +1,241 @@
 
 
-# Payment System Structural Hardening
+# MonCash Payment Integration in Signup Step 3 (with Subscription Expiry Banner)
 
-## Issues Found
-
-### Issue 1: `.single()` crash risk in `moncash-check-status` (HIGH)
-`moncash-check-status/index.ts` line 87 uses `.single()` which throws an error if no row is found. Per project rules, this must be `.maybeSingle()`. If a user lands on the callback with a mismatched orderId, the function crashes with a Postgres error instead of returning a clean 404.
-
-**Fix:** Replace `.single()` with `.maybeSingle()` and handle `null` result gracefully.
-
-### Issue 2: Dead MonCash fallback code in `moncash-verify-payment` (MEDIUM)
-Lines 160-218 of `moncash-verify-payment` attempt a "direct MonCash API" fallback using `clientId`/`clientSecret`. But these are **Bazik.io credentials**, not MonCash credentials. The MonCash API requires separate `client_id`/`client_secret` from the Digicel portal. This fallback will silently fail every time -- it is dead code that adds complexity and false confidence.
-
-**Fix:** Remove the entire direct MonCash fallback block. Bazik.io is the sole payment gateway; the verify function should only use Bazik's API. If Bazik fails, return `unknown` and let the polling retry.
-
-### Issue 3: Duplicated `getBazikToken` function (LOW)
-`getBazikToken` is copy-pasted identically in `moncash-create-payment` and `moncash-verify-payment`. This violates DRY and means any future fix must be applied in two places.
-
-**Fix:** Extract to `_shared/bazik.ts` and import from both functions.
-
-### Issue 4: `moncash-verify-payment` has no authentication (MEDIUM)
-The verify function uses `SUPABASE_SERVICE_ROLE_KEY` (admin access) and has no auth check. Any unauthenticated request can trigger payment verification and update transaction statuses. While the damage is limited (it can only mark things as completed if Bazik confirms), it's an unnecessary attack surface.
-
-**Fix:** Add optional auth validation -- if an auth header is present, validate it. If not, still allow the call (needed for the redirect flow where the session may not be attached), but log it.
-
-### Issue 5: Console logs left in production paths (LOW)
-Both edge functions have `console.log` statements logging full payment responses including potentially sensitive data (payer phone, amounts). Per project rules, production-critical paths should minimize logging.
-
-**Fix:** Reduce to essential status logs only, remove response body dumps.
+## Overview
+Integrate MonCash payment (200 HTG) as an alternative to promo codes in Step 3 of the signup flow. Users must either enter a valid promo code OR complete a MonCash payment to create their account. No free tier. Payment grants 30 days of access with manual monthly renewal. A countdown banner warns users as their subscription nears expiration.
 
 ---
 
-## Plan
+## Current State
+- Step 3 requires a valid promo code (mandatory)
+- Promo codes with `grants_free_access = true` give full platform access
+- Payment infrastructure (MonCash via Bazik.io) is fully functional and structurally hardened
+- `profiles.has_free_access` column exists for promo-based access gating
+- Banner priority system (`useBannerPriority`) and `FloatingLayer` already exist for centralized banner management
 
-### File 1: `supabase/functions/_shared/bazik.ts` (NEW)
-Extract shared Bazik utilities:
-- `BAZIK_API_BASE` constant
-- `getBazikToken(userID, secretKey)` function
-- `getMonCashCredentials(mode)` helper that returns the correct client ID and secret key based on mode
+---
 
-### File 2: `supabase/functions/moncash-create-payment/index.ts`
-- Import `getBazikToken` and `getMonCashCredentials` from `_shared/bazik.ts`
-- Remove local `getBazikToken` function
-- Remove local credential selection logic (replaced by shared helper)
+## Subscription Model
 
-### File 3: `supabase/functions/moncash-verify-payment/index.ts`
-- Import `getBazikToken` and `getMonCashCredentials` from `_shared/bazik.ts`
-- Remove local `getBazikToken` function
-- **Remove the entire direct MonCash API fallback block** (lines 160-218) -- dead code
-- Remove local credential selection logic
-- Clean up excessive console.log statements
+- **Price**: 200 HTG per month
+- **Duration**: Each payment grants exactly 30 days of access
+- **Renewal**: Manual -- when subscription expires, user sees a renewal prompt
+- **Promo code users**: Unaffected -- `has_free_access = true` bypasses all subscription checks
 
-### File 4: `supabase/functions/moncash-check-status/index.ts`
-- Change `.single()` to `.maybeSingle()` on line 87
-- Handle `null` transaction with a proper 404 response
+---
 
-### No changes needed:
-- `PaymentCallback.tsx` -- the recent fixes (referenceId priority, useRef for single verification) are solid
-- `PaymentDemo.tsx` -- the "J'ai deja paye" button correctly passes our internal `orderId` which PaymentCallback reads via the fallback path
+## New Step 3 Design
+
+```text
++-------------------------------------------+
+|          Derniere etape !                  |
+|    Choisissez votre methode d'acces        |
+|                                            |
+|  [Tab: Code Promo]   [Tab: MonCash]        |
+|                                            |
+|  --- If Promo Code selected ---            |
+|  | Input field + [Verifier] button |       |
+|                                            |
+|  --- If MonCash selected ---               |
+|  | Acces Premium          |                |
+|  | 200 HTG / mois         |                |
+|  | 30 jours d'acces       |                |
+|  | [Payer avec MonCash]   |                |
+|                                            |
+|  [ ] J'accepte les politiques...           |
+|  [<- Retour]    [Creer mon compte]         |
++-------------------------------------------+
+```
+
+---
+
+## Subscription Expiry Warning Banner
+
+A persistent banner that appears in the `FloatingLayer` when the user's subscription is close to expiring. It integrates with the existing `useBannerPriority` system so it respects dismissal rules and doesn't conflict with other banners (notification permission, PWA prompt, etc.).
+
+### Behavior
+- **Shows at 7 days remaining**: A yellow/amber banner appears at the top of the app with a live countdown timer (e.g., "Votre abonnement expire dans 6j 14h 32m")
+- **Shows at 3 days remaining**: Banner turns orange/red for urgency
+- **Shows at 0 days (expired)**: `SubscriptionGate` blocks access entirely with a renewal screen (no banner needed -- the gate takes over)
+- **Dismissable**: User can dismiss the banner, but it reappears after 24 hours (uses `useBannerPriority` with `days = 1`)
+- **Promo users**: Banner never shows (they have `has_free_access = true`)
+- **Action button**: "Renouveler maintenant" triggers the MonCash renewal flow
+
+### Timer Implementation
+- Uses a `useSubscriptionCountdown` hook that reads `subscription_end_date` from the user profile
+- Updates every minute (not every second -- saves battery on mobile/3G)
+- Formats as "Xj Xh Xm" (days, hours, minutes)
+
+### Banner Priority
+- Registered with `useBannerPriority` at priority **2** (higher than PWA prompt, lower than critical system banners)
+- When multiple banners compete, the priority system ensures only one shows at a time
+
+---
+
+## Technical Plan
+
+### 1. Database Migration
+
+Add columns to `profiles`:
+- `subscription_status` (text, default `'none'`): Values: `'none'`, `'active'`, `'expired'`
+- `subscription_end_date` (timestamptz, nullable): When current period expires
+- `payment_order_id` (text, nullable): Links signup payment to `payment_transactions`
+
+### 2. Update `src/auth/store/authFlow.store.ts`
+
+Add fields to `SignupFormData`:
+- `accessMethod`: `'promo'` | `'moncash'`
+- `paymentCompleted`: boolean
+- `paymentOrderId`: string
+
+### 3. Rewrite `src/auth/routes/signup/Step3.tsx`
+
+- Add tab toggle between "Code Promo" and "MonCash"
+- Promo tab: keep existing promo code UI and logic unchanged
+- MonCash tab: plan card (200 HTG/mois, 30 jours) + "Payer avec MonCash" button
+- "Creer mon compte" enabled when either promo is valid OR payment is confirmed
+- Privacy checkbox shared across both tabs
+
+### 4. New file: `src/auth/services/payment.service.ts`
+
+- `createSignupPayment(email)`: Calls `moncash-create-payment` with `isSignupPayment: true`
+- `checkSignupPaymentStatus(orderId)`: Calls `moncash-check-status`
+
+### 5. New file: `src/auth/routes/signup/SignupPaymentCallback.tsx`
+
+- Reads `orderId` / `referenceId` from URL params
+- Polls `moncash-check-status` for verification
+- On success: saves to authFlow store, redirects back to Step 3
+- On failure: shows error with retry/back options
+
+### 6. Add route in `App.tsx`
+
+- `/auth/signup/payment-callback` -> `SignupPaymentCallback`
+
+### 7. Update `src/auth/services/signup.service.ts`
+
+- If `accessMethod === 'moncash'` and `paymentCompleted`: set `subscription_status = 'active'`, `subscription_end_date = now + 30 days`
+- If `accessMethod === 'promo'`: existing behavior unchanged
+- `validateStep3()`: accept either valid promo OR completed payment
+
+### 8. Update `moncash-create-payment` edge function
+
+- Accept optional `isSignupPayment: true` + `email` in request body
+- When signup mode: skip auth header requirement, store email in transaction metadata
+- After account creation, link the transaction to the real user
+
+### 9. Subscription Gate: `src/components/SubscriptionGate.tsx`
+
+- Wraps protected content in `AppShell`
+- Checks `has_free_access` (always allow) or `subscription_end_date > now()` (allow if active)
+- If expired: full-screen renewal prompt with "Renouveler (200 HTG)" MonCash button
+- Renewal extends `subscription_end_date` by 30 days
+
+### 10. Expiry Warning Banner: `src/components/SubscriptionExpiryBanner.tsx`
+
+- Reads `subscription_end_date` from user profile query
+- If `has_free_access = true`: render nothing
+- If 7 or fewer days remaining: render warning banner
+- Contains a live countdown timer (updates every 60 seconds)
+- Color: amber when > 3 days, red/orange when <= 3 days
+- "Renouveler maintenant" button triggers MonCash payment
+- "X" dismiss button uses `useBannerPriority.dismissBanner('subscription-expiry', 1)` (reappears after 24h)
+
+### 11. New hook: `src/hooks/useSubscriptionCountdown.ts`
+
+- Takes `subscription_end_date` as input
+- Returns `{ daysLeft, hoursLeft, minutesLeft, isExpired, isExpiringSoon }`
+- `isExpiringSoon` = true when <= 7 days remain
+- Updates via `setInterval` every 60 seconds (battery-friendly for 3G)
+- Cleans up interval on unmount
+
+### 12. Register banner in `FloatingLayer`
+
+- Add `SubscriptionExpiryBannerWrapper` to `FloatingLayer` (lazy-loaded)
+- Add visibility rule: show only for authenticated, non-visitor users
+- Integrate with `useBannerPriority` at priority 2
+
+### 13. Update `src/shell/hooks/useVisibility.ts` and visibility config
+
+- Add `showSubscriptionBanner` to the visibility result
+- Show on all authenticated routes except auth pages and fullscreen modes
+
+---
+
+## Flow Diagrams
+
+### Signup Flow
+```text
+Step 1 (Email/Password)
+        |
+Step 2 (Profile)
+        |
+Step 3 (Access Method)
+   /              \
+Promo Code      MonCash (200 HTG)
+   |                |
+Validate         Save progress
+   |                |
+   |           Create payment
+   |                |
+   |           Redirect to MonCash
+   |                |
+   |           Payment Callback
+   |                |
+   |           Verify + return to Step 3
+    \              /
+     \            /
+   Create Account
+        |
+   Verify Email
+        |
+     Dashboard
+```
+
+### Subscription Lifecycle
+```text
+Day 1: Account created (subscription_status = 'active')
+        |
+Day 23: Banner appears (7 days left)
+        "Votre abonnement expire dans 7j 0h 0m"
+        [Renouveler maintenant]  [X dismiss]
+        |
+Day 24: User dismisses banner
+        |
+Day 25: Banner reappears (dismissed for only 24h)
+        Banner turns orange/red (< 3 days left)
+        |
+Day 27: User clicks "Renouveler"
+        -> MonCash payment -> extends 30 days
+        |
+   OR
+        |
+Day 30: Subscription expires
+        SubscriptionGate blocks access
+        Full-screen renewal prompt shown
+```
+
+---
+
+## Files Summary
+
+| File | Action | Purpose |
+|------|--------|---------|
+| `profiles` table | Migrate | Add `subscription_status`, `subscription_end_date`, `payment_order_id` |
+| `src/auth/store/authFlow.store.ts` | Modify | Add payment fields to signup form data |
+| `src/auth/routes/signup/Step3.tsx` | Modify | Add MonCash tab alongside promo code |
+| `src/auth/services/payment.service.ts` | Create | Signup payment service |
+| `src/auth/routes/signup/SignupPaymentCallback.tsx` | Create | Payment callback for signup flow |
+| `src/auth/services/signup.service.ts` | Modify | Handle MonCash path in account creation |
+| `src/App.tsx` | Modify | Add payment callback route |
+| `supabase/functions/moncash-create-payment/index.ts` | Modify | Support unauthenticated signup payments |
+| `src/components/SubscriptionGate.tsx` | Create | Access gate for expired subscriptions |
+| `src/components/SubscriptionExpiryBanner.tsx` | Create | Countdown warning banner |
+| `src/hooks/useSubscriptionCountdown.ts` | Create | Countdown timer hook |
+| `src/shell/FloatingLayer.tsx` | Modify | Add expiry banner to floating layer |
+| `src/shell/hooks/useVisibility.ts` | Modify | Add `showSubscriptionBanner` |
+| `src/shell/config/visibility.ts` | Modify | Add subscription banner visibility rules |
 
 ---
 
@@ -65,9 +243,14 @@ Extract shared Bazik utilities:
 
 | Check | Result |
 |-------|--------|
-| Breaks existing functionality? | No -- only removing dead code and fixing crash risk |
-| Works with existing data? | Yes -- no schema changes |
-| Backward compatible? | Yes |
-| 3G optimized? | Yes -- removing dead fallback code reduces edge function execution time |
-| Edge cases handled? | Yes -- `.maybeSingle()` handles missing transactions gracefully |
+| Breaks existing promo code flow? | No -- promo path preserved as a tab option |
+| Works with existing data? | Yes -- new columns default to `'none'` / null |
+| Backward compatible? | Yes -- existing `has_free_access` users unaffected |
+| 3G optimized? | Yes -- banner timer updates every 60s (not every second), lazy-loaded component |
+| Edge case: payment succeeds but user closes tab? | Handled -- sessionStorage persists progress |
+| Edge case: user refreshes during callback? | Handled -- reads from URL params + sessionStorage |
+| Edge case: subscription expires mid-session? | Handled -- client-side check on app load |
+| Edge case: user dismisses banner repeatedly? | Handled -- reappears every 24h via `useBannerPriority` |
+| Security: unauthenticated payment creation? | Controlled -- signup mode uses email + metadata, rate-limited |
+| Security: user manipulates `paymentCompleted` in storage? | Mitigated -- `createAccount` verifies order in `payment_transactions` |
 
