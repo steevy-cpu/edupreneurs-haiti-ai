@@ -123,7 +123,7 @@ serve(async (req) => {
     // MONCASH_CLIENT_ID should contain Bazik userID (e.g., bzk_xxx)
     // MONCASH_CLIENT_SECRET should contain Bazik secretKey (e.g., sk_xxx)
     const userID = Deno.env.get('MONCASH_CLIENT_ID');
-    const secretKey = Deno.env.get('MONCASH_CLIENT_SECRET');
+    const secretKey = Deno.env.get('MONCASH_SECRET_KEY');
 
     if (!userID || !secretKey) {
       console.error('Bazik.io credentials not configured');

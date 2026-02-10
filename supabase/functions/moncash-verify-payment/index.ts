@@ -117,7 +117,7 @@ serve(async (req) => {
   try {
     // Get MonCash credentials from secrets
     const clientId = Deno.env.get('MONCASH_CLIENT_ID');
-    const clientSecret = Deno.env.get('MONCASH_CLIENT_SECRET');
+    const clientSecret = Deno.env.get('MONCASH_SECRET_KEY');
     const mode = Deno.env.get('MONCASH_MODE') || 'sandbox';
 
     if (!clientId || !clientSecret) {
