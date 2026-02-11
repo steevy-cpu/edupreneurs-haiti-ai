@@ -29,7 +29,9 @@ function stripHtml(html: string): string {
 
 // Input validation schema
 const generateActivitiesSchema = z.object({
-  exercisesContent: z.string().min(1).max(100000),
+  exercisesContent: z.string().max(100000).optional(),
+  contenu: z.string().max(100000).optional(),
+  exemplesExercices: z.string().max(100000).optional(),
   lessonTitle: z.string().min(1).max(500),
   gradeLevel: z.string().min(1).max(50),
   subject: z.string().min(1).max(200)
@@ -80,7 +82,7 @@ serve(async (req) => {
       return secureErrorResponse('Invalid input', 400, errors);
     }
 
-    const { exercisesContent, lessonTitle, gradeLevel, subject } = validation.data;
+    const { exercisesContent, contenu, exemplesExercices, lessonTitle, gradeLevel, subject } = validation.data;
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
     if (!LOVABLE_API_KEY) {
@@ -179,7 +181,7 @@ RÈGLES CRITIQUES:
 3. Placer la bonne réponse aléatoirement parmi A, B, C, ou D (pa toujou A!)
 4. Pour TRUE_FALSE: Une affirmation claire, réponse VRAI ou FAUX uniquement
 5. Options sur lignes séparées: "A) texte" (pas de tiret avant!)
-6. Génère 8-10 questions QUIZ + 5-7 affirmations TRUE_FALSE
+6. Génère EXACTEMENT 10 à 15 questions au total: 7-10 questions QCM + 3-5 affirmations VRAI/FAUX. NE JAMAIS générer moins de 10 questions.
 7. Sépare les questions/affirmations avec "---"
 8. Réponse QUIZ: "**Réponse correcte: X**" (X = A, B, C ou D)
 9. Réponse TRUE_FALSE: "**Réponse: VRAI**" ou "**Réponse: FAUX**"
@@ -258,7 +260,7 @@ RÈGLES CRITIQUES:
 3. Placer la bonne réponse aléatoirement parmi A, B, C, ou D (pas toujours A!)
 4. Pour TRUE_FALSE: Une affirmation claire, réponse VRAI ou FAUX uniquement
 5. Options sur lignes séparées: "A) texte" (pas de tiret avant!)
-6. Génère 8-10 questions QUIZ + 5-7 affirmations TRUE_FALSE
+6. Génère EXACTEMENT 10 à 15 questions au total: 7-10 questions QCM + 3-5 affirmations VRAI/FAUX. NE JAMAIS générer moins de 10 questions.
 7. Sépare les questions/affirmations avec "---"
 8. Réponse QUIZ: "**Réponse correcte: X**" (X = A, B, C ou D)
 9. Réponse TRUE_FALSE: "**Réponse: VRAI**" ou "**Réponse: FAUX**"
@@ -266,23 +268,37 @@ RÈGLES CRITIQUES:
 11. Tout en FRANÇAIS
 12. VÉRIFIE L'EXACTITUDE DE CHAQUE RÉPONSE - ne génère que des faits vérifiés!`;
 
-    const cleanedContent = stripHtml(exercisesContent);
+    // Use separate contenu/exemples if available, otherwise fall back to exercisesContent
+    const lessonContenu = contenu ? stripHtml(contenu) : '';
+    const lessonExemples = exemplesExercices ? stripHtml(exemplesExercices) : '';
+    const fallbackContent = exercisesContent ? stripHtml(exercisesContent) : '';
+    
+    const hasStructuredContent = lessonContenu || lessonExemples;
 
-    console.log('Original exercises length:', exercisesContent.length);
-    console.log('Cleaned exercises length:', cleanedContent.length);
+    console.log('Content lengths:', { 
+      contenu: lessonContenu.length, 
+      exemples: lessonExemples.length, 
+      fallback: fallbackContent.length 
+    });
 
     const userPrompt = isCreoleLesson
       ? `Lesyon: "${lessonTitle}"
 Nivo: ${gradeLevel}
 Matyè: ${subject}
 
-Men kontni egzèsis yo pou transfòme an aktivite entèaktif:
+${hasStructuredContent ? `=== KONTENI LESYON AN ===
+${lessonContenu || 'Pa gen kontni.'}
 
-${cleanedContent}
+=== EGZANP AK EGZÈSIS LESYON AN ===
+${lessonExemples || 'Pa gen egzanp.'}` : `Men kontni egzèsis yo pou transfòme an aktivite entèaktif:
+
+${fallbackContent}`}
 
 ENSTRIKSYON KRITIK:
-- Jenere 8-10 kesyon QUIZ (QCM ak 4 opsyon A, B, C, D)
-- Jenere 5-7 afimasyon TRUE_FALSE (Vrai/Faux)
+- Jenere EGZAKTEMAN 10 a 15 kesyon an total
+- 7 a 10 kesyon QCM (choix multiples ak 4 opsyon A, B, C, D)
+- 3 a 5 afimasyon VRE/FO
+- TOUT kesyon yo dwe baze SÈLMAN sou kontni ki anwo a. PA JANM poze kesyon sou sijè ki pa nan lesyon an.
 - Opsyon yo dwe sou liy separe: "A) tèks" (pa gen tirè anvan!)
 - Separe kesyon/afimasyon yo ak "---"
 - Bay yon esplikasyon klè pou chak repons
@@ -291,13 +307,19 @@ ENSTRIKSYON KRITIK:
 Niveau: ${gradeLevel}
 Matière: ${subject}
 
-Voici le contenu des exercices à transformer en activités interactives:
+${hasStructuredContent ? `=== CONTENU DE LA LEÇON ===
+${lessonContenu || 'Pas de contenu.'}
 
-${cleanedContent}
+=== EXEMPLES ET EXERCICES DE LA LEÇON ===
+${lessonExemples || 'Pas d\'exemples.'}` : `Voici le contenu des exercices à transformer en activités interactives:
+
+${fallbackContent}`}
 
 INSTRUCTIONS CRITIQUES:
-- Génère 8-10 questions QUIZ (QCM avec 4 options A, B, C, D)
-- Génère 5-7 affirmations TRUE_FALSE (Vrai/Faux)
+- Génère EXACTEMENT 10 à 15 questions au total
+- 7 à 10 questions QCM (choix multiples avec 4 options A, B, C, D)
+- 3 à 5 affirmations VRAI/FAUX
+- TOUTES les questions doivent être basées UNIQUEMENT sur le contenu ci-dessus. Ne pose JAMAIS de questions sur des sujets non couverts dans la leçon.
 - Les options doivent être sur des lignes séparées: "A) texte" (pas de tiret avant!)
 - Sépare les questions/affirmations avec "---"
 - Fournis une explication claire pour chaque réponse
