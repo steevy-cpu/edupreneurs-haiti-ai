@@ -46,6 +46,7 @@ import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import { debounce } from "@/utils/performanceOptimization";
 import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { validateUserText } from "@/lib/textModeration";
+import NatCashPaymentFlow from "@/components/subscription/NatCashPaymentFlow";
 
 // Lazy load heavy components
 const AvatarSelector = lazy(() => import('@/components/AvatarSelector').then(m => ({ default: m.AvatarSelector })));
@@ -414,6 +415,8 @@ const Settings = () => {
       setLoading(false);
     }
   };
+
+  const [paymentMethod, setPaymentMethod] = useState<"moncash" | "natcash">("moncash");
 
   const handleRenewSubscription = async () => {
     setRenewLoading(true);
@@ -935,17 +938,58 @@ const Settings = () => {
                         <div className="text-sm text-muted-foreground">/ 30 jours</div>
                       </div>
                     </div>
-                    <Button
-                      className="w-full"
-                      onClick={handleRenewSubscription}
-                      disabled={renewLoading}
-                    >
-                      {renewLoading ? (
-                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Préparation...</>
+                    
+                    {/* Payment method tabs */}
+                    <div className="space-y-3">
+                      <div className="flex rounded-lg border border-input overflow-hidden">
+                        <button
+                          type="button"
+                          className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
+                            paymentMethod === "moncash"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-background text-muted-foreground hover:bg-muted"
+                          }`}
+                          onClick={() => setPaymentMethod("moncash")}
+                        >
+                          MonCash
+                        </button>
+                        <button
+                          type="button"
+                          className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
+                            paymentMethod === "natcash"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-background text-muted-foreground hover:bg-muted"
+                          }`}
+                          onClick={() => setPaymentMethod("natcash")}
+                        >
+                          NatCash
+                        </button>
+                      </div>
+
+                      {paymentMethod === "moncash" ? (
+                        <Button
+                          className="w-full"
+                          onClick={handleRenewSubscription}
+                          disabled={renewLoading}
+                        >
+                          {renewLoading ? (
+                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Préparation...</>
+                          ) : (
+                            <><CreditCard className="mr-2 h-4 w-4" />Renouveler avec MonCash (+30 jours)</>
+                          )}
+                        </Button>
                       ) : (
-                        <><CreditCard className="mr-2 h-4 w-4" />Renouveler (+30 jours)</>
+                        <NatCashPaymentFlow
+                          amount={200}
+                          description="Renouvellement Edupreneurs - 30 jours"
+                          onSuccess={() => {
+                            queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+                            queryClient.invalidateQueries({ queryKey: ["subscription-status"] });
+                            queryClient.invalidateQueries({ queryKey: ["subscription-banner"] });
+                          }}
+                        />
                       )}
-                    </Button>
+                    </div>
                   </div>
                 ) : (
                   <div className="p-4 sm:p-6 bg-gradient-to-br from-destructive/10 to-destructive/5 rounded-xl border-2 border-destructive/20">
@@ -960,18 +1004,58 @@ const Settings = () => {
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                       <div className="text-2xl font-extrabold text-primary">200 HTG <span className="text-sm font-normal text-muted-foreground">/ 30 jours</span></div>
                     </div>
-                    <Button
-                      className="w-full"
-                      size="lg"
-                      onClick={handleRenewSubscription}
-                      disabled={renewLoading}
-                    >
-                      {renewLoading ? (
-                        <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Préparation...</>
+                    {/* Payment method tabs */}
+                    <div className="space-y-3">
+                      <div className="flex rounded-lg border border-input overflow-hidden">
+                        <button
+                          type="button"
+                          className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
+                            paymentMethod === "moncash"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-background text-muted-foreground hover:bg-muted"
+                          }`}
+                          onClick={() => setPaymentMethod("moncash")}
+                        >
+                          MonCash
+                        </button>
+                        <button
+                          type="button"
+                          className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
+                            paymentMethod === "natcash"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-background text-muted-foreground hover:bg-muted"
+                          }`}
+                          onClick={() => setPaymentMethod("natcash")}
+                        >
+                          NatCash
+                        </button>
+                      </div>
+
+                      {paymentMethod === "moncash" ? (
+                        <Button
+                          className="w-full"
+                          size="lg"
+                          onClick={handleRenewSubscription}
+                          disabled={renewLoading}
+                        >
+                          {renewLoading ? (
+                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Préparation...</>
+                          ) : (
+                            <><CreditCard className="mr-2 h-5 w-5" />Renouveler avec MonCash — 200 HTG</>
+                          )}
+                        </Button>
                       ) : (
-                        <><CreditCard className="mr-2 h-5 w-5" />Renouveler maintenant — 200 HTG</>
+                        <NatCashPaymentFlow
+                          amount={200}
+                          description="Renouvellement Edupreneurs - 30 jours"
+                          onSuccess={() => {
+                            queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+                            queryClient.invalidateQueries({ queryKey: ["subscription-status"] });
+                            queryClient.invalidateQueries({ queryKey: ["subscription-banner"] });
+                          }}
+                        />
                       )}
-                    </Button>
+                    </div>
                   </div>
                 )}
               </CardContent>

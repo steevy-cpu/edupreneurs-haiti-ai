@@ -139,10 +139,46 @@ serve(async (req) => {
 
     console.log('[NatCash Admin Verify] Transaction', action === 'approve' ? 'approved' : 'rejected');
 
+    // BUG FIX: Extend subscription when payment is approved (was missing before)
+    if (action === 'approve' && transaction.user_id) {
+      try {
+        const { data: currentProfile } = await supabase
+          .from('profiles')
+          .select('subscription_end_date')
+          .eq('user_id', transaction.user_id)
+          .maybeSingle();
+
+        const currentTime = new Date();
+        const currentEnd = currentProfile?.subscription_end_date
+          ? new Date(currentProfile.subscription_end_date)
+          : null;
+        // Stack: if still active, add 30 days from current end; otherwise from now
+        const baseDate = (currentEnd && currentEnd > currentTime) ? currentEnd : currentTime;
+        const newEnd = new Date(baseDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+        const { error: subError } = await supabase
+          .from('profiles')
+          .update({
+            subscription_status: 'active',
+            subscription_end_date: newEnd.toISOString(),
+            payment_order_id: orderId,
+          })
+          .eq('user_id', transaction.user_id);
+
+        if (subError) {
+          console.error('[NatCash Admin Verify] Subscription extension error:', subError);
+        } else {
+          console.log(`[NatCash Admin Verify] Subscription extended for user ${transaction.user_id} until ${newEnd.toISOString()}`);
+        }
+      } catch (subExtErr) {
+        console.error('[NatCash Admin Verify] Subscription extension failed:', subExtErr);
+      }
+    }
+
     return secureJsonResponse({
       success: true,
       message: action === 'approve' 
-        ? 'Payment verified and approved successfully'
+        ? 'Payment verified, approved, and subscription extended'
         : 'Payment rejected',
       transaction: {
         orderId: orderId,

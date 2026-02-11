@@ -2285,6 +2285,75 @@ export type Database = {
           },
         ]
       }
+      natcash_transfers: {
+        Row: {
+          amount: number
+          bazik_transaction_id: string | null
+          completed_at: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          fees: number | null
+          id: string
+          initiated_by: string
+          metadata: Json | null
+          recipient_email: string | null
+          recipient_first_name: string
+          recipient_last_name: string
+          reference_id: string
+          status: string | null
+          total: number | null
+          transfer_type: string | null
+          updated_at: string | null
+          user_id: string
+          wallet: string
+        }
+        Insert: {
+          amount: number
+          bazik_transaction_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          fees?: number | null
+          id?: string
+          initiated_by: string
+          metadata?: Json | null
+          recipient_email?: string | null
+          recipient_first_name: string
+          recipient_last_name: string
+          reference_id: string
+          status?: string | null
+          total?: number | null
+          transfer_type?: string | null
+          updated_at?: string | null
+          user_id: string
+          wallet: string
+        }
+        Update: {
+          amount?: number
+          bazik_transaction_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          fees?: number | null
+          id?: string
+          initiated_by?: string
+          metadata?: Json | null
+          recipient_email?: string | null
+          recipient_first_name?: string
+          recipient_last_name?: string
+          reference_id?: string
+          status?: string | null
+          total?: number | null
+          transfer_type?: string | null
+          updated_at?: string | null
+          user_id?: string
+          wallet?: string
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
           content: string | null
