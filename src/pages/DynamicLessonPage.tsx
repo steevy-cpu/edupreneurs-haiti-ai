@@ -11,11 +11,7 @@ import judeScientist from "@/assets/eric-scientist.png";
 import judeBiologist from "@/assets/eric-biologist.png";
 import judeComputer from "@/assets/eric-computer.png";
 import judeMath from "@/assets/eric-math.png";
-
-interface SiblingLesson {
-  slug: string;
-  title: string;
-}
+import type { SiblingLesson } from "@/features/matieres/types/lesson.types";
 
 export default function DynamicLessonPage() {
   const { slug, lessonSlug } = useParams();
