@@ -1,100 +1,77 @@
 
 
-# Fix: JudeChatbot Typewriter Animation Restarting on Keystroke
+# Lesson Search Bar for Subject Pages
 
-## Problem
+## Overview
+Add an inline search bar to each subject/course page that lets users instantly filter lessons by title without scrolling. The search is purely client-side (lessons are already loaded), so it works instantly even on 3G.
 
-Every time you type in the JudeChatbot input, the typewriter animation for Jude's response restarts from the beginning. This is the same bug that was previously fixed in the HomeChatbot.
+## Placement
+The search bar will sit between the MonthQuickNav and the ProgressCard -- right where the user's eye lands after seeing the stats and month navigation. This keeps it visible without pushing important content down.
 
-## Root Cause
+## Architecture
 
-The `TypewriterText` component inside `JudeChatbot.tsx` (line 74) includes `onComplete` in its `useEffect` dependency array. Each keystroke triggers a re-render, creating a new `onComplete` function reference, which restarts the entire animation.
+### New Component: `src/components/course/LessonSearchBar.tsx`
+A standalone, focused component following the existing `src/components/course/` pattern.
 
-## Fix
+**Props:**
+- `searchQuery: string` -- controlled input value
+- `onSearchChange: (query: string) => void` -- callback on input change
+- `totalResults: number` -- how many lessons match (for feedback)
+- `totalLessons: number` -- total lesson count (for context)
 
-Apply the same `useRef` pattern already used in `HomeChatbot.tsx`:
+**Behavior:**
+- Search icon on the left, clear (X) button on the right when text is present
+- Debounce-free (client-side filtering is instant, no need for debounce)
+- Shows result count feedback: "3 sur 39 lecons" when filtering
+- Placeholder: "Rechercher une lecon..."
+- Compact on mobile, slightly wider on desktop
 
-1. Store `onComplete` in a `useRef` so it doesn't trigger re-renders
-2. Remove `onComplete` from the `useEffect` dependency array
-3. Call `onCompleteRef.current?.()` instead of `onComplete?.()`
+### Modifications to `src/pages/DynamicCoursePage.tsx`
+1. Add `searchQuery` state
+2. Add a `filteredLessons` useMemo that filters lessons by title match (case-insensitive, accent-insensitive using `normalize('NFD')`)
+3. Place `LessonSearchBar` between MonthQuickNav and ProgressCard
+4. When searching: hide month sections, show a flat filtered grid instead
+5. When search is empty: show normal month-based layout (no change)
 
-### File: `src/components/JudeChatbot.tsx`
-
-**Before** (lines 44-82):
+### Filtering Logic (accent-insensitive for Haitian/French content)
 ```typescript
-const TypewriterText = ({ text, speed = 15, onComplete }) => {
-  const [displayedText, setDisplayedText] = useState('');
-  const [isComplete, setIsComplete] = useState(false);
-  
-  useEffect(() => {
-    setDisplayedText('');
-    setIsComplete(false);
-    let index = 0;
-    const timer = setInterval(() => {
-      if (index < text.length) {
-        setDisplayedText(text.slice(0, index + 1));
-        index++;
-      } else {
-        setIsComplete(true);
-        onComplete?.();          // <-- stale closure risk
-        clearInterval(timer);
-      }
-    }, speed);
-    return () => clearInterval(timer);
-  }, [text, speed, onComplete]);  // <-- onComplete causes restart
-  // ...
-};
+const normalize = (str: string) =>
+  str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+const filteredLessons = useMemo(() => {
+  if (!searchQuery.trim()) return null; // null = show all months
+  const q = normalize(searchQuery);
+  return lessons.filter(l => normalize(l.title).includes(q));
+}, [lessons, searchQuery]);
 ```
 
-**After:**
-```typescript
-const TypewriterText = ({ text, speed = 15, onComplete }) => {
-  const [displayedText, setDisplayedText] = useState('');
-  const [isComplete, setIsComplete] = useState(false);
-  const onCompleteRef = useRef(onComplete);
+This ensures "biodegradable" matches "biodégradable".
 
-  useEffect(() => {
-    onCompleteRef.current = onComplete;
-  }, [onComplete]);
+### Export Update: `src/components/course/index.ts`
+Add `LessonSearchBar` to the barrel export file.
 
-  useEffect(() => {
-    setDisplayedText('');
-    setIsComplete(false);
-    let index = 0;
-    const timer = setInterval(() => {
-      if (index < text.length) {
-        setDisplayedText(text.slice(0, index + 1));
-        index++;
-      } else {
-        setIsComplete(true);
-        onCompleteRef.current?.();  // <-- always fresh
-        clearInterval(timer);
-      }
-    }, speed);
-    return () => clearInterval(timer);
-  }, [text, speed]);  // <-- onComplete removed
-  // ...
-};
-```
+## UI Behavior Summary
 
-## Other Components Checked
+| State | What the user sees |
+|-------|-------------------|
+| No search query | Normal month-grouped layout (unchanged) |
+| Typing a query | Month sections hidden, flat grid of matching lessons shown |
+| No results | Friendly empty state: "Aucune lecon trouvee pour [query]" with a clear button |
+| Clear button clicked | Returns to normal month layout |
 
-| Component | File | Status |
-|-----------|------|--------|
-| HomeChatbot TypewriterText | `src/components/HomeChatbot.tsx` | Already fixed (uses `onCompleteRef`) |
-| MessageTypewriter | `src/components/community/MessageTypewriter.tsx` | Already fixed (uses `onCompleteRef`) |
-| SimpleTypewriter | `src/components/visitor/SimpleTypewriter.tsx` | No issue (no parent re-render during typing) |
-| TypewriterText (auth) | `src/components/TypewriterText.tsx` | No issue (phrase cycler, no `onComplete`) |
-| **JudeChatbot TypewriterText** | **`src/components/JudeChatbot.tsx`** | **BUG -- needs fix** |
+## Technical Details
 
-Only the JudeChatbot has this issue. One file, one change.
+### File changes:
+1. **NEW** `src/components/course/LessonSearchBar.tsx` -- search input component (~50 lines)
+2. **EDIT** `src/components/course/index.ts` -- add export
+3. **EDIT** `src/pages/DynamicCoursePage.tsx` -- add search state, filtering logic, conditional rendering
 
-## Safety
+### Safety
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- identical pattern to HomeChatbot fix |
-| Backward compatible? | Yes -- same behavior, just stable refs |
-| 3G optimized? | Yes -- no extra work, prevents wasted re-renders |
-| Edge cases? | Handles unmount (clearInterval in cleanup) |
-
+| Breaks existing functionality? | No -- search is additive; empty search = original layout |
+| Works with existing data? | Yes -- filters the already-loaded `lessons` array |
+| 3G optimized? | Yes -- no network calls, pure client-side filtering |
+| Backward compatible? | Yes -- no data model changes |
+| Edge cases? | Empty lessons, accent characters, partial matches all handled |
