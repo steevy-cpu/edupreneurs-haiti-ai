@@ -1,79 +1,69 @@
 
 
-# Jude Voice Feedback for Quiz and Activities
+# Two Changes to Lesson Pages
 
-## Overview
-Pre-generate audio clips for all 20 Jude feedback messages using ElevenLabs with a young male voice, cache them in storage, and auto-play the matching clip when JudeFeedback renders.
+## Change 1: Compact Audio Icon Instead of Full Player
 
-## Voice Selection
+**Problem**: The current audio player takes up a full row with a large `<audio>` element (as seen in the screenshot). This wastes vertical space, especially on mobile.
 
-**"Eric" (cjVigY5qzO86Huf0OWal)** -- a younger male voice that fits Jude's character as a boy. Emotion-matched settings:
+**Solution**: Replace the full audio bar with a small, clickable speaker icon button placed inline next to the section title. Clicking it plays/pauses the audio. A subtle animation indicates playback.
 
-- **Correct (happy/excited)**: stability 0.35, style 0.6, speed 1.05
-- **Incorrect (gentle/encouraging)**: stability 0.55, style 0.25, speed 0.95
+### Implementation
 
-## Approach: Pre-generated Audio (NOT real-time TTS)
+**New component: `src/components/LessonAudioIconButton.tsx`**
+- A small circular button with a `Volume2` icon
+- On click: plays or pauses the audio using an `Audio` object via `useRef`
+- While playing: icon animates (pulse) and switches to a "pause" or "playing" state
+- Lightweight -- no browser `<audio controls>`, just programmatic playback
 
-1. **One-time generation**: Edge function generates all 20 feedback clips once, stores in `lesson-audio` bucket
-2. **Cached forever**: Served from CDN -- no API calls during quiz
-3. **Instant playback**: Audio plays from cache when feedback appears
-4. **Mute toggle**: Users can disable voice via speaker icon, preference saved in localStorage
+**Update: `src/features/matieres/components/tabs/LessonIntroductionTab.tsx`**
+- Replace `LessonAudioPlayerSimple` with `LessonAudioIconButton` placed next to the "Introduction" title in `CardTitle`
 
-## Changes
+**Update: `src/features/matieres/components/tabs/LessonContenuTab.tsx`**
+- Replace both `LessonAudioPlayerSimple` instances with `LessonAudioIconButton` next to "Contenu du cours" and "Exemples et Exercices" titles
 
-### 1. New Edge Function: `generate-jude-feedback-audio`
-**File: `supabase/functions/generate-jude-feedback-audio/index.ts`**
+**Update: `src/components/LessonPageTemplate.tsx`**
+- Replace `LessonAudioPlayerSimple` for the objectif audio with `LessonAudioIconButton` placed inline next to the objectif text/badge area
 
-- Iterates over all 20 messages (10 correct, 10 incorrect)
-- Uses "Eric" voice with emotion-appropriate settings
-- Uploads to `lesson-audio/jude-feedback/correct-0.mp3` through `correct-9.mp3` and `incorrect-0.mp3` through `incorrect-9.mp3`
-- One-time admin action, not called by students
-
-### 2. New Utility: `src/utils/judeFeedbackAudio.ts`
-Maps message index to public storage URL:
-```
-getJudeFeedbackAudioUrl(type: 'correct' | 'incorrect', index: number) => string
+### Visual Result
+```text
+Before:  [====== full audio bar with controls ======]
+After:   Introduction  [speaker icon]
 ```
 
-### 3. Update `src/components/jude/JudeFeedback.tsx`
-- Add audio index tracking to each message
-- Auto-play matching audio clip when feedback renders
-- Add mute toggle icon (stored in localStorage as `jude-voice-muted`)
-- Graceful fallback if audio fails or is blocked by browser
+---
 
-### 4. Update `src/features/matieres/renderers/QuizRenderer.tsx`
-- Import and call `useSoundEffects` for chime/buzzer on answer submit (matching activities behavior)
+## Change 2: Collapsible Objectif Section
 
-## File Changes
+**Problem**: The "Objectif de la lecon" text takes too much vertical space in the header, pushing important content down.
+
+**Solution**: Show only the first 2 lines of the objectif text by default with a "Lire plus" button. Clicking it expands to show the full text.
+
+### Implementation
+
+**Update: `src/components/LessonPageTemplate.tsx`**
+- Wrap the objectif `div` in a container with `max-h` + `overflow-hidden` and a `line-clamp-2` class
+- Add a "Lire plus" / "Lire moins" toggle button below
+- Use a simple `useState` boolean (`isObjectifExpanded`) to toggle
+- Apply to both mobile and desktop sections of the header
+
+---
+
+## Files Summary
 
 | File | Change |
 |------|--------|
-| `supabase/functions/generate-jude-feedback-audio/index.ts` | NEW -- One-time generation of 20 audio clips with Eric voice |
-| `src/utils/judeFeedbackAudio.ts` | NEW -- URL mapping for feedback audio files |
-| `src/components/jude/JudeFeedback.tsx` | Add audio playback, mute toggle |
-| `src/features/matieres/renderers/QuizRenderer.tsx` | Add sound effects on answer submit |
-
-## UX Flow
-
-```text
-User submits answer in Quiz
-    |
-    v
-[Chime/buzzer plays] (useSoundEffects)
-    |
-    v
-[JudeFeedback renders + Jude's voice plays the message]
-    |
-    v
-[Speaker icon available to mute]
-```
+| `src/components/LessonAudioIconButton.tsx` | **NEW** -- Small inline audio play/pause icon button |
+| `src/components/LessonPageTemplate.tsx` | Replace audio player with icon button; add collapsible objectif |
+| `src/features/matieres/components/tabs/LessonIntroductionTab.tsx` | Replace audio player with icon button next to title |
+| `src/features/matieres/components/tabs/LessonContenuTab.tsx` | Replace both audio players with icon buttons next to titles |
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- audio is additive |
-| 3G optimized? | Yes -- clips are 2-5KB each, cached by CDN |
-| Backward compatible? | Yes -- works without audio if not generated |
-| Cost impact? | 20 one-time API calls, zero ongoing cost |
+| Breaks existing functionality? | No -- audio still plays, just different UI |
+| 3G optimized? | Yes -- smaller UI, same audio preload strategy |
+| Backward compatible? | Yes -- lessons without audio still work (icon hidden) |
+| Works on mobile? | Yes -- icon button is touch-friendly, collapsible saves space |
 
