@@ -231,6 +231,8 @@ export function useAIGeneratedActivities(
       const { data: responseData, error: invokeError } = await supabase.functions.invoke('generate-interactive-activities', {
         body: {
           exercisesContent: combinedContent,
+          contenu: lessonContent,
+          exemplesExercices: lessonExamples,
           lessonTitle,
           gradeLevel,
           subject: subjectName,
