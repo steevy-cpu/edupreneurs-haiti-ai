@@ -1,63 +1,79 @@
 
 
-# Fix: Content Flags Incorrectly Counting Placeholder Text as Real Content
+# Batch Operation Progress Persistence
 
 ## Problem
-The `lesson_content_flags` database view considers any text longer than 10 characters as "having content." However, many lessons contain placeholder strings like **"Contenu a venir..."** (18 chars) and **"Exercices a venir..."** (20 chars) that pass this threshold. This causes the content editor to report 204/204 (100%) when at least **29 lessons** in 7AF actually have no real content.
+When the batch content generation is running (e.g., "Générer 183 contenus manquants") and the user refreshes the page or navigates away, all progress UI is lost. The underlying data is safe (each lesson is saved to the DB after processing), but the progress bar, stats, and running state disappear.
 
 ## Solution
-Update the `lesson_content_flags` view to exclude known placeholder strings. The check will require content to be longer than 10 characters **AND** not match placeholder patterns.
+Add sessionStorage persistence to `useBatchOperation`, following the existing `quizBattleSession.store.ts` pattern. On page load, if a batch operation was running, the hook will restore the saved progress and offer to auto-resume processing the remaining items.
+
+## Changes
+
+### 1. New file: `src/features/content-editor/batch-operations/store/batchOperationSession.ts`
+
+A small persistence store (modeled after `quizBattleSession.store.ts`) with:
+- `saveBatchSession(operationType, gradeLevel, progress, results, currentItem)` -- called after each lesson completes
+- `getBatchSession(operationType, gradeLevel)` -- returns saved state or null if expired
+- `clearBatchSession(operationType, gradeLevel)` -- clears on completion or manual cancel
+- Session key format: `edupreneurs_batch_{operationType}_{gradeLevel}`
+- TTL: 60 minutes (batch operations can be long)
+
+### 2. Update: `src/features/content-editor/batch-operations/hooks/useBatchOperation.ts`
+
+Add persistence behavior:
+- **On mount**: Check sessionStorage for saved state. If found, restore `progress`, `results`, `stats`, and show a "Resume" state.
+- **During operation**: After each lesson completes (line 114-116), also save to sessionStorage.
+- **On complete/pause**: Clear or update sessionStorage accordingly.
+- **New return value**: `canResume: boolean` -- true if there's a saved session to resume from.
+- **Resume behavior**: When `start()` is called with saved state, the `skipCompleted` filter already handles skipping processed lessons (they're saved to DB), so it naturally resumes from where it left off.
+
+### 3. Update: `src/features/content-editor/batch-operations/components/BatchOperationDialog.tsx`
+
+- When `canResume` is true, show a "Reprendre" (Resume) indicator on the button sublabel (e.g., "45/183 -- Reprendre?")
+- The dialog description will mention that previous progress was found
+
+### 4. Update: `src/features/content-editor/batch-operations/types.ts`
+
+- Add `canResume` to `UseBatchOperationReturn`
 
 ## Technical Details
 
-### Step 1: Recreate the database view
-
-Drop and recreate `lesson_content_flags` with additional exclusion logic:
-
-```sql
-CREATE OR REPLACE VIEW public.lesson_content_flags AS
-SELECT 
-  id,
-  (objectif IS NOT NULL AND length(trim(objectif)) > 10 
-    AND trim(objectif) NOT IN ('Contenu à venir...', 'Contenu a venir...')) AS has_objectif,
-  (introduction IS NOT NULL AND length(trim(introduction)) > 10 
-    AND trim(introduction) NOT IN ('Contenu à venir...', 'Contenu a venir...')) AS has_introduction,
-  (contenu IS NOT NULL AND length(trim(contenu)) > 10 
-    AND trim(contenu) NOT IN ('Contenu à venir...', 'Contenu a venir...')) AS has_contenu,
-  (exemples_exercices IS NOT NULL AND length(trim(exemples_exercices)) > 10 
-    AND trim(exemples_exercices) NOT IN ('Exercices à venir...', 'Exercices a venir...', 'Contenu à venir...', 'Contenu a venir...')) AS has_exemples,
-  (quiz_final IS NOT NULL AND length(trim(quiz_final)) > 10) AS has_quiz,
-  (activites_interactives IS NOT NULL AND length(trim(activites_interactives)) > 10) AS has_activities
-FROM lessons;
-```
-
-### Step 2: Update `isLessonMissingContent` in contentGenerator.ts
-
-Add the same placeholder exclusion logic to the fallback raw-text check so both paths are consistent:
-
+**SessionStorage structure:**
 ```typescript
-const PLACEHOLDER_PATTERNS = ['Contenu à venir...', 'Contenu a venir...', 'Exercices à venir...', 'Exercices a venir...'];
-
-const isPlaceholderOrEmpty = (field?: string | null): boolean => {
-  if (!field || field.trim().length < 10) return true;
-  return PLACEHOLDER_PATTERNS.includes(field.trim());
-};
+interface BatchSessionState {
+  operationType: string;
+  gradeLevel: string;
+  progress: { current: number; total: number };
+  results: OperationResult[];
+  currentItem: string;
+  savedAt: number;
+  expiresAt: number; // savedAt + 60min
+}
 ```
 
-### No UI changes needed
-The `LessonBrowser` already reads `has_contenu`, `has_objectif`, etc. from the view. Once the view is corrected, the stats bar will automatically show the correct count (e.g., 175/204 instead of 204/204) and the "Vide" badges will appear on the affected lessons.
+**Persistence trigger** -- after each lesson in the worker loop (line ~116 in useBatchOperation):
+```typescript
+setResults([...operationResults]);
+// NEW: persist to sessionStorage
+saveBatchSession(config.operationType, gradeLevel, 
+  { current: completedCount, total: itemsToProcess.length },
+  operationResults, lesson.title);
+```
 
-## Impact
-- **29 lessons** in 7AF will correctly show as missing content
-- Progress bar will update from 100% to the accurate percentage
-- "Contenu manquant uniquement" filter will correctly list these lessons
-- Batch content generator button will appear with the correct count
+**Clear trigger** -- on operation complete (line ~168):
+```typescript
+onComplete();
+clearBatchSession(config.operationType, gradeLevel);
+```
 
 ## Safety Verification
 
 | Check | Result |
 |-------|--------|
-| Breaks existing functionality? | No -- only changes false positives to correct negatives |
-| Works with existing data? | Yes -- the view reads existing columns |
-| 3G optimized? | No change -- same lightweight query |
-| Backward compatible? | Yes -- same flag names and types |
+| Breaks existing functionality? | No -- additive only, existing flow unchanged |
+| Works with existing data? | Yes -- DB-saved lessons are skipped via `skipCompleted` filter |
+| 3G optimized? | Yes -- sessionStorage is synchronous local I/O, no network |
+| Backward compatible? | Yes -- missing session = current behavior |
+| Edge cases handled? | Expired sessions auto-clear; corrupted JSON caught with try/catch |
+
