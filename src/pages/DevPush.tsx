@@ -84,7 +84,7 @@ export default function DevPush() {
       const registration = await navigator.serviceWorker.getRegistration();
       if (registration) {
         swState = registration.active ? 'active' : 'inactive';
-        subscription = await registration.pushManager.getSubscription();
+        subscription = await (registration as any).pushManager.getSubscription();
       } else {
         swState = 'not registered';
       }
@@ -177,7 +177,7 @@ export default function DevPush() {
         return outputArray;
       };
 
-      const subscription = await registration.pushManager.subscribe({
+      const subscription = await (registration as any).pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
       });
