@@ -2,10 +2,37 @@
  * JudeFeedback Component
  * 
  * Shows Jude's avatar next to feedback text after answering a question.
- * Provides a personalized "Jude says..." experience.
+ * Provides a personalized "Jude says..." experience with randomized messages.
  */
 
+import { useMemo } from 'react';
 import judeChairDesk from "@/assets/eric-chair-desk.png";
+
+const CORRECT_MESSAGES = [
+  { emoji: '🎉', text: 'Bravo !' },
+  { emoji: '🌟', text: 'Excellent !' },
+  { emoji: '✨', text: 'Parfait !' },
+  { emoji: '💪', text: 'Super boulot !' },
+  { emoji: '🔥', text: 'Tu gères !' },
+  { emoji: '👏', text: 'Impressionnant !' },
+  { emoji: '✅', text: "C'est ça !" },
+  { emoji: '🏆', text: 'Bien joué !' },
+  { emoji: '⭐', text: 'Tu assures !' },
+  { emoji: '💎', text: 'Magnifique !' },
+];
+
+const INCORRECT_MESSAGES = [
+  { emoji: '📚', text: 'Pas tout à fait...' },
+  { emoji: '🤏', text: 'Presque !' },
+  { emoji: '💡', text: 'Essaie encore la prochaine fois !' },
+  { emoji: '🔍', text: 'Pas exactement...' },
+  { emoji: '😊', text: "C'est pas grave, on apprend !" },
+  { emoji: '👍', text: 'Bonne tentative !' },
+  { emoji: '💪', text: 'Continue, tu vas y arriver !' },
+  { emoji: '🤔', text: 'Hmm, pas cette fois...' },
+  { emoji: '🚀', text: 'Ne lâche pas !' },
+  { emoji: '👀', text: "Regarde bien l'explication !" },
+];
 
 interface JudeFeedbackProps {
   isCorrect: boolean;
@@ -14,6 +41,11 @@ interface JudeFeedbackProps {
 }
 
 export function JudeFeedback({ isCorrect, explanation, children }: JudeFeedbackProps) {
+  const feedback = useMemo(() => {
+    const pool = isCorrect ? CORRECT_MESSAGES : INCORRECT_MESSAGES;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }, [isCorrect]);
+
   return (
     <div className={`
       p-4 sm:p-5 rounded-lg border-2 animate-fade-in
@@ -32,9 +64,7 @@ export function JudeFeedback({ isCorrect, explanation, children }: JudeFeedbackP
         />
         <div className="flex-1 min-w-0">
           <p className="font-semibold mb-1 text-sm sm:text-base">
-            {isCorrect
-              ? '🎉 Bravo !' 
-              : '📚 Pas tout à fait...'}
+            {feedback.emoji} {feedback.text}
           </p>
           {children || (
             <p className="text-xs sm:text-sm leading-relaxed break-words text-muted-foreground">
