@@ -255,14 +255,19 @@ export const LessonPageTemplate = ({
                   <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Objectif</span>
                   <LessonAudioIconButton audioUrl={lesson.audio_objectif_url} />
                 </div>
-                {isMathSubject(subjectName) ? (
-                  <MathContent content={lesson.objectif} className={cn("text-muted-foreground text-sm sm:text-base transition-all", !isObjectifExpanded && "line-clamp-2")} />
-                ) : (
-                  <div 
-                    className={cn("text-muted-foreground lesson-content text-sm sm:text-base transition-all", !isObjectifExpanded && "line-clamp-2")}
-                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.objectif) }}
-                  />
-                )}
+                <div className="relative">
+                  {isMathSubject(subjectName) ? (
+                    <MathContent content={lesson.objectif} className={cn("text-muted-foreground text-sm sm:text-base transition-all", !isObjectifExpanded && "max-h-[3.5em] overflow-hidden")} />
+                  ) : (
+                    <div 
+                      className={cn("text-muted-foreground lesson-content text-sm sm:text-base transition-all", !isObjectifExpanded && "max-h-[3.5em] overflow-hidden")}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.objectif) }}
+                    />
+                  )}
+                  {!isObjectifExpanded && (
+                    <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
+                  )}
+                </div>
                 <button
                   onClick={() => setIsObjectifExpanded(!isObjectifExpanded)}
                   className="text-xs text-primary hover:underline mt-1"
@@ -312,14 +317,19 @@ export const LessonPageTemplate = ({
                   <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Objectif</span>
                   <LessonAudioIconButton audioUrl={lesson.audio_objectif_url} />
                 </div>
-                {isMathSubject(subjectName) ? (
-                  <MathContent content={lesson.objectif} className={cn("text-muted-foreground text-base transition-all", !isObjectifExpanded && "line-clamp-2")} />
-                ) : (
-                  <div 
-                    className={cn("text-muted-foreground lesson-content text-base transition-all", !isObjectifExpanded && "line-clamp-2")}
-                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.objectif) }}
-                  />
-                )}
+                <div className="relative">
+                  {isMathSubject(subjectName) ? (
+                    <MathContent content={lesson.objectif} className={cn("text-muted-foreground text-base transition-all", !isObjectifExpanded && "max-h-[3.5em] overflow-hidden")} />
+                  ) : (
+                    <div 
+                      className={cn("text-muted-foreground lesson-content text-base transition-all", !isObjectifExpanded && "max-h-[3.5em] overflow-hidden")}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.objectif) }}
+                    />
+                  )}
+                  {!isObjectifExpanded && (
+                    <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
+                  )}
+                </div>
                 <button
                   onClick={() => setIsObjectifExpanded(!isObjectifExpanded)}
                   className="text-xs text-primary hover:underline mt-1"
