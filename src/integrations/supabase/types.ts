@@ -122,6 +122,13 @@ export type Database = {
             foreignKeyName: "ai_generation_jobs_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
+            referencedRelation: "lesson_content_flags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generation_jobs_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
             referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
@@ -195,6 +202,13 @@ export type Database = {
           word_count?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "ai_generation_logs_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_content_flags"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ai_generation_logs_lesson_id_fkey"
             columns: ["lesson_id"]
@@ -850,6 +864,13 @@ export type Database = {
           timestamp?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "content_change_log_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_content_flags"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "content_change_log_lesson_id_fkey"
             columns: ["lesson_id"]
@@ -1730,6 +1751,13 @@ export type Database = {
             foreignKeyName: "lesson_assets_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
+            referencedRelation: "lesson_content_flags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_assets_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
             referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
@@ -1761,6 +1789,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "lesson_comments_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_content_flags"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "lesson_comments_lesson_id_fkey"
             columns: ["lesson_id"]
@@ -1826,6 +1861,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "lesson_feedback_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_content_flags"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "lesson_feedback_lesson_id_fkey"
             columns: ["lesson_id"]
@@ -1913,6 +1955,13 @@ export type Database = {
             foreignKeyName: "lesson_versions_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
+            referencedRelation: "lesson_content_flags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_versions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
             referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
@@ -1959,6 +2008,13 @@ export type Database = {
           youtube_url?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "lesson_videos_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_content_flags"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "lesson_videos_lesson_id_fkey"
             columns: ["lesson_id"]
@@ -3358,6 +3414,13 @@ export type Database = {
             foreignKeyName: "quiz_battles_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
+            referencedRelation: "lesson_content_flags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_battles_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
             referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
@@ -3420,6 +3483,13 @@ export type Database = {
           validation_status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "quiz_validations_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_content_flags"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "quiz_validations_lesson_id_fkey"
             columns: ["lesson_id"]
@@ -4125,6 +4195,36 @@ export type Database = {
           nickname?: string | null
           user_id?: string | null
           verified?: boolean | null
+        }
+        Relationships: []
+      }
+      lesson_content_flags: {
+        Row: {
+          has_activities: boolean | null
+          has_contenu: boolean | null
+          has_exemples: boolean | null
+          has_introduction: boolean | null
+          has_objectif: boolean | null
+          has_quiz: boolean | null
+          id: string | null
+        }
+        Insert: {
+          has_activities?: never
+          has_contenu?: never
+          has_exemples?: never
+          has_introduction?: never
+          has_objectif?: never
+          has_quiz?: never
+          id?: string | null
+        }
+        Update: {
+          has_activities?: never
+          has_contenu?: never
+          has_exemples?: never
+          has_introduction?: never
+          has_objectif?: never
+          has_quiz?: never
+          id?: string | null
         }
         Relationships: []
       }
