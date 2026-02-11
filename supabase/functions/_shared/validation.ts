@@ -256,6 +256,8 @@ export const paymentSchema = z.object({
     .max(1000000, "Montant trop élevé"),
   description: z.string().max(500).optional(),
   orderId: z.string().max(100).optional(),
+  isSignupPayment: z.boolean().optional(),
+  email: z.string().email().max(320).optional(),
 }).strict();
 
 /**
