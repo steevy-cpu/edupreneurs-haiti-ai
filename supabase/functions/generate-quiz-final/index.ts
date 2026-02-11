@@ -80,8 +80,6 @@ serve(async (req) => {
     
     console.log('🔍 Creole detection:', { subject, subjectNormalized, isCreoleLesson, language });
 
-    const combinedContent = `${contenu || ''}\n\n${exemplesExercices || ''}`.trim();
-    
     // Use JSON output format if requested
     if (outputFormat === 'json') {
       return await generateJsonQuiz({
@@ -89,12 +87,15 @@ serve(async (req) => {
         lessonSlug: lessonSlug || lessonTitle.toLowerCase().replace(/\s+/g, '-'),
         subjectSlug: subjectSlug || (subject || 'general').toLowerCase().replace(/\s+/g, '-'),
         gradeLevel: gradeLevel || '7AF',
-        combinedContent,
+        contenu: contenu || '',
+        exemplesExercices: exemplesExercices || '',
         isCreoleLesson,
         language,
         LOVABLE_API_KEY,
       });
     }
+    
+    const combinedContent = `${contenu || ''}\n\n${exemplesExercices || ''}`.trim();
     
     // Legacy HTML generation (backward compatibility)
 
@@ -235,21 +236,43 @@ ${combinedContent}
 // JSON Quiz Generation (Phase 2 - Structured Content)
 // ============================================================================
 
+// Strip HTML tags to send clean text to the AI
+function stripHtml(html: string): string {
+  if (!html) return '';
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 interface JsonQuizParams {
   lessonTitle: string;
   lessonSlug: string;
   subjectSlug: string;
   gradeLevel: string;
-  combinedContent: string;
+  contenu: string;
+  exemplesExercices: string;
   isCreoleLesson: boolean;
   language: 'fr' | 'ht' | 'en' | 'es';
   LOVABLE_API_KEY: string;
 }
 
 async function generateJsonQuiz(params: JsonQuizParams): Promise<Response> {
-  const { lessonTitle, lessonSlug, subjectSlug, gradeLevel, combinedContent, isCreoleLesson, language, LOVABLE_API_KEY } = params;
+  const { lessonTitle, lessonSlug, subjectSlug, gradeLevel, contenu, exemplesExercices, isCreoleLesson, language, LOVABLE_API_KEY } = params;
 
   console.log('🎯 Generating JSON Quiz (Phase 2)');
+
+  // Strip HTML from content before sending to AI
+  const cleanContenu = stripHtml(contenu).substring(0, 12000);
+  const cleanExemples = stripHtml(exemplesExercices).substring(0, 8000);
 
   const jsonSystemPrompt = isCreoleLesson
     ? `Ou se yon ekspè nan kreye quiz edikasyon. Jenere yon quiz final ak 10-15 kesyon QCM.
@@ -279,7 +302,8 @@ RÈG KRITIK:
 3. Jenere 10-15 kesyon
 4. PA itilize emojis nan kesyon yo
 5. TOUT KONTNI AN KREYÒL AYISYEN
-6. Retounen SÈL JSON valid, pa gen tèks anvan oswa apre`
+6. Retounen SÈL JSON valid, pa gen tèks anvan oswa apre
+7. TOUT kesyon yo DOIT baze SÈLMAN sou kontni leson an ki bay la. PA JANM jenere kesyon sou sijè ekstèn.`
     : `Tu es un expert en création de quiz éducatifs. Génère un quiz final de 10-15 questions QCM.
 
 FORMAT JSON EXACT OBLIGATOIRE:
@@ -307,7 +331,8 @@ RÈGLES CRITIQUES:
 3. Générer 10-15 questions
 4. NE PAS utiliser d'emojis dans les questions
 5. TOUT EN FRANÇAIS
-6. Retourner UNIQUEMENT du JSON valide, pas de texte avant ou après`;
+6. Retourner UNIQUEMENT du JSON valide, pas de texte avant ou après
+7. TOUTES les questions doivent être basées UNIQUEMENT sur le contenu fourni dans la leçon. Ne génère JAMAIS de questions sur des sujets externes.`;
 
   const jsonUserPrompt = isCreoleLesson
     ? `Jenere yon quiz JSON pou lesyon sa a:
@@ -316,20 +341,36 @@ Tit: ${lessonTitle}
 Nivo: ${gradeLevel}
 Matyè: ${subjectSlug}
 
-Kontni lesyon an:
-${combinedContent.substring(0, 15000)}
+=== KONTNI LESON AN ===
+${cleanContenu || 'Pa gen kontni.'}
 
-Retounen SÈL yon objè JSON valid.`
+=== EGZANP AK EGZÈSIS LESON AN ===
+${cleanExemples || 'Pa gen egzanp.'}
+
+ENSTRIKSYON KRITIK:
+- Jenere EGZAKTEMAN 10 a 15 kesyon QCM
+- TOUT kesyon yo dwe baze SÈLMAN sou kontni ak egzanp ki anwo a
+- PA JANM poze kesyon sou sijè ki pa kouvri nan leson an
+- Chak kesyon dwe teste konpreyansyon kontni espesifik leson sa a
+- Retounen SÈL yon objè JSON valid.`
     : `Génère un quiz JSON pour cette leçon:
 
 Titre: ${lessonTitle}
 Niveau: ${gradeLevel}
 Matière: ${subjectSlug}
 
-Contenu de la leçon:
-${combinedContent.substring(0, 15000)}
+=== CONTENU DE LA LEÇON ===
+${cleanContenu || 'Pas de contenu.'}
 
-Retourne UNIQUEMENT un objet JSON valide.`;
+=== EXEMPLES ET EXERCICES DE LA LEÇON ===
+${cleanExemples || "Pas d'exemples."}
+
+INSTRUCTIONS CRITIQUES:
+- Génère EXACTEMENT 10 à 15 questions QCM
+- TOUTES les questions doivent être basées UNIQUEMENT sur le contenu et les exemples ci-dessus
+- Ne pose JAMAIS de questions sur des sujets non couverts dans la leçon
+- Chaque question doit tester la compréhension du contenu spécifique de cette leçon
+- Retourne UNIQUEMENT un objet JSON valide.`;
 
   const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
@@ -385,7 +426,6 @@ Retourne UNIQUEMENT un objet JSON valide.`;
   if (!validationResult.success) {
     console.error('Schema validation failed:', validationResult.error.errors);
     
-    // Return validation errors for debugging
     return secureJsonResponse({
       success: false,
       validationErrors: validationResult.error.errors.map(e => `${e.path.join('.')}: ${e.message}`),
