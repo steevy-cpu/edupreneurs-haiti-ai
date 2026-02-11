@@ -1,31 +1,68 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, Phone, CheckCircle, Upload, ArrowRight, Clock } from "lucide-react";
-import { useSessionAuth } from "@/contexts/SessionAuthContext";
+import { Loader2, Phone, CheckCircle, Upload, ArrowRight, Clock, Camera, AlertCircle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface NatCashPaymentFlowProps {
   amount: number;
   description?: string;
   onSuccess?: () => void;
-  onFallback?: () => void;
 }
 
-type FlowStep = "phone" | "instructions" | "waiting" | "success" | "fallback";
+interface PaymentInstructions {
+  accountNumber: string;
+  accountName: string;
+}
 
-const NatCashPaymentFlow = ({ amount, description, onSuccess, onFallback }: NatCashPaymentFlowProps) => {
-  const { session } = useSessionAuth();
+type FlowStep = "phone" | "instructions" | "waiting" | "upload" | "pending" | "success";
+
+/** Compress image client-side for 3G optimization */
+async function compressImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_DIM = 1024;
+        let w = img.width;
+        let h = img.height;
+        if (w > MAX_DIM || h > MAX_DIM) {
+          const ratio = Math.min(MAX_DIM / w, MAX_DIM / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.75));
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+const NatCashPaymentFlow = ({ amount, description, onSuccess }: NatCashPaymentFlowProps) => {
   const queryClient = useQueryClient();
   const [step, setStep] = useState<FlowStep>("phone");
   const [phone, setPhone] = useState("");
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [instructions, setInstructions] = useState<PaymentInstructions | null>(null);
   const [loading, setLoading] = useState(false);
   const [pollCount, setPollCount] = useState(0);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const MAX_POLLS = 36; // 3 minutes at 5s intervals
 
   // Create NatCash order
@@ -51,6 +88,12 @@ const NatCashPaymentFlow = ({ amount, description, onSuccess, onFallback }: NatC
       }
 
       setOrderId(data.order.orderId);
+      if (data.paymentInstructions) {
+        setInstructions({
+          accountNumber: data.paymentInstructions.accountNumber,
+          accountName: data.paymentInstructions.accountName,
+        });
+      }
       setStep("instructions");
     } catch {
       toast.error("Erreur réseau - vérifiez votre connexion");
@@ -62,7 +105,6 @@ const NatCashPaymentFlow = ({ amount, description, onSuccess, onFallback }: NatC
   // Poll for auto-confirmation
   const checkPaymentStatus = useCallback(async () => {
     if (!orderId) return false;
-
     try {
       const { data, error } = await supabase
         .from("payment_transactions")
@@ -70,9 +112,7 @@ const NatCashPaymentFlow = ({ amount, description, onSuccess, onFallback }: NatC
         .eq("order_id", orderId)
         .maybeSingle();
 
-      if (!error && data?.status === "completed") {
-        return true;
-      }
+      if (!error && data?.status === "completed") return true;
     } catch {
       // Silently fail polling
     }
@@ -87,7 +127,7 @@ const NatCashPaymentFlow = ({ amount, description, onSuccess, onFallback }: NatC
       setPollCount((prev) => {
         if (prev >= MAX_POLLS) {
           clearInterval(interval);
-          setStep("fallback");
+          setStep("upload");
           return prev;
         }
         return prev + 1;
@@ -108,6 +148,66 @@ const NatCashPaymentFlow = ({ amount, description, onSuccess, onFallback }: NatC
     return () => clearInterval(interval);
   }, [step, checkPaymentStatus, queryClient, onSuccess]);
 
+  // Handle receipt file selection
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Fichier trop volumineux (max 10 MB)");
+      return;
+    }
+
+    setReceiptFile(file);
+    try {
+      const compressed = await compressImage(file);
+      setReceiptPreview(compressed);
+    } catch {
+      // If compression fails, just show a placeholder
+      setReceiptPreview(null);
+    }
+  };
+
+  // Upload receipt
+  const handleUploadReceipt = async () => {
+    if (!receiptFile || !orderId) return;
+
+    setUploadLoading(true);
+    try {
+      const base64 = receiptPreview || await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(receiptFile);
+      });
+
+      const { data, error } = await supabase.functions.invoke("natcash-upload-receipt", {
+        body: {
+          orderId,
+          receiptBase64: base64,
+          fileName: receiptFile.name,
+          natcashPhone: phone,
+        },
+      });
+
+      if (error || !data?.success) {
+        toast.error(data?.error || "Erreur lors du téléversement");
+        return;
+      }
+
+      toast.success("Reçu téléversé! En attente de vérification.");
+      setStep("pending");
+    } catch {
+      toast.error("Erreur réseau - vérifiez votre connexion");
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
+  const accountNumber = instructions?.accountNumber;
+  const accountConfigured = accountNumber && accountNumber !== "NOT_CONFIGURED";
+
+  // ─── STEP: Phone Entry ─────────────────────────────────────
   if (step === "phone") {
     return (
       <div className="space-y-4">
@@ -143,6 +243,7 @@ const NatCashPaymentFlow = ({ amount, description, onSuccess, onFallback }: NatC
     );
   }
 
+  // ─── STEP: Instructions ────────────────────────────────────
   if (step === "instructions") {
     return (
       <div className="space-y-4">
@@ -160,13 +261,38 @@ const NatCashPaymentFlow = ({ amount, description, onSuccess, onFallback }: NatC
               </li>
               <li className="flex items-start gap-2">
                 <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">3</span>
-                <span>Entrez le montant: <strong>{amount} HTG</strong></span>
+                <span>
+                  {accountConfigured ? (
+                    <>Entrez le numéro: <strong className="text-primary">{accountNumber}</strong></>
+                  ) : (
+                    <span className="flex items-center gap-1 text-destructive">
+                      <AlertCircle size={14} />
+                      Numéro non disponible — contactez le support
+                    </span>
+                  )}
+                </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">4</span>
+                <span>Entrez le montant: <strong>{amount} HTG</strong></span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">5</span>
                 <span>Confirmez avec votre <strong>PIN NatCash</strong></span>
               </li>
             </ol>
+
+            {/* Destination info */}
+            {accountConfigured && (
+              <div className="bg-background rounded-lg p-3 text-center border border-border">
+                <p className="text-xs text-muted-foreground mb-1">Envoyer à</p>
+                <p className="font-mono font-bold text-lg text-primary">{accountNumber}</p>
+                {instructions?.accountName && instructions.accountName !== "NOT_CONFIGURED" && (
+                  <p className="text-xs text-muted-foreground">{instructions.accountName}</p>
+                )}
+              </div>
+            )}
+
             <div className="bg-background rounded-lg p-3 text-center">
               <p className="text-xs text-muted-foreground mb-1">Référence de commande</p>
               <p className="font-mono font-bold text-sm">{orderId}</p>
@@ -180,6 +306,7 @@ const NatCashPaymentFlow = ({ amount, description, onSuccess, onFallback }: NatC
             setStep("waiting");
             setPollCount(0);
           }}
+          disabled={!accountConfigured}
         >
           <CheckCircle className="mr-2 h-4 w-4" />
           J'ai effectué le transfert
@@ -188,6 +315,7 @@ const NatCashPaymentFlow = ({ amount, description, onSuccess, onFallback }: NatC
     );
   }
 
+  // ─── STEP: Waiting / Polling ───────────────────────────────
   if (step === "waiting") {
     const progress = Math.min((pollCount / MAX_POLLS) * 100, 100);
     return (
@@ -212,51 +340,118 @@ const NatCashPaymentFlow = ({ amount, description, onSuccess, onFallback }: NatC
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setStep("fallback")}
+          onClick={() => setStep("upload")}
         >
-          Pas encore confirmé? Essayer autrement
+          Pas encore confirmé? Téléverser mon reçu
         </Button>
       </div>
     );
   }
 
-  if (step === "success") {
+  // ─── STEP: Receipt Upload (Fallback) ───────────────────────
+  if (step === "upload") {
+    return (
+      <div className="space-y-4 py-2">
+        <div className="text-center">
+          <h4 className="font-semibold text-sm">Téléverser votre reçu</h4>
+          <p className="text-xs text-muted-foreground mt-1">
+            Prenez une photo ou sélectionnez la capture d'écran de votre transfert NatCash.
+          </p>
+        </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={handleFileSelect}
+        />
+
+        {receiptPreview ? (
+          <div className="space-y-3">
+            <div className="rounded-lg overflow-hidden border border-border">
+              <img
+                src={receiptPreview}
+                alt="Aperçu du reçu"
+                className="w-full max-h-48 object-contain bg-muted"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => {
+                  setReceiptPreview(null);
+                  setReceiptFile(null);
+                  fileInputRef.current?.click();
+                }}
+              >
+                <Camera className="mr-1 h-4 w-4" />
+                Changer
+              </Button>
+              <Button
+                size="sm"
+                className="flex-1"
+                onClick={handleUploadReceipt}
+                disabled={uploadLoading}
+              >
+                {uploadLoading ? (
+                  <><Loader2 className="mr-1 h-4 w-4 animate-spin" />Envoi...</>
+                ) : (
+                  <><Upload className="mr-1 h-4 w-4" />Envoyer</>
+                )}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <Button
+            variant="outline"
+            className="w-full h-24 border-dashed flex flex-col gap-1"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Camera className="h-6 w-6 text-muted-foreground" />
+            <span className="text-sm">Photo ou fichier du reçu</span>
+          </Button>
+        )}
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full"
+          onClick={() => {
+            setStep("waiting");
+            setPollCount(0);
+          }}
+        >
+          Réessayer la vérification automatique
+        </Button>
+      </div>
+    );
+  }
+
+  // ─── STEP: Pending Admin Verification ──────────────────────
+  if (step === "pending") {
     return (
       <div className="text-center py-6 space-y-3">
-        <CheckCircle className="h-12 w-12 text-[hsl(var(--success))] mx-auto" />
-        <h4 className="font-semibold text-lg">Paiement confirmé!</h4>
+        <Clock className="h-12 w-12 text-[hsl(var(--warning,40_96%_50%))] mx-auto" />
+        <h4 className="font-semibold text-lg">Reçu en cours de vérification</h4>
         <p className="text-sm text-muted-foreground">
-          Votre abonnement a été renouvelé pour 30 jours.
+          Un administrateur vérifiera votre paiement sous peu. Votre abonnement sera activé automatiquement.
         </p>
       </div>
     );
   }
 
-  // Fallback step
+  // ─── STEP: Success ─────────────────────────────────────────
   return (
-    <div className="space-y-4 text-center py-4">
+    <div className="text-center py-6 space-y-3">
+      <CheckCircle className="h-12 w-12 text-[hsl(var(--success))] mx-auto" />
+      <h4 className="font-semibold text-lg">Paiement confirmé!</h4>
       <p className="text-sm text-muted-foreground">
-        La vérification automatique n'a pas pu confirmer votre paiement. 
-        Vous pouvez téléverser votre reçu pour une vérification manuelle.
+        Votre abonnement a été renouvelé pour 30 jours.
       </p>
-      <Button
-        className="w-full"
-        variant="outline"
-        onClick={() => onFallback?.()}
-      >
-        <Upload className="mr-2 h-4 w-4" />
-        Téléverser mon reçu
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => {
-          setStep("waiting");
-          setPollCount(0);
-        }}
-      >
-        Réessayer la vérification automatique
-      </Button>
     </div>
   );
 };
