@@ -142,6 +142,50 @@ serve(async (req) => {
       } else {
         console.log(`Transaction ${dbOrderId} updated to: ${paymentStatus}`);
       }
+
+      // Extend user subscription by 30 days on completed payment
+      if (paymentStatus === 'completed') {
+        try {
+          const { data: txn } = await supabase
+            .from('payment_transactions')
+            .select('user_id')
+            .eq('order_id', dbOrderId)
+            .maybeSingle();
+
+          if (txn?.user_id) {
+            const { data: currentProfile } = await supabase
+              .from('profiles')
+              .select('subscription_end_date')
+              .eq('user_id', txn.user_id)
+              .maybeSingle();
+
+            const now = new Date();
+            const currentEnd = currentProfile?.subscription_end_date
+              ? new Date(currentProfile.subscription_end_date)
+              : null;
+            // Stack: if still active, add 30 days from current end; otherwise from now
+            const baseDate = (currentEnd && currentEnd > now) ? currentEnd : now;
+            const newEnd = new Date(baseDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+            const { error: subError } = await supabase
+              .from('profiles')
+              .update({
+                subscription_status: 'active',
+                subscription_end_date: newEnd.toISOString(),
+                payment_order_id: dbOrderId,
+              })
+              .eq('user_id', txn.user_id);
+
+            if (subError) {
+              console.error('Error extending subscription:', subError);
+            } else {
+              console.log(`Subscription extended for user ${txn.user_id} until ${newEnd.toISOString()}`);
+            }
+          }
+        } catch (subExtErr) {
+          console.error('Subscription extension failed:', subExtErr);
+        }
+      }
     }
 
     return new Response(
