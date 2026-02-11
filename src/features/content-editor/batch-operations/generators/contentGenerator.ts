@@ -28,8 +28,14 @@ export const contentGeneratorDialogConfig: BatchDialogConfig = {
   showSkipCheckbox: false,
 };
 
-// Helper: check if a lesson is missing core content
+// Helper: check if a lesson is missing core content (supports both flag-based and raw text)
 export const isLessonMissingContent = (lesson: BatchLesson): boolean => {
+  // Flag-based check (from lesson_content_flags view)
+  if ('has_objectif' in lesson || 'has_contenu' in lesson) {
+    return !(lesson as any).has_objectif || !(lesson as any).has_introduction || 
+           !(lesson as any).has_contenu || !(lesson as any).has_exemples;
+  }
+  // Fallback: raw text check
   const fields = [lesson.objectif, lesson.introduction, lesson.contenu, lesson.exemples_exercices];
   return fields.some(field => !field || field.trim().length < 10);
 };
