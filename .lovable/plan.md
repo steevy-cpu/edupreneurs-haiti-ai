@@ -1,60 +1,47 @@
 
 
-# Fix: Quiz JSON Parse Error in Edge Function
+# Add Typing Sound Effect to Jude's Generation Overlay
 
-## Problem
-The `generate-quiz-final` edge function fails with `SyntaxError: Bad escaped character in JSON at position 8411`. The AI model (Gemini 2.5 Flash) returns JSON containing improperly escaped characters -- typically backslashes in math expressions like `f(x₁) \ne f(x₂)` -- which causes `JSON.parse` to fail. The function returns a 500 error and the student sees "Quiz non disponible."
+## Overview
+Add a subtle keyboard typing sound that plays while Jude is "working" (generating quiz/activities/translations). The sound will be synthesized using the Web Audio API -- no external files needed, keeping it lightweight for 3G connections.
 
-## Root Cause
-Line 417 in `supabase/functions/generate-quiz-final/index.ts` does a raw `JSON.parse(rawContent)` with no sanitization. When the AI includes unescaped special characters (common in math-heavy lessons like "Applications et Bijections"), parsing fails.
+## Approach
+Embed the typing sound logic directly inside the `JudeGeneratingOverlay` component. Since this is the shared overlay used by all three generation screens (Quiz, Activities, and the Activities enhanced loader), adding the sound here means every consumer gets it automatically with zero changes.
 
-## Solution
-Add a JSON sanitization step before parsing, and a retry mechanism if the first attempt fails.
+The sound will use the Web Audio API (already used elsewhere in the project via `useSoundEffects.ts` and `useMessageSounds.ts`) to create a realistic typing pattern: short noise bursts at random intervals simulating keyboard clicks.
 
 ## Changes
 
-**File: `supabase/functions/generate-quiz-final/index.ts`** (lines 406-421)
+**File: `src/components/jude/JudeGeneratingOverlay.tsx`**
 
-1. After cleaning markdown code blocks (line 410), add a sanitization function that fixes common bad escape sequences:
-   - Replace invalid escape sequences like `\n` inside strings that aren't actual newlines, lone backslashes, etc.
-   - Use a regex to fix unescaped backslashes: replace `\` followed by a character that isn't a valid JSON escape (`"`, `\`, `/`, `b`, `f`, `n`, `r`, `t`, `u`) with `\\`
+1. Add a `useEffect` that starts a typing sound loop when `isVisible` becomes true:
+   - Create an `AudioContext`
+   - Use a recurring interval (~80-150ms random spacing) that plays short filtered noise bursts (like key clicks)
+   - Each "keystroke" is a ~30ms burst of filtered white noise with a quick gain envelope
+   - Add random pauses every few keystrokes to simulate natural typing rhythm
+   - Clean up the interval and close the `AudioContext` on unmount or when `isVisible` becomes false
 
-2. Wrap the parse in a two-step try/catch:
-   - **Step 1**: Try `JSON.parse(rawContent)` as-is
-   - **Step 2**: If that fails, sanitize the raw content by fixing bad escapes, then retry `JSON.parse`
-   - **Step 3**: If both fail, return the error
+2. Keep overall volume low (gain ~0.08) so it's ambient, not distracting
 
-### Code
+3. No new files, no network requests, no additional bundle size
 
-```typescript
-// Sanitize common AI JSON escape issues (math backslashes, etc.)
-const sanitizeJsonString = (str: string): string => {
-  // Fix invalid escape sequences: replace \X where X is not a valid JSON escape char
-  return str.replace(/\\([^"\\\/bfnrtu])/g, '\\\\$1');
-};
-
-let parsedQuiz;
-try {
-  parsedQuiz = JSON.parse(rawContent);
-} catch (parseError) {
-  console.warn('First JSON parse failed, attempting sanitization...');
-  try {
-    const sanitized = sanitizeJsonString(rawContent);
-    parsedQuiz = JSON.parse(sanitized);
-    console.log('JSON parse succeeded after sanitization');
-  } catch (secondError) {
-    console.error('Failed to parse JSON even after sanitization:', secondError);
-    return secureErrorResponse('AI returned invalid JSON', 500);
-  }
-}
+### Sound Design (Web Audio API)
 ```
+Keystroke = white noise -> bandpass filter (2000-4000Hz) -> gain envelope (30ms attack/decay)
+Pattern = random 80-150ms intervals, with occasional 300-500ms pauses
+Volume = 0.08 (subtle background)
+```
+
+This follows the existing project pattern from `useSoundEffects.ts` and `useMessageSounds.ts` which both use the Web Audio API for synthesized sounds.
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- valid JSON still parses on first try |
-| Handles math content? | Yes -- fixes unescaped backslashes common in math expressions |
-| 3G impact? | None -- server-side only |
-| Backward compatible? | Yes -- adds fallback, doesn't change success path |
+| Breaks existing functionality? | No -- adds audio only, no UI changes |
+| 3G optimized? | Yes -- zero network requests, pure Web Audio API synthesis |
+| Works across consumers? | Yes -- sound lives in the shared overlay component |
+| Cleanup on unmount? | Yes -- interval cleared and AudioContext closed |
+| Browser compatibility? | Yes -- Web Audio API supported in all modern browsers, with webkitAudioContext fallback |
+| Doesn't interfere with music player? | No -- uses separate AudioContext at low volume |
 
