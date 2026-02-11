@@ -1,102 +1,67 @@
 
 
-# Jude-Branded Quiz and Activities Experience
+# Randomized Jude Feedback Messages
 
-## Overview
-Transform the quiz and activities sections so that **Jude** feels like the one generating questions and giving personalized feedback — matching the translate page pattern where Jude's avatar, name, and personality are front and center.
+## Problem
+Currently, Jude always says the same two phrases: "Bravo !" for correct and "Pas tout a fait..." for incorrect. This feels repetitive and less engaging, especially with 10-15 questions per session.
 
-## What Changes
+## Solution
+Add a pool of varied feedback messages for both correct and incorrect answers, randomly selected each time. This makes Jude feel more alive and conversational.
 
-### 1. Loading States -- "Jude is preparing your quiz/activities"
-**Files: `LessonActivitiesTab.tsx` and `LessonQuizTab.tsx`**
+## Changes
 
-Replace the generic Skeleton/Sparkles loading with a reusable `JudeGeneratingOverlay` component (similar to `JudeTranslatingOverlay`):
-- Jude's avatar (eric-chair-desk.png) with pulse animation
-- Text: "Jude prepare tes activites..." / "Jude prepare ton quiz..."
-- Bouncing dots indicator
+### File: `src/components/jude/JudeFeedback.tsx`
 
-### 2. New Reusable Component: `JudeGeneratingOverlay`
-**New file: `src/components/jude/JudeGeneratingOverlay.tsx`**
+Add two arrays of randomized messages and pick one on each render:
 
-A generic overlay component that accepts a `message` prop:
-```
-Props:
-- isVisible: boolean
-- message: string (e.g., "Jude prepare ton quiz...")
-```
+**Correct answer messages (pool of 8+):**
+- "Bravo !"
+- "Excellent !"
+- "Parfait !"
+- "Super boulot !"
+- "Tu geres !"
+- "Impressionnant !"
+- "C'est ca !"
+- "Bien joue !"
+- "Tu assures !"
+- "Magnifique !"
 
-Uses the same pattern as `JudeTranslatingOverlay`: Jude avatar + pulse + bouncing dots.
+**Incorrect answer messages (pool of 8+):**
+- "Pas tout a fait..."
+- "Presque !"
+- "Essaie encore la prochaine fois !"
+- "Pas exactement..."
+- "C'est pas grave, on apprend !"
+- "Bonne tentative !"
+- "Continue, tu vas y arriver !"
+- "Hmm, pas cette fois..."
+- "Ne lache pas !"
+- "Regarde bien l'explication !"
 
-### 3. Feedback Messages -- "Jude says..."
-**File: `InteractiveActivitiesEnhanced.tsx`**
+**Emojis also randomized** to match the variety of messages.
 
-When showing feedback after answering:
-- Add Jude's small avatar next to the feedback text
-- Correct: "Bravo! [explanation]" with Jude's happy avatar
-- Incorrect: "Pas tout a fait... [explanation]" with Jude's encouraging avatar
+Implementation uses `useMemo` with a random index so the message stays stable during re-renders but changes per question.
 
-**File: `QuizRenderer.tsx`**
+### File: `src/components/jude/JudeCompletionScreen.tsx`
 
-Same pattern:
-- Add Jude's avatar next to the feedback block
-- Personalized feedback text from Jude
+Add more granular score tiers with varied messages:
+- 100%: "Parfait ! Tu es un champion !"
+- 80-99%: pool of 3 encouraging messages
+- 60-79%: pool of 3 motivating messages  
+- Below 60%: pool of 3 supportive messages
 
-### 4. Completion Screens -- "Jude congratulates you"
-**File: `InteractiveActivitiesEnhanced.tsx` (completion section)**
+## Files Modified
 
-Replace the generic emoji completion with:
-- Jude's larger avatar at the top
-- Personalized message from Jude based on score:
-  - 80%+: "Jude: Excellent travail! Tu maitrises ce sujet!"
-  - 60-79%: "Jude: Bien joue! Continue comme ca!"
-  - Below 60: "Jude: Ne lache pas! Revise la lecon et reessaye!"
-
-**File: `QuizRenderer.tsx` (completion section)**
-
-Same Jude-branded completion screen.
-
-### 5. Headers -- Jude branding
-**Files: `LessonActivitiesTab.tsx` and `LessonQuizTab.tsx`**
-
-Add a small Jude avatar icon next to the section titles:
-- "Activites par Jude" (with small avatar)
-- "Quiz par Jude" (with small avatar)
-
-## Detailed File Changes
-
-| File | Changes |
-|------|---------|
-| `src/components/jude/JudeGeneratingOverlay.tsx` | **NEW** -- Reusable Jude loading overlay (avatar + pulse + dots + custom message) |
-| `src/features/matieres/components/tabs/LessonActivitiesTab.tsx` | Replace Skeleton loading with JudeGeneratingOverlay; add Jude avatar to header |
-| `src/features/matieres/components/tabs/LessonQuizTab.tsx` | Replace Skeleton loading with JudeGeneratingOverlay; add Jude avatar to header |
-| `src/components/InteractiveActivitiesEnhanced.tsx` | Add Jude avatar to feedback blocks and completion screen; update loading state |
-| `src/features/matieres/renderers/QuizRenderer.tsx` | Add Jude avatar to feedback blocks and completion screen |
-
-## UX Flow
-
-```text
-User clicks "Activites" tab
-    |
-    v
-[Jude avatar + pulse + "Jude prepare tes activites..."]
-    |
-    v
-[Questions appear, header shows "Activites par Jude"]
-    |
-    v
-User answers --> [Jude avatar + "Bravo!" or "Pas tout a fait..."]
-    |
-    v
-All done --> [Large Jude avatar + personalized score message]
-```
+| File | Change |
+|------|--------|
+| `src/components/jude/JudeFeedback.tsx` | Add randomized message pools for correct/incorrect feedback |
+| `src/components/jude/JudeCompletionScreen.tsx` | Add more varied score-based messages |
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- only UI/cosmetic changes, no logic changes |
-| Works with existing data? | Yes -- no data structure changes |
-| 3G optimized? | Yes -- Jude image already cached by service worker; reuses existing asset |
-| Edge cases handled? | Yes -- JudeGeneratingOverlay has isVisible guard |
-| Backward compatible? | Yes -- same quiz/activity data, just better presentation |
+| Breaks existing functionality? | No -- same component API, just varied text |
+| 3G optimized? | Yes -- no network changes, just string arrays |
+| Backward compatible? | Yes -- same props interface |
 
