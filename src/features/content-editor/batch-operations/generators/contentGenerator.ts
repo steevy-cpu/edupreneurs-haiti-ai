@@ -28,6 +28,17 @@ export const contentGeneratorDialogConfig: BatchDialogConfig = {
   showSkipCheckbox: false,
 };
 
+// Placeholder patterns that should not count as real content
+const PLACEHOLDER_PATTERNS = [
+  'contenu à venir...', 'contenu a venir...',
+  'exercices à venir...', 'exercices a venir...',
+];
+
+const isPlaceholderOrEmpty = (field?: string | null): boolean => {
+  if (!field || field.trim().length < 10) return true;
+  return PLACEHOLDER_PATTERNS.includes(field.trim().toLowerCase());
+};
+
 // Helper: check if a lesson is missing core content (supports both flag-based and raw text)
 export const isLessonMissingContent = (lesson: BatchLesson): boolean => {
   // Flag-based check (from lesson_content_flags view)
@@ -35,9 +46,9 @@ export const isLessonMissingContent = (lesson: BatchLesson): boolean => {
     return !(lesson as any).has_objectif || !(lesson as any).has_introduction || 
            !(lesson as any).has_contenu || !(lesson as any).has_exemples;
   }
-  // Fallback: raw text check
-  const fields = [lesson.objectif, lesson.introduction, lesson.contenu, lesson.exemples_exercices];
-  return fields.some(field => !field || field.trim().length < 10);
+  // Fallback: raw text check with placeholder detection
+  return isPlaceholderOrEmpty(lesson.objectif) || isPlaceholderOrEmpty(lesson.introduction) ||
+         isPlaceholderOrEmpty(lesson.contenu) || isPlaceholderOrEmpty(lesson.exemples_exercices);
 };
 
 // Factory function for content generator config
