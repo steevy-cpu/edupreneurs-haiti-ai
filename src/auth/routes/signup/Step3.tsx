@@ -246,7 +246,7 @@ export default function SignupStep3() {
              <Button
               type="button"
               onClick={handleMonCashPayment}
-              disabled={isCreatingPayment || !privacy}
+              disabled={isCreatingPayment}
               className="w-full"
               size="lg"
             >
