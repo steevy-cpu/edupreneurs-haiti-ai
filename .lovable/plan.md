@@ -1,29 +1,67 @@
 
 
-# Fix: Subscription Banner Hidden Behind Sidebar
+# Fix: Typewriter Animation Restarts on User Input
 
-## Problem
-The subscription expiry banner at the top of the page uses `z-50` (z-index: 50), but the sidebar uses `z-[1000]`. This means the sidebar renders **on top** of the banner, cutting it off on the left side.
+## Root Cause
 
-## Solution
-Two changes to `src/components/SubscriptionExpiryBanner.tsx`:
+In `TypewriterText` (line 47), the `useEffect` that drives the animation depends on `[text, speed, onComplete]`. The `onComplete` prop is an **inline arrow function** passed on line 208:
 
-1. **Increase z-index** from `z-50` to `z-[1100]` so the banner stacks above the sidebar (`z-[1000]`) and the sidebar toggle button (`z-[1001]`).
-
-2. **Add left padding on desktop** to offset the banner content from behind the sidebar. On large screens (`lg:`), add `lg:pl-[260px]` (matching the sidebar width) so the banner text starts after the sidebar. This way the banner spans the full top but the content is visible.
-
-## Technical Detail
-
-**File: `src/components/SubscriptionExpiryBanner.tsx`** (line 45)
-
-Change the className from:
-```
-fixed top-0 left-0 right-0 z-50 px-4 py-2.5 ...
-```
-To:
-```
-fixed top-0 left-0 right-0 z-[1100] px-4 py-2.5 lg:pl-[260px] ...
+```tsx
+onComplete={() => setTypingMessageIndex(null)}
 ```
 
-This keeps the banner full-width visually (background color spans edge to edge) while ensuring the text and buttons are not hidden behind the sidebar on desktop.
+Every keystroke in the input causes `HomeChatbot` to re-render (because `input` state changes), which creates a **new function reference** for `onComplete`. This triggers the `useEffect` cleanup and re-run, resetting `displayedText` back to `''` and restarting the animation from scratch.
+
+## Fix
+
+**File: `src/components/HomeChatbot.tsx`**
+
+Store `onComplete` in a `useRef` inside `TypewriterText` so it never triggers the effect to re-run. Remove `onComplete` from the dependency array.
+
+Changes to the `TypewriterText` component (lines 18-55):
+
+```typescript
+const TypewriterText = ({ text, speed = 15, onComplete }) => {
+  const [displayedText, setDisplayedText] = useState('');
+  const [isComplete, setIsComplete] = useState(false);
+  const onCompleteRef = useRef(onComplete);
+
+  // Keep ref updated without triggering effect
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  useEffect(() => {
+    setDisplayedText('');
+    setIsComplete(false);
+    let index = 0;
+
+    const timer = setInterval(() => {
+      if (index < text.length) {
+        setDisplayedText(text.slice(0, index + 1));
+        index++;
+      } else {
+        setIsComplete(true);
+        onCompleteRef.current?.();  // Use ref instead of prop
+        clearInterval(timer);
+      }
+    }, speed);
+
+    return () => clearInterval(timer);
+  }, [text, speed]);  // onComplete removed from deps
+  // ...
+};
+```
+
+This is the same pattern already used in `MessageTypewriter.tsx` (lines 36-39), so it maintains consistency across the codebase.
+
+## Safety Verification
+
+| Check | Status |
+|-------|--------|
+| Breaks existing functionality? | No -- animation works the same, just doesn't restart |
+| Works with existing data? | Yes -- no data changes |
+| 3G optimized? | Yes -- actually fixes unnecessary re-processing |
+| Edge cases handled? | Yes -- ref always stays current |
+| Backward compatible? | Yes -- same API, same behavior once stable |
 
