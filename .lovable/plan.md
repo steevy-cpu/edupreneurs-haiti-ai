@@ -1,141 +1,127 @@
 
 
-# Lesson Page Structure Review -- Findings and Recommendations
+# Batch Content Generator -- Empty Lessons Detection and Generation
 
-## Current Architecture Overview
+## Problem
+Many lessons exist as empty shells (title + objectif only, no introduction/contenu/exemples). For example:
+- **9AF**: ~50 lessons missing content
+- **NS2**: ~93 lessons missing content
+- **NS3**: 7 lessons missing content
 
-The lesson page flow follows this path:
+Currently, the only way to generate content is one lesson at a time via `SingleLessonGenerator`. There's no visibility into how many lessons are empty, and no batch generation for core content.
+
+## Solution
+Add a new **"Contenu manquant"** (Missing Content) stats section and batch generation button in the `LessonBrowser` sidebar, following the same visual pattern as the existing quiz stats/buttons. This includes:
+
+1. A progress bar showing `X/Y leçons avec contenu` (like the quiz progress bar)
+2. A batch generation button to process all empty lessons
+3. A checkbox filter to show only empty lessons
+
+## Architecture (Following Existing Patterns)
+
+The implementation follows the established batch operations architecture exactly:
 
 ```text
-Route (/course/:slug/:lessonSlug)
-  -> DynamicLessonPage.tsx (data fetcher + gate)
-    -> LessonPageTemplate.tsx (558-line monolith -- layout + tabs + header)
-      -> Tab Components (in src/features/matieres/components/tabs/)
-        -> LessonIntroductionTab
-        -> LessonContenuTab
-        -> LessonActivitiesTab (AI-generated)
-        -> LessonQuizTab (AI-generated)
-        -> LessonNotesTab
-      -> Supporting Components (in src/components/lesson/)
-        -> LessonNavigation
-        -> LessonQuickStats
-        -> LessonFeedback
-        -> LessonAIPracticeSection
-        -> ProgressiveContent
+src/features/content-editor/batch-operations/
+  generators/
+    quizGenerator.ts          (existing pattern to follow)
+    contentGenerator.ts       <-- NEW: config for batch content generation
+  wrappers/
+    BatchQuizGeneratorNew.tsx  (existing pattern to follow)
+    BatchContentGenerator.tsx  <-- NEW: wrapper component
+  types.ts                     (update BatchLesson to include objectif, introduction)
 ```
 
-## What's Working Well
+## Detailed Changes
 
-- **Tab decomposition**: Each tab is its own component -- good separation of concerns
-- **Lazy loading**: AI-generated tabs (Quiz, Activities) only fetch when accessed
-- **Caching strategy**: localStorage with 7-day staleness in `useAIGeneratedContent.ts` -- solid for 3G
-- **Abort controllers**: Proper cleanup on unmount in AI hooks
-- **Defensive queries**: `.maybeSingle()` everywhere -- prevents crashes on missing data
-- **Sanitization**: Centralized `lib/sanitize.ts` with comprehensive DOMPurify config
+### 1. Update `BatchLesson` type (types.ts)
+Add the missing fields so the filter can check for empty content:
+- `objectif?: string | null`
+- `introduction?: string | null`
+- `youtube_url?: string | null`
 
-## Structural Issues Found
+### 2. Create Content Generator Config (`generators/contentGenerator.ts`)
+Following the exact same pattern as `quizGenerator.ts`:
+- **filterLesson**: Check if lesson is missing any of: objectif, introduction, contenu, exemples_exercices (any field empty or null = needs generation)
+- **processLesson**: Call the existing `process-ai-job` edge function (same one used by `SingleLessonGenerator`) with the 4 core sections + images + youtube enabled
+- **updateLesson**: Save generated content back to the lesson
+- **theme**: Use a blue/indigo color scheme to differentiate from quiz (green) and validation (amber/purple)
+- **rateLimit**: 3000ms (content generation is heavier than quiz generation)
+- **concurrency**: 1 (one lesson at a time since each generation is multi-step)
 
-### Issue 1: LessonPageTemplate.tsx is a 558-line monolith
+### 3. Create Wrapper Component (`wrappers/BatchContentGenerator.tsx`)
+Following `BatchQuizGeneratorNew.tsx` pattern exactly:
+- Accepts `lessons`, `gradeLevel`, `onComplete`, `onStart`, `disabled` props
+- Uses `useBatchOperation` hook with the content generator config
+- Renders `BatchOperationDialog`
 
-This file handles header rendering, tab navigation, objectif expand/collapse, stats calculation, subject gradients, motivational messages, completion checking, and tab content assembly. It's the most fragile file in the lesson flow -- any change risks breaking something else.
+### 4. Update LessonBrowser.tsx
+Add to the existing stats section (lines 418-515):
 
-**Risk**: High. Every UI tweak to the lesson page touches this one file.
+**New computed values** (alongside existing quiz stats):
+- `lessonsWithContent`: count of lessons where ALL 4 fields have content
+- `lessonsMissingContent`: filtered list of lessons missing any content field
+- `contentPercentage`: coverage percentage
 
-### Issue 2: Duplicate sanitization logic
+**New UI elements** (inside the grade-level stats block):
+- A second progress bar: `{gradeLevel}: {withContent}/{total} contenu`
+- A `BatchContentGenerator` button (only shown when `lessonsMissingContent.length > 0`)
+- A new checkbox: `Contenu manquant uniquement` filter
 
-`LessonPageTemplate.tsx` defines its own `PURIFY_CONFIG` and `sanitizeHtml` (lines 31-44) while `lib/sanitize.ts` already provides the same thing with a more comprehensive config. The template's version is a subset and could miss edge cases.
+**New fields in lesson query** (line 157): Add `objectif, introduction, youtube_url` to the select query so we can check for empty content without extra fetches.
 
-**Risk**: Medium. Inconsistent sanitization across the app.
+### 5. Update Lesson List Badges
+Add a new badge on each lesson item when it's missing content:
+- Orange badge with `FileX` icon showing "Vide" (Empty) when core content is missing
 
-### Issue 3: Duplicate mobile/desktop header rendering
+### 6. Export from index.ts
+Add the new generator and wrapper exports.
 
-The header section (lines 230-385) renders the **exact same content twice** -- once for mobile (`lg:hidden`) and once for desktop (`hidden lg:block`). That's ~150 lines of near-identical JSX. Any change must be applied in two places or the layouts diverge silently.
+## Processing Logic (What Gets Generated Per Lesson)
 
-**Risk**: High. This is the most likely source of bugs when updating the header.
+Each empty lesson will be processed through the existing `process-ai-job` edge function with this config:
+- **Sections**: objectif, introduction, contenu, exemples_exercices
+- **Images**: enabled (using Lovable model)
+- **YouTube**: enabled (video suggestions)
+- **Quiz**: NOT included (handled by the existing BatchQuizGenerator)
+- **Activities**: NOT included (handled by existing BatchQuizGenerator flow)
 
-### Issue 4: Helper functions inside the component file
+This reuses the exact same generation pipeline that `SingleLessonGenerator` uses, just automated across multiple lessons.
 
-`countActivities`, `countQuizQuestions`, `estimateReadingTime`, `stripHtmlToText` are utility functions defined in `LessonPageTemplate.tsx`. They belong in a utility file and are untestable in their current location.
-
-**Risk**: Low. Functional but messy.
-
-### Issue 5: LessonData interface defined locally
-
-The `LessonData` and `SiblingLesson` interfaces are defined inside `LessonPageTemplate.tsx` (lines 54-76) AND duplicated in `DynamicLessonPage.tsx` (`SiblingLesson` at line 14). If one changes, the other might not.
-
-**Risk**: Medium. Type drift between pages.
-
-### Issue 6: No ErrorBoundary around tab content
-
-If a tab component throws (e.g., bad AI response crashes `QuizRenderer`), the entire lesson page goes blank. Each tab should be wrapped in an error boundary so one broken tab doesn't take down the whole page.
-
-**Risk**: High. A single parsing error in quiz data can destroy the user's session.
-
-### Issue 7: The page doesn't use AppShell's PageContainer
-
-`LessonPageTemplate` builds its own layout from scratch (`min-h-screen`, custom container, custom sticky nav) instead of using the standardized `PageContainer` and `CourseLayout` components. This means it doesn't benefit from the app's consistent spacing and scroll isolation.
-
-**Risk**: Low-medium. Works now, but diverges from platform conventions.
-
-## Proposed Refactoring Plan
-
-### Step 1: Extract LessonHeader component
-Pull the entire header section (badges, title, Jude image, objectif, motivational message, download button) into `src/features/matieres/components/LessonHeader.tsx`. Unify the mobile/desktop markup using responsive classes on a **single** set of elements instead of duplicating the entire block.
-
-### Step 2: Remove duplicate sanitization
-Delete the local `PURIFY_CONFIG`, `sanitizeHtml`, and `stripHtmlToText` from `LessonPageTemplate.tsx`. Import `sanitizeHtml` from `@/lib/sanitize`. Move `stripHtmlToText` to a shared utility (`@/lib/text-utils.ts`).
-
-### Step 3: Extract shared types
-Create `src/features/matieres/types/lesson.types.ts` containing `LessonData`, `SiblingLesson`, and any other shared lesson interfaces. Import from there in both `DynamicLessonPage.tsx` and `LessonPageTemplate.tsx`.
-
-### Step 4: Extract utility functions
-Move `countActivities`, `countQuizQuestions`, `estimateReadingTime` to `src/features/matieres/utils/lesson-stats.ts`.
-
-### Step 5: Add TabErrorBoundary
-Create a lightweight `TabErrorBoundary` component that catches errors inside each tab and shows "This section encountered an error -- try refreshing" instead of crashing the whole page. Wrap each `TabsContent` child with it.
-
-### Step 6: Slim down LessonPageTemplate
-After steps 1-5, `LessonPageTemplate.tsx` becomes a ~150-line orchestrator that:
-- Manages tab state and completion tracking
-- Composes `LessonHeader`, `LessonNavigation`, `LessonQuickStats`, tabs, and `LessonFeedback`
-- No rendering logic, no utility functions, no type definitions
-
-## File Structure After Refactoring
+## Visual Layout (in LessonBrowser stats section)
 
 ```text
-src/features/matieres/
-  types/
-    lesson.types.ts           <-- NEW: LessonData, SiblingLesson
-  utils/
-    lesson-stats.ts           <-- NEW: countActivities, countQuizQuestions, estimateReadingTime
-  components/
-    LessonHeader.tsx          <-- NEW: unified header (mobile+desktop)
-    TabErrorBoundary.tsx      <-- NEW: error boundary for tabs
-    tabs/
-      (unchanged)
+7AF: 204/204 quizzes                    100%
+[========================================] 
 
-src/lib/
-  text-utils.ts               <-- NEW: stripHtmlToText
-  sanitize.ts                 (unchanged)
+7AF: 154/204 contenu                     75%    <-- NEW
+[==============================          ]      <-- NEW
 
-src/components/
-  LessonPageTemplate.tsx      <-- SLIMMED: ~150 lines, orchestration only
+Generation
+[Générer 50 contenus manquants]                 <-- NEW (blue button)
+[Générer 50 quizzes manquants]                  (existing green button)
+
+Validation
+[Valider alignement contenu]
+[Valider alignement activités]
+...
 ```
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- pure refactoring, no behavior changes |
-| Works with existing data? | Yes -- no database changes |
-| 3G optimized? | Yes -- no new network calls, same lazy-loading |
-| Backward compatible? | Yes -- same props, same routes |
-| Edge cases handled? | Improved -- TabErrorBoundary catches tab crashes |
+| Breaks existing functionality? | No -- adds new section alongside existing ones |
+| Works with existing data? | Yes -- checks for null/empty fields already in DB |
+| 3G optimized? | Yes -- reuses existing generation pipeline with proper delays |
+| Backward compatible? | Yes -- empty lessons simply show as "needs generation" |
+| Edge cases? | Lessons with partial content (e.g., has objectif but no contenu) are included |
+| Rate limiting? | 3s delay between lessons, concurrency of 1 |
+| Follows existing patterns? | Yes -- mirrors quizGenerator.ts and BatchQuizGeneratorNew.tsx exactly |
 
 ## What This Does NOT Change
-- Tab components stay as-is (already well-structured)
-- AI generation hooks stay as-is (already solid)
-- ProgressiveContent stays as-is
-- Routing stays as-is
-- No database changes
+- SingleLessonGenerator stays as-is (still available for individual lessons)
+- Quiz generation/validation buttons unchanged
+- Tab components unchanged
+- No database schema changes needed
 
