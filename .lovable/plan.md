@@ -1,208 +1,90 @@
 
-# Dynamic AI-Generated Quiz and Activities
+# Fix: Activities Generation — 10-15 Questions with Content Grounding
 
-## Overview
+## Problem
+The edge function `generate-interactive-activities` is producing only 2 activities instead of 10-15. Two issues:
 
-Replace the current static (pre-stored) quiz and activities content with on-demand AI generation via Lovable AI. When a user clicks the Quiz or Activities tab, the system generates fresh content from the lesson's `contenu` and `exemples_exercices`, then caches it on the device so subsequent visits are instant. The existing static HTML content stays in the database as a safety fallback but is no longer the primary rendering path.
-
-## How It Works
-
-```text
-User clicks "Quiz" tab
-        |
-        v
-  Check localStorage cache
-  (key: quiz_{lessonId}_v1)
-        |
-   +----+----+
-   |         |
- CACHED    NOT CACHED
-   |         |
-   v         v
- Render    Show skeleton +
- instantly "Generating quiz..."
-             |
-             v
-        Call edge function
-        (generate-quiz-final)
-             |
-             v
-        Parse + validate JSON
-             |
-             v
-        Save to localStorage
-             |
-             v
-          Render quiz
-```
-
-Same flow for Activities tab using `generate-interactive-activities`.
-
-## Architecture Decisions
-
-- **No database storage for student-facing generated content** -- we cache in localStorage only. This keeps it simple, avoids table bloat, and works offline after first generation.
-- **Existing static content preserved** -- `quiz_final` and `activites_interactives` columns remain untouched. The legacy HTML renderers (`HTMLQuizParser`, `InteractiveActivitiesEnhanced`) stay in the codebase but are no longer the primary path.
-- **Existing `QuizRenderer` reused** -- it already renders the `QuizPayload` JSON structure perfectly with progress bar, feedback, score. We just need to feed it AI-generated data.
-- **Regenerate button** -- clears the cache and re-triggers generation for fresh questions.
-- **Edge functions already exist** -- `generate-quiz-final` (with `outputFormat: 'json'`) and `generate-interactive-activities` are already built and deployed. We reuse them as-is.
+1. **Question count too vague**: The prompt says "8-10 QUIZ + 5-7 TRUE_FALSE" but the AI often under-generates. Need a stricter minimum of 10-15 total questions.
+2. **Content not grounded**: The user prompt just dumps `exercisesContent` as raw text without clearly labeling it as "Contenu de la lecon" and "Exemples et exercices". The AI needs explicit instructions that ALL questions must be based ONLY on the provided lesson content.
 
 ## Changes
 
-### 1. New hook: `useAIGeneratedContent`
+### File: `supabase/functions/generate-interactive-activities/index.ts`
 
-**New file: `src/features/matieres/hooks/useAIGeneratedContent.ts`**
+**1. Update the user prompt (both French and Creole versions, lines 274-304)**
 
-A reusable hook that handles the generate-cache-render lifecycle for both quiz and activities:
+Restructure the user prompt to:
+- Clearly separate and label "CONTENU DE LA LECON" and "EXEMPLES ET EXERCICES" as distinct sections
+- Change the question count instruction to: "Genere EXACTEMENT 10 a 15 questions au total: 7-10 questions QCM + 3-5 affirmations VRAI/FAUX"
+- Add a grounding instruction: "TOUTES les questions doivent etre basees UNIQUEMENT sur le contenu ci-dessus. Ne pose JAMAIS de questions sur des sujets non couverts dans la lecon."
 
-- Accepts: `lessonId`, `contentType` ('quiz' | 'activities'), lesson metadata (title, contenu, grade, subject)
-- On mount: checks `localStorage` for cached content (`quiz_{lessonId}_v1` or `activities_{lessonId}_v1`)
-- If cached: returns parsed data immediately, no network call
-- If not cached: calls the appropriate edge function, validates the response, saves to localStorage, returns data
-- Exposes: `{ data, isLoading, isGenerating, error, regenerate }`
-- `regenerate()`: clears cache and re-triggers generation
-- Uses `staleTime` concept: cached content older than 7 days gets a "Regenerer?" suggestion badge but still renders
+**2. Update the system prompt question count (lines 182, 261)**
 
-Cache key format: `ai_quiz_{lessonId}_v1` / `ai_activities_{lessonId}_v1`
+Change rule 6 from:
+```
+Genere 8-10 questions QUIZ + 5-7 affirmations TRUE_FALSE
+```
+To:
+```
+Genere EXACTEMENT 10 a 15 questions au total: 7-10 questions QCM + 3-5 affirmations VRAI/FAUX. NE JAMAIS generer moins de 10 questions.
+```
 
-Cache value structure:
+**3. Update input schema to accept separate contenu and exemples fields**
+
+Add optional `contenu` and `exemplesExercices` fields to the Zod schema so the hook can pass them separately. Keep backward compatibility with `exercisesContent`.
+
+**4. Update the hook to pass separate fields**
+
+In `useAIGeneratedContent.ts` (line 231), change the body to pass `contenu` and `exemplesExercices` as separate fields alongside `exercisesContent` (for backward compat):
+
 ```typescript
-{
-  payload: QuizPayload | ActivitiesPayload,
-  generatedAt: ISO string,
-  lessonTitle: string
+body: {
+  exercisesContent: combinedContent,  // kept for backward compat
+  contenu: lessonContent,             // new: lesson main content
+  exemplesExercices: lessonExamples,   // new: examples section
+  lessonTitle,
+  gradeLevel,
+  subject: subjectName,
 }
 ```
 
-### 2. Rewrite: `LessonQuizTab.tsx`
+### Updated User Prompt (French version)
 
-**File: `src/features/matieres/components/tabs/LessonQuizTab.tsx`**
+```
+Lecon: "${lessonTitle}"
+Niveau: ${gradeLevel}
+Matiere: ${subject}
 
-Replace the current flow (fetch from `lesson_assets` table then fallback to legacy HTML) with:
+=== CONTENU DE LA LECON ===
+${contenu}
 
-- Use `useAIGeneratedContent('quiz', ...)` hook
-- Three states:
-  - **Loading/Generating**: Skeleton with animated "Generation du quiz en cours..." message
-  - **Ready**: Render `QuizRenderer` with the AI-generated `QuizPayload`
-  - **Error**: Show error card with "Reessayer" button
-- Add "Regenerer le quiz" button (RefreshCw icon) in the card header
-- Remove dependency on `useLessonQuizAsset` (the lesson_assets table query)
-- Remove `legacyQuizHtml` prop -- no longer needed as primary path
+=== EXEMPLES ET EXERCICES DE LA LECON ===
+${exemplesExercices}
 
-New props:
-```typescript
-interface LessonQuizTabProps {
-  lessonId: string;
-  lessonSlug: string;
-  subjectName: string;
-  subjectSlug: string;
-  gradeLevel: string;
-  lessonContent: string;      // lesson.contenu
-  lessonExamples: string;     // lesson.exemples_exercices
-  legacyQuizHtml?: string | null;  // kept as emergency fallback
-}
+INSTRUCTIONS CRITIQUES:
+- Genere EXACTEMENT 10 a 15 questions au total
+- 7 a 10 questions QCM (choix multiples avec 4 options A, B, C, D)
+- 3 a 5 affirmations VRAI/FAUX
+- TOUTES les questions doivent etre basees UNIQUEMENT sur le contenu ci-dessus
+- Ne pose JAMAIS de questions sur des sujets non couverts dans la lecon
+- Les options doivent etre sur des lignes separees: "A) texte"
+- Separe les questions/affirmations avec "---"
+- Fournis une explication claire pour chaque reponse
 ```
 
-### 3. Rewrite: `LessonActivitiesTab.tsx`
+## Files Modified
 
-**File: `src/features/matieres/components/tabs/LessonActivitiesTab.tsx`**
-
-Same pattern as quiz:
-
-- Use `useAIGeneratedContent('activities', ...)` hook
-- Render activities using `InteractiveActivitiesEnhanced` (pass generated HTML) or build a new JSON-based renderer
-- Add "Regenerer les activites" button
-- Remove dependency on `useLessonActivitiesAsset`
-
-New props:
-```typescript
-interface LessonActivitiesTabProps {
-  lessonId: string;
-  subjectName: string;
-  gradeLevel: string;
-  lessonTitle: string;
-  lessonContent: string;
-  lessonExamples: string;
-  legacyActivitiesHtml?: string | null;
-}
-```
-
-### 4. Update: `LessonPageTemplate.tsx`
-
-**File: `src/components/LessonPageTemplate.tsx`**
-
-Pass additional props to the Quiz and Activities tabs:
-
-```tsx
-<LessonQuizTab
-  lessonId={lesson.id}
-  lessonSlug={lessonSlug}
-  subjectName={subjectName}
-  subjectSlug={subjectSlug}
-  gradeLevel={gradeLevel}
-  lessonContent={lesson.contenu}
-  lessonExamples={lesson.exemples_exercices}
-  legacyQuizHtml={lesson.quiz_final}
-/>
-
-<LessonActivitiesTab
-  lessonId={lesson.id}
-  subjectName={subjectName}
-  gradeLevel={gradeLevel}
-  lessonTitle={lesson.title}
-  lessonContent={lesson.contenu}
-  lessonExamples={lesson.exemples_exercices}
-  legacyActivitiesHtml={lesson.activites_interactives}
-/>
-```
-
-### 5. Edge function adjustment: `generate-quiz-final`
-
-**File: `supabase/functions/generate-quiz-final/index.ts`**
-
-Minor change: set `verify_jwt = false` in config.toml so unauthenticated students can also generate quizzes (the function already works without auth). The rate limiting will still protect against abuse.
-
-Actually, looking at the config, `generate-quiz-final` already has `verify_jwt = false`. But `generate-interactive-activities` has `verify_jwt = true` -- we need to handle this by passing the auth token from the client, which `supabase.functions.invoke` already does automatically.
-
-### 6. Activities edge function: ensure HTML output for compatibility
-
-**File: `supabase/functions/generate-interactive-activities/index.ts`**
-
-The existing function already outputs HTML content that `InteractiveActivitiesEnhanced` can render. No changes needed to the edge function itself. The hook will call it with the lesson content and receive back HTML to pass to the existing renderer.
-
-## What Does NOT Change
-
-- **Database tables**: `lessons`, `lesson_assets` -- untouched
-- **Static content**: `quiz_final` and `activites_interactives` columns keep their data
-- **Content Editor**: The admin-side batch generation/validation system stays as-is
-- **QuizRenderer component**: Reused as-is for JSON quiz rendering
-- **InteractiveActivitiesEnhanced component**: Reused as-is for activities rendering
-- **Edge functions**: Reused as-is, no prompt changes
-
-## 3G Optimization Strategy
-
-- **First visit**: ~3-8 seconds generation time (shown with progress animation)
-- **Subsequent visits**: Instant from localStorage (0ms network)
-- **Cache size**: ~5-15KB per quiz/activity (lightweight JSON/HTML)
-- **No unnecessary re-fetching**: Cache persists across sessions until user explicitly regenerates
-- **Skeleton loading**: Immediate visual feedback while generating
+| File | Change |
+|------|--------|
+| `supabase/functions/generate-interactive-activities/index.ts` | Update prompts: question count 10-15, content grounding, separate contenu/exemples |
+| `src/features/matieres/hooks/useAIGeneratedContent.ts` | Pass `contenu` and `exemplesExercices` as separate body fields |
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- static content preserved, legacy renderers kept |
+| Breaks existing functionality? | No -- backward compat with exercisesContent maintained |
 | Works with existing data? | Yes -- uses lesson.contenu which all lessons have |
-| 3G optimized? | Yes -- localStorage cache means one-time cost, instant thereafter |
-| Edge cases handled? | No contenu (show fallback), generation failure (retry), cache corruption (clear + retry) |
-| Backward compatible? | Yes -- legacy HTML fallback remains as emergency path |
-| Content Editor system affected? | No -- admin tools untouched |
-
-## File Summary
-
-| File | Action |
-|------|--------|
-| `src/features/matieres/hooks/useAIGeneratedContent.ts` | NEW -- core generation + cache hook |
-| `src/features/matieres/components/tabs/LessonQuizTab.tsx` | REWRITE -- use AI generation |
-| `src/features/matieres/components/tabs/LessonActivitiesTab.tsx` | REWRITE -- use AI generation |
-| `src/components/LessonPageTemplate.tsx` | UPDATE -- pass extra props to tabs |
-| `src/features/matieres/index.ts` | UPDATE -- export new hook |
+| 3G optimized? | Yes -- same single request, just better prompt |
+| Edge cases handled? | Yes -- if contenu is empty, falls back to exercisesContent |
+| Backward compatible? | Yes -- old cached data still renders, new generations get 10-15 questions |
