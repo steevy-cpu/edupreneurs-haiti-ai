@@ -7,6 +7,9 @@ import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MathText } from "@/components/MathContent";
+import { JudeFeedback } from "@/components/jude/JudeFeedback";
+import { JudeCompletionScreen } from "@/components/jude/JudeCompletionScreen";
+import { JudeGeneratingOverlay } from "@/components/jude/JudeGeneratingOverlay";
 
 type ActivityType = 'QUIZ' | 'TRUEFALSE';
 
@@ -358,88 +361,21 @@ export const InteractiveActivitiesEnhanced = ({
   if (isLoading) {
     return (
       <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-accent/30 bg-gradient-to-br from-accent/5 to-primary/5">
-        <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-accent/20 to-primary/20 rounded-t-[20px]">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-              ✏️ Activités Interactives
-            </CardTitle>
-            {onRegenerate && (
-              <Button 
-                onClick={onRegenerate} 
-                variant="outline" 
-                size="sm"
-                className="gap-2 bg-gradient-to-r from-accent/10 to-primary/10 hover:from-accent/20 hover:to-primary/20 border-accent/30"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span className="text-xs font-semibold">Régénérer</span>
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="p-4 sm:p-6 pt-6">
-          <div className="flex flex-col items-center justify-center py-12 space-y-4">
-            <div className="relative w-16 h-16">
-              <svg className="w-full h-full transform -rotate-90">
-                <circle
-                  cx="32"
-                  cy="32"
-                  r="28"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                  className="text-muted"
-                />
-                <circle
-                  cx="32"
-                  cy="32"
-                  r="28"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                  strokeDasharray={175.93}
-                  strokeDashoffset={175.93}
-                  className="text-primary animate-spin"
-                  style={{
-                    animation: 'spin 1.5s linear infinite',
-                  }}
-                />
-              </svg>
-            </div>
-            <p className="text-muted-foreground text-center font-medium">Génération des activités interactives...</p>
-          </div>
+        <CardContent className="p-4 sm:p-6">
+          <JudeGeneratingOverlay
+            isVisible={true}
+            message="Jude prépare tes activités..."
+          />
         </CardContent>
       </Card>
     );
   }
 
   if (completed) {
-    const percentage = Math.round((score / activities.length) * 100);
-    const emoji = percentage >= 80 ? "🎉" : percentage >= 60 ? "👏" : "💪";
-    
     return (
-      <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-success/30">
-        <CardHeader className="p-6 bg-gradient-to-r from-success/20 to-primary/20 rounded-t-[20px]">
-          <CardTitle className="flex items-center gap-2">
-            {emoji} Activités Complétées!
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6 text-center space-y-6">
-          <div>
-            <div className="text-6xl font-bold text-primary mb-2">{percentage}%</div>
-            <p className="text-xl font-semibold">
-              {score} / {activities.length} bonnes réponses
-            </p>
-          </div>
-          
-          <div className="p-6 bg-gradient-to-r from-success/10 to-primary/10 rounded-lg border-2 border-success/30">
-            {percentage >= 80 ? (
-              <p className="text-lg font-bold text-success">Excellent! Tu maîtrises le sujet!</p>
-            ) : percentage >= 60 ? (
-              <p className="text-lg font-bold text-primary">Bien! Continue à pratiquer.</p>
-            ) : (
-              <p className="text-lg font-bold text-orange-600">Continue d'essayer! Révise la leçon.</p>
-            )}
-          </div>
+      <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-primary/20">
+        <CardContent className="p-6 space-y-6">
+          <JudeCompletionScreen score={score} total={activities.length} />
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button onClick={handleRestart} size="lg" variant="outline">
@@ -585,22 +521,14 @@ export const InteractiveActivitiesEnhanced = ({
         {renderActivity()}
 
         {showFeedback && (
-          <div className={`
-            p-4 sm:p-6 rounded-lg border-2 animate-fade-in
-            ${selectedAnswer === currentActivity.correctAnswer
-              ? 'bg-success/10 border-success' 
-              : 'bg-orange-50 dark:bg-orange-950/20 border-orange-300 dark:border-orange-700'
-            }
-          `}>
-            <p className="font-semibold mb-2 text-sm sm:text-base">
-              {selectedAnswer === currentActivity.correctAnswer
-                ? '✅ Correct!' 
-                : '📚 Explications:'}
+          <JudeFeedback
+            isCorrect={selectedAnswer === currentActivity.correctAnswer}
+            explanation={currentActivity.explanation || ''}
+          >
+            <p className="text-xs sm:text-sm leading-relaxed break-words text-muted-foreground">
+              <MathText text={currentActivity.explanation || ''} />
             </p>
-                    <p className="text-xs sm:text-sm leading-relaxed break-words">
-                      <MathText text={currentActivity.explanation || ''} />
-                    </p>
-          </div>
+          </JudeFeedback>
         )}
 
         {!showFeedback && (

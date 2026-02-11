@@ -1,10 +1,11 @@
 import { QuizRenderer } from '@/features/matieres/renderers/QuizRenderer';
 import { HTMLQuizParser } from '@/components/HTMLQuizParser';
 import { useAIGeneratedQuiz } from '@/features/matieres/hooks/useAIGeneratedContent';
+import { JudeGeneratingOverlay } from '@/components/jude/JudeGeneratingOverlay';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { GraduationCap, AlertCircle, RefreshCw, Sparkles } from 'lucide-react';
+import { AlertCircle, RefreshCw } from 'lucide-react';
+import judeChairDesk from '@/assets/eric-chair-desk.png';
 
 interface LessonQuizTabProps {
   lessonId: string;
@@ -48,26 +49,11 @@ export function LessonQuizTab({
   if (isLoading || isGenerating) {
     return (
       <Card>
-        <CardHeader className="p-3 sm:p-6">
-          <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
-            <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5" />
-            Quiz Final
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-3 sm:p-6 space-y-4">
-          <div className="flex items-center gap-3 text-muted-foreground">
-            <Sparkles className="h-4 w-4 animate-pulse text-primary" />
-            <p className="text-sm animate-pulse">
-              {isGenerating ? 'Génération du quiz en cours...' : 'Chargement...'}
-            </p>
-          </div>
-          <Skeleton className="h-8 w-3/4" />
-          <div className="space-y-2">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-          </div>
+        <CardContent className="p-3 sm:p-6">
+          <JudeGeneratingOverlay
+            isVisible={true}
+            message={isGenerating ? 'Jude prépare ton quiz...' : 'Chargement...'}
+          />
         </CardContent>
       </Card>
     );
@@ -79,8 +65,8 @@ export function LessonQuizTab({
       <Card>
         <CardHeader className="p-3 sm:p-6">
           <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
-            <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5" />
-            Quiz Final
+            <img src={judeChairDesk} alt="Jude" className="h-6 w-6 sm:h-7 sm:w-7 object-contain rounded-full" loading="lazy" decoding="async" />
+            Quiz par Jude
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 sm:p-6 space-y-4">
@@ -116,8 +102,8 @@ export function LessonQuizTab({
         <CardHeader className="p-3 sm:p-6">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
-              <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5" />
-              Quiz Final
+              <img src={judeChairDesk} alt="Jude" className="h-6 w-6 sm:h-7 sm:w-7 object-contain rounded-full" loading="lazy" decoding="async" />
+              Quiz par Jude
             </CardTitle>
             <Button
               onClick={regenerate}
