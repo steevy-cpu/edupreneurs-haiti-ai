@@ -1,96 +1,63 @@
 
 
-# Fix: Statement Timeout on Lesson Loading
+# Fix: Content Flags Incorrectly Counting Placeholder Text as Real Content
 
-## Root Cause
-The `LessonBrowser` query fetches **full text content** for every lesson (`quiz_final`, `activites_interactives`, `contenu`, `exemples_exercices`, `objectif`, `introduction`). These are massive HTML strings (5,000-15,000+ characters each). When loading a grade with 200+ lessons, this means transferring megabytes of data in a single query, causing a database statement timeout.
+## Problem
+The `lesson_content_flags` database view considers any text longer than 10 characters as "having content." However, many lessons contain placeholder strings like **"Contenu a venir..."** (18 chars) and **"Exercices a venir..."** (20 chars) that pass this threshold. This causes the content editor to report 204/204 (100%) when at least **29 lessons** in 7AF actually have no real content.
 
-## Solution: Lightweight Content Flags
+## Solution
+Update the `lesson_content_flags` view to exclude known placeholder strings. The check will require content to be longer than 10 characters **AND** not match placeholder patterns.
 
-Replace the heavy column fetches with a database view that returns only boolean existence flags and character lengths. The full content is never needed in the list view -- only when opening a specific lesson.
+## Technical Details
 
-## Step 1: Create Database View
+### Step 1: Recreate the database view
 
-Create a `lesson_content_flags` view that computes lightweight boolean flags:
+Drop and recreate `lesson_content_flags` with additional exclusion logic:
 
 ```sql
-CREATE VIEW lesson_content_flags AS
+CREATE OR REPLACE VIEW public.lesson_content_flags AS
 SELECT 
   id,
-  (objectif IS NOT NULL AND length(trim(objectif)) > 10) AS has_objectif,
-  (introduction IS NOT NULL AND length(trim(introduction)) > 10) AS has_introduction,
-  (contenu IS NOT NULL AND length(trim(contenu)) > 10) AS has_contenu,
-  (exemples_exercices IS NOT NULL AND length(trim(exemples_exercices)) > 10) AS has_exemples,
+  (objectif IS NOT NULL AND length(trim(objectif)) > 10 
+    AND trim(objectif) NOT IN ('Contenu à venir...', 'Contenu a venir...')) AS has_objectif,
+  (introduction IS NOT NULL AND length(trim(introduction)) > 10 
+    AND trim(introduction) NOT IN ('Contenu à venir...', 'Contenu a venir...')) AS has_introduction,
+  (contenu IS NOT NULL AND length(trim(contenu)) > 10 
+    AND trim(contenu) NOT IN ('Contenu à venir...', 'Contenu a venir...')) AS has_contenu,
+  (exemples_exercices IS NOT NULL AND length(trim(exemples_exercices)) > 10 
+    AND trim(exemples_exercices) NOT IN ('Exercices à venir...', 'Exercices a venir...', 'Contenu à venir...', 'Contenu a venir...')) AS has_exemples,
   (quiz_final IS NOT NULL AND length(trim(quiz_final)) > 10) AS has_quiz,
   (activites_interactives IS NOT NULL AND length(trim(activites_interactives)) > 10) AS has_activities
 FROM lessons;
 ```
 
-## Step 2: Update LessonBrowser Query
+### Step 2: Update `isLessonMissingContent` in contentGenerator.ts
 
-Replace the current heavy select:
-```
-id, title, slug, subject_id, order_index, workflow_status, grade_level, 
-quiz_final, activites_interactives, contenu, exemples_exercices, objectif, 
-introduction, youtube_url, ...
-```
+Add the same placeholder exclusion logic to the fallback raw-text check so both paths are consistent:
 
-With a lightweight select (removing all large text columns):
-```
-id, title, slug, subject_id, order_index, workflow_status, grade_level, 
-youtube_url, needs_quiz_regeneration, needs_activities_regeneration, 
-last_content_validated_at, last_activities_validated_at, 
-validation_details_json, content_alignment_score, activities_alignment_score, 
-subjects(id, name)
-```
-
-Then fetch the content flags separately from the view:
 ```typescript
-const { data: flags } = await supabase
-  .from('lesson_content_flags')
-  .select('id, has_objectif, has_introduction, has_contenu, has_exemples, has_quiz, has_activities')
-  .in('id', lessonIds);
+const PLACEHOLDER_PATTERNS = ['Contenu à venir...', 'Contenu a venir...', 'Exercices à venir...', 'Exercices a venir...'];
+
+const isPlaceholderOrEmpty = (field?: string | null): boolean => {
+  if (!field || field.trim().length < 10) return true;
+  return PLACEHOLDER_PATTERNS.includes(field.trim());
+};
 ```
 
-Merge the flags into the lesson objects for badge/stats calculations.
+### No UI changes needed
+The `LessonBrowser` already reads `has_contenu`, `has_objectif`, etc. from the view. Once the view is corrected, the stats bar will automatically show the correct count (e.g., 175/204 instead of 204/204) and the "Vide" badges will appear on the affected lessons.
 
-## Step 3: Update Badge and Stats Logic
-
-Replace direct field checks like:
-```typescript
-!lesson.contenu || lesson.contenu.trim().length < 10
-```
-
-With flag checks:
-```typescript
-!lesson.has_contenu
-```
-
-This applies to:
-- Content coverage progress bar calculation
-- "Vide" badge rendering
-- "Contenu manquant uniquement" filter
-- Quiz stats (has_quiz / has_activities)
-
-## Step 4: Update `isLessonMissingContent` in contentGenerator.ts
-
-Update to use the new flag-based properties instead of checking raw text fields.
-
-## Performance Impact
-
-| Metric | Before | After |
-|--------|--------|-------|
-| Data transferred per grade | ~5-15 MB (full HTML) | ~50-100 KB (metadata + flags) |
-| Query time (200 lessons) | Timeout (>8s) | <1s |
-| Columns fetched | 22 (including 6 large text) | 16 small + 6 booleans (separate query) |
+## Impact
+- **29 lessons** in 7AF will correctly show as missing content
+- Progress bar will update from 100% to the accurate percentage
+- "Contenu manquant uniquement" filter will correctly list these lessons
+- Batch content generator button will appear with the correct count
 
 ## Safety Verification
 
-| Check | Status |
+| Check | Result |
 |-------|--------|
-| Breaks existing functionality? | No -- same data, different format |
-| Works with existing data? | Yes -- view reads existing columns |
-| 3G optimized? | Major improvement -- 100x less data transferred |
-| Backward compatible? | Yes -- badges and stats work identically |
-| Edge cases? | Null fields handled with IS NOT NULL checks |
-
+| Breaks existing functionality? | No -- only changes false positives to correct negatives |
+| Works with existing data? | Yes -- the view reads existing columns |
+| 3G optimized? | No change -- same lightweight query |
+| Backward compatible? | Yes -- same flag names and types |
