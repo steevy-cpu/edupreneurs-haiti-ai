@@ -6,7 +6,6 @@ import { Slider } from "@/components/ui/slider";
 import { Music, Play, Pause, SkipForward, SkipBack, Loader2, Volume2, Volume1, VolumeX, Shuffle, Repeat, Repeat1, X } from "lucide-react";
 import { useMusicPlayer } from "@/contexts/MusicPlayerContext";
 import { useState, useEffect, useRef } from "react";
-import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { useLocation } from "react-router-dom";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import { cn } from "@/lib/utils";
@@ -33,8 +32,6 @@ export const GlobalMusicPlayer = () => {
   } = useMusicPlayer();
   
   const { isSlowConnection, shouldShowAnimations, shouldShowBlur } = useNetworkAwareLoading();
-  const { isAuthenticated } = useSessionAuth();
-
   const [playlistOpen, setPlaylistOpen] = useState(false);
   const [minimized, setMinimized] = useState(true);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -140,11 +137,7 @@ export const GlobalMusicPlayer = () => {
     return () => {};
   }, []);
 
-  const isPublicPage = location.pathname === '/' || 
-                       location.pathname.startsWith('/auth') || 
-                       location.pathname.startsWith('/blog');
-  
-  if (!isAuthenticated || tracks.length === 0 || isPublicPage) return null;
+  if (tracks.length === 0) return null;
 
   const VolumeIcon = isMuted || volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2;
   const RepeatIcon = repeatMode === 'one' ? Repeat1 : Repeat;
