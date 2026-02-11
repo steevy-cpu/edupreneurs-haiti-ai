@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +15,7 @@ import { LessonAIPracticeSection } from "@/components/lesson/LessonAIPracticeSec
 import { LessonQuickStats } from "@/components/lesson/LessonQuickStats";
 import { LessonNavigation } from "@/components/lesson/LessonNavigation";
 import { LessonFeedback } from "@/components/lesson/LessonFeedback";
-import { LessonAudioPlayerSimple } from "@/components/LessonAudioPlayerSimple";
+import { LessonAudioIconButton } from "@/components/LessonAudioIconButton";
 import { MathContent, isMathSubject } from "@/components/MathContent";
 
 // Lazy-loaded tab components for 3G optimization
@@ -132,6 +133,7 @@ export const LessonPageTemplate = ({
   const [viewedTabs, setViewedTabs] = useState<Set<string>>(new Set(["introduction"]));
   const [isLessonCompleted, setIsLessonCompleted] = useState(false);
   const [hasNotes, setHasNotes] = useState(false);
+  const [isObjectifExpanded, setIsObjectifExpanded] = useState(false);
 
   // Get random motivational message (stable per session)
   const [motivationalMessage] = useState(() => 
@@ -248,29 +250,32 @@ export const LessonPageTemplate = ({
 
             {/* Mobile/Tablet: Rest of content below */}
             <div className="space-y-2 sm:space-y-3 w-full lg:hidden">
-              {isMathSubject(subjectName) ? (
-                <MathContent content={lesson.objectif} className="text-muted-foreground text-sm sm:text-base" />
-              ) : (
-                <div 
-                  className="text-muted-foreground lesson-content text-sm sm:text-base" 
-                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.objectif) }}
-                />
-              )}
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Objectif</span>
+                  <LessonAudioIconButton audioUrl={lesson.audio_objectif_url} />
+                </div>
+                {isMathSubject(subjectName) ? (
+                  <MathContent content={lesson.objectif} className={cn("text-muted-foreground text-sm sm:text-base transition-all", !isObjectifExpanded && "line-clamp-2")} />
+                ) : (
+                  <div 
+                    className={cn("text-muted-foreground lesson-content text-sm sm:text-base transition-all", !isObjectifExpanded && "line-clamp-2")}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.objectif) }}
+                  />
+                )}
+                <button
+                  onClick={() => setIsObjectifExpanded(!isObjectifExpanded)}
+                  className="text-xs text-primary hover:underline mt-1"
+                >
+                  {isObjectifExpanded ? 'Lire moins' : 'Lire plus...'}
+                </button>
+              </div>
               
               {/* Motivational message */}
               <div className="flex items-center gap-2 text-sm text-muted-foreground bg-primary/5 rounded-lg px-3 py-2">
                 <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
                 <span>{motivationalMessage}</span>
               </div>
-
-              {/* Audio Player - Only show if audio URL exists */}
-              {lesson.audio_objectif_url && (
-                <LessonAudioPlayerSimple
-                  audioUrl={lesson.audio_objectif_url}
-                  label="Écouter l'objectif"
-                  className="w-full"
-                />
-              )}
 
               <div className="flex gap-2 flex-wrap">
                 <DownloadLessonButton 
@@ -302,29 +307,32 @@ export const LessonPageTemplate = ({
               <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent break-words">
                 {lesson.title}
               </h1>
-              {isMathSubject(subjectName) ? (
-                <MathContent content={lesson.objectif} className="text-muted-foreground text-base" />
-              ) : (
-                <div 
-                  className="text-muted-foreground lesson-content text-base" 
-                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.objectif) }}
-                />
-              )}
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Objectif</span>
+                  <LessonAudioIconButton audioUrl={lesson.audio_objectif_url} />
+                </div>
+                {isMathSubject(subjectName) ? (
+                  <MathContent content={lesson.objectif} className={cn("text-muted-foreground text-base transition-all", !isObjectifExpanded && "line-clamp-2")} />
+                ) : (
+                  <div 
+                    className={cn("text-muted-foreground lesson-content text-base transition-all", !isObjectifExpanded && "line-clamp-2")}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.objectif) }}
+                  />
+                )}
+                <button
+                  onClick={() => setIsObjectifExpanded(!isObjectifExpanded)}
+                  className="text-xs text-primary hover:underline mt-1"
+                >
+                  {isObjectifExpanded ? 'Lire moins' : 'Lire plus...'}
+                </button>
+              </div>
               
               {/* Motivational message */}
               <div className="flex items-center gap-2 text-sm text-muted-foreground bg-primary/5 rounded-lg px-3 py-2">
                 <Sparkles className="h-4 w-4 text-primary" />
                 <span>{motivationalMessage}</span>
               </div>
-
-              {/* Audio Player - Only show if audio URL exists */}
-              {lesson.audio_objectif_url && (
-                <LessonAudioPlayerSimple
-                  audioUrl={lesson.audio_objectif_url}
-                  label="Écouter l'objectif"
-                  className="w-full max-w-md"
-                />
-              )}
 
               <div className="flex gap-2 flex-wrap">
                 <DownloadLessonButton 
