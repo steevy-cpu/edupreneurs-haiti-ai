@@ -62,6 +62,7 @@ const NatCashPaymentFlow = ({ amount, description, onSuccess }: NatCashPaymentFl
   const [uploadLoading, setUploadLoading] = useState(false);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [payMethod, setPayMethod] = useState<"ussd" | "app">("ussd");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const MAX_POLLS = 36; // 3 minutes at 5s intervals
 
@@ -214,7 +215,7 @@ const NatCashPaymentFlow = ({ amount, description, onSuccess }: NatCashPaymentFl
         <div className="space-y-2">
           <Label htmlFor="natcash-phone" className="flex items-center gap-2">
             <Phone size={16} />
-            Votre numéro NatCash (Digicel)
+            Votre numéro NatCash (Natcom)
           </Label>
           <Input
             id="natcash-phone"
@@ -225,7 +226,7 @@ const NatCashPaymentFlow = ({ amount, description, onSuccess }: NatCashPaymentFl
             inputMode="numeric"
           />
           <p className="text-xs text-muted-foreground">
-            Entrez votre numéro Digicel à 8 chiffres (sans le +509)
+            Entrez votre numéro Natcom à 8 chiffres (sans le +509)
           </p>
         </div>
         <Button
@@ -250,37 +251,96 @@ const NatCashPaymentFlow = ({ amount, description, onSuccess }: NatCashPaymentFl
         <Card className="border-2 border-primary/20 bg-primary/5">
           <CardContent className="p-4 space-y-3">
             <h4 className="font-semibold text-sm">Instructions de paiement NatCash</h4>
-            <ol className="space-y-2 text-sm">
-              <li className="flex items-start gap-2">
-                <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">1</span>
-                <span>Composez <strong>*202#</strong> sur votre téléphone Digicel</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">2</span>
-                <span>Sélectionnez <strong>"Transfert d'argent"</strong></span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">3</span>
-                <span>
-                  {accountConfigured ? (
-                    <>Entrez le numéro: <strong className="text-primary">{accountNumber}</strong></>
-                  ) : (
-                    <span className="flex items-center gap-1 text-destructive">
-                      <AlertCircle size={14} />
-                      Numéro non disponible — contactez le support
+
+            {/* Method toggle */}
+            <div className="flex rounded-lg bg-muted p-1 gap-1">
+              <button
+                className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${payMethod === "ussd" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}
+                onClick={() => setPayMethod("ussd")}
+              >
+                📞 Via USSD
+              </button>
+              <button
+                className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${payMethod === "app" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}
+                onClick={() => setPayMethod("app")}
+              >
+                📱 Via l'App
+              </button>
+            </div>
+
+            {payMethod === "ussd" ? (
+              <ol className="space-y-2 text-sm">
+                <li className="flex items-start gap-2">
+                  <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">1</span>
+                  <span>Composez <strong>*202#</strong> sur votre téléphone Natcom</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">2</span>
+                  <span>Sélectionnez <strong>"Transfert d'argent"</strong></span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">3</span>
+                  <span>
+                    {accountConfigured ? (
+                      <>Entrez le numéro: <strong className="text-primary">{accountNumber}</strong></>
+                    ) : (
+                      <span className="flex items-center gap-1 text-destructive">
+                        <AlertCircle size={14} />
+                        Numéro non disponible — contactez le support
+                      </span>
+                    )}
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">4</span>
+                  <span>Entrez le montant: <strong>{amount} HTG</strong></span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">5</span>
+                  <span>Confirmez avec votre <strong>PIN NatCash</strong></span>
+                </li>
+              </ol>
+            ) : (
+              <div className="space-y-2">
+                <ol className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">1</span>
+                    <span>Ouvrez l'application <strong>NatCash</strong> sur votre téléphone</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">2</span>
+                    <span>Sélectionnez <strong>"Transfert"</strong></span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">3</span>
+                    <span>
+                      {accountConfigured ? (
+                        <>Entrez le numéro: <strong className="text-primary">{accountNumber}</strong></>
+                      ) : (
+                        <span className="flex items-center gap-1 text-destructive">
+                          <AlertCircle size={14} />
+                          Numéro non disponible — contactez le support
+                        </span>
+                      )}
                     </span>
-                  )}
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">4</span>
-                <span>Entrez le montant: <strong>{amount} HTG</strong></span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">5</span>
-                <span>Confirmez avec votre <strong>PIN NatCash</strong></span>
-              </li>
-            </ol>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">4</span>
+                    <span>Entrez le montant: <strong>{amount} HTG</strong></span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">5</span>
+                    <span>Confirmez le transfert</span>
+                  </li>
+                </ol>
+                <p className="text-xs text-muted-foreground pt-1">
+                  Pas encore l'app?{" "}
+                  <a href="https://play.google.com/store/apps/details?id=com.natcash" target="_blank" rel="noopener noreferrer" className="text-primary underline">Android</a>
+                  {" · "}
+                  <a href="https://apps.apple.com/us/app/natcash-natcom/id1613464862" target="_blank" rel="noopener noreferrer" className="text-primary underline">iPhone</a>
+                </p>
+              </div>
+            )}
 
             {/* Destination info */}
             {accountConfigured && (

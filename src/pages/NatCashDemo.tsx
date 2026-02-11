@@ -279,7 +279,7 @@ export default function NatCashDemo() {
               <div className="w-7 h-7 rounded-full bg-green-500 text-white flex items-center justify-center shrink-0 text-sm font-bold">1</div>
               <div>
                 <p className="font-medium">Composez *202#</p>
-                <p className="text-sm text-muted-foreground">Sur votre téléphone Digicel</p>
+                <p className="text-sm text-muted-foreground">Sur votre téléphone Natcom</p>
               </div>
             </div>
             <div className="flex gap-3 items-start">
