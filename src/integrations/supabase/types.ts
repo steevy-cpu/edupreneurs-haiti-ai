@@ -2058,6 +2058,7 @@ export type Database = {
           scheduled_publish_at: string | null
           slug: string
           subject_id: string
+          suggested_videos: string | null
           title: string
           updated_at: string
           validation_details_json: Json | null
@@ -2097,6 +2098,7 @@ export type Database = {
           scheduled_publish_at?: string | null
           slug: string
           subject_id: string
+          suggested_videos?: string | null
           title: string
           updated_at?: string
           validation_details_json?: Json | null
@@ -2138,6 +2140,7 @@ export type Database = {
           scheduled_publish_at?: string | null
           slug?: string
           subject_id?: string
+          suggested_videos?: string | null
           title?: string
           updated_at?: string
           validation_details_json?: Json | null

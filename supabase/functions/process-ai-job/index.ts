@@ -29,11 +29,41 @@ interface JobProgress {
   sections: SectionResult[];
 }
 
-// Rate limiting delay between AI calls (3 seconds)
-const RATE_LIMIT_DELAY = 3000;
+// Delay between AI calls (reduced since service-role bypasses rate limiting)
+const INTER_CALL_DELAY = 1500;
 
 async function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Retry helper for transient failures (429, 5xx)
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  label: string,
+  maxRetries = 2,
+  baseDelay = 5000
+): Promise<T> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      const isTransient = 
+        error?.message?.includes('429') ||
+        error?.message?.includes('Too many requests') ||
+        error?.message?.includes('rate limit') ||
+        error?.message?.includes('5') && error?.message?.includes('status') ||
+        error?.message?.includes('non-2xx');
+      
+      if (attempt < maxRetries && isTransient) {
+        const delay = baseDelay * Math.pow(2, attempt);
+        console.warn(`⚠️ Retry ${attempt + 1}/${maxRetries} for ${label} after ${delay}ms:`, error.message);
+        await sleep(delay);
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new Error(`Exhausted retries for ${label}`);
 }
 
 async function updateJobProgress(
@@ -204,14 +234,12 @@ Deno.serve(async (req) => {
       return secureErrorResponse('Lesson not found', 404);
     }
 
-    // Calculate total tasks
-    const audioSections = config.generateAudio ? 4 : 0;
+    // Calculate total tasks - only count features that are actually processed
+    // Note: image generation and audio are NOT processed server-side
     const totalTasks = 
       config.selectedSections.length + 
       (config.generateQuiz ? 1 : 0) + 
-      (config.generateVideos ? 1 : 0) + 
-      (config.imageGenerationModel !== 'none' ? 1 : 0) + 
-      audioSections;
+      (config.generateVideos ? 1 : 0);
 
     // Initialize progress
     const progress: JobProgress = {
@@ -254,7 +282,10 @@ Deno.serve(async (req) => {
         console.log(`📝 Generating section: ${sectionName}`);
         const startTime = Date.now();
         
-        const result = await generateSection(supabase, lesson, sectionName, config);
+        const result = await withRetry(
+          () => generateSection(supabase, lesson, sectionName, config),
+          sectionName
+        );
         
         resultContent[sectionName] = result.content;
         progress.sections.push({
@@ -302,7 +333,7 @@ Deno.serve(async (req) => {
 
       // Rate limiting delay
       if (config.selectedSections.indexOf(sectionName) < config.selectedSections.length - 1) {
-        await sleep(RATE_LIMIT_DELAY);
+        await sleep(INTER_CALL_DELAY);
       }
     }
 
@@ -333,7 +364,7 @@ Deno.serve(async (req) => {
       }
       
       await updateJobProgress(supabase, jobId, progress);
-      await sleep(RATE_LIMIT_DELAY);
+      await sleep(INTER_CALL_DELAY);
     }
 
     // Suggest videos if selected
@@ -373,39 +404,58 @@ Deno.serve(async (req) => {
       await updateJobProgress(supabase, jobId, progress);
     }
 
-    // Note: Image generation and audio TTS would require more complex handling
-    // For now, we skip them in the async job and let the user generate them separately
-    // This is because image generation requires client-side canvas processing
+    // Note: Image generation and audio TTS are not supported server-side
+    // They must be added separately via the lesson editor
 
     // Save generated content to the lessons table
-    const lessonUpdates: Record<string, any> = {};
+    // DEFENSIVE: Separate core content save from optional metadata
+    // so a failure in optional fields doesn't lose core content
+    
+    // Step 1: Save core section content
+    const coreUpdates: Record<string, any> = {};
     for (const section of progress.sections) {
       if (section.status === 'completed' && section.content) {
         const columnName = section.name === 'quiz_final' ? 'quiz_final' 
           : section.name === 'activites_interactives' ? 'activites_interactives'
           : section.name;
-        lessonUpdates[columnName] = section.content;
+        coreUpdates[columnName] = section.content;
       }
     }
 
-    if (resultContent.youtube_url) {
-      lessonUpdates.youtube_url = resultContent.youtube_url;
-    }
-    if (resultContent.suggested_videos) {
-      lessonUpdates.suggested_videos = resultContent.suggested_videos;
-    }
-
-    if (Object.keys(lessonUpdates).length > 0) {
-      const { error: updateError } = await supabase
+    if (Object.keys(coreUpdates).length > 0) {
+      const { error: coreError } = await supabase
         .from('lessons')
-        .update(lessonUpdates)
+        .update(coreUpdates)
         .eq('id', lesson.id);
 
-      if (updateError) {
-        console.error('Failed to save content to lesson:', updateError);
+      if (coreError) {
+        console.error('❌ Failed to save core content:', coreError);
         hasErrors = true;
       } else {
-        console.log('✅ Lesson content saved:', Object.keys(lessonUpdates));
+        console.log('✅ Core lesson content saved:', Object.keys(coreUpdates));
+      }
+    }
+
+    // Step 2: Save optional metadata (youtube_url, suggested_videos) separately
+    const metadataUpdates: Record<string, any> = {};
+    if (resultContent.youtube_url) {
+      metadataUpdates.youtube_url = resultContent.youtube_url;
+    }
+    if (resultContent.suggested_videos) {
+      metadataUpdates.suggested_videos = resultContent.suggested_videos;
+    }
+
+    if (Object.keys(metadataUpdates).length > 0) {
+      const { error: metaError } = await supabase
+        .from('lessons')
+        .update(metadataUpdates)
+        .eq('id', lesson.id);
+
+      if (metaError) {
+        console.warn('⚠️ Failed to save optional metadata (non-critical):', metaError);
+        // Don't set hasErrors - core content was already saved
+      } else {
+        console.log('✅ Metadata saved:', Object.keys(metadataUpdates));
       }
     }
 

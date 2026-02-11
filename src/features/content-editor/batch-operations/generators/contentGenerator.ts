@@ -22,7 +22,7 @@ export const contentGeneratorTheme: BatchOperationTheme = {
 // Dialog configuration for content generation
 export const contentGeneratorDialogConfig: BatchDialogConfig = {
   title: 'Générer le contenu manquant',
-  description: 'Cette opération va générer automatiquement le contenu (objectif, introduction, contenu, exemples, images et vidéos YouTube) pour {count} leçon(s). Les leçons seront publiées automatiquement après génération. Les résultats sont sauvegardés après chaque génération.',
+  description: 'Cette opération va générer automatiquement le contenu (objectif, introduction, contenu, exemples et vidéos YouTube) pour {count} leçon(s). Les leçons seront publiées automatiquement après génération. Les images doivent être ajoutées séparément depuis l\'éditeur de leçon.',
   confirmLabel: 'Commencer la génération',
   skipCheckboxLabel: 'Ignorer les leçons avec contenu partiel',
   showSkipCheckbox: false,
@@ -84,7 +84,7 @@ export const createContentGeneratorConfig = (): BatchOperationConfig => ({
       generateQuiz: false,
       generateVideos: true,
       generateAudio: false,
-      imageGenerationModel: 'lovable' as const,
+      imageGenerationModel: 'none' as const,
     };
 
     const { data: { user } } = await supabase.auth.getUser();
