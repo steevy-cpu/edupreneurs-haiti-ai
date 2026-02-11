@@ -2,8 +2,10 @@ import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, RotateCcw, ChevronRight, Trophy } from 'lucide-react';
+import { Check, X, RotateCcw, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { JudeCompletionScreen } from '@/components/jude/JudeCompletionScreen';
+import { JudeFeedback } from '@/components/jude/JudeFeedback';
 import type { QuizPayload, QuizQuestionMCQ } from '../validation/quiz.schema';
 
 interface QuizRendererProps {
@@ -85,25 +87,11 @@ export function QuizRenderer({ payload, onComplete, className }: QuizRendererPro
   const progress = ((currentIndex + 1) / payload.questions.length) * 100;
 
   if (isComplete) {
-    const percentage = Math.round((correctCount / payload.questions.length) * 100);
-    const isPassing = percentage >= 60;
-    
     return (
       <Card className={cn('w-full', className)}>
-        <CardContent className="pt-6 text-center">
-          <div className={cn(
-            'w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4',
-            isPassing ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
-          )}>
-            <Trophy className="w-10 h-10" />
-          </div>
-          <h3 className="text-2xl font-bold mb-2">
-            {isPassing ? 'Félicitations!' : 'Continuez à pratiquer!'}
-          </h3>
-          <p className="text-muted-foreground mb-4">
-            Vous avez obtenu <strong>{correctCount}</strong> sur <strong>{payload.questions.length}</strong> ({percentage}%)
-          </p>
-          <div className="flex gap-2 justify-center">
+        <CardContent className="pt-6">
+          <JudeCompletionScreen score={correctCount} total={payload.questions.length} />
+          <div className="flex gap-2 justify-center mt-6">
             <Button onClick={handleRestart} variant="outline">
               <RotateCcw className="w-4 h-4 mr-2" />
               Recommencer
@@ -178,15 +166,10 @@ export function QuizRenderer({ payload, onComplete, className }: QuizRendererPro
         </div>
 
         {currentState.isSubmitted && (
-          <div className={cn(
-            'p-3 rounded-lg mb-4',
-            currentState.isCorrect ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100' : 'bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100'
-          )}>
-            <p className="font-medium mb-1">
-              {currentState.isCorrect ? '✓ Correct!' : '✗ Incorrect'}
-            </p>
-            <p className="text-sm">{currentQuestion.explanation}</p>
-          </div>
+          <JudeFeedback
+            isCorrect={!!currentState.isCorrect}
+            explanation={currentQuestion.explanation}
+          />
         )}
 
         <div className="flex justify-end gap-2">

@@ -1,9 +1,10 @@
 import { useAIGeneratedActivities } from '@/features/matieres/hooks/useAIGeneratedContent';
 import { InteractiveActivitiesEnhanced } from '@/components/InteractiveActivitiesEnhanced';
+import { JudeGeneratingOverlay } from '@/components/jude/JudeGeneratingOverlay';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Gamepad2, AlertCircle, RefreshCw, Sparkles } from 'lucide-react';
+import { AlertCircle, RefreshCw } from 'lucide-react';
+import judeChairDesk from '@/assets/eric-chair-desk.png';
 
 interface LessonActivitiesTabProps {
   lessonId: string;
@@ -43,21 +44,11 @@ export function LessonActivitiesTab({
   if (isLoading || isGenerating) {
     return (
       <Card>
-        <CardHeader className="p-3 sm:p-6">
-          <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
-            <Gamepad2 className="h-4 w-4 sm:h-5 sm:w-5" />
-            Activités Interactives
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-3 sm:p-6 space-y-4">
-          <div className="flex items-center gap-3 text-muted-foreground">
-            <Sparkles className="h-4 w-4 animate-pulse text-primary" />
-            <p className="text-sm animate-pulse">
-              {isGenerating ? 'Génération des activités en cours...' : 'Chargement...'}
-            </p>
-          </div>
-          <Skeleton className="h-32 w-full rounded-lg" />
-          <Skeleton className="h-32 w-full rounded-lg" />
+        <CardContent className="p-3 sm:p-6">
+          <JudeGeneratingOverlay
+            isVisible={true}
+            message={isGenerating ? 'Jude prépare tes activités...' : 'Chargement...'}
+          />
         </CardContent>
       </Card>
     );
@@ -69,8 +60,8 @@ export function LessonActivitiesTab({
       <Card>
         <CardHeader className="p-3 sm:p-6">
           <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
-            <Gamepad2 className="h-4 w-4 sm:h-5 sm:w-5" />
-            Activités Interactives
+            <img src={judeChairDesk} alt="Jude" className="h-6 w-6 sm:h-7 sm:w-7 object-contain rounded-full" loading="lazy" decoding="async" />
+            Activités par Jude
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 sm:p-6 space-y-4">
@@ -105,8 +96,8 @@ export function LessonActivitiesTab({
         <CardHeader className="p-3 sm:p-6">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
-              <Gamepad2 className="h-4 w-4 sm:h-5 sm:w-5" />
-              Activités Interactives
+              <img src={judeChairDesk} alt="Jude" className="h-6 w-6 sm:h-7 sm:w-7 object-contain rounded-full" loading="lazy" decoding="async" />
+              Activités par Jude
             </CardTitle>
             <Button
               onClick={regenerate}
