@@ -108,6 +108,7 @@ export interface UseBatchOperationReturn {
   results: OperationResult[];
   currentItem: string;
   skipCompleted: boolean;
+  canResume: boolean;
   
   // Actions
   start: () => Promise<void>;

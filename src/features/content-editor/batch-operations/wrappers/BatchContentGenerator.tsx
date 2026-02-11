@@ -32,6 +32,7 @@ export const BatchContentGenerator = ({
   const operation = useBatchOperation({
     lessons,
     config,
+    gradeLevel,
     onComplete,
     onDashboardRefresh,
     onStart,

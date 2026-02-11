@@ -30,6 +30,7 @@ export const BatchActivitiesValidator = ({
   const operation = useBatchOperation({
     lessons,
     config,
+    gradeLevel,
     onComplete,
     onDashboardRefresh,
     onStart,
