@@ -34,17 +34,14 @@ interface LessonBrowserProps {
   onDashboardRefresh?: () => void;
 }
 
-// Helper function to check if a lesson has a valid quiz
+// Helper function to check if a lesson has a valid quiz (uses content flags)
 const hasValidQuiz = (lesson: any): boolean => {
-  if (!lesson.quiz_final) return false;
-  return lesson.quiz_final.includes('quiz-question') || 
-         lesson.quiz_final.includes('quiz-container');
+  return !!lesson.has_quiz;
 };
 
-// Helper function to check if a lesson has valid activities
+// Helper function to check if a lesson has valid activities (uses content flags)
 const hasValidActivities = (lesson: any): boolean => {
-  return !!lesson.activites_interactives && 
-         lesson.activites_interactives.length > 50;
+  return !!lesson.has_activities;
 };
 
 // Helper function to extract validation details from lesson
@@ -157,7 +154,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
         const batch = subjectIds.slice(i, i + batchSize);
         const { data: lessonsData, error } = await supabase
            .from('lessons')
-           .select('id, title, slug, subject_id, order_index, workflow_status, grade_level, quiz_final, activites_interactives, contenu, exemples_exercices, objectif, introduction, youtube_url, needs_quiz_regeneration, needs_activities_regeneration, last_content_validated_at, last_activities_validated_at, validation_details_json, content_alignment_score, activities_alignment_score, subjects(id, name)')
+           .select('id, title, slug, subject_id, order_index, workflow_status, grade_level, youtube_url, needs_quiz_regeneration, needs_activities_regeneration, last_content_validated_at, last_activities_validated_at, validation_details_json, content_alignment_score, activities_alignment_score, subjects(id, name)')
           .in('subject_id', batch)
           .order('order_index');
 
@@ -165,9 +162,37 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
         if (lessonsData) allLessons.push(...lessonsData);
       }
 
+      // Fetch lightweight content flags from the view
+      const lessonIds = allLessons.map(l => l.id);
+      const flagsBatchSize = 50;
+      const allFlags: Record<string, any> = {};
+      
+      for (let i = 0; i < lessonIds.length; i += flagsBatchSize) {
+        const batch = lessonIds.slice(i, i + flagsBatchSize);
+        const { data: flagsData } = await supabase
+          .from('lesson_content_flags' as any)
+          .select('id, has_objectif, has_introduction, has_contenu, has_exemples, has_quiz, has_activities')
+          .in('id', batch);
+        
+        if (flagsData) {
+          (flagsData as any[]).forEach((f: any) => { allFlags[f.id] = f; });
+        }
+      }
+
+      // Merge flags into lessons
+      const mergedLessons = allLessons.map(lesson => ({
+        ...lesson,
+        has_objectif: allFlags[lesson.id]?.has_objectif ?? false,
+        has_introduction: allFlags[lesson.id]?.has_introduction ?? false,
+        has_contenu: allFlags[lesson.id]?.has_contenu ?? false,
+        has_exemples: allFlags[lesson.id]?.has_exemples ?? false,
+        has_quiz: allFlags[lesson.id]?.has_quiz ?? false,
+        has_activities: allFlags[lesson.id]?.has_activities ?? false,
+      }));
+
       // Group lessons by subject
       const grouped: Record<string, any[]> = {};
-      allLessons.forEach(lesson => {
+      mergedLessons.forEach(lesson => {
         if (!grouped[lesson.subject_id]) {
           grouped[lesson.subject_id] = [];
         }
@@ -292,7 +317,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
   const missingQuizzesTotal = totalLessons - lessonsWithQuiz;
   const quizPercentage = totalLessons > 0 ? Math.round((lessonsWithQuiz / totalLessons) * 100) : 0;
 
-  // Calculate content stats
+  // Calculate content stats using flags
   const lessonsWithContent = allLessons.filter(l => !isLessonMissingContent(l)).length;
   const missingContentTotal = totalLessons - lessonsWithContent;
   const contentPercentage = totalLessons > 0 ? Math.round((lessonsWithContent / totalLessons) * 100) : 0;
