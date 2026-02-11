@@ -1,126 +1,102 @@
 
-# Update Quiz and Activities Prompts for Strict Content Grounding
 
-## Problem
+# Jude-Branded Quiz and Activities Experience
 
-The `generate-quiz-final` edge function (JSON mode, used by students) still combines `contenu` and `exemplesExercices` into a single `combinedContent` blob and passes it to the AI without clear separation or grounding instructions. This means:
+## Overview
+Transform the quiz and activities sections so that **Jude** feels like the one generating questions and giving personalized feedback — matching the translate page pattern where Jude's avatar, name, and personality are front and center.
 
-1. The AI cannot distinguish lesson content from examples/exercises
-2. No explicit instruction to base questions ONLY on provided content
-3. Questions may be generic or unrelated to the actual lesson
+## What Changes
 
-The activities function was already fixed in the previous iteration. This plan applies the same fix to the quiz function.
+### 1. Loading States -- "Jude is preparing your quiz/activities"
+**Files: `LessonActivitiesTab.tsx` and `LessonQuizTab.tsx`**
 
-## Changes
+Replace the generic Skeleton/Sparkles loading with a reusable `JudeGeneratingOverlay` component (similar to `JudeTranslatingOverlay`):
+- Jude's avatar (eric-chair-desk.png) with pulse animation
+- Text: "Jude prepare tes activites..." / "Jude prepare ton quiz..."
+- Bouncing dots indicator
 
-### File: `supabase/functions/generate-quiz-final/index.ts`
+### 2. New Reusable Component: `JudeGeneratingOverlay`
+**New file: `src/components/jude/JudeGeneratingOverlay.tsx`**
 
-**1. Pass separate contenu/exemples to `generateJsonQuiz` (line 83-97)**
-
-Instead of combining content at line 83 and passing `combinedContent`, pass `contenu` and `exemplesExercices` separately to the `generateJsonQuiz` function.
-
-**2. Update `JsonQuizParams` interface (line 238-247)**
-
-Replace `combinedContent: string` with:
-- `contenu: string`
-- `exemplesExercices: string`
-
-**3. Rewrite JSON user prompts (lines 312-332)**
-
-Replace the generic "Contenu de la lecon: combinedContent" with structured sections:
-
-French version:
+A generic overlay component that accepts a `message` prop:
 ```
-Titre: {lessonTitle}
-Niveau: {gradeLevel}
-Matiere: {subjectSlug}
-
-=== CONTENU DE LA LECON ===
-{contenu or 'Pas de contenu.'}
-
-=== EXEMPLES ET EXERCICES DE LA LECON ===
-{exemplesExercices or "Pas d'exemples."}
-
-INSTRUCTIONS CRITIQUES:
-- Genere EXACTEMENT 10 a 15 questions QCM
-- TOUTES les questions doivent etre basees UNIQUEMENT sur le contenu
-  et les exemples ci-dessus
-- Ne pose JAMAIS de questions sur des sujets non couverts dans la lecon
-- Chaque question doit tester la comprehension du contenu specifique
-  de cette lecon
-- Retourne UNIQUEMENT un objet JSON valide
+Props:
+- isVisible: boolean
+- message: string (e.g., "Jude prepare ton quiz...")
 ```
 
-Creole version: same structure translated to Kreyol.
+Uses the same pattern as `JudeTranslatingOverlay`: Jude avatar + pulse + bouncing dots.
 
-**4. Update JSON system prompts (lines 254-310)**
+### 3. Feedback Messages -- "Jude says..."
+**File: `InteractiveActivitiesEnhanced.tsx`**
 
-Add a grounding rule to both French and Creole system prompts:
-- "TOUTES les questions doivent etre basees UNIQUEMENT sur le contenu fourni dans la lecon. Ne genere JAMAIS de questions sur des sujets externes."
+When showing feedback after answering:
+- Add Jude's small avatar next to the feedback text
+- Correct: "Bravo! [explanation]" with Jude's happy avatar
+- Incorrect: "Pas tout a fait... [explanation]" with Jude's encouraging avatar
 
-**5. Also update legacy HTML prompts (lines 164-184)**
+**File: `QuizRenderer.tsx`**
 
-Apply the same structured contenu/exemples separation and grounding instructions to the legacy HTML user prompts, for consistency if they are ever used.
+Same pattern:
+- Add Jude's avatar next to the feedback block
+- Personalized feedback text from Jude
 
-### File: `supabase/functions/generate-interactive-activities/index.ts`
+### 4. Completion Screens -- "Jude congratulates you"
+**File: `InteractiveActivitiesEnhanced.tsx` (completion section)**
 
-No changes needed -- already has structured contenu/exemples and grounding instructions.
+Replace the generic emoji completion with:
+- Jude's larger avatar at the top
+- Personalized message from Jude based on score:
+  - 80%+: "Jude: Excellent travail! Tu maitrises ce sujet!"
+  - 60-79%: "Jude: Bien joue! Continue comme ca!"
+  - Below 60: "Jude: Ne lache pas! Revise la lecon et reessaye!"
 
-### File: `src/features/matieres/hooks/useAIGeneratedContent.ts`
+**File: `QuizRenderer.tsx` (completion section)**
 
-No changes needed -- already passes `contenu` and `exemplesExercices` separately to both edge functions.
+Same Jude-branded completion screen.
 
-## Technical Details
+### 5. Headers -- Jude branding
+**Files: `LessonActivitiesTab.tsx` and `LessonQuizTab.tsx`**
 
-### Updated `generateJsonQuiz` signature
+Add a small Jude avatar icon next to the section titles:
+- "Activites par Jude" (with small avatar)
+- "Quiz par Jude" (with small avatar)
 
-```typescript
-interface JsonQuizParams {
-  lessonTitle: string;
-  lessonSlug: string;
-  subjectSlug: string;
-  gradeLevel: string;
-  contenu: string;           // was: combinedContent
-  exemplesExercices: string;  // new
-  isCreoleLesson: boolean;
-  language: 'fr' | 'ht' | 'en' | 'es';
-  LOVABLE_API_KEY: string;
-}
+## Detailed File Changes
+
+| File | Changes |
+|------|---------|
+| `src/components/jude/JudeGeneratingOverlay.tsx` | **NEW** -- Reusable Jude loading overlay (avatar + pulse + dots + custom message) |
+| `src/features/matieres/components/tabs/LessonActivitiesTab.tsx` | Replace Skeleton loading with JudeGeneratingOverlay; add Jude avatar to header |
+| `src/features/matieres/components/tabs/LessonQuizTab.tsx` | Replace Skeleton loading with JudeGeneratingOverlay; add Jude avatar to header |
+| `src/components/InteractiveActivitiesEnhanced.tsx` | Add Jude avatar to feedback blocks and completion screen; update loading state |
+| `src/features/matieres/renderers/QuizRenderer.tsx` | Add Jude avatar to feedback blocks and completion screen |
+
+## UX Flow
+
+```text
+User clicks "Activites" tab
+    |
+    v
+[Jude avatar + pulse + "Jude prepare tes activites..."]
+    |
+    v
+[Questions appear, header shows "Activites par Jude"]
+    |
+    v
+User answers --> [Jude avatar + "Bravo!" or "Pas tout a fait..."]
+    |
+    v
+All done --> [Large Jude avatar + personalized score message]
 ```
-
-### Updated call site (line 87-97)
-
-```typescript
-return await generateJsonQuiz({
-  lessonTitle,
-  lessonSlug: ...,
-  subjectSlug: ...,
-  gradeLevel: gradeLevel || '7AF',
-  contenu: contenu || '',
-  exemplesExercices: exemplesExercices || '',
-  isCreoleLesson,
-  language,
-  LOVABLE_API_KEY,
-});
-```
-
-### stripHtml utility
-
-The quiz function does NOT currently strip HTML from contenu/exemples before sending to the AI. The activities function does this (it has a `stripHtml` utility). We should add the same `stripHtml` processing in the quiz function to send clean text to the AI, improving question quality.
-
-## Files Modified
-
-| File | Change |
-|------|--------|
-| `supabase/functions/generate-quiz-final/index.ts` | Separate contenu/exemples in prompts, add grounding instructions, add stripHtml |
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- same JSON schema output, same validation |
-| Works with existing data? | Yes -- uses lesson fields that all lessons have |
-| 3G optimized? | Yes -- same single request, just better prompt |
-| Edge cases handled? | Yes -- empty contenu/exemples show fallback text |
-| Backward compatible? | Yes -- cached quizzes still render, new ones are better grounded |
-| Activities affected? | No -- already fixed in previous iteration |
+| Breaks existing functionality? | No -- only UI/cosmetic changes, no logic changes |
+| Works with existing data? | Yes -- no data structure changes |
+| 3G optimized? | Yes -- Jude image already cached by service worker; reuses existing asset |
+| Edge cases handled? | Yes -- JudeGeneratingOverlay has isVisible guard |
+| Backward compatible? | Yes -- same quiz/activity data, just better presentation |
+
