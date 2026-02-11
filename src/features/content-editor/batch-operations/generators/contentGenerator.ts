@@ -22,7 +22,7 @@ export const contentGeneratorTheme: BatchOperationTheme = {
 // Dialog configuration for content generation
 export const contentGeneratorDialogConfig: BatchDialogConfig = {
   title: 'Générer le contenu manquant',
-  description: 'Cette opération va générer automatiquement le contenu (objectif, introduction, contenu, exemples, images et vidéos YouTube) pour {count} leçon(s). Les résultats sont sauvegardés après chaque génération.',
+  description: 'Cette opération va générer automatiquement le contenu (objectif, introduction, contenu, exemples, images et vidéos YouTube) pour {count} leçon(s). Les leçons seront publiées automatiquement après génération. Les résultats sont sauvegardés après chaque génération.',
   confirmLabel: 'Commencer la génération',
   skipCheckboxLabel: 'Ignorer les leçons avec contenu partiel',
   showSkipCheckbox: false,
@@ -149,9 +149,22 @@ export const createContentGeneratorConfig = (): BatchOperationConfig => ({
     throw new Error('Timeout: la génération a pris trop de temps');
   },
   
-  updateLesson: async (_lessonId: string, _result: any) => {
-    // The process-ai-job edge function already saves the content to the lesson
-    // No additional update needed
+  updateLesson: async (lessonId: string, result: any) => {
+    // The process-ai-job edge function already saves the content
+    // Now also auto-publish the lesson
+    if (result.success) {
+      const { error } = await supabase
+        .from('lessons')
+        .update({ 
+          is_published: true, 
+          workflow_status: 'approved' 
+        })
+        .eq('id', lessonId);
+
+      if (error) {
+        console.error('Auto-publish failed for', lessonId, error);
+      }
+    }
   },
   
   theme: contentGeneratorTheme,
@@ -159,7 +172,7 @@ export const createContentGeneratorConfig = (): BatchOperationConfig => ({
   messages: {
     empty: "Toutes les leçons ont déjà du contenu!",
     progress: "Génération de contenu en cours...",
-    success: "{count} contenu(s) généré(s) avec succès!",
+    success: "{count} contenu(s) généré(s) et publié(s) avec succès!",
     partial: "{success} réussi(s), {errors} échec(s)",
     error: "Échec de génération pour tous les contenus",
     pauseInfo: "Génération annulée. Progrès sauvegardé.",
