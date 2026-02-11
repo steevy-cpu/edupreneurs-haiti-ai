@@ -44,6 +44,13 @@ const sanitizeHtml = (html: string): string => {
   return DOMPurify.sanitize(html, PURIFY_CONFIG);
 };
 
+// Helper to strip HTML and extract plain text for collapsed preview
+const stripHtmlToText = (html: string): string => {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return (tmp.textContent || tmp.innerText || '').trim();
+};
+
 interface LessonData {
   id: string;
   title: string;
@@ -255,17 +262,20 @@ export const LessonPageTemplate = ({
                   <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Objectif</span>
                   <LessonAudioIconButton audioUrl={lesson.audio_objectif_url} />
                 </div>
-                <div className="relative">
-                  {isMathSubject(subjectName) ? (
-                    <MathContent content={lesson.objectif} className={cn("text-muted-foreground text-sm sm:text-base", !isObjectifExpanded && "max-h-[2.5em] overflow-hidden")} />
+                <div>
+                  {isObjectifExpanded ? (
+                    isMathSubject(subjectName) ? (
+                      <MathContent content={lesson.objectif} className="text-muted-foreground text-sm sm:text-base" />
+                    ) : (
+                      <div 
+                        className="text-muted-foreground lesson-content text-sm sm:text-base"
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.objectif) }}
+                      />
+                    )
                   ) : (
-                    <div 
-                      className={cn("text-muted-foreground lesson-content text-sm sm:text-base [&>*]:m-0 [&>*]:p-0", !isObjectifExpanded && "max-h-[2.5em] overflow-hidden")}
-                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.objectif) }}
-                    />
-                  )}
-                  {!isObjectifExpanded && (
-                    <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+                    <p className="text-muted-foreground text-sm sm:text-base line-clamp-2">
+                      {stripHtmlToText(lesson.objectif).slice(0, 150)}...
+                    </p>
                   )}
                 </div>
                 <button
@@ -317,17 +327,20 @@ export const LessonPageTemplate = ({
                   <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Objectif</span>
                   <LessonAudioIconButton audioUrl={lesson.audio_objectif_url} />
                 </div>
-                <div className="relative">
-                  {isMathSubject(subjectName) ? (
-                    <MathContent content={lesson.objectif} className={cn("text-muted-foreground text-base", !isObjectifExpanded && "max-h-[2.5em] overflow-hidden")} />
+                <div>
+                  {isObjectifExpanded ? (
+                    isMathSubject(subjectName) ? (
+                      <MathContent content={lesson.objectif} className="text-muted-foreground text-base" />
+                    ) : (
+                      <div 
+                        className="text-muted-foreground lesson-content text-base"
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.objectif) }}
+                      />
+                    )
                   ) : (
-                    <div 
-                      className={cn("text-muted-foreground lesson-content text-base [&>*]:m-0 [&>*]:p-0", !isObjectifExpanded && "max-h-[2.5em] overflow-hidden")}
-                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.objectif) }}
-                    />
-                  )}
-                  {!isObjectifExpanded && (
-                    <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+                    <p className="text-muted-foreground text-base line-clamp-2">
+                      {stripHtmlToText(lesson.objectif).slice(0, 150)}...
+                    </p>
                   )}
                 </div>
                 <button
