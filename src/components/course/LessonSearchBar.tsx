@@ -18,7 +18,7 @@ export const LessonSearchBar = ({
   const isSearching = searchQuery.trim().length > 0;
 
   return (
-    <div className="w-full">
+    <div className="w-full p-4 rounded-xl border border-primary/30 bg-primary/5 shadow-[0_0_15px_-3px_hsl(var(--primary)/0.2)]">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
