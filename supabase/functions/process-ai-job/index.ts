@@ -377,6 +377,38 @@ Deno.serve(async (req) => {
     // For now, we skip them in the async job and let the user generate them separately
     // This is because image generation requires client-side canvas processing
 
+    // Save generated content to the lessons table
+    const lessonUpdates: Record<string, any> = {};
+    for (const section of progress.sections) {
+      if (section.status === 'completed' && section.content) {
+        const columnName = section.name === 'quiz_final' ? 'quiz_final' 
+          : section.name === 'activites_interactives' ? 'activites_interactives'
+          : section.name;
+        lessonUpdates[columnName] = section.content;
+      }
+    }
+
+    if (resultContent.youtube_url) {
+      lessonUpdates.youtube_url = resultContent.youtube_url;
+    }
+    if (resultContent.suggested_videos) {
+      lessonUpdates.suggested_videos = resultContent.suggested_videos;
+    }
+
+    if (Object.keys(lessonUpdates).length > 0) {
+      const { error: updateError } = await supabase
+        .from('lessons')
+        .update(lessonUpdates)
+        .eq('id', lesson.id);
+
+      if (updateError) {
+        console.error('Failed to save content to lesson:', updateError);
+        hasErrors = true;
+      } else {
+        console.log('✅ Lesson content saved:', Object.keys(lessonUpdates));
+      }
+    }
+
     // Mark job as completed
     const finalStatus = hasErrors ? 'completed' : 'completed'; // Still completed but with partial results
     
