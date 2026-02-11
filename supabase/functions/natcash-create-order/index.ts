@@ -140,8 +140,8 @@ serve(async (req) => {
         paymentInstructions: {
           accountNumber: natcashAccountNumber,
           accountName: natcashAccountName,
-          steps: [
-            'Composez *202# sur votre téléphone Digicel',
+        steps: [
+            'Composez *202# sur votre téléphone Natcom',
             'Sélectionnez "Transfert d\'argent"',
             'Entrez le numéro: ' + natcashAccountNumber,
             'Entrez le montant: ' + amount + ' HTG',
@@ -149,12 +149,30 @@ serve(async (req) => {
             'Notez le code de référence de la transaction',
             'Téléversez la capture d\'écran de confirmation'
           ],
+          stepsApp: [
+            'Ouvrez l\'application NatCash sur votre téléphone',
+            'Sélectionnez "Transfert"',
+            'Entrez le numéro: ' + natcashAccountNumber,
+            'Entrez le montant: ' + amount + ' HTG',
+            'Confirmez le transfert',
+            'Notez le code de référence de la transaction',
+            'Téléversez la capture d\'écran de confirmation'
+          ],
           stepsEnglish: [
-            'Dial *202# on your Digicel phone',
+            'Dial *202# on your Natcom phone',
             'Select "Transfer Money"',
             'Enter the number: ' + natcashAccountNumber,
             'Enter the amount: ' + amount + ' HTG',
             'Confirm with your NatCash PIN',
+            'Note the transaction reference code',
+            'Upload the confirmation screenshot'
+          ],
+          stepsAppEnglish: [
+            'Open the NatCash app on your phone',
+            'Select "Transfer"',
+            'Enter the number: ' + natcashAccountNumber,
+            'Enter the amount: ' + amount + ' HTG',
+            'Confirm the transfer',
             'Note the transaction reference code',
             'Upload the confirmation screenshot'
           ],
