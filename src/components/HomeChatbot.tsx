@@ -26,7 +26,12 @@ const TypewriterText = ({
 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isComplete, setIsComplete] = useState(false);
-  
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
   useEffect(() => {
     setDisplayedText('');
     setIsComplete(false);
@@ -38,13 +43,13 @@ const TypewriterText = ({
         index++;
       } else {
         setIsComplete(true);
-        onComplete?.();
+        onCompleteRef.current?.();
         clearInterval(timer);
       }
     }, speed);
     
     return () => clearInterval(timer);
-  }, [text, speed, onComplete]);
+  }, [text, speed]);
   
   return (
     <span>
