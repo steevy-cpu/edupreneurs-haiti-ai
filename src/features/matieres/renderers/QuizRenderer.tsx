@@ -6,6 +6,7 @@ import { Check, X, RotateCcw, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { JudeCompletionScreen } from '@/components/jude/JudeCompletionScreen';
 import { JudeFeedback } from '@/components/jude/JudeFeedback';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 import type { QuizPayload, QuizQuestionMCQ } from '../validation/quiz.schema';
 
 interface QuizRendererProps {
@@ -30,6 +31,7 @@ export function QuizRenderer({ payload, onComplete, className }: QuizRendererPro
     }))
   );
   const [isComplete, setIsComplete] = useState(false);
+  const { playSound } = useSoundEffects();
 
   const currentQuestion = payload.questions[currentIndex];
   const currentState = questionStates[currentIndex];
@@ -52,6 +54,9 @@ export function QuizRenderer({ payload, onComplete, className }: QuizRendererPro
     
     const isCorrect = currentState.selectedAnswer === currentQuestion.answerIndex;
     
+    // Play chime or buzzer sound
+    playSound(isCorrect ? 'correct' : 'incorrect');
+    
     setQuestionStates(prev => {
       const newStates = [...prev];
       newStates[currentIndex] = {
@@ -61,7 +66,7 @@ export function QuizRenderer({ payload, onComplete, className }: QuizRendererPro
       };
       return newStates;
     });
-  }, [currentIndex, currentState.selectedAnswer, currentQuestion.answerIndex]);
+  }, [currentIndex, currentState.selectedAnswer, currentQuestion.answerIndex, playSound]);
 
   const handleNext = useCallback(() => {
     if (currentIndex < payload.questions.length - 1) {
