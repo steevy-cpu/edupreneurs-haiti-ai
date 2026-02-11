@@ -16,6 +16,7 @@ import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 const orderSchema = z.object({
   amount: z.number().positive().max(1000000),
   description: z.string().max(500).optional(),
+  natcashPhone: z.string().regex(/^\d{8}$/, "NatCash phone must be 8 digits").optional(),
 });
 
 function generateOrderId(): string {
@@ -83,7 +84,7 @@ serve(async (req) => {
       );
     }
 
-    const { amount, description } = validation.data;
+    const { amount, description, natcashPhone } = validation.data;
 
     // Get NatCash account details from environment
     const natcashAccountNumber = Deno.env.get('NATCASH_ACCOUNT_NUMBER') || 'NOT_CONFIGURED';
@@ -105,9 +106,11 @@ serve(async (req) => {
         provider: 'natcash',
         status: 'pending',
         description: description || 'NatCash Payment',
+        natcash_phone: natcashPhone || null,
         metadata: {
           created_via: 'natcash-create-order',
           natcash_account: natcashAccountNumber,
+          user_natcash_phone: natcashPhone || null,
         }
       })
       .select()

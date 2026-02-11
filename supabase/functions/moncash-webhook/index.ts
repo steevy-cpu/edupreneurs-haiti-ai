@@ -210,8 +210,8 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Determine payment status from event type and status field
-    const successEvents = ['payment.succeeded', 'payment.completed'];
-    const failedEvents = ['payment.failed', 'payment.cancelled'];
+    const successEvents = ['payment.succeeded', 'payment.completed', 'transfer.completed'];
+    const failedEvents = ['payment.failed', 'payment.cancelled', 'transfer.failed'];
     const successStatuses = ['successful', 'success', 'completed', 'paid', 'approved'];
     const failedStatuses = ['failed', 'failure', 'declined', 'rejected', 'cancelled'];
     
@@ -230,12 +230,53 @@ serve(async (req) => {
       newStatus = 'failed';
     }
 
+    // Determine if this is a NatCash transfer webhook (payout) or a payment webhook
+    const isNatCashTransfer = validation.eventType?.startsWith('transfer.') || 
+      (payload as Record<string, unknown>)?.provider === 'natcash';
+
+    // Try to find in natcash_transfers first (for outgoing payouts)
+    if (isNatCashTransfer) {
+      const { data: natcashTransfer, error: natcashFetchError } = await supabase
+        .from('natcash_transfers')
+        .select('id, status')
+        .eq('reference_id', validation.referenceId)
+        .maybeSingle();
+
+      if (natcashTransfer && !natcashFetchError) {
+        if (natcashTransfer.status === 'pending' && natcashTransfer.status !== newStatus) {
+          const updateData: Record<string, unknown> = {
+            status: newStatus,
+            updated_at: new Date().toISOString(),
+          };
+          if (validation.transactionId) {
+            updateData.bazik_transaction_id = validation.transactionId;
+          }
+          if (newStatus === 'completed') {
+            updateData.completed_at = new Date().toISOString();
+          }
+
+          await supabase
+            .from('natcash_transfers')
+            .update(updateData)
+            .eq('id', natcashTransfer.id);
+
+          console.log(`NatCash transfer ${validation.referenceId} updated to: ${newStatus}`);
+        }
+
+        // Return early - this was a transfer webhook, not a payment
+        return new Response(
+          JSON.stringify({ received: true, type: 'natcash_transfer', referenceId: validation.referenceId, status: newStatus }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     // Look up transaction by OUR order_id (which is Bazik's referenceId)
     const { data: transaction, error: fetchError } = await supabase
       .from('payment_transactions')
-      .select('id, status')
-      .eq('order_id', validation.referenceId)  // Use referenceId to find our transaction
-      .single();
+      .select('id, status, user_id')
+      .eq('order_id', validation.referenceId)
+      .maybeSingle();
 
     if (fetchError || !transaction) {
       console.error('Transaction not found for referenceId:', validation.referenceId);
@@ -278,6 +319,37 @@ serve(async (req) => {
       }
 
       console.log(`Transaction ${validation.referenceId} updated to: ${newStatus}`);
+
+      // Auto-extend subscription on completed payment
+      if (newStatus === 'completed' && transaction.user_id) {
+        try {
+          const { data: currentProfile } = await supabase
+            .from('profiles')
+            .select('subscription_end_date')
+            .eq('user_id', transaction.user_id)
+            .maybeSingle();
+
+          const now = new Date();
+          const currentEnd = currentProfile?.subscription_end_date
+            ? new Date(currentProfile.subscription_end_date)
+            : null;
+          const baseDate = (currentEnd && currentEnd > now) ? currentEnd : now;
+          const newEnd = new Date(baseDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+          await supabase
+            .from('profiles')
+            .update({
+              subscription_status: 'active',
+              subscription_end_date: newEnd.toISOString(),
+              payment_order_id: validation.referenceId,
+            })
+            .eq('user_id', transaction.user_id);
+
+          console.log(`Webhook: Subscription extended for user ${transaction.user_id} until ${newEnd.toISOString()}`);
+        } catch (subErr) {
+          console.error('Webhook: Subscription extension failed:', subErr);
+        }
+      }
     } else {
       console.log(`Transaction ${validation.referenceId} already processed or not pending`);
     }
