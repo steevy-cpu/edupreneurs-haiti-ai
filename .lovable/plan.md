@@ -1,90 +1,195 @@
 
-# Fix: Activities Generation — 10-15 Questions with Content Grounding
+# Fix: Activities Parser — Extract All Questions from TYPE Sections
 
-## Problem
-The edge function `generate-interactive-activities` is producing only 2 activities instead of 10-15. Two issues:
+## Root Cause
 
-1. **Question count too vague**: The prompt says "8-10 QUIZ + 5-7 TRUE_FALSE" but the AI often under-generates. Need a stricter minimum of 10-15 total questions.
-2. **Content not grounded**: The user prompt just dumps `exercisesContent` as raw text without clearly labeling it as "Contenu de la lecon" and "Exemples et exercices". The AI needs explicit instructions that ALL questions must be based ONLY on the provided lesson content.
+The AI edge function IS generating 10-15 questions correctly. The bug is in the **frontend parser** (`InteractiveActivitiesEnhanced.tsx`).
 
-## Changes
+The generated content looks like:
 
-### File: `supabase/functions/generate-interactive-activities/index.ts`
+```text
+**TYPE: QUIZ**
 
-**1. Update the user prompt (both French and Creole versions, lines 274-304)**
+**Question 1:**
+...options...
+**Reponse correcte: C**
+---
+**Question 2:**
+...options...
+**Reponse correcte: A**
+---
+... (8 more questions) ...
 
-Restructure the user prompt to:
-- Clearly separate and label "CONTENU DE LA LECON" and "EXEMPLES ET EXERCICES" as distinct sections
-- Change the question count instruction to: "Genere EXACTEMENT 10 a 15 questions au total: 7-10 questions QCM + 3-5 affirmations VRAI/FAUX"
-- Add a grounding instruction: "TOUTES les questions doivent etre basees UNIQUEMENT sur le contenu ci-dessus. Ne pose JAMAIS de questions sur des sujets non couverts dans la lecon."
+**TYPE: TRUE_FALSE**
 
-**2. Update the system prompt question count (lines 182, 261)**
-
-Change rule 6 from:
+**Affirmation 1:**
+...
+---
+**Affirmation 2:**
+...
 ```
-Genere 8-10 questions QUIZ + 5-7 affirmations TRUE_FALSE
-```
-To:
-```
-Genere EXACTEMENT 10 a 15 questions au total: 7-10 questions QCM + 3-5 affirmations VRAI/FAUX. NE JAMAIS generer moins de 10 questions.
-```
 
-**3. Update input schema to accept separate contenu and exemples fields**
+The parser uses regex to find each `**TYPE: QUIZ**` section, then calls `.match()` which only returns the **FIRST** question. So 10 questions become 1. Same for TRUE_FALSE. Total: 2 activities displayed.
 
-Add optional `contenu` and `exemplesExercices` fields to the Zod schema so the hook can pass them separately. Keep backward compatibility with `exercisesContent`.
+## Fix
 
-**4. Update the hook to pass separate fields**
+**File: `src/components/InteractiveActivitiesEnhanced.tsx`**
 
-In `useAIGeneratedContent.ts` (line 231), change the body to pass `contenu` and `exemplesExercices` as separate fields alongside `exercisesContent` (for backward compat):
+Rewrite `parseQuizActivities()` and `parseTrueFalseActivities()` to:
+
+1. Find the full TYPE section (same as now)
+2. **Split the section by `---` delimiters** into individual question blocks
+3. Parse each block separately for its question/options/answer/explanation
+
+### parseQuizActivities — New Logic
 
 ```typescript
-body: {
-  exercisesContent: combinedContent,  // kept for backward compat
-  contenu: lessonContent,             // new: lesson main content
-  exemplesExercices: lessonExamples,   // new: examples section
-  lessonTitle,
-  gradeLevel,
-  subject: subjectName,
-}
+const parseQuizActivities = (content: string): QuizActivity[] => {
+  const activities: QuizActivity[] = [];
+  
+  // Find QUIZ section(s)
+  const quizRegex = /\*\*TYPE:\s*QUIZ\*\*([\s\S]*?)(?=\*\*TYPE:|$)/gi;
+  let sectionMatch;
+  
+  while ((sectionMatch = quizRegex.exec(content)) !== null) {
+    const fullSection = sectionMatch[1];
+    
+    // Split by --- to get individual question blocks
+    const blocks = fullSection.split(/\n---\n/).filter(b => b.trim());
+    
+    for (const block of blocks) {
+      // Parse question text
+      const questionMatch = block.match(
+        /\*\*Question\s*\d*:?\*\*\s*\n?\s*(.+?)(?=\n\s*[-*]?\s*[A-D]\))/is
+      );
+      if (!questionMatch) continue;
+      
+      const question = questionMatch[1].trim()
+        .replace(/\*\*/g, '').replace(/\s+/g, ' ');
+      
+      // Parse options A-D
+      const optionsMap: Record<string, string> = {};
+      const optionMatches = block.matchAll(
+        /^\s*[-*]?\s*([A-D])\)\s*(.+?)$/gim
+      );
+      for (const m of optionMatches) {
+        let text = m[2].trim().replace(/\*\*/g, '').split('\n')[0].trim();
+        if (text && !text.toLowerCase().startsWith('reponse')) {
+          optionsMap[m[1].toUpperCase()] = text;
+        }
+      }
+      
+      const options = ['A','B','C','D']
+        .filter(l => optionsMap[l])
+        .map(l => optionsMap[l]);
+      if (options.length < 2) continue;
+      
+      // Parse correct answer
+      const correctMatch = block.match(
+        /\*\*Reponse\s*correcte:?\*\*\s*([A-D])/i
+      ) || block.match(
+        /\*\*Reponse\s*correcte:\s*([A-D])\*\*/i
+      );
+      if (!correctMatch) continue;
+      
+      const correctIndex = correctMatch[1].toUpperCase()
+        .charCodeAt(0) - 65;
+      
+      // Parse explanation
+      const explMatch = block.match(
+        /\*\*Explication:?\*\*\s*(.+?)$/is
+      );
+      const explanation = explMatch 
+        ? explMatch[1].trim().replace(/\*\*/g, '') : '';
+      
+      activities.push({
+        type: 'QUIZ',
+        title: `Question ${activities.length + 1}`,
+        difficulty: 'Moyen',
+        question, options, correctAnswer: correctIndex, explanation
+      });
+    }
+  }
+  return activities;
+};
 ```
 
-### Updated User Prompt (French version)
+### parseTrueFalseActivities — New Logic
 
+Same pattern: find the TYPE section, split by `---`, parse each block for statement/answer/explanation.
+
+```typescript
+const parseTrueFalseActivities = (content: string): TrueFalseActivity[] => {
+  const activities: TrueFalseActivity[] = [];
+  
+  const tfRegex = /\*\*TYPE:\s*(?:TRUE_FALSE|TRUEFALSE)\*\*([\s\S]*?)(?=\*\*TYPE:|$)/gi;
+  let sectionMatch;
+  
+  while ((sectionMatch = tfRegex.exec(content)) !== null) {
+    const fullSection = sectionMatch[1];
+    const blocks = fullSection.split(/\n---\n/).filter(b => b.trim());
+    
+    for (const block of blocks) {
+      // Parse statement
+      const stmtMatch = block.match(
+        /\*\*Affirmation\s*(?:a|à)?\s*(?:evaluer|évaluer|\d*):?\*\*\s*\n?\s*(.+?)(?=\n\s*\*\*Reponse)/is
+      );
+      if (!stmtMatch) continue;
+      
+      const statement = stmtMatch[1].trim()
+        .replace(/\*\*/g, '').replace(/\s+/g, ' ');
+      if (statement.length < 5) continue;
+      
+      // Parse answer (VRAI/FAUX or A/B)
+      let correctAnswer = -1;
+      const directMatch = block.match(
+        /\*\*Reponse:?\*\*\s*(VRAI|FAUX)/i
+      ) || block.match(
+        /\*\*Reponse:\s*(VRAI|FAUX)\*\*/i
+      );
+      if (directMatch) {
+        correctAnswer = directMatch[1].toUpperCase() === 'VRAI' ? 0 : 1;
+      }
+      if (correctAnswer === -1) continue;
+      
+      // Parse explanation
+      const explMatch = block.match(
+        /\*\*Explication:?\*\*\s*(.+?)$/is
+      );
+      const explanation = explMatch
+        ? explMatch[1].trim().replace(/\*\*/g, '') : '';
+      
+      activities.push({
+        type: 'TRUEFALSE',
+        title: `Affirmation ${activities.length + 1}`,
+        difficulty: 'Moyen',
+        statement, correctAnswer, explanation
+      });
+    }
+  }
+  return activities;
+};
 ```
-Lecon: "${lessonTitle}"
-Niveau: ${gradeLevel}
-Matiere: ${subject}
 
-=== CONTENU DE LA LECON ===
-${contenu}
-
-=== EXEMPLES ET EXERCICES DE LA LECON ===
-${exemplesExercices}
-
-INSTRUCTIONS CRITIQUES:
-- Genere EXACTEMENT 10 a 15 questions au total
-- 7 a 10 questions QCM (choix multiples avec 4 options A, B, C, D)
-- 3 a 5 affirmations VRAI/FAUX
-- TOUTES les questions doivent etre basees UNIQUEMENT sur le contenu ci-dessus
-- Ne pose JAMAIS de questions sur des sujets non couverts dans la lecon
-- Les options doivent etre sur des lignes separees: "A) texte"
-- Separe les questions/affirmations avec "---"
-- Fournis une explication claire pour chaque reponse
-```
-
-## Files Modified
+## What Changes
 
 | File | Change |
 |------|--------|
-| `supabase/functions/generate-interactive-activities/index.ts` | Update prompts: question count 10-15, content grounding, separate contenu/exemples |
-| `src/features/matieres/hooks/useAIGeneratedContent.ts` | Pass `contenu` and `exemplesExercices` as separate body fields |
+| `src/components/InteractiveActivitiesEnhanced.tsx` | Rewrite `parseQuizActivities()` and `parseTrueFalseActivities()` to split by `---` delimiters and parse each block individually |
+
+## What Does NOT Change
+
+- Edge function (already generating 10-15 questions correctly)
+- Hook / caching logic
+- UI rendering (QuizActivity / TrueFalseActivity types unchanged)
+- Score, gold, sound effects, completion logic
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- backward compat with exercisesContent maintained |
-| Works with existing data? | Yes -- uses lesson.contenu which all lessons have |
-| 3G optimized? | Yes -- same single request, just better prompt |
-| Edge cases handled? | Yes -- if contenu is empty, falls back to exercisesContent |
-| Backward compatible? | Yes -- old cached data still renders, new generations get 10-15 questions |
+| Breaks existing functionality? | No -- same Activity types, same rendering, just better parsing |
+| Works with existing cached data? | Yes -- cached content already has 10+ questions, they just weren't being parsed |
+| 3G optimized? | Yes -- no additional network calls, just better client-side parsing |
+| Edge cases handled? | Yes -- blocks with missing fields are skipped, same as before |
+| Backward compatible? | Yes -- handles both old and new content formats |
