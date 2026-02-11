@@ -382,7 +382,7 @@ export const LessonPageTemplate = ({
         {/* Sticky Tabs Navigation */}
         <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b shadow-sm">
           <div className="container mx-auto px-2 sm:px-4 py-2">
-            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-3 md:grid-cols-5 h-auto p-1 gap-1">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-3 md:grid-cols-5 h-auto p-1 gap-1 [&>button[data-state=active]]:bg-emerald-600 [&>button[data-state=active]]:text-white [&>button[data-state=active]]:shadow-md">
             <TabsTrigger value="introduction" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
               <TabIndicator status={getTabStatus('introduction')} />
               <Target className="h-3 w-3 sm:h-4 sm:w-4" />
