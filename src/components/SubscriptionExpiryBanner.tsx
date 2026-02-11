@@ -6,11 +6,11 @@
  * Updates every 60 seconds (battery-friendly for 3G).
  */
 
+import { useNavigate } from 'react-router-dom';
 import { X, Clock, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSubscriptionCountdown } from '@/hooks/useSubscriptionCountdown';
 import { useBannerPriority } from '@/hooks/useBannerPriority';
-import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
 interface SubscriptionExpiryBannerProps {
@@ -21,6 +21,7 @@ interface SubscriptionExpiryBannerProps {
 const BANNER_ID = 'subscription-expiry';
 
 export function SubscriptionExpiryBanner({ subscriptionEndDate, hasFreeAccess }: SubscriptionExpiryBannerProps) {
+  const navigate = useNavigate();
   const { dismissBanner, isBannerDismissed } = useBannerPriority();
   const countdown = useSubscriptionCountdown(subscriptionEndDate);
 
@@ -30,17 +31,8 @@ export function SubscriptionExpiryBanner({ subscriptionEndDate, hasFreeAccess }:
   if (countdown.isExpired) return null; // SubscriptionGate handles expired state
   if (isBannerDismissed(BANNER_ID)) return null;
 
-  const handleRenew = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('moncash-create-payment', {
-        body: { amount: 200, description: 'Renouvellement Edupreneurs - 30 jours' },
-      });
-      if (!error && data?.redirectUrl) {
-        window.location.href = data.redirectUrl;
-      }
-    } catch {
-      // Silent fail - user can retry
-    }
+  const handleRenew = () => {
+    navigate('/settings?tab=preferences#subscription');
   };
 
   const handleDismiss = () => {

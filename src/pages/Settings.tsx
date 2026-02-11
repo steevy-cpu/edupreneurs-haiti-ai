@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -78,6 +78,7 @@ const DEFAULT_NOTIFICATION_CATEGORIES: Omit<NotificationCategory, 'enabled'>[] =
 
 const Settings = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { session, user, isAuthenticated, isLoading: authLoading } = useSessionAuth();
   const { isSlowConnection, shouldShowAnimations } = useNetworkAwareLoading();
@@ -85,8 +86,11 @@ const Settings = () => {
   const userId = user?.id ?? null;
   const userEmail = user?.email ?? "";
   
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState(() => {
+    return searchParams.get('tab') || "profile";
+  });
   const [loading, setLoading] = useState(false);
+  const [renewLoading, setRenewLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
@@ -187,6 +191,15 @@ const Settings = () => {
       fetchUserData();
     }
   }, [userId, authLoading, fetchUserData]);
+
+  // Scroll to subscription card if hash is present
+  useEffect(() => {
+    if (activeTab === 'preferences' && window.location.hash === '#subscription') {
+      setTimeout(() => {
+        document.getElementById('subscription')?.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     localStorage.setItem("lessonLanguage", language);
@@ -401,6 +414,47 @@ const Settings = () => {
       setLoading(false);
     }
   };
+
+  const handleRenewSubscription = async () => {
+    setRenewLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('moncash-create-payment', {
+        body: { amount: 200, description: 'Renouvellement Edupreneurs - 30 jours' },
+      });
+      if (error || !data?.redirectUrl) {
+        toast.error("Erreur lors de la création du paiement");
+        setRenewLoading(false);
+        return;
+      }
+      window.location.href = data.redirectUrl;
+    } catch {
+      toast.error("Erreur réseau - vérifiez votre connexion");
+      setRenewLoading(false);
+    }
+  };
+
+  // Compute subscription display data
+  const subscriptionInfo = useMemo(() => {
+    if (!profile) return null;
+    const p = profile as any;
+    if (p.has_free_access) return { state: 'free' as const };
+    
+    const endDate = p.subscription_end_date ? new Date(p.subscription_end_date) : null;
+    const now = new Date();
+    const isActive = p.subscription_status === 'active' && endDate && endDate.getTime() > now.getTime();
+    
+    if (isActive && endDate) {
+      const daysLeft = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return {
+        state: 'active' as const,
+        endDate,
+        daysLeft,
+        formattedDate: endDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
+      };
+    }
+    
+    return { state: 'expired' as const };
+  }, [profile]);
 
   // Show skeleton while auth is loading OR page data is loading (non-blocking)
   if (authLoading || pageLoading) {
@@ -838,7 +892,7 @@ const Settings = () => {
           {/* Preferences Tab - Now includes Subscription */}
           <TabsContent value="preferences" className="mt-4 sm:mt-6 space-y-6">
             {/* Subscription Section */}
-            <Card className="border-none rounded-[20px] shadow-md">
+            <Card id="subscription" className="border-none rounded-[20px] shadow-md">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                   <CreditCard className="text-primary shrink-0" size={20} />
@@ -849,42 +903,77 @@ const Settings = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0 space-y-4 sm:space-y-6">
-                <div className="p-4 sm:p-6 bg-gradient-to-br from-[hsl(var(--primary))]/10 to-[hsl(var(--success))]/10 rounded-xl border-2 border-[hsl(var(--primary))]/20">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                    <div>
-                      <h3 className="text-xl sm:text-2xl font-bold">Plan Gratuit</h3>
-                      <p className="text-sm text-muted-foreground">Accès de base aux fonctionnalités</p>
+                {subscriptionInfo?.state === 'free' ? (
+                  <div className="p-4 sm:p-6 bg-gradient-to-br from-[hsl(var(--success))]/10 to-[hsl(var(--primary))]/10 rounded-xl border-2 border-[hsl(var(--success))]/20">
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="px-3 py-1 rounded-full bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] text-xs font-semibold uppercase tracking-wide">
+                        Accès Gratuit
+                      </span>
                     </div>
-                    <div className="text-left sm:text-right">
-                      <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent">
-                        0 HTG
+                    <p className="text-sm text-muted-foreground">
+                      Vous bénéficiez d'un accès gratuit à la plateforme. Aucun renouvellement nécessaire.
+                    </p>
+                  </div>
+                ) : subscriptionInfo?.state === 'active' ? (
+                  <div className="p-4 sm:p-6 bg-gradient-to-br from-[hsl(var(--primary))]/10 to-[hsl(var(--success))]/10 rounded-xl border-2 border-[hsl(var(--primary))]/20">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                      <div>
+                        <div className="flex items-center gap-3 mb-1">
+                          <span className="px-3 py-1 rounded-full bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] text-xs font-semibold uppercase tracking-wide">
+                            Actif
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Expire le <strong>{subscriptionInfo.formattedDate}</strong>
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {subscriptionInfo.daysLeft} jour{subscriptionInfo.daysLeft !== 1 ? 's' : ''} restant{subscriptionInfo.daysLeft !== 1 ? 's' : ''}
+                        </p>
                       </div>
-                      <div className="text-sm text-muted-foreground">par mois</div>
+                      <div className="text-left sm:text-right">
+                        <div className="text-2xl sm:text-3xl font-extrabold text-primary">200 HTG</div>
+                        <div className="text-sm text-muted-foreground">/ 30 jours</div>
+                      </div>
                     </div>
+                    <Button
+                      className="w-full"
+                      onClick={handleRenewSubscription}
+                      disabled={renewLoading}
+                    >
+                      {renewLoading ? (
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Préparation...</>
+                      ) : (
+                        <><CreditCard className="mr-2 h-4 w-4" />Renouveler (+30 jours)</>
+                      )}
+                    </Button>
                   </div>
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 rounded-full bg-[hsl(var(--success))]" />
-                      Accès aux leçons de base
+                ) : (
+                  <div className="p-4 sm:p-6 bg-gradient-to-br from-destructive/10 to-destructive/5 rounded-xl border-2 border-destructive/20">
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="px-3 py-1 rounded-full bg-destructive/15 text-destructive text-xs font-semibold uppercase tracking-wide">
+                        Expiré
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 rounded-full bg-[hsl(var(--success))]" />
-                      Assistant IA limité
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Votre abonnement a expiré. Renouvelez pour continuer à accéder à toutes les fonctionnalités.
+                    </p>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                      <div className="text-2xl font-extrabold text-primary">200 HTG <span className="text-sm font-normal text-muted-foreground">/ 30 jours</span></div>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <div className="w-2 h-2 rounded-full bg-muted" />
-                      Quiz illimités (Premium)
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <div className="w-2 h-2 rounded-full bg-muted" />
-                      Support prioritaire (Premium)
-                    </div>
+                    <Button
+                      className="w-full"
+                      size="lg"
+                      onClick={handleRenewSubscription}
+                      disabled={renewLoading}
+                    >
+                      {renewLoading ? (
+                        <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Préparation...</>
+                      ) : (
+                        <><CreditCard className="mr-2 h-5 w-5" />Renouveler maintenant — 200 HTG</>
+                      )}
+                    </Button>
                   </div>
-                  <div className="flex items-center gap-2 p-3 bg-amber-100 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-800 dark:text-amber-200">
-                    <div className="w-2 h-2 rounded-full bg-amber-500" />
-                    Les abonnements premium arrivent bientôt!
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 

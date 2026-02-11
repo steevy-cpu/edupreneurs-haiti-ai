@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -17,6 +18,7 @@ type PaymentStatus = 'checking' | 'completed' | 'failed' | 'pending' | 'error';
 export default function PaymentCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [status, setStatus] = useState<PaymentStatus>('checking');
   const [attempts, setAttempts] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -69,6 +71,10 @@ export default function PaymentCallback() {
 
       if (paymentStatus === 'completed') {
         setStatus('completed');
+        // Invalidate subscription queries so banner/gate update immediately
+        queryClient.invalidateQueries({ queryKey: ['subscription-status'] });
+        queryClient.invalidateQueries({ queryKey: ['subscription-banner'] });
+        queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       } else if (paymentStatus === 'failed') {
         setStatus('failed');
         setErrorMessage(data?.transaction?.description || data?.error || 'Le paiement a échoué');
