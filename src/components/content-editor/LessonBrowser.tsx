@@ -14,14 +14,16 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { Search, ChevronDown, ChevronRight, BookOpen, Calculator, FlaskConical, Book, RefreshCw, AlertCircle, RotateCcw } from "lucide-react";
+import { Search, ChevronDown, ChevronRight, BookOpen, Calculator, FlaskConical, Book, RefreshCw, AlertCircle, RotateCcw, FileX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   BatchQuizValidator, 
   BatchActivitiesValidator,
   BatchQuizRegenerator,
   BatchActivitiesRegenerator,
-  BatchQuizGeneratorNew 
+  BatchQuizGeneratorNew,
+  BatchContentGenerator,
+  isLessonMissingContent,
 } from "@/features/content-editor/batch-operations";
 import { ValidationDetailsPanel } from "./ValidationDetailsPanel";
 
@@ -69,6 +71,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(true);
   const [openSubjects, setOpenSubjects] = useState<Set<string>>(new Set());
   const [showOnlyMissingQuiz, setShowOnlyMissingQuiz] = useState(false);
+  const [showOnlyMissingContent, setShowOnlyMissingContent] = useState(false);
   const [regeneratingLessonId, setRegeneratingLessonId] = useState<string | null>(null);
   const [activeBatchOperation, setActiveBatchOperation] = useState<string | null>(null);
 
@@ -154,7 +157,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
         const batch = subjectIds.slice(i, i + batchSize);
         const { data: lessonsData, error } = await supabase
            .from('lessons')
-           .select('id, title, slug, subject_id, order_index, workflow_status, grade_level, quiz_final, activites_interactives, contenu, exemples_exercices, needs_quiz_regeneration, needs_activities_regeneration, last_content_validated_at, last_activities_validated_at, validation_details_json, content_alignment_score, activities_alignment_score, subjects(id, name)')
+           .select('id, title, slug, subject_id, order_index, workflow_status, grade_level, quiz_final, activites_interactives, contenu, exemples_exercices, objectif, introduction, youtube_url, needs_quiz_regeneration, needs_activities_regeneration, last_content_validated_at, last_activities_validated_at, validation_details_json, content_alignment_score, activities_alignment_score, subjects(id, name)')
           .in('subject_id', batch)
           .order('order_index');
 
@@ -289,6 +292,12 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
   const missingQuizzesTotal = totalLessons - lessonsWithQuiz;
   const quizPercentage = totalLessons > 0 ? Math.round((lessonsWithQuiz / totalLessons) * 100) : 0;
 
+  // Calculate content stats
+  const lessonsWithContent = allLessons.filter(l => !isLessonMissingContent(l)).length;
+  const missingContentTotal = totalLessons - lessonsWithContent;
+  const contentPercentage = totalLessons > 0 ? Math.round((lessonsWithContent / totalLessons) * 100) : 0;
+  const lessonsMissingContent = allLessons.filter(l => isLessonMissingContent(l));
+
   // Get all lessons missing quizzes for batch generation
   const lessonsMissingQuiz = allLessons.filter(lesson => !hasValidQuiz(lesson));
   
@@ -315,6 +324,11 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
       filteredLessons = filteredLessons.filter(lesson => !hasValidQuiz(lesson));
     }
     
+    // Apply missing content filter
+    if (showOnlyMissingContent) {
+      filteredLessons = filteredLessons.filter(lesson => isLessonMissingContent(lesson));
+    }
+    
     return {
       ...subject,
       lessons: filteredLessons,
@@ -323,8 +337,8 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
       totalLessons: subjectLessons.length
     };
   }).filter(subject => {
-    // When showing only missing quizzes, hide subjects with no matching lessons
-    if (showOnlyMissingQuiz && subject.lessons.length === 0) {
+    // When showing only missing quizzes or content, hide subjects with no matching lessons
+    if ((showOnlyMissingQuiz || showOnlyMissingContent) && subject.lessons.length === 0) {
       return false;
     }
     // Otherwise, show subjects that match search or have lessons
@@ -402,21 +416,54 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
           />
         </div>
 
-        {/* Missing Quiz Filter */}
-        <div className="flex items-center space-x-2 mt-3">
-          <Checkbox 
-            id="missing-quiz" 
-            checked={showOnlyMissingQuiz}
-            onCheckedChange={(checked) => setShowOnlyMissingQuiz(checked === true)}
-          />
-          <Label htmlFor="missing-quiz" className="text-sm text-muted-foreground cursor-pointer">
-            Quizzes manquants uniquement
-          </Label>
+        {/* Filter Checkboxes */}
+        <div className="space-y-2 mt-3">
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="missing-quiz" 
+              checked={showOnlyMissingQuiz}
+              onCheckedChange={(checked) => setShowOnlyMissingQuiz(checked === true)}
+            />
+            <Label htmlFor="missing-quiz" className="text-sm text-muted-foreground cursor-pointer">
+              Quizzes manquants uniquement
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="missing-content" 
+              checked={showOnlyMissingContent}
+              onCheckedChange={(checked) => setShowOnlyMissingContent(checked === true)}
+            />
+            <Label htmlFor="missing-content" className="text-sm text-muted-foreground cursor-pointer">
+              Contenu manquant uniquement
+            </Label>
+          </div>
         </div>
 
-        {/* Quiz Coverage Stats */}
+        {/* Coverage Stats */}
         {gradeLevel !== "all" && totalLessons > 0 && (
           <div className="mt-4 p-3 rounded-lg bg-muted/50 space-y-3">
+            {/* Content Coverage */}
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-medium flex items-center gap-1">
+                {missingContentTotal > 0 && <FileX className="h-3.5 w-3.5 text-blue-600" />}
+                {gradeLevel}: {lessonsWithContent}/{totalLessons} contenu
+              </span>
+              <span className={missingContentTotal > 0 ? "text-blue-600 font-medium" : "text-muted-foreground"}>
+                {contentPercentage}%
+              </span>
+            </div>
+            <Progress 
+              value={contentPercentage} 
+              className={`h-2 ${missingContentTotal > 50 ? "[&>div]:bg-blue-600" : missingContentTotal > 0 ? "[&>div]:bg-blue-500" : ""}`}
+            />
+            {missingContentTotal > 0 && (
+              <p className="text-xs text-blue-600">
+                {missingContentTotal} leçon{missingContentTotal > 1 ? 's' : ''} sans contenu
+              </p>
+            )}
+
+            {/* Quiz Coverage */}
             <div className="flex items-center justify-between text-sm">
               <span className="font-medium flex items-center gap-1">
                 {missingQuizzesTotal > 0 && <AlertCircle className="h-3.5 w-3.5 text-destructive" />}
@@ -437,20 +484,35 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
             )}
 
             {/* Generation Section */}
-            {missingQuizzesTotal > 0 && (
+            {(missingContentTotal > 0 || missingQuizzesTotal > 0) && (
               <div className="space-y-1.5 pt-1">
                 <Label className="text-xs text-muted-foreground">Génération</Label>
-                <BatchQuizGeneratorNew 
-                  lessons={lessonsMissingQuiz}
-                  gradeLevel={gradeLevel}
-                  onComplete={() => {
-                    setActiveBatchOperation(null);
-                    loadSubjects();
-                  }}
-                  onStart={() => setActiveBatchOperation('quiz-generate')}
-                  onDashboardRefresh={onDashboardRefresh}
-                  disabled={activeBatchOperation !== null && activeBatchOperation !== 'quiz-generate'}
-                />
+                {missingContentTotal > 0 && (
+                  <BatchContentGenerator 
+                    lessons={lessonsMissingContent}
+                    gradeLevel={gradeLevel}
+                    onComplete={() => {
+                      setActiveBatchOperation(null);
+                      loadSubjects();
+                    }}
+                    onStart={() => setActiveBatchOperation('content-generate')}
+                    onDashboardRefresh={onDashboardRefresh}
+                    disabled={activeBatchOperation !== null && activeBatchOperation !== 'content-generate'}
+                  />
+                )}
+                {missingQuizzesTotal > 0 && (
+                  <BatchQuizGeneratorNew 
+                    lessons={lessonsMissingQuiz}
+                    gradeLevel={gradeLevel}
+                    onComplete={() => {
+                      setActiveBatchOperation(null);
+                      loadSubjects();
+                    }}
+                    onStart={() => setActiveBatchOperation('quiz-generate')}
+                    onDashboardRefresh={onDashboardRefresh}
+                    disabled={activeBatchOperation !== null && activeBatchOperation !== 'quiz-generate'}
+                  />
+                )}
               </div>
             )}
 
@@ -585,7 +647,13 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
                                        Activités
                                      </Badge>
                                    )}
-                                   {!hasValidQuiz(lesson) && (
+                                    {isLessonMissingContent(lesson) && (
+                                      <Badge variant="outline" className="text-xs border-blue-500 text-blue-600">
+                                        <FileX className="h-3 w-3 mr-0.5" />
+                                        Vide
+                                      </Badge>
+                                    )}
+                                    {!hasValidQuiz(lesson) && (
                                      <Badge variant="destructive" className="text-xs flex items-center gap-0.5">
                                        <AlertCircle className="h-3 w-3" />
                                        Quiz

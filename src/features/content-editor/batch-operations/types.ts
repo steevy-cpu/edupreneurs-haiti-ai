@@ -17,6 +17,9 @@ export interface BatchLesson {
   validation_details_json?: any;
   content_alignment_score?: number | null;
   activities_alignment_score?: number | null;
+  objectif?: string | null;
+  introduction?: string | null;
+  youtube_url?: string | null;
   subjects?: { name: string } | null;
 }
 

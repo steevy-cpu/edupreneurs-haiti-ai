@@ -42,6 +42,12 @@ export {
   quizGeneratorTheme, 
   quizGeneratorDialogConfig 
 } from './generators/quizGenerator';
+export { 
+  createContentGeneratorConfig, 
+  contentGeneratorTheme, 
+  contentGeneratorDialogConfig,
+  isLessonMissingContent 
+} from './generators/contentGenerator';
 
 // Wrapper components (ready to use)
 export { BatchQuizValidator } from './wrappers/BatchQuizValidator';
@@ -49,3 +55,4 @@ export { BatchActivitiesValidator } from './wrappers/BatchActivitiesValidator';
 export { BatchQuizRegenerator } from './wrappers/BatchQuizRegenerator';
 export { BatchActivitiesRegenerator } from './wrappers/BatchActivitiesRegenerator';
 export { BatchQuizGeneratorNew } from './wrappers/BatchQuizGeneratorNew';
+export { BatchContentGenerator } from './wrappers/BatchContentGenerator';
