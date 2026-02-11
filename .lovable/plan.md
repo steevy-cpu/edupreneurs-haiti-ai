@@ -1,67 +1,79 @@
 
 
-# Randomized Jude Feedback Messages
+# Jude Voice Feedback for Quiz and Activities
 
-## Problem
-Currently, Jude always says the same two phrases: "Bravo !" for correct and "Pas tout a fait..." for incorrect. This feels repetitive and less engaging, especially with 10-15 questions per session.
+## Overview
+Pre-generate audio clips for all 20 Jude feedback messages using ElevenLabs with a young male voice, cache them in storage, and auto-play the matching clip when JudeFeedback renders.
 
-## Solution
-Add a pool of varied feedback messages for both correct and incorrect answers, randomly selected each time. This makes Jude feel more alive and conversational.
+## Voice Selection
+
+**"Eric" (cjVigY5qzO86Huf0OWal)** -- a younger male voice that fits Jude's character as a boy. Emotion-matched settings:
+
+- **Correct (happy/excited)**: stability 0.35, style 0.6, speed 1.05
+- **Incorrect (gentle/encouraging)**: stability 0.55, style 0.25, speed 0.95
+
+## Approach: Pre-generated Audio (NOT real-time TTS)
+
+1. **One-time generation**: Edge function generates all 20 feedback clips once, stores in `lesson-audio` bucket
+2. **Cached forever**: Served from CDN -- no API calls during quiz
+3. **Instant playback**: Audio plays from cache when feedback appears
+4. **Mute toggle**: Users can disable voice via speaker icon, preference saved in localStorage
 
 ## Changes
 
-### File: `src/components/jude/JudeFeedback.tsx`
+### 1. New Edge Function: `generate-jude-feedback-audio`
+**File: `supabase/functions/generate-jude-feedback-audio/index.ts`**
 
-Add two arrays of randomized messages and pick one on each render:
+- Iterates over all 20 messages (10 correct, 10 incorrect)
+- Uses "Eric" voice with emotion-appropriate settings
+- Uploads to `lesson-audio/jude-feedback/correct-0.mp3` through `correct-9.mp3` and `incorrect-0.mp3` through `incorrect-9.mp3`
+- One-time admin action, not called by students
 
-**Correct answer messages (pool of 8+):**
-- "Bravo !"
-- "Excellent !"
-- "Parfait !"
-- "Super boulot !"
-- "Tu geres !"
-- "Impressionnant !"
-- "C'est ca !"
-- "Bien joue !"
-- "Tu assures !"
-- "Magnifique !"
+### 2. New Utility: `src/utils/judeFeedbackAudio.ts`
+Maps message index to public storage URL:
+```
+getJudeFeedbackAudioUrl(type: 'correct' | 'incorrect', index: number) => string
+```
 
-**Incorrect answer messages (pool of 8+):**
-- "Pas tout a fait..."
-- "Presque !"
-- "Essaie encore la prochaine fois !"
-- "Pas exactement..."
-- "C'est pas grave, on apprend !"
-- "Bonne tentative !"
-- "Continue, tu vas y arriver !"
-- "Hmm, pas cette fois..."
-- "Ne lache pas !"
-- "Regarde bien l'explication !"
+### 3. Update `src/components/jude/JudeFeedback.tsx`
+- Add audio index tracking to each message
+- Auto-play matching audio clip when feedback renders
+- Add mute toggle icon (stored in localStorage as `jude-voice-muted`)
+- Graceful fallback if audio fails or is blocked by browser
 
-**Emojis also randomized** to match the variety of messages.
+### 4. Update `src/features/matieres/renderers/QuizRenderer.tsx`
+- Import and call `useSoundEffects` for chime/buzzer on answer submit (matching activities behavior)
 
-Implementation uses `useMemo` with a random index so the message stays stable during re-renders but changes per question.
-
-### File: `src/components/jude/JudeCompletionScreen.tsx`
-
-Add more granular score tiers with varied messages:
-- 100%: "Parfait ! Tu es un champion !"
-- 80-99%: pool of 3 encouraging messages
-- 60-79%: pool of 3 motivating messages  
-- Below 60%: pool of 3 supportive messages
-
-## Files Modified
+## File Changes
 
 | File | Change |
 |------|--------|
-| `src/components/jude/JudeFeedback.tsx` | Add randomized message pools for correct/incorrect feedback |
-| `src/components/jude/JudeCompletionScreen.tsx` | Add more varied score-based messages |
+| `supabase/functions/generate-jude-feedback-audio/index.ts` | NEW -- One-time generation of 20 audio clips with Eric voice |
+| `src/utils/judeFeedbackAudio.ts` | NEW -- URL mapping for feedback audio files |
+| `src/components/jude/JudeFeedback.tsx` | Add audio playback, mute toggle |
+| `src/features/matieres/renderers/QuizRenderer.tsx` | Add sound effects on answer submit |
+
+## UX Flow
+
+```text
+User submits answer in Quiz
+    |
+    v
+[Chime/buzzer plays] (useSoundEffects)
+    |
+    v
+[JudeFeedback renders + Jude's voice plays the message]
+    |
+    v
+[Speaker icon available to mute]
+```
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- same component API, just varied text |
-| 3G optimized? | Yes -- no network changes, just string arrays |
-| Backward compatible? | Yes -- same props interface |
+| Breaks existing functionality? | No -- audio is additive |
+| 3G optimized? | Yes -- clips are 2-5KB each, cached by CDN |
+| Backward compatible? | Yes -- works without audio if not generated |
+| Cost impact? | 20 one-time API calls, zero ongoing cost |
 
