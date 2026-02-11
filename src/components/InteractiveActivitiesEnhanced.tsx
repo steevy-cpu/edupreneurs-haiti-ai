@@ -109,171 +109,138 @@ export const InteractiveActivitiesEnhanced = ({
     }
   };
 
-  // Parse TRUEFALSE activities - handles multiple formats
+  // Parse TRUEFALSE activities - split by --- delimiters to get ALL questions
   const parseTrueFalseActivities = (content: string): TrueFalseActivity[] => {
     const activities: TrueFalseActivity[] = [];
     
-    // Find all TRUEFALSE sections using TYPE marker
-    const trueFalseRegex = /\*\*TYPE:\s*(?:TRUE_FALSE|TRUEFALSE)\*\*([\s\S]*?)(?=\*\*TYPE:|$)/gi;
-    let match;
+    const tfRegex = /\*\*TYPE:\s*(?:TRUE_FALSE|TRUEFALSE)\*\*([\s\S]*?)(?=\*\*TYPE:|$)/gi;
+    let sectionMatch;
     
-    while ((match = trueFalseRegex.exec(content)) !== null) {
-      const section = match[1];
+    while ((sectionMatch = tfRegex.exec(content)) !== null) {
+      const fullSection = sectionMatch[1];
       
-      // Try to find the statement - multiple formats
-      // Format 1: **Affirmation à évaluer** or **Affirmation a evaluer**
-      // Format 2: **Affirmation 1:**
-      let statement = '';
+      // Split by --- to get individual question blocks
+      const blocks = fullSection.split(/\n---\n/).filter(b => b.trim());
       
-      const affirmationMatch = section.match(/\*\*Affirmation\s*(?:à|a)?\s*(?:évaluer|evaluer|[0-9]*):?\*\*\s*\n?\s*(.+?)(?=\n\s*[-*]?\s*[A-B]\)|\n\s*\*\*Réponse)/is);
-      if (affirmationMatch) {
-        statement = affirmationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
-      }
-      
-      if (!statement || statement.length < 5) {
-        console.warn('⚠️ No statement found in TRUEFALSE block');
-        continue;
-      }
-      
-      // Try to find the correct answer - multiple formats
-      let correctAnswer = -1;
-      
-      // Format 1: **Réponse correcte:** A or B (with A=VRAI, B=FAUX options)
-      const letterAnswerMatch = section.match(/\*\*Réponse\s*correcte:?\*\*\s*([A-B])/i) 
-        || section.match(/\*\*Réponse\s*correcte:\s*([A-B])\*\*/i);
-      
-      if (letterAnswerMatch) {
-        const letter = letterAnswerMatch[1].toUpperCase();
-        // Check if options show A=VRAI, B=FAUX pattern
-        const hasVraiOption = /[-*]?\s*A\)\s*VRAI/i.test(section);
-        const hasFauxOption = /[-*]?\s*B\)\s*FAUX/i.test(section);
+      for (const block of blocks) {
+        // Parse statement - multiple formats
+        const stmtMatch = block.match(
+          /\*\*Affirmation\s*(?:à|a)?\s*(?:évaluer|evaluer|\d*):?\*\*\s*\n?\s*(.+?)(?=\n\s*(?:[-*]?\s*[A-B]\)|\*\*R[ée]ponse))/is
+        );
+        if (!stmtMatch) continue;
         
-        if (hasVraiOption && hasFauxOption) {
-          // A = VRAI (0), B = FAUX (1)
-          correctAnswer = letter === 'A' ? 0 : 1;
-        } else {
-          // Assume direct mapping: A=0, B=1
+        const statement = stmtMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
+        if (statement.length < 5) continue;
+        
+        // Parse answer
+        let correctAnswer = -1;
+        
+        // Format 1: Letter answer with A=VRAI, B=FAUX options
+        const letterAnswerMatch = block.match(/\*\*R[ée]ponse\s*correcte:?\*\*\s*([A-B])/i) 
+          || block.match(/\*\*R[ée]ponse\s*correcte:\s*([A-B])\*\*/i);
+        
+        if (letterAnswerMatch) {
+          const letter = letterAnswerMatch[1].toUpperCase();
           correctAnswer = letter === 'A' ? 0 : 1;
         }
-      }
-      
-      // Format 2: **Réponse: VRAI** or **Réponse: FAUX**
-      if (correctAnswer === -1) {
-        const directAnswerMatch = section.match(/\*\*Réponse:?\*\*\s*(VRAI|FAUX)/i) 
-          || section.match(/\*\*Réponse:\s*(VRAI|FAUX)\*\*/i);
         
-        if (directAnswerMatch) {
-          correctAnswer = directAnswerMatch[1].toUpperCase() === 'VRAI' ? 0 : 1;
+        // Format 2: Direct VRAI/FAUX answer
+        if (correctAnswer === -1) {
+          const directMatch = block.match(/\*\*R[ée]ponse:?\*\*\s*(VRAI|FAUX)/i) 
+            || block.match(/\*\*R[ée]ponse:\s*(VRAI|FAUX)\*\*/i);
+          if (directMatch) {
+            correctAnswer = directMatch[1].toUpperCase() === 'VRAI' ? 0 : 1;
+          }
         }
+        
+        if (correctAnswer === -1) continue;
+        
+        // Get explanation
+        const explMatch = block.match(/\*\*Explication:?\*\*\s*(.+?)$/is);
+        const explanation = explMatch 
+          ? explMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') 
+          : "";
+        
+        activities.push({
+          type: 'TRUEFALSE',
+          title: `Affirmation ${activities.length + 1}`,
+          difficulty: 'Moyen',
+          statement,
+          correctAnswer,
+          explanation
+        });
       }
-      
-      if (correctAnswer === -1) {
-        console.warn('⚠️ No correct answer found in TRUEFALSE block');
-        continue;
-      }
-      
-      // Get explanation
-      const explanationMatch = section.match(/\*\*Explication:?\*\*\s*(.+?)(?=\*\*TYPE:|$)/is);
-      const explanation = explanationMatch 
-        ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') 
-        : "";
-      
-      activities.push({
-        type: 'TRUEFALSE',
-        title: `Affirmation ${activities.length + 1}`,
-        difficulty: 'Moyen',
-        statement,
-        correctAnswer,
-        explanation
-      });
-      
-      console.log(`✅ Parsed TRUEFALSE: "${statement.substring(0, 50)}..." -> ${correctAnswer === 0 ? 'VRAI' : 'FAUX'}`);
     }
     
+    console.log(`✅ Parsed ${activities.length} TRUEFALSE activities`);
     return activities;
   };
   
-  // Parse QUIZ activities - handles multiple formats
+  // Parse QUIZ activities - split by --- delimiters to get ALL questions
   const parseQuizActivities = (content: string): QuizActivity[] => {
     const activities: QuizActivity[] = [];
     
-    // Find all QUIZ sections using TYPE marker
     const quizRegex = /\*\*TYPE:\s*QUIZ\*\*([\s\S]*?)(?=\*\*TYPE:|$)/gi;
-    let match;
+    let sectionMatch;
     
-    while ((match = quizRegex.exec(content)) !== null) {
-      const section = match[1];
+    while ((sectionMatch = quizRegex.exec(content)) !== null) {
+      const fullSection = sectionMatch[1];
       
-      // Find question text - multiple formats
-      // Format 1: **Question 1:**
-      // Format 2: **Question:**
-      const questionMatch = section.match(/\*\*Question\s*\d*:?\*\*\s*\n?\s*(.+?)(?=\n\s*[-*]?\s*[A-D]\))/is);
-      if (!questionMatch) {
-        console.warn('⚠️ No question text found in QUIZ block');
-        continue;
-      }
+      // Split by --- to get individual question blocks
+      const blocks = fullSection.split(/\n---\n/).filter(b => b.trim());
       
-      const question = questionMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
-      
-      // Parse options - accepts optional dash/asterisk prefix: - A) or * A) or A)
-      const optionsMap: Record<string, string> = {};
-      const optionMatches = section.matchAll(/^\s*[-*]?\s*([A-D])\)\s*(.+?)$/gim);
-      
-      for (const optMatch of optionMatches) {
-        const letter = optMatch[1].toUpperCase();
-        let optionText = optMatch[2].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
-        // Clean up any trailing content
-        optionText = optionText.split('\n')[0].trim();
-        if (optionText && !optionText.toLowerCase().startsWith('réponse')) {
-          optionsMap[letter] = optionText;
+      for (const block of blocks) {
+        // Find question text
+        const questionMatch = block.match(
+          /\*\*Question\s*\d*:?\*\*\s*\n?\s*(.+?)(?=\n\s*[-*]?\s*[A-D]\))/is
+        );
+        if (!questionMatch) continue;
+        
+        const question = questionMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
+        
+        // Parse options A-D
+        const optionsMap: Record<string, string> = {};
+        const optionMatches = block.matchAll(/^\s*[-*]?\s*([A-D])\)\s*(.+?)$/gim);
+        
+        for (const optMatch of optionMatches) {
+          const letter = optMatch[1].toUpperCase();
+          let optionText = optMatch[2].trim().replace(/\*\*/g, '').split('\n')[0].trim();
+          if (optionText && !optionText.toLowerCase().startsWith('réponse') && !optionText.toLowerCase().startsWith('reponse')) {
+            optionsMap[letter] = optionText;
+          }
         }
-      }
-      
-      // Build options array in A, B, C, D order
-      const options: string[] = [];
-      ['A', 'B', 'C', 'D'].forEach(letter => {
-        if (optionsMap[letter]) {
-          options.push(optionsMap[letter]);
+        
+        const options = ['A', 'B', 'C', 'D'].filter(l => optionsMap[l]).map(l => optionsMap[l]);
+        if (options.length < 2) continue;
+        
+        // Parse correct answer
+        let correctMatch = block.match(/\*\*R[ée]ponse\s*correcte:?\*\*\s*([A-D])/i);
+        if (!correctMatch) {
+          correctMatch = block.match(/\*\*R[ée]ponse\s*correcte:\s*([A-D])\*\*/i);
         }
-      });
-      
-      if (options.length < 2) {
-        console.warn(`⚠️ Expected at least 2 options, found ${options.length} in QUIZ block`);
-        continue;
+        if (!correctMatch) continue;
+        
+        const correctIndex = correctMatch[1].toUpperCase().charCodeAt(0) - 65;
+        
+        // Get explanation
+        const explMatch = block.match(/\*\*Explication:?\*\*\s*(.+?)$/is);
+        const explanation = explMatch 
+          ? explMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') 
+          : "";
+        
+        activities.push({
+          type: 'QUIZ',
+          title: `Question ${activities.length + 1}`,
+          difficulty: 'Moyen',
+          question,
+          options,
+          correctAnswer: correctIndex,
+          explanation
+        });
       }
-      
-      // Parse correct answer - multiple formats
-      let correctMatch = section.match(/\*\*Réponse\s*correcte:?\*\*\s*([A-D])/i);
-      if (!correctMatch) {
-        correctMatch = section.match(/\*\*Réponse\s*correcte:\s*([A-D])\*\*/i);
-      }
-      if (!correctMatch) {
-        console.warn('⚠️ No correct answer found in QUIZ block');
-        continue;
-      }
-      
-      const correctLetter = correctMatch[1].toUpperCase();
-      const correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
-      
-      // Get explanation
-      const explanationMatch = section.match(/\*\*Explication:?\*\*\s*(.+?)(?=\*\*TYPE:|$)/is);
-      const explanation = explanationMatch 
-        ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') 
-        : "";
-      
-      activities.push({
-        type: 'QUIZ',
-        title: `Question ${activities.length + 1}`,
-        difficulty: 'Moyen',
-        question,
-        options,
-        correctAnswer: correctIndex,
-        explanation
-      });
-      
-      console.log(`✅ Parsed QUIZ: "${question.substring(0, 50)}..." -> Correct: ${correctLetter}`);
     }
     
+    console.log(`✅ Parsed ${activities.length} QUIZ activities`);
     return activities;
   };
 
