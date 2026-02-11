@@ -1,27 +1,46 @@
-import { useLessonActivitiesAsset } from '@/features/matieres/data/lessonAssets.queries';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Gamepad2, AlertCircle } from 'lucide-react';
+import { useAIGeneratedActivities } from '@/features/matieres/hooks/useAIGeneratedContent';
 import { InteractiveActivitiesEnhanced } from '@/components/InteractiveActivitiesEnhanced';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Gamepad2, AlertCircle, RefreshCw, Sparkles } from 'lucide-react';
 
 interface LessonActivitiesTabProps {
   lessonId: string;
+  subjectName: string;
+  gradeLevel: string;
+  lessonTitle: string;
+  lessonContent: string;
+  lessonExamples: string;
   legacyActivitiesHtml?: string | null;
 }
 
 /**
- * Lazy-loading Activities Tab
- * Fetches activities content only when tab is active
- * Falls back to legacy HTML if no JSON asset exists
+ * AI-Generated Activities Tab
+ * Generates activities on-demand via edge function, caches in localStorage.
+ * Falls back to legacy HTML if AI generation is unavailable.
  */
-export function LessonActivitiesTab({ 
-  lessonId, 
-  legacyActivitiesHtml 
+export function LessonActivitiesTab({
+  lessonId,
+  subjectName,
+  gradeLevel,
+  lessonTitle,
+  lessonContent,
+  lessonExamples,
+  legacyActivitiesHtml,
 }: LessonActivitiesTabProps) {
-  const { data: activitiesAsset, isLoading, error } = useLessonActivitiesAsset(lessonId);
+  const { data, isLoading, isGenerating, error, isStale, regenerate } = useAIGeneratedActivities({
+    lessonId,
+    contentType: 'activities',
+    lessonTitle,
+    lessonContent,
+    lessonExamples,
+    gradeLevel,
+    subjectName,
+  });
 
-  // Loading state
-  if (isLoading) {
+  // Loading / Generating state
+  if (isLoading || isGenerating) {
     return (
       <Card>
         <CardHeader className="p-3 sm:p-6">
@@ -31,6 +50,12 @@ export function LessonActivitiesTab({
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 sm:p-6 space-y-4">
+          <div className="flex items-center gap-3 text-muted-foreground">
+            <Sparkles className="h-4 w-4 animate-pulse text-primary" />
+            <p className="text-sm animate-pulse">
+              {isGenerating ? 'Génération des activités en cours...' : 'Chargement...'}
+            </p>
+          </div>
           <Skeleton className="h-32 w-full rounded-lg" />
           <Skeleton className="h-32 w-full rounded-lg" />
         </CardContent>
@@ -38,24 +63,8 @@ export function LessonActivitiesTab({
     );
   }
 
-  // Error state
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="p-3 sm:p-6 flex items-center gap-2 text-destructive">
-          <AlertCircle className="h-4 w-4" />
-          <p className="text-sm">Erreur lors du chargement des activités</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Check for JSON asset first (Phase 2+ content)
-  // TODO: Create ActivitiesRenderer when JSON format is implemented
-  // For now, fallback to legacy HTML
-
-  // Fallback to legacy HTML content
-  if (legacyActivitiesHtml) {
+  // Error state — offer retry + legacy fallback
+  if (error && !data) {
     return (
       <Card>
         <CardHeader className="p-3 sm:p-6">
@@ -64,9 +73,64 @@ export function LessonActivitiesTab({
             Activités Interactives
           </CardTitle>
         </CardHeader>
+        <CardContent className="p-3 sm:p-6 space-y-4">
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertCircle className="h-4 w-4" />
+            <p className="text-sm">{error}</p>
+          </div>
+          <Button onClick={regenerate} variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Réessayer
+          </Button>
+
+          {/* Legacy fallback */}
+          {legacyActivitiesHtml && (
+            <div className="mt-4 pt-4 border-t">
+              <p className="text-xs text-muted-foreground mb-3">Activités statiques disponibles :</p>
+              <InteractiveActivitiesEnhanced
+                content={legacyActivitiesHtml}
+                isLoading={false}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Activities ready
+  if (data) {
+    return (
+      <Card>
+        <CardHeader className="p-3 sm:p-6">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
+              <Gamepad2 className="h-4 w-4 sm:h-5 sm:w-5" />
+              Activités Interactives
+            </CardTitle>
+            <Button
+              onClick={regenerate}
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground"
+              title="Régénérer les activités"
+            >
+              <RefreshCw className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1 text-xs">Régénérer</span>
+            </Button>
+          </div>
+          {isStale && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Activités générées il y a plus de 7 jours — 
+              <button onClick={regenerate} className="underline text-primary ml-1">
+                Régénérer ?
+              </button>
+            </p>
+          )}
+        </CardHeader>
         <CardContent className="p-3 sm:p-6">
-          <InteractiveActivitiesEnhanced 
-            content={legacyActivitiesHtml}
+          <InteractiveActivitiesEnhanced
+            content={data}
             isLoading={false}
           />
         </CardContent>
@@ -74,21 +138,7 @@ export function LessonActivitiesTab({
     );
   }
 
-  // Check if we have a JSON asset (for future use)
-  if (activitiesAsset?.payload_json && activitiesAsset.status === 'published') {
-    // TODO: Render from JSON when ActivitiesRenderer is ready
-    return (
-      <Card>
-        <CardContent className="p-3 sm:p-6">
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Activités en cours de chargement...
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // No activities available
+  // No content at all
   return (
     <Card>
       <CardContent className="p-3 sm:p-6">
