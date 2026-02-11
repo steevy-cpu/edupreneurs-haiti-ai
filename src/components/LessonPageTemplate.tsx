@@ -257,15 +257,15 @@ export const LessonPageTemplate = ({
                 </div>
                 <div className="relative">
                   {isMathSubject(subjectName) ? (
-                    <MathContent content={lesson.objectif} className={cn("text-muted-foreground text-sm sm:text-base transition-all", !isObjectifExpanded && "max-h-[3.5em] overflow-hidden")} />
+                    <MathContent content={lesson.objectif} className={cn("text-muted-foreground text-sm sm:text-base", !isObjectifExpanded && "max-h-[2.5em] overflow-hidden")} />
                   ) : (
                     <div 
-                      className={cn("text-muted-foreground lesson-content text-sm sm:text-base transition-all", !isObjectifExpanded && "max-h-[3.5em] overflow-hidden")}
+                      className={cn("text-muted-foreground lesson-content text-sm sm:text-base [&>*]:m-0 [&>*]:p-0", !isObjectifExpanded && "max-h-[2.5em] overflow-hidden")}
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.objectif) }}
                     />
                   )}
                   {!isObjectifExpanded && (
-                    <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
                   )}
                 </div>
                 <button
@@ -319,15 +319,15 @@ export const LessonPageTemplate = ({
                 </div>
                 <div className="relative">
                   {isMathSubject(subjectName) ? (
-                    <MathContent content={lesson.objectif} className={cn("text-muted-foreground text-base transition-all", !isObjectifExpanded && "max-h-[3.5em] overflow-hidden")} />
+                    <MathContent content={lesson.objectif} className={cn("text-muted-foreground text-base", !isObjectifExpanded && "max-h-[2.5em] overflow-hidden")} />
                   ) : (
                     <div 
-                      className={cn("text-muted-foreground lesson-content text-base transition-all", !isObjectifExpanded && "max-h-[3.5em] overflow-hidden")}
+                      className={cn("text-muted-foreground lesson-content text-base [&>*]:m-0 [&>*]:p-0", !isObjectifExpanded && "max-h-[2.5em] overflow-hidden")}
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.objectif) }}
                     />
                   )}
                   {!isObjectifExpanded && (
-                    <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
                   )}
                 </div>
                 <button
