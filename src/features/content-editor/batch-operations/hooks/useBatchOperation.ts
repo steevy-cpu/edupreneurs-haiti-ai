@@ -1,6 +1,7 @@
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { saveBatchSession, getBatchSession, clearBatchSession } from "../store/batchOperationSession";
 import type { 
   BatchOperationConfig, 
   BatchLesson, 
@@ -13,6 +14,7 @@ import type {
 interface UseBatchOperationOptions {
   lessons: BatchLesson[];
   config: BatchOperationConfig;
+  gradeLevel: string;
   onComplete: () => void;
   onDashboardRefresh?: () => void;
   onStart?: () => void;
@@ -21,6 +23,7 @@ interface UseBatchOperationOptions {
 export const useBatchOperation = ({
   lessons,
   config,
+  gradeLevel,
   onComplete,
   onDashboardRefresh,
   onStart,
@@ -30,7 +33,19 @@ export const useBatchOperation = ({
   const [results, setResults] = useState<OperationResult[]>([]);
   const [currentItem, setCurrentItem] = useState<string>("");
   const [skipCompleted, setSkipCompleted] = useState(true);
+  const [canResume, setCanResume] = useState(false);
   const abortRef = useRef(false);
+
+  // Restore saved session on mount
+  useEffect(() => {
+    const saved = getBatchSession(config.operationType, gradeLevel);
+    if (saved && saved.progress.current > 0 && saved.progress.current < saved.progress.total) {
+      setProgress(saved.progress);
+      setResults(saved.results);
+      setCurrentItem(saved.currentItem);
+      setCanResume(true);
+    }
+  }, [config.operationType, gradeLevel]);
 
   // Calculate items to process based on filter
   const itemsToProcess = useMemo(() => {
@@ -63,6 +78,9 @@ export const useBatchOperation = ({
 
     // Notify parent that operation is starting
     onStart?.();
+
+    // Clear resume state
+    setCanResume(false);
 
     abortRef.current = false;
     setIsRunning(true);
@@ -112,8 +130,18 @@ export const useBatchOperation = ({
         }
 
         completedCount++;
-        setProgress({ current: completedCount, total: itemsToProcess.length });
+        const currentProgress = { current: completedCount, total: itemsToProcess.length };
+        setProgress(currentProgress);
         setResults([...operationResults]);
+
+        // Persist to sessionStorage after each lesson
+        saveBatchSession(
+          config.operationType,
+          gradeLevel,
+          currentProgress,
+          operationResults,
+          lesson.title,
+        );
 
         // Rate limiting delay before next item
         if (queueIndex < itemsToProcess.length && !abortRef.current) {
@@ -165,9 +193,12 @@ export const useBatchOperation = ({
       }
     }
 
+    // Clear session on completion
+    clearBatchSession(config.operationType, gradeLevel);
+
     onComplete();
     onDashboardRefresh?.();
-  }, [itemsToProcess, config, onComplete, onDashboardRefresh, onStart]);
+  }, [itemsToProcess, config, gradeLevel, onComplete, onDashboardRefresh, onStart]);
 
   return {
     isRunning,
@@ -175,6 +206,7 @@ export const useBatchOperation = ({
     results,
     currentItem,
     skipCompleted,
+    canResume,
     start,
     pause,
     setSkipCompleted,

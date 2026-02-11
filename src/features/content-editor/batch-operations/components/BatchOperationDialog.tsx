@@ -77,10 +77,13 @@ export const BatchOperationDialog = ({
     );
   }
 
+  const { canResume } = operation;
   const percentage = totalCount > 0 ? Math.round((validatedCount / totalCount) * 100) : 0;
-  const sublabel = totalCount > 0 
-    ? `${validatedCount}/${totalCount} déjà ${operationType === 'validate' ? 'validés' : 'régénérés'} (${percentage}%)`
-    : undefined;
+  const sublabel = canResume
+    ? `${operation.progress.current}/${operation.progress.total} — Reprendre?`
+    : totalCount > 0 
+      ? `${validatedCount}/${totalCount} déjà ${operationType === 'validate' ? 'validés' : 'régénérés'} (${percentage}%)`
+      : undefined;
 
   const showProviderToggle = provider !== undefined && onProviderChange !== undefined;
 

@@ -34,6 +34,7 @@ export const BatchQuizGeneratorNew = ({
   const operation = useBatchOperation({
     lessons,
     config,
+    gradeLevel,
     onComplete,
     onDashboardRefresh,
     onStart,
