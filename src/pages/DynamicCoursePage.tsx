@@ -11,13 +11,14 @@ import {
   MonthSection,
   QuickStatsBar,
   MonthQuickNav,
-  AIPracticeSection
+  AIPracticeSection,
+  LessonSearchBar
 } from "@/components/course";
 import { groupLessonsByMonth, MONTH_ORDER } from "@/utils/courseHelpers";
 
 import { useUserGrade, GRADE_LABELS } from "@/hooks/useUserGrade";
 import { useCourseData } from "@/hooks/useCourseData";
-import { Lock } from "lucide-react";
+import { Lock, Search } from "lucide-react";
 
 export default function DynamicCoursePage() {
   const { slug } = useParams();
@@ -37,6 +38,18 @@ export default function DynamicCoursePage() {
 
   // Active month state for navigation (for MonthQuickNav highlighting)
   const [activeMonth, setActiveMonth] = useState<string | undefined>();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Accent-insensitive normalization for French/Haitian content
+  const normalizeText = (str: string) =>
+    str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+  // Filtered lessons when searching (null = show all months)
+  const filteredLessons = useMemo(() => {
+    if (!searchQuery.trim()) return null;
+    const q = normalizeText(searchQuery);
+    return lessons.filter(l => normalizeText(l.title).includes(q));
+  }, [lessons, searchQuery]);
 
   // User grade access
   const { userGrade, canAccessGrade, isLoading: gradeLoading, isAuthenticated } = useUserGrade();
@@ -191,96 +204,141 @@ export default function DynamicCoursePage() {
         />
       )}
 
+      {/* Lesson Search Bar */}
+      <LessonSearchBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        totalResults={filteredLessons?.length ?? publishedLessons.length}
+        totalLessons={publishedLessons.length}
+      />
+
       {/* Progress Card */}
       <ProgressCard
         completedLessons={completedCount}
         totalLessons={publishedLessons.length}
       />
 
-      {/* Lessons organized by month or as simple list */}
-      {hasMonthlyOrganization ? (
-        // Month-based organization
-        MONTH_ORDER.map((month) => {
-          const monthLessons = groupedByMonth[month];
-          if (!monthLessons || monthLessons.length === 0) return null;
-
-          return (
-            <div
-              key={month}
-              ref={(el) => { monthRefs.current[month] = el; }}
-            >
-              <MonthSection month={month}>
-                {monthLessons.map((lesson) => (
-                  <LessonCard
-                    key={lesson.id}
-                    title={lesson.title}
-                    objectif={lesson.objectif}
-                    orderIndex={lesson.order_index}
-                    isPublished={lesson.is_published ?? false}
-                    isCompleted={completedLessons.includes(lesson.slug)}
-                    subjectSlug={subjectSlug}
-                    lessonSlug={lesson.slug}
-                    onClick={() => {
-                      if (lesson.is_published) {
-                        navigate(`/course/${subjectSlug}/${lesson.slug}`);
-                      } else {
-                        toast.info("Cette leçon n'est pas encore disponible");
-                      }
-                    }}
-                  />
-                ))}
-              </MonthSection>
-            </div>
-          );
-        })
+      {/* Search results mode: flat grid */}
+      {filteredLessons !== null ? (
+        filteredLessons.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredLessons.map((lesson) => (
+              <LessonCard
+                key={lesson.id}
+                title={lesson.title}
+                objectif={lesson.objectif}
+                orderIndex={lesson.order_index}
+                isPublished={lesson.is_published ?? false}
+                isCompleted={completedLessons.includes(lesson.slug)}
+                subjectSlug={subjectSlug}
+                lessonSlug={lesson.slug}
+                onClick={() => {
+                  if (lesson.is_published) {
+                    navigate(`/course/${subjectSlug}/${lesson.slug}`);
+                  } else {
+                    toast.info("Cette leçon n'est pas encore disponible");
+                  }
+                }}
+              />
+            ))}
+          </div>
+        ) : (
+          <Card className="p-8 text-center">
+            <Search className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground mb-3">
+              Aucune leçon trouvée pour "<strong>{searchQuery}</strong>"
+            </p>
+            <Button variant="outline" onClick={() => setSearchQuery("")}>
+              Effacer la recherche
+            </Button>
+          </Card>
+        )
       ) : (
-        // Simple grid layout for lessons without monthly organization
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {lessons.map((lesson) => (
-            <LessonCard
-              key={lesson.id}
-              title={lesson.title}
-              objectif={lesson.objectif}
-              orderIndex={lesson.order_index}
-              isPublished={lesson.is_published ?? false}
-              isCompleted={completedLessons.includes(lesson.slug)}
-              subjectSlug={subjectSlug}
-              lessonSlug={lesson.slug}
-              onClick={() => {
-                if (lesson.is_published) {
-                  navigate(`/course/${subjectSlug}/${lesson.slug}`);
-                } else {
-                  toast.info("Cette leçon n'est pas encore disponible");
-                }
-              }}
-            />
-          ))}
-        </div>
-      )}
+        <>
+          {/* Normal month-based layout */}
+          {hasMonthlyOrganization ? (
+            MONTH_ORDER.map((month) => {
+              const monthLessons = groupedByMonth[month];
+              if (!monthLessons || monthLessons.length === 0) return null;
 
-      {/* Handle lessons with "Sans mois" separately if they exist */}
-      {hasMonthlyOrganization && groupedByMonth["Sans mois"]?.length > 0 && (
-        <MonthSection month="Sans mois">
-          {groupedByMonth["Sans mois"].map((lesson) => (
-            <LessonCard
-              key={lesson.id}
-              title={lesson.title}
-              objectif={lesson.objectif}
-              orderIndex={lesson.order_index}
-              isPublished={lesson.is_published ?? false}
-              isCompleted={completedLessons.includes(lesson.slug)}
-              subjectSlug={subjectSlug}
-              lessonSlug={lesson.slug}
-              onClick={() => {
-                if (lesson.is_published) {
-                  navigate(`/course/${subjectSlug}/${lesson.slug}`);
-                } else {
-                  toast.info("Cette leçon n'est pas encore disponible");
-                }
-              }}
-            />
-          ))}
-        </MonthSection>
+              return (
+                <div
+                  key={month}
+                  ref={(el) => { monthRefs.current[month] = el; }}
+                >
+                  <MonthSection month={month}>
+                    {monthLessons.map((lesson) => (
+                      <LessonCard
+                        key={lesson.id}
+                        title={lesson.title}
+                        objectif={lesson.objectif}
+                        orderIndex={lesson.order_index}
+                        isPublished={lesson.is_published ?? false}
+                        isCompleted={completedLessons.includes(lesson.slug)}
+                        subjectSlug={subjectSlug}
+                        lessonSlug={lesson.slug}
+                        onClick={() => {
+                          if (lesson.is_published) {
+                            navigate(`/course/${subjectSlug}/${lesson.slug}`);
+                          } else {
+                            toast.info("Cette leçon n'est pas encore disponible");
+                          }
+                        }}
+                      />
+                    ))}
+                  </MonthSection>
+                </div>
+              );
+            })
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {lessons.map((lesson) => (
+                <LessonCard
+                  key={lesson.id}
+                  title={lesson.title}
+                  objectif={lesson.objectif}
+                  orderIndex={lesson.order_index}
+                  isPublished={lesson.is_published ?? false}
+                  isCompleted={completedLessons.includes(lesson.slug)}
+                  subjectSlug={subjectSlug}
+                  lessonSlug={lesson.slug}
+                  onClick={() => {
+                    if (lesson.is_published) {
+                      navigate(`/course/${subjectSlug}/${lesson.slug}`);
+                    } else {
+                      toast.info("Cette leçon n'est pas encore disponible");
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Sans mois section */}
+          {hasMonthlyOrganization && groupedByMonth["Sans mois"]?.length > 0 && (
+            <MonthSection month="Sans mois">
+              {groupedByMonth["Sans mois"].map((lesson) => (
+                <LessonCard
+                  key={lesson.id}
+                  title={lesson.title}
+                  objectif={lesson.objectif}
+                  orderIndex={lesson.order_index}
+                  isPublished={lesson.is_published ?? false}
+                  isCompleted={completedLessons.includes(lesson.slug)}
+                  subjectSlug={subjectSlug}
+                  lessonSlug={lesson.slug}
+                  onClick={() => {
+                    if (lesson.is_published) {
+                      navigate(`/course/${subjectSlug}/${lesson.slug}`);
+                    } else {
+                      toast.info("Cette leçon n'est pas encore disponible");
+                    }
+                  }}
+                />
+              ))}
+            </MonthSection>
+          )}
+        </>
       )}
 
       {lessons.length === 0 && (

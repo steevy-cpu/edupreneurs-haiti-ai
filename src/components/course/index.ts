@@ -6,3 +6,4 @@ export { MonthSection } from './MonthSection';
 export { QuickStatsBar } from './QuickStatsBar';
 export { MonthQuickNav } from './MonthQuickNav';
 export { AIPracticeSection } from './AIPracticeSection';
+export { LessonSearchBar } from './LessonSearchBar';
