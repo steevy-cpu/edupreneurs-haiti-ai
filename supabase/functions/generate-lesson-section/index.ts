@@ -117,24 +117,33 @@ Deno.serve(async (req) => {
     const clientIp = getClientIp(req);
     const authHeader = req.headers.get('Authorization');
     let userId: string | null = null;
+    let isServiceRoleCall = false;
     
     if (authHeader) {
       const token = authHeader.replace('Bearer ', '');
-      const { data: { user } } = await supabase.auth.getUser(token);
-      userId = user?.id || null;
+      // Check if this is a service-role call (server-to-server, e.g. from process-ai-job)
+      if (token === supabaseServiceKey) {
+        isServiceRoleCall = true;
+        console.log('[generate-lesson-section] Service-role call detected, skipping rate limit');
+      } else {
+        const { data: { user } } = await supabase.auth.getUser(token);
+        userId = user?.id || null;
+      }
     }
 
-    // Check rate limit
-    const rateLimitResult = await checkRateLimit(
-      supabase,
-      RATE_LIMITS.RESOURCE_INTENSIVE,
-      userId,
-      clientIp
-    );
+    // Skip rate limiting for trusted service-role calls (internal server-to-server)
+    if (!isServiceRoleCall) {
+      const rateLimitResult = await checkRateLimit(
+        supabase,
+        RATE_LIMITS.RESOURCE_INTENSIVE,
+        userId,
+        clientIp
+      );
 
-    if (!rateLimitResult.allowed) {
-      console.warn('[generate-lesson-section] Rate limit exceeded');
-      return secureErrorResponse('Too many requests. Please try again later.', 429);
+      if (!rateLimitResult.allowed) {
+        console.warn('[generate-lesson-section] Rate limit exceeded');
+        return secureErrorResponse('Too many requests. Please try again later.', 429);
+      }
     }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
