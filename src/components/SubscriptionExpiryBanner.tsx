@@ -42,7 +42,7 @@ export function SubscriptionExpiryBanner({ subscriptionEndDate, hasFreeAccess }:
   return (
     <div
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 px-4 py-2.5 flex items-center justify-between gap-3 text-sm font-medium shadow-md transition-colors',
+        'fixed top-0 left-0 right-0 z-[1100] px-4 py-2.5 lg:pl-[260px] flex items-center justify-between gap-3 text-sm font-medium shadow-md transition-colors',
         countdown.isUrgent
           ? 'bg-destructive text-destructive-foreground'
           : 'bg-amber-500 text-white'
