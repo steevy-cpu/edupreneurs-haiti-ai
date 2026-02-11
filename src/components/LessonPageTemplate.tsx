@@ -445,6 +445,11 @@ export const LessonPageTemplate = ({
           <TabsContent value="activites" className="space-y-4 sm:space-y-6 mt-4">
             <LessonActivitiesTab
               lessonId={lesson.id}
+              subjectName={subjectName}
+              gradeLevel={gradeLevel}
+              lessonTitle={lesson.title}
+              lessonContent={lesson.contenu}
+              lessonExamples={lesson.exemples_exercices}
               legacyActivitiesHtml={lesson.activites_interactives}
             />
           </TabsContent>
@@ -454,6 +459,10 @@ export const LessonPageTemplate = ({
               lessonId={lesson.id}
               lessonSlug={lessonSlug}
               subjectName={subjectName}
+              subjectSlug={subjectSlug}
+              gradeLevel={gradeLevel}
+              lessonContent={lesson.contenu}
+              lessonExamples={lesson.exemples_exercices}
               legacyQuizHtml={lesson.quiz_final}
             />
           </TabsContent>
