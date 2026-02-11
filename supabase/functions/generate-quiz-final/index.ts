@@ -411,13 +411,25 @@ INSTRUCTIONS CRITIQUES:
 
   console.log('📦 Raw JSON response (first 500 chars):', rawContent.substring(0, 500));
 
+  // Sanitize common AI JSON escape issues (math backslashes, etc.)
+  const sanitizeJsonString = (str: string): string => {
+    return str.replace(/\\([^"\\\/bfnrtu])/g, '\\\\$1');
+  };
+
   // Parse and validate the JSON
   let parsedQuiz;
   try {
     parsedQuiz = JSON.parse(rawContent);
   } catch (parseError) {
-    console.error('Failed to parse JSON:', parseError);
-    return secureErrorResponse('AI returned invalid JSON', 500);
+    console.warn('First JSON parse failed, attempting sanitization...');
+    try {
+      const sanitized = sanitizeJsonString(rawContent);
+      parsedQuiz = JSON.parse(sanitized);
+      console.log('JSON parse succeeded after sanitization');
+    } catch (secondError) {
+      console.error('Failed to parse JSON even after sanitization:', secondError);
+      return secureErrorResponse('AI returned invalid JSON', 500);
+    }
   }
 
   // Validate against schema
