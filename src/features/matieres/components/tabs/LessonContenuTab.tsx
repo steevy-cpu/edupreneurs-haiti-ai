@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookOpen, Lightbulb } from 'lucide-react';
 import { ProgressiveContent } from '@/components/lesson/ProgressiveContent';
-import { LessonAudioPlayerSimple } from '@/components/LessonAudioPlayerSimple';
+import { LessonAudioIconButton } from '@/components/LessonAudioIconButton';
 import { YouTubeVideoSection } from '@/components/YouTubeVideoSection';
 
 interface LessonContenuTabProps {
@@ -41,16 +41,10 @@ export function LessonContenuTab({
           <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
             <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />
             Contenu du cours
+            <LessonAudioIconButton audioUrl={audioContenuUrl} />
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 sm:p-6 space-y-4">
-          {audioContenuUrl && (
-            <LessonAudioPlayerSimple
-              audioUrl={audioContenuUrl}
-              label="Écouter le contenu"
-              className="w-full"
-            />
-          )}
           {contenu ? (
             <ProgressiveContent 
               content={contenu}
@@ -72,16 +66,10 @@ export function LessonContenuTab({
           <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
             <Lightbulb className="h-4 w-4 sm:h-5 sm:w-5" />
             Exemples et Exercices
+            <LessonAudioIconButton audioUrl={audioExemplesUrl} />
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 sm:p-6 space-y-4">
-          {audioExemplesUrl && (
-            <LessonAudioPlayerSimple
-              audioUrl={audioExemplesUrl}
-              label="Écouter les exemples"
-              className="w-full"
-            />
-          )}
           {exemplesExercices ? (
             <ProgressiveContent 
               content={exemplesExercices}
