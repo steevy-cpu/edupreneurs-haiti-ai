@@ -164,7 +164,7 @@ export const subscribeToPushNotifications = async (
     }
 
     // Get existing subscription first
-    const existingSubscription = await registration.pushManager.getSubscription();
+    const existingSubscription = await (registration as any).pushManager.getSubscription();
     if (existingSubscription) {
       await existingSubscription.unsubscribe();
     }
@@ -173,7 +173,7 @@ export const subscribeToPushNotifications = async (
     const vapidPublicKey = 'BOQ0Fn35WtOTVFKRkrQRxYzb9oRwi2IldpPeSU3VHbHLoiNwheYEpklA2YVBh3Ah3h2De8743ShfRYx61lVhNUM';
     const vapidKey = urlBase64ToUint8Array(vapidPublicKey);
     
-    const subscription = await registration.pushManager.subscribe({
+    const subscription = await (registration as any).pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: vapidKey.buffer as ArrayBuffer
     });
