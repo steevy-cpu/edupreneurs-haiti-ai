@@ -48,6 +48,7 @@ export const UI_VISIBILITY: Record<string, VisibilityConfig> = {
       /^\/course\/[^/]+\/[^/]+/, // Lesson pages
       /^\/lecture\//,
       /-lesson\//,
+      /^\/exams\/practice\//,
     ],
     requiresAuth: true,
     allowForVisitors: true, // Show for visitor tour/welcome
@@ -88,6 +89,7 @@ export const UI_VISIBILITY: Record<string, VisibilityConfig> = {
     hideOnPatterns: [
       /^\/quiz-battle/,
       /^\/auth/,
+      /^\/exams\/practice\//,
     ],
     requiresAuth: true,
   },
