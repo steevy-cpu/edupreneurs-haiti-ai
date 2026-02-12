@@ -1,64 +1,98 @@
 
-# Improve ActionRow Mobile Layout
 
-## Problem
-The action buttons (Precedent, Indice, Voir la reponse, Question suivante) use `flex-wrap` with `min-w-[100px]`, causing an awkward 2-row layout on mobile where buttons wrap unevenly -- "Precedent" and "Indice" on row 1, "Voir la reponse" and "Question suivante" on row 2, with inconsistent sizing.
+# Add Voice Feedback to Exam Practice FeedbackCard
 
-## Solution
-Restructure into a clean 2-row grid layout on mobile:
-- **Row 1**: Previous + Indice (navigation + help)
-- **Row 2**: Voir la reponse + Question suivante (action buttons, full width)
+## What Changes
+Add the same Jude voice audio feedback that exists on lesson pages to the exam practice FeedbackCard. When a student gets a correct or incorrect answer, Jude will speak a short audio clip -- just like in the quiz and activities sections.
 
-On desktop, keep everything in a single row.
+## How It Works
+The voice clips already exist in storage (`lesson-audio/jude-feedback/correct-{n}.mp3` and `incorrect-{n}.mp3`). The lesson pages use the `JudeFeedback` component which auto-plays these clips with a mute toggle. We will add the same behavior to `FeedbackCard`.
 
 ## Technical Details
 
-**File:** `src/features/exams/practice/components/ActionRow.tsx`
+**File:** `src/features/exams/practice/components/FeedbackCard.tsx`
 
-Replace the current `flex flex-wrap` container with a grid-based layout:
+Changes:
+1. Import `useState`, `useEffect`, `useRef`, `useMemo`, `useCallback` from React
+2. Import `Volume2`, `VolumeX` from lucide-react (add to existing icon imports)
+3. Import `getJudeFeedbackAudioUrl` from `@/utils/judeFeedbackAudio`
+4. Add mute state from localStorage (same `jude-voice-muted` key -- shared preference with lessons)
+5. Pick a random audio index with `useMemo` based on correct/incorrect state
+6. Auto-play audio on feedback appearance (only for correct/incorrect states, not hints/revealed)
+7. Add mute toggle button next to the status text
 
 ```tsx
-<div className="p-3 border-t bg-muted/30 space-y-2">
-  {/* Row 1: Previous + Hint */}
-  <div className="flex gap-2">
-    {onPrevious && (
-      <Button variant="ghost" size="sm" onClick={onPrevious}
-        disabled={!canGoPrevious || isLoading} className="flex-shrink-0">
-        <ChevronLeft className="h-4 w-4 mr-1" />
-        <span className="hidden sm:inline">Precedent</span>
-      </Button>
-    )}
-    <Button variant="outline" size="sm" onClick={onHint}
-      disabled={hintDisabled} className="flex-1">
-      ...Indice...
-    </Button>
-  </div>
+// New imports
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { getJudeFeedbackAudioUrl } from '@/utils/judeFeedbackAudio';
+// Add Volume2, VolumeX to existing lucide import
 
-  {/* Row 2: Reveal + Next (always full width, equal split) */}
-  <div className="grid grid-cols-2 gap-2">
-    <Button variant="secondary" size="sm" ...>
-      Voir la reponse
-    </Button>
-    <Button size="sm" ...>
-      Question suivante
-    </Button>
-  </div>
-</div>
+const MUTE_KEY = 'jude-voice-muted';
+
+export function FeedbackCard({ feedback, state }: FeedbackCardProps) {
+  const isCorrect = state === 'correct';
+  const isIncorrect = state === 'incorrect';
+  // ... existing code ...
+
+  // Voice feedback (only for correct/incorrect)
+  const [isMuted, setIsMuted] = useState(() => {
+    try { return localStorage.getItem(MUTE_KEY) === 'true'; } catch { return false; }
+  });
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const audioIndex = useMemo(
+    () => (isCorrect || isIncorrect) ? Math.floor(Math.random() * 10) : null,
+    [isCorrect, isIncorrect]
+  );
+
+  const audioUrl = useMemo(
+    () => audioIndex !== null
+      ? getJudeFeedbackAudioUrl(isCorrect ? 'correct' : 'incorrect', audioIndex)
+      : null,
+    [isCorrect, audioIndex]
+  );
+
+  useEffect(() => {
+    if (isMuted || !audioUrl) return;
+    const audio = new Audio(audioUrl);
+    audio.volume = 0.7;
+    audioRef.current = audio;
+    audio.play().catch(() => {});
+    return () => { audio.pause(); audio.src = ''; audioRef.current = null; };
+  }, [audioUrl, isMuted]);
+
+  const toggleMute = useCallback(() => {
+    setIsMuted(prev => {
+      const next = !prev;
+      try { localStorage.setItem(MUTE_KEY, String(next)); } catch {}
+      if (next && audioRef.current) audioRef.current.pause();
+      return next;
+    });
+  }, []);
 ```
 
-Key changes:
-- Use `space-y-2` for consistent vertical spacing between rows
-- Row 1: `flex` with Previous as shrink-0 and Indice as flex-1
-- Row 2: `grid grid-cols-2` so both buttons are always equal width
-- Hide "Precedent" text on very small screens (icon only) with `hidden sm:inline`
-- Remove `min-w-[100px]` constraints that caused uneven wrapping
+The mute toggle button will be added next to the status line (after the points badge), only visible when state is correct or incorrect:
+
+```tsx
+{(isCorrect || isIncorrect) && (
+  <button onClick={toggleMute} className="p-1 rounded-md hover:bg-black/5 ...">
+    {isMuted ? <VolumeX .../> : <Volume2 .../>}
+  </button>
+)}
+```
+
+## Key Design Decisions
+- **Shared mute preference**: Uses the same `jude-voice-muted` localStorage key as lessons, so if a student mutes Jude in lessons, he stays muted in exams too
+- **No audio for hints/revealed**: Voice only plays for correct/incorrect -- hints and reveals are silent
+- **Same audio pool**: Reuses the 10 correct + 10 incorrect pre-generated clips already in storage
 
 ## Safety Checklist
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- same buttons, same handlers |
-| Works with existing data? | Yes -- no data changes |
-| 3G optimized? | Yes -- no new assets |
-| Backward compatible? | Yes |
-| Mobile UX impact? | Positive -- clean, predictable layout |
+| Breaks existing functionality? | No -- additive only |
+| Works with existing data? | Yes -- uses existing audio files |
+| 3G optimized? | Yes -- small MP3 clips, already cached by browser |
+| Backward compatible? | Yes -- shared mute key is consistent |
+| Dark mode compatible? | Yes -- uses theme-aware classes |
+
