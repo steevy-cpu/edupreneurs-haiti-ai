@@ -288,11 +288,11 @@ export default function ExamPreparation() {
             <div className="lg:hidden">
               <Tabs defaultValue="tutor" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 h-12">
-                  <TabsTrigger value="pdf" className="text-sm">
+                  <TabsTrigger value="pdf" className="text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     <FileText className="h-4 w-4 mr-2" />
                     Document PDF
                   </TabsTrigger>
-                  <TabsTrigger value="tutor" className="text-sm">
+                  <TabsTrigger value="tutor" className="text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     <MessageCircle className="h-4 w-4 mr-2" />
                     Pratique avec Jude
                   </TabsTrigger>
