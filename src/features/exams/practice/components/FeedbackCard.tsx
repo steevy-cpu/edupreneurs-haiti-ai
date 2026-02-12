@@ -71,10 +71,10 @@ export function FeedbackCard({ feedback, state }: FeedbackCardProps) {
           <div className="flex items-center gap-2 mb-2">
             {styles.icon}
             <span className="text-sm font-medium">
-              {isCorrect && 'Correct! 🎉'}
-              {isIncorrect && 'Pas tout à fait...'}
-              {isRevealed && 'Réponse révélée'}
-              {isHint && 'Indice'}
+              {isCorrect && 'Bravo, c\'est correct! 🎉'}
+              {isIncorrect && 'Pas exactement... Regarde bien l\'explication.'}
+              {isRevealed && 'Voici la réponse. Étudie-la bien!'}
+              {isHint && 'Voici un indice pour t\'aider'}
             </span>
             {feedback.grading?.pointsAwarded && feedback.grading.pointsAwarded > 0 && (
               <span className="text-sm font-semibold text-green-600">

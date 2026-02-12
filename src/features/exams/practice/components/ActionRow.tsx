@@ -75,7 +75,7 @@ export function ActionRow({
         className="flex-1 min-w-[100px]"
       >
         <Eye className="h-4 w-4 mr-2" />
-        Révéler
+        Voir la réponse
       </Button>
 
       {/* Next button */}
@@ -85,7 +85,7 @@ export function ActionRow({
         disabled={!canAdvance && !isAnswered}
         className="flex-1 min-w-[100px]"
       >
-        Suivant
+        Question suivante
         <ChevronRight className="h-4 w-4 ml-1" />
       </Button>
     </div>
