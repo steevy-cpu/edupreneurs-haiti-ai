@@ -2,6 +2,7 @@
  * FeedbackCard - Compact Jude response card
  */
 
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
@@ -10,7 +11,10 @@ import { MathText } from '@/components/MathContent';
 import judeProfile from '@/assets/jude-profile.jpeg';
 import type { TutorResponse } from '../../types/exam.types';
 import type { RunnerState } from '../types';
-import { CheckCircle2, XCircle, Lightbulb, Eye } from 'lucide-react';
+import { CheckCircle2, XCircle, Lightbulb, Eye, Volume2, VolumeX } from 'lucide-react';
+import { getJudeFeedbackAudioUrl } from '@/utils/judeFeedbackAudio';
+
+const MUTE_KEY = 'jude-voice-muted';
 
 interface FeedbackCardProps {
   feedback: TutorResponse;
@@ -22,6 +26,42 @@ export function FeedbackCard({ feedback, state }: FeedbackCardProps) {
   const isIncorrect = state === 'incorrect';
   const isRevealed = state === 'revealed';
   const isHint = state === 'idle' && feedback.blocks?.length > 0;
+
+  // Voice feedback (only for correct/incorrect)
+  const [isMuted, setIsMuted] = useState(() => {
+    try { return localStorage.getItem(MUTE_KEY) === 'true'; } catch { return false; }
+  });
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const audioIndex = useMemo(
+    () => (isCorrect || isIncorrect) ? Math.floor(Math.random() * 10) : null,
+    [isCorrect, isIncorrect]
+  );
+
+  const audioUrl = useMemo(
+    () => audioIndex !== null
+      ? getJudeFeedbackAudioUrl(isCorrect ? 'correct' : 'incorrect', audioIndex)
+      : null,
+    [isCorrect, audioIndex]
+  );
+
+  useEffect(() => {
+    if (isMuted || !audioUrl) return;
+    const audio = new Audio(audioUrl);
+    audio.volume = 0.7;
+    audioRef.current = audio;
+    audio.play().catch(() => {});
+    return () => { audio.pause(); audio.src = ''; audioRef.current = null; };
+  }, [audioUrl, isMuted]);
+
+  const toggleMute = useCallback(() => {
+    setIsMuted(prev => {
+      const next = !prev;
+      try { localStorage.setItem(MUTE_KEY, String(next)); } catch {}
+      if (next && audioRef.current) audioRef.current.pause();
+      return next;
+    });
+  }, []);
 
   // Determine icon and border color
   const getStateStyles = () => {
@@ -80,6 +120,20 @@ export function FeedbackCard({ feedback, state }: FeedbackCardProps) {
               <span className="text-sm font-semibold text-green-600">
                 +{feedback.grading.pointsAwarded} pts
               </span>
+            )}
+            {(isCorrect || isIncorrect) && (
+              <button
+                onClick={toggleMute}
+                className="p-1 rounded-md hover:bg-muted transition-colors flex-shrink-0"
+                aria-label={isMuted ? 'Activer la voix de Jude' : 'Couper la voix de Jude'}
+                title={isMuted ? 'Activer la voix' : 'Couper la voix'}
+              >
+                {isMuted ? (
+                  <VolumeX className="w-4 h-4 text-muted-foreground" />
+                ) : (
+                  <Volume2 className="w-4 h-4 text-muted-foreground" />
+                )}
+              </button>
             )}
           </div>
 
