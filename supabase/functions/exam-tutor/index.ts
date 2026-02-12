@@ -390,14 +390,26 @@ Donne une explication complète mais concise (maximum 150 mots).`;
 
     // Handle check action - feedback on answer
     if (action === 'check' && studentAnswer) {
-      const isCorrect = validateAnswer(studentAnswer, exercise);
-      if (isCorrect) {
-        systemPrompt += `\n\n**ACTION REQUISE: L'élève a donné la BONNE réponse (${studentAnswer})**
-Félicite brièvement (max 30 mots) avec enthousiasme! 🎉`;
+      if (!exercise.correct_answer) {
+        // No answer key in DB -- let AI evaluate independently
+        systemPrompt += `\n\n**ACTION REQUISE: ÉVALUER la réponse de l'élève (${studentAnswer})**
+Aucune réponse officielle n'est définie pour cette question.
+Tu dois:
+1. Analyser la question et déterminer toi-même la bonne réponse
+2. Comparer avec la réponse de l'élève (${studentAnswer})
+3. Si l'élève a raison, félicite-le avec enthousiasme 🎉
+4. Si l'élève a tort, explique pourquoi avec bienveillance
+Ne dis JAMAIS que l'élève a tort si son raisonnement est correct. (max 80 mots)`;
       } else {
-        systemPrompt += `\n\n**ACTION REQUISE: L'élève a donné une MAUVAISE réponse (${studentAnswer})**
+        const isCorrect = validateAnswer(studentAnswer, exercise);
+        if (isCorrect) {
+          systemPrompt += `\n\n**ACTION REQUISE: L'élève a donné la BONNE réponse (${studentAnswer})**
+Félicite brièvement (max 30 mots) avec enthousiasme! 🎉`;
+        } else {
+          systemPrompt += `\n\n**ACTION REQUISE: L'élève a donné une MAUVAISE réponse (${studentAnswer})**
 La bonne réponse est: ${exercise.correct_answer}
 Explique l'erreur avec bienveillance et donne la bonne réponse avec une explication claire (max 80 mots).`;
+        }
       }
     }
 
@@ -444,10 +456,11 @@ Explique l'erreur avec bienveillance et donne la bonne réponse avec une explica
       // Use deterministic validation
       isCorrect = validateAnswer(studentAnswer, exercise);
       shouldAwardPoints = isCorrect;
-      shouldMoveToNext = true; // Auto-move after answering (correct or incorrect)
+      shouldMoveToNext = true;
     } else if (studentAnswer && !exercise.correct_answer) {
-      // No correct answer in database - log and handle gracefully
-      console.warn(`Exercise ${exercise.exercise_number} has no correct_answer defined`);
+      // No correct answer in database - let AI evaluate, don't falsely mark incorrect
+      console.warn(`Exercise ${exercise.exercise_number} has no correct_answer defined - AI will evaluate`);
+      // isCorrect stays false but we won't expose it to frontend
       shouldMoveToNext = true;
     }
 
@@ -484,7 +497,7 @@ Explique l'erreur avec bienveillance et donne la bonne réponse avec une explica
 
     // Build grading info with confidence scoring
     const grading: TutorGrading = {
-      isCorrect: studentAnswer ? isCorrect : undefined,
+      isCorrect: (studentAnswer && exercise.correct_answer) ? isCorrect : undefined,
       confidence: hasCorrectAnswer ? 'high' : (hasReferenceTexts ? 'medium' : 'low'),
       reasoning: hasCorrectAnswer 
         ? 'Évaluation basée sur la réponse officielle'
