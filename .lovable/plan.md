@@ -1,98 +1,89 @@
 
 
-# Add Voice Feedback to Exam Practice FeedbackCard
+# Fix: Prevent False "Incorrect" Verdicts When No Answer Key Exists
 
-## What Changes
-Add the same Jude voice audio feedback that exists on lesson pages to the exam practice FeedbackCard. When a student gets a correct or incorrect answer, Jude will speak a short audio clip -- just like in the quiz and activities sections.
+## The Bug
+In the `exam-tutor` edge function, when an exercise has no `correct_answer` in the database:
 
-## How It Works
-The voice clips already exist in storage (`lesson-audio/jude-feedback/correct-{n}.mp3` and `incorrect-{n}.mp3`). The lesson pages use the `JudeFeedback` component which auto-plays these clips with a mute toggle. We will add the same behavior to `FeedbackCard`.
+1. `validateAnswer()` returns `false` by default (line 198-200)
+2. The system prompt tells the AI: "L'eleve a donne une MAUVAISE reponse"
+3. The AI reasons correctly (e.g., "rain" is NOT a transport = odd one out) but is forced to say the student is wrong
+4. Result: A contradictory response -- "You're wrong... but here's why you're actually right"
 
-## Technical Details
+## The Fix
 
-**File:** `src/features/exams/practice/components/FeedbackCard.tsx`
+**File:** `supabase/functions/exam-tutor/index.ts`
 
-Changes:
-1. Import `useState`, `useEffect`, `useRef`, `useMemo`, `useCallback` from React
-2. Import `Volume2`, `VolumeX` from lucide-react (add to existing icon imports)
-3. Import `getJudeFeedbackAudioUrl` from `@/utils/judeFeedbackAudio`
-4. Add mute state from localStorage (same `jude-voice-muted` key -- shared preference with lessons)
-5. Pick a random audio index with `useMemo` based on correct/incorrect state
-6. Auto-play audio on feedback appearance (only for correct/incorrect states, not hints/revealed)
-7. Add mute toggle button next to the status text
+Update the `check` action block (lines 392-402) to handle missing `correct_answer` separately using cautious/evaluation mode instead of falsely declaring the answer wrong.
 
-```tsx
-// New imports
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { getJudeFeedbackAudioUrl } from '@/utils/judeFeedbackAudio';
-// Add Volume2, VolumeX to existing lucide import
-
-const MUTE_KEY = 'jude-voice-muted';
-
-export function FeedbackCard({ feedback, state }: FeedbackCardProps) {
-  const isCorrect = state === 'correct';
-  const isIncorrect = state === 'incorrect';
-  // ... existing code ...
-
-  // Voice feedback (only for correct/incorrect)
-  const [isMuted, setIsMuted] = useState(() => {
-    try { return localStorage.getItem(MUTE_KEY) === 'true'; } catch { return false; }
-  });
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const audioIndex = useMemo(
-    () => (isCorrect || isIncorrect) ? Math.floor(Math.random() * 10) : null,
-    [isCorrect, isIncorrect]
-  );
-
-  const audioUrl = useMemo(
-    () => audioIndex !== null
-      ? getJudeFeedbackAudioUrl(isCorrect ? 'correct' : 'incorrect', audioIndex)
-      : null,
-    [isCorrect, audioIndex]
-  );
-
-  useEffect(() => {
-    if (isMuted || !audioUrl) return;
-    const audio = new Audio(audioUrl);
-    audio.volume = 0.7;
-    audioRef.current = audio;
-    audio.play().catch(() => {});
-    return () => { audio.pause(); audio.src = ''; audioRef.current = null; };
-  }, [audioUrl, isMuted]);
-
-  const toggleMute = useCallback(() => {
-    setIsMuted(prev => {
-      const next = !prev;
-      try { localStorage.setItem(MUTE_KEY, String(next)); } catch {}
-      if (next && audioRef.current) audioRef.current.pause();
-      return next;
-    });
-  }, []);
+### Current Code (lines 392-402)
+```ts
+if (action === 'check' && studentAnswer) {
+  const isCorrect = validateAnswer(studentAnswer, exercise);
+  if (isCorrect) {
+    // correct prompt...
+  } else {
+    // ALWAYS says wrong, even when correct_answer is null
+  }
+}
 ```
 
-The mute toggle button will be added next to the status line (after the points badge), only visible when state is correct or incorrect:
-
-```tsx
-{(isCorrect || isIncorrect) && (
-  <button onClick={toggleMute} className="p-1 rounded-md hover:bg-black/5 ...">
-    {isMuted ? <VolumeX .../> : <Volume2 .../>}
-  </button>
-)}
+### New Code
+```ts
+if (action === 'check' && studentAnswer) {
+  if (!exercise.correct_answer) {
+    // No answer key -- ask AI to evaluate on its own
+    systemPrompt += `\n\n**ACTION REQUISE: EVALUER la reponse de l'eleve (${studentAnswer})**
+Aucune reponse officielle n'est definie pour cette question.
+Tu dois:
+1. Analyser la question et determiner toi-meme la bonne reponse
+2. Comparer avec la reponse de l'eleve (${studentAnswer})
+3. Si l'eleve a raison, felicite-le
+4. Si l'eleve a tort, explique pourquoi avec bienveillance
+Ne dis JAMAIS que l'eleve a tort si son raisonnement est correct. (max 80 mots)`;
+  } else {
+    const isCorrect = validateAnswer(studentAnswer, exercise);
+    if (isCorrect) {
+      // existing correct prompt
+    } else {
+      // existing incorrect prompt
+    }
+  }
+}
 ```
 
-## Key Design Decisions
-- **Shared mute preference**: Uses the same `jude-voice-muted` localStorage key as lessons, so if a student mutes Jude in lessons, he stays muted in exams too
-- **No audio for hints/revealed**: Voice only plays for correct/incorrect -- hints and reveals are silent
-- **Same audio pool**: Reuses the 10 correct + 10 incorrect pre-generated clips already in storage
+Also update the deterministic grading block (lines 443-452) to set `isCorrect` to `undefined` (not `false`) when there's no answer key, so the frontend doesn't show a red "incorrect" state:
+
+```ts
+if (studentAnswer && exercise.correct_answer) {
+  isCorrect = validateAnswer(studentAnswer, exercise);
+  // ... existing logic
+} else if (studentAnswer && !exercise.correct_answer) {
+  // Let AI determine correctness -- parse from response
+  // Don't set isCorrect to false; leave as undefined
+  shouldMoveToNext = true;
+}
+```
+
+And update the grading object to not return `isCorrect: false` when there's no key:
+
+```ts
+const grading: TutorGrading = {
+  isCorrect: (studentAnswer && exercise.correct_answer) ? isCorrect : undefined,
+  // ... rest unchanged
+};
+```
+
+## Files to Edit
+- `supabase/functions/exam-tutor/index.ts`
 
 ## Safety Checklist
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- additive only |
-| Works with existing data? | Yes -- uses existing audio files |
-| 3G optimized? | Yes -- small MP3 clips, already cached by browser |
-| Backward compatible? | Yes -- shared mute key is consistent |
-| Dark mode compatible? | Yes -- uses theme-aware classes |
+| Breaks existing functionality? | No -- exercises WITH answer keys behave identically |
+| Works with existing data? | Yes -- only changes behavior for missing answer keys |
+| 3G optimized? | Yes -- no new network calls |
+| Backward compatible? | Yes -- grading.isCorrect becomes undefined instead of false |
+| Edge cases | AI may still misjudge, but no longer contradicts itself |
 
