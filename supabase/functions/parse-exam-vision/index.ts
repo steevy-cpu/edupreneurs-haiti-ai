@@ -6,7 +6,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -28,87 +27,33 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Build messages with all page images for vision processing
+    // Build image content for vision
     const imageContent = pageImages.map((img: string) => ({
       type: "image_url",
       image_url: {
-        url: img.startsWith("data:") ? img : `data:image/png;base64,${img}`,
+        url: img.startsWith("data:") ? img : `data:image/jpeg;base64,${img}`,
       },
     }));
 
-const systemPrompt = `Tu es un expert OCR spécialisé dans l'extraction d'examens officiels haïtiens pour la 9ème année fondamentale (9AF) et le Baccalauréat (NS4).
+    const systemPrompt = `Tu es un expert OCR spécialisé dans l'extraction d'examens officiels haïtiens pour la 9ème année fondamentale (9AF) et le Baccalauréat (NS4).
 
 INSTRUCTIONS CRITIQUES:
 1. Analyse attentivement CHAQUE page de l'examen
-2. Identifie et extrait TOUS les TEXTES DE RÉFÉRENCE (Reading, Texte, Lecture, passages, extraits de texte) qui sont utilisés pour répondre aux questions - EXTRAIT LE TEXTE COMPLET sans le tronquer
+2. Identifie et extrait TOUS les TEXTES DE RÉFÉRENCE (Reading, Texte, Lecture, passages) - EXTRAIT LE TEXTE COMPLET
 3. Identifie TOUS les exercices/questions avec leurs numéros
 4. Pour les QCM, extrait précisément les options A), B), C), D)
 5. Préserve les accents français et créoles (é, è, à, ç, ô, etc.)
 6. Identifie les points attribués à chaque question si visibles
-7. Détermine le type d'exercice: "multiple_choice" ou "open_ended"
-8. Pour les formules mathématiques, utilise la notation LaTeX dans "promptBlocks"
-
-RETOURNE UN JSON VALIDE avec cette structure EXACTE:
-{
-  "title": "Examen officiel de [Matière] [Année] - [9AF ou NS4]",
-  "referenceTexts": [
-    {
-      "section": "Section A",
-      "title": "Titre du texte (ex: Reading: Going to a Restaurant)",
-      "text": "LE TEXTE COMPLET DU PASSAGE - ne pas tronquer, extraire tout le contenu"
-    }
-  ],
-  "exercises": [
-    {
-      "exerciseNumber": 1,
-      "exerciseType": "multiple_choice" ou "open_ended",
-      "questionText": "Le texte complet de la question (version texte simple)",
-      "promptBlocks": [
-        { "type": "text", "content": "Résoudre " },
-        { "type": "math-inline", "latex": "x^2 + 5x + 6 = 0" }
-      ],
-      "options": {"A": "option A", "B": "option B", "C": "option C", "D": "option D"} ou null,
-      "optionsJson": {
-        "A": { "blocks": [{ "type": "text", "content": "x = -2" }], "value": "A" },
-        "B": { "blocks": [{ "type": "math-inline", "latex": "x = -3" }], "value": "B" }
-      },
-      "correctAnswer": "A" ou null si inconnu,
-      "answerJson": { "index": 0, "value": "A" },
-      "explanation": null,
-      "explanationBlocks": null,
-      "points": 5,
-      "concept": "Concept mathématique/grammatical principal"
-    }
-  ],
-  "totalExercises": nombre total,
-  "totalPoints": somme des points
-}
-
-RÈGLES POUR LES MATHÉMATIQUES:
-- Si une question contient des formules mathématiques, utilise "promptBlocks" avec type "math-inline" ou "math-block"
-- Pour les équations en ligne: { "type": "math-inline", "latex": "x^2" }
-- Pour les équations en bloc: { "type": "math-block", "latex": "\\frac{a}{b}" }
-- Garde toujours "questionText" comme version texte simple de secours
+7. Détermine le type: "multiple_choice" ou "open_ended"
+8. Pour les formules mathématiques, utilise la notation LaTeX
 
 IMPORTANT:
-- EXTRAIT TOUS les textes de référence (Reading, Texte, Passage, etc.) COMPLETS dans "referenceTexts"
-- Si l'examen contient des textes de lecture pour répondre aux questions, ils DOIVENT être dans "referenceTexts"
+- EXTRAIT TOUS les textes de référence COMPLETS dans referenceTexts
 - Ne rate AUCUNE question
-- Numérote séquentiellement (1, 2, 3...)
 - Si les points ne sont pas visibles: 5 pts pour QCM, 8 pts pour questions ouvertes
-- Le JSON doit être parsable sans erreur`;
+- Utilise la fonction extract_exam_data pour retourner les résultats`;
 
-    const userPrompt = `Analyse cet examen officiel de ${subject} ${year} pour la 9ème AF haïtienne.
-
-Extrait TOUTES les questions avec:
-- Numéro exact de chaque question
-- Texte complet de la question
-- Options A, B, C, D pour les QCM
-- Points si indiqués
-- Type d'exercice (multiple_choice ou open_ended)
-- Concept principal abordé
-
-Retourne UNIQUEMENT le JSON structuré, sans texte additionnel.`;
+    const userPrompt = `Analyse cet examen officiel de ${subject} ${year}. Extrait TOUTES les questions, options, textes de référence. Utilise la fonction extract_exam_data.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -128,13 +73,91 @@ Retourne UNIQUEMENT le JSON structuré, sans texte additionnel.`;
             ],
           },
         ],
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "extract_exam_data",
+              description: "Retourne les données structurées de l'examen extrait",
+              parameters: {
+                type: "object",
+                properties: {
+                  title: { type: "string", description: "Titre de l'examen" },
+                  referenceTexts: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        section: { type: "string" },
+                        title: { type: "string" },
+                        text: { type: "string", description: "Le texte complet du passage" },
+                      },
+                      required: ["section", "title", "text"],
+                    },
+                  },
+                  exercises: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        exerciseNumber: { type: "integer" },
+                        exerciseType: { type: "string", enum: ["multiple_choice", "open_ended"] },
+                        questionText: { type: "string", description: "Texte complet de la question" },
+                        promptBlocks: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              type: { type: "string", enum: ["text", "math-inline", "math-block"] },
+                              content: { type: "string" },
+                              latex: { type: "string" },
+                            },
+                            required: ["type"],
+                          },
+                        },
+                        options: {
+                          type: "object",
+                          properties: {
+                            A: { type: "string" },
+                            B: { type: "string" },
+                            C: { type: "string" },
+                            D: { type: "string" },
+                          },
+                        },
+                        optionsJson: {
+                          type: "object",
+                          description: "Structured options with blocks for KaTeX rendering",
+                        },
+                        correctAnswer: { type: "string" },
+                        answerJson: {
+                          type: "object",
+                          properties: {
+                            index: { type: "integer" },
+                            value: { type: "string" },
+                          },
+                        },
+                        explanation: { type: "string" },
+                        explanationBlocks: { type: "array" },
+                        points: { type: "integer" },
+                        concept: { type: "string", description: "Concept principal abordé" },
+                      },
+                      required: ["exerciseNumber", "exerciseType", "questionText"],
+                    },
+                  },
+                },
+                required: ["title", "exercises"],
+              },
+            },
+          },
+        ],
+        tool_choice: { type: "function", function: { name: "extract_exam_data" } },
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error("AI Gateway error:", response.status, errorText);
-      
+
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Rate limits exceeded, please try again later." }),
@@ -147,57 +170,43 @@ Retourne UNIQUEMENT le JSON structuré, sans texte additionnel.`;
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      
+
       throw new Error(`AI Gateway error: ${response.status}`);
     }
 
     const aiResponse = await response.json();
-    const content = aiResponse.choices?.[0]?.message?.content;
 
-    if (!content) {
-      throw new Error("No content in AI response");
+    // Extract structured tool call result (no more fragile JSON parsing!)
+    const toolCall = aiResponse.choices?.[0]?.message?.tool_calls?.[0];
+    if (!toolCall || toolCall.function.name !== "extract_exam_data") {
+      console.error("No valid tool call in response");
+      throw new Error("AI did not return structured exam data");
     }
 
-    console.log("Raw AI response length:", content.length);
-
-    // Clean the response - remove markdown code blocks if present
-    let cleanedContent = content.trim();
-    if (cleanedContent.startsWith("```json")) {
-      cleanedContent = cleanedContent.slice(7);
-    } else if (cleanedContent.startsWith("```")) {
-      cleanedContent = cleanedContent.slice(3);
-    }
-    if (cleanedContent.endsWith("```")) {
-      cleanedContent = cleanedContent.slice(0, -3);
-    }
-    cleanedContent = cleanedContent.trim();
-
-    // Parse the JSON response
     let parsedData;
     try {
-      parsedData = JSON.parse(cleanedContent);
+      parsedData = JSON.parse(toolCall.function.arguments);
     } catch (parseError) {
-      console.error("JSON parse error:", parseError);
-      console.error("Content that failed to parse:", cleanedContent.substring(0, 500));
-      throw new Error("Failed to parse AI response as JSON");
+      console.error("Failed to parse tool arguments:", parseError);
+      console.error("Arguments:", toolCall.function.arguments?.substring(0, 500));
+      throw new Error("Failed to parse AI response");
     }
 
-    // Validate and normalize the data
+    // Validate exercises array
     if (!parsedData.exercises || !Array.isArray(parsedData.exercises)) {
       throw new Error("Invalid response structure: missing exercises array");
     }
 
-    // Normalize exercises with structured content support
+    // Normalize exercises
     const normalizedExercises = parsedData.exercises.map((ex: any, index: number) => ({
       exerciseNumber: ex.exerciseNumber || index + 1,
       exerciseType: ex.exerciseType || (ex.options ? "multiple_choice" : "open_ended"),
-      questionText: ex.questionText || ex.question || `Question ${index + 1}`,
+      questionText: ex.questionText || `Question ${index + 1}`,
       options: ex.options || null,
       correctAnswer: ex.correctAnswer || null,
       explanation: ex.explanation || null,
       points: typeof ex.points === "number" ? ex.points : (ex.exerciseType === "multiple_choice" ? 5 : 8),
       concept: ex.concept || "Général",
-      // Structured content fields for KaTeX rendering
       promptBlocks: ex.promptBlocks || null,
       optionsJson: ex.optionsJson || null,
       answerJson: ex.answerJson || null,
@@ -206,8 +215,7 @@ Retourne UNIQUEMENT le JSON structuré, sans texte additionnel.`;
 
     const totalPoints = normalizedExercises.reduce((sum: number, ex: any) => sum + (ex.points || 0), 0);
 
-    // Normalize reference texts
-    const referenceTexts = Array.isArray(parsedData.referenceTexts) 
+    const referenceTexts = Array.isArray(parsedData.referenceTexts)
       ? parsedData.referenceTexts.map((ref: any) => ({
           section: ref.section || "Texte",
           title: ref.title || "",
@@ -216,7 +224,7 @@ Retourne UNIQUEMENT le JSON structuré, sans texte additionnel.`;
       : [];
 
     const result = {
-      title: parsedData.title || `Examen officiel de ${subject} ${year} - 9AF`,
+      title: parsedData.title || `Examen officiel de ${subject} ${year}`,
       referenceTexts,
       exercises: normalizedExercises,
       totalExercises: normalizedExercises.length,
