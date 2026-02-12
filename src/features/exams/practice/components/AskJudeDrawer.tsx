@@ -184,10 +184,28 @@ export function AskJudeDrawer({ exercise, sessionId, onAskJude }: AskJudeDrawerP
                 <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
               </div>
             ) : messages.length === 0 ? (
-              <div className="text-center text-muted-foreground py-8">
-                <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">Pose ta question à Jude!</p>
-                <p className="text-xs mt-1">Il t'aidera avec cet exercice.</p>
+              <div className="flex flex-col items-center text-center py-8 px-4">
+                <Avatar className="h-16 w-16 mb-4 border-2 border-primary/30">
+                  <AvatarImage src={judeProfile} alt="Jude" />
+                  <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">J</AvatarFallback>
+                </Avatar>
+                <p className="text-sm font-medium text-foreground mb-1">
+                  Je suis là pour t'aider !
+                </p>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Tu peux me poser n'importe quelle question sur cet exercice.
+                </p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {['Explique-moi la question', 'Donne-moi un exemple', 'Je ne comprends pas'].map((chip) => (
+                    <button
+                      key={chip}
+                      onClick={() => { setInput(chip); }}
+                      className="px-3 py-1.5 text-xs rounded-full border border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 transition-colors"
+                    >
+                      {chip}
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="space-y-4">

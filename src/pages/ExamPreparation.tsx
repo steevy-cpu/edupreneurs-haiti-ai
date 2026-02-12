@@ -12,6 +12,8 @@ import type { ExerciseForRunner, SessionForRunner, ReferenceText } from "@/featu
 import { ExamProgressBar } from "@/components/exam/ExamProgressBar";
 import { ArrowLeft, FileText, MessageCircle } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import judeProfile from "@/assets/jude-profile.jpeg";
 
 export default function ExamPreparation() {
   const { examId } = useParams<{ examId: string }>();
@@ -253,9 +255,21 @@ export default function ExamPreparation() {
               <ThemeToggle />
             </div>
 
-            <h1 className="text-lg sm:text-xl font-bold line-clamp-1">
-              {exam?.title || "Préparation à l'examen"}
-            </h1>
+            {/* Jude Welcome Banner */}
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border border-primary/20">
+              <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 border-2 border-primary/30 ring-2 ring-primary/10">
+                <AvatarImage src={judeProfile} alt="Jude" />
+                <AvatarFallback className="bg-primary/10 text-primary font-bold">J</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="text-sm sm:text-base font-semibold text-foreground">
+                  Salut! Je suis Jude, ton tuteur pour cet examen 👋
+                </p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 line-clamp-2">
+                  Voici <strong>quelques questions</strong> de <span className="font-medium">{exam?.title || "cet examen"}</span> — pas toutes! Si tu bloques, demande-moi de l'aide.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Progress Bar */}
@@ -280,7 +294,7 @@ export default function ExamPreparation() {
                   </TabsTrigger>
                   <TabsTrigger value="tutor" className="text-sm">
                     <MessageCircle className="h-4 w-4 mr-2" />
-                    Tuteur Jude
+                    Pratique avec Jude
                   </TabsTrigger>
                 </TabsList>
                 
