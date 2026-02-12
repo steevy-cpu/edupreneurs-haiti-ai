@@ -272,15 +272,17 @@ export default function ExamPreparation() {
             </div>
           </div>
 
-          {/* Progress Bar */}
-          {exam && exercises.length > 0 && (
-            <ExamProgressBar
-              currentExercise={currentExercise}
-              totalExercises={exercises.length}
-              completedExercises={completedExercises}
-              onExerciseClick={handleExerciseClick}
-            />
-          )}
+          {/* Progress Bar - desktop only */}
+          <div className="hidden lg:block">
+            {exam && exercises.length > 0 && (
+              <ExamProgressBar
+                currentExercise={currentExercise}
+                totalExercises={exercises.length}
+                completedExercises={completedExercises}
+                onExerciseClick={handleExerciseClick}
+              />
+            )}
+          </div>
 
           {/* Main Content */}
           <div className="mt-4">
@@ -290,7 +292,7 @@ export default function ExamPreparation() {
                 <TabsList className="grid w-full grid-cols-2 h-12">
                   <TabsTrigger value="pdf" className="text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     <FileText className="h-4 w-4 mr-2" />
-                    Document PDF
+                    Examen PDF
                   </TabsTrigger>
                   <TabsTrigger value="tutor" className="text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     <MessageCircle className="h-4 w-4 mr-2" />
