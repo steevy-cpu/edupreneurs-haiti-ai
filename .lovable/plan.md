@@ -1,46 +1,69 @@
 
+# Exam Practice Page Refinements
 
-# Add Visible Background Color to Active Tabs
+## 3 Changes
 
-## Problem
-The active tab trigger uses `data-[state=active]:bg-background` which blends into the page background (white on white in light mode). Students cannot clearly see which tab is selected -- it only shows a subtle outline/shadow.
+### 1. Hide the question progress bubbles on mobile (desktop only)
+The `ExamProgressBar` component (the grid of numbered circles showing exercise progress) takes up valuable screen space on mobile. Hide it on small screens using `hidden lg:block`.
 
-## Solution
-Add a prominent filled background color to active tabs in both locations:
+**File:** `src/pages/ExamPreparation.tsx`
+- Wrap the `<ExamProgressBar>` section (around line 280) with `hidden lg:block`
 
-### 1. Exam Practice Page Tabs (`src/pages/ExamPreparation.tsx`)
-Add `data-[state=active]:bg-primary data-[state=active]:text-primary-foreground` to both TabsTrigger elements (lines 291 and 295). This gives the active tab the app's primary teal/green fill with white text -- making selection obvious.
+### 2. Rename "Document PDF" tab to "Examen PDF"
+Simple text change in `ExamPreparation.tsx`.
 
-### 2. Dashboard Tabs (`src/components/dashboard/DashboardTabs.tsx`)
-Add the same `data-[state=active]:bg-primary data-[state=active]:text-primary-foreground` to all three TabsTrigger elements (lines 37, 42, 47). Consistent styling across the app.
+**File:** `src/pages/ExamPreparation.tsx`
+- Change "Document PDF" to "Examen PDF" (line ~293)
+
+### 3. Hide Jude Chatbot + QuickMessage FAB on exam practice pages
+The floating Jude chatbot bubble is redundant since Jude is already embedded in the tutor panel. Add the exam practice route pattern to the visibility config.
+
+**File:** `src/shell/config/visibility.ts`
+- Add `/^\/exams\/practice\//` to `jude.hideOnPatterns`
+- Add `/^\/exams\/practice\//` to `quickMessage.hideOnPatterns`
+
+---
 
 ## Technical Details
 
-**ExamPreparation.tsx** (2 TabsTriggers, lines ~291 and ~295):
 ```tsx
-// Before
-<TabsTrigger value="pdf" className="text-sm">
+// ExamPreparation.tsx - Progress bar wrapper
+// Before:
+{exam && exercises.length > 0 && (
+  <ExamProgressBar ... />
+)}
 
-// After
-<TabsTrigger value="pdf" className="text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+// After:
+<div className="hidden lg:block">
+  {exam && exercises.length > 0 && (
+    <ExamProgressBar ... />
+  )}
+</div>
 ```
 
-**DashboardTabs.tsx** (3 TabsTriggers, lines 37, 42, 47):
 ```tsx
-// Before
-className="rounded-lg data-[state=active]:shadow-md text-xs sm:text-sm gap-1"
+// ExamPreparation.tsx - Tab label
+// Before:
+Document PDF
 
-// After  
-className="rounded-lg data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm gap-1"
+// After:
+Examen PDF
+```
+
+```ts
+// visibility.ts - add to jude.hideOnPatterns:
+/^\/exams\/practice\//,
+
+// visibility.ts - add to quickMessage.hideOnPatterns:
+/^\/exams\/practice\//,
 ```
 
 ## Safety Checklist
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- only CSS class additions |
+| Breaks existing functionality? | No -- CSS visibility + text + config only |
 | Works with existing data? | Yes -- no data changes |
 | 3G optimized? | Yes -- no new assets |
-| Dark mode compatible? | Yes -- uses theme-aware CSS variables (primary/primary-foreground) |
 | Backward compatible? | Yes |
-
+| Mobile UX impact? | Positive -- more screen space, less clutter |
