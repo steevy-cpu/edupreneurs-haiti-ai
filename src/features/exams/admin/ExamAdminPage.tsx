@@ -1,7 +1,8 @@
 /**
  * ExamAdminPage - Unified admin interface for both 9AF and NS4 exams
+ * Hardened pipeline: cached PDF URL, step indicator, retry logic
  */
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -9,15 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Upload, GraduationCap } from "lucide-react";
+import { Loader2, Upload, GraduationCap, RotateCcw } from "lucide-react";
 
 import { TrackToggle } from "./components/TrackToggle";
-import { SeriesMultiSelect, SERIES } from "./components/SeriesMultiSelect";
-import { PDFUploader } from "./components/PDFUploader";
+import { SeriesMultiSelect } from "./components/SeriesMultiSelect";
+import { PDFUploader, type ProcessingStep } from "./components/PDFUploader";
 import { ExamPreviewCard } from "./components/ExamPreviewCard";
 import { ExistingExamsList, type ExistingExam } from "./components/ExistingExamsList";
 import { ExamDetailEditor } from "./components/ExamDetailEditor";
-import { convertPdfToImages, uploadPdfToStorage, type PDFConversionProgress } from "./utils/pdfUtils";
+import { convertPdfToImages, uploadPdfToStorage, validatePdfFile, type PDFConversionProgress } from "./utils/pdfUtils";
 import { saveExamWithExercises, updateExamFromReanalysis, type ParsedPreview } from "./utils/examSaveUtils";
 import type { ExamTrack } from "../types/exam.types";
 
@@ -62,11 +63,18 @@ export function ExamAdminPage() {
   const [conversionProgress, setConversionProgress] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [reanalyzingExamId, setReanalyzingExamId] = useState<string | null>(null);
+  const [processingStep, setProcessingStep] = useState<ProcessingStep>("idle");
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Cache state to avoid double upload and enable retry
+  const cachedPdfUrlRef = useRef<string | null>(null);
+  const cachedPageImagesRef = useRef<string[] | null>(null);
+  const [canRetryAnalysis, setCanRetryAnalysis] = useState(false);
 
   // Preview state
   const [parsedPreview, setParsedPreview] = useState<ParsedPreview | null>(null);
   const [showPreview, setShowPreview] = useState(false);
-  
+
   // Editor state
   const [selectedExam, setSelectedExam] = useState<ExistingExam | null>(null);
   const [reanalyzeExamData, setReanalyzeExamData] = useState<ExistingExam | null>(null);
@@ -90,6 +98,9 @@ export function ExamAdminPage() {
     setPdfFile(null);
     setParsedPreview(null);
     setShowPreview(false);
+    cachedPdfUrlRef.current = null;
+    cachedPageImagesRef.current = null;
+    setCanRetryAnalysis(false);
   }, []);
 
   // Handle conversion progress
@@ -97,6 +108,27 @@ export function ExamAdminPage() {
     setConversionProgress(progress.percent);
     setTotalPages(progress.totalPages);
   }, []);
+
+  // Run only the AI analysis step (used for initial + retry)
+  const runAiAnalysis = async (pageImages: string[]): Promise<any> => {
+    setProcessingStep("analyzing");
+    const { data: parsedData, error: parseError } = await supabase.functions.invoke(
+      "parse-exam-vision",
+      {
+        body: {
+          subject,
+          year: isModelExam ? new Date().getFullYear() : parseInt(year),
+          pageImages,
+          gradeLevel: track,
+          series: track === 'NS4' ? selectedSeries[0] : undefined,
+        },
+      }
+    );
+
+    if (parseError) throw new Error(parseError.message || "Erreur lors de l'analyse");
+    if (parsedData.error) throw new Error(parsedData.error);
+    return parsedData;
+  };
 
   // Analyze and save a new exam
   const handleAnalyzeAndSave = async () => {
@@ -118,11 +150,19 @@ export function ExamAdminPage() {
       return;
     }
 
+    // Validate file
+    const validationError = validatePdfFile(pdfFile);
+    if (validationError) {
+      toast.error(validationError.message);
+      return;
+    }
+
     setIsAnalyzing(true);
+    setCanRetryAnalysis(false);
 
     try {
-      // 1. Upload PDF
-      toast.info("Téléversement du PDF...");
+      // 1. Upload PDF (with progress)
+      setProcessingStep("uploading");
       const pdfUrl = await uploadPdfToStorage(pdfFile, {
         track,
         subject,
@@ -130,16 +170,18 @@ export function ExamAdminPage() {
         series: selectedSeries[0],
         session,
         isModelExam,
-      });
+      }, (progress) => setUploadProgress(progress.progress));
 
       if (!pdfUrl) {
         toast.error("Échec du téléversement du PDF");
         setIsAnalyzing(false);
+        setProcessingStep("idle");
         return;
       }
+      cachedPdfUrlRef.current = pdfUrl;
 
       // 2. Convert PDF to images
-      toast.info("Conversion du PDF en images...");
+      setProcessingStep("converting");
       setIsConverting(true);
       const pageImages = await convertPdfToImages(pdfFile, handleConversionProgress);
       setIsConverting(false);
@@ -147,80 +189,86 @@ export function ExamAdminPage() {
       if (pageImages.length === 0) {
         toast.error("Aucune page n'a pu être extraite du PDF");
         setIsAnalyzing(false);
+        setProcessingStep("idle");
         return;
       }
+      cachedPageImagesRef.current = pageImages;
 
-      // 3. Send to Vision AI
-      toast.info(`${pageImages.length} pages extraites. Analyse par IA en cours...`);
-      const { data: parsedData, error: parseError } = await supabase.functions.invoke(
-        "parse-exam-vision",
-        {
-          body: {
-            subject,
-            year: isModelExam ? new Date().getFullYear() : parseInt(year),
-            pageImages,
-            gradeLevel: track,
-            series: track === 'NS4' ? selectedSeries[0] : undefined,
-          },
-        }
-      );
-
-      if (parseError) {
-        throw new Error(parseError.message || "Erreur lors de l'analyse");
-      }
-
-      if (parsedData.error) {
-        throw new Error(parsedData.error);
-      }
+      // 3. AI Analysis
+      const parsedData = await runAiAnalysis(pageImages);
 
       // 4. Show preview
       setParsedPreview(parsedData);
       setShowPreview(true);
+      setProcessingStep("idle");
       toast.success(`✅ ${parsedData.totalExercises} exercices détectés. Vérifiez l'aperçu.`);
     } catch (error: any) {
       console.error("Error analyzing exam:", error);
       toast.error(error.message || "Erreur lors de l'analyse");
+      // Enable retry if we have cached images
+      if (cachedPageImagesRef.current && cachedPageImagesRef.current.length > 0) {
+        setCanRetryAnalysis(true);
+      }
     } finally {
       setIsAnalyzing(false);
       setIsConverting(false);
+      setProcessingStep("idle");
     }
   };
 
-  // Confirm and save the parsed preview
+  // Retry only the AI analysis step
+  const handleRetryAnalysis = async () => {
+    const pageImages = cachedPageImagesRef.current;
+    if (!pageImages || pageImages.length === 0) {
+      toast.error("Aucune image en cache. Veuillez re-téléverser le PDF.");
+      setCanRetryAnalysis(false);
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setCanRetryAnalysis(false);
+
+    try {
+      const parsedData = await runAiAnalysis(pageImages);
+      setParsedPreview(parsedData);
+      setShowPreview(true);
+      toast.success(`✅ ${parsedData.totalExercises} exercices détectés. Vérifiez l'aperçu.`);
+    } catch (error: any) {
+      console.error("Error retrying analysis:", error);
+      toast.error(error.message || "Erreur lors de la ré-analyse");
+      setCanRetryAnalysis(true);
+    } finally {
+      setIsAnalyzing(false);
+      setProcessingStep("idle");
+    }
+  };
+
+  // Confirm and save the parsed preview (no double upload!)
   const handleConfirmAndSave = async () => {
     if (!parsedPreview) return;
 
     setIsAnalyzing(true);
+    setProcessingStep("saving");
 
     try {
-      // Upload PDF again (might have been a re-analyze)
-      let pdfUrl: string | null = null;
-      
-      if (pdfFile) {
-        pdfUrl = await uploadPdfToStorage(pdfFile, {
-          track,
-          subject,
-          year: isModelExam ? new Date().getFullYear() : parseInt(year),
-          series: selectedSeries[0],
-          session,
-          isModelExam,
-        });
-      } else if (reanalyzeExamData) {
+      // Use cached PDF URL instead of re-uploading
+      let pdfUrl = cachedPdfUrlRef.current;
+
+      if (!pdfUrl && reanalyzeExamData) {
         pdfUrl = reanalyzeExamData.pdf_url;
       }
 
       if (!pdfUrl) {
         toast.error("Aucun PDF disponible");
         setIsAnalyzing(false);
+        setProcessingStep("idle");
         return;
       }
 
       if (reanalyzeExamData) {
-        // Update existing exam
         const result = await updateExamFromReanalysis(reanalyzeExamData.id, parsedPreview);
         toast.success(`Examen ré-analysé: ${result.exerciseCount} exercices`);
       } else {
-        // Save new exam
         const result = await saveExamWithExercises(
           {
             track,
@@ -233,21 +281,21 @@ export function ExamAdminPage() {
           },
           parsedPreview
         );
-        
+
         toast.success(
-          result.isUpdate 
+          result.isUpdate
             ? `Examen mis à jour: ${result.exerciseCount} exercices`
             : `Nouvel examen créé: ${result.exerciseCount} exercices`
         );
       }
 
-      // Reset form
       resetForm();
     } catch (error: any) {
       console.error("Error saving exam:", error);
       toast.error(error.message || "Erreur lors de la sauvegarde");
     } finally {
       setIsAnalyzing(false);
+      setProcessingStep("idle");
     }
   };
 
@@ -263,6 +311,7 @@ export function ExamAdminPage() {
 
     try {
       // 1. Fetch PDF
+      setProcessingStep("uploading");
       toast.info("Téléchargement du PDF...");
       const response = await fetch(exam.pdf_url);
       if (!response.ok) {
@@ -271,8 +320,11 @@ export function ExamAdminPage() {
       const blob = await response.blob();
       const file = new File([blob], `${exam.subject}-${exam.year}.pdf`, { type: 'application/pdf' });
 
+      // Cache the existing URL (no need to re-upload)
+      cachedPdfUrlRef.current = exam.pdf_url;
+
       // 2. Convert to images
-      toast.info("Conversion du PDF en images...");
+      setProcessingStep("converting");
       setIsConverting(true);
       const pageImages = await convertPdfToImages(file, handleConversionProgress);
       setIsConverting(false);
@@ -281,8 +333,10 @@ export function ExamAdminPage() {
         toast.error("Aucune page n'a pu être extraite du PDF");
         return;
       }
+      cachedPageImagesRef.current = pageImages;
 
-      // 3. Send to Vision AI
+      // 3. AI Analysis
+      setProcessingStep("analyzing");
       toast.info(`${pageImages.length} pages extraites. Analyse par IA en cours...`);
       const { data: parsedData, error: parseError } = await supabase.functions.invoke(
         "parse-exam-vision",
@@ -297,13 +351,8 @@ export function ExamAdminPage() {
         }
       );
 
-      if (parseError) {
-        throw new Error(parseError.message || "Erreur lors de l'analyse");
-      }
-
-      if (parsedData.error) {
-        throw new Error(parsedData.error);
-      }
+      if (parseError) throw new Error(parseError.message || "Erreur lors de l'analyse");
+      if (parsedData.error) throw new Error(parsedData.error);
 
       // 4. Set form state from exam
       setTrack(exam.grade_level as ExamTrack);
@@ -321,9 +370,13 @@ export function ExamAdminPage() {
       console.error("Error re-analyzing exam:", error);
       toast.error(error.message || "Erreur lors de la ré-analyse");
       setReanalyzeExamData(null);
+      if (cachedPageImagesRef.current && cachedPageImagesRef.current.length > 0) {
+        setCanRetryAnalysis(true);
+      }
     } finally {
       setReanalyzingExamId(null);
       setIsConverting(false);
+      setProcessingStep("idle");
     }
   };
 
@@ -336,6 +389,9 @@ export function ExamAdminPage() {
     setParsedPreview(null);
     setShowPreview(false);
     setReanalyzeExamData(null);
+    cachedPdfUrlRef.current = null;
+    cachedPageImagesRef.current = null;
+    setCanRetryAnalysis(false);
   };
 
   const handleCancelPreview = () => {
@@ -356,8 +412,8 @@ export function ExamAdminPage() {
   if (selectedExam) {
     return (
       <div className="space-y-6">
-        <ExamDetailEditor 
-          exam={selectedExam} 
+        <ExamDetailEditor
+          exam={selectedExam}
           onBack={handleBackFromEdit}
         />
       </div>
@@ -385,9 +441,9 @@ export function ExamAdminPage() {
           {track === 'NS4' && (
             <div className="space-y-2">
               <Label>Série(s)</Label>
-              <SeriesMultiSelect 
-                value={selectedSeries} 
-                onChange={setSelectedSeries} 
+              <SeriesMultiSelect
+                value={selectedSeries}
+                onChange={setSelectedSeries}
               />
             </div>
           )}
@@ -466,26 +522,41 @@ export function ExamAdminPage() {
             isConverting={isConverting}
             conversionProgress={conversionProgress}
             totalPages={totalPages}
+            processingStep={processingStep}
+            uploadProgress={uploadProgress}
           />
 
-          {/* Analyze Button */}
-          <Button 
-            onClick={handleAnalyzeAndSave} 
-            disabled={isAnalyzing || isConverting}
-            className="w-full"
-          >
-            {isAnalyzing ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Analyse en cours...
-              </>
-            ) : (
-              <>
-                <Upload className="h-4 w-4 mr-2" />
-                Analyser et Sauvegarder
-              </>
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <Button
+              onClick={handleAnalyzeAndSave}
+              disabled={isAnalyzing || isConverting}
+              className="flex-1"
+            >
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Analyse en cours...
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Analyser et Sauvegarder
+                </>
+              )}
+            </Button>
+
+            {canRetryAnalysis && (
+              <Button
+                onClick={handleRetryAnalysis}
+                disabled={isAnalyzing}
+                variant="outline"
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Réessayer l'analyse
+              </Button>
             )}
-          </Button>
+          </div>
         </CardContent>
       </Card>
 
