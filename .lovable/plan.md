@@ -1,133 +1,223 @@
 
 
-# Auth System Restructuring Plan
+# Auth System Restructuring -- The Real One
 
-## Current Architecture Problems
+## What Was Actually Done (Patches Only)
+- Removed `signOut()` in `signup.service.ts` after account creation
+- Updated `AuthRouteGuard` to not sign out unverified users  
+- Added session check in `VerifyEmailPage` for post-verify navigation
+- Added 30s polling in `SubscriptionGate`
 
-### Problem 1: Forced Sign-Out After Signup Creates Friction
-After completing Step 3, `signup.service.ts` calls `supabase.auth.signOut()` (line 142). The user is then redirected to `/auth/verify-email`. After verifying their email, `VerifyEmailPage.tsx` navigates to `/auth/login` (line 78), forcing the user to re-enter email and password manually. This is the root cause of the "re-enter credentials" complaint.
+These are 4 line-level edits. The architecture is identical to before.
 
-### Problem 2: Device Trust Not Working After Email Verification
-The `verify_email_code` RPC correctly inserts a trusted device record. However, when the user then logs in on `LoginPage.tsx`, the `isDeviceTrusted()` call (line 190) queries `user_trusted_devices` using the **current browser's fingerprint**. If the fingerprint generated at verification time differs even slightly from the fingerprint generated at login time (which can happen due to timing, tab switches, or canvas rendering differences), the device won't be found. The user then sees "Nouvel appareil detecte" -- a second OTP prompt.
+## What Still Breaks
 
-### Problem 3: Gift Payment Activation Works But Is Invisible to User
-The `verify-gift-payment` edge function correctly activates subscriptions. However, if the student is already logged in, their cached `subscription-status` query (5-minute stale time) doesn't refresh. The `PendingGiftPrompt` continues showing until the cache expires.
+### Problem 1: Login Service Still Signs Out Unverified Users
+`login.service.ts` line 157 calls `supabase.auth.signOut()` when an unverified user tries to log in. After verifying, they go to `/auth/login` (no session), log in again, and then hit the device trust check -- which may fail due to fingerprint drift. **This is the "double verification" bug for returning users.**
 
-### Problem 4: State Machine is Spread Across Multiple Systems
-Auth state lives in: `localStorage` (authFlow.store), Supabase session, `SessionAuthContext`, `AuthRouteGuard`, and individual page components. This makes debugging impossible and creates race conditions.
+### Problem 2: verify.service.ts Clears Auth Flow Prematurely
+Line 78 in `verify.service.ts` calls `clearAuthFlow()` inside the service. Then `VerifyEmailPage.tsx` line 83-88 also calls `clearAuthFlow()`. The service shouldn't manage navigation state -- that's the page's job.
 
-## Proposed Solution: Eliminate Sign-Out During Signup
+### Problem 3: No Centralized Flow Control
+State decisions are made in 6 different places:
+- `authFlow.store.ts` (localStorage)
+- `SessionAuthContext.tsx` (React context)
+- `AuthRouteGuard.tsx` (route guard)
+- `login.service.ts` (login logic)
+- `signup.service.ts` (signup logic)
+- `VerifyEmailPage.tsx` (page component)
 
-The core fix follows the user's guideline: **keep the user logged in through verification** and eliminate the re-login step entirely. This removes the device trust problem as a side effect (no login = no device check).
+Each makes independent decisions about signing out, redirecting, and clearing state.
 
-### Phase 1: Keep User Session After Signup (Critical Fix)
-
-**File: `src/auth/services/signup.service.ts`**
-
-Remove the `supabase.auth.signOut()` call after account creation. Instead, keep the Supabase session alive but gate access via `email_confirmed` check.
-
-Changes:
-- Remove line 142: `await supabase.auth.signOut()`
-- Keep the `saveAuthFlow({ flow: 'verify' })` call so the guard still redirects to verify page
-- The user stays authenticated but unverified
-
-### Phase 2: Update Email Verification to Auto-Navigate to Dashboard
-
-**File: `src/auth/routes/VerifyEmailPage.tsx`**
-
-After successful verification, instead of navigating to `/auth/login`, directly navigate to `/dashboard`. The user is already logged in (session survived from signup).
-
-Changes:
-- Line 76-78: Change from toast + navigate to login --> toast + navigate to dashboard
-- Remove the `clearAuthFlow()` before navigation (let the guard handle it)
-
-### Phase 3: Update AuthRouteGuard for Unverified-But-Authenticated Users
-
-**File: `src/auth/guards/AuthRouteGuard.tsx`**
-
-Currently, Rule 2 (lines 53-72) signs out unverified users. Instead, redirect them to verify-email without signing out.
-
-Changes:
-- Remove the `await supabase.auth.signOut()` in Rule 2
-- Keep the redirect to `/auth/verify-email`
-- The verify page now works because the user has a valid session AND the authFlow state
-
-### Phase 4: Update Login Service for Edge Cases
-
-**File: `src/auth/services/login.service.ts`**
-
-The login service signs out unverified users (lines 147-186). This is still needed for users who come back later without a session. But now the verification page can detect if the user has an active session.
-
-Changes:
-- Keep the existing behavior for login (sign out unverified users, send new code, redirect to verify)
-- This only triggers when a user manually tries to log in with unverified email
-
-### Phase 5: Update VerifyEmailPage to Handle Both Flows
-
-**File: `src/auth/routes/VerifyEmailPage.tsx`**
-
-The verify page needs to handle two scenarios:
-1. **New signup** (user has active session) -- verify, then go to dashboard
-2. **Returning user** (no session, only authFlow state) -- verify, then go to login
-
-Changes:
-- Check if user has an active Supabase session
-- If session exists: after verification, navigate to `/dashboard`
-- If no session (came from login redirect): after verification, navigate to `/auth/login`
-
-### Phase 6: Gift Payment Real-Time Refresh
-
-**File: `src/components/SubscriptionGate.tsx`**
-
-Add a polling mechanism to detect when a gift payment is completed while the user is on the `PendingGiftPrompt`.
-
-Changes:
-- Add `refetchInterval: 30000` (30 seconds) to the subscription-status query when status is `pending_gift`
-- This way, when the family member pays, the student's screen auto-refreshes within 30 seconds
+### Problem 4: Gift Payment Webhook Has No Idempotency
+If Stripe retries the webhook (which it does), the same payment could be processed multiple times.
 
 ---
 
-## Technical Details
+## The Restructuring Plan
 
-### Changes Summary
+### Phase 1: Create Auth State Machine
+**New file: `src/auth/store/authStateMachine.ts`**
+
+A simple, explicit state machine that replaces the scattered decision-making. No external libraries needed.
+
+```text
+States:
+  UNAUTHENTICATED --> can go to: SIGNUP_STEP1, AUTHENTICATING
+  SIGNUP_STEP1    --> SIGNUP_STEP2, UNAUTHENTICATED
+  SIGNUP_STEP2    --> SIGNUP_STEP3, SIGNUP_STEP1
+  SIGNUP_STEP3    --> EMAIL_VERIFY_PENDING, SIGNUP_STEP2
+  EMAIL_VERIFY_PENDING --> AUTHENTICATED (if session exists), UNAUTHENTICATED (if no session)
+  AUTHENTICATING  --> EMAIL_VERIFY_PENDING, DEVICE_VERIFY_PENDING, AUTHENTICATED, UNAUTHENTICATED
+  DEVICE_VERIFY_PENDING --> AUTHENTICATING, UNAUTHENTICATED
+  AUTHENTICATED   --> gated by SubscriptionGate (pending_gift, active, expired)
+```
+
+This file exports:
+- `getAuthState()`: derives current state from Supabase session + profile + localStorage
+- `transition(event)`: validates and executes state transitions
+- `getTargetRoute(state)`: maps each state to its correct route
+
+### Phase 2: Fix login.service.ts -- Keep Session for Unverified Users
+**File: `src/auth/services/login.service.ts`**
+
+Currently lines 146-186: when an unverified user logs in, the service signs them out, generates a new code, and redirects to verify.
+
+Change: **Do NOT sign them out.** Keep the session alive just like we do for signup. The user is already authenticated -- just redirect to verify-email. After verification, they go straight to dashboard (session exists).
+
+This eliminates the returning-user double-verification problem entirely.
+
+### Phase 3: Fix verify.service.ts -- Remove Navigation Side Effects
+**File: `src/auth/services/verify.service.ts`**
+
+Remove `clearAuthFlow()` from line 78. Services should not manage navigation/UI state. The calling page (`VerifyEmailPage.tsx`) already handles this.
+
+### Phase 4: Simplify VerifyEmailPage -- Always Go to Dashboard
+**File: `src/auth/routes/VerifyEmailPage.tsx`**
+
+Since we now keep sessions alive in both signup AND login flows, the verify page always has an active session after successful verification. Simplify:
+- After verification success: always navigate to `/dashboard`
+- Remove the session check branching (lines 77-90) -- it's always true now
+- `clearAuthFlow()` happens here (single place)
+
+### Phase 5: Simplify AuthRouteGuard -- Use State Machine
+**File: `src/auth/guards/AuthRouteGuard.tsx`**
+
+Replace the current multi-rule logic with a single call to the state machine:
+- Get current auth state
+- Get target route for that state  
+- If current route doesn't match target, redirect
+
+This makes the guard a thin routing layer instead of a decision-maker.
+
+### Phase 6: Add Idempotency to Gift Payment Webhook
+**File: `supabase/functions/stripe-gift-webhook/index.ts`** (or equivalent)
+
+Add a check: before processing a Stripe event, query the `gift_subscriptions` table to see if this payment has already been processed (check `stripe_session_id`). If already processed, return 200 immediately.
+
+### Phase 7: Gift Payment Real-Time -- Already Done
+The 30s polling in `SubscriptionGate.tsx` is already implemented. No changes needed.
+
+---
+
+## Detailed Changes
+
+### New File: `src/auth/store/authStateMachine.ts`
+
+Exports:
+- `AuthState` type (union of all states)
+- `deriveAuthState(session, profile, authFlow)` -- pure function, no side effects
+- `getRouteForState(state)` -- maps state to route path
+- `canTransitionTo(from, to)` -- validates transitions
+
+This is a pure utility -- no React, no hooks, no side effects. Just logic.
+
+### login.service.ts Changes (lines 146-186)
+
+Before:
+```
+if (profile && !profile.email_confirmed) {
+  // Generate new code
+  // Sign out immediately      <-- PROBLEM
+  // Send verification email
+  // Save authFlow
+  return { requiresVerification: true }
+}
+```
+
+After:
+```
+if (profile && !profile.email_confirmed) {
+  // Generate new code
+  // DO NOT sign out -- keep session alive
+  // Send verification email
+  // Save authFlow
+  return { requiresVerification: true }
+}
+```
+
+One line removed. The user stays authenticated but unverified, just like signup.
+
+### verify.service.ts Change (line 78)
+
+Remove: `clearAuthFlow();`
+
+The page component handles this, not the service.
+
+### VerifyEmailPage.tsx Changes (lines 77-90)
+
+Before:
+```
+const { data: sessionData } = await supabase.auth.getSession();
+if (sessionData?.session) {
+  navigate('/dashboard');
+} else {
+  navigate('/auth/login');
+}
+```
+
+After:
+```
+clearAuthFlow();
+navigate('/dashboard');
+```
+
+Session always exists now. No branching needed.
+
+### AuthRouteGuard.tsx Changes
+
+Simplify the `checkAuthState` function to use the state machine:
+1. Derive current state from session + profile + authFlow
+2. Get the target route for that state
+3. If not on the target route, redirect
+
+---
+
+## Files Changed Summary
 
 | File | Change | Risk |
 |---|---|---|
-| `signup.service.ts` | Remove `signOut()` after account creation | Low -- user stays authed but gated by email_confirmed |
-| `VerifyEmailPage.tsx` | Navigate to dashboard if session exists, login if not | Low -- two clear paths |
-| `AuthRouteGuard.tsx` | Don't sign out unverified users, just redirect to verify | Low -- verify page handles both states |
-| `SubscriptionGate.tsx` | Add 30s polling for pending_gift status | None -- only adds a periodic refetch |
-| `login.service.ts` | No changes needed -- existing flow handles returning unverified users | None |
+| `authStateMachine.ts` (NEW) | Centralized state logic | None -- new file, no existing code touched |
+| `login.service.ts` | Remove `signOut()` for unverified users (line 157) | Low -- same pattern as signup fix |
+| `verify.service.ts` | Remove `clearAuthFlow()` (line 78) | None -- page already handles this |
+| `VerifyEmailPage.tsx` | Remove session-check branching, always go to dashboard | Low -- session always exists now |
+| `AuthRouteGuard.tsx` | Use state machine for routing decisions | Medium -- must test all entry points |
+| `stripe-gift-webhook` | Add idempotency check before processing | Low -- additive change |
 
-### Flow After Changes
+## Flow After Restructuring
 
-**New Signup (Happy Path):**
-1. User completes Step 3 --> account created, session kept alive
-2. Redirect to `/auth/verify-email` with authFlow state
-3. User enters OTP code --> `verify_email_code` RPC runs (email_confirmed=true, device trusted)
-4. Navigate directly to `/dashboard` -- NO re-login, NO device check
-5. SubscriptionGate checks status: `pending_gift` shows prompt, `active` shows dashboard
+**New Signup:**
+1. Steps 1-3 complete --> account created, session kept
+2. Redirect to `/auth/verify-email`
+3. Verify OTP --> device auto-trusted --> navigate to `/dashboard`
+4. SubscriptionGate checks status: `pending_gift` shows prompt, `active` shows dashboard
+5. Zero re-logins. Zero device prompts.
 
-**Returning Unverified User (Edge Case):**
-1. User tries to log in with unverified email
-2. Login service signs them out, sends new code, saves authFlow
-3. Redirect to `/auth/verify-email` 
-4. After verification, navigate to `/auth/login` (no active session)
-5. User logs in normally, device already trusted from verification
+**Returning Unverified User:**
+1. User logs in with unverified email
+2. Login service keeps session, generates new code, redirects to verify
+3. Verify OTP --> navigate to `/dashboard`
+4. Zero re-logins. Zero device prompts.
 
-**Gift Payment Activation:**
-1. Family member pays via Stripe on `/gift/pay/:token`
-2. `verify-gift-payment` edge function activates subscription
-3. Student's SubscriptionGate polls every 30s, detects `active` status
-4. PendingGiftPrompt disappears, dashboard loads
+**Already Verified User:**
+1. Login normally
+2. Device trust check (works because same session, same fingerprint)
+3. If trusted: dashboard. If not: device verify (legitimate new device).
 
-### Safety Verification
+**Gift Payment:**
+1. Family pays via Stripe
+2. Webhook processes payment (with idempotency)
+3. Student's SubscriptionGate polls every 30s
+4. Status flips to `active` --> dashboard loads
+
+## Safety Verification
 
 | Check | Result |
 |---|---|
-| Breaks existing functionality? | No -- login flow for already-verified users unchanged |
-| Works with existing data? | Yes -- no schema changes |
-| Optimized for 3G? | Yes -- eliminates one round-trip (login) and one email (device OTP) |
-| Edge cases handled? | Yes -- returning unverified users still work via login service |
-| Backward compatible? | Yes -- existing verified users login normally |
+| Breaks existing functionality? | No -- verified users login exactly as before |
+| Works with existing data? | Yes -- no schema changes needed |
+| Optimized for 3G? | Yes -- eliminates 2 round-trips (re-login + device OTP email) |
+| Edge cases handled? | Yes -- expired sessions recover via email, locked accounts reset via password |
+| Backward compatible? | Yes -- state machine derives state from existing data |
+| Idempotent webhooks? | Yes -- duplicate Stripe events are safely ignored |
 
