@@ -36,8 +36,8 @@ export function MatchingInput({
   const [activeNumber, setActiveNumber] = useState<string | null>(null);
   const [matches, setMatches] = useState<Record<string, string>>({});
 
-  const isDisabled = state === 'checking' || state === 'correct' || state === 'incorrect' || state === 'revealed';
-  const showResult = state === 'correct' || state === 'incorrect' || state === 'revealed';
+  const isDisabled = state === 'checking' || state === 'correct' || state === 'incorrect' || state === 'partial' || state === 'revealed';
+  const showResult = state === 'correct' || state === 'incorrect' || state === 'partial' || state === 'revealed';
 
   // If parsing failed, fall back to short answer input
   if (!parsed) {
