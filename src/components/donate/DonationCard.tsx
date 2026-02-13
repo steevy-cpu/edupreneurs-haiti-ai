@@ -117,7 +117,7 @@ export function DonationCard() {
 
   return (
     <section className="py-8 px-4">
-      <div className="max-w-md mx-auto bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-lg space-y-6">
+      <div className="max-w-md mx-auto bg-card border border-border rounded-2xl p-4 sm:p-8 shadow-lg space-y-4 sm:space-y-6">
         <h2 className="text-lg font-bold text-foreground text-center">
           Faites un don 🎁
         </h2>
@@ -136,14 +136,14 @@ export function DonationCard() {
           </TabsList>
 
           {/* Shared content below tabs */}
-          <div className="mt-4 space-y-6">
+          <div className="mt-4 space-y-4 sm:space-y-6">
             {/* Preset amounts */}
             <div className="grid grid-cols-2 gap-3">
               {presets.map((amount) => (
                 <button
                   key={amount}
                   onClick={() => handlePresetClick(amount)}
-                  className={`py-3 rounded-xl text-sm font-semibold transition-all border-2 ${
+                  className={`py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all border-2 ${
                     selectedAmount === amount
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border bg-background text-foreground hover:border-primary/50"
@@ -158,14 +158,14 @@ export function DonationCard() {
             <Input
               type="text"
               inputMode="numeric"
-              placeholder={`Montant personnalisé (min ${isUSD ? "$1" : "50 HTG"})`}
+              placeholder={`Montant (min ${isUSD ? "$1" : "50 HTG"})`}
               value={customAmount}
               onChange={(e) => handleCustomChange(e.target.value)}
               className="text-center text-lg font-semibold"
             />
 
             {/* Optional fields */}
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <Input
                 type="text"
                 placeholder="Votre nom (optionnel)"
@@ -175,14 +175,14 @@ export function DonationCard() {
               />
               <Input
                 type="email"
-                placeholder="Votre email (pour recevoir un remerciement)"
+                placeholder="Votre email (optionnel)"
                 value={donorEmail}
                 onChange={(e) => setDonorEmail(e.target.value)}
                 maxLength={255}
               />
               <Input
                 type="text"
-                placeholder="Un message d'encouragement (optionnel)"
+                placeholder="Message (optionnel)"
                 value={donorMessage}
                 onChange={(e) => setDonorMessage(e.target.value)}
                 maxLength={500}
@@ -194,7 +194,7 @@ export function DonationCard() {
               <Button
                 onClick={handleMonCashDonate}
                 disabled={!isValidAmount || isLoading}
-                className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-6 text-base"
+                className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-4 sm:py-6 text-sm sm:text-base"
               >
                 {isLoading ? (
                   <>
@@ -211,7 +211,7 @@ export function DonationCard() {
               <Button
                 onClick={handleStripeDonate}
                 disabled={!isValidAmount || isLoading}
-                className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-6 text-base"
+                className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-4 sm:py-6 text-sm sm:text-base"
               >
                 {isLoading ? (
                   <>
