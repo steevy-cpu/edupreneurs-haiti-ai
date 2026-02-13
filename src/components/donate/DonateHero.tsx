@@ -1,25 +1,22 @@
-import { getAvatarUrl } from "@/lib/avatarMap";
+import edupreneursLogo from "@/assets/edupreneurs-logo.png";
 
 export function DonateHero() {
-  const judeAvatar = getAvatarUrl('jude', 128);
-
   return (
-    <section className="text-center py-12 sm:py-16 px-4 bg-background">
+    <section className="text-center py-12 sm:py-16 px-4 bg-background relative z-10">
       <div className="flex flex-col items-center gap-4 max-w-2xl mx-auto">
         <img
-          src={judeAvatar}
-          alt="Jude - Assistant IA Edupreneurs"
-          className="w-20 h-20 sm:w-28 sm:h-28 rounded-full border-4 border-primary/30 shadow-lg"
+          src={edupreneursLogo}
+          alt="Edupreneurs Haiti"
+          className="w-24 h-24 sm:w-32 sm:h-32 shadow-lg"
           loading="eager"
-          width={112}
-          height={112}
+          width={128}
+          height={128}
         />
         <h1 className="text-2xl sm:text-4xl font-bold text-foreground leading-tight">
-          Ede m transfòme edikasyon ann Ayiti! 🇭🇹
+          Ede nou transfòme edikasyon an nan Ayiti! 🇭🇹
         </h1>
         <p className="text-muted-foreground text-base sm:text-lg max-w-xl">
-          Chaque don aide des milliers d'élèves haïtiens à accéder à une éducation
-          de qualité grâce à l'intelligence artificielle. Ensemble, transformons l'avenir.
+          Chaque don nous aide à améliorer l'expérience de l'élève avec l'intelligence artificielle.
         </p>
       </div>
     </section>
