@@ -4714,20 +4714,18 @@ export type Database = {
         }
         Returns: Json
       }
-      verify_email_code:
-        | { Args: { p_code: string; p_user_id: string }; Returns: Json }
-        | {
-            Args: {
-              p_browser?: string
-              p_code: string
-              p_device_fingerprint?: string
-              p_device_name?: string
-              p_hardware_fingerprint?: string
-              p_os?: string
-              p_user_id: string
-            }
-            Returns: Json
-          }
+      verify_email_code: {
+        Args: {
+          p_browser?: string
+          p_code: string
+          p_device_fingerprint?: string
+          p_device_name?: string
+          p_hardware_fingerprint?: string
+          p_os?: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       verify_reset_token: {
         Args: { reset_token: string }
         Returns: {
