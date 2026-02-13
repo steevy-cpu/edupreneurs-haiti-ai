@@ -167,7 +167,13 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
 
     if (profileError) throw profileError;
 
+    // Handle referral if provided (while user session is still active)
+    if (referralCode) {
+      await handleReferral(authData.user.id, referralCode);
+    }
+
     // Check for any completed gift payments matching this email and activate subscription
+    // IMPORTANT: This runs BEFORE signOut so the user session is still active for RLS
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: completedGifts } = await (supabase as any)
@@ -198,11 +204,6 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
       }
     } catch (giftErr) {
       console.error("Gift link activation check error:", giftErr);
-    }
-
-    // Handle referral if provided
-    if (referralCode) {
-      await handleReferral(authData.user.id, referralCode);
     }
 
     // Send confirmation email

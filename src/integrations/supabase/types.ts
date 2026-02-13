@@ -4464,6 +4464,7 @@ export type Database = {
         Args: { _is_public: boolean; _post_user_id: string; _user_id: string }
         Returns: boolean
       }
+      check_gift_rate_limit: { Args: { p_email: string }; Returns: boolean }
       check_lesson_publishable: {
         Args: { p_lesson_id: string }
         Returns: boolean
