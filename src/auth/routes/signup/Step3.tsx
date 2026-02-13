@@ -110,7 +110,7 @@ export default function SignupStep3() {
     navigate('/auth/signup/step-2');
   };
 
-  // Gift tab doesn't gate submit — student can create account and wait for gift payment
+  // Gift tab: student can create account and wait for gift payment (pending_gift status)
   const canSubmit = activeTab === 'promo' ? promoCodeValid : activeTab === 'moncash' ? paymentCompleted : true;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -120,7 +120,7 @@ export default function SignupStep3() {
       ? { promoCodeValid, privacy, accessMethod: 'promo' as const }
       : activeTab === 'moncash'
       ? { paymentCompleted, privacy, accessMethod: 'moncash' as const }
-      : { privacy, accessMethod: 'promo' as const, promoCodeValid: true }; // Gift: treat as valid
+      : { privacy, accessMethod: 'gift' as const };
     
     const validation = validateStep3(validationData);
     if (!validation.valid) {
@@ -135,7 +135,9 @@ export default function SignupStep3() {
     
     const accountData = activeTab === 'promo'
       ? { ...signupData, promoCode, promoCodeValid, promoGrantsFreeAccess, privacy, accessMethod: 'promo' as const }
-      : { ...signupData, privacy, accessMethod: 'moncash' as const, paymentCompleted: true, paymentOrderId };
+      : activeTab === 'moncash'
+      ? { ...signupData, privacy, accessMethod: 'moncash' as const, paymentCompleted: true, paymentOrderId }
+      : { ...signupData, privacy, accessMethod: 'gift' as const };
     
     const result = await createAccount(accountData, authFlow?.referralCode);
     

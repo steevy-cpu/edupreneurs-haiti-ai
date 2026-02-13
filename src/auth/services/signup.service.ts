@@ -90,6 +90,7 @@ export function validateStep3(data: SignupFormData): { valid: boolean; error?: s
       return { valid: false, error: "Veuillez compléter le paiement MonCash" };
     }
   }
+  // 'gift' access method: no payment required at signup, account created with pending_gift status
   
   if (!data.privacy) {
     return { valid: false, error: "Vous devez accepter les politiques de confidentialité" };
@@ -140,6 +141,13 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
     // Determine subscription fields based on access method
     const accessMethod = data.accessMethod || 'promo';
     const isMonCash = accessMethod === 'moncash' && data.paymentCompleted;
+    const isGift = accessMethod === 'gift';
+    
+    // Determine subscription status:
+    // - MonCash paid: 'active' with 30-day end date
+    // - Gift tab: 'pending_gift' (waiting for family payment)
+    // - Promo code: 'none' (has_free_access handles gating)
+    const subscriptionStatus = isMonCash ? 'active' : isGift ? 'pending_gift' : 'none';
     
     // Create profile
     const { error: profileError } = await supabase
@@ -159,8 +167,7 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
         promo_code_used: data.promoCode?.toUpperCase().trim() || null,
         promo_code_used_at: data.promoCode ? new Date().toISOString() : null,
         has_free_access: data.promoGrantsFreeAccess || false,
-        // Subscription fields for MonCash users
-        subscription_status: isMonCash ? 'active' : 'none',
+        subscription_status: subscriptionStatus,
         subscription_end_date: isMonCash ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() : null,
         payment_order_id: isMonCash ? data.paymentOrderId : null,
       } as any);

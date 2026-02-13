@@ -6,12 +6,15 @@
  */
 
 import React, { ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Clock, CreditCard } from 'lucide-react';
+import { Clock, CreditCard, Gift } from 'lucide-react';
+
+// Users created before this date are legacy (before subscription system)
+const SUBSCRIPTION_CUTOFF_DATE = new Date('2026-02-10T00:00:00Z');
 
 interface SubscriptionGateProps {
   children: ReactNode;
@@ -26,7 +29,7 @@ export function SubscriptionGate({ children }: SubscriptionGateProps) {
       if (!user?.id) return null;
       const { data } = await supabase
         .from('profiles')
-        .select('has_free_access, subscription_status, subscription_end_date')
+        .select('has_free_access, subscription_status, subscription_end_date, created_at')
         .eq('user_id', user.id)
         .maybeSingle();
       return data;
@@ -41,8 +44,21 @@ export function SubscriptionGate({ children }: SubscriptionGateProps) {
   // Promo users always pass
   if (profile.has_free_access) return <>{children}</>;
 
-  // No subscription set up (legacy users before this feature) - allow through
-  if (!profile.subscription_status || profile.subscription_status === 'none') return <>{children}</>;
+  // Legacy users (created before subscription system) with no subscription - allow through
+  const isLegacyUser = profile.created_at && new Date(profile.created_at) < SUBSCRIPTION_CUTOFF_DATE;
+  if ((!profile.subscription_status || profile.subscription_status === 'none') && isLegacyUser) {
+    return <>{children}</>;
+  }
+
+  // New users with 'none' status - show payment prompt
+  if (!profile.subscription_status || profile.subscription_status === 'none') {
+    return <RenewalPrompt />;
+  }
+
+  // Pending gift - waiting for family member to pay
+  if (profile.subscription_status === 'pending_gift') {
+    return <PendingGiftPrompt />;
+  }
 
   // Check if subscription is active and not expired
   const endDate = profile.subscription_end_date ? new Date(profile.subscription_end_date) : null;
@@ -83,6 +99,38 @@ function RenewalPrompt() {
         <Button size="lg" className="w-full" onClick={handleRenew}>
           <CreditCard className="mr-2 h-5 w-5" />Renouveler mon abonnement
         </Button>
+      </div>
+    </div>
+  );
+}
+
+function PendingGiftPrompt() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="flex items-center justify-center min-h-[60vh] p-6">
+      <div className="max-w-md w-full text-center space-y-6 animate-in fade-in duration-500">
+        <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+          <Gift className="h-8 w-8 text-primary" />
+        </div>
+
+        <div>
+          <h2 className="text-2xl font-bold">En attente du paiement</h2>
+          <p className="text-muted-foreground mt-2">
+            Votre compte est créé ! Un membre de votre famille doit compléter le paiement 
+            via le lien cadeau pour activer votre accès.
+          </p>
+        </div>
+
+        <div className="p-4 rounded-lg border border-border bg-muted/30 text-sm text-muted-foreground">
+          <p>Partagez votre lien cadeau avec votre parent ou tuteur pour qu'il puisse payer votre abonnement.</p>
+        </div>
+
+        <div className="space-y-2">
+          <Button size="lg" className="w-full" onClick={() => navigate('/settings?tab=preferences#subscription')}>
+            <CreditCard className="mr-2 h-5 w-5" />Payer moi-même (200 HTG)
+          </Button>
+        </div>
       </div>
     </div>
   );
