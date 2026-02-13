@@ -12,7 +12,6 @@ import { Loader2, Mail, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { verifyEmailCode, resendVerificationCode, sendWelcomeEmail, recoverVerificationByEmail } from "../services/verify.service";
 import { getAuthFlow, clearAuthFlow } from "../store/authFlow.store";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function VerifyEmailPage() {
   const navigate = useNavigate();
@@ -74,20 +73,11 @@ export default function VerifyEmailPage() {
       await sendWelcomeEmail(email, result.fullName || '', result.nickname || '');
     }
 
-    // Check if user has an active session (new signup flow keeps session)
-    const { data: sessionData } = await supabase.auth.getSession();
-    
-    if (sessionData?.session) {
-      // User is still logged in from signup — go directly to dashboard
-      toast({ title: "Email vérifié ! ✅", description: "Bienvenue sur Edupreneurs !" });
-      clearAuthFlow();
-      navigate('/dashboard');
-    } else {
-      // Returning user without session — must log in
-      toast({ title: "Email vérifié ! ✅", description: "Vous pouvez maintenant vous connecter." });
-      clearAuthFlow();
-      navigate('/auth/login');
-    }
+    // Session always exists now (both signup and login keep session alive)
+    // Clear auth flow state and navigate to dashboard
+    clearAuthFlow();
+    toast({ title: "Email vérifié ! ✅", description: "Bienvenue sur Edupreneurs !" });
+    navigate('/dashboard');
   };
 
   const handleResendCode = async () => {

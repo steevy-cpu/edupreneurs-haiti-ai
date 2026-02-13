@@ -4,7 +4,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { verificationCodeSchema } from "@/lib/authValidation";
-import { clearAuthFlow, saveAuthFlow } from "../store/authFlow.store";
+import { saveAuthFlow } from "../store/authFlow.store";
 import { getFullDeviceIdentifier } from "@/utils/deviceFingerprint";
 
 export interface VerifyResult {
@@ -74,8 +74,8 @@ export async function verifyEmailCode(userId: string, code: string): Promise<Ver
       };
     }
 
-    // Clear auth flow state after successful verification
-    clearAuthFlow();
+    // NOTE: Do NOT clear auth flow here — the calling page handles this.
+    // Services should not manage navigation/UI state.
 
     return {
       success: true,

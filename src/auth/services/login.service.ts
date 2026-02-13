@@ -153,8 +153,8 @@ export async function loginWithEmail(credentials: LoginCredentials): Promise<Log
       .update({ confirmation_code: newCode.trim() })
       .eq('user_id', authData.user.id);
     
-    // Sign out immediately - can't proceed without verification
-    await supabase.auth.signOut();
+    // DO NOT sign out — keep session alive so user goes straight to dashboard after verification
+    // This eliminates the re-login + device trust check that caused "double verification"
     
     // Send verification email
     try {

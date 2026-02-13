@@ -15,6 +15,7 @@ export { default as ForgotPasswordPage } from './routes/ForgotPasswordPage';
 
 // Store
 export * from './store/authFlow.store';
+export * from './store/authStateMachine';
 
 // Services
 export * from './services/login.service';
