@@ -1,48 +1,62 @@
 
+# Enhanced Floating Bubbles: Colors, Layering, and Content Fix
 
-# Enhanced Floating Feature Bubbles
+## 3 Changes
 
-## Problems from Screenshot
-- Bubbles are nearly invisible (10-15% opacity is too low)
-- Only 10 bubbles -- user wants more
-- All bubbles are the same pill shape -- user wants varied shapes
+### 1. Remove "Certificats" and add varied colors
 
-## Changes
+Replace the "Certificats" bubble with "Notifications" (a real feature). Each bubble gets a `color` index that maps to a palette of distinct, visible colors applied via inline styles for both background and text:
 
-### File: `src/components/donate/FloatingFeatureBubbles.tsx` (rewrite)
+- Blue: `rgba(59,130,246,0.25)` bg / `rgb(59,130,246)` text
+- Green: `rgba(34,197,94,0.25)` bg / `rgb(34,197,94)` text  
+- Purple: `rgba(168,85,247,0.25)` bg / `rgb(168,85,247)` text
+- Orange: `rgba(249,115,22,0.25)` bg / `rgb(249,115,22)` text
+- Pink: `rgba(236,72,153,0.25)` bg / `rgb(236,72,153)` text
+- Teal: `rgba(20,184,166,0.25)` bg / `rgb(20,184,166)` text
 
-**More bubbles**: Expand from 10 to ~18 bubbles with additional platform features like "Quiz Interactif", "Tableau de Bord", "Certificats", "Forum", "Mode Hors-ligne", "Exercices", "Lecons Video", "Progression"
+Each bubble is assigned a color index (distributed across all 18 bubbles). The border color also matches. This makes every bubble distinct and eye-catching.
 
-**Visible styling**: Increase opacity significantly:
-- Background: `bg-primary/20` to `bg-primary/30` (instead of `/10`)
-- Text: `text-primary/60` to `text-primary/80` (instead of `/15`)
-- Add a subtle border: `border border-primary/20`
+**File:** `src/components/donate/FloatingFeatureBubbles.tsx`
 
-**Random shapes** using different `border-radius` values applied via inline styles:
-- Standard pill (50px)
-- Rounded rectangle (12px)
-- Soft square (8px)
-- Blob-like (asymmetric radii like `30% 70% 70% 30% / 30% 30% 70% 70%`)
-- Circle-ish (50%)
+### 2. Bubbles pass behind content sections (z-index layering)
 
-Each bubble gets a `shape` property that maps to a specific `borderRadius` value, distributed across the array so shapes feel random.
+Currently the bubbles container uses `z-0` (behind content), but the content sections don't have explicit z-index or background, so bubbles may visually appear on top.
 
-**Size variation**: Mix of `text-xs`, `text-sm`, and `text-base` with corresponding padding to create depth.
+To make bubbles slide "under" each section div:
+- Change the bubbles container from `fixed` to `absolute` so it scrolls with the page
+- Add `relative z-10 bg-background` to the content wrapper sections (DonateHero, DonationCard, ImpactSection, Jude quote) so they stack above the bubbles
+- The bubbles at `z-0` will appear to pass behind each content card
 
-### File: `tailwind.config.ts`
+**Files:** `src/pages/Donate.tsx` (add `relative z-10` to content sections), `src/components/donate/DonateHero.tsx`, `src/components/donate/ImpactSection.tsx`
 
-No changes needed -- the existing `float-up` keyframe and animation work fine.
+### 3. Summary of bubble content update
 
-### File: `src/pages/Donate.tsx`
+Remove: "Certificats"  
+Add: "Notifications"
 
-No changes needed -- already imports and renders the component.
+---
+
+## Technical Details
+
+### FloatingFeatureBubbles.tsx changes
+- Add a `colors` array with 6 color objects `{ bg, text, border }`
+- Add `color` property to each bubble entry (0-5, distributed)
+- Replace the Tailwind `bg-primary/25 text-primary/70 border-primary/20` classes with inline `style` for `backgroundColor`, `color`, and `borderColor`
+- Replace "Certificats" label with "Notifications"
+
+### Donate.tsx changes
+- Wrap each content section group with `relative z-10` so they sit above the `z-0` bubble layer
+- Add `bg-background` to the main content areas so bubbles don't show through them
+
+### DonateHero.tsx / ImpactSection.tsx changes
+- Add `bg-background` to the root `<section>` elements so bubbles are hidden behind them
 
 ## Safety Checklist
 
 | Check | Result |
 |-------|--------|
-| Breaks existing functionality? | No -- same component, updated styles |
-| 3G optimized? | Yes -- still CSS-only, just more DOM elements (~18 spans) |
+| Breaks existing functionality? | No -- visual-only changes |
+| Works with existing data? | N/A |
+| 3G optimized? | Yes -- still CSS-only, no new assets |
 | Backward compatible? | Yes |
-| Edge cases? | overflow-hidden still prevents scroll issues |
-
+| Edge cases? | Dark mode: inline colors work in both themes since they use explicit RGB values with alpha |
