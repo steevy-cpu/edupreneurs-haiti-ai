@@ -215,7 +215,7 @@ const hasLatexDelimiters = (text: string): boolean => {
 // Render styled question quote box for 《...》 delimiters
 const QuestionQuoteBox = ({ content }: { content: string }) => (
   <span className="inline-block my-2 px-3 py-2 bg-primary/10 border-l-4 border-primary rounded-r-lg italic text-foreground">
-    "{content}"
+    "{hasLatexDelimiters(content) ? renderWithLatexDelimiters(content) : content}"
   </span>
 );
 

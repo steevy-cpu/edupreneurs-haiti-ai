@@ -125,7 +125,7 @@ export function FeedbackCard({ feedback, state }: FeedbackCardProps) {
               {isRevealed && 'Voici la réponse. Étudie-la bien!'}
               {isHint && 'Voici un indice pour t\'aider'}
             </span>
-            {feedback.grading?.pointsAwarded && feedback.grading.pointsAwarded > 0 && (
+            {feedback.grading?.pointsAwarded != null && feedback.grading.pointsAwarded > 0 && (
               <span className="text-sm font-semibold text-green-600">
                 +{feedback.grading.pointsAwarded} pts
               </span>
