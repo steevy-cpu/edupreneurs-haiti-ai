@@ -173,13 +173,39 @@ serve(async (req) => {
       return new Response(JSON.stringify({ received: true, skipped: "no_gift_found" }), { status: 200 });
     }
 
-    console.log(`[GIFT-WEBHOOK] Processing renewal for student ${gift.student_user_id}`);
+    // Resolve student_user_id: if null, look up by email
+    let studentUserId = gift.student_user_id;
+    if (!studentUserId && gift.student_email) {
+      const { data: userList } = await supabaseAdmin.auth.admin.listUsers({
+        filter: gift.student_email,
+        page: 1,
+        perPage: 1,
+      });
+      const matchedUser = userList?.users?.[0];
+      if (matchedUser?.email?.toLowerCase() === gift.student_email.toLowerCase()) {
+        studentUserId = matchedUser.id;
+        await supabaseAdmin
+          .from("gift_subscriptions")
+          .update({ student_user_id: studentUserId })
+          .eq("id", gift.id);
+      }
+    }
+
+    if (!studentUserId) {
+      console.log(`[GIFT-WEBHOOK] Student not yet registered (${gift.student_email}), skipping renewal`);
+      return new Response(
+        JSON.stringify({ received: true, skipped: "student_not_registered" }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`[GIFT-WEBHOOK] Processing renewal for student ${studentUserId}`);
 
     // Extend student subscription by 30 days (stacking logic)
     const { data: currentProfile } = await supabaseAdmin
       .from("profiles")
       .select("subscription_end_date")
-      .eq("user_id", gift.student_user_id)
+      .eq("user_id", studentUserId)
       .maybeSingle();
 
     const now = new Date();
@@ -195,7 +221,7 @@ serve(async (req) => {
         subscription_status: "active",
         subscription_end_date: newEnd.toISOString(),
       })
-      .eq("user_id", gift.student_user_id);
+      .eq("user_id", studentUserId);
 
     if (subError) {
       console.error("[GIFT-WEBHOOK] Error extending subscription:", subError);
@@ -207,8 +233,8 @@ serve(async (req) => {
     // Send notification
     try {
       await supabaseAdmin.from("notifications").insert({
-        user_id: gift.student_user_id,
-        actor_id: gift.student_user_id,
+        user_id: studentUserId,
+        actor_id: studentUserId,
         type: "gift_payment",
         content: `Votre abonnement a été renouvelé automatiquement! Accès actif jusqu'au ${newEnd.toLocaleDateString("fr-FR")}`,
         read: false,
