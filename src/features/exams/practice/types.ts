@@ -9,8 +9,9 @@ import type { ContentBlock, TutorResponse } from '../types/exam.types';
 export type RunnerState = 
   | 'idle'        // Prompt shown, waiting for answer
   | 'checking'    // API call in progress
-  | 'correct'     // Answer validated, show success
-  | 'incorrect'   // Answer wrong, show explanation
+  | 'correct'     // Answer validated, show success (score >= 75%)
+  | 'partial'     // Partially correct (25-74% score)
+  | 'incorrect'   // Answer wrong, show explanation (score < 25%)
   | 'revealed'    // User clicked reveal
   | 'error';      // API error
 

@@ -67,7 +67,7 @@ export function ExamTutorPanel({
     reset();
   }, [exercise.id, reset]);
 
-  const canAdvance = state === 'correct' || state === 'incorrect' || state === 'revealed';
+  const canAdvance = state === 'correct' || state === 'incorrect' || state === 'partial' || state === 'revealed';
   const canGoPrevious = session.current_exercise > 1;
   const isLoading = state === 'checking';
 

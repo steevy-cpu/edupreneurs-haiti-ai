@@ -24,6 +24,7 @@ interface FeedbackCardProps {
 export function FeedbackCard({ feedback, state }: FeedbackCardProps) {
   const isCorrect = state === 'correct';
   const isIncorrect = state === 'incorrect';
+  const isPartial = state === 'partial';
   const isRevealed = state === 'revealed';
   const isHint = state === 'idle' && feedback.blocks?.length > 0;
 
@@ -86,6 +87,13 @@ export function FeedbackCard({ feedback, state }: FeedbackCardProps) {
         icon: <Eye className="h-4 w-4 text-amber-500" />,
       };
     }
+    if (isPartial) {
+      return {
+        border: 'border-yellow-500/50',
+        bg: 'bg-yellow-500/5',
+        icon: <CheckCircle2 className="h-4 w-4 text-yellow-500" />,
+      };
+    }
     // Hint state
     return {
       border: 'border-blue-500/50',
@@ -112,6 +120,7 @@ export function FeedbackCard({ feedback, state }: FeedbackCardProps) {
             {styles.icon}
             <span className="text-sm font-medium">
               {isCorrect && 'Bravo, c\'est correct! 🎉'}
+              {isPartial && 'Pas mal! Mais tu peux faire mieux. 💪'}
               {isIncorrect && 'Pas exactement... Regarde bien l\'explication.'}
               {isRevealed && 'Voici la réponse. Étudie-la bien!'}
               {isHint && 'Voici un indice pour t\'aider'}

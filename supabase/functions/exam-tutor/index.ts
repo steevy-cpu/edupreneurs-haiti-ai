@@ -29,6 +29,7 @@ interface TutorAction {
 
 interface TutorGrading {
   isCorrect?: boolean;
+  partialScore?: number;  // 0-100 percentage (0, 25, 50, 75, 100)
   confidence?: 'high' | 'medium' | 'low';
   reasoning?: string;
   pointsAwarded?: number | null;
@@ -265,6 +266,35 @@ function parseToBlocks(text: string): ContentBlock[] {
   return blocks;
 }
 
+/**
+ * Parse structured grade block from AI response
+ * Format: <<GRADE:{"score":75,"reason":"..."}>>
+ * Returns cleaned text (without grade block) and parsed grade
+ */
+function parseGradeFromResponse(text: string): {
+  cleanText: string;
+  grade: { score: number; reason: string } | null;
+} {
+  const match = text.match(/<<GRADE:(\{.*?\})>>/s);
+  if (!match) return { cleanText: text, grade: null };
+
+  try {
+    const parsed = JSON.parse(match[1]);
+    const rawScore = Math.max(0, Math.min(100, Number(parsed.score) || 0));
+    // Snap to valid tiers: 0, 25, 50, 75, 100
+    const score = Math.round(rawScore / 25) * 25;
+    return {
+      cleanText: text.replace(/<<GRADE:\{.*?\}>>/s, '').trim(),
+      grade: { score, reason: parsed.reason || '' },
+    };
+  } catch {
+    return {
+      cleanText: text.replace(/<<GRADE:\{.*?\}>>/s, '').trim(),
+      grade: null,
+    };
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return corsPreflightResponse();
@@ -390,16 +420,26 @@ Donne une explication complète mais concise (maximum 150 mots).`;
 
     // Handle check action - feedback on answer
     if (action === 'check' && studentAnswer) {
-      if (!exercise.correct_answer) {
-        // No answer key in DB -- let AI evaluate independently
-        systemPrompt += `\n\n**ACTION REQUISE: ÉVALUER la réponse de l'élève (${studentAnswer})**
-Aucune réponse officielle n'est définie pour cette question.
+      const needsAiGrading = !exercise.correct_answer || exercise.exercise_type === 'open_ended';
+      
+      if (needsAiGrading) {
+        // No answer key OR open-ended -- let AI evaluate with structured grade output
+        const hasKey = exercise.correct_answer ? `\nRéponse officielle connue: ${exercise.correct_answer}` : '\nAucune réponse officielle n\'est définie pour cette question.';
+        systemPrompt += `\n\n**ACTION REQUISE: ÉVALUER la réponse de l'élève (${studentAnswer})**${hasKey}
 Tu dois:
-1. Analyser la question et déterminer toi-même la bonne réponse
+1. Analyser la question et déterminer toi-même si la réponse est correcte
 2. Comparer avec la réponse de l'élève (${studentAnswer})
-3. Si l'élève a raison, félicite-le avec enthousiasme 🎉
-4. Si l'élève a tort, explique pourquoi avec bienveillance
-Ne dis JAMAIS que l'élève a tort si son raisonnement est correct. (max 80 mots)`;
+3. Donner un feedback adapté au score (max 80 mots)
+4. Ne dis JAMAIS que l'élève a tort si son raisonnement est correct
+
+Tu dois OBLIGATOIREMENT fournir une note en ajoutant ce bloc EXACTEMENT a la fin de ta reponse:
+<<GRADE:{"score":X,"reason":"..."}>>
+ou X est un pourcentage (0, 25, 50, 75, ou 100):
+- 100: Reponse completement correcte
+- 75: Bonne reponse avec erreurs mineures ou formulation incomplete
+- 50: Partiellement correct, elements importants manquants
+- 25: Tentative avec un debut de raisonnement correct
+- 0: Reponse incorrecte`;
       } else {
         const isCorrect = validateAnswer(studentAnswer, exercise);
         if (isCorrect) {
@@ -447,27 +487,42 @@ Explique l'erreur avec bienveillance et donne la bonne réponse avec une explica
     const data = await response.json();
     const judeResponse = data.choices[0].message.content;
 
-    // ============= Deterministic Answer Validation =============
-    let isCorrect = false;
+    // ============= Grade Parsing & Answer Validation =============
+    const needsAiGrading = studentAnswer && (!exercise.correct_answer || exercise.exercise_type === 'open_ended');
+    const { cleanText, grade } = needsAiGrading
+      ? parseGradeFromResponse(judeResponse)
+      : { cleanText: judeResponse, grade: null };
+
+    let isCorrect: boolean | undefined = undefined;
+    let partialScore: number | undefined = undefined;
     let shouldAwardPoints = false;
     let shouldMoveToNext = false;
+    let pointsAwarded = 0;
 
-    if (studentAnswer && exercise.correct_answer) {
-      // Use deterministic validation
+    if (studentAnswer && exercise.correct_answer && exercise.exercise_type !== 'open_ended') {
+      // MCQ with answer key: deterministic validation
       isCorrect = validateAnswer(studentAnswer, exercise);
       shouldAwardPoints = isCorrect;
+      pointsAwarded = isCorrect ? exercise.points : 0;
       shouldMoveToNext = true;
-    } else if (studentAnswer && !exercise.correct_answer) {
-      // No correct answer in database - let AI evaluate, don't falsely mark incorrect
-      console.warn(`Exercise ${exercise.exercise_number} has no correct_answer defined - AI will evaluate`);
-      // isCorrect stays false but we won't expose it to frontend
+    } else if (studentAnswer && grade) {
+      // AI-graded: use parsed score
+      partialScore = grade.score;
+      isCorrect = grade.score >= 75;
+      shouldAwardPoints = grade.score > 0;
+      pointsAwarded = Math.round(exercise.points * (grade.score / 100));
+      shouldMoveToNext = true;
+      console.log('AI grade parsed:', { score: grade.score, reason: grade.reason, pointsAwarded });
+    } else if (studentAnswer) {
+      // Fallback: AI didn't include grade block
+      console.warn(`Exercise ${exercise.exercise_number}: AI did not return grade block, falling back`);
       shouldMoveToNext = true;
     }
 
     // ============= Build Structured Response =============
     
-    // Parse response into content blocks for KaTeX rendering
-    const blocks = parseToBlocks(judeResponse);
+    // Parse cleaned response (without grade tag) into content blocks
+    const blocks = parseToBlocks(cleanText);
     
     // Build available actions
     const actions: TutorAction[] = [];
@@ -497,40 +552,34 @@ Explique l'erreur avec bienveillance et donne la bonne réponse avec une explica
 
     // Build grading info with confidence scoring
     const grading: TutorGrading = {
-      isCorrect: (studentAnswer && exercise.correct_answer) ? isCorrect : undefined,
+      isCorrect: partialScore !== undefined ? (partialScore >= 75) :
+                 (studentAnswer && exercise.correct_answer && exercise.exercise_type !== 'open_ended') ? isCorrect : undefined,
+      partialScore,
       confidence: hasCorrectAnswer ? 'high' : (hasReferenceTexts ? 'medium' : 'low'),
       reasoning: hasCorrectAnswer 
         ? 'Évaluation basée sur la réponse officielle'
-        : hasReferenceTexts 
-          ? 'Évaluation basée sur les textes de référence'
-          : 'Évaluation approximative - pas de réponse officielle',
-      pointsAwarded: shouldAwardPoints ? exercise.points : 0,
+        : grade?.reason
+          ? grade.reason
+          : hasReferenceTexts 
+            ? 'Évaluation basée sur les textes de référence'
+            : 'Évaluation approximative - pas de réponse officielle',
+      pointsAwarded,
       correctAnswer: revealAnswer ? exercise.correct_answer : undefined,
     };
 
     // Return structured TutorResponse
     return new Response(
       JSON.stringify({
-        // NEW: Structured content blocks for KaTeX
         blocks,
-        
-        // NEW: Available action buttons
         actions,
-        
-        // NEW: Grading info
         grading,
-        
-        // Auto-advance flag
         shouldAutoAdvance: shouldMoveToNext,
-        
-        // YouTube query for video suggestions
         youtubeQuery,
-        
-        // BACKWARD COMPAT: Keep raw response for older clients
-        response: judeResponse,
-        isCorrect,
+        // BACKWARD COMPAT
+        response: cleanText,
+        isCorrect: grading.isCorrect,
         shouldAwardPoints,
-        pointsEarned: shouldAwardPoints ? exercise.points : 0,
+        pointsEarned: pointsAwarded,
         shouldMoveToNext,
         explanation: isCorrect ? exercise.explanation : null,
       }),

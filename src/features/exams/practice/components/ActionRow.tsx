@@ -29,7 +29,7 @@ export function ActionRow({
   isLoading,
   state,
 }: ActionRowProps) {
-  const isAnswered = state === 'correct' || state === 'incorrect' || state === 'revealed';
+  const isAnswered = state === 'correct' || state === 'incorrect' || state === 'partial' || state === 'revealed';
   const hintDisabled = hintLevel >= 3 || isLoading || isAnswered;
   const revealDisabled = isLoading || isAnswered;
 
