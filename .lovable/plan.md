@@ -1,66 +1,71 @@
 
-# Fix: Gift Tab Allows Unpaid Account Access
+# Fix: Two Critical Auth Bugs
 
-## Root Cause
+## Bug 1: SubscriptionGate Bypass (Gift Tab Access Without Payment)
 
-Two issues combine to create this bypass:
-
-### 1. `SubscriptionGate` treats `subscription_status = 'none'` as "allowed"
-Line 45 of `SubscriptionGate.tsx`:
+### Root Cause
+In `SubscriptionGate.tsx` line 42:
+```typescript
+if (!isAuthenticated || !profile) return <>{children}</>;
 ```
-if (subscription_status === 'none') return children; // lets them through!
-```
-This was intended for legacy users who existed before subscriptions were added, but it also lets new gift-tab signups access everything without payment.
 
-### 2. Step3 gift path bypasses all validation
-In `Step3.tsx`, the gift tab sets `canSubmit = true` unconditionally and fakes `promoCodeValid: true` during submit. The account is created with `subscription_status: 'none'` -- no payment required.
+When a user logs in, the `subscription-status` query takes time to load. During that loading window, `profile` is `undefined`, so the gate **lets the user through to the full dashboard**. This is a race condition that affects ALL subscription enforcement, not just the gift flow.
+
+The gift flow itself is correct -- `pending_gift` status IS being set, and the gate DOES handle it. But the gate's loading state renders `children` instead of a loading spinner.
+
+### Fix
+Change the loading behavior to show nothing (or a spinner) while the profile is loading, instead of rendering the protected content:
+
+```typescript
+// BEFORE (broken):
+if (!isAuthenticated || !profile) return <>{children}</>;
+
+// AFTER (fixed):
+if (!isAuthenticated) return <>{children}</>; // Auth guard handles this
+if (!profile) return null; // Loading -- block content until we know subscription status
+```
+
+**File**: `src/components/SubscriptionGate.tsx` (line 42)
 
 ---
 
-## Fix
+## Bug 2: Double Email Verification After Account Creation
 
-### A. Gate `subscription_status = 'none'` for new users
-In `SubscriptionGate.tsx`, change the legacy bypass to only apply to users created **before** the subscription system was introduced (use a cutoff date). New users with `'none'` status will see the renewal/payment prompt.
+### Root Cause
+PostgreSQL function overloading conflict. Two versions of `verify_email_code` exist in the database:
 
-```
-// Legacy users (before subscription system) - allow through
-// New users must have an active subscription or free access
-const isLegacyUser = profile.created_at && new Date(profile.created_at) < SUBSCRIPTION_CUTOFF_DATE;
-if (subscription_status === 'none' && isLegacyUser) return children;
-if (subscription_status === 'none' && !isLegacyUser) show payment prompt;
-```
+1. **Old** (from migration `20251014`): `verify_email_code(p_user_id uuid, p_code text)` -- 2 params
+2. **New** (from migration `20260209`): `verify_email_code(p_user_id uuid, p_code text, p_device_fingerprint text DEFAULT NULL, ...)` -- 7 params
 
-The `created_at` field needs to be added to the subscription-status query.
+In PostgreSQL, `CREATE OR REPLACE` with a different parameter count creates a **new overloaded function**, it does NOT replace the old one. Both functions coexist. When the client calls `supabase.rpc('verify_email_code', {...})` with all 7 params, PostgREST may route to the old 2-param function, silently ignoring the device params. The device is never auto-trusted.
 
-### B. Update Step3 gift flow to set `subscription_status = 'pending_gift'`
-Instead of creating the account with `'none'`, set a new status `'pending_gift'` so the system knows this user is waiting for a family payment. This distinguishes them from legacy users and MonCash-paid users.
+Result: On first login after email verification, `isDeviceTrusted()` returns `false`, triggering device verification -- which looks like a second email verification to the user.
 
-In `signup.service.ts`, update the profile insert for gift-tab users:
-```
-subscription_status: isMonCash ? 'active' : isGift ? 'pending_gift' : 'none'
+### Fix
+Drop the old 2-param function via a database migration, leaving only the 7-param version:
+
+```sql
+-- Drop the old overload (2 params only)
+DROP FUNCTION IF EXISTS public.verify_email_code(uuid, text);
 ```
 
-### C. Handle `pending_gift` in `SubscriptionGate`
-Show a specific waiting message for `pending_gift` users instead of the generic "expired" prompt. This tells them their family member hasn't paid yet and provides the option to generate a new gift link.
+The new function with DEFAULT params already handles calls with just 2 params, so nothing breaks.
 
-### D. Remove the fake validation bypass in Step3
-Stop sending `promoCodeValid: true` for gift-tab submissions. Instead, pass `accessMethod: 'gift'` properly and handle it in `validateStep3()`.
+**File**: New database migration
 
 ---
 
 ## Files to Modify
 
-1. **`src/components/SubscriptionGate.tsx`** -- Add `created_at` to query, gate `'none'` for new users, handle `'pending_gift'` status
-2. **`src/auth/services/signup.service.ts`** -- Set `subscription_status: 'pending_gift'` for gift-tab signups
-3. **`src/auth/routes/signup/Step3.tsx`** -- Pass `accessMethod: 'gift'` cleanly instead of faking promo validation
-4. **`src/auth/services/signup.service.ts` (`validateStep3`)** -- Add proper `'gift'` access method validation
+1. **`src/components/SubscriptionGate.tsx`** -- Fix loading state to block content instead of allowing it
+2. **Database migration** -- Drop old `verify_email_code(uuid, text)` overload
 
 ## Safety Verification
 
 | Check | Result |
 |---|---|
-| Breaks existing functionality? | No -- legacy users still pass via date cutoff |
-| Works with existing data? | Yes -- existing `'none'` users predate cutoff |
-| Optimized for 3G? | Yes -- no new network calls |
-| Edge cases handled? | Yes -- pending_gift, legacy, expired, active |
-| Backward compatible? | Yes -- additive status value |
+| Breaks existing functionality? | No -- loading spinner is a brief flash before profile loads |
+| Works with existing data? | Yes -- no schema changes to data |
+| Optimized for 3G? | Yes -- on slow connections, the spinner shows slightly longer but prevents unauthorized access |
+| Edge cases handled? | Yes -- unauthenticated users still pass through for auth guard to handle |
+| Backward compatible? | Yes -- the 7-param function accepts 2-param calls via DEFAULTs |
