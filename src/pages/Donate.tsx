@@ -6,6 +6,7 @@ import { DonationCard } from "@/components/donate/DonationCard";
 import { ImpactSection } from "@/components/donate/ImpactSection";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { HomeChatbot } from "@/components/HomeChatbot";
+import { FloatingFeatureBubbles } from "@/components/donate/FloatingFeatureBubbles";
 
 export default function Donate() {
   const judeAvatar = getAvatarUrl("jude", 128);
@@ -26,7 +27,8 @@ export default function Donate() {
         {judeAvatar && <meta property="og:image" content={judeAvatar} />}
       </Helmet>
 
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-background flex flex-col relative">
+        <FloatingFeatureBubbles />
         <HeaderNav />
         <main className="flex-1">
           <DonateHero />

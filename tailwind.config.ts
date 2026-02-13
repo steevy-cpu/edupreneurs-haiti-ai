@@ -180,6 +180,12 @@ export default {
             transform: "translateY(-4px)",
           },
         },
+        "float-up": {
+          "0%": { transform: "translateY(100vh)", opacity: "0" },
+          "10%": { opacity: "1" },
+          "90%": { opacity: "1" },
+          "100%": { transform: "translateY(-100vh)", opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -195,6 +201,7 @@ export default {
         "music-bar-2": "music-bar 0.7s ease-in-out infinite 0.1s",
         "music-bar-3": "music-bar 0.6s ease-in-out infinite 0.2s",
         "bounce-subtle": "bounce-subtle 2s ease-in-out infinite",
+        "float-up": "float-up 20s linear infinite",
       },
     },
   },
