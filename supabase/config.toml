@@ -198,3 +198,6 @@ verify_jwt = false
 
 [functions.natcash-check-transfer]
 verify_jwt = false
+
+[functions.stripe-create-donation]
+verify_jwt = false
