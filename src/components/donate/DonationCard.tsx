@@ -15,6 +15,7 @@ export function DonationCard() {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(250);
   const [customAmount, setCustomAmount] = useState("");
   const [donorName, setDonorName] = useState("");
+  const [donorEmail, setDonorEmail] = useState("");
   const [donorMessage, setDonorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("moncash");
@@ -58,6 +59,7 @@ export function DonationCard() {
         currency: "HTG",
         provider: "moncash",
         donor_name: donorName.trim() || null,
+        donor_email: donorEmail.trim() || null,
         donor_message: donorMessage.trim() || null,
         status: "pending",
       });
@@ -95,6 +97,7 @@ export function DonationCard() {
         body: {
           amount: amountCents,
           donorName: donorName.trim() || null,
+          donorEmail: donorEmail.trim() || null,
           donorMessage: donorMessage.trim() || null,
         },
       });
@@ -169,6 +172,13 @@ export function DonationCard() {
                 value={donorName}
                 onChange={(e) => setDonorName(e.target.value)}
                 maxLength={100}
+              />
+              <Input
+                type="email"
+                placeholder="Votre email (pour recevoir un remerciement)"
+                value={donorEmail}
+                onChange={(e) => setDonorEmail(e.target.value)}
+                maxLength={255}
               />
               <Input
                 type="text"

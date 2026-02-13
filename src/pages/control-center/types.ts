@@ -125,6 +125,19 @@ export interface LessonFeedbackAdmin {
   lesson_slug: string | null;
 }
 
+export interface DonationAdmin {
+  id: string;
+  order_id: string;
+  amount: number;
+  currency: string;
+  provider: string;
+  donor_name: string | null;
+  donor_email: string | null;
+  donor_message: string | null;
+  status: string;
+  created_at: string;
+}
+
 export const FEEDBACK_RATING_OPTIONS = [
   { value: 'up', label: 'Positif' },
   { value: 'down', label: 'Négatif' },

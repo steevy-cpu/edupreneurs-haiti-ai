@@ -17,7 +17,7 @@ serve(async (req) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
-    const { amount, donorName, donorMessage } = await req.json();
+    const { amount, donorName, donorEmail, donorMessage } = await req.json();
 
     // Validate amount (minimum $1 USD = 100 cents)
     const amountCents = Math.round(Number(amount));
@@ -42,6 +42,7 @@ serve(async (req) => {
       currency: "USD",
       provider: "stripe",
       donor_name: donorName?.trim() || null,
+      donor_email: donorEmail?.trim() || null,
       donor_message: donorMessage?.trim() || null,
       status: "pending",
     });
@@ -67,6 +68,7 @@ serve(async (req) => {
       metadata: {
         order_id: orderId,
         donor_name: donorName?.trim() || "",
+        donor_email: donorEmail?.trim() || "",
         donor_message: donorMessage?.trim() || "",
       },
     });

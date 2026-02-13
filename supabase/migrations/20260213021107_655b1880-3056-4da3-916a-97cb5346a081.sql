@@ -1,0 +1,1 @@
+ALTER TABLE public.donations ADD COLUMN donor_email TEXT;
