@@ -2,7 +2,7 @@ import { memo, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Menu, X, Rss } from "lucide-react";
+import { Menu, X, Rss, Heart } from "lucide-react";
 import { navLinks } from "@/data/homePageData";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 
@@ -57,6 +57,14 @@ export const HeaderNav = memo(function HeaderNav() {
           >
             <Rss className="h-3.5 w-3.5" />
             Blog
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
+          </Link>
+          <Link 
+            to="/donate" 
+            className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group text-sm flex items-center gap-1"
+          >
+            <Heart className="h-3.5 w-3.5" />
+            Faire un don
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
           </Link>
         </nav>
@@ -120,6 +128,14 @@ export const HeaderNav = memo(function HeaderNav() {
           >
             <Rss className="h-4 w-4" />
             Blog
+          </Link>
+          <Link 
+            to="/donate" 
+            className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm flex items-center gap-2" 
+            onClick={closeMobileMenu}
+          >
+            <Heart className="h-4 w-4" />
+            Faire un don
           </Link>
           <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-border">
             <Link to="/auth/login" onClick={closeMobileMenu}>
