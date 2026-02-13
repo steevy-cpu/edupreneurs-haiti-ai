@@ -38,7 +38,7 @@ serve(async (req) => {
 
     await supabaseAdmin.from("donations").insert({
       order_id: orderId,
-      amount: amountCents,
+      amount: amountCents / 100,
       currency: "USD",
       provider: "stripe",
       donor_name: donorName?.trim() || null,
