@@ -1,71 +1,68 @@
 
-# Gift Subscription Email Flow
+
+# Add Recurring Payment Option for Gift Subscriptions
 
 ## Overview
-Add 3 emails triggered when a gift payment is verified successfully:
+On the public gift payment page (`/gift/pay/:token`), the family member will see two options: **one-time payment** ($2.00) or **monthly subscription** ($2.00/month). The monthly option means the student's subscription auto-renews every 30 days without the family member having to come back.
 
-1. **Student notification email** -- "Your account has been activated by a family member!"
-2. **Payer invoice/receipt email** -- Payment confirmation with amount and reference
-3. **Payer thank-you email** -- "Thank you for supporting a student on Edupreneurs"
+## Why This Needs a Webhook
+For one-time payments, the current flow works: pay once, verify, activate 30 days. But for recurring monthly payments, Stripe charges the family member automatically every month. Since the payer is NOT a user on the platform, we need a Stripe webhook to listen for each monthly payment and extend the student's subscription by another 30 days. There is no other reliable way to detect renewal payments.
 
-## How It Works
+## Changes Required
 
-All 3 emails are sent from the existing `verify-gift-payment` edge function, right after the subscription is activated. No new edge functions needed -- we add email sending directly in the verification flow using the Resend API (already available via `RESEND_API_KEY`).
+### 1. Create a Stripe Product + Price
+- Product: "Abonnement Edupreneurs - Gift Monthly"
+- Price: $2.00 USD / month (recurring)
+- The price ID will be hardcoded in the edge function
 
-## Implementation Details
+### 2. Database: Add `payment_mode` column to `gift_subscriptions`
+- New column: `payment_mode text DEFAULT 'one_time'` (values: `one_time`, `recurring`)
+- New column: `stripe_subscription_id text` (to track the Stripe subscription for cancellation/management)
+- This lets us know which gifts are recurring so the webhook can process them
 
-### Modify: `supabase/functions/verify-gift-payment/index.ts`
+### 3. Modify: `stripe-gift-payment` Edge Function
+- Accept new parameter: `{ token, mode: "one_time" | "recurring" }`
+- If `mode === "one_time"`: current flow (unchanged, uses `price_data`)
+- If `mode === "recurring"`: create checkout with `mode: "subscription"` using the recurring price ID
+- Save `payment_mode` to the gift record
 
-After the subscription activation succeeds (line ~119), add 3 email sends:
+### 4. Modify: `verify-gift-payment` Edge Function
+- For one-time: current flow (unchanged)
+- For recurring: retrieve the Stripe session, get the subscription ID, save it to `stripe_subscription_id`, activate 30 days (first month)
 
-**Email 1 -- Student Activation Email**
-- To: student's email (fetched from `auth.users` via service role, or from `gift.student_email`)
-- Subject: "Votre abonnement a ete active! -- Edupreneurs"
-- Content: Congratulations message, who paid (payer's first name or "un proche"), subscription active until date, CTA to log in
+### 5. New: `stripe-gift-webhook` Edge Function
+- Listens for Stripe `invoice.paid` events (for subscription renewals)
+- Looks up the subscription ID in `gift_subscriptions`
+- If found and it's a renewal (not the first payment): extend the student's subscription by 30 more days
+- Sends the student a notification email for each renewal
+- Sends the payer a receipt email for each renewal
 
-**Email 2 -- Payer Invoice/Receipt Email**
-- To: `session.customer_details?.email` (from Stripe)
-- Subject: "Recu de paiement -- Abonnement Edupreneurs"
-- Content: Payment amount ($2.00 USD), student's first name, date, Stripe session ID as reference, standard receipt format
+### 6. Modify: `GiftPayment.tsx` (Frontend)
+- Add a radio group below the price: "Paiement unique" vs "Abonnement mensuel"
+- One-time shows: "$2.00 - 30 jours"
+- Monthly shows: "$2.00/mois - Renouvellement automatique"
+- Pass the selected mode to `createGiftCheckout`
 
-**Email 3 -- Payer Thank-You Email**
-- To: same payer email
-- Subject: "Mesi anpil! Vous soutenez l'education en Haiti -- Edupreneurs"
-- Content: Heartfelt thank you, impact message (what the subscription provides: AI tutors, lessons, quizzes), Edupreneurs mission statement, CTA to visit the platform or donate
+### 7. Modify: `gift.service.ts`
+- Update `createGiftCheckout` to accept and pass a `mode` parameter
 
-### Email Sending Pattern
-Uses the Resend API directly (same pattern as `send-donation-thank-you`):
-```text
-fetch("https://api.resend.com/emails", {
-  method: "POST",
-  headers: { Authorization: Bearer RESEND_API_KEY },
-  body: { from: "Edupreneurs <noreply@mon-edupreneur.com>", to, subject, html }
-})
-```
+## Files to Create/Modify
 
-### Error Handling
-Each email is wrapped in its own try/catch so a failure in one doesn't block the others or the payment verification response. Errors are logged but don't affect the success response to the payer.
-
-### Data Available
-- **Student name**: `gift.student_name` (first name only)
-- **Student email**: `gift.student_email` (stored when link was generated)
-- **Payer email**: `session.customer_details?.email` (from Stripe checkout)
-- **Payer name**: `session.customer_details?.name` (from Stripe checkout)
-- **Amount**: `gift.amount_usd` (200 cents = $2.00)
-- **Subscription end date**: `newEnd` (calculated in the function)
+| File | Action | Description |
+|------|--------|-------------|
+| `supabase/functions/stripe-gift-payment/index.ts` | Modify | Add recurring mode support |
+| `supabase/functions/verify-gift-payment/index.ts` | Modify | Handle subscription ID for recurring |
+| `supabase/functions/stripe-gift-webhook/index.ts` | Create | Webhook for monthly renewal processing |
+| `src/pages/GiftPayment.tsx` | Modify | Add one-time vs monthly radio selector |
+| `src/auth/services/gift.service.ts` | Modify | Pass mode parameter |
+| Database migration | Create | Add `payment_mode` and `stripe_subscription_id` columns |
 
 ## Safety Checklist
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- only adds email sends after existing logic |
-| Security risk? | No -- uses existing RESEND_API_KEY, no new secrets needed |
-| Backward compatible? | Yes -- existing gift flow unchanged |
-| 3G optimized? | N/A -- emails sent server-side |
-| Edge cases? | If payer email is null (rare), skip payer emails gracefully |
+| Breaks existing functionality? | No -- one-time is default, all existing links work unchanged |
+| Backward compatible? | Yes -- `payment_mode` defaults to `one_time` |
+| 3G optimized? | Yes -- only adds a radio group to the page |
+| Edge cases handled? | Webhook validates signature; duplicate events ignored via idempotency |
 
-## Technical Notes
-- No new edge functions, no new files -- single file modification to `verify-gift-payment/index.ts`
-- No database changes needed
-- Email HTML templates follow the same design language as existing emails (green gradient header, Edupreneurs branding, rounded cards)
-- All emails sent in French to match the platform language
