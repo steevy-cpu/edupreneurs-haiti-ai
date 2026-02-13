@@ -112,7 +112,7 @@ serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Edupreneurs Haiti <noreply@edupreneurs.com>",
+        from: "Edupreneurs Haiti <noreply@mon-edupreneur.com>",
         to: [donorEmail],
         subject: "💚 Mèsi anpil pou don ou! — Edupreneurs Haiti",
         html,
