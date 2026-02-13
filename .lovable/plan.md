@@ -1,150 +1,142 @@
 
 
-# Donation Page - "Aidez Jude a transformer l'education"
+# Donations Control Center Tab + Donor Email Collection
 
-## Overview
+## What We're Building
 
-A public-facing donation page themed around Jude (the AI mascot) asking visitors to support Haitian education. Two payment methods: MonCash (already integrated) and Stripe (to be set up later). The page will be accessible without login and optimized for 3G connections.
+Two interconnected features:
+1. A new **"Donations" tab** in the Control Center for super users to monitor all contributions
+2. A **donor email field** on the `/donate` page so we can send thank-you emails and display emails in the admin view
 
-## Page Structure
+---
 
-```text
-/donate
-+-------------------------------------------------------+
-|  HeaderNav (reuse from Index page)                     |
-+-------------------------------------------------------+
-|                                                        |
-|  [Jude Avatar]  "Ede m transfome edikasyon ann Ayiti!" |
-|  Subtitle explaining the mission                       |
-|                                                        |
-|  +---------------------------------------------------+ |
-|  |  Impact Stats (animated counters)                  | |
-|  |  [Students helped] [Lessons created] [Hours saved] | |
-|  +---------------------------------------------------+ |
-|                                                        |
-|  +---------------------------------------------------+ |
-|  |  DONATION CARD                                     | |
-|  |                                                    | |
-|  |  Preset Amount Buttons:                            | |
-|  |  [100 HTG] [250 HTG] [500 HTG] [1000 HTG]        | |
-|  |                                                    | |
-|  |  [Custom amount input field]                       | |
-|  |                                                    | |
-|  |  Payment Method Tabs:                              | |
-|  |  [MonCash] | [Stripe (USD)]                       | |
-|  |                                                    | |
-|  |  MonCash tab:                                      | |
-|  |    [Payer avec MonCash] button                     | |
-|  |                                                    | |
-|  |  Stripe tab:                                       | |
-|  |    [Donate with Card] button (USD conversion)     | |
-|  |                                                    | |
-|  +---------------------------------------------------+ |
-|                                                        |
-|  "Where your donation goes" - 3 impact cards           |
-|  [Teachers] [Tech/Servers] [Content Creation]          |
-|                                                        |
-|  Thank-you / transparency note from Jude               |
-|                                                        |
-+-------------------------------------------------------+
-|  Footer (reuse)                                        |
-+-------------------------------------------------------+
+## 1. Database: Add `donor_email` Column
+
+Add a single nullable `TEXT` column to the existing `donations` table:
+
+```sql
+ALTER TABLE public.donations ADD COLUMN donor_email TEXT;
 ```
 
-## File Structure (5 new files, 2 modified)
+No other schema changes needed. The existing RLS policies (public INSERT, founder-only SELECT) already cover this column automatically.
 
-### New Files
+---
 
-1. **`src/pages/Donate.tsx`** - Page orchestrator
-   - Reuses HeaderNav and Footer from the home page
-   - Imports and composes all donation sub-components
-   - Public route, no auth required
-   - Helmet meta tags for SEO and social sharing
+## 2. Frontend: Donor Email Input on `/donate`
 
-2. **`src/components/donate/DonateHero.tsx`** - Jude-focused hero section
-   - Jude's avatar (reuse `getAvatarUrl('jude')`)
-   - Motivational headline in Creole/French
-   - Brief mission statement paragraph
+**File: `src/components/donate/DonationCard.tsx`**
 
-3. **`src/components/donate/DonationCard.tsx`** - Core donation form
-   - Preset amount buttons: 100, 250, 500, 1000 HTG
-   - Custom amount input with validation (min 50 HTG)
-   - Tabbed payment methods (MonCash / Stripe)
-   - MonCash tab: calls existing `moncash-create-payment` edge function with a `isDonation: true` flag
-   - Stripe tab: placeholder UI with "Coming soon" message until Stripe is enabled; once active, will use Stripe Checkout
-   - Donor name field (optional) and message field (optional)
+- Add a `donorEmail` state variable
+- Add an email `<Input>` field between the name and message fields with:
+  - Placeholder: "Votre email (pour recevoir un remerciement)"
+  - Type `email`, maxLength 255
+  - Basic client-side validation (HTML5 email type handles this)
+- Pass `donor_email` to the `donations` INSERT call (MonCash flow)
+- Pass `donorEmail` to both edge functions (`moncash-create-payment` and `stripe-create-donation`)
 
-4. **`src/components/donate/ImpactSection.tsx`** - "Where your donation goes"
-   - Three cards explaining fund allocation (Teachers, Technology, Content)
-   - Simple icons, short descriptions
-   - Lightweight -- no heavy animations
+---
 
-5. **`src/components/donate/DonationSuccessCallback.tsx`** - Post-payment landing
-   - Similar pattern to PaymentCallback.tsx
-   - Shows Jude celebrating with a thank-you message
-   - Confetti animation (already installed: canvas-confetti)
+## 3. Edge Functions: Accept & Store Email
 
-### Modified Files
+**File: `supabase/functions/stripe-create-donation/index.ts`**
+- Accept `donorEmail` from the request body
+- Include it in the `donations` INSERT as `donor_email`
+- Add it to Stripe checkout session metadata for traceability
 
-6. **`src/App.tsx`** - Add two new public routes:
-   - `/donate` pointing to Donate page
-   - `/donate/callback` pointing to DonationSuccessCallback
+**File: `supabase/functions/moncash-create-payment/index.ts`**
+- No changes needed here -- the email is already stored in the `donations` table directly from the client before calling this function
 
-7. **`supabase/functions/moncash-create-payment/index.ts`** - Support donation payments
-   - Add `isDonation: true` flag handling (similar to `isSignupPayment`)
-   - Donations are unauthenticated, rate-limited by IP
-   - Store with `description: 'Donation'` and donation metadata
-   - Return URL points to `/donate/callback`
+---
 
-## Database
+## 4. Control Center: Donations Module
 
-### New table: `donations`
+### New Type (in `src/pages/control-center/types.ts`)
 
-Separate from `payment_transactions` for clean tracking:
+```typescript
+export interface DonationAdmin {
+  id: string;
+  order_id: string;
+  amount: number;
+  currency: string;
+  provider: string;
+  donor_name: string | null;
+  donor_email: string | null;
+  donor_message: string | null;
+  status: string;
+  created_at: string;
+}
+```
 
-| Column | Type | Notes |
-|--------|------|-------|
-| id | uuid (PK) | Default gen_random_uuid() |
-| order_id | text | Links to payment_transactions |
-| amount | integer | In HTG |
-| currency | text | HTG or USD |
-| provider | text | moncash or stripe |
-| donor_name | text (nullable) | Optional display name |
-| donor_message | text (nullable) | Optional message |
-| status | text | pending, completed, failed |
-| created_at | timestamptz | Default now() |
+### New Module: `src/pages/control-center/modules/DonationsModule.tsx`
 
-RLS: INSERT allowed for anon (to create donation records), SELECT restricted to founders only (for admin view).
+Following the exact same pattern as `PaymentsModule.tsx`:
 
-## Stripe Plan
+- **Header**: Title "Dons" with a refresh button and pending count badge
+- **Filters bar** (Card with 3 controls):
+  - Search input (searches order_id, donor_name, donor_email)
+  - Status filter dropdown: Tous / En attente / Completes / Echoues
+  - Provider filter dropdown: Tous / MonCash / Stripe
+- **Donations list**: Cards showing for each donation:
+  - Order ID (mono font, bold)
+  - Provider badge (MonCash blue / Stripe purple)
+  - Status badge (pending yellow / completed green / failed red)
+  - Amount + currency
+  - Donor name (if provided)
+  - Donor email (if provided, with a mail icon)
+  - Donor message (if provided, italic)
+  - Created date
+- **Summary stats row** at the top:
+  - Total donations count
+  - Total HTG amount
+  - Total USD amount (stored in cents, displayed as dollars)
+- Data fetched via `useQuery` from the `donations` table, ordered by `created_at DESC`
 
-Stripe is **not being configured now** -- the structure will be built with a clear integration point:
+### Register Module (in `src/pages/control-center/modules.ts`)
 
-- The Stripe tab in DonationCard will show a friendly "Bientot disponible" (Coming soon) message
-- When you're ready, you'll provide your Stripe secret key
-- We'll then create a `stripe-create-donation` edge function using Stripe Checkout Sessions
-- The flow will convert HTG amounts to USD at a configurable rate
+Add the new module to the `CONTROL_CENTER_MODULES` array:
 
-**What you'll need for Stripe later:**
-- A Stripe account (stripe.com)
-- Your Stripe Secret Key (starts with `sk_live_` or `sk_test_`)
-- That's it -- we handle the rest (products, checkout sessions, webhooks)
+```typescript
+{
+  id: "donations",
+  label: "Dons",
+  shortLabel: "Dons",
+  icon: Heart, // from lucide-react
+  component: lazy(() => import("./modules/DonationsModule")),
+  badge: async () => {
+    const { count } = await supabase
+      .from("donations")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending");
+    return count || 0;
+  },
+}
+```
 
-## 3G Performance Considerations
+Position it after "Payments" in the array for logical grouping.
 
-- No heavy images beyond Jude's avatar (already cached)
-- No client-side animation libraries for the impact section (CSS only)
-- Confetti only fires on success callback (lazy-loaded)
-- Page is lazy-loaded in App.tsx like other public routes
+---
+
+## File Summary
+
+| File | Action | What Changes |
+|------|--------|--------------|
+| `donations` table | Migration | Add `donor_email TEXT` column |
+| `src/components/donate/DonationCard.tsx` | Edit | Add email input + pass to insert/functions |
+| `supabase/functions/stripe-create-donation/index.ts` | Edit | Accept + store `donorEmail` |
+| `src/pages/control-center/types.ts` | Edit | Add `DonationAdmin` interface |
+| `src/pages/control-center/modules.ts` | Edit | Register DonationsModule |
+| `src/pages/control-center/modules/DonationsModule.tsx` | Create | Full admin view for donations |
+
+---
 
 ## Safety Checklist
 
-| Check | Status |
+| Check | Result |
 |-------|--------|
-| Breaks existing functionality? | No -- additive only, new route + new table |
-| Works with existing payment infra? | Yes -- reuses moncash-create-payment with new flag |
-| Backward compatible? | Yes -- existing payment flows unchanged |
-| 3G optimized? | Yes -- minimal assets, lazy loading |
-| Edge cases handled? | Min amount validation, rate limiting by IP, optional fields |
-| Security (public page)? | IP-based rate limiting, input validation, RLS on donations table |
+| Breaks existing functionality? | No -- additive column, no existing code reads `donor_email` |
+| Works with existing data? | Yes -- column is nullable, old rows get NULL |
+| Backward compatible? | Yes -- email field is optional for donors |
+| 3G optimized? | Yes -- no new assets, simple text field |
+| Edge cases? | Empty email stored as NULL, not empty string |
+| Security? | Email visible only to founders via existing RLS SELECT policy |
 
