@@ -1,80 +1,48 @@
 
-# Floating Feature Bubbles Background for Donate Page
 
-## Concept
+# Enhanced Floating Feature Bubbles
 
-A CSS-only animated background layer behind the donate page content. Small translucent "bubbles" containing short feature labels (like "IA Personnalisee", "Systeme Gold", "Examens Officiels", etc.) float slowly upward across the page, creating a subtle, engaging visual that showcases what the platform offers -- reinforcing why donations matter.
+## Problems from Screenshot
+- Bubbles are nearly invisible (10-15% opacity is too low)
+- Only 10 bubbles -- user wants more
+- All bubbles are the same pill shape -- user wants varied shapes
 
-## Design Decisions
+## Changes
 
-- **CSS-only animations** (no JS animation loop) -- critical for 3G performance
-- **Fixed position layer** behind all content with `pointer-events-none` so it never blocks interaction
-- **Low opacity** (10-15%) so bubbles don't compete with the actual page content
-- **Multiple speed/delay variations** so bubbles feel organic, not synchronized
-- **`overflow: hidden`** on the container to prevent horizontal scroll from bubbles exiting the viewport
+### File: `src/components/donate/FloatingFeatureBubbles.tsx` (rewrite)
 
-## Bubble Content (from platform features)
+**More bubbles**: Expand from 10 to ~18 bubbles with additional platform features like "Quiz Interactif", "Tableau de Bord", "Certificats", "Forum", "Mode Hors-ligne", "Exercices", "Lecons Video", "Progression"
 
-Short labels extracted from existing feature data:
-- "IA Personnalisee"
-- "200 Gdes/mois"
-- "Systeme Gold"
-- "Multilingue"
-- "Examens Officiels"
-- "Decouvre ta Passion"
-- "Messagerie"
-- "Fil d'Actualite"
-- "Classement"
-- "Developpement Personnel"
+**Visible styling**: Increase opacity significantly:
+- Background: `bg-primary/20` to `bg-primary/30` (instead of `/10`)
+- Text: `text-primary/60` to `text-primary/80` (instead of `/15`)
+- Add a subtle border: `border border-primary/20`
 
-## Implementation
+**Random shapes** using different `border-radius` values applied via inline styles:
+- Standard pill (50px)
+- Rounded rectangle (12px)
+- Soft square (8px)
+- Blob-like (asymmetric radii like `30% 70% 70% 30% / 30% 30% 70% 70%`)
+- Circle-ish (50%)
 
-### 1. New Component: `src/components/donate/FloatingFeatureBubbles.tsx`
+Each bubble gets a `shape` property that maps to a specific `borderRadius` value, distributed across the array so shapes feel random.
 
-A pure presentational component:
-- Renders ~10 `<span>` elements, each with a feature label
-- Each bubble is absolutely positioned at a random horizontal offset (using inline styles for variety)
-- Each uses a shared `float-up` CSS animation with different `animation-duration` (15-30s) and `animation-delay` (0-15s) values
-- Bubbles are styled as small rounded pills: `bg-primary/10 text-primary/15 text-xs px-3 py-1 rounded-full`
-- The container is `fixed inset-0 overflow-hidden pointer-events-none z-0`
+**Size variation**: Mix of `text-xs`, `text-sm`, and `text-base` with corresponding padding to create depth.
 
-### 2. New Keyframe in `tailwind.config.ts`
+### File: `tailwind.config.ts`
 
-Add a `float-up` keyframe:
-```
-"float-up": {
-  "0%":   { transform: "translateY(100vh)", opacity: "0" },
-  "10%":  { opacity: "1" },
-  "90%":  { opacity: "1" },
-  "100%": { transform: "translateY(-100vh)", opacity: "0" }
-}
-```
+No changes needed -- the existing `float-up` keyframe and animation work fine.
 
-And the corresponding animation utility:
-```
-"float-up": "float-up 20s linear infinite"
-```
+### File: `src/pages/Donate.tsx`
 
-### 3. Integrate in `src/pages/Donate.tsx`
-
-- Import `FloatingFeatureBubbles`
-- Place it as the first child inside the outer `<div>`, before `<HeaderNav />`
-- The `relative` + `z-index` layering ensures content stays on top
-
-## File Summary
-
-| File | Action | What Changes |
-|------|--------|--------------|
-| `src/components/donate/FloatingFeatureBubbles.tsx` | Create | New bubble background component |
-| `tailwind.config.ts` | Edit | Add `float-up` keyframe + animation |
-| `src/pages/Donate.tsx` | Edit | Import and render FloatingFeatureBubbles |
+No changes needed -- already imports and renders the component.
 
 ## Safety Checklist
 
 | Check | Result |
 |-------|--------|
-| Breaks existing functionality? | No -- purely decorative layer with pointer-events-none |
-| 3G optimized? | Yes -- CSS-only animations, no JS loops, no images |
-| Backward compatible? | Yes -- additive only |
-| Edge cases? | overflow-hidden prevents horizontal scroll; reduced-motion users see static low-opacity text |
-| Performance? | ~10 DOM elements with CSS transforms (GPU-accelerated), negligible cost |
+| Breaks existing functionality? | No -- same component, updated styles |
+| 3G optimized? | Yes -- still CSS-only, just more DOM elements (~18 spans) |
+| Backward compatible? | Yes |
+| Edge cases? | overflow-hidden still prevents scroll issues |
+
