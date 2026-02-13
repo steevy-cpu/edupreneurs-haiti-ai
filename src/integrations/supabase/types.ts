@@ -1604,7 +1604,7 @@ export type Database = {
           stripe_subscription_id: string | null
           student_email: string
           student_name: string
-          student_user_id: string
+          student_user_id: string | null
           token: string
         }
         Insert: {
@@ -1620,7 +1620,7 @@ export type Database = {
           stripe_subscription_id?: string | null
           student_email: string
           student_name: string
-          student_user_id: string
+          student_user_id?: string | null
           token: string
         }
         Update: {
@@ -1636,7 +1636,7 @@ export type Database = {
           stripe_subscription_id?: string | null
           student_email?: string
           student_name?: string
-          student_user_id?: string
+          student_user_id?: string | null
           token?: string
         }
         Relationships: []
