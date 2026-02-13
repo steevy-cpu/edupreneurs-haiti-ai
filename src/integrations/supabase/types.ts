@@ -1590,6 +1590,51 @@ export type Database = {
         }
         Relationships: []
       }
+      gift_subscriptions: {
+        Row: {
+          amount_usd: number
+          completed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          payer_email: string | null
+          status: string
+          stripe_session_id: string | null
+          student_email: string
+          student_name: string
+          student_user_id: string
+          token: string
+        }
+        Insert: {
+          amount_usd?: number
+          completed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          payer_email?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          student_email: string
+          student_name: string
+          student_user_id: string
+          token: string
+        }
+        Update: {
+          amount_usd?: number
+          completed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          payer_email?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          student_email?: string
+          student_name?: string
+          student_user_id?: string
+          token?: string
+        }
+        Relationships: []
+      }
       group_chats: {
         Row: {
           avatar_url: string | null

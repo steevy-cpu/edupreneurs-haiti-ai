@@ -14,8 +14,9 @@ import { validatePromoCode } from "../../services/promo.service";
 import { createSignupPayment } from "../../services/payment.service";
 import { saveSignupProgress, getSignupProgress, getAuthFlow } from "../../store/authFlow.store";
 import { cn } from "@/lib/utils";
+import GiftLinkTab from "./GiftLinkTab";
 
-type AccessTab = 'promo' | 'moncash';
+type AccessTab = 'promo' | 'moncash' | 'gift';
 
 export default function SignupStep3() {
   const navigate = useNavigate();
@@ -104,19 +105,22 @@ export default function SignupStep3() {
   const handleBack = () => {
     saveSignupProgress({ 
       promoCode, promoCodeValid, promoGrantsFreeAccess, privacy,
-      accessMethod: activeTab, paymentCompleted, paymentOrderId
+      accessMethod: activeTab === 'gift' ? 'promo' : activeTab, paymentCompleted, paymentOrderId
     });
     navigate('/auth/signup/step-2');
   };
 
-  const canSubmit = activeTab === 'promo' ? promoCodeValid : paymentCompleted;
+  // Gift tab doesn't gate submit — student can create account and wait for gift payment
+  const canSubmit = activeTab === 'promo' ? promoCodeValid : activeTab === 'moncash' ? paymentCompleted : true;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const validationData = activeTab === 'promo'
       ? { promoCodeValid, privacy, accessMethod: 'promo' as const }
-      : { paymentCompleted, privacy, accessMethod: 'moncash' as const };
+      : activeTab === 'moncash'
+      ? { paymentCompleted, privacy, accessMethod: 'moncash' as const }
+      : { privacy, accessMethod: 'promo' as const, promoCodeValid: true }; // Gift: treat as valid
     
     const validation = validateStep3(validationData);
     if (!validation.valid) {
@@ -158,7 +162,7 @@ export default function SignupStep3() {
           type="button"
           onClick={() => setActiveTab('promo')}
           className={cn(
-            "flex-1 py-2.5 text-sm font-medium transition-colors",
+            "flex-1 py-2.5 text-xs font-medium transition-colors",
             activeTab === 'promo'
               ? "bg-primary text-primary-foreground"
               : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
@@ -170,13 +174,25 @@ export default function SignupStep3() {
           type="button"
           onClick={() => setActiveTab('moncash')}
           className={cn(
-            "flex-1 py-2.5 text-sm font-medium transition-colors",
+            "flex-1 py-2.5 text-xs font-medium transition-colors",
             activeTab === 'moncash'
               ? "bg-primary text-primary-foreground"
               : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
           )}
         >
           💳 MonCash
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('gift')}
+          className={cn(
+            "flex-1 py-2.5 text-xs font-medium transition-colors",
+            activeTab === 'gift'
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
+          )}
+        >
+          👨‍👩‍👧 Famille
         </button>
       </div>
 
@@ -259,6 +275,9 @@ export default function SignupStep3() {
           )}
         </div>
       )}
+
+      {/* Gift Link Tab */}
+      {activeTab === 'gift' && <GiftLinkTab />}
 
       {/* Privacy Checkbox */}
       <div className="flex items-start gap-3 p-4 border border-input rounded-lg bg-muted/30">

@@ -118,6 +118,8 @@ const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const Donate = lazy(() => import("./pages/Donate"));
 const DonationSuccessCallback = lazy(() => import("./components/donate/DonationSuccessCallback"));
+const GiftPayment = lazy(() => import("./pages/GiftPayment"));
+const GiftPaymentSuccess = lazy(() => import("./pages/GiftPaymentSuccess"));
 
 // Templates (public, no auth)
 const TemplatesHomePage = lazy(() => import("./pages/templates/TemplatesHomePage"));
@@ -181,6 +183,18 @@ const App = () => (
                         <Route path="/donate/callback" element={
                           <Suspense fallback={<GenericPageSkeleton />}>
                             <DonationSuccessCallback />
+                          </Suspense>
+                        } />
+                        
+                        {/* Gift Payment - Public, no shell */}
+                        <Route path="/gift/pay/:token" element={
+                          <Suspense fallback={<GenericPageSkeleton />}>
+                            <GiftPayment />
+                          </Suspense>
+                        } />
+                        <Route path="/gift/success" element={
+                          <Suspense fallback={<GenericPageSkeleton />}>
+                            <GiftPaymentSuccess />
                           </Suspense>
                         } />
                         
