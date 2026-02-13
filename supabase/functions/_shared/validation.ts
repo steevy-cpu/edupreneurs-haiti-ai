@@ -281,6 +281,17 @@ export const natcashOrderSchema = z.object({
 /**
  * NatCash receipt upload validation
  */
+/**
+ * Donation thank-you email validation
+ */
+export const donationThankYouSchema = z.object({
+  donorName: z.string().max(100).optional(),
+  donorEmail: z.string().email("Email invalide").max(255),
+  amount: z.number().positive("Montant doit être positif"),
+  currency: z.enum(["HTG", "USD"]),
+  orderId: z.string().max(100),
+}).strict();
+
 export const natcashReceiptSchema = z.object({
   orderId: z.string().uuid("ID commande invalide"),
   receiptUrl: z.string().url("URL invalide").max(1000),
