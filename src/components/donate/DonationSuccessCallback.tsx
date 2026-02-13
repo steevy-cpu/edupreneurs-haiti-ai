@@ -10,8 +10,34 @@ type Status = "verifying" | "success" | "failed";
 export default function DonationSuccessCallback() {
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState<Status>("verifying");
-  const orderId = searchParams.get("orderId") || searchParams.get("referenceId");
+
+  const isStripe = searchParams.get("stripe") === "success";
+  const orderId = searchParams.get("order") || searchParams.get("orderId") || searchParams.get("referenceId");
   const judeAvatar = getAvatarUrl("jude", 128);
+
+  const sendThankYouEmail = async (donationOrderId: string) => {
+    try {
+      const { data: donation } = await supabase
+        .from("donations")
+        .select("donor_name, donor_email, amount, currency")
+        .eq("order_id", donationOrderId)
+        .maybeSingle();
+
+      if (donation?.donor_email) {
+        await supabase.functions.invoke("send-donation-thank-you", {
+          body: {
+            donorName: donation.donor_name,
+            donorEmail: donation.donor_email,
+            amount: donation.amount,
+            currency: donation.currency,
+            orderId: donationOrderId,
+          },
+        });
+      }
+    } catch (e) {
+      console.error("Thank-you email failed (non-blocking):", e);
+    }
+  };
 
   useEffect(() => {
     if (!orderId) {
@@ -21,16 +47,34 @@ export default function DonationSuccessCallback() {
 
     const verify = async () => {
       try {
-        const { data, error } = await supabase.functions.invoke("moncash-check-status", {
-          body: { orderId },
-        });
+        if (isStripe) {
+          // Stripe handles payment confirmation; mark donation as completed
+          const { error: updateError } = await supabase
+            .from("donations")
+            .update({ status: "completed" })
+            .eq("order_id", orderId)
+            .eq("status", "pending");
 
-        if (error || !data?.success || data?.status !== "completed") {
-          setStatus("failed");
-          return;
+          if (updateError) {
+            console.error("Stripe donation update error:", updateError);
+          }
+
+          setStatus("success");
+          await sendThankYouEmail(orderId);
+        } else {
+          // MonCash flow: verify via edge function
+          const { data, error } = await supabase.functions.invoke("moncash-check-status", {
+            body: { orderId },
+          });
+
+          if (error || !data?.success || data?.status !== "completed") {
+            setStatus("failed");
+            return;
+          }
+
+          setStatus("success");
+          await sendThankYouEmail(orderId);
         }
-
-        setStatus("success");
 
         // Fire confetti
         const confetti = (await import("canvas-confetti")).default;
