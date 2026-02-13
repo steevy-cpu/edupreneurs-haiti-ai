@@ -29,20 +29,22 @@ export default function Donate() {
 
       <div className="min-h-screen bg-background flex flex-col relative">
         <FloatingFeatureBubbles />
-        <HeaderNav />
-        <main className="flex-1">
-          <DonateHero />
-          <DonationCard />
-          <ImpactSection />
+        <div className="relative z-10">
+          <HeaderNav />
+          <main className="flex-1">
+            <DonateHero />
+            <DonationCard />
+            <ImpactSection />
 
-          {/* Jude transparency note */}
-          <section className="py-10 px-4 text-center max-w-xl mx-auto">
-            <p className="text-muted-foreground text-sm italic">
-              "Chak goud ou bay ede yon elèv aprann plis. Mèsi pou konfyans ou!" — Jude 💙
-            </p>
-          </section>
-        </main>
-        <Footer />
+            {/* Jude transparency note */}
+            <section className="py-10 px-4 text-center max-w-xl mx-auto bg-background">
+              <p className="text-muted-foreground text-sm italic">
+                "Chak goud ou bay ede yon elèv aprann plis. Mèsi pou konfyans ou!" — Jude 💙
+              </p>
+            </section>
+          </main>
+          <Footer />
+        </div>
       </div>
       <HomeChatbot />
     </>
