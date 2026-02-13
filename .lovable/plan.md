@@ -1,35 +1,60 @@
 
-# Mobile-Responsive DonationCard Fix
+# Add "Donate Page" Navigation Suggestion to HomeChatbot
 
-## Problem (from screenshot)
-- Input placeholder text is truncated on mobile ("min 50 H1", "recevoir un rem", "encouragement (c")
-- The card padding and spacing are too generous for small screens
-- Inputs and preset buttons are oversized for mobile viewports
+## What Changes
 
-## Changes
+Add a 5th suggestion button "Emmène-moi vers la page de donation" to the existing FAQ suggestions in the Jude chatbot. When clicked, instead of sending a message to the AI, it navigates the user directly to `/donate`.
 
-### File: `src/components/donate/DonationCard.tsx`
+## How
 
-1. **Reduce card padding on mobile**: Change `p-6 sm:p-8` to `p-4 sm:p-8` for tighter mobile fit
+### File: `src/components/HomeChatbot.tsx`
 
-2. **Shorten placeholder text on mobile-friendly lengths**:
-   - "Montant personnalise (min 50 HTG)" -> "Montant (min 50 HTG)" / "Amount (min $1)"
-   - "Votre email (pour recevoir un remerciement)" -> "Votre email (optionnel)"
-   - "Un message d'encouragement (optionnel)" -> "Message (optionnel)"
+1. **Import `useNavigate`** from `react-router-dom`
 
-3. **Reduce spacing between form groups**: Change `space-y-6` to `space-y-4 sm:space-y-6` inside the shared content div
+2. **Convert `faqSuggestions` from a string array to an object array** with properties:
+   - `label`: display text
+   - `action`: either `"chat"` (send as message) or `"navigate"` (redirect)
+   - `path`: optional navigation path (for navigate actions)
 
-4. **Smaller preset buttons on mobile**: Change `py-3` to `py-2 sm:py-3` and `text-sm` to `text-xs sm:text-sm`
+3. **Add the new suggestion**:
+   ```text
+   { label: "Emmène-moi vers la page de donation", action: "navigate", path: "/donate" }
+   ```
 
-5. **Reduce gap in optional fields**: Change `space-y-3` to `space-y-2 sm:space-y-3`
+4. **Update the suggestion buttons rendering** to check the action type:
+   - If `action === "navigate"`: call `navigate(path)` and close the chatbot
+   - If `action === "chat"`: call `sendMessage(label)` as before
 
-6. **Smaller donate button on mobile**: Change `py-6 text-base` to `py-4 sm:py-6 text-sm sm:text-base`
+### Updated data structure:
+
+```typescript
+const faqSuggestions = [
+  { label: "Qu'est-ce qu'EDUPRENEURS ?", action: "chat" },
+  { label: "Comment puis-je m'inscrire ?", action: "chat" },
+  { label: "Quels cours sont disponibles ?", action: "chat" },
+  { label: "Comment fonctionne la plateforme ?", action: "chat" },
+  { label: "Emmène-moi vers la page de donation", action: "navigate", path: "/donate" },
+];
+```
+
+### Updated button click handler:
+
+```typescript
+onClick={() => {
+  if (suggestion.action === "navigate" && suggestion.path) {
+    setIsOpen(false);
+    navigate(suggestion.path);
+  } else {
+    sendMessage(suggestion.label);
+  }
+}}
+```
 
 ## Safety Checklist
 
 | Check | Result |
 |-------|--------|
-| Breaks existing functionality? | No -- spacing/text only |
-| 3G optimized? | Yes -- no new assets |
-| Backward compatible? | Yes -- desktop unchanged |
-| Edge cases? | Shorter placeholders still convey meaning |
+| Breaks existing functionality? | No -- existing 4 suggestions unchanged |
+| 3G optimized? | Yes -- no new assets or API calls |
+| Backward compatible? | Yes |
+| Edge cases? | Navigation closes chat first to avoid overlay issues |
