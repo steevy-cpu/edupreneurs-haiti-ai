@@ -5,6 +5,7 @@ import { DonateHero } from "@/components/donate/DonateHero";
 import { DonationCard } from "@/components/donate/DonationCard";
 import { ImpactSection } from "@/components/donate/ImpactSection";
 import { getAvatarUrl } from "@/lib/avatarMap";
+import { HomeChatbot } from "@/components/HomeChatbot";
 
 export default function Donate() {
   const judeAvatar = getAvatarUrl("jude", 128);
@@ -41,6 +42,7 @@ export default function Donate() {
         </main>
         <Footer />
       </div>
+      <HomeChatbot />
     </>
   );
 }
