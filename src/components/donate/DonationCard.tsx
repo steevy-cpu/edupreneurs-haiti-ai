@@ -27,6 +27,7 @@ export function DonationCard() {
 
   const effectiveAmount = selectedAmount ?? (customAmount ? parseInt(customAmount, 10) : 0);
   const isValidAmount = effectiveAmount >= minAmount;
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(donorEmail.trim());
 
   const handlePresetClick = (amount: number) => {
     setSelectedAmount(amount);
@@ -175,7 +176,8 @@ export function DonationCard() {
               />
               <Input
                 type="email"
-                placeholder="Votre email (optionnel)"
+                placeholder="Votre email *"
+                required
                 value={donorEmail}
                 onChange={(e) => setDonorEmail(e.target.value)}
                 maxLength={255}
@@ -193,7 +195,7 @@ export function DonationCard() {
             <TabsContent value="moncash" className="mt-0">
               <Button
                 onClick={handleMonCashDonate}
-                disabled={!isValidAmount || isLoading}
+                disabled={!isValidAmount || !isValidEmail || isLoading}
                 className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-4 sm:py-6 text-sm sm:text-base"
               >
                 {isLoading ? (
@@ -210,7 +212,7 @@ export function DonationCard() {
             <TabsContent value="stripe" className="mt-0">
               <Button
                 onClick={handleStripeDonate}
-                disabled={!isValidAmount || isLoading}
+                disabled={!isValidAmount || !isValidEmail || isLoading}
                 className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-4 sm:py-6 text-sm sm:text-base"
               >
                 {isLoading ? (
