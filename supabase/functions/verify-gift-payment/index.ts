@@ -258,11 +258,45 @@ serve(async (req) => {
       .update(updateData)
       .eq("id", gift.id);
 
+    // Resolve student_user_id: if null, look up by email
+    let studentUserId = gift.student_user_id;
+    if (!studentUserId) {
+      const { data: studentProfile } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id")
+        .eq("user_id", gift.student_email) // We'll match via auth.users email below
+        .maybeSingle();
+
+      // Look up by email in auth.users via profiles join
+      const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers();
+      const matchedUser = authUsers?.users?.find(
+        (u: { email?: string }) => u.email?.toLowerCase() === gift.student_email?.toLowerCase()
+      );
+
+      if (matchedUser) {
+        studentUserId = matchedUser.id;
+        // Link the gift record to the student
+        await supabaseAdmin
+          .from("gift_subscriptions")
+          .update({ student_user_id: studentUserId })
+          .eq("id", gift.id);
+      }
+    }
+
+    // If student hasn't created account yet, mark as completed but skip activation
+    if (!studentUserId) {
+      console.log(`Gift ${gift.id} completed but student not yet registered (${gift.student_email})`);
+      return new Response(
+        JSON.stringify({ success: true, studentName: gift.student_name, pendingActivation: true }),
+        { status: 200, headers }
+      );
+    }
+
     // Activate/extend student subscription (same stacking logic as moncash-verify-payment)
     const { data: currentProfile } = await supabaseAdmin
       .from("profiles")
       .select("subscription_end_date")
-      .eq("user_id", gift.student_user_id)
+      .eq("user_id", studentUserId)
       .maybeSingle();
 
     const now = new Date();
@@ -278,19 +312,19 @@ serve(async (req) => {
         subscription_status: "active",
         subscription_end_date: newEnd.toISOString(),
       })
-      .eq("user_id", gift.student_user_id);
+      .eq("user_id", studentUserId);
 
     if (subError) {
       console.error("Error extending subscription:", subError);
     } else {
-      console.log(`Gift subscription activated for ${gift.student_user_id} until ${newEnd.toISOString()}`);
+      console.log(`Gift subscription activated for ${studentUserId} until ${newEnd.toISOString()}`);
     }
 
     // Send notification to student
     try {
       await supabaseAdmin.from("notifications").insert({
-        user_id: gift.student_user_id,
-        actor_id: gift.student_user_id,
+        user_id: studentUserId,
+        actor_id: studentUserId,
         type: "gift_payment",
         content: `Un proche a payé votre abonnement ! Accès actif jusqu'au ${newEnd.toLocaleDateString("fr-FR")}`,
         read: false,

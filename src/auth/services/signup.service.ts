@@ -167,6 +167,39 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
 
     if (profileError) throw profileError;
 
+    // Check for any completed gift payments matching this email and activate subscription
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: completedGifts } = await (supabase as any)
+        .from("gift_subscriptions")
+        .select("id")
+        .eq("student_email", data.email)
+        .eq("status", "completed")
+        .is("student_user_id", null);
+
+      if (completedGifts && completedGifts.length > 0) {
+        // Link gift records to the new user
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any)
+          .from("gift_subscriptions")
+          .update({ student_user_id: authData.user.id })
+          .eq("student_email", data.email)
+          .is("student_user_id", null);
+
+        // Activate subscription (30 days from now)
+        const newEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        await supabase
+          .from("profiles")
+          .update({
+            subscription_status: "active" as any,
+            subscription_end_date: newEnd.toISOString(),
+          } as any)
+          .eq("user_id", authData.user.id);
+      }
+    } catch (giftErr) {
+      console.error("Gift link activation check error:", giftErr);
+    }
+
     // Handle referral if provided
     if (referralCode) {
       await handleReferral(authData.user.id, referralCode);
