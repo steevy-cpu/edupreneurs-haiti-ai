@@ -132,7 +132,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Invalid signature" }), { status: 400 });
     }
 
-    console.log(`[GIFT-WEBHOOK] Received event: ${event.type}`);
+    console.log(`[GIFT-WEBHOOK] Received event: ${event.type}, id: ${event.id}`);
 
     // Only process invoice.paid for subscription renewals
     if (event.type !== "invoice.paid") {
@@ -156,12 +156,27 @@ serve(async (req) => {
       return new Response(JSON.stringify({ received: true }), { status: 200 });
     }
 
-    // Look up gift subscription by Stripe subscription ID
+    // Initialize Supabase admin client
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    // Idempotency check: prevent duplicate processing of the same Stripe event
+    // Use invoice ID as idempotency key since each renewal has a unique invoice
+    const invoiceId = invoice.id;
+    const { data: existingGift } = await supabaseAdmin
+      .from("gift_subscriptions")
+      .select("id")
+      .eq("stripe_session_id", invoiceId)
+      .maybeSingle();
+
+    if (existingGift) {
+      console.log(`[GIFT-WEBHOOK] Invoice ${invoiceId} already processed, skipping (idempotent)`);
+      return new Response(JSON.stringify({ received: true, skipped: "already_processed" }), { status: 200 });
+    }
+
+    // Look up gift subscription by Stripe subscription ID
     const { data: gift, error: giftError } = await supabaseAdmin
       .from("gift_subscriptions")
       .select("*")
