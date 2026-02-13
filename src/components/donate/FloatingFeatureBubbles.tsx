@@ -33,7 +33,7 @@ const bubbles = [
   { label: "Tableau de Bord", left: "45%", duration: "24s", delay: "9s", shape: 3, size: "sm", color: 5 },
   { label: "Notifications", left: "72%", duration: "15s", delay: "4s", shape: 4, size: "xs", color: 0 },
   { label: "Forum", left: "18%", duration: "27s", delay: "11s", shape: 5, size: "base", color: 1 },
-  { label: "Mode Hors-ligne", left: "82%", duration: "19s", delay: "13s", shape: 6, size: "sm", color: 2 },
+  
   { label: "Exercices", left: "48%", duration: "22s", delay: "0s", shape: 7, size: "xs", color: 3 },
   { label: "Leçons Vidéo", left: "28%", duration: "16s", delay: "8s", shape: 0, size: "sm", color: 4 },
   { label: "Progression", left: "62%", duration: "20s", delay: "15s", shape: 1, size: "base", color: 5 },
