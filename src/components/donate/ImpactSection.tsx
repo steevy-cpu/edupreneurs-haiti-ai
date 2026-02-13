@@ -1,11 +1,6 @@
-import { GraduationCap, Server, BookOpen } from "lucide-react";
+import { Server, BookOpen } from "lucide-react";
 
 const impactCards = [
-  {
-    icon: GraduationCap,
-    title: "Enseignants",
-    description: "Former et soutenir les enseignants avec des outils IA pour améliorer leurs cours.",
-  },
   {
     icon: Server,
     title: "Technologie",
@@ -25,7 +20,7 @@ export function ImpactSection() {
         <h2 className="text-xl sm:text-2xl font-bold text-center text-foreground mb-8">
           Où va votre don? 💡
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
           {impactCards.map((card) => (
             <div
               key={card.title}
