@@ -36,6 +36,11 @@ export function SubscriptionGate({ children }: SubscriptionGateProps) {
     },
     enabled: !!user?.id && isAuthenticated,
     staleTime: 5 * 60 * 1000,
+    // Poll every 30s when waiting for gift payment so UI auto-refreshes
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      return data?.subscription_status === 'pending_gift' ? 30_000 : false;
+    },
   });
 
   // Not authenticated - let auth guard handle redirect

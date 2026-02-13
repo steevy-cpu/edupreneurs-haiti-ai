@@ -224,8 +224,8 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
       }
     });
 
-    // Sign out - user must verify email first
-    await supabase.auth.signOut();
+    // Keep user logged in — do NOT sign out
+    // The AuthRouteGuard will redirect unverified users to /auth/verify-email
 
     // Persist verification flow state - CRITICAL for OTP fix
     saveAuthFlow({

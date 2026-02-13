@@ -53,12 +53,9 @@ export function AuthRouteGuard({ children }: AuthRouteGuardProps) {
           .eq('user_id', user.id)
           .maybeSingle();
 
-        // If not verified, sign out and redirect to verify
+        // If not verified, redirect to verify WITHOUT signing out
         if (profile && !profile.email_confirmed) {
-          // Sign out immediately
-          await supabase.auth.signOut();
-          
-          // Save flow for verification
+          // Save flow for verification (keep session alive)
           saveAuthFlow({
             flow: 'verify',
             pendingUserId: user.id,
