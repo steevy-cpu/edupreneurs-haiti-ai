@@ -45,8 +45,8 @@ export function EssayInput({
   const [isSaving, setIsSaving] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
-  const isDisabled = state === 'checking' || state === 'correct' || state === 'incorrect' || state === 'revealed';
-  const showResult = state === 'correct' || state === 'incorrect' || state === 'revealed';
+  const isDisabled = state === 'checking' || state === 'correct' || state === 'incorrect' || state === 'partial' || state === 'revealed';
+  const showResult = state === 'correct' || state === 'incorrect' || state === 'partial' || state === 'revealed';
 
   // Calculate word count
   const wordCount = essayText.trim() ? essayText.trim().split(/\s+/).length : 0;

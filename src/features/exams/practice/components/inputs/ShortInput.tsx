@@ -26,8 +26,8 @@ export function ShortInput({
 }: ShortInputProps) {
   const [shortAnswer, setShortAnswer] = useState('');
   
-  const isDisabled = state === 'checking' || state === 'correct' || state === 'incorrect' || state === 'revealed';
-  const showResult = state === 'correct' || state === 'incorrect' || state === 'revealed';
+  const isDisabled = state === 'checking' || state === 'correct' || state === 'incorrect' || state === 'partial' || state === 'revealed';
+  const showResult = state === 'correct' || state === 'incorrect' || state === 'partial' || state === 'revealed';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

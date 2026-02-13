@@ -27,8 +27,8 @@ export function MCQInput({
   state,
   correctAnswer,
 }: MCQInputProps) {
-  const isDisabled = state === 'checking' || state === 'correct' || state === 'incorrect' || state === 'revealed';
-  const showResult = state === 'correct' || state === 'incorrect' || state === 'revealed';
+  const isDisabled = state === 'checking' || state === 'correct' || state === 'incorrect' || state === 'partial' || state === 'revealed';
+  const showResult = state === 'correct' || state === 'incorrect' || state === 'partial' || state === 'revealed';
 
   // Check for array-based options (legacy format)
   const hasOptionsArray = exercise.options && Array.isArray(exercise.options) && exercise.options.length > 0;
