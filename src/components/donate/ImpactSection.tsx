@@ -15,7 +15,7 @@ const impactCards = [
 
 export function ImpactSection() {
   return (
-    <section className="py-12 px-4">
+    <section className="py-12 px-4 bg-background">
       <div className="max-w-4xl mx-auto">
         <h2 className="text-xl sm:text-2xl font-bold text-center text-foreground mb-8">
           Où va votre don? 💡

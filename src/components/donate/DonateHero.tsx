@@ -4,7 +4,7 @@ export function DonateHero() {
   const judeAvatar = getAvatarUrl('jude', 128);
 
   return (
-    <section className="text-center py-12 sm:py-16 px-4">
+    <section className="text-center py-12 sm:py-16 px-4 bg-background">
       <div className="flex flex-col items-center gap-4 max-w-2xl mx-auto">
         <img
           src={judeAvatar}
