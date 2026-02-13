@@ -38,8 +38,11 @@ export function SubscriptionGate({ children }: SubscriptionGateProps) {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Not loaded yet or not authenticated - allow through (auth guard handles redirect)
-  if (!isAuthenticated || !profile) return <>{children}</>;
+  // Not authenticated - let auth guard handle redirect
+  if (!isAuthenticated) return <>{children}</>;
+
+  // Profile still loading - block content until we know subscription status
+  if (!profile) return null;
 
   // Promo users always pass
   if (profile.has_free_access) return <>{children}</>;
