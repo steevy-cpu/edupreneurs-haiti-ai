@@ -2,12 +2,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, CreditCard, Smartphone, Clock } from "lucide-react";
+import { Loader2, CreditCard, Smartphone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const PRESET_AMOUNTS = [100, 250, 500, 1000];
-const MIN_AMOUNT = 50;
+const PRESET_AMOUNTS_HTG = [100, 250, 500, 1000];
+const PRESET_AMOUNTS_USD = [5, 10, 25, 50];
+const MIN_AMOUNT_HTG = 50;
+const MIN_AMOUNT_USD = 1;
 
 export function DonationCard() {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(250);
@@ -15,9 +17,15 @@ export function DonationCard() {
   const [donorName, setDonorName] = useState("");
   const [donorMessage, setDonorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("moncash");
+
+  const isUSD = activeTab === "stripe";
+  const presets = isUSD ? PRESET_AMOUNTS_USD : PRESET_AMOUNTS_HTG;
+  const minAmount = isUSD ? MIN_AMOUNT_USD : MIN_AMOUNT_HTG;
+  const currency = isUSD ? "USD" : "HTG";
 
   const effectiveAmount = selectedAmount ?? (customAmount ? parseInt(customAmount, 10) : 0);
-  const isValidAmount = effectiveAmount >= MIN_AMOUNT;
+  const isValidAmount = effectiveAmount >= minAmount;
 
   const handlePresetClick = (amount: number) => {
     setSelectedAmount(amount);
@@ -30,12 +38,18 @@ export function DonationCard() {
     setSelectedAmount(null);
   };
 
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    // Reset to first preset of new currency
+    setSelectedAmount(tab === "stripe" ? PRESET_AMOUNTS_USD[1] : PRESET_AMOUNTS_HTG[1]);
+    setCustomAmount("");
+  };
+
   const handleMonCashDonate = async () => {
     if (!isValidAmount) return;
     setIsLoading(true);
 
     try {
-      // Create donation record first
       const orderId = `DON-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`.toUpperCase();
 
       await supabase.from("donations").insert({
@@ -48,7 +62,6 @@ export function DonationCard() {
         status: "pending",
       });
 
-      // Call the edge function
       const { data, error } = await supabase.functions.invoke("moncash-create-payment", {
         body: {
           amount: effectiveAmount,
@@ -62,10 +75,37 @@ export function DonationCard() {
         throw new Error(data?.error || "Erreur de paiement");
       }
 
-      // Redirect to MonCash
       window.location.href = data.redirectUrl;
     } catch (err: any) {
       console.error("Donation error:", err);
+      toast.error("Erreur lors de la création du paiement. Réessayez.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleStripeDonate = async () => {
+    if (!isValidAmount) return;
+    setIsLoading(true);
+
+    try {
+      const amountCents = effectiveAmount * 100;
+
+      const { data, error } = await supabase.functions.invoke("stripe-create-donation", {
+        body: {
+          amount: amountCents,
+          donorName: donorName.trim() || null,
+          donorMessage: donorMessage.trim() || null,
+        },
+      });
+
+      if (error || !data?.url) {
+        throw new Error("Erreur de paiement Stripe");
+      }
+
+      window.location.href = data.url;
+    } catch (err: any) {
+      console.error("Stripe donation error:", err);
       toast.error("Erreur lors de la création du paiement. Réessayez.");
     } finally {
       setIsLoading(false);
@@ -79,55 +119,8 @@ export function DonationCard() {
           Faites un don 🎁
         </h2>
 
-        {/* Preset amounts */}
-        <div className="grid grid-cols-2 gap-3">
-          {PRESET_AMOUNTS.map((amount) => (
-            <button
-              key={amount}
-              onClick={() => handlePresetClick(amount)}
-              className={`py-3 rounded-xl text-sm font-semibold transition-all border-2 ${
-                selectedAmount === amount
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border bg-background text-foreground hover:border-primary/50"
-              }`}
-            >
-              {amount} HTG
-            </button>
-          ))}
-        </div>
-
-        {/* Custom amount */}
-        <div>
-          <Input
-            type="text"
-            inputMode="numeric"
-            placeholder="Montant personnalisé (min 50 HTG)"
-            value={customAmount}
-            onChange={(e) => handleCustomChange(e.target.value)}
-            className="text-center text-lg font-semibold"
-          />
-        </div>
-
-        {/* Optional fields */}
-        <div className="space-y-3">
-          <Input
-            type="text"
-            placeholder="Votre nom (optionnel)"
-            value={donorName}
-            onChange={(e) => setDonorName(e.target.value)}
-            maxLength={100}
-          />
-          <Input
-            type="text"
-            placeholder="Un message d'encouragement (optionnel)"
-            value={donorMessage}
-            onChange={(e) => setDonorMessage(e.target.value)}
-            maxLength={500}
-          />
-        </div>
-
         {/* Payment method tabs */}
-        <Tabs defaultValue="moncash" className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="moncash" className="flex items-center gap-1.5">
               <Smartphone className="w-4 h-4" />
@@ -139,34 +132,88 @@ export function DonationCard() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="moncash" className="mt-4">
-            <Button
-              onClick={handleMonCashDonate}
-              disabled={!isValidAmount || isLoading}
-              className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-6 text-base"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  Traitement...
-                </>
-              ) : (
-                `Donner ${effectiveAmount || "..."} HTG avec MonCash`
-              )}
-            </Button>
-          </TabsContent>
-
-          <TabsContent value="stripe" className="mt-4">
-            <div className="text-center py-6 space-y-3">
-              <Clock className="w-8 h-8 mx-auto text-muted-foreground" />
-              <p className="text-muted-foreground text-sm font-medium">
-                Paiement par carte bientôt disponible
-              </p>
-              <p className="text-xs text-muted-foreground/70">
-                Vous pourrez bientôt donner en USD avec votre carte bancaire.
-              </p>
+          {/* Shared content below tabs */}
+          <div className="mt-4 space-y-6">
+            {/* Preset amounts */}
+            <div className="grid grid-cols-2 gap-3">
+              {presets.map((amount) => (
+                <button
+                  key={amount}
+                  onClick={() => handlePresetClick(amount)}
+                  className={`py-3 rounded-xl text-sm font-semibold transition-all border-2 ${
+                    selectedAmount === amount
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background text-foreground hover:border-primary/50"
+                  }`}
+                >
+                  {isUSD ? `$${amount}` : `${amount} HTG`}
+                </button>
+              ))}
             </div>
-          </TabsContent>
+
+            {/* Custom amount */}
+            <Input
+              type="text"
+              inputMode="numeric"
+              placeholder={`Montant personnalisé (min ${isUSD ? "$1" : "50 HTG"})`}
+              value={customAmount}
+              onChange={(e) => handleCustomChange(e.target.value)}
+              className="text-center text-lg font-semibold"
+            />
+
+            {/* Optional fields */}
+            <div className="space-y-3">
+              <Input
+                type="text"
+                placeholder="Votre nom (optionnel)"
+                value={donorName}
+                onChange={(e) => setDonorName(e.target.value)}
+                maxLength={100}
+              />
+              <Input
+                type="text"
+                placeholder="Un message d'encouragement (optionnel)"
+                value={donorMessage}
+                onChange={(e) => setDonorMessage(e.target.value)}
+                maxLength={500}
+              />
+            </div>
+
+            {/* Payment buttons per tab */}
+            <TabsContent value="moncash" className="mt-0">
+              <Button
+                onClick={handleMonCashDonate}
+                disabled={!isValidAmount || isLoading}
+                className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-6 text-base"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Traitement...
+                  </>
+                ) : (
+                  `Donner ${effectiveAmount || "..."} HTG avec MonCash`
+                )}
+              </Button>
+            </TabsContent>
+
+            <TabsContent value="stripe" className="mt-0">
+              <Button
+                onClick={handleStripeDonate}
+                disabled={!isValidAmount || isLoading}
+                className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-6 text-base"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Traitement...
+                  </>
+                ) : (
+                  `Donate $${effectiveAmount || "..."} USD with Card`
+                )}
+              </Button>
+            </TabsContent>
+          </div>
         </Tabs>
       </div>
     </section>
