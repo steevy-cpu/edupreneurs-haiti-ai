@@ -201,3 +201,9 @@ verify_jwt = false
 
 [functions.stripe-create-donation]
 verify_jwt = false
+
+[functions.stripe-gift-payment]
+verify_jwt = false
+
+[functions.verify-gift-payment]
+verify_jwt = false
