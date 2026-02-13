@@ -258,22 +258,16 @@ serve(async (req) => {
       .update(updateData)
       .eq("id", gift.id);
 
-    // Resolve student_user_id: if null, look up by email
+    // Resolve student_user_id: if null, look up by email (targeted, not full scan)
     let studentUserId = gift.student_user_id;
-    if (!studentUserId) {
-      const { data: studentProfile } = await supabaseAdmin
-        .from("profiles")
-        .select("user_id")
-        .eq("user_id", gift.student_email) // We'll match via auth.users email below
-        .maybeSingle();
-
-      // Look up by email in auth.users via profiles join
-      const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers();
-      const matchedUser = authUsers?.users?.find(
-        (u: { email?: string }) => u.email?.toLowerCase() === gift.student_email?.toLowerCase()
-      );
-
-      if (matchedUser) {
+    if (!studentUserId && gift.student_email) {
+      const { data: userList } = await supabaseAdmin.auth.admin.listUsers({
+        filter: gift.student_email,
+        page: 1,
+        perPage: 1,
+      });
+      const matchedUser = userList?.users?.[0];
+      if (matchedUser?.email?.toLowerCase() === gift.student_email.toLowerCase()) {
         studentUserId = matchedUser.id;
         // Link the gift record to the student
         await supabaseAdmin
