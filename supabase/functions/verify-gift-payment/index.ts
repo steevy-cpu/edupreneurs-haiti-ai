@@ -239,14 +239,23 @@ serve(async (req) => {
       );
     }
 
-    // Mark gift as completed
+    // Mark gift as completed and save subscription ID if recurring
+    const updateData: Record<string, unknown> = {
+      status: "completed",
+      completed_at: new Date().toISOString(),
+      payer_email: session.customer_details?.email || null,
+    };
+
+    // For recurring payments, store the Stripe subscription ID
+    if (gift.payment_mode === "recurring" && session.subscription) {
+      updateData.stripe_subscription_id = typeof session.subscription === "string"
+        ? session.subscription
+        : session.subscription.id;
+    }
+
     await supabaseAdmin
       .from("gift_subscriptions")
-      .update({
-        status: "completed",
-        completed_at: new Date().toISOString(),
-        payer_email: session.customer_details?.email || null,
-      })
+      .update(updateData)
       .eq("id", gift.id);
 
     // Activate/extend student subscription (same stacking logic as moncash-verify-payment)
