@@ -1121,6 +1121,42 @@ export type Database = {
         }
         Relationships: []
       }
+      donations: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          donor_message: string | null
+          donor_name: string | null
+          id: string
+          order_id: string
+          provider: string
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          donor_message?: string | null
+          donor_name?: string | null
+          id?: string
+          order_id: string
+          provider?: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          donor_message?: string | null
+          donor_name?: string | null
+          id?: string
+          order_id?: string
+          provider?: string
+          status?: string
+        }
+        Relationships: []
+      }
       ebook_comments: {
         Row: {
           comment: string

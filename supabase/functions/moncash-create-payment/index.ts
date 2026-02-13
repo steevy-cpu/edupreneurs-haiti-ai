@@ -84,14 +84,16 @@ serve(async (req) => {
 
     const rawBody = await req.json();
     const isSignupPayment = rawBody.isSignupPayment === true;
+    const isDonation = rawBody.isDonation === true;
 
     let userId: string;
 
-    if (isSignupPayment) {
+    if (isDonation || isSignupPayment) {
       // Signup payments don't require auth - use a system placeholder
       // Rate limit by IP instead
       const clientIp = getClientIp(req);
-      const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.PAYMENT, `signup-${clientIp}`, clientIp);
+      const prefix = isDonation ? 'donation' : 'signup';
+      const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.PAYMENT, `${prefix}-${clientIp}`, clientIp);
       if (!rateCheck.allowed) {
         return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
       }
@@ -141,11 +143,16 @@ serve(async (req) => {
     const finalOrderId = rawBody.orderId || generateOrderId();
 
     const siteUrl = Deno.env.get('SITE_URL') || 'https://edupreneurs-haiti-ai.lovable.app';
-    const returnUrl = isSignupPayment
-      ? `${siteUrl}/auth/signup/payment-callback?orderId=${finalOrderId}`
-      : `${siteUrl}/payment/callback?orderId=${finalOrderId}`;
+    let returnUrl: string;
+    if (isDonation) {
+      returnUrl = `${siteUrl}/donate/callback?orderId=${finalOrderId}`;
+    } else if (isSignupPayment) {
+      returnUrl = `${siteUrl}/auth/signup/payment-callback?orderId=${finalOrderId}`;
+    } else {
+      returnUrl = `${siteUrl}/payment/callback?orderId=${finalOrderId}`;
+    }
 
-    console.log(`Creating payment: amount=${amount}, orderId=${finalOrderId}, mode=${mode}, isSignup=${isSignupPayment}`);
+    console.log(`Creating payment: amount=${amount}, orderId=${finalOrderId}, mode=${mode}, isSignup=${isSignupPayment}, isDonation=${isDonation}`);
 
     const bazikToken = await getBazikToken(userID, secretKey);
     const { redirectUrl, bazikOrderId } = await createBazikPayment(
@@ -169,6 +176,7 @@ serve(async (req) => {
           gateway: 'bazik.io', 
           bazikOrderId,
           isSignupPayment,
+          isDonation,
           signupEmail: isSignupPayment ? rawBody.email : undefined,
         },
       });

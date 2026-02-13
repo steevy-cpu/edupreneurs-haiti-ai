@@ -116,6 +116,8 @@ const Library = lazy(() => import("./pages/Library"));
 const EbookReader = lazy(() => import("./pages/EbookReader"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
+const Donate = lazy(() => import("./pages/Donate"));
+const DonationSuccessCallback = lazy(() => import("./components/donate/DonationSuccessCallback"));
 
 // Templates (public, no auth)
 const TemplatesHomePage = lazy(() => import("./pages/templates/TemplatesHomePage"));
@@ -167,6 +169,18 @@ const App = () => (
                         <Route path="/terms" element={
                           <Suspense fallback={<GenericPageSkeleton />}>
                             <Terms />
+                          </Suspense>
+                        } />
+                        
+                        {/* Donate - Public, no shell */}
+                        <Route path="/donate" element={
+                          <Suspense fallback={<GenericPageSkeleton />}>
+                            <Donate />
+                          </Suspense>
+                        } />
+                        <Route path="/donate/callback" element={
+                          <Suspense fallback={<GenericPageSkeleton />}>
+                            <DonationSuccessCallback />
                           </Suspense>
                         } />
                         
