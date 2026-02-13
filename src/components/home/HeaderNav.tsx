@@ -40,12 +40,12 @@ export const HeaderNav = memo(function HeaderNav() {
         </Link>
         
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-5">
+        <nav className="hidden lg:flex items-center gap-3 xl:gap-5">
           {navLinks.map((link) => (
             <a 
               key={link.href}
               href={link.href} 
-              className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group text-sm"
+              className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group text-sm whitespace-nowrap"
             >
               {link.label}
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
@@ -53,19 +53,18 @@ export const HeaderNav = memo(function HeaderNav() {
           ))}
           <Link 
             to="/blog" 
-            className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group text-sm flex items-center gap-1"
+            className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group text-sm flex items-center gap-1 whitespace-nowrap"
           >
-            <Rss className="h-3.5 w-3.5" />
+            <Rss className="h-3.5 w-3.5 shrink-0" />
             Blog
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
           </Link>
           <Link 
             to="/donate" 
-            className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group text-sm flex items-center gap-1"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/30 text-accent hover:bg-accent/20 transition-all duration-300 font-semibold text-sm whitespace-nowrap"
           >
-            <Heart className="h-3.5 w-3.5" />
+            <Heart className="h-3.5 w-3.5 shrink-0" />
             Faire un don
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
           </Link>
         </nav>
 
@@ -131,10 +130,10 @@ export const HeaderNav = memo(function HeaderNav() {
           </Link>
           <Link 
             to="/donate" 
-            className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm flex items-center gap-2" 
+            className="py-2.5 px-3 bg-accent/10 border border-accent/30 text-accent rounded-lg transition-colors text-sm flex items-center gap-2 font-semibold" 
             onClick={closeMobileMenu}
           >
-            <Heart className="h-4 w-4" />
+            <Heart className="h-4 w-4 shrink-0" />
             Faire un don
           </Link>
           <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-border">
