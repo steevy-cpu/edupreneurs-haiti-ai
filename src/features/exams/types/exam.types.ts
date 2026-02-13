@@ -19,6 +19,7 @@ export interface TutorAction {
 
 export interface TutorGrading {
   isCorrect?: boolean;
+  partialScore?: number;  // 0-100 percentage (0, 25, 50, 75, 100)
   pointsAwarded?: number;
   correctAnswer?: string;
 }

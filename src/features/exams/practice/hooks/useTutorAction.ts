@@ -62,12 +62,30 @@ export function useTutorAction({
       }
 
       setFeedback(data as TutorResponse);
-      const isCorrect = data.grading?.isCorrect === true;
-      setState(isCorrect ? 'correct' : 'incorrect');
+      
+      // Determine state from grading data
+      const grading = data.grading;
+      let newState: RunnerState;
+
+      if (grading?.partialScore !== undefined) {
+        // AI-graded with partial scoring
+        if (grading.partialScore >= 75) newState = 'correct';
+        else if (grading.partialScore >= 25) newState = 'partial';
+        else newState = 'incorrect';
+      } else if (grading?.isCorrect === true) {
+        newState = 'correct';
+      } else if (grading?.isCorrect === false) {
+        newState = 'incorrect';
+      } else {
+        // isCorrect is undefined (no answer key, no AI grade) -- neutral
+        newState = 'partial';
+      }
+
+      setState(newState);
 
       // Trigger callback for score updates
-      if (data.grading?.pointsAwarded && onAnswerValidated) {
-        onAnswerValidated(isCorrect, data.grading.pointsAwarded);
+      if (grading?.pointsAwarded && grading.pointsAwarded > 0 && onAnswerValidated) {
+        onAnswerValidated(newState === 'correct', grading.pointsAwarded);
       }
     } catch (err) {
       console.error('Tutor check exception:', err);
