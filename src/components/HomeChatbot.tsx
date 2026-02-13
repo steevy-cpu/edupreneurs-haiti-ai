@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, type FocusEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Send } from "lucide-react";
@@ -81,11 +82,14 @@ const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isSlowConnection, shouldShowAnimations } = useNetworkAwareLoading();
   const shouldShowBlur = !isSlowConnection;
 
+  const navigate = useNavigate();
+
   const faqSuggestions = [
-    "Qu'est-ce qu'EDUPRENEURS ?",
-    "Comment puis-je m'inscrire ?",
-    "Quels cours sont disponibles ?",
-    "Comment fonctionne la plateforme ?"
+    { label: "Qu'est-ce qu'EDUPRENEURS ?", action: "chat" as const },
+    { label: "Comment puis-je m'inscrire ?", action: "chat" as const },
+    { label: "Quels cours sont disponibles ?", action: "chat" as const },
+    { label: "Comment fonctionne la plateforme ?", action: "chat" as const },
+    { label: "Emmène-moi vers la page de donation", action: "navigate" as const, path: "/donate" },
   ];
 
   const scrollToBottom = () => {
@@ -236,9 +240,16 @@ const messagesEndRef = useRef<HTMLDivElement>(null);
                     key={index}
                     variant="secondary"
                     className="w-full text-left justify-start shadow-sm transition-all text-xs py-2 h-auto"
-                    onClick={() => sendMessage(suggestion)}
+                    onClick={() => {
+                      if (suggestion.action === "navigate" && "path" in suggestion) {
+                        setIsOpen(false);
+                        navigate(suggestion.path);
+                      } else {
+                        sendMessage(suggestion.label);
+                      }
+                    }}
                   >
-                    {suggestion}
+                    {suggestion.label}
                   </Button>
                 ))}
               </div>
