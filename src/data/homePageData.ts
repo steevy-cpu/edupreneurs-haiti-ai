@@ -286,7 +286,8 @@ export const footerLinks = {
   support: [
     { href: "mailto:support@edupreneurs.com", label: "Contact" },
     { to: "/#faq", label: "FAQ" },
-    { to: "/resources", label: "Ressources" }
+    { to: "/resources", label: "Ressources" },
+    { to: "/donate", label: "Faire un don" }
   ],
   legal: [
     { to: "/terms", label: "Conditions" },
