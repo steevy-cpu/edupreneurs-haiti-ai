@@ -21,10 +21,7 @@ export async function generateGiftLink(studentName: string, studentEmail: string
   error?: string;
 }> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: "Vous devez être connecté" };
-    }
+    // No auth required - gift links can be generated during signup (before account exists)
 
     // Generate a cryptographically random 32-char hex token
     const array = new Uint8Array(16);
@@ -39,7 +36,7 @@ export async function generateGiftLink(studentName: string, studentEmail: string
       .from("gift_subscriptions")
       .insert({
         token,
-        student_user_id: user.id,
+        student_user_id: null,
         student_name: firstName,
         student_email: studentEmail,
         status: "pending",
