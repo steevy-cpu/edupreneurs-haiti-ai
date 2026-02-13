@@ -125,11 +125,11 @@ export function DonationCard() {
         {/* Payment method tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="moncash" className="flex items-center gap-1.5">
+            <TabsTrigger value="moncash" className="flex items-center gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Smartphone className="w-4 h-4" />
               MonCash
             </TabsTrigger>
-            <TabsTrigger value="stripe" className="flex items-center gap-1.5">
+            <TabsTrigger value="stripe" className="flex items-center gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <CreditCard className="w-4 h-4" />
               Carte (USD)
             </TabsTrigger>
