@@ -1,67 +1,150 @@
 
-# Fix KaTeX Rendering Inside Question Quotes and Hint Display
 
-## Root Cause
+# Donation Page - "Aidez Jude a transformer l'education"
 
-Two bugs found:
+## Overview
 
-### Bug 1: QuestionQuoteBox doesn't render KaTeX (main issue)
+A public-facing donation page themed around Jude (the AI mascot) asking visitors to support Haitian education. Two payment methods: MonCash (already integrated) and Stripe (to be set up later). The page will be accessible without login and optimized for 3G connections.
 
-The `QuestionQuoteBox` component in `MathContent.tsx` renders its content as plain text. When the AI wraps a question in `《...》` delimiters (as instructed by the system prompt), any `$...$` math inside those quotes is swallowed and displayed as raw text like `$\widehat{AB}$`.
+## Page Structure
 
-**Flow:**
 ```text
-AI response: 'Pour la premiere partie, 《Calcule la mesure de l'arc $\widehat{AB}$》, rappelle-toi...'
-                                         ^---- QuestionQuoteBox captures everything inside, including $...$
-                                               and renders as plain text. KaTeX never runs.
+/donate
++-------------------------------------------------------+
+|  HeaderNav (reuse from Index page)                     |
++-------------------------------------------------------+
+|                                                        |
+|  [Jude Avatar]  "Ede m transfome edikasyon ann Ayiti!" |
+|  Subtitle explaining the mission                       |
+|                                                        |
+|  +---------------------------------------------------+ |
+|  |  Impact Stats (animated counters)                  | |
+|  |  [Students helped] [Lessons created] [Hours saved] | |
+|  +---------------------------------------------------+ |
+|                                                        |
+|  +---------------------------------------------------+ |
+|  |  DONATION CARD                                     | |
+|  |                                                    | |
+|  |  Preset Amount Buttons:                            | |
+|  |  [100 HTG] [250 HTG] [500 HTG] [1000 HTG]        | |
+|  |                                                    | |
+|  |  [Custom amount input field]                       | |
+|  |                                                    | |
+|  |  Payment Method Tabs:                              | |
+|  |  [MonCash] | [Stripe (USD)]                       | |
+|  |                                                    | |
+|  |  MonCash tab:                                      | |
+|  |    [Payer avec MonCash] button                     | |
+|  |                                                    | |
+|  |  Stripe tab:                                       | |
+|  |    [Donate with Card] button (USD conversion)     | |
+|  |                                                    | |
+|  +---------------------------------------------------+ |
+|                                                        |
+|  "Where your donation goes" - 3 impact cards           |
+|  [Teachers] [Tech/Servers] [Content Creation]          |
+|                                                        |
+|  Thank-you / transparency note from Jude               |
+|                                                        |
++-------------------------------------------------------+
+|  Footer (reuse)                                        |
++-------------------------------------------------------+
 ```
 
-### Bug 2: "0" displayed next to hint header
+## File Structure (5 new files, 2 modified)
 
-In `FeedbackCard.tsx` line 128, the condition `feedback.grading?.pointsAwarded && ...` evaluates to `0` (falsy number) for hints, and React renders `0` as visible text.
+### New Files
 
-## Fix Plan (2 files)
+1. **`src/pages/Donate.tsx`** - Page orchestrator
+   - Reuses HeaderNav and Footer from the home page
+   - Imports and composes all donation sub-components
+   - Public route, no auth required
+   - Helmet meta tags for SEO and social sharing
 
-### File 1: `src/components/MathContent.tsx`
+2. **`src/components/donate/DonateHero.tsx`** - Jude-focused hero section
+   - Jude's avatar (reuse `getAvatarUrl('jude')`)
+   - Motivational headline in Creole/French
+   - Brief mission statement paragraph
 
-Update `QuestionQuoteBox` to recursively render its content through `renderWithLatexDelimiters` so that any `$...$` or `$$...$$` inside question quotes gets proper KaTeX rendering:
+3. **`src/components/donate/DonationCard.tsx`** - Core donation form
+   - Preset amount buttons: 100, 250, 500, 1000 HTG
+   - Custom amount input with validation (min 50 HTG)
+   - Tabbed payment methods (MonCash / Stripe)
+   - MonCash tab: calls existing `moncash-create-payment` edge function with a `isDonation: true` flag
+   - Stripe tab: placeholder UI with "Coming soon" message until Stripe is enabled; once active, will use Stripe Checkout
+   - Donor name field (optional) and message field (optional)
 
-```tsx
-// Before (line 216-220)
-const QuestionQuoteBox = ({ content }: { content: string }) => (
-  <span className="inline-block my-2 px-3 py-2 bg-primary/10 border-l-4 border-primary rounded-r-lg italic text-foreground">
-    "{content}"
-  </span>
-);
+4. **`src/components/donate/ImpactSection.tsx`** - "Where your donation goes"
+   - Three cards explaining fund allocation (Teachers, Technology, Content)
+   - Simple icons, short descriptions
+   - Lightweight -- no heavy animations
 
-// After
-const QuestionQuoteBox = ({ content }: { content: string }) => (
-  <span className="inline-block my-2 px-3 py-2 bg-primary/10 border-l-4 border-primary rounded-r-lg italic text-foreground">
-    "{hasLatexDelimiters(content) ? renderWithLatexDelimiters(content) : content}"
-  </span>
-);
-```
+5. **`src/components/donate/DonationSuccessCallback.tsx`** - Post-payment landing
+   - Similar pattern to PaymentCallback.tsx
+   - Shows Jude celebrating with a thank-you message
+   - Confetti animation (already installed: canvas-confetti)
 
-This is safe because `renderWithLatexDelimiters` only processes `$...$`, `$$...$$`, `\(...\)`, and `\[...\]` -- it won't recurse on `《...》` since we already consumed that outer delimiter.
+### Modified Files
 
-### File 2: `src/features/exams/practice/components/FeedbackCard.tsx`
+6. **`src/App.tsx`** - Add two new public routes:
+   - `/donate` pointing to Donate page
+   - `/donate/callback` pointing to DonationSuccessCallback
 
-Fix the "0" display bug on line 128 by using explicit null check:
+7. **`supabase/functions/moncash-create-payment/index.ts`** - Support donation payments
+   - Add `isDonation: true` flag handling (similar to `isSignupPayment`)
+   - Donations are unauthenticated, rate-limited by IP
+   - Store with `description: 'Donation'` and donation metadata
+   - Return URL points to `/donate/callback`
 
-```tsx
-// Before
-{feedback.grading?.pointsAwarded && feedback.grading.pointsAwarded > 0 && (
+## Database
 
-// After
-{feedback.grading?.pointsAwarded != null && feedback.grading.pointsAwarded > 0 && (
-```
+### New table: `donations`
+
+Separate from `payment_transactions` for clean tracking:
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid (PK) | Default gen_random_uuid() |
+| order_id | text | Links to payment_transactions |
+| amount | integer | In HTG |
+| currency | text | HTG or USD |
+| provider | text | moncash or stripe |
+| donor_name | text (nullable) | Optional display name |
+| donor_message | text (nullable) | Optional message |
+| status | text | pending, completed, failed |
+| created_at | timestamptz | Default now() |
+
+RLS: INSERT allowed for anon (to create donation records), SELECT restricted to founders only (for admin view).
+
+## Stripe Plan
+
+Stripe is **not being configured now** -- the structure will be built with a clear integration point:
+
+- The Stripe tab in DonationCard will show a friendly "Bientot disponible" (Coming soon) message
+- When you're ready, you'll provide your Stripe secret key
+- We'll then create a `stripe-create-donation` edge function using Stripe Checkout Sessions
+- The flow will convert HTG amounts to USD at a configurable rate
+
+**What you'll need for Stripe later:**
+- A Stripe account (stripe.com)
+- Your Stripe Secret Key (starts with `sk_live_` or `sk_test_`)
+- That's it -- we handle the rest (products, checkout sessions, webhooks)
+
+## 3G Performance Considerations
+
+- No heavy images beyond Jude's avatar (already cached)
+- No client-side animation libraries for the impact section (CSS only)
+- Confetti only fires on success callback (lazy-loaded)
+- Page is lazy-loaded in App.tsx like other public routes
 
 ## Safety Checklist
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- QuestionQuoteBox only adds rendering, fallback to plain text unchanged |
-| Backward compatible? | Yes -- only enhances existing component |
-| 3G optimized? | Yes -- no extra network calls, KaTeX already loaded |
-| Edge case: no math in quote? | Handled -- `hasLatexDelimiters` check skips KaTeX processing when not needed |
-| Edge case: recursive 《...》? | Safe -- renderWithLatexDelimiters doesn't re-process 《...》 |
+| Breaks existing functionality? | No -- additive only, new route + new table |
+| Works with existing payment infra? | Yes -- reuses moncash-create-payment with new flag |
+| Backward compatible? | Yes -- existing payment flows unchanged |
+| 3G optimized? | Yes -- minimal assets, lazy loading |
+| Edge cases handled? | Min amount validation, rate limiting by IP, optional fields |
+| Security (public page)? | IP-based rate limiting, input validation, RLS on donations table |
+
