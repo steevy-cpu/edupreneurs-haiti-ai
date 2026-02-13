@@ -40,7 +40,8 @@ export async function generateGiftLink(studentName: string, studentEmail: string
         student_name: firstName,
         student_email: studentEmail,
         status: "pending",
-        amount_usd: 200,
+        amount_cents: 200,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       });
 
     if (error) {
@@ -121,18 +122,13 @@ export async function getGiftInfo(token: string): Promise<{
   error?: string;
 }> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase as any)
-      .from("gift_subscriptions")
-      .select("student_name, status, expires_at")
-      .eq("token", token)
-      .maybeSingle();
+    const { data, error } = await supabase.rpc("get_gift_info_by_token", { p_token: token });
 
-    if (error || !data) {
+    if (error || !data || data.length === 0) {
       return { success: false, error: "Lien introuvable" };
     }
 
-    const record = data as GiftRecord;
+    const record = data[0] as GiftRecord;
 
     if (record.status === "completed") {
       return { success: true, studentName: record.student_name, status: "completed" };

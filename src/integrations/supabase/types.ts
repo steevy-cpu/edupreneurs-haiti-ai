@@ -1592,7 +1592,7 @@ export type Database = {
       }
       gift_subscriptions: {
         Row: {
-          amount_usd: number
+          amount_cents: number
           completed_at: string | null
           created_at: string
           expires_at: string
@@ -1608,7 +1608,7 @@ export type Database = {
           token: string
         }
         Insert: {
-          amount_usd?: number
+          amount_cents?: number
           completed_at?: string | null
           created_at?: string
           expires_at?: string
@@ -1624,7 +1624,7 @@ export type Database = {
           token: string
         }
         Update: {
-          amount_usd?: number
+          amount_cents?: number
           completed_at?: string | null
           created_at?: string
           expires_at?: string
@@ -4532,6 +4532,14 @@ export type Database = {
         }[]
       }
       generate_referral_code: { Args: never; Returns: string }
+      get_gift_info_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          expires_at: string
+          status: string
+          student_name: string
+        }[]
+      }
       get_leaderboard_profiles: {
         Args: { limit_count?: number }
         Returns: {

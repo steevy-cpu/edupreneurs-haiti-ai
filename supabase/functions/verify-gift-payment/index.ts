@@ -351,7 +351,7 @@ serve(async (req) => {
         await sendEmail(
           payerEmail,
           "🧾 Reçu de paiement — Abonnement Edupreneurs",
-          buildPayerInvoiceEmail(payerName, gift.student_name, gift.amount_usd, gift.stripe_session_id || "", dateNow)
+          buildPayerInvoiceEmail(payerName, gift.student_name, gift.amount_cents, gift.stripe_session_id || "", dateNow)
         );
         console.log("Invoice email sent to", payerEmail);
       } catch (e) {

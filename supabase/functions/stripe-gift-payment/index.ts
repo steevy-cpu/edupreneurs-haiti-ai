@@ -119,7 +119,7 @@ serve(async (req) => {
                 name: `Abonnement Edupreneurs pour ${gift.student_name}`,
                 description: "30 jours d'accès complet à la plateforme éducative",
               },
-              unit_amount: gift.amount_usd, // 200 cents = $2.00
+              unit_amount: gift.amount_cents, // 200 cents = $2.00
             },
             quantity: 1,
           },
