@@ -27,7 +27,8 @@ serve(async (req) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
-    const { token } = await req.json();
+    const body = await req.json();
+    const { token, mode: paymentMode } = body;
 
     if (!token || typeof token !== "string" || token.length < 16) {
       return new Response(
@@ -75,38 +76,71 @@ serve(async (req) => {
       );
     }
 
-    // Create Stripe Checkout session - fixed $2 USD
+    // Use payment mode from the parsed body (default to one_time)
+    const mode = paymentMode === "recurring" ? "recurring" : "one_time";
+
+    // Create Stripe Checkout session
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const origin = req.headers.get("origin") || Deno.env.get("SITE_URL") || "https://edupreneurs-haiti-ai.lovable.app";
 
-    const session = await stripe.checkout.sessions.create({
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: `Abonnement Edupreneurs pour ${gift.student_name}`,
-              description: "30 jours d'accès complet à la plateforme éducative",
-            },
-            unit_amount: gift.amount_usd, // 200 cents = $2.00
-          },
-          quantity: 1,
-        },
-      ],
-      mode: "payment",
-      success_url: `${origin}/gift/success?token=${token}`,
-      cancel_url: `${origin}/gift/pay/${token}`,
-      metadata: {
-        gift_token: token,
-        student_name: gift.student_name,
-        student_user_id: gift.student_user_id,
-      },
-    });
+    // Recurring monthly price ID from Stripe
+    const RECURRING_PRICE_ID = "price_1T0M1kCkC1XzoKhlwDHEUSDz";
 
-    // Save the Stripe session ID
+    let sessionConfig: Record<string, unknown>;
+
+    if (mode === "recurring") {
+      // Subscription mode: use pre-created recurring price
+      sessionConfig = {
+        line_items: [{ price: RECURRING_PRICE_ID, quantity: 1 }],
+        mode: "subscription",
+        success_url: `${origin}/gift/success?token=${token}`,
+        cancel_url: `${origin}/gift/pay/${token}`,
+        metadata: {
+          gift_token: token,
+          student_name: gift.student_name,
+          student_user_id: gift.student_user_id,
+        },
+        subscription_data: {
+          metadata: {
+            gift_token: token,
+            student_name: gift.student_name,
+            student_user_id: gift.student_user_id,
+          },
+        },
+      };
+    } else {
+      // One-time payment mode (existing flow)
+      sessionConfig = {
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: `Abonnement Edupreneurs pour ${gift.student_name}`,
+                description: "30 jours d'accès complet à la plateforme éducative",
+              },
+              unit_amount: gift.amount_usd, // 200 cents = $2.00
+            },
+            quantity: 1,
+          },
+        ],
+        mode: "payment",
+        success_url: `${origin}/gift/success?token=${token}`,
+        cancel_url: `${origin}/gift/pay/${token}`,
+        metadata: {
+          gift_token: token,
+          student_name: gift.student_name,
+          student_user_id: gift.student_user_id,
+        },
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig as Stripe.Checkout.SessionCreateParams);
+
+    // Save the Stripe session ID and payment mode
     await supabaseAdmin
       .from("gift_subscriptions")
-      .update({ stripe_session_id: session.id })
+      .update({ stripe_session_id: session.id, payment_mode: mode })
       .eq("id", gift.id);
 
     return new Response(

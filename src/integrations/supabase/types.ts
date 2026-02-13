@@ -1598,8 +1598,10 @@ export type Database = {
           expires_at: string
           id: string
           payer_email: string | null
+          payment_mode: string
           status: string
           stripe_session_id: string | null
+          stripe_subscription_id: string | null
           student_email: string
           student_name: string
           student_user_id: string
@@ -1612,8 +1614,10 @@ export type Database = {
           expires_at?: string
           id?: string
           payer_email?: string | null
+          payment_mode?: string
           status?: string
           stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
           student_email: string
           student_name: string
           student_user_id: string
@@ -1626,8 +1630,10 @@ export type Database = {
           expires_at?: string
           id?: string
           payer_email?: string | null
+          payment_mode?: string
           status?: string
           stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
           student_email?: string
           student_name?: string
           student_user_id?: string

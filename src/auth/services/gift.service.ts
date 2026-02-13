@@ -64,14 +64,14 @@ export async function generateGiftLink(studentName: string, studentEmail: string
 /**
  * Create a Stripe Checkout session for a gift payment (called from the public page)
  */
-export async function createGiftCheckout(token: string): Promise<{
+export async function createGiftCheckout(token: string, mode: "one_time" | "recurring" = "one_time"): Promise<{
   success: boolean;
   url?: string;
   error?: string;
 }> {
   try {
     const { data, error } = await supabase.functions.invoke("stripe-gift-payment", {
-      body: { token },
+      body: { token, mode },
     });
 
     if (error) {

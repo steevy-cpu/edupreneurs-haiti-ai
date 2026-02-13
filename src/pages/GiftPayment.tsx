@@ -8,6 +8,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Loader2, CreditCard, Heart, AlertCircle, CheckCircle } from "lucide-react";
 import { getGiftInfo, createGiftCheckout } from "@/auth/services/gift.service";
 
@@ -17,6 +18,7 @@ export default function GiftPayment() {
   const [status, setStatus] = useState<"loading" | "ready" | "completed" | "error">("loading");
   const [errorMsg, setErrorMsg] = useState("");
   const [isPaying, setIsPaying] = useState(false);
+  const [paymentMode, setPaymentMode] = useState<"one_time" | "recurring">("one_time");
 
   useEffect(() => {
     if (!token) { setStatus("error"); setErrorMsg("Lien invalide"); return; }
@@ -38,7 +40,7 @@ export default function GiftPayment() {
   const handlePay = async () => {
     if (!token) return;
     setIsPaying(true);
-    const result = await createGiftCheckout(token);
+    const result = await createGiftCheckout(token, paymentMode);
     if (result.success && result.url) {
       window.location.href = result.url;
     } else {
@@ -95,10 +97,45 @@ export default function GiftPayment() {
               </div>
 
               <div className="p-6 space-y-4">
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-gray-900">$2.00 <span className="text-lg font-normal text-gray-500">USD</span></div>
-                  <p className="text-sm text-gray-500 mt-1">≈ 200 HTG · 30 jours d'accès complet</p>
-                </div>
+                {/* Payment mode selector */}
+                <RadioGroup
+                  value={paymentMode}
+                  onValueChange={(v) => setPaymentMode(v as "one_time" | "recurring")}
+                  className="grid grid-cols-2 gap-3"
+                >
+                  <label
+                    htmlFor="one_time"
+                    className={`relative flex flex-col items-center gap-1 rounded-xl border-2 p-4 cursor-pointer transition-all ${
+                      paymentMode === "one_time"
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <RadioGroupItem value="one_time" id="one_time" className="sr-only" />
+                    <span className="text-2xl font-bold text-gray-900">$2.00</span>
+                    <span className="text-xs text-gray-500 text-center">Paiement unique</span>
+                    <span className="text-xs text-gray-400">30 jours</span>
+                  </label>
+                  <label
+                    htmlFor="recurring"
+                    className={`relative flex flex-col items-center gap-1 rounded-xl border-2 p-4 cursor-pointer transition-all ${
+                      paymentMode === "recurring"
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <RadioGroupItem value="recurring" id="recurring" className="sr-only" />
+                    <span className="text-2xl font-bold text-gray-900">$2.00</span>
+                    <span className="text-xs text-gray-500 text-center">Par mois</span>
+                    <span className="text-[10px] text-blue-600 font-medium">♻️ Automatique</span>
+                  </label>
+                </RadioGroup>
+
+                {paymentMode === "recurring" && (
+                  <p className="text-xs text-center text-blue-600 bg-blue-50 rounded-lg p-2">
+                    L'abonnement se renouvelle automatiquement chaque mois. Annulable à tout moment.
+                  </p>
+                )}
 
                 <ul className="text-sm text-gray-600 space-y-2 bg-blue-50 rounded-lg p-4">
                   <li>✅ Accès à tous les cours et leçons</li>
@@ -116,7 +153,9 @@ export default function GiftPayment() {
                   {isPaying ? (
                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Redirection vers Stripe...</>
                   ) : (
-                    <><CreditCard className="mr-2 h-4 w-4" />Payer $2.00 par carte</>
+                    <><CreditCard className="mr-2 h-4 w-4" />
+                      {paymentMode === "recurring" ? "S'abonner à $2.00/mois" : "Payer $2.00 par carte"}
+                    </>
                   )}
                 </Button>
 
