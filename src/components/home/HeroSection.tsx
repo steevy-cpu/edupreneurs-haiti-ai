@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Rss } from "lucide-react";
+import { GraduationCap, Heart } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import ericCelebrating from "@/assets/eric-celebrating.png";
 
@@ -61,11 +61,11 @@ export const HeroSection = memo(function HeroSection({
             </div>
             {/* Blog Badge */}
             <Link 
-              to="/blog" 
+              to="/donate" 
               className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold text-accent hover:bg-accent/20 transition-colors"
             >
-              <Rss className="w-4 h-4" />
-              <span>Nouveau: Blog</span>
+              <Heart className="w-4 h-4" />
+              <span>Fait un don avec nous</span>
             </Link>
           </div>
           
