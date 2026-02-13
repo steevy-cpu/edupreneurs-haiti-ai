@@ -257,6 +257,7 @@ export const paymentSchema = z.object({
   description: z.string().max(500).optional(),
   orderId: z.string().max(100).optional(),
   isSignupPayment: z.boolean().optional(),
+  isDonation: z.boolean().optional(),
   email: z.string().email().max(320).optional(),
 }).strict();
 
