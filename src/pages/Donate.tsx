@@ -4,27 +4,23 @@ import { Footer } from "@/components/Footer";
 import { DonateHero } from "@/components/donate/DonateHero";
 import { DonationCard } from "@/components/donate/DonationCard";
 import { ImpactSection } from "@/components/donate/ImpactSection";
-import { getAvatarUrl } from "@/lib/avatarMap";
 import { HomeChatbot } from "@/components/HomeChatbot";
 import { FloatingFeatureBubbles } from "@/components/donate/FloatingFeatureBubbles";
 
 export default function Donate() {
-  const judeAvatar = getAvatarUrl("jude", 128);
-
   return (
     <>
       <Helmet>
         <title>Faire un don | Edupreneurs Haiti</title>
         <meta
           name="description"
-          content="Aidez Jude à transformer l'éducation en Haïti. Chaque don soutient des élèves haïtiens grâce à l'IA éducative."
+          content="Chaque don nous aide à améliorer l'expérience de l'élève avec l'intelligence artificielle."
         />
         <meta property="og:title" content="Faire un don | Edupreneurs Haiti" />
         <meta
           property="og:description"
           content="Soutenez l'éducation en Haïti avec un don. Chaque gourde compte."
         />
-        {judeAvatar && <meta property="og:image" content={judeAvatar} />}
       </Helmet>
 
       <div className="min-h-screen bg-background flex flex-col relative">
