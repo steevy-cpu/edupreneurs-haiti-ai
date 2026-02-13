@@ -161,7 +161,7 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
         // Fetch profile data including tour completion status
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('nickname, academic_grade, onboarding_tour_completed')
+          .select('nickname, academic_grade, onboarding_tour_completed, subscription_status, subscription_end_date, has_free_access')
           .eq('user_id', authUser.id)
           .single();
 
@@ -173,6 +173,20 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
 
         setUserNickname(profile?.nickname || null);
         setUserGrade(profile?.academic_grade || null);
+
+        // Skip onboarding if subscription is not active
+        // (SubscriptionGate will show payment/pending prompt instead)
+        if (!profile?.has_free_access) {
+          const isActive = profile?.subscription_status === 'active'
+            && profile?.subscription_end_date
+            && new Date(profile.subscription_end_date) > new Date();
+
+          if (!isActive) {
+            setIsLoading(false);
+            hasInitialized.current = true;
+            return;
+          }
+        }
 
         // Check if this is a test account - always show tour for testing
         const isTestAccount = TEST_ACCOUNT_IDS.includes(authUser.id);
