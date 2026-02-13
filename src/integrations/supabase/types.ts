@@ -1126,6 +1126,7 @@ export type Database = {
           amount: number
           created_at: string
           currency: string
+          donor_email: string | null
           donor_message: string | null
           donor_name: string | null
           id: string
@@ -1137,6 +1138,7 @@ export type Database = {
           amount: number
           created_at?: string
           currency?: string
+          donor_email?: string | null
           donor_message?: string | null
           donor_name?: string | null
           id?: string
@@ -1148,6 +1150,7 @@ export type Database = {
           amount?: number
           created_at?: string
           currency?: string
+          donor_email?: string | null
           donor_message?: string | null
           donor_name?: string | null
           id?: string
