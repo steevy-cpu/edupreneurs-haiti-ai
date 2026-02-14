@@ -1,76 +1,115 @@
 
-
-# Fix: First-Time Tour Conflicting with SubscriptionGate
+# Structured Email System for All Payment Flows
 
 ## The Problem
 
-When a new user with `pending_gift` status lands on `/dashboard` after email verification:
+Currently, email sending is scattered and inconsistent:
 
-1. `SubscriptionGate` blocks the dashboard and shows the "En attente du paiement" prompt
-2. But `FirstTimeUserContext` also activates because `location.pathname === '/dashboard'` and `onboarding_tour_completed === false`
-3. The welcome overlay (z-index 9999) renders ON TOP of the payment prompt
-4. The user sees Jude's animated welcome covering a screen they can't interact with
-5. If they complete the welcome + avatar steps, the tour tries to navigate to `/matieres`, `/feed`, etc. -- all blocked by `SubscriptionGate`
+| Payment flow | User confirmation email | Invoice/receipt email | Emails sent |
+|---|---|---|---|
+| Gift (Stripe one-time) | Student activation | Payer invoice + thank-you | 3 emails |
+| Gift (Stripe recurring) | Student renewal | Payer renewal receipt | 2 emails |
+| MonCash subscription renewal | NONE | NONE | 0 emails |
+| MonCash webhook (auto-verify) | NONE | NONE | 0 emails |
+| NatCash admin verify | NONE | NONE | 0 emails |
+| Donations (MonCash/Stripe) | Thank-you email | -- | 1 email |
 
-The tour and the subscription gate are completely unaware of each other.
+The person renewing via MonCash or NatCash gets zero confirmation. No receipt, no "your subscription is extended" email. And the email code that does exist is duplicated across 4 edge functions with inline HTML templates, making it fragile.
 
-## The Fix
+## The Solution: Shared Email Module + Fix All Gaps
 
-**File: `src/contexts/FirstTimeUserContext.tsx`** (single file change)
+### Phase 1: Create shared email utility
 
-In the `checkTourStatus` function (around line 132), add a subscription status check BEFORE triggering the onboarding sequence. If the user's subscription is not active (status is `pending_gift`, `none`, or expired), skip the tour entirely and don't set `showWelcome = true`.
+**New file: `supabase/functions/_shared/emails.ts`**
 
-### What Changes
+A single shared module that all payment functions import. Contains:
 
-Inside `checkTourStatus`, after fetching the profile (line 162), also fetch `subscription_status`, `subscription_end_date`, and `has_free_access`. Then add a guard:
+- `sendEmail(to, subject, html)` -- the actual Resend API call (currently duplicated in 4 files)
+- `buildSubscriptionConfirmationEmail(studentName, endDate, paymentMethod)` -- for the user who just got their subscription extended
+- `buildSubscriptionInvoiceEmail(name, amount, currency, orderId, date, paymentMethod)` -- receipt/invoice for the payer
+- `buildSubscriptionThankYouEmail(payerName, studentName)` -- thank-you for gift payers (reused from verify-gift-payment)
+- `buildRenewalStudentEmail(studentName, endDate)` -- reused from stripe-gift-webhook
+- `buildRenewalPayerEmail(payerEmail, studentName, amount, date)` -- reused from stripe-gift-webhook
 
-```
-// Skip onboarding if subscription is not active
-// (SubscriptionGate will show payment/pending prompt instead)
-if (!profile.has_free_access) {
-  const isActive = profile.subscription_status === 'active' 
-    && profile.subscription_end_date 
-    && new Date(profile.subscription_end_date) > new Date();
-  
-  if (!isActive) {
-    // Don't show tour -- SubscriptionGate handles this state
-    setIsLoading(false);
-    return;
-  }
-}
-```
+This eliminates all inline email templates from individual functions.
 
-This means:
-- `has_free_access` users: tour shows normally (promo users bypass subscription)
-- `active` subscription users: tour shows normally
-- `pending_gift` users: tour is deferred until subscription activates
-- `expired` users: tour is deferred until renewal
+### Phase 2: Add emails to MonCash verify-payment
 
-When the gift payment comes through and `SubscriptionGate` refreshes (via the 30s polling), `hasInitialized.current` is still `false` for the tour context, so on the next render cycle, `checkTourStatus` re-runs and this time the subscription IS active -- the tour starts naturally.
+**File: `supabase/functions/moncash-verify-payment/index.ts`**
 
-### Technical Details
+After the subscription extension succeeds (line 182), add:
 
-**Modified query** (line 164):
-```typescript
-const { data: profile } = await supabase
-  .from('profiles')
-  .select('nickname, academic_grade, onboarding_tour_completed, subscription_status, subscription_end_date, has_free_access')
-  .eq('user_id', authUser.id)
-  .single();
-```
+1. Fetch the user's email and name from their profile
+2. Send a "Subscription confirmed" email with the new end date
+3. Send an invoice/receipt email with the 200 HTG amount and order ID
 
-**New guard** (inserted after line 173, before the tour completion check):
-- Check `has_free_access` first (bypass for promo users)
-- Check if subscription is active and not expired
-- If not active, return early without starting the tour
+### Phase 3: Add emails to MonCash webhook
 
-### Safety Verification
+**File: `supabase/functions/moncash-webhook/index.ts`**
+
+After the subscription extension succeeds (line 348), add:
+
+1. Fetch the user's email and name from their profile
+2. Send a "Subscription confirmed" email
+3. Send an invoice/receipt email
+
+### Phase 4: Add emails to NatCash admin verify
+
+**File: `supabase/functions/natcash-admin-verify/index.ts`**
+
+After subscription extension on approval, add the same two emails.
+
+### Phase 5: Deduplicate existing email code
+
+Refactor these files to import from `_shared/emails.ts` instead of defining their own templates:
+
+- `stripe-gift-webhook/index.ts` -- remove `sendEmail()` and `buildRenewalStudentEmail()` / `buildRenewalPayerEmail()`
+- `verify-gift-payment/index.ts` -- remove `sendEmail()` and all 3 `build*Email()` functions
+
+---
+
+## Email Templates
+
+### Subscription Confirmation (for the user)
+
+Used when a user's own subscription is activated/renewed via MonCash or NatCash.
+
+Content:
+- Header: "Abonnement activé!" (or "renouvelé!")
+- Body: "Votre abonnement de 30 jours est actif."
+- Card showing: expiry date
+- CTA: "Continuer a apprendre"
+- Payment method badge (MonCash or NatCash)
+
+### Payment Invoice/Receipt (for the payer)
+
+Used for MonCash/NatCash self-payments (the user IS the payer).
+
+Content:
+- Header: "Recu de paiement"
+- Body: Amount, date, order ID, payment method
+- Note: "Conservez ce recu pour vos archives"
+
+---
+
+## Files Changed Summary
+
+| File | Change | Risk |
+|---|---|---|
+| `_shared/emails.ts` (NEW) | Shared email utility + templates | None -- new file |
+| `moncash-verify-payment/index.ts` | Add 2 emails after subscription extension | Low -- additive |
+| `moncash-webhook/index.ts` | Add 2 emails after subscription extension | Low -- additive |
+| `natcash-admin-verify/index.ts` | Add 2 emails after approval | Low -- additive |
+| `stripe-gift-webhook/index.ts` | Import from shared instead of inline | Low -- same behavior |
+| `verify-gift-payment/index.ts` | Import from shared instead of inline | Low -- same behavior |
+
+## Safety Verification
 
 | Check | Result |
 |---|---|
-| Breaks existing functionality? | No -- only adds an early return condition |
-| Works with existing data? | Yes -- reads existing profile columns |
-| 3G optimized? | Yes -- no extra query, just additional columns in existing fetch |
-| Edge cases? | Promo users bypass check; legacy users with active status proceed normally |
-| Tour still works after payment? | Yes -- `hasInitialized.current` stays false, re-runs on next dashboard visit |
-
+| Breaks existing functionality? | No -- only adding emails where none existed, and deduplicating existing ones |
+| Works with existing data? | Yes -- reads existing profile fields (email, full_name) |
+| 3G optimized? | Yes -- emails are server-side; no client impact |
+| Edge cases? | Missing email addresses handled with early return; Resend failures are non-blocking |
+| Backward compatible? | Yes -- gift payment emails remain identical, just sourced from shared module |
+| Idempotent? | Yes -- duplicate webhook calls already prevented by status checks; emails are fire-and-forget |
