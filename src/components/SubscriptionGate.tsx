@@ -5,10 +5,10 @@
  * Expired users see a full-screen renewal prompt.
  */
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Clock, CreditCard, Gift } from 'lucide-react';
@@ -36,12 +36,26 @@ export function SubscriptionGate({ children }: SubscriptionGateProps) {
     },
     enabled: !!user?.id && isAuthenticated,
     staleTime: 5 * 60 * 1000,
-    // Poll every 30s when waiting for gift payment so UI auto-refreshes
+    // Poll every 10s when waiting for gift payment so UI auto-refreshes
     refetchInterval: (query) => {
       const data = query.state.data;
-      return data?.subscription_status === 'pending_gift' ? 30_000 : false;
+      return data?.subscription_status === 'pending_gift' ? 10_000 : false;
     },
   });
+
+  // Track previous status to detect pending_gift → active transition
+  const queryClient = useQueryClient();
+  const prevStatusRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const currentStatus = profile?.subscription_status ?? null;
+    if (prevStatusRef.current === 'pending_gift' && currentStatus === 'active') {
+      // Invalidate all subscription-related queries so tour context + banner pick up the change
+      queryClient.invalidateQueries({ queryKey: ['subscription-status'] });
+      queryClient.invalidateQueries({ queryKey: ['subscription-banner'] });
+    }
+    prevStatusRef.current = currentStatus;
+  }, [profile?.subscription_status, queryClient]);
 
   // Not authenticated - let auth guard handle redirect
   if (!isAuthenticated) return <>{children}</>;
