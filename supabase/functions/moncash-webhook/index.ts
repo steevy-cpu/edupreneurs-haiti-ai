@@ -11,6 +11,7 @@
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendSubscriptionEmailsWithAuth } from "../_shared/emails.ts";
 
 // Extract Bazik-specific headers
 function extractBazikHeaders(headers: Headers): {
@@ -346,6 +347,16 @@ serve(async (req) => {
             .eq('user_id', transaction.user_id);
 
           console.log(`Webhook: Subscription extended for user ${transaction.user_id} until ${newEnd.toISOString()}`);
+
+          // Send confirmation + invoice emails
+          await sendSubscriptionEmailsWithAuth(
+            supabase as any,
+            transaction.user_id,
+            validation.referenceId!,
+            newEnd,
+            "MonCash",
+            "200 HTG"
+          );
         } catch (subErr) {
           console.error('Webhook: Subscription extension failed:', subErr);
         }
