@@ -207,3 +207,9 @@ verify_jwt = false
 
 [functions.verify-gift-payment]
 verify_jwt = false
+
+[functions.moncash-gift-payment]
+verify_jwt = false
+
+[functions.verify-moncash-gift]
+verify_jwt = false

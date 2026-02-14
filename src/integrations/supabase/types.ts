@@ -1593,11 +1593,14 @@ export type Database = {
       gift_subscriptions: {
         Row: {
           amount_cents: number
+          amount_htg: number | null
           completed_at: string | null
           created_at: string
           expires_at: string
           id: string
+          moncash_order_id: string | null
           payer_email: string | null
+          payment_gateway: string
           payment_mode: string
           status: string
           stripe_session_id: string | null
@@ -1609,11 +1612,14 @@ export type Database = {
         }
         Insert: {
           amount_cents?: number
+          amount_htg?: number | null
           completed_at?: string | null
           created_at?: string
           expires_at?: string
           id?: string
+          moncash_order_id?: string | null
           payer_email?: string | null
+          payment_gateway?: string
           payment_mode?: string
           status?: string
           stripe_session_id?: string | null
@@ -1625,11 +1631,14 @@ export type Database = {
         }
         Update: {
           amount_cents?: number
+          amount_htg?: number | null
           completed_at?: string | null
           created_at?: string
           expires_at?: string
           id?: string
+          moncash_order_id?: string | null
           payer_email?: string | null
+          payment_gateway?: string
           payment_mode?: string
           status?: string
           stripe_session_id?: string | null
