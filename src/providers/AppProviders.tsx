@@ -83,13 +83,13 @@ interface FeatureProvidersProps {
 function FeatureProviders({ children }: FeatureProvidersProps) {
   return (
     <PresenceProvider>
-      <MusicPlayerProvider>
-        <VisitorProvider>
+      <VisitorProvider>
+        <MusicPlayerProvider>
           <FirstTimeUserProvider>
             {children}
           </FirstTimeUserProvider>
-        </VisitorProvider>
-      </MusicPlayerProvider>
+        </MusicPlayerProvider>
+      </VisitorProvider>
     </PresenceProvider>
   );
 }
