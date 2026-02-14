@@ -1,61 +1,65 @@
 
 
-# Fix Visitor Mode Music Not Playing
+# Fix: Visitor Music Not Playing -- Provider Ordering Bug
 
 ## Root Cause
 
-Two issues prevent music from playing in visitor mode:
+The `MusicPlayerProvider` sits **above** `VisitorProvider` in the component tree (`AppProviders.tsx`):
 
-### Issue 1: Database blocks visitors
-The `study_music_tracks` table has an RLS policy that only allows `authenticated` users to read tracks. Visitors use the anonymous role, so the database returns zero rows.
+```text
+MusicPlayerProvider  <-- calls useVisitor() here
+  VisitorProvider    <-- but VisitorContext is provided here (below)
+```
 
-### Issue 2: Tracks never fetched for visitors
-In `MusicPlayerContext.tsx`, the playlist fetch only triggers when `isAuthenticated` is `true`. Since visitors are not authenticated, `tracks` stays as an empty array. When `JudeWelcomePopup` calls `playTrack()`, there is nothing to play.
+When `useVisitor()` is called inside `MusicPlayerProvider`, the `VisitorContext` doesn't exist yet. The hook returns safe defaults with `isVisitor: false`. So the condition `isAuthenticated || isVisitor` never becomes true for visitors, and `fetchPlaylistTracks()` never runs. Tracks stay empty. Music never plays.
 
 ## Fix
 
-### Change 1: Add RLS policy for anonymous read access
+**Swap the provider order** in `src/providers/AppProviders.tsx` so that `VisitorProvider` wraps `MusicPlayerProvider`:
 
-Add a new policy allowing the `anon` role to read active tracks from `study_music_tracks`. This is safe because the playlist is public content (YouTube IDs and titles) with no sensitive data. Write policies remain restricted to founders.
-
-```sql
-CREATE POLICY "Anyone can read active tracks"
-ON public.study_music_tracks FOR SELECT
-TO anon
-USING (is_active = true);
+```text
+VisitorProvider          <-- provides isVisitor context
+  MusicPlayerProvider    <-- can now read isVisitor correctly
 ```
 
-### Change 2: Fetch tracks for visitors too
+### Change in `src/providers/AppProviders.tsx` (FeatureProviders function)
 
-In `MusicPlayerContext.tsx`, update the initialization effect to also fetch tracks when the user is in visitor mode. Import `useVisitor` and trigger `fetchPlaylistTracks()` when either `isAuthenticated` or `isVisitor` is true.
-
+Current order (lines 85-93):
 ```typescript
-const { isVisitor } = useVisitor();
-
-useEffect(() => {
-  if (isAuthenticated || isVisitor) {
-    fetchPlaylistTracks();
-  }
-  // ...
-}, [isAuthenticated, isVisitor]);
+<PresenceProvider>
+  <MusicPlayerProvider>
+    <VisitorProvider>
+      <FirstTimeUserProvider>
+        {children}
+      </FirstTimeUserProvider>
+    </VisitorProvider>
+  </MusicPlayerProvider>
+</PresenceProvider>
 ```
 
-This ensures the tracks array is populated before Jude's welcome popup tries to play music.
+New order:
+```typescript
+<PresenceProvider>
+  <VisitorProvider>
+    <MusicPlayerProvider>
+      <FirstTimeUserProvider>
+        {children}
+      </FirstTimeUserProvider>
+    </MusicPlayerProvider>
+  </VisitorProvider>
+</PresenceProvider>
+```
 
-## Files Changed
-
-| File | Change | Risk |
-|---|---|---|
-| Database migration | Add anon SELECT policy for active tracks | None -- read-only public content |
-| `src/contexts/MusicPlayerContext.tsx` | Fetch tracks when visitor mode is active | Low -- additive condition |
+This is the only file that needs to change. The RLS policy and the `useVisitor` import from the previous fix are already correct -- they just couldn't work because of this ordering issue.
 
 ## Safety Verification
 
 | Check | Result |
 |---|---|
-| Breaks existing functionality? | No -- authenticated flow unchanged |
-| Works with existing data? | Yes -- same table, same query |
-| 3G optimized? | Yes -- single small SELECT, same as before |
-| Security concern? | None -- YouTube IDs and titles are not sensitive; write access stays founder-only |
-| Backward compatible? | Yes -- only adds a new code path for visitors |
+| Breaks existing functionality? | No -- VisitorProvider has no dependency on MusicPlayerProvider |
+| Works with existing data? | Yes -- no data changes |
+| Other consumers of useVisitor? | Unaffected -- they are all below VisitorProvider in the tree |
+| Other consumers of useMusicPlayer? | Unaffected -- they are all below MusicPlayerProvider in the tree |
+| 3G optimized? | Yes -- no additional network requests |
+| Backward compatible? | Yes -- same providers, just reordered |
 
