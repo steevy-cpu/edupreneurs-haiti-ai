@@ -183,7 +183,8 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
 
           if (!isActive) {
             setIsLoading(false);
-            hasInitialized.current = true;
+            // Do NOT set hasInitialized.current = true here.
+            // Let checkTourStatus re-run when subscription activates.
             return;
           }
         }
