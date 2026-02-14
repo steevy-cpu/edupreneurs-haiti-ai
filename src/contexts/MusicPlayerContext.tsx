@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useRef, useEffect, useCallback, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSessionAuth } from "@/contexts/SessionAuthContext";
+import { useVisitor } from "@/contexts/VisitorContext";
 
 interface PlaylistTrack {
   id: string;
@@ -76,15 +77,16 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const { isAuthenticated } = useSessionAuth();
+  const { isVisitor } = useVisitor();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated || isVisitor) {
       fetchPlaylistTracks();
     }
     if (!isSlowConnection()) {
       loadYouTubeAPI();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isVisitor]);
 
   const loadYouTubeAPI = useCallback(() => {
     if (youtubeApiLoaded || window.YT) {
