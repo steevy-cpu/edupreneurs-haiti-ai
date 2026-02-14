@@ -11,97 +11,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const SITE_URL = Deno.env.get("SITE_URL") || "https://edupreneurs-haiti-ai.lovable.app";
-
-async function sendEmail(to: string, subject: string, html: string) {
-  if (!RESEND_API_KEY || !to) return;
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
-    body: JSON.stringify({ from: "Edupreneurs Haiti <noreply@mon-edupreneur.com>", to: [to], subject, html }),
-  });
-  if (!res.ok) console.error("Email send failed:", await res.text());
-}
-
-function buildRenewalStudentEmail(studentName: string, endDate: string): string {
-  return `<!DOCTYPE html>
-<html lang="fr">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background:#f4f7f6;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7f6;padding:32px 16px;">
-<tr><td align="center">
-<table width="100%" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-<tr><td style="background:linear-gradient(135deg,#16a34a,#059669);padding:40px 32px;text-align:center;">
-  <div style="font-size:48px;margin-bottom:8px;">🔄</div>
-  <h1 style="color:#ffffff;font-size:24px;margin:0;">Abonnement renouvelé!</h1>
-  <p style="color:#d1fae5;font-size:14px;margin:4px 0 0;">Votre accès continue</p>
-</td></tr>
-<tr><td style="padding:32px;">
-  <p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">Bonjour <strong>${studentName}</strong>,</p>
-  <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px;">
-    Votre abonnement Edupreneurs a été renouvelé automatiquement grâce au soutien de votre proche. Continuez à apprendre!
-  </p>
-  <table width="100%" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;margin-bottom:24px;">
-  <tr><td style="padding:20px;text-align:center;">
-    <p style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;">Accès actif jusqu'au</p>
-    <p style="color:#16a34a;font-size:28px;font-weight:700;margin:0;">${endDate}</p>
-  </td></tr>
-  </table>
-  <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-    <a href="${SITE_URL}" style="display:inline-block;background:#16a34a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:15px;font-weight:600;">
-      Continuer à apprendre 🚀
-    </a>
-  </td></tr></table>
-</td></tr>
-<tr><td style="background:#f9fafb;padding:20px 32px;text-align:center;border-top:1px solid #e5e7eb;">
-  <p style="color:#9ca3af;font-size:12px;margin:0;">© ${new Date().getFullYear()} Edupreneurs Haiti</p>
-</td></tr>
-</table>
-</td></tr>
-</table>
-</body>
-</html>`;
-}
-
-function buildRenewalPayerEmail(payerEmail: string, studentName: string, amount: string, date: string): string {
-  return `<!DOCTYPE html>
-<html lang="fr">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background:#f4f7f6;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7f6;padding:32px 16px;">
-<tr><td align="center">
-<table width="100%" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-<tr><td style="background:linear-gradient(135deg,#16a34a,#059669);padding:40px 32px;text-align:center;">
-  <div style="font-size:48px;margin-bottom:8px;">🧾</div>
-  <h1 style="color:#ffffff;font-size:24px;margin:0;">Renouvellement mensuel</h1>
-  <p style="color:#d1fae5;font-size:14px;margin:4px 0 0;">Abonnement Edupreneurs</p>
-</td></tr>
-<tr><td style="padding:32px;">
-  <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 20px;">
-    Votre abonnement mensuel pour <strong>${studentName}</strong> a été renouvelé avec succès.
-  </p>
-  <table width="100%" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;margin-bottom:24px;">
-  <tr><td style="padding:20px;">
-    <table width="100%" cellpadding="0" cellspacing="0">
-    <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Montant</td><td style="color:#16a34a;font-size:18px;font-weight:700;text-align:right;padding:6px 0;">${amount}</td></tr>
-    <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Date</td><td style="color:#1f2937;font-size:13px;text-align:right;padding:6px 0;">${date}</td></tr>
-    <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Étudiant</td><td style="color:#1f2937;font-size:13px;text-align:right;padding:6px 0;">${studentName}</td></tr>
-    </table>
-  </td></tr>
-  </table>
-  <p style="color:#9ca3af;font-size:12px;margin:0;">Merci pour votre soutien continu! 💚</p>
-</td></tr>
-<tr><td style="background:#f9fafb;padding:20px 32px;text-align:center;border-top:1px solid #e5e7eb;">
-  <p style="color:#9ca3af;font-size:12px;margin:0;">© ${new Date().getFullYear()} Edupreneurs Haiti</p>
-</td></tr>
-</table>
-</td></tr>
-</table>
-</body>
-</html>`;
-}
+import {
+  sendEmail,
+  buildRenewalStudentEmail,
+  buildRenewalPayerEmail,
+} from "../_shared/emails.ts";
 
 serve(async (req) => {
   // Only accept POST
@@ -162,8 +76,7 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Idempotency check: prevent duplicate processing of the same Stripe event
-    // Use invoice ID as idempotency key since each renewal has a unique invoice
+    // Idempotency check
     const invoiceId = invoice.id;
     const { data: existingGift } = await supabaseAdmin
       .from("gift_subscriptions")
@@ -188,7 +101,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({ received: true, skipped: "no_gift_found" }), { status: 200 });
     }
 
-    // Resolve student_user_id: if null, look up by email
+    // Resolve student_user_id
     let studentUserId = gift.student_user_id;
     if (!studentUserId && gift.student_email) {
       const { data: userList } = await supabaseAdmin.auth.admin.listUsers({
@@ -258,7 +171,7 @@ serve(async (req) => {
       console.error("[GIFT-WEBHOOK] Notification error:", e);
     }
 
-    // Send emails
+    // Send emails (using shared module)
     const endDateStr = newEnd.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
     const dateNow = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
     const amountStr = `$${((invoice.amount_paid || 200) / 100).toFixed(2)} USD`;
@@ -281,7 +194,7 @@ serve(async (req) => {
         await sendEmail(
           payerEmail,
           "🧾 Renouvellement mensuel — Edupreneurs",
-          buildRenewalPayerEmail(payerEmail, gift.student_name, amountStr, dateNow)
+          buildRenewalPayerEmail(gift.student_name, amountStr, dateNow)
         );
       } catch (e) {
         console.error("[GIFT-WEBHOOK] Payer email error:", e);

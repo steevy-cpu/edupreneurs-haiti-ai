@@ -11,6 +11,7 @@ import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../
 import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { BAZIK_API_BASE, getBazikToken, getMonCashCredentials } from "../_shared/bazik.ts";
+import { sendSubscriptionEmailsWithAuth } from "../_shared/emails.ts";
 
 const verifySchema = z.object({
   orderId: z.string().max(100).optional(),
@@ -176,10 +177,20 @@ serve(async (req) => {
               })
               .eq('user_id', txn.user_id);
 
-            if (subError) {
+          if (subError) {
               console.error('Error extending subscription:', subError);
             } else {
               console.log(`Subscription extended for user ${txn.user_id} until ${newEnd.toISOString()}`);
+
+              // Send confirmation + invoice emails
+              await sendSubscriptionEmailsWithAuth(
+                supabase as any,
+                txn.user_id,
+                dbOrderId,
+                newEnd,
+                "MonCash",
+                "200 HTG"
+              );
             }
           }
         } catch (subExtErr) {

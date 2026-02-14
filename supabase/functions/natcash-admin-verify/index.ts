@@ -7,6 +7,7 @@ import {
   corsPreflightResponse 
 } from "../_shared/securityHeaders.ts";
 import { checkRateLimit, RATE_LIMITS, getClientIp } from "../_shared/rateLimiter.ts";
+import { sendSubscriptionEmailsWithAuth } from "../_shared/emails.ts";
 
 // Input validation schema
 const adminVerifySchema = z.object({
@@ -169,6 +170,16 @@ serve(async (req) => {
           console.error('[NatCash Admin Verify] Subscription extension error:', subError);
         } else {
           console.log(`[NatCash Admin Verify] Subscription extended for user ${transaction.user_id} until ${newEnd.toISOString()}`);
+
+          // Send confirmation + invoice emails
+          await sendSubscriptionEmailsWithAuth(
+            supabase as any,
+            transaction.user_id,
+            orderId,
+            newEnd,
+            "NatCash",
+            "200 HTG"
+          );
         }
       } catch (subExtErr) {
         console.error('[NatCash Admin Verify] Subscription extension failed:', subExtErr);
