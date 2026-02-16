@@ -5,13 +5,17 @@
  * Expired users see a full-screen renewal prompt.
  */
 
-import React, { ReactNode, useEffect, useRef } from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Clock, CreditCard, Gift } from 'lucide-react';
+import { Clock, CreditCard, Gift, Loader2 } from 'lucide-react';
+import { StripeRenewalButton } from '@/components/subscription/StripeRenewalButton';
+import { RenewalGiftLink } from '@/components/subscription/RenewalGiftLink';
+import NatCashPaymentFlow from '@/components/subscription/NatCashPaymentFlow';
+import { toast } from 'sonner';
 
 // Users created before this date are legacy (before subscription system)
 const SUBSCRIPTION_CUTOFF_DATE = new Date('2026-02-10T00:00:00Z');
@@ -93,10 +97,26 @@ export function SubscriptionGate({ children }: SubscriptionGateProps) {
 }
 
 function RenewalPrompt() {
-  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [paymentMethod, setPaymentMethod] = useState<"moncash" | "natcash" | "stripe">("moncash");
+  const [renewLoading, setRenewLoading] = useState(false);
 
-  const handleRenew = () => {
-    navigate('/settings?tab=preferences#subscription');
+  const handleMonCashRenewal = async () => {
+    setRenewLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('moncash-create-payment', {
+        body: { amount: 200, description: 'Renouvellement Edupreneurs - 30 jours' },
+      });
+      if (error || !data?.redirectUrl) {
+        toast.error("Erreur lors de la création du paiement");
+        setRenewLoading(false);
+        return;
+      }
+      window.location.href = data.redirectUrl;
+    } catch {
+      toast.error("Erreur réseau");
+      setRenewLoading(false);
+    }
   };
 
   return (
@@ -118,9 +138,74 @@ function RenewalPrompt() {
           <div className="text-sm text-muted-foreground">/ 30 jours</div>
         </div>
 
-        <Button size="lg" className="w-full" onClick={handleRenew}>
-          <CreditCard className="mr-2 h-5 w-5" />Renouveler mon abonnement
-        </Button>
+        {/* Payment method tabs */}
+        <div className="space-y-3 text-left">
+          <div className="flex rounded-lg border border-input overflow-hidden">
+            <button
+              type="button"
+              className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
+                paymentMethod === "moncash"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-background text-muted-foreground hover:bg-muted"
+              }`}
+              onClick={() => setPaymentMethod("moncash")}
+            >
+              MonCash
+            </button>
+            <button
+              type="button"
+              className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
+                paymentMethod === "natcash"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-background text-muted-foreground hover:bg-muted"
+              }`}
+              onClick={() => setPaymentMethod("natcash")}
+            >
+              NatCash
+            </button>
+            <button
+              type="button"
+              className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
+                paymentMethod === "stripe"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-background text-muted-foreground hover:bg-muted"
+              }`}
+              onClick={() => setPaymentMethod("stripe")}
+            >
+              Carte
+            </button>
+          </div>
+
+          {paymentMethod === "moncash" ? (
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={handleMonCashRenewal}
+              disabled={renewLoading}
+            >
+              {renewLoading ? (
+                <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Préparation...</>
+              ) : (
+                <><CreditCard className="mr-2 h-5 w-5" />Renouveler avec MonCash — 200 HTG</>
+              )}
+            </Button>
+          ) : paymentMethod === "natcash" ? (
+            <NatCashPaymentFlow
+              amount={200}
+              description="Renouvellement Edupreneurs - 30 jours"
+              onSuccess={() => {
+                queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+                queryClient.invalidateQueries({ queryKey: ["subscription-status"] });
+                queryClient.invalidateQueries({ queryKey: ["subscription-banner"] });
+              }}
+            />
+          ) : (
+            <StripeRenewalButton size="lg" />
+          )}
+
+          {/* Shareable renewal link */}
+          <RenewalGiftLink />
+        </div>
       </div>
     </div>
   );

@@ -122,6 +122,7 @@ const GiftPayment = lazy(() => import("./pages/GiftPayment"));
 const GiftPaymentSuccess = lazy(() => import("./pages/GiftPaymentSuccess"));
 const GiftMonCashPayment = lazy(() => import("./pages/GiftMonCashPayment"));
 const GiftMonCashCallback = lazy(() => import("./pages/GiftMonCashCallback"));
+const StripeRenewalCallback = lazy(() => import("./pages/StripeRenewalCallback"));
 
 // Templates (public, no auth)
 const TemplatesHomePage = lazy(() => import("./pages/templates/TemplatesHomePage"));
@@ -511,6 +512,11 @@ const App = () => (
                           <Route path="/payment/callback" element={
                             <Suspense fallback={<GenericPageSkeleton />}>
                               <PaymentCallback />
+                            </Suspense>
+                          } />
+                          <Route path="/payment/stripe-renewal-callback" element={
+                            <Suspense fallback={<GenericPageSkeleton />}>
+                              <StripeRenewalCallback />
                             </Suspense>
                           } />
                           <Route path="/natcash-demo" element={
