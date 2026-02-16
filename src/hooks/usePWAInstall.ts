@@ -25,11 +25,15 @@ export const usePWAInstall = (): PWAInstallState => {
   const [showPrompt, setShowPrompt] = useState(false);
   const [isPromptAvailable, setIsPromptAvailable] = useState(false);
 
+  // Check if running inside Capacitor native shell
+  const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
+
   // Check if running on iOS
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
   
   // Check if running in standalone mode (already installed)
-  const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || 
+  const isInStandaloneMode = isCapacitor ||
+                            window.matchMedia('(display-mode: standalone)').matches || 
                             (window.navigator as any).standalone === true ||
                             document.referrer.includes('android-app://');
 
