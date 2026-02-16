@@ -12,7 +12,8 @@ const MONCASH_GIFT_EXPIRY_MINUTES = 15;
  */
 export async function generateMonCashGiftLink(
   studentName: string,
-  studentEmail: string
+  studentEmail: string,
+  studentUserId: string | null = null
 ): Promise<{
   success: boolean;
   token?: string;
@@ -35,7 +36,7 @@ export async function generateMonCashGiftLink(
       .from("gift_subscriptions")
       .insert({
         token,
-        student_user_id: null,
+        student_user_id: studentUserId,
         student_name: firstName,
         student_email: studentEmail,
         status: "pending",

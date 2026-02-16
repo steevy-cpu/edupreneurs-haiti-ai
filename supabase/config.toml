@@ -213,3 +213,9 @@ verify_jwt = false
 
 [functions.verify-moncash-gift]
 verify_jwt = false
+
+[functions.create-stripe-renewal]
+verify_jwt = false
+
+[functions.verify-stripe-renewal]
+verify_jwt = false

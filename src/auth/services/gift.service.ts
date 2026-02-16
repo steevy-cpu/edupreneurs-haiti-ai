@@ -14,7 +14,11 @@ interface GiftRecord {
 /**
  * Generate a gift payment link for the current student
  */
-export async function generateGiftLink(studentName: string, studentEmail: string): Promise<{
+export async function generateGiftLink(
+  studentName: string,
+  studentEmail: string,
+  studentUserId: string | null = null
+): Promise<{
   success: boolean;
   token?: string;
   giftUrl?: string;
@@ -36,7 +40,7 @@ export async function generateGiftLink(studentName: string, studentEmail: string
       .from("gift_subscriptions")
       .insert({
         token,
-        student_user_id: null,
+        student_user_id: studentUserId,
         student_name: firstName,
         student_email: studentEmail,
         status: "pending",
