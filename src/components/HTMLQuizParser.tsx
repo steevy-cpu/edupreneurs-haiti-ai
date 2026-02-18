@@ -175,18 +175,11 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('gold_earned')
-        .eq('user_id', user.id)
-        .single();
-
-      if (profile) {
-        await supabase
-          .from('profiles')
-          .update({ gold_earned: (profile.gold_earned || 0) + amount })
-          .eq('user_id', user.id);
-      }
+      const { error } = await supabase.rpc('increment_gold', {
+        p_user_id: user.id,
+        amount,
+      });
+      if (error) console.error('Error awarding gold:', error);
     } catch (error) {
       console.error('Error awarding gold:', error);
     }

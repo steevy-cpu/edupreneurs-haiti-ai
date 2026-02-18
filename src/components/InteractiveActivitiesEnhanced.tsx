@@ -93,20 +93,12 @@ export const InteractiveActivitiesEnhanced = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('gold_earned')
-        .eq('user_id', user.id)
-        .single();
-
-      if (profile) {
-        await supabase
-          .from('profiles')
-          .update({ gold_earned: (profile.gold_earned || 0) + 1 })
-          .eq('user_id', user.id);
-        
-        onGoldUpdate?.();
-      }
+      const { error } = await supabase.rpc('increment_gold', {
+        p_user_id: user.id,
+        amount: 1,
+      });
+      if (error) console.error('Error awarding gold:', error);
+      else onGoldUpdate?.();
     } catch (error) {
       console.error('Error awarding gold:', error);
     }
