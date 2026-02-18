@@ -11,6 +11,7 @@ import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { getAuthFlow, saveAuthFlow } from "../store/authFlow.store";
 import { deriveAuthState, getRedirectIfNeeded } from "../store/authStateMachine";
 import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface AuthRouteGuardProps {
   children: React.ReactNode;
@@ -99,8 +100,17 @@ export function AuthRouteGuard({ children }: AuthRouteGuardProps) {
     checkAuthState();
   }, [isAuthenticated, isLoading, user, location.pathname, location.search, navigate]);
 
+  // I3: Show a generic skeleton instead of null during auth check to prevent blank white screen on 3G.
+  // The skeleton is replaced immediately when checkAuthState() completes (redirect or children render).
   if (isChecking || isLoading) {
-    return null;
+    return (
+      <div className="flex-1 p-4 lg:p-6 space-y-4" aria-hidden="true">
+        <Skeleton className="h-8 w-56 rounded-lg" />
+        <Skeleton className="h-40 w-full rounded-xl" />
+        <Skeleton className="h-32 w-full rounded-xl" />
+        <Skeleton className="h-28 w-3/4 rounded-xl" />
+      </div>
+    );
   }
 
   return <>{children}</>;

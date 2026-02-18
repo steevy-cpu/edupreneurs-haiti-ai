@@ -224,11 +224,16 @@ serve(async (req) => {
       );
     }
     
-    // Get all user's push subscriptions
+    // I7: Compute cutoff date once — used in DB query to filter stale subscriptions server-side.
+    // Defense-in-depth: even if cleanupOldSubscriptions() fails, we never fetch or send to stale endpoints.
+    const subscriptionCutoffDate = new Date(Date.now() - MAX_SUBSCRIPTION_AGE_MS).toISOString();
+
+    // Get all user's recent push subscriptions (DB-side filter — avoids transferring stale rows)
     const { data: subscriptions, error: fetchError } = await supabase
       .from('push_subscriptions')
       .select('*')
-      .eq('user_id', recipientUserId);
+      .eq('user_id', recipientUserId)
+      .gte('last_used_at', subscriptionCutoffDate);
 
     if (fetchError) {
       console.error('Error fetching subscriptions:', fetchError);
