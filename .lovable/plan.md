@@ -1,37 +1,37 @@
 
-## Root Cause: `HomeChatbot` Missing the `isStable` Dispatcher Guard
+## Root Cause Confirmed: `JudeChatbot` (and other shell floating components) Missing `isStable` Guard
 
-### What Is Happening
+### What Is Crashing
 
-The error "Cannot read properties of null (reading 'useState')" is the React null dispatcher crash. It occurs when a lazy-loaded component calls hooks while the React module fiber dispatcher is still `null` — i.e., the module resolves but React's internal reconciler hasn't finished mounting the fiber tree yet.
-
-**The crash is on the `/` (homepage) route.** The `HomeChatbot` component is loaded like this in `src/pages/Index.tsx`:
+The console crash is the same null dispatcher error, but it is **not** coming from `HomeChatbot` (which was already fixed). It is coming from **`JudeChatbot`** — the authenticated user's floating AI assistant — which is lazy-loaded in `FloatingLayer.tsx`:
 
 ```tsx
-const HomeChatbot = lazy(() => import("@/components/HomeChatbot")...);
-
-// ...then conditionally mounted after scroll/idle:
-{chatbotReady && (
-  <Suspense fallback={null}>
-    <HomeChatbot />
-  </Suspense>
-)}
+const JudeChatbot = lazy(() => import('@/components/JudeChatbot').then(m => ({ default: m.JudeChatbot })));
 ```
 
-`HomeChatbot` calls `useState` at the top level immediately when it mounts. When the lazy chunk resolves right as `chatbotReady` flips to `true`, the React fiber for that subtree may not yet have its dispatcher initialized, causing hooks to read `null`.
+`JudeChatbot` has **8+ `useState` calls, 2 custom hook calls (`useVisitor`, `useSessionAuth`), and `useNavigate`/`useLocation`** — all firing immediately on mount, before the React dispatcher has been fully initialized for that lazy chunk.
 
-### Why `JudeChatbot`, `FirstTimeUserTour`, and `VisitorTour` Do NOT Crash
+Secondary candidates that share the same `<Suspense fallback={null}>` boundary in `FloatingLayer.tsx` and also lack the guard:
+- `GlobalMusicPlayer`
+- `QuickMessageFAB`
+- `CookieConsent`
+- `NotificationPermissionBanner`
 
-All of those components use the **double `requestAnimationFrame` isStable guard**:
+### Files to Change
 
+4 files — all follow the same one-paragraph change: add `isStable` state at the top of hooks, add the double-RAF `useEffect`, and add `if (!isStable) return null` before the JSX `return`.
+
+#### 1. `src/components/JudeChatbot.tsx` (PRIMARY — this is the crasher)
+
+Add at top of `JudeChatbot` component (before line 90's `useVisitor`):
 ```tsx
 const [isStable, setIsStable] = useState(false);
-
+```
+Add after the last `useEffect` (before line 346's `return (`):
+```tsx
 useEffect(() => {
   const timer = requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      setIsStable(true);
-    });
+    requestAnimationFrame(() => setIsStable(true));
   });
   return () => cancelAnimationFrame(timer);
 }, []);
@@ -39,53 +39,39 @@ useEffect(() => {
 if (!isStable) return null;
 ```
 
-This guard defers all other logic (including any risky renders) until two animation frames after mount, which guarantees the React dispatcher is fully initialized.
+#### 2. `src/components/GlobalMusicPlayer.tsx`
 
-**`HomeChatbot` is the only floating, lazy-loaded component missing this guard.**
+Add `isStable` state + double-RAF effect + `if (!isStable) return null` before its `return (`.
+
+#### 3. `src/components/shared/QuickMessageFAB.tsx`
+
+Same pattern — `isStable` guard before its `return (` at line 150.
+
+#### 4. `src/components/CookieConsent.tsx`
+
+Same pattern — `isStable` guard before its `return (` at line ~45.
+
+### Why `NotificationPermissionBanner` Is Lower Priority
+
+It's wrapped in `NotificationBannerWrapper` which already gates its render behind `userId` existing. The risk of dispatcher crash is lower because it mounts later in the session lifecycle after full auth resolution. It can be addressed in a follow-up pass.
 
 ### Safety Verification
 
 | Check | Status |
 |---|---|
 | Does this touch RLS or DB functions? | No |
-| Does this affect the Provider Stack or AppShell? | No |
+| Does this affect Provider Stack or AppShell? | No — only adds a 2-frame null render to floating components |
 | Does this add dependencies? | No |
-| Cold start / 3G risk? | None — guard is a pure two-frame delay |
-| Backward compatibility? | Full — no API, data, or prop changes |
-| Does the fix affect auth or device trust? | No |
+| Cold start / 3G risk? | None — 2-frame delay is imperceptible, ~32ms max |
+| Hook count mismatch? | No — `isStable` state is declared first, before all other hooks |
+| Backward compatibility? | Full — all props, APIs, and behaviors unchanged |
+| Does this affect auth or device trust? | No |
 
-### What Will Be Changed
+### Implementation Order
 
-**Single file: `src/components/HomeChatbot.tsx`**
+1. `JudeChatbot.tsx` — fixes the active crash
+2. `GlobalMusicPlayer.tsx` — preventive, same lazy boundary
+3. `QuickMessageFAB.tsx` — preventive, same lazy boundary
+4. `CookieConsent.tsx` — preventive, same lazy boundary
 
-Add the `isStable` double-RAF guard at the top of the `HomeChatbot` component, matching the exact same pattern used in `FirstTimeUserTour`, `VisitorTour`, `FirstTimeUserWelcome`, and `AvatarGenerationStep`.
-
-The guard works by:
-1. Mounting with `isStable = false` — all hooks still run (no hook count mismatch), but the component renders `null`
-2. Two animation frames later, `isStable` becomes `true` and the component renders normally
-3. This two-frame window is always enough for React's fiber dispatcher to be fully initialized
-
-No other files need changes. The `JudeChatbot` in `FloatingLayer.tsx` already has its own Suspense boundary and is rendered conditionally by `useVisibility`, so it is not affected.
-
-### Technical Implementation
-
-In `HomeChatbot.tsx`, inside the `HomeChatbot` function:
-
-```tsx
-// Add at top (after existing hook declarations):
-const [isStable, setIsStable] = useState(false);
-
-useEffect(() => {
-  const timer = requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      setIsStable(true);
-    });
-  });
-  return () => cancelAnimationFrame(timer);
-}, []);
-
-// Add as first conditional return (after ALL hooks):
-if (!isStable) return null;
-```
-
-This is a one-component, zero-risk, pattern-consistent fix.
+All 4 are identical one-pattern changes with zero risk.
