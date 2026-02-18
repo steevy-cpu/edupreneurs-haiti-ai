@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, Eye, Clock, DollarSign, Phone, FileText, Loader2, RefreshCw, Search, Filter } from "lucide-react";
+import { CheckCircle, XCircle, Eye, Clock, DollarSign, Loader2, RefreshCw, Search, Filter } from "lucide-react";
 import { format } from "date-fns";
 
 interface PaymentTransaction {
@@ -20,8 +20,6 @@ interface PaymentTransaction {
   status: string;
   provider: string;
   receipt_url: string | null;
-  natcash_phone: string | null;
-  natcash_reference: string | null;
   admin_verified: boolean | null;
   verified_by: string | null;
   verification_notes: string | null;
@@ -72,18 +70,24 @@ const PaymentsModule = () => {
     }
   });
 
-  // Verify payment mutation
+  // Manual payment verification mutation (approve/reject pending receipts)
   const verifyMutation = useMutation({
     mutationFn: async ({ orderId, action, notes }: { orderId: string; action: 'approve' | 'reject'; notes?: string }) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
+      // Update the transaction directly — natcash-admin-verify edge function removed
+      const updateData: Record<string, unknown> = {
+        admin_verified: action === 'approve',
+        verified_at: new Date().toISOString(),
+      };
+      if (notes) updateData.verification_notes = notes;
+      if (action === 'approve') updateData.status = 'completed';
 
-      const response = await supabase.functions.invoke('natcash-admin-verify', {
-        body: { orderId, action, notes }
-      });
+      const { error } = await supabase
+        .from('payment_transactions')
+        .update(updateData)
+        .eq('order_id', orderId);
 
-      if (response.error) throw new Error(response.error.message);
-      return response.data;
+      if (error) throw new Error(error.message);
+      return { success: true };
     },
     onSuccess: (data, variables) => {
       toast.success(variables.action === 'approve' ? 'Paiement approuvé' : 'Paiement rejeté');
@@ -128,8 +132,6 @@ const PaymentsModule = () => {
 
   const getProviderBadge = (provider: string) => {
     switch (provider) {
-      case 'natcash':
-        return <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-300">NatCash</Badge>;
       case 'moncash':
         return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">MonCash</Badge>;
       default:
@@ -137,15 +139,10 @@ const PaymentsModule = () => {
     }
   };
 
-  // Filter by search query
+  // Filter by search query (order_id only — natcash fields removed)
   const filteredPayments = payments?.filter(p => {
     if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      p.order_id.toLowerCase().includes(query) ||
-      p.natcash_reference?.toLowerCase().includes(query) ||
-      p.natcash_phone?.toLowerCase().includes(query)
-    );
+    return p.order_id.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   const pendingVerificationCount = payments?.filter(
@@ -205,7 +202,6 @@ const PaymentsModule = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous</SelectItem>
-                <SelectItem value="natcash">NatCash</SelectItem>
                 <SelectItem value="moncash">MonCash</SelectItem>
               </SelectContent>
             </Select>
@@ -248,18 +244,6 @@ const PaymentsModule = () => {
                         <DollarSign className="h-4 w-4" />
                         {payment.amount} {payment.currency || 'HTG'}
                       </span>
-                      {payment.natcash_phone && (
-                        <span className="flex items-center gap-1">
-                          <Phone className="h-4 w-4" />
-                          {payment.natcash_phone}
-                        </span>
-                      )}
-                      {payment.natcash_reference && (
-                        <span className="flex items-center gap-1">
-                          <FileText className="h-4 w-4" />
-                          Réf: {payment.natcash_reference}
-                        </span>
-                      )}
                     </div>
                     
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -315,12 +299,6 @@ const PaymentsModule = () => {
                 <p><strong>Commande:</strong> {selectedTransaction.order_id}</p>
                 <p><strong>Montant:</strong> {selectedTransaction.amount} {selectedTransaction.currency || 'HTG'}</p>
                 <p><strong>Fournisseur:</strong> {selectedTransaction.provider}</p>
-                {selectedTransaction.natcash_phone && (
-                  <p><strong>Téléphone:</strong> {selectedTransaction.natcash_phone}</p>
-                )}
-                {selectedTransaction.natcash_reference && (
-                  <p><strong>Référence:</strong> {selectedTransaction.natcash_reference}</p>
-                )}
               </div>
 
               {selectedTransaction.receipt_url && (
