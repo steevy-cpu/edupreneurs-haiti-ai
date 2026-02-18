@@ -52,7 +52,7 @@ export function saveAuthFlow(state: Partial<AuthFlowState>): void {
         ? Date.now() + LOCKOUT_TTL_MS
         : Date.now() + SIGNUP_TTL_MS,
     };
-    localStorage.setItem(AUTH_FLOW_KEY, JSON.stringify(merged));
+    sessionStorage.setItem(AUTH_FLOW_KEY, JSON.stringify(merged));
   } catch (error) {
     console.error('Failed to save auth flow:', error);
   }
@@ -64,7 +64,9 @@ export function saveAuthFlow(state: Partial<AuthFlowState>): void {
  */
 export function getAuthFlow(): AuthFlowState | null {
   try {
-    const stored = localStorage.getItem(AUTH_FLOW_KEY);
+    const stored = sessionStorage.getItem(AUTH_FLOW_KEY);
+    // One-time cleanup: evict any legacy data stored in localStorage
+    localStorage.removeItem(AUTH_FLOW_KEY);
     if (!stored) return null;
     
     const state: AuthFlowState = JSON.parse(stored);
@@ -87,7 +89,8 @@ export function getAuthFlow(): AuthFlowState | null {
  */
 export function clearAuthFlow(): void {
   try {
-    localStorage.removeItem(AUTH_FLOW_KEY);
+    sessionStorage.removeItem(AUTH_FLOW_KEY);
+    localStorage.removeItem(AUTH_FLOW_KEY); // Legacy cleanup
   } catch (error) {
     console.error('Failed to clear auth flow:', error);
   }
@@ -159,7 +162,7 @@ export function saveSignupProgress(data: Partial<SignupFormData>): void {
   try {
     const existing = getSignupProgress();
     const merged = { ...existing, ...data };
-    localStorage.setItem(SIGNUP_DATA_KEY, JSON.stringify(merged));
+    sessionStorage.setItem(SIGNUP_DATA_KEY, JSON.stringify(merged));
   } catch (error) {
     console.error('Failed to save signup progress:', error);
   }
@@ -170,7 +173,9 @@ export function saveSignupProgress(data: Partial<SignupFormData>): void {
  */
 export function getSignupProgress(): SignupFormData {
   try {
-    const stored = localStorage.getItem(SIGNUP_DATA_KEY);
+    const stored = sessionStorage.getItem(SIGNUP_DATA_KEY);
+    // One-time cleanup: evict any legacy data stored in localStorage
+    localStorage.removeItem(SIGNUP_DATA_KEY);
     if (!stored) return {};
     return JSON.parse(stored);
   } catch (error) {
@@ -184,7 +189,8 @@ export function getSignupProgress(): SignupFormData {
  */
 export function clearSignupProgress(): void {
   try {
-    localStorage.removeItem(SIGNUP_DATA_KEY);
+    sessionStorage.removeItem(SIGNUP_DATA_KEY);
+    localStorage.removeItem(SIGNUP_DATA_KEY); // Legacy cleanup
   } catch (error) {
     console.error('Failed to clear signup progress:', error);
   }

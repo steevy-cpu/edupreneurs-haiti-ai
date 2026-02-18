@@ -1,5 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, RATE_LIMITS, getClientIp, rateLimitResponse } from "../_shared/rateLimiter.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,6 +19,37 @@ interface QuestionRequest {
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // C7: Authorization check — reject unauthenticated requests before any AI call
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const token = authHeader.replace('Bearer ', '');
+  const anonClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const { data: claimsData, error: authError } = await anonClient.auth.getClaims(token);
+  if (authError || !claimsData?.claims) {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+  const userId = claimsData.claims.sub;
+
+  // C7: Rate limiting using AI_TUTOR config (60 req/min for auth users)
+  const serviceClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+  const clientIp = getClientIp(req);
+  const rateLimit = await checkRateLimit(serviceClient, RATE_LIMITS.AI_TUTOR, userId, clientIp);
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.retryAfter!, rateLimit.remaining, corsHeaders);
   }
 
   try {
