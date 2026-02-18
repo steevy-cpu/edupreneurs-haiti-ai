@@ -87,7 +87,7 @@ const tourSteps: TourStep[] = [
   {
     path: "/community",
     title: "Rejoignez la famille 🎓",
-    description: "Plus de 1000 élèves haïtiens apprennent déjà sur Edupreneurs. Créez votre compte gratuit maintenant et commencez votre parcours aujourd'hui !",
+    description: "Rejoignez une communauté d'élèves haïtiens passionnés. Créez votre compte gratuit maintenant et commencez votre parcours d'apprentissage aujourd'hui !",
   },
 ];
 
