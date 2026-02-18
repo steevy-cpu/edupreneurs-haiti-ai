@@ -9,6 +9,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { checkRateLimit, RATE_LIMITS, getClientIp, rateLimitResponse } from "../_shared/rateLimiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,6 +23,21 @@ serve(async (req) => {
   }
 
   const headers = { ...corsHeaders, "Content-Type": "application/json" };
+
+  // Create the admin client once — reused for rate limiting and gift lookup.
+  // Service role is required to write to the rate_limits table.
+  const supabaseAdmin = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+  );
+
+  // Rate limit: 5 req/min per IP (PAYMENT anonymous config).
+  // Prevents automated spamming of Stripe session creation per token.
+  const clientIp = getClientIp(req);
+  const rateCheck = await checkRateLimit(supabaseAdmin, RATE_LIMITS.PAYMENT, null, clientIp);
+  if (!rateCheck.allowed) {
+    return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, corsHeaders);
+  }
 
   try {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
@@ -37,12 +53,7 @@ serve(async (req) => {
       );
     }
 
-    // Look up the gift subscription
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-
+    // Look up the gift subscription using the admin client (already created above)
     const { data: gift, error: giftError } = await supabaseAdmin
       .from("gift_subscriptions")
       .select("*")
