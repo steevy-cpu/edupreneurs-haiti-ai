@@ -3,15 +3,18 @@ import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
 
-// Map tour step index to nav icon path for mobile highlighting
+// Map tour step index to nav icon path for mobile highlighting.
+// IMPORTANT: Keep this in sync with tourSteps array in FirstTimeUserTour.tsx (8 steps).
+// Step 1 (Music FAB) stays on /dashboard, so it maps to '/dashboard' — not null.
 const TOUR_STEP_NAV_PATHS: Record<number, string | null> = {
-  0: '/dashboard',    // Home icon
-  1: '/matieres',     // BookOpen icon
-  2: '/feed',         // Rss icon
-  3: null,            // /leaderboard - no nav icon
-  4: null,            // /passion-discovery - no nav icon
-  5: '/community',    // MessageSquare icon
-  6: null,            // /settings - no nav icon
+  0: '/dashboard',    // Dashboard KPI cards
+  1: '/dashboard',    // Music FAB (stays on /dashboard)
+  2: '/matieres',     // BookOpen icon
+  3: '/feed',         // Rss icon
+  4: null,            // /leaderboard - no nav icon
+  5: null,            // /passion-discovery - no nav icon
+  6: '/community',    // MessageSquare icon
+  7: null,            // /settings - no nav icon
 };
 
 interface FirstTimeUserContextType {

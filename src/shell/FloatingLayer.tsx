@@ -89,14 +89,24 @@ export function FloatingLayer() {
 /**
  * Onboarding overlays - renders sequentially (one at a time).
  * These are self-managing based on FirstTimeUserContext.
+ *
+ * CRITICAL: FirstTimeUserTour MUST have its own isolated <Suspense> boundary.
+ * When the tour navigates to lazy-loaded pages, React suspends those page
+ * components. If the Tour shares a Suspense boundary with Welcome/Avatar,
+ * the suspension collision causes the fiber dispatcher to go null on chunk
+ * resolution, crashing every hook call in the newly mounted page component.
  */
 function OnboardingOverlays() {
   return (
-    <Suspense fallback={null}>
-      <FirstTimeUserWelcome />
-      <AvatarGenerationStep />
-      <FirstTimeUserTour />
-    </Suspense>
+    <>
+      <Suspense fallback={null}>
+        <FirstTimeUserWelcome />
+        <AvatarGenerationStep />
+      </Suspense>
+      <Suspense fallback={null}>
+        <FirstTimeUserTour />
+      </Suspense>
+    </>
   );
 }
 
