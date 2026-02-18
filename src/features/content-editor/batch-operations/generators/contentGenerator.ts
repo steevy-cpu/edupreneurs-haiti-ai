@@ -157,7 +157,7 @@ export const createContentGeneratorConfig = (): BatchOperationConfig => ({
         .from('lessons')
         .update({ 
           is_published: true, 
-          workflow_status: 'approved' 
+          workflow_status: 'published' 
         })
         .eq('id', lessonId);
 

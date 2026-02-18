@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,6 +49,7 @@ export const BatchLessonGenerator = () => {
   const [globalContext, setGlobalContext] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const isPausedRef = useRef(false);
   const [lessonStatuses, setLessonStatuses] = useState<LessonGenerationStatus[]>([]);
   const [totalLessons, setTotalLessons] = useState(0);
   const [hasGeneratedOptionalContent, setHasGeneratedOptionalContent] = useState(false);
@@ -348,16 +349,30 @@ export const BatchLessonGenerator = () => {
       generationTime: 0,
     })));
     setIsGenerating(true);
+    // Fix: reset ref on new batch start
+    isPausedRef.current = false;
     setIsPaused(false);
 
+    let localCompleted = 0;
+
     for (let i = 0; i < batchLessons.length; i++) {
-      if (isPaused) break;
+      // Fix: read from ref instead of stale state
+      if (isPausedRef.current) break;
 
       const lesson = batchLessons[i];
-      await generateLessonSections(lesson, i);
+      const didSucceed = await generateLessonSections(lesson, i);
+
+      if (didSucceed) {
+        localCompleted++;
+        // Auto-publish immediately after each lesson succeeds
+        await supabase
+          .from('lessons')
+          .update({ is_published: true, workflow_status: 'published' })
+          .eq('id', lesson.id);
+      }
       
       // 3 second pause between lessons
-      if (i < batchLessons.length - 1 && !isPaused) {
+      if (i < batchLessons.length - 1 && !isPausedRef.current) {
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
     }
@@ -366,9 +381,9 @@ export const BatchLessonGenerator = () => {
     
     const hasMoreBatches = batchNumber < totalBatchCount;
     if (hasMoreBatches) {
-      toast.success(`Lot ${batchNumber}/${totalBatchCount} terminé: ${completedCount}/${batchLessons.length} leçons. Prêt pour le lot suivant.`);
+      toast.success(`Lot ${batchNumber}/${totalBatchCount} terminé: ${localCompleted}/${batchLessons.length} leçons. Prêt pour le lot suivant.`);
     } else {
-      toast.success(`Génération terminée: ${completedCount}/${batchLessons.length} leçons du dernier lot.`);
+      toast.success(`Génération terminée: ${localCompleted}/${batchLessons.length} leçons du dernier lot.`);
       setAllLessons([]);
       setCurrentBatch(0);
       setTotalBatches(0);
@@ -386,7 +401,7 @@ export const BatchLessonGenerator = () => {
     await processBatch(allLessons, nextBatch, 50, totalBatches);
   };
 
-  const generateLessonSections = async (lesson: any, index: number) => {
+  const generateLessonSections = async (lesson: any, index: number): Promise<boolean> => {
     const startTime = Date.now();
     
     console.log('🟢 [Batch] Starting generation for lesson:', {
@@ -405,7 +420,8 @@ export const BatchLessonGenerator = () => {
     let success = false;
     let errorMessage = "";
 
-    while (retryCount < maxRetries && !success && !isPaused) {
+    // Fix: use ref for pause check in async loop
+    while (retryCount < maxRetries && !success && !isPausedRef.current) {
       try {
         // Generate each selected section (only if sections are selected)
         if (selectedSections.length > 0) {
@@ -545,6 +561,12 @@ export const BatchLessonGenerator = () => {
             });
 
             if (!quizError && quizData?.quizContent) {
+              // Auto-save quiz to DB immediately (Fix 3)
+              await supabase
+                .from('lessons')
+                .update({ quiz_final: quizData.quizContent })
+                .eq('id', lesson.id);
+
               // Store in lesson status for preview buttons to show
               setLessonStatuses(prev => prev.map((l, i) => {
                 if (i === index) {
@@ -560,7 +582,7 @@ export const BatchLessonGenerator = () => {
               }));
               setHasGeneratedOptionalContent(true);
               
-              console.log('✅ [Batch] Quiz Final generated');
+              console.log('✅ [Batch] Quiz Final generated and saved');
             }
           } catch (error) {
             console.error('❌ [Batch] Error generating quiz:', error);
@@ -703,13 +725,14 @@ export const BatchLessonGenerator = () => {
         }
       }
     }
+    return success;
   };
 
   const retryFailed = async () => {
     const failedLessons = lessonStatuses.filter(l => l.status === 'error');
     
     for (const lessonStatus of failedLessons) {
-      if (isPaused) break;
+      if (isPausedRef.current) break;
       
       const { data: lesson } = await supabase
         .from('lessons')
@@ -1346,7 +1369,7 @@ export const BatchLessonGenerator = () => {
                 )}
               </>
             ) : (
-              <Button onClick={() => setIsPaused(!isPaused)} variant="outline" className="flex-1">
+              <Button onClick={() => { isPausedRef.current = !isPaused; setIsPaused(!isPaused); }} variant="outline" className="flex-1">
                 {isPaused ? <PlayCircle className="mr-2 h-4 w-4" /> : <PauseCircle className="mr-2 h-4 w-4" />}
                 {isPaused ? 'Reprendre' : 'Pause'}
               </Button>
