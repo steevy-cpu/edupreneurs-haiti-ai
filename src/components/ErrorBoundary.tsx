@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import * as Sentry from '@sentry/react';
 import { isChunkLoadError, handleChunkLoadError } from '@/utils/chunkLoadErrorHandler';
 
 interface Props {
@@ -28,12 +29,24 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // Keep existing console log for local debugging
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
-    // Check if this is a chunk loading error (stale cache)
+
+    // Report to Sentry with React component stack for meaningful traces in production.
+    // No-op if Sentry was never initialised (VITE_SENTRY_DSN not set).
+    // Placed before the chunk-load check so chunk errors are also tracked in Sentry.
+    Sentry.captureException(error, {
+      contexts: {
+        react: {
+          componentStack: errorInfo.componentStack,
+        },
+      },
+    });
+
+    // Chunk loading errors (stale cache) trigger auto-reload — no user action needed
     if (isChunkLoadError(error)) {
       handleChunkLoadError(error);
-      return; // Page will reload, no need to continue
+      return;
     }
   }
 

@@ -1,7 +1,39 @@
 import { createRoot } from "react-dom/client";
+import * as Sentry from '@sentry/react';
 import App from "./App.tsx";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
 import "./index.css";
+
+// Initialise Sentry before React renders so it can catch errors during React's own init.
+// Guarded by env var — if VITE_SENTRY_DSN is absent (local dev), Sentry is never loaded.
+const sentryDsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
+
+if (sentryDsn) {
+  Sentry.init({
+    dsn: sentryDsn,
+    // Vite sets MODE to "production" in builds and "development" in dev server
+    environment: import.meta.env.MODE,
+    // 10% transaction sampling — keeps overhead minimal on Haiti's 3G connections
+    tracesSampleRate: 0.1,
+    // Drop errors that originate from browser extensions — these are noise from
+    // students' installed extensions, not platform bugs, and would pollute the feed
+    beforeSend(event) {
+      const frames = event.exception?.values?.flatMap(
+        (v) => v.stacktrace?.frames ?? []
+      ) ?? [];
+      const fromExtension = frames.some((frame) => {
+        const filename = frame.filename ?? '';
+        return (
+          filename.startsWith('chrome-extension://') ||
+          filename.startsWith('moz-extension://') ||
+          filename.startsWith('safari-extension://')  // Safari on iOS (some students)
+        );
+      });
+      // Return null to silently drop the event
+      return fromExtension ? null : event;
+    },
+  });
+}
 
 // Register service worker for push notifications
 if ('serviceWorker' in navigator) {
