@@ -119,12 +119,20 @@ Deno.serve(async (req) => {
     let userId: string | null = null;
     let isServiceRoleCall = false;
     
-    if (authHeader) {
+    // I13: Dedicated internal-call header (preferred pattern — avoids exposing service role key on wire)
+    const internalSecret = Deno.env.get('INTERNAL_CALL_SECRET') ?? '';
+    const internalHeader = req.headers.get('X-Internal-Secret');
+
+    if (internalSecret.length > 0 && internalHeader === internalSecret) {
+      // Explicit server-to-server call from process-ai-job — skip rate limit entirely
+      isServiceRoleCall = true;
+      console.log('[generate-lesson-section] Internal-secret call detected, skipping rate limit');
+    } else if (authHeader) {
       const token = authHeader.replace('Bearer ', '');
-      // Check if this is a service-role call (server-to-server, e.g. from process-ai-job)
+      // Legacy fallback: service-role bearer comparison (kept for backward compatibility)
       if (token === supabaseServiceKey) {
         isServiceRoleCall = true;
-        console.log('[generate-lesson-section] Service-role call detected, skipping rate limit');
+        console.log('[generate-lesson-section] Service-role call detected (legacy), skipping rate limit');
       } else {
         const { data: { user } } = await supabase.auth.getUser(token);
         userId = user?.id || null;

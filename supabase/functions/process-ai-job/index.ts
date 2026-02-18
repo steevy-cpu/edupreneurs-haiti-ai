@@ -123,7 +123,9 @@ async function generateSection(
     };
   }
 
-  // Standard section generation
+  // Standard section generation — pass X-Internal-Secret to bypass rate limiting in generate-lesson-section.
+  // This replaces the implicit service-role bearer pattern (I13 fix).
+  const internalSecret = Deno.env.get('INTERNAL_CALL_SECRET') ?? '';
   const { data, error } = await supabase.functions.invoke('generate-lesson-section', {
     body: {
       lessonId: lesson.id,
@@ -133,7 +135,10 @@ async function generateSection(
       gradeLevel: lesson.grade_level || '7AF',
       targetWords: config.wordCounts[sectionName] || 300,
       context: config.globalContext,
-    }
+    },
+    headers: {
+      'X-Internal-Secret': internalSecret, // Explicit internal-call marker (I13)
+    },
   });
 
   if (error) throw error;

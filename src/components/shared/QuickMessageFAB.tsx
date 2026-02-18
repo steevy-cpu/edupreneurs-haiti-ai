@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -27,6 +28,9 @@ interface QuickMessageFABProps {
 }
 
 export const QuickMessageFAB = ({ isVisitor = false }: QuickMessageFABProps) => {
+  // I12: Use in-memory session auth instead of supabase.auth.getUser() network call.
+  // SessionAuthContext already has the user cached — zero extra round-trip to auth server.
+  const { user } = useSessionAuth();
   const [isStable, setIsStable] = useState(false);
   const [recentConversations, setRecentConversations] = useState<RecentConversation[]>([]);
   const [unreadTotal, setUnreadTotal] = useState(0);
@@ -35,7 +39,7 @@ export const QuickMessageFAB = ({ isVisitor = false }: QuickMessageFABProps) => 
 
   // Function MUST be defined before useEffect to avoid ReferenceError
   const fetchRecentConversations = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    // user comes from useSessionAuth() hook above — no network call needed
     if (!user) return;
 
     // Get recent conversations the user is part of
@@ -111,7 +115,7 @@ export const QuickMessageFAB = ({ isVisitor = false }: QuickMessageFABProps) => 
     const validConversations = conversationsWithDetails.filter(Boolean) as RecentConversation[];
     setRecentConversations(validConversations);
     setUnreadTotal(validConversations.reduce((acc, c) => acc + c.unreadCount, 0));
-  }, []);
+  }, [user]); // user is a closure dep — recreate callback if user identity changes (e.g. re-login)
 
   // useEffect MUST be called before any conditional returns to comply with Rules of Hooks
   // This prevents React error #310 when navigating between pages
