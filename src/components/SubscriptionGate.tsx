@@ -64,8 +64,8 @@ export function SubscriptionGate({ children }: SubscriptionGateProps) {
   // Not authenticated - let auth guard handle redirect
   if (!isAuthenticated) return <>{children}</>;
 
-  // Profile still loading - block content until we know subscription status
-  if (!profile) return null;
+  // Profile still loading - show skeleton instead of null blank screen (critical on 3G)
+  if (!profile) return <SubscriptionLoadingSkeleton />;
 
   // Promo users always pass
   if (profile.has_free_access) return <>{children}</>;
@@ -94,6 +94,38 @@ export function SubscriptionGate({ children }: SubscriptionGateProps) {
 
   // Expired - show renewal prompt
   return <RenewalPrompt />;
+}
+
+/**
+ * Skeleton shown while subscription profile is loading.
+ * Approximates the dashboard layout to prevent blank-screen flash on 3G.
+ */
+function SubscriptionLoadingSkeleton() {
+  return (
+    <div className="p-4 lg:p-6 space-y-6 animate-pulse">
+      {/* Page header */}
+      <div className="h-8 w-48 rounded-lg bg-muted" />
+
+      {/* KPI cards row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="rounded-xl bg-muted h-24" />
+        ))}
+      </div>
+
+      {/* Main content blocks */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 space-y-3">
+          <div className="rounded-xl bg-muted h-40" />
+          <div className="rounded-xl bg-muted h-32" />
+        </div>
+        <div className="space-y-3">
+          <div className="rounded-xl bg-muted h-36" />
+          <div className="rounded-xl bg-muted h-28" />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function RenewalPrompt() {

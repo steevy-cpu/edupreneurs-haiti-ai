@@ -166,7 +166,7 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
           .from('profiles')
           .select('nickname, academic_grade, onboarding_tour_completed, subscription_status, subscription_end_date, has_free_access')
           .eq('user_id', authUser.id)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error('Error fetching profile for tour:', error);
