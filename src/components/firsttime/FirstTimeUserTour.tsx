@@ -27,6 +27,12 @@ const tourSteps: TourStep[] = [
     target: "[data-tour='kpi-cards']",
   },
   {
+    path: "/dashboard",
+    title: "Musique d'étude 🎵",
+    description: "Tu peux écouter de la musique pendant que tu étudies! 🎵 Clique sur ce bouton pour ouvrir le lecteur et choisir ta playlist préférée.",
+    target: "[data-tour='music-fab']",
+  },
+  {
     path: "/matieres",
     title: "Vos matières 📚",
     description: "Accédez aux cours de votre niveau. Chaque leçon a des résumés clairs, des exercices et des quiz interactifs!",
