@@ -423,7 +423,7 @@ CONTEXTE ACTUEL:
         .from('jude_audio_cache')
         .select('audio_url, phoneme_data, duration_ms')
         .eq('text_hash', textHash)
-        .single();
+        .maybeSingle(); // maybeSingle: null = cache miss, handled by if (cachedAudio) below
 
       if (cachedAudio) {
         console.log('Using cached audio');

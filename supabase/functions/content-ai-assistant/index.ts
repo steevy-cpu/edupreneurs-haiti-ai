@@ -215,7 +215,7 @@ serve(async (req) => {
       .from('content_editor_roles')
       .select('role')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle(); // maybeSingle: null = no role row → !editorRole is true → 403 returned below
 
     if (!editorRole || !['admin', 'editor'].includes(editorRole.role)) {
       return new Response(

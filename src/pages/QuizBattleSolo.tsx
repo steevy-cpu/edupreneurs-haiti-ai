@@ -121,7 +121,7 @@ const QuizBattleSolo = () => {
         .from('profiles')
         .select('academic_grade')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle(); // maybeSingle: profile?.academic_grade on line 126 already handles null gracefully
 
       if (profile?.academic_grade) {
         setSelectedGrade(profile.academic_grade);
