@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -1367,7 +1368,7 @@ export const BatchGenerationValidation = () => {
                       ) : (
                         <div 
                           className="prose prose-sm max-w-none dark:prose-invert text-sm"
-                          dangerouslySetInnerHTML={{ __html: String(content).substring(0, 2000) + (String(content).length > 2000 ? '...' : '') }} 
+                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(String(content).substring(0, 2000) + (String(content).length > 2000 ? '...' : '')) }} 
                         />
                       )}
                     </CardContent>

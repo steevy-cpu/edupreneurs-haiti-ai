@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { InlineMath, BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface MathContentProps {
   content: string;
@@ -511,7 +512,7 @@ export const MathContent = React.memo(({ content, className = "" }: MathContentP
     // Check if content likely contains math
     if (!containsMath(content)) {
       // No math detected, use regular HTML rendering for performance
-      return <div dangerouslySetInnerHTML={{ __html: content }} />;
+      return <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />;
     }
     
     // Parse and render with KaTeX
