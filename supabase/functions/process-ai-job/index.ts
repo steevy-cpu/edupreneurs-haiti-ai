@@ -242,7 +242,7 @@ Deno.serve(async (req) => {
       .from('ai_generation_jobs')
       .select('*, lessons(*, subjects(name))')
       .eq('id', jobId)
-      .single();
+      .maybeSingle(); // maybeSingle: null → !job is true → 404 returned below
 
     if (jobError || !job) {
       console.error('Job not found:', jobError);
@@ -304,7 +304,7 @@ Deno.serve(async (req) => {
         .from('ai_generation_jobs')
         .select('status')
         .eq('id', jobId)
-        .single();
+        .maybeSingle(); // maybeSingle: null → optional chain ?.status is undefined → generation continues safely
       
       if (currentJob?.status === 'cancelled') {
         console.log('Job cancelled by user');

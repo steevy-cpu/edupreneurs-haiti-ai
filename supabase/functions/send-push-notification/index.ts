@@ -214,7 +214,7 @@ serve(async (req) => {
       .select('enabled')
       .eq('user_id', recipientUserId)
       .eq('category', category)
-      .single();
+      .maybeSingle(); // maybeSingle: null means no preference row → default to enabled (send notification)
 
     if (prefData && !prefData.enabled) {
       console.log(`⏭️ User ${recipientUserId.substring(0, 8)}... has disabled ${category} notifications`);

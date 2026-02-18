@@ -136,7 +136,7 @@ export async function checkRateLimit(
       .from('rate_limits')
       .select('id, request_count, window_start, expires_at')
       .eq('key', key)
-      .single();
+      .maybeSingle(); // CRITICAL FIX: .single() was throwing PGRST116 on first requests, caught silently → rate limit bypassed. maybeSingle() → null → INSERT branch below
 
     if (existing) {
       const windowStartTime = new Date(existing.window_start);

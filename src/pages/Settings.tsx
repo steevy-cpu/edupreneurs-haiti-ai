@@ -147,7 +147,7 @@ const Settings = () => {
 
     // Fetch all data in parallel
     const [profileResult, followersResult, followingResult, notificationPrefsResult] = await Promise.all([
-      supabase.from("profiles").select("*").eq("user_id", userId).single(),
+      supabase.from("profiles").select("*").eq("user_id", userId).maybeSingle(), // maybeSingle: avoids PGRST116 on race at signup or orphaned auth user
       supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", userId).eq("status", "accepted"),
       supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", userId).eq("status", "accepted"),
       supabase.from("notification_preferences").select("*").eq("user_id", userId),
@@ -160,6 +160,11 @@ const Settings = () => {
     }
 
     const profileData = profileResult.data;
+    // Null guard: handles race at signup or orphaned auth user — abort silently rather than crash on .avatar_url
+    if (!profileData) {
+      setPageLoading(false);
+      return;
+    }
     setProfile(profileData);
     setSelectedAvatar(profileData.avatar_url || "");
     setProfileForm({
