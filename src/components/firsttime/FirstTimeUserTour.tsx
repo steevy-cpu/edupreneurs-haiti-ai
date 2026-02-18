@@ -8,6 +8,7 @@ import ericStudentDesk from "@/assets/eric-student-desk.png";
 import ericCelebrating from "@/assets/eric-celebrating.png";
 import SimpleTypewriter from "@/components/visitor/SimpleTypewriter";
 import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
+import { useRoutePreloader } from "@/shell/hooks/useRoutePreloader";
 import { preloadImage } from "@/utils/performanceOptimization";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
@@ -84,6 +85,7 @@ const FirstTimeUserTour = () => {
   // STABILITY GUARD: Use safe context access pattern to prevent null dispatcher errors
   const firstTimeUser = useFirstTimeUser();
   const { shouldShowGlow, shouldAnimate } = useNetworkAwareAnimations();
+  const { preloadChunk } = useRoutePreloader();
   
   // Track mount stability to prevent errors during navigation transitions
   const [isStable, setIsStable] = useState(false);
@@ -107,6 +109,15 @@ const FirstTimeUserTour = () => {
     return () => cancelAnimationFrame(timer);
   }, []);
 
+  // Preload all lazy chunks for tour routes on mount (idle, non-blocking)
+  useEffect(() => {
+    const uniquePaths = [...new Set(tourSteps.map(s => s.path))];
+    const timer = setTimeout(() => {
+      uniquePaths.forEach(path => preloadChunk(path));
+    }, 1500); // defer 1.5s so page initial render completes first
+    return () => clearTimeout(timer);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Preload Eric images on mount
   useEffect(() => {
     preloadImage(ericStudentDesk).catch(() => {});
@@ -125,12 +136,13 @@ const FirstTimeUserTour = () => {
     if (!isNavigating && location.pathname !== currentStep.path) {
       setIsNavigating(true);
       
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          navigate(currentStep.path);
-          setTimeout(() => setIsNavigating(false), 800);
-        });
-      });
+      // Preload the chunk first, then navigate after 300ms head-start
+      // This prevents the React dispatcher null error on lazy-loaded routes
+      preloadChunk(currentStep.path);
+      setTimeout(() => {
+        navigate(currentStep.path);
+        setTimeout(() => setIsNavigating(false), 800);
+      }, 300);
     }
   }, [firstTimeUser.tourStep, firstTimeUser.tourActive, firstTimeUser.tourCompleted, currentStep, location.pathname, navigate, isNavigating]);
 
