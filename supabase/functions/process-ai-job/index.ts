@@ -188,16 +188,52 @@ Deno.serve(async (req) => {
     return corsPreflightResponse();
   }
 
+  // ── AUTHORIZATION CHECK ────────────────────────────────────────────────────
+  // Allow service-role internal calls (process-ai-job is triggered server-side)
+  // OR authenticated user JWTs. Reject all unauthenticated requests.
+  const authHeader = req.headers.get('Authorization');
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+  if (!authHeader?.startsWith('Bearer ')) {
+    return secureErrorResponse('Unauthorized', 401);
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+
+  // Service-role calls (internal server-to-server) bypass JWT verification
+  const isServiceRole = token === supabaseServiceKey;
+
+  if (!isServiceRole) {
+    // Verify JWT for user-initiated calls
+    const anonClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data, error: authError } = await anonClient.auth.getClaims(token);
+    if (authError || !data?.claims) {
+      return secureErrorResponse('Unauthorized', 401);
+    }
+  }
+
+  // ── PARSE BODY ONCE ────────────────────────────────────────────────────────
+  // CRITICAL: req.json() can only be called ONCE — the body stream is consumed.
+  // We capture jobId here so it's available in the outer catch block too,
+  // preventing the "Body already consumed" TypeError.
+  let jobId: string | undefined;
+  try {
+    const body = await req.json();
+    jobId = body?.jobId;
+  } catch {
+    return secureErrorResponse('Invalid request body', 400);
+  }
+
+  if (!jobId) {
+    return secureErrorResponse('Missing jobId', 400);
+  }
+
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    const { jobId } = await req.json();
-
-    if (!jobId) {
-      return secureErrorResponse('Missing jobId', 400);
-    }
 
     console.log('📋 Starting job processing:', jobId);
 
@@ -488,10 +524,11 @@ Deno.serve(async (req) => {
   } catch (error: any) {
     console.error('❌ Fatal job processing error:', error);
     
-    // Try to mark job as failed
-    try {
-      const { jobId } = await req.json();
-      if (jobId) {
+    // jobId is already in scope from the top-level parse — no second req.json() needed.
+    // Previously this catch tried to call req.json() again which always threw
+    // "Body already consumed", leaving failed jobs stuck as 'running' forever.
+    if (jobId) {
+      try {
         await supabase
           .from('ai_generation_jobs')
           .update({
@@ -500,9 +537,9 @@ Deno.serve(async (req) => {
             completed_at: new Date().toISOString(),
           })
           .eq('id', jobId);
+      } catch (e) {
+        console.error('❌ Failed to mark job as failed:', e);
       }
-    } catch (e) {
-      // Ignore cleanup errors
     }
     
     return secureErrorResponse(error.message || 'Job processing failed', 500);

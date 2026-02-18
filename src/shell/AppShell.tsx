@@ -106,19 +106,23 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
+          // Server-side filter: skip messages sent by the current user.
+          // This drops the most frequent case (self-messages) at the protocol
+          // level, avoiding unnecessary DB roundtrips on every message insert.
+          // The conversation_participants check below remains as the correctness
+          // guard for multi-user conversations.
+          filter: `sender_id=neq.${userId}`,
         },
         async (payload) => {
-          if (payload.new && (payload.new as any).sender_id !== userId) {
-            const { data: participation } = await supabase
-              .from('conversation_participants')
-              .select('user_id')
-              .eq('conversation_id', (payload.new as any).conversation_id)
-              .eq('user_id', userId)
-              .maybeSingle();
-            
-            if (participation && location.pathname !== '/community') {
-              playReceiveSound();
-            }
+          const { data: participation } = await supabase
+            .from('conversation_participants')
+            .select('user_id')
+            .eq('conversation_id', (payload.new as any).conversation_id)
+            .eq('user_id', userId)
+            .maybeSingle();
+          
+          if (participation && location.pathname !== '/community') {
+            playReceiveSound();
           }
         }
       )
@@ -144,7 +148,7 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
             .from('profiles')
             .select('nickname, full_name')
             .eq('user_id', notification.actor_id)
-            .single();
+            .maybeSingle();
           
           const actorName = actorProfile?.nickname || actorProfile?.full_name || 'Quelqu\'un';
           
