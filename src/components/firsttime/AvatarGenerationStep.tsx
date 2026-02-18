@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Sparkles, SkipForward } from 'lucide-react';
 import ericStudentDesk from '@/assets/eric-student-desk.png';
+import ericThumbUp from '@/assets/eric-thumb-up.png';
 import SimpleTypewriter from '@/components/visitor/SimpleTypewriter';
 import { useFirstTimeUser } from '@/contexts/FirstTimeUserContext';
 import { AIAvatarGenerator } from '@/components/AIAvatarGenerator';
@@ -18,6 +19,7 @@ const AvatarGenerationStep = () => {
   const [isStable, setIsStable] = useState(false);
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
   const [textComplete, setTextComplete] = useState(false);
+  const [celebrating, setCelebrating] = useState(false);
   
   // Wait one render cycle for React dispatcher to stabilize after lazy load
   useEffect(() => {
@@ -29,14 +31,19 @@ const AvatarGenerationStep = () => {
     return () => cancelAnimationFrame(timer);
   }, []);
 
-  // Preload Eric image on mount
+  // Preload Eric images on mount
   useEffect(() => {
     preloadImage(ericStudentDesk).catch(() => {});
+    preloadImage(ericThumbUp).catch(() => {});
   }, []);
 
   const handleAvatarGenerated = (avatarUrl: string) => {
     setShowAvatarDialog(false);
-    firstTimeUser.completeAvatarGeneration();
+    // 2D: brief Jude celebration before advancing
+    setCelebrating(true);
+    setTimeout(() => {
+      firstTimeUser.completeAvatarGeneration();
+    }, 1200);
   };
 
   // Early return AFTER all hooks are called (prevents hook count mismatch)
@@ -50,9 +57,8 @@ const AvatarGenerationStep = () => {
   const containerAnimation = shouldAnimate
     ? { initial: { scale: 0.8, opacity: 0 }, animate: { scale: 1, opacity: 1 }, exit: { scale: 0.9, opacity: 0 } }
     : {};
-  const imageAnimation = shouldAnimate
-    ? { initial: { scale: 0, rotate: -10 }, animate: { scale: 1, rotate: 0 } }
-    : {};
+
+  const judeImg = celebrating ? ericThumbUp : ericStudentDesk;
 
   return (
     <>
@@ -64,12 +70,12 @@ const AvatarGenerationStep = () => {
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-[9998] flex items-center justify-center"
           >
-            {/* Dark overlay - disable blur on slow connections */}
+            {/* Branded gradient overlay */}
             <motion.div 
               initial={shouldAnimate ? { opacity: 0 } : undefined}
-              animate={{ opacity: 0.5 }}
+              animate={{ opacity: 1 }}
               exit={shouldAnimate ? { opacity: 0 } : undefined}
-              className={`absolute inset-0 bg-black/50 ${shouldShowGlow ? 'backdrop-blur-sm' : ''}`}
+              className={`absolute inset-0 bg-gradient-to-br from-black/70 via-primary/10 to-black/70 ${shouldShowGlow ? 'backdrop-blur-sm' : ''}`}
             />
             
             {/* Content */}
@@ -78,13 +84,15 @@ const AvatarGenerationStep = () => {
               transition={shouldAnimate ? { type: "spring", damping: 20, stiffness: 300 } : { duration: 0.1 }}
               className="relative flex flex-col items-center gap-4 sm:gap-6 p-4 sm:p-8 max-w-md"
             >
-              {/* Jude Image */}
+              {/* Jude Image — swaps to thumb-up on celebration */}
               <motion.div
-                {...imageAnimation}
-                transition={shouldAnimate ? { type: "spring", damping: 15, stiffness: 200, delay: 0.2 } : { duration: 0.1 }}
+                key={celebrating ? 'thumb-up' : 'normal'}
+                initial={shouldAnimate ? { scale: celebrating ? 0.5 : 0, rotate: celebrating ? 0 : -10 } : undefined}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={shouldAnimate ? { type: "spring", damping: 15, stiffness: 200 } : { duration: 0.1 }}
               >
                 <img
-                  src={ericStudentDesk}
+                  src={judeImg}
                   alt="Jude"
                   className={`w-28 h-28 sm:w-36 sm:h-36 object-contain ${shouldShowGlow ? 'drop-shadow-2xl' : 'drop-shadow-md'}`}
                 />
@@ -100,38 +108,56 @@ const AvatarGenerationStep = () => {
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-b-[12px] border-b-card/95" />
                 
                 <div className="text-center space-y-4">
-                  <p className="text-base sm:text-lg text-foreground font-medium min-h-[3rem]">
-                    <SimpleTypewriter
-                      text="Maintenant, créons ton avatar personnalisé avec l'IA! 🎨✨"
-                      speed={60}
-                      onComplete={() => setTextComplete(true)}
-                      enableSound
-                      soundVolume={0.06}
-                    />
-                  </p>
-                  
-                  {textComplete && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex flex-col sm:flex-row gap-2 pt-2"
+                  {celebrating ? (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
                     >
-                      <Button
-                        variant="outline"
-                        onClick={firstTimeUser.skipAvatarGeneration}
-                        className="gap-2"
-                      >
-                        <SkipForward className="h-4 w-4" />
-                        Plus tard
-                      </Button>
-                      <Button
-                        onClick={() => setShowAvatarDialog(true)}
-                        className="gap-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"
-                      >
-                        <Sparkles className="h-4 w-4" />
-                        Créer mon avatar
-                      </Button>
+                      <p className="text-base sm:text-lg text-foreground font-bold">
+                        Superbe avatar! 🎉 Bienvenue dans la famille!
+                      </p>
                     </motion.div>
+                  ) : (
+                    <>
+                      <p className="text-base sm:text-lg text-foreground font-medium min-h-[3rem]">
+                        <SimpleTypewriter
+                          text="Maintenant, créons ton avatar personnalisé avec l'IA! 🎨✨"
+                          speed={60}
+                          onComplete={() => setTextComplete(true)}
+                          enableSound
+                          soundVolume={0.06}
+                        />
+                      </p>
+                      
+                      {textComplete && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="flex flex-col gap-2 pt-2"
+                        >
+                          <Button
+                            onClick={() => setShowAvatarDialog(true)}
+                            className="gap-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"
+                          >
+                            <Sparkles className="h-4 w-4" />
+                            Créer mon avatar
+                          </Button>
+                          <div className="flex flex-col items-center gap-0.5">
+                            <Button
+                              variant="outline"
+                              onClick={firstTimeUser.skipAvatarGeneration}
+                              className="gap-2 w-full"
+                            >
+                              <SkipForward className="h-4 w-4" />
+                              Plus tard
+                            </Button>
+                            <p className="text-xs text-muted-foreground">
+                              Tu pourras en créer un depuis tes paramètres.
+                            </p>
+                          </div>
+                        </motion.div>
+                      )}
+                    </>
                   )}
                 </div>
               </motion.div>
@@ -140,13 +166,14 @@ const AvatarGenerationStep = () => {
         )}
       </AnimatePresence>
 
-      {/* Avatar Generator Dialog */}
+      {/* Avatar Generator Dialog — with onboarding context */}
       <AIAvatarGenerator
         open={showAvatarDialog}
         onOpenChange={setShowAvatarDialog}
         onAvatarGenerated={handleAvatarGenerated}
         userId={firstTimeUser.userId}
         isSuperUser={firstTimeUser.isSuperUser}
+        isOnboarding
       />
     </>
   );

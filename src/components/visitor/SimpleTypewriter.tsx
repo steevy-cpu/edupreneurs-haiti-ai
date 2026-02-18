@@ -7,6 +7,8 @@ interface SimpleTypewriterProps {
   className?: string;
   enableSound?: boolean;
   soundVolume?: number;
+  /** When set to true, immediately snaps to full text (for fast-tap skip UX) */
+  skipToEnd?: boolean;
 }
 
 const SimpleTypewriter = ({
@@ -15,7 +17,8 @@ const SimpleTypewriter = ({
   onComplete,
   className = "",
   enableSound = false,
-  soundVolume = 0.08
+  soundVolume = 0.08,
+  skipToEnd = false,
 }: SimpleTypewriterProps) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isComplete, setIsComplete] = useState(false);
@@ -52,8 +55,18 @@ const SimpleTypewriter = ({
     }
   }, [enableSound, soundVolume]);
 
+  // skipToEnd: immediately jump to complete state
+  useEffect(() => {
+    if (skipToEnd && !isComplete) {
+      setDisplayedText(text);
+      setIsComplete(true);
+      onComplete?.();
+    }
+  }, [skipToEnd, text, isComplete, onComplete]);
+
   useEffect(() => {
     if (isComplete) return;
+    if (skipToEnd) return;
 
     if (displayedText.length < text.length) {
       const timeout = setTimeout(() => {
@@ -70,7 +83,7 @@ const SimpleTypewriter = ({
       setIsComplete(true);
       onComplete?.();
     }
-  }, [displayedText, text, speed, onComplete, isComplete, playTypingSound]);
+  }, [displayedText, text, speed, onComplete, isComplete, playTypingSound, skipToEnd]);
 
   // Cleanup audio context
   useEffect(() => {
