@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useCookieConsent, emitConsentChange, onConsentChange } from "@/hooks/useCookieConsent";
 
 export const CookieConsent = () => {
+  const [isStable, setIsStable] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
   const { hasDecided, acceptAll, acceptEssential, decline } = useCookieConsent();
 
@@ -47,7 +48,15 @@ export const CookieConsent = () => {
     emitConsentChange(false);
   };
 
-  if (!showBanner || hasDecided) return null;
+  // isStable guard: prevents null dispatcher crash on lazy-load mount
+  useEffect(() => {
+    const timer = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setIsStable(true));
+    });
+    return () => cancelAnimationFrame(timer);
+  }, []);
+
+  if (!isStable || !showBanner || hasDecided) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[1002] bg-background/95 backdrop-blur-sm border-t border-border shadow-lg animate-in slide-in-from-bottom-5 duration-300">

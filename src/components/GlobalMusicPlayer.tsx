@@ -11,6 +11,7 @@ import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import { cn } from "@/lib/utils";
 
 export const GlobalMusicPlayer = () => {
+  const [isStable, setIsStable] = useState(false);
   const location = useLocation();
   const {
     tracks,
@@ -137,7 +138,15 @@ export const GlobalMusicPlayer = () => {
     return () => {};
   }, []);
 
-  if (tracks.length === 0) return null;
+  // isStable guard: prevents null dispatcher crash on lazy-load mount
+  useEffect(() => {
+    const timer = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setIsStable(true));
+    });
+    return () => cancelAnimationFrame(timer);
+  }, []);
+
+  if (!isStable || tracks.length === 0) return null;
 
   const VolumeIcon = isMuted || volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2;
   const RepeatIcon = repeatMode === 'one' ? Repeat1 : Repeat;

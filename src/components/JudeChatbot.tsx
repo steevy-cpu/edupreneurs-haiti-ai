@@ -87,6 +87,7 @@ const TypewriterText = ({
 };
 
 export const JudeChatbot = () => {
+  const [isStable, setIsStable] = useState(false);
   const { isVisitor } = useVisitor();
   const { user } = useSessionAuth(); // CRITICAL: Use cached auth instead of getUser()
   const navigate = useNavigate();
@@ -227,8 +228,16 @@ export const JudeChatbot = () => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
+  // isStable guard: prevents null dispatcher crash on lazy-load mount
+  useEffect(() => {
+    const timer = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setIsStable(true));
+    });
+    return () => cancelAnimationFrame(timer);
+  }, []);
+
   // Hide JudeChatbot in visitor mode or on specific routes - AFTER all hooks
-  if (isVisitor || HIDDEN_ROUTES.includes(location.pathname)) {
+  if (!isStable || isVisitor || HIDDEN_ROUTES.includes(location.pathname)) {
     return null;
   }
 

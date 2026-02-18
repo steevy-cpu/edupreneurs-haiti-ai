@@ -27,6 +27,7 @@ interface QuickMessageFABProps {
 }
 
 export const QuickMessageFAB = ({ isVisitor = false }: QuickMessageFABProps) => {
+  const [isStable, setIsStable] = useState(false);
   const [recentConversations, setRecentConversations] = useState<RecentConversation[]>([]);
   const [unreadTotal, setUnreadTotal] = useState(0);
   const navigate = useNavigate();
@@ -119,6 +120,16 @@ export const QuickMessageFAB = ({ isVisitor = false }: QuickMessageFABProps) => 
       fetchRecentConversations();
     }
   }, [isVisitor, fetchRecentConversations]);
+
+  // isStable guard: prevents null dispatcher crash on lazy-load mount
+  useEffect(() => {
+    const timer = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setIsStable(true));
+    });
+    return () => cancelAnimationFrame(timer);
+  }, []);
+
+  if (!isStable) return null;
 
   // Hide on community page, passion-discovery page, and all quiz battle pages
   if (
