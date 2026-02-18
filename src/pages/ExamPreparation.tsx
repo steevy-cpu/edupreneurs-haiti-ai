@@ -181,28 +181,15 @@ export default function ExamPreparation() {
         console.error('Failed to update session score:', sessionError);
       }
 
-      // Award gold to profile with error handling
+      // Award gold to profile atomically via server-side RPC
       try {
-        const { data: user } = await supabase.auth.getUser();
-        if (user.user) {
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('gold_earned')
-            .eq('user_id', user.user.id)
-            .maybeSingle();
-
-          if (profileError) {
-            console.error('Failed to fetch profile:', profileError);
-          } else if (profile) {
-            const { error: updateError } = await supabase
-              .from('profiles')
-              .update({ gold_earned: (profile.gold_earned || 0) + points })
-              .eq('user_id', user.user.id);
-            
-            if (updateError) {
-              console.error('Failed to award gold:', updateError);
-            }
-          }
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData.user) {
+          const { error: goldError } = await supabase.rpc('increment_gold', {
+            p_user_id: userData.user.id,
+            amount: Math.min(points, 100),
+          });
+          if (goldError) console.error('Failed to award gold:', goldError);
         }
       } catch (error) {
         console.error('Error in gold award flow:', error);

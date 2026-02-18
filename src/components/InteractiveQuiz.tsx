@@ -130,22 +130,12 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Fetch current gold
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('gold_earned')
-        .eq('user_id', user.id)
-        .single();
-
-      if (profile) {
-        await supabase
-          .from('profiles')
-          .update({ gold_earned: (profile.gold_earned || 0) + 1 })
-          .eq('user_id', user.id);
-        
-        // Notify parent to update gold display
-        onGoldUpdate?.();
-      }
+      const { error } = await supabase.rpc('increment_gold', {
+        p_user_id: user.id,
+        amount: 1,
+      });
+      if (error) console.error('Error awarding gold:', error);
+      else onGoldUpdate?.();
     } catch (error) {
       console.error('Error awarding gold:', error);
     }
@@ -370,22 +360,15 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
 
       setIsLessonCompleted(true);
 
-      // Award completion gold only if not already completed
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('gold_earned')
-        .eq('user_id', user.id)
-        .single();
-
-      if (profile) {
-        await supabase
-          .from('profiles')
-          .update({ gold_earned: (profile.gold_earned || 0) + lessonGoldReward })
-          .eq('user_id', user.id);
-
-        // Notify parent to update gold display
+      // Award completion gold atomically via server-side RPC
+      const { error: goldError } = await supabase.rpc('increment_gold', {
+        p_user_id: user.id,
+        amount: Math.min(lessonGoldReward, 100),
+      });
+      if (goldError) {
+        console.error('Failed to award completion gold:', goldError);
+      } else {
         onGoldUpdate?.();
-
         toast({
           title: "🎉 Leçon complétée!",
           description: `Tu as gagné ${lessonGoldReward} gold!`,

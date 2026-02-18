@@ -4600,6 +4600,10 @@ export type Database = {
           verified: boolean
         }[]
       }
+      increment_gold: {
+        Args: { amount: number; p_user_id: string }
+        Returns: undefined
+      }
       increment_template_downloads: {
         Args: { template_id: string }
         Returns: undefined
