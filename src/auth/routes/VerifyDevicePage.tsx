@@ -38,6 +38,10 @@ export default function VerifyDevicePage() {
   const challengeId = authFlow?.deviceChallengeId;
   const email = authFlow?.email;
   const fullName = authFlow?.fullName;
+  // Show delivery failure banner if the initial email send failed (persisted in auth flow store)
+  const [emailDeliveryFailed, setEmailDeliveryFailed] = useState(
+    authFlow?.emailDeliveryFailed === true
+  );
   
   // Check if session is valid
   const hasValidSession = authFlow && authFlow.flow === 'verify-device' && challengeId;
@@ -163,7 +167,7 @@ export default function VerifyDevicePage() {
     if (!canResend || isResending || !email || !challengeId) return;
     
     setIsResending(true);
-    const result = await resendDeviceCode(challengeId, email);
+    const result = await resendDeviceCode(challengeId, email, fullName || 'Utilisateur');
     
     if (!result.success) {
       toast({ 
@@ -171,12 +175,23 @@ export default function VerifyDevicePage() {
         description: result.error, 
         variant: "destructive" 
       });
-    } else {
+    } else if (result.emailSent) {
+      // Delivery confirmed — clear the warning banner if it was showing
+      setEmailDeliveryFailed(false);
       setResendCooldown(60);
       setCanResend(false);
       toast({ 
         title: "Code renvoyé ✅", 
-        description: "Un nouveau code a été envoyé à votre email" 
+        description: "Vérifiez votre boîte mail et dossier spam" 
+      });
+    } else {
+      // Resend attempt succeeded (new code generated) but email delivery failed
+      setResendCooldown(60);
+      setCanResend(false);
+      toast({ 
+        title: "Envoi échoué ⚠️", 
+        description: "L'email n'a pas pu être envoyé. Attendez 60s et réessayez.",
+        variant: "destructive"
       });
     }
     setIsResending(false);
@@ -275,6 +290,31 @@ export default function VerifyDevicePage() {
             {fullName && (
               <div className="text-center text-sm text-muted-foreground mb-4">
                 Bonjour <span className="font-medium text-foreground">{fullName}</span> !
+              </div>
+            )}
+
+            {/* Email delivery failure warning — shown when initial send failed */}
+            {emailDeliveryFailed && (
+              <div style={{ background: 'hsl(48 96% 95%)', borderColor: 'hsl(45 90% 70%)' }} className="border rounded-lg p-3 mb-4 flex items-start gap-2">
+                <span className="text-lg leading-none mt-0.5">⚠️</span>
+                <div>
+                  <p className="text-sm font-medium" style={{ color: 'hsl(25 80% 30%)' }}>
+                    L'email n'a pas pu être envoyé
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: 'hsl(30 70% 35%)' }}>
+                    Attendez 60s et cliquez sur "Renvoyer le code", ou vérifiez votre dossier spam.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Spam reminder — always visible as info banner, not a tiny footnote */}
+            {!emailDeliveryFailed && (
+              <div style={{ background: 'hsl(210 80% 96%)', borderColor: 'hsl(210 70% 75%)' }} className="border rounded-lg p-3 mb-4 flex items-start gap-2">
+                <span className="text-base leading-none mt-0.5">💡</span>
+                <p className="text-xs" style={{ color: 'hsl(220 60% 35%)' }}>
+                  Pensez à vérifier votre dossier <strong>spam / courrier indésirable</strong> si vous ne trouvez pas le code.
+                </p>
               </div>
             )}
             
@@ -388,10 +428,6 @@ export default function VerifyDevicePage() {
               Annuler et revenir à la connexion
             </button>
             
-            {/* Help Text */}
-            <p className="text-xs text-center text-muted-foreground mt-4">
-              💡 N'oubliez pas de vérifier votre dossier <strong>spam/courrier indésirable</strong>
-            </p>
           </form>
         )}
       </div>

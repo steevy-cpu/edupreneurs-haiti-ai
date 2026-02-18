@@ -205,13 +205,15 @@ export async function loginWithEmail(credentials: LoginCredentials): Promise<Log
       return { success: false, error: challengeResult.error };
     }
     
-    // Persist device verification flow state
+    // Persist device verification flow state — include emailDeliveryFailed
+    // so VerifyDevicePage can show a warning banner immediately on mount
     saveAuthFlow({
       flow: 'verify-device',
       pendingUserId: authData.user.id,
       email: credentials.email,
       deviceChallengeId: challengeResult.challengeId,
       fullName: profile?.full_name,
+      emailDeliveryFailed: !challengeResult.emailSent,
     });
     
     return {

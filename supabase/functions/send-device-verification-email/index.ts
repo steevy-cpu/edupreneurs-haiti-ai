@@ -166,10 +166,11 @@ const handler = async (req: Request): Promise<Response> => {
     // Get client IP for rate limiting
     const clientIp = getClientIp(req);
 
-    // Check rate limit (email endpoints are strictly limited)
-    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.EMAIL, null, clientIp);
+    // Check rate limit — use dedicated DEVICE_VERIFY bucket so other email
+    // calls on the same IP cannot exhaust this user's verification budget
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.DEVICE_VERIFY, null, clientIp);
     if (!rateCheck.allowed) {
-      console.warn(`Rate limit exceeded for IP: ${clientIp}`);
+      console.warn(`Device verify rate limit exceeded for IP: ${clientIp}`);
       return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
     }
 
@@ -199,9 +200,18 @@ const handler = async (req: Request): Promise<Response> => {
       html: getEmailTemplate(fullName, verificationCode, deviceName, browser, timestamp),
     });
 
-    console.log("Device verification email sent successfully");
+    // Structured delivery logging so failures are visible in edge function logs
+    if (emailResponse.error) {
+      console.error("Resend delivery failed:", JSON.stringify(emailResponse.error));
+      return new Response(
+        JSON.stringify({ error: "Erreur de livraison email", details: emailResponse.error }),
+        { status: 500, headers: responseHeaders }
+      );
+    }
 
-    return new Response(JSON.stringify(emailResponse), {
+    console.log("Device verification email delivered. id:", emailResponse.data?.id);
+
+    return new Response(JSON.stringify({ success: true, id: emailResponse.data?.id }), {
       status: 200,
       headers: responseHeaders,
     });

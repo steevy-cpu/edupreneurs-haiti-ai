@@ -83,6 +83,15 @@ export const RATE_LIMITS = {
     maxRequests: 5,           // Auth: 5 req/min
     maxAnonRequests: 3,       // Anon: 3 req/min (strict to prevent spam)
     keyPrefix: 'contact_form'
+  },
+
+  // Device verification: legitimate security flow — keep same limit for anon and auth
+  // Intentionally separate from EMAIL so other email calls can't consume this budget
+  DEVICE_VERIFY: {
+    windowMs: 60 * 1000,      // 1 minute
+    maxRequests: 5,           // Auth: 5 req/min
+    maxAnonRequests: 5,       // Anon: 5/min — same because this IS the auth flow
+    keyPrefix: 'device_verify'
   }
 } as const;
 
