@@ -8,7 +8,7 @@
 import type { OperationResult, OperationProgress } from "../types";
 
 const SESSION_PREFIX = 'edupreneurs_batch_';
-const SESSION_TTL_MS = 60 * 60 * 1000; // 60 minutes
+const SESSION_TTL_MS = 120 * 60 * 1000; // 120 minutes
 
 export interface BatchSessionState {
   operationType: string;
