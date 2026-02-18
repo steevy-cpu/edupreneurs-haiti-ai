@@ -108,9 +108,6 @@ const AIGenerationAnalytics = lazy(() => import("./pages/AIGenerationAnalytics")
 const MigratePDFs = lazy(() => import("./pages/MigratePDFs"));
 const PaymentDemo = lazy(() => import("./pages/PaymentDemo"));
 const PaymentCallback = lazy(() => import("./pages/PaymentCallback"));
-const NatCashDemo = lazy(() => import("./pages/NatCashDemo"));
-const AdminPayments = lazy(() => import("./pages/AdminPayments"));
-const AdminPaymentsDemo = lazy(() => import("./pages/AdminPaymentsDemo"));
 const BaccExamsHub = lazy(() => import("./pages/BaccExamsHub"));
 const Library = lazy(() => import("./pages/Library"));
 const EbookReader = lazy(() => import("./pages/EbookReader"));
@@ -472,17 +469,6 @@ const App = () => (
                               <MigratePDFs />
                             </Suspense>
                           } />
-                          <Route path="/admin/payments" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <AdminPayments />
-                            </Suspense>
-                          } />
-                          <Route path="/admin/payments-demo" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <AdminPaymentsDemo />
-                            </Suspense>
-                          } />
-                          
                           {/* Dev & Demo */}
                           <Route path="/onboarding" element={
                             <Suspense fallback={<GenericPageSkeleton />}>
@@ -517,11 +503,6 @@ const App = () => (
                           <Route path="/payment/stripe-renewal-callback" element={
                             <Suspense fallback={<GenericPageSkeleton />}>
                               <StripeRenewalCallback />
-                            </Suspense>
-                          } />
-                          <Route path="/natcash-demo" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <NatCashDemo />
                             </Suspense>
                           } />
                         </Route>

@@ -46,7 +46,6 @@ import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import { debounce } from "@/utils/performanceOptimization";
 import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { validateUserText } from "@/lib/textModeration";
-import NatCashPaymentFlow from "@/components/subscription/NatCashPaymentFlow";
 import { StripeRenewalButton } from "@/components/subscription/StripeRenewalButton";
 import { RenewalGiftLink } from "@/components/subscription/RenewalGiftLink";
 
@@ -418,7 +417,7 @@ const Settings = () => {
     }
   };
 
-  const [paymentMethod, setPaymentMethod] = useState<"moncash" | "natcash" | "stripe">("moncash");
+  const [paymentMethod, setPaymentMethod] = useState<"moncash" | "stripe">("moncash");
 
   const handleRenewSubscription = async () => {
     setRenewLoading(true);
@@ -958,17 +957,6 @@ const Settings = () => {
                         <button
                           type="button"
                           className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
-                            paymentMethod === "natcash"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-background text-muted-foreground hover:bg-muted"
-                          }`}
-                          onClick={() => setPaymentMethod("natcash")}
-                        >
-                          NatCash
-                        </button>
-                        <button
-                          type="button"
-                          className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
                             paymentMethod === "stripe"
                               ? "bg-primary text-primary-foreground"
                               : "bg-background text-muted-foreground hover:bg-muted"
@@ -991,16 +979,6 @@ const Settings = () => {
                             <><CreditCard className="mr-2 h-4 w-4" />Renouveler avec MonCash (+30 jours)</>
                           )}
                         </Button>
-                      ) : paymentMethod === "natcash" ? (
-                        <NatCashPaymentFlow
-                          amount={200}
-                          description="Renouvellement Edupreneurs - 30 jours"
-                          onSuccess={() => {
-                            queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-                            queryClient.invalidateQueries({ queryKey: ["subscription-status"] });
-                            queryClient.invalidateQueries({ queryKey: ["subscription-banner"] });
-                          }}
-                        />
                       ) : (
                         <StripeRenewalButton />
                       )}
@@ -1039,17 +1017,6 @@ const Settings = () => {
                         <button
                           type="button"
                           className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
-                            paymentMethod === "natcash"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-background text-muted-foreground hover:bg-muted"
-                          }`}
-                          onClick={() => setPaymentMethod("natcash")}
-                        >
-                          NatCash
-                        </button>
-                        <button
-                          type="button"
-                          className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
                             paymentMethod === "stripe"
                               ? "bg-primary text-primary-foreground"
                               : "bg-background text-muted-foreground hover:bg-muted"
@@ -1073,16 +1040,6 @@ const Settings = () => {
                             <><CreditCard className="mr-2 h-5 w-5" />Renouveler avec MonCash — 200 HTG</>
                           )}
                         </Button>
-                      ) : paymentMethod === "natcash" ? (
-                        <NatCashPaymentFlow
-                          amount={200}
-                          description="Renouvellement Edupreneurs - 30 jours"
-                          onSuccess={() => {
-                            queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-                            queryClient.invalidateQueries({ queryKey: ["subscription-status"] });
-                            queryClient.invalidateQueries({ queryKey: ["subscription-banner"] });
-                          }}
-                        />
                       ) : (
                         <StripeRenewalButton size="lg" />
                       )}
