@@ -3,6 +3,9 @@
  * 
  * Verifies payment status through Bazik.io API only (no dead MonCash fallback).
  * Uses shared Bazik utilities for authentication and credentials.
+ * 
+ * Idempotency guard (I10/I11): Reads the existing transaction status BEFORE
+ * the update so that replay attacks and race-condition double-grants are blocked.
  */
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
@@ -118,6 +121,26 @@ serve(async (req) => {
     const dbOrderId = internalOrderId || (paymentDetails as Record<string, unknown>)?.orderId as string;
 
     if (dbOrderId && paymentStatus !== 'unknown') {
+      // I10/I11: Idempotency guard — read the CURRENT stored status BEFORE our update.
+      // This prevents replay attacks (same orderId POST'd twice) and race-condition
+      // double-grants (two near-simultaneous requests on 3G). The subscription
+      // extension is skipped if the transaction was already completed in the DB.
+      const { data: existingTxn } = await supabase
+        .from('payment_transactions')
+        .select('status')
+        .eq('order_id', dbOrderId)
+        .maybeSingle();
+
+      const wasAlreadyCompleted = existingTxn?.status === 'completed';
+
+      if (wasAlreadyCompleted) {
+        console.log(`Transaction ${dbOrderId} already completed — returning idempotent success`);
+        return new Response(
+          JSON.stringify({ success: true, status: 'completed', idempotent: true }),
+          { headers: responseHeaders }
+        );
+      }
+
       const updateData: Record<string, unknown> = {
         status: paymentStatus,
         updated_at: new Date().toISOString(),
@@ -144,8 +167,9 @@ serve(async (req) => {
         console.log(`Transaction ${dbOrderId} updated to: ${paymentStatus}`);
       }
 
-      // Extend user subscription by 30 days on completed payment
-      if (paymentStatus === 'completed') {
+      // Extend user subscription by 30 days on first completed payment.
+      // wasAlreadyCompleted=false guarantees this only fires once per orderId.
+      if (paymentStatus === 'completed' && !wasAlreadyCompleted) {
         try {
           const { data: txn } = await supabase
             .from('payment_transactions')
@@ -177,7 +201,7 @@ serve(async (req) => {
               })
               .eq('user_id', txn.user_id);
 
-          if (subError) {
+            if (subError) {
               console.error('Error extending subscription:', subError);
             } else {
               console.log(`Subscription extended for user ${txn.user_id} until ${newEnd.toISOString()}`);

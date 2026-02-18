@@ -39,14 +39,27 @@ serve(async (req) => {
     console.log('Validating promo code:', code);
 
     // Look up promo code in database (case-insensitive)
+    // maybeSingle() returns null (not an error) when no row is found,
+    // allowing us to distinguish "code not found" from genuine DB errors.
     const { data: promoCode, error } = await supabase
       .from('promo_codes')
       .select('id, code, gold_reward, max_uses, current_uses, expires_at, is_active, grants_free_access')
       .eq('code', code.toUpperCase())
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
-    if (error || !promoCode) {
+    // Genuine DB error (network failure, RLS block, schema mismatch) —
+    // must not be silently swallowed as "invalid code".
+    if (error) {
+      console.error('DB error validating promo code:', error.message, error.code);
+      return new Response(
+        JSON.stringify({ error: 'Erreur de base de données' }),
+        { status: 500, headers: responseHeaders }
+      );
+    }
+
+    // No matching row — code doesn't exist or is inactive
+    if (!promoCode) {
       return new Response(
         JSON.stringify({ 
           valid: false, 
