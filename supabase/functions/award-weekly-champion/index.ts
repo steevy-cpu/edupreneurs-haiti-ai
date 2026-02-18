@@ -17,6 +17,50 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // ── SECURITY: Only allow calls from our cron job or founders ──────────────
+  // Accept either a valid CRON_SECRET header (for scheduled invocations) or a
+  // valid founder JWT (for manual admin triggers).  All other callers → 401.
+  const authHeader = req.headers.get('Authorization') ?? '';
+  const cronSecret = Deno.env.get('CRON_SECRET') ?? '';
+
+  const hasCronSecret =
+    cronSecret.length > 0 &&
+    req.headers.get('X-Cron-Secret') === cronSecret;
+
+  if (!hasCronSecret) {
+    // Fall back: accept a valid JWT from a founder
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+
+    if (!authHeader.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const tempClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: { user }, error: authError } = await tempClient.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    );
+
+    const isFounder =
+      !authError &&
+      user &&
+      FOUNDER_USER_IDS.includes(user.id);
+
+    if (!isFounder) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+  }
+  // ── END SECURITY CHECK ─────────────────────────────────────────────────────
+
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
