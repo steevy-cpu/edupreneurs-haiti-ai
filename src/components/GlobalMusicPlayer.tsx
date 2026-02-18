@@ -207,6 +207,7 @@ export const GlobalMusicPlayer = () => {
       {/* Floating Music Player */}
       <div 
         ref={playerRef}
+        data-tour="music-fab"
         className="fixed z-50"
         style={{
           left: position.x !== 0 ? `${position.x}px` : 'auto',
