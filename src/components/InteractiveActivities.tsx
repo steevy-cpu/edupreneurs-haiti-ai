@@ -663,7 +663,7 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGold
             Voir tous les exercices
           </summary>
           <div className="mt-4 prose prose-sm max-w-none dark:prose-invert overflow-x-hidden">
-            <div dangerouslySetInnerHTML={{ __html: content }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
           </div>
         </details>
       </CardContent>
