@@ -87,7 +87,7 @@ export default defineConfig(({ mode }) => ({
     },
     // Force all packages to use the same React instance
     // Prevents "Cannot read properties of null (reading 'useState'/'useContext')" errors
-    dedupe: ["react", "react-dom", "react/jsx-runtime", "react-router", "react-router-dom", "framer-motion"],
+    dedupe: ["react", "react-dom", "react/jsx-runtime", "react-router", "react-router-dom", "framer-motion", "three", "@react-three/fiber"],
   },
   build: {
     // Optimizations for production - especially 3G connections

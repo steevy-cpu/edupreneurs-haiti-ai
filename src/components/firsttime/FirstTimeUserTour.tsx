@@ -109,7 +109,7 @@ const FirstTimeUserTour = () => {
     return () => cancelAnimationFrame(timer);
   }, []);
 
-  // Preload all lazy chunks for tour routes on mount (idle, non-blocking)
+  // Preload all lazy chunks for tour routes on mount (idle, non-blocking safety net)
   useEffect(() => {
     const uniquePaths = [...new Set(tourSteps.map(s => s.path))];
     const timer = setTimeout(() => {
@@ -124,6 +124,19 @@ const FirstTimeUserTour = () => {
     preloadImage(ericCelebrating).catch(() => {});
   }, []);
 
+  // EAGER_PRELOAD: Direct dynamic imports that fire immediately (bypass requestIdleCallback).
+  // During the tour, the browser is never idle (animations + typewriter running), so
+  // preloadChunk()'s requestIdleCallback would delay until AFTER navigate() fires.
+  // These imports start the network request synchronously the moment a step change occurs.
+  const EAGER_PRELOAD: Record<string, () => Promise<unknown>> = {
+    '/matieres':          () => import('@/pages/Matieres'),
+    '/feed':              () => import('@/pages/Feed'),
+    '/leaderboard':       () => import('@/pages/Leaderboard'),
+    '/passion-discovery': () => import('@/pages/PassionDiscovery'),
+    '/community':         () => import('@/pages/Community'),
+    '/settings':          () => import('@/pages/Settings'),
+  };
+
   const currentStep = tourSteps[firstTimeUser.tourStep];
   const isLastStep = firstTimeUser.tourStep === tourSteps.length - 1;
   const progress = ((firstTimeUser.tourStep + 1) / tourSteps.length) * 100;
@@ -132,19 +145,20 @@ const FirstTimeUserTour = () => {
   useEffect(() => {
     if (!firstTimeUser.tourActive || firstTimeUser.tourCompleted || !currentStep) return;
 
-    // Safety check: ensure we're in a stable state before navigating
     if (!isNavigating && location.pathname !== currentStep.path) {
       setIsNavigating(true);
       
-      // Preload the chunk first, then navigate after 300ms head-start
-      // This prevents the React dispatcher null error on lazy-loaded routes
-      preloadChunk(currentStep.path);
+      // Fire eager import immediately — no idle callback delay.
+      // This starts the chunk fetch NOW, giving 500ms of network head-start
+      // before React tries to mount and call hooks in the new page component.
+      EAGER_PRELOAD[currentStep.path]?.().catch(() => {});
+      
       setTimeout(() => {
         navigate(currentStep.path);
         setTimeout(() => setIsNavigating(false), 800);
-      }, 300);
+      }, 500); // 500ms head-start — enough for chunk to resolve on fast connections
     }
-  }, [firstTimeUser.tourStep, firstTimeUser.tourActive, firstTimeUser.tourCompleted, currentStep, location.pathname, navigate, isNavigating]);
+  }, [firstTimeUser.tourStep, firstTimeUser.tourActive, firstTimeUser.tourCompleted, currentStep, location.pathname, navigate, isNavigating]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset typewriter + skip state when step changes
   useEffect(() => {
