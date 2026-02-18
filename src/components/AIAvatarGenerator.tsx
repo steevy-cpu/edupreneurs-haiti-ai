@@ -15,6 +15,8 @@ interface AIAvatarGeneratorProps {
   onAvatarGenerated: (avatarUrl: string) => void;
   userId: string;
   isSuperUser?: boolean;
+  /** When true, shows onboarding step indicator and Jude-branded header */
+  isOnboarding?: boolean;
 }
 
 const styles = [
@@ -74,7 +76,7 @@ const accessories = [
   { id: "mask", label: "Masque", emoji: "😷" },
 ];
 
-export const AIAvatarGenerator = ({ open, onOpenChange, onAvatarGenerated, userId, isSuperUser = false }: AIAvatarGeneratorProps) => {
+export const AIAvatarGenerator = ({ open, onOpenChange, onAvatarGenerated, userId, isSuperUser = false, isOnboarding = false }: AIAvatarGeneratorProps) => {
   const queryClient = useQueryClient();
   const [gender, setGender] = useState<"male" | "female">("male");
   const [selectedStyle, setSelectedStyle] = useState("anime");
@@ -271,10 +273,15 @@ export const AIAvatarGenerator = ({ open, onOpenChange, onAvatarGenerated, userI
       <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 mx-0 w-[calc(100%-2rem)] max-w-lg max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
         {/* Header */}
         <div className="bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 p-4 shrink-0">
+          {isOnboarding && (
+            <p className="text-xs font-medium text-primary mb-2 tracking-wide uppercase">
+              Étape 2 sur 3 — Ton avatar
+            </p>
+          )}
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg">
               <Sparkles className="h-5 w-5 text-primary" />
-              Créer un avatar IA
+              {isOnboarding ? "Crée ton avatar unique! 🎨" : "Créer un avatar IA"}
             </DialogTitle>
           </DialogHeader>
         </div>

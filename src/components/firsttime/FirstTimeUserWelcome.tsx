@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ericStudentDesk from '@/assets/eric-student-desk.png';
+import ericWaving from '@/assets/eric-waving.png';
 import SimpleTypewriter from '@/components/visitor/SimpleTypewriter';
 import { useFirstTimeUser } from '@/contexts/FirstTimeUserContext';
-import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import { ChevronRight, X } from 'lucide-react';
 import { useNetworkAwareAnimations } from '@/hooks/useNetworkAwareAnimations';
 import { preloadImage } from '@/utils/performanceOptimization';
 
@@ -14,11 +15,10 @@ const FirstTimeUserWelcome = () => {
   
   // Track mount stability to prevent errors during navigation transitions
   const [isStable, setIsStable] = useState(false);
-  const [phase, setPhase] = useState<'greeting' | 'intro' | 'walkthrough' | 'progress' | 'done'>('greeting');
+  const [phase, setPhase] = useState<'greeting' | 'intro' | 'walkthrough' | 'cta'>('greeting');
   const [showGreeting, setShowGreeting] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [showWalkthrough, setShowWalkthrough] = useState(false);
-  const [progressValue, setProgressValue] = useState(0);
   
   // Wait one render cycle for React dispatcher to stabilize after lazy load
   useEffect(() => {
@@ -32,7 +32,7 @@ const FirstTimeUserWelcome = () => {
 
   // Preload Eric image on mount for better UX
   useEffect(() => {
-    preloadImage(ericStudentDesk).catch(() => {});
+    preloadImage(ericWaving).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -42,7 +42,6 @@ const FirstTimeUserWelcome = () => {
       setShowGreeting(false);
       setShowIntro(false);
       setShowWalkthrough(false);
-      setProgressValue(0);
       return;
     }
 
@@ -53,33 +52,6 @@ const FirstTimeUserWelcome = () => {
 
     return () => clearTimeout(greetingTimer);
   }, [firstTimeUser.showWelcome, firstTimeUser.isLoading]);
-
-  // Progress bar animation after walkthrough text
-  useEffect(() => {
-    if (phase !== 'progress') return;
-    
-    const interval = setInterval(() => {
-      setProgressValue(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return prev + 4; // ~2.5 seconds total
-      });
-    }, 100);
-    
-    return () => clearInterval(interval);
-  }, [phase]);
-
-  // Complete when progress hits 100%
-  useEffect(() => {
-    if (progressValue === 100 && phase === 'progress') {
-      setTimeout(() => {
-        setPhase('done');
-        setTimeout(firstTimeUser.completeWelcome, 300);
-      }, 500);
-    }
-  }, [progressValue, phase, firstTimeUser.completeWelcome]);
 
   const handleGreetingComplete = () => {
     setTimeout(() => {
@@ -97,7 +69,7 @@ const FirstTimeUserWelcome = () => {
 
   const handleWalkthroughComplete = () => {
     setTimeout(() => {
-      setPhase('progress');
+      setPhase('cta');
     }, 400);
   };
 
@@ -125,13 +97,31 @@ const FirstTimeUserWelcome = () => {
         transition={{ duration: 0.3 }}
         className="fixed inset-0 z-[9999] flex items-center justify-center"
       >
-        {/* Dark overlay - disable blur on slow connections */}
+        {/* Branded gradient overlay */}
         <motion.div 
           initial={shouldAnimate ? { opacity: 0 } : undefined}
-          animate={{ opacity: 0.5 }}
+          animate={{ opacity: 1 }}
           exit={shouldAnimate ? { opacity: 0 } : undefined}
-          className={`absolute inset-0 bg-black/50 ${shouldShowGlow ? 'backdrop-blur-sm' : ''}`}
+          className={`absolute inset-0 bg-gradient-to-br from-black/70 via-primary/10 to-black/70 ${shouldShowGlow ? 'backdrop-blur-sm' : ''}`}
         />
+
+        {/* Skip button — top right, visible immediately */}
+        <motion.div
+          initial={shouldAnimate ? { opacity: 0, y: -10 } : undefined}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="absolute top-4 right-4 z-10"
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={firstTimeUser.completeWelcome}
+            className="text-white/70 hover:text-white hover:bg-white/10 gap-1"
+          >
+            <X className="h-4 w-4" />
+            Passer
+          </Button>
+        </motion.div>
         
         {/* Floating container */}
         <motion.div
@@ -139,14 +129,14 @@ const FirstTimeUserWelcome = () => {
           transition={shouldAnimate ? { type: "spring", damping: 20, stiffness: 300 } : { duration: 0.1 }}
           className="relative flex flex-col items-center gap-4 sm:gap-6 p-4 sm:p-8"
         >
-          {/* Jude Image */}
+          {/* Jude Image — waving for welcome */}
           <motion.div
             {...imageAnimation}
             transition={shouldAnimate ? { type: "spring", damping: 15, stiffness: 200, delay: 0.2 } : { duration: 0.1 }}
             className="relative"
           >
             <img
-              src={ericStudentDesk}
+              src={ericWaving}
               alt="Jude"
               className={`w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 object-contain ${shouldShowGlow ? 'drop-shadow-2xl' : 'drop-shadow-md'}`}
             />
@@ -210,20 +200,21 @@ const FirstTimeUserWelcome = () => {
                 </motion.p>
               )}
               
-              {/* Progress bar */}
-              {phase === 'progress' && (
-                <motion.div 
+              {/* CTA button — replaces fake progress bar */}
+              {phase === 'cta' && (
+                <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-4 space-y-2"
+                  transition={{ duration: 0.3 }}
+                  className="pt-2"
                 >
-                  <p className="text-xs text-muted-foreground">
-                    Préparation de la visite...
-                  </p>
-                  <Progress value={progressValue} className="h-2" />
-                  <p className="text-xs text-muted-foreground text-right">
-                    {progressValue}%
-                  </p>
+                  <Button
+                    onClick={firstTimeUser.completeWelcome}
+                    className="w-full gap-2 bg-gradient-to-r from-primary to-primary/80 hover:opacity-90"
+                  >
+                    Commencer la visite
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
                 </motion.div>
               )}
             </div>
