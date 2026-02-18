@@ -304,9 +304,15 @@ const FirstTimeUserTour = () => {
         )}
       </AnimatePresence>
       
-      {/* Tour dialog - positioned above bottom nav on mobile */}
+      {/* Tour dialog - repositions to top when spotlighting bottom-right elements (e.g. music FAB) */}
       {!showCelebration && (
-        <div className="fixed bottom-20 left-4 right-4 sm:left-auto sm:right-4 sm:bottom-4 sm:w-96 z-[1004] animate-slide-up">
+        <div className={[
+          "fixed left-4 right-4 sm:left-auto sm:w-96 z-[1004] animate-slide-up",
+          // Step 1 = music FAB (bottom-right) → anchor to top so card doesn't cover the FAB
+          firstTimeUser.tourStep === 1
+            ? "top-4 sm:right-4"
+            : "bottom-20 sm:right-4 sm:bottom-4",
+        ].join(' ')}>
           <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
             {/* Progress bar */}
             <div className="px-4 pt-3">
