@@ -11,6 +11,7 @@ import { logger } from "@/utils/logger";
 export interface DeviceChallengeResult {
   success: boolean;
   challengeId?: string;
+  emailSent?: boolean; // true = Resend confirmed delivery; false = delivery failed
   error?: string;
 }
 
@@ -23,6 +24,7 @@ export interface VerifyDeviceResult {
 
 export interface ResendDeviceCodeResult {
   success: boolean;
+  emailSent?: boolean; // true = delivered; false = edge function returned error
   error?: string;
 }
 
@@ -205,9 +207,11 @@ export async function createDeviceChallenge(
 
     const result = data as { challenge_id: string; code: string };
     
-    // Send verification email
-    try {
-      await supabase.functions.invoke('send-device-verification-email', {
+    // Send verification email — check response instead of fire-and-forget
+    let emailSent = false;
+    const { data: emailData, error: emailError } = await supabase.functions.invoke(
+      'send-device-verification-email',
+      {
         body: {
           email,
           fullName,
@@ -216,15 +220,21 @@ export async function createDeviceChallenge(
           browser: deviceInfo.browser,
           os: deviceInfo.os,
         },
-      });
-    } catch (emailError) {
-      console.error('Failed to send device verification email:', emailError);
-      // Don't fail the challenge creation if email fails
+      }
+    );
+
+    if (emailError) {
+      console.error('Edge function invocation failed:', emailError);
+    } else if (emailData?.error) {
+      console.error('Email delivery error from edge function:', emailData.error);
+    } else {
+      emailSent = true;
     }
 
     return {
       success: true,
       challengeId: result.challenge_id,
+      emailSent,
     };
   } catch (error) {
     console.error('Error in createDeviceChallenge:', error);
@@ -302,7 +312,8 @@ export async function verifyDeviceCode(
  */
 export async function resendDeviceCode(
   challengeId: string,
-  email: string
+  email: string,
+  fullName: string = 'Utilisateur'
 ): Promise<ResendDeviceCodeResult> {
   try {
     const { data, error } = await supabase.rpc('resend_device_challenge', {
@@ -330,22 +341,30 @@ export async function resendDeviceCode(
     // Get device info for email
     const deviceInfo = getFullDeviceIdentifier();
 
-    // Send new verification email
-    try {
-      await supabase.functions.invoke('send-device-verification-email', {
+    // Send new verification email — check delivery status
+    let emailSent = false;
+    const { data: emailData, error: emailError } = await supabase.functions.invoke(
+      'send-device-verification-email',
+      {
         body: {
           email,
-          fullName: 'Utilisateur', // We don't have the name in resend
+          fullName, // No longer hardcoded — passed from VerifyDevicePage
           verificationCode: result.code,
           deviceName: result.device_name || deviceInfo.deviceName,
           browser: result.browser || deviceInfo.browser,
         },
-      });
-    } catch (emailError) {
-      console.error('Failed to send device verification email:', emailError);
+      }
+    );
+
+    if (emailError) {
+      console.error('Edge function invocation failed on resend:', emailError);
+    } else if (emailData?.error) {
+      console.error('Email delivery error on resend:', emailData.error);
+    } else {
+      emailSent = true;
     }
 
-    return { success: true };
+    return { success: true, emailSent };
   } catch (error) {
     console.error('Error in resendDeviceCode:', error);
     return { success: false, error: 'Erreur inattendue' };

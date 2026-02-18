@@ -23,6 +23,7 @@ export interface AuthFlowState {
   deviceChallengeId?: string;
   fullName?: string;
   rememberDevice?: boolean;
+  emailDeliveryFailed?: boolean; // true when initial email send failed — shown as warning on VerifyDevicePage
   // Lockout fields
   lockedEmail?: string;
 }
