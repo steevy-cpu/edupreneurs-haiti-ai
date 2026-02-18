@@ -28,6 +28,11 @@ interface NotificationPermissionBannerProps {
 const DEBUG_NOTIFICATIONS = import.meta.env.DEV;
 
 export const NotificationPermissionBanner = ({ userId }: NotificationPermissionBannerProps) => {
+  // isStable guard: prevents null dispatcher crash on lazy-load mount.
+  // Follows the exact same pattern as HomeChatbot, JudeChatbot, GlobalMusicPlayer,
+  // QuickMessageFAB, and CookieConsent — double requestAnimationFrame defers
+  // all hook calls until the React dispatcher is fully initialized.
+  const [isStable, setIsStable] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -110,6 +115,19 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
     return () => { unsubscribe(); };
   }, []);
 
+  // isStable guard: prevents null dispatcher crash on lazy-load mount.
+  // Double RAF defers rendering until React dispatcher is fully initialized.
+  // Follows exact same pattern as HomeChatbot, JudeChatbot, GlobalMusicPlayer,
+  // QuickMessageFAB, and CookieConsent.
+  useEffect(() => {
+    const timer = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setIsStable(true));
+    });
+    return () => cancelAnimationFrame(timer);
+  }, []);
+
+  if (!isStable) return null;
+
   const handleAllow = async () => {
     setIsRequesting(true);
     setError(null);
@@ -168,7 +186,7 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
             
             {isIOS && !isPWA ? (
               <div className="space-y-3 text-sm">
-                <p className="font-medium text-orange-500">
+                <p className="font-medium text-warning">
                   Sur iPhone, installez d'abord l'application pour activer les notifications
                 </p>
                 <div className="max-h-[45dvh] overflow-y-auto -mx-2 px-2">
