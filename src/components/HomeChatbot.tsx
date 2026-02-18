@@ -70,12 +70,22 @@ const getInitialMessage = (): Message => {
 };
 
 export const HomeChatbot = () => {
+  const [isStable, setIsStable] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>(() => [getInitialMessage()]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [typingMessageIndex, setTypingMessageIndex] = useState<number | null>(null);
+  useEffect(() => {
+    const timer = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsStable(true);
+      });
+    });
+    return () => cancelAnimationFrame(timer);
+  }, []);
+
 const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const chatRef = useRef<HTMLDivElement>(null);
@@ -155,6 +165,8 @@ const messagesEndRef = useRef<HTMLDivElement>(null);
       e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 300);
   }, []);
+
+  if (!isStable) return null;
 
   return (
     <>
