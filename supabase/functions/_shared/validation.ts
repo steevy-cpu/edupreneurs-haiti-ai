@@ -196,10 +196,14 @@ export const confirmationEmailSchema = z.object({
     .max(200, "Nom trop long")
     .transform(s => s.trim()),
   nickname: z.string()
-    .min(2, "Pseudo trop court")
     .max(50, "Pseudo trop long")
-    .transform(s => s.trim()),
-  academicGrade: z.string().max(50),
+    .transform(s => s.trim())
+    .nullable()
+    .optional(),
+  academicGrade: z.string()
+    .max(50)
+    .nullable()
+    .optional(),
   confirmationCode: z.string()
     .length(6, "Code doit être 6 chiffres")
     .regex(/^\d{6}$/, "Code invalide"),
