@@ -17,7 +17,8 @@ import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } f
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-const getEmailTemplate = (fullName: string, nickname: string, academicGrade: string, email: string, confirmationCode: string) => `
+// Template accepts nullable nickname/academicGrade — conditionally renders those rows
+const getEmailTemplate = (fullName: string, nickname: string | null | undefined, academicGrade: string | null | undefined, email: string, confirmationCode: string) => `
 <!DOCTYPE html>
 <html lang="fr">
   <head>
@@ -115,22 +116,22 @@ const getEmailTemplate = (fullName: string, nickname: string, academicGrade: str
                                   <span style="font-size: 14px; color: #1e293b; font-weight: 600;">${fullName}</span>
                                 </td>
                               </tr>
-                              <tr>
+                              ${nickname ? `<tr>
                                 <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
                                   <span style="font-size: 14px; color: #64748b;">Pseudo</span>
                                 </td>
                                 <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">
                                   <span style="font-size: 14px; color: #1e293b; font-weight: 600;">@${nickname}</span>
                                 </td>
-                              </tr>
-                              <tr>
+                              </tr>` : ''}
+                              ${academicGrade ? `<tr>
                                 <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
                                   <span style="font-size: 14px; color: #64748b;">Niveau</span>
                                 </td>
                                 <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">
                                   <span style="font-size: 14px; color: #1e293b; font-weight: 600;">${academicGrade}</span>
                                 </td>
-                              </tr>
+                              </tr>` : ''}
                               <tr>
                                 <td style="padding: 12px 0;">
                                   <span style="font-size: 14px; color: #64748b;">Email</span>
