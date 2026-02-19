@@ -1,276 +1,205 @@
 
-## Plan C: Control Center — 7 Low-Severity Cleanup Fixes
+## Révision Plan A — Wiring the Three Dead Components
 
-### Pre-implementation audit findings
+### What This Plan Touches
 
-**Fix 1 — Auth calls in ReportsModule.tsx**
+Three files are modified. Nothing else is touched.
 
-Three independent `supabase.auth.getUser()` calls:
-- Line 156 in `updateReportStatus`
-- Line 186 in `saveAdminNotes`
-- Line 296 in `handleDismissReport`
-
-Each makes a network round-trip to the auth server. The fix: import `useSessionAuth` from `@/contexts/SessionAuthContext`, call it once at the top of the component, and use the returned `user` object in all three functions. The `user` object from `useSessionAuth` is the same in-memory session user that these calls return — no behavior change, just eliminates 3 redundant network calls.
-
-Note: Lines 212 and 256 (`supabase.auth.getSession()`) feed the `Authorization` header for direct `fetch()` calls to edge functions — these are **not** redundant and must stay unchanged. Only the three `getUser()` calls for `reviewed_by: user?.id` are replaced.
-
-**Fix 2 — Auth call in AnnouncementsModule.tsx**
-
-Line 110 in `sendMutation.mutationFn`: `const { data: { user } } = await supabase.auth.getUser()`. The `user.id` is only used for `sent_by: user.id` (line 129). Fix: import `useSessionAuth`, call it at the component level, use `user?.id` in the mutation body. Add a guard: if `!user` throw `new Error('Non authentifié')` (the existing guard on line 111 already does this).
-
-**Fix 3 — UsersModule GRADES vs ACADEMIC_GRADES in types.ts**
-
-Current `GRADES` array in `UsersModule.tsx` (lines 44–52):
-```
-7AF, 8AF, 9AF, NS3, NS4, PHILO
-```
-
-`ACADEMIC_GRADES` in `types.ts` (line 19):
-```
-'7AF', '7e', '8AF', '8e', '9AF', 'NS1', 'NS3', 'NS4', 'Philo', 'S1'
-```
-
-Missing from UsersModule: `7e`, `8e`, `NS1`, `S1`. Also `PHILO` is cased wrong — types.ts uses `Philo`. The fix: replace the entire `GRADES` array to exactly mirror `ACADEMIC_GRADES` from types.ts, preserving the "Tous les niveaux" sentinel and adding proper labels for each entry.
-
-**Fix 4 — PaymentsModule search placeholder and reject status**
-
-- Line 180: Placeholder `"Rechercher par ID, référence, téléphone..."` — the actual filter at line 143–146 only searches `order_id`. Fix: change placeholder to `"Rechercher par ID de commande..."`.
-- Lines 76–83 (`verifyMutation`): when `action === 'reject'`, `updateData` only sets `admin_verified: false`, `verified_at`, and optionally `verification_notes`. The `status` field is NOT updated — a rejected payment keeps its `pending_verification` status. This makes the "Échoués" filter useless for rejected manual payments. Fix: add `if (action === 'reject') updateData.status = 'rejected'` in the same update object. This mirrors the existing `if (action === 'approve') updateData.status = 'completed'` pattern at line 82.
-
-**Fix 5 — ContactModule pagination cap**
-
-Line 333:
-```typescript
-Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-  const pageNum = i + 1;
-```
-
-This hard-caps numbered page links at 5, making pages 6+ unreachable via numbered links. The `PaginationNext` button at line 348–352 still works for sequential navigation, but the user has no direct-jump access to pages beyond 5.
-
-Fix: Replace the static capped array with a sliding window approach that always shows at most 5 page links but centered around the current page, so pages 6+ are always accessible when navigating forward:
-
-```typescript
-// Compute visible page range — 5-page sliding window centered on currentPage
-const windowSize = 5;
-const halfWindow = Math.floor(windowSize / 2);
-let startPage = Math.max(1, currentPage - halfWindow);
-let endPage = Math.min(totalPages, startPage + windowSize - 1);
-// Adjust start if we're near the end
-if (endPage - startPage < windowSize - 1) {
-  startPage = Math.max(1, endPage - windowSize + 1);
-}
-const pageNumbers = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
-```
-
-Then render `pageNumbers.map(...)` instead of the `Array.from({ length: Math.min(5, totalPages) })` block. This makes all pages reachable.
-
-**Fix 6 — Realtime re-subscription churn in ContactModule and ReportsModule**
-
-**ContactModule.tsx (lines 118–142):**
-Two `useEffect` blocks both have `[statusFilter, currentPage]` as dependencies:
-- Lines 118–120: `useEffect(() => { fetchSubmissions(); }, [statusFilter, currentPage])` — correct
-- Lines 122–142: realtime subscription `useEffect` also has `[statusFilter, currentPage]` — **wrong**. Every filter or page change tears down and re-creates the Supabase channel.
-
-Fix: The realtime subscription effect gets an **empty dependency array** `[]`. The `fetchSubmissions` function it calls must be wrapped in `useCallback` with its actual dependencies (`[statusFilter, currentPage]`) so the channel callback always invokes the latest version. The subscription itself only subscribes once.
-
-```typescript
-// Stable fetch function — recreated when filters/page change
-const fetchSubmissions = useCallback(async () => {
-  // ... existing body unchanged
-}, [statusFilter, currentPage]);
-
-// Data fetching effect — re-runs when filters/page change
-useEffect(() => {
-  fetchSubmissions();
-}, [fetchSubmissions]);
-
-// Realtime subscription — subscribes ONCE on mount only
-useEffect(() => {
-  const channel = supabase
-    .channel('contact_submissions_changes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_submissions' },
-      () => { fetchSubmissions(); }  // always calls latest via closure
-    )
-    .subscribe();
-  return () => { supabase.removeChannel(channel); };
-}, []); // empty — subscribe once, never re-register
-```
-
-**ReportsModule.tsx (lines 77–93):**
-Same problem: single `useEffect` handles both the data fetch AND the subscription, with `[statusFilter, currentPage]` deps. Every filter/page change unsubscribes and re-subscribes.
-
-Fix: Same pattern — wrap `fetchReports` in `useCallback([statusFilter, currentPage])`. Split into two `useEffect` blocks: one for data fetching (`[fetchReports]`), one for subscription (`[]`).
-
-**Fix 7 — Consolidate FOUNDER_USER_IDS**
-
-Current state:
-- `src/lib/founderConstants.ts` exports `FOUNDER_USER_IDS` (lines 5–8) and `isFounder` (lines 10–13)
-- `src/lib/quizBattleUtils.ts` re-declares `FOUNDER_USER_IDS` (lines 79–82) and `isFounder` (lines 87–89)
-
-Two consumers import from `quizBattleUtils`:
-1. `src/components/quiz-battle/BattleLeaderboardPreview.tsx` line 10: `import { FOUNDER_USER_IDS, calculateLevel } from '@/lib/quizBattleUtils'`
-2. `src/pages/QuizBattleLeaderboard.tsx` line 11: `import { FOUNDER_USER_IDS, calculateLevel } from '@/lib/quizBattleUtils'`
-
-**Plan:**
-- In `quizBattleUtils.ts`: Remove the `FOUNDER_USER_IDS` array and `isFounder` function. Add `export { FOUNDER_USER_IDS, isFounder } from '@/lib/founderConstants'` — this re-exports from the canonical source. This preserves backward compatibility for `BattleLeaderboardPreview` and `QuizBattleLeaderboard` without touching those files. The comment "NOTE: Keep in sync with..." in `founderConstants.ts` is also removed as it's no longer needed.
-- Result: single source of truth in `founderConstants.ts`, all existing imports continue to work.
-
----
-
-### Technical Implementation
-
-#### Fix 1 + Fix 6 — ReportsModule.tsx
-
-Add `useCallback` to imports. Import `useSessionAuth`. At component top level add:
-```typescript
-const { user } = useSessionAuth();
-```
-
-Wrap `fetchReports` in `useCallback`:
-```typescript
-const fetchReports = useCallback(async () => {
-  // ... existing body unchanged
-}, [statusFilter, currentPage]);
-```
-
-Replace the single combined `useEffect` (lines 77–93) with two separate effects:
-```typescript
-// Data fetch — re-runs when filter/page change
-useEffect(() => {
-  fetchReports();
-}, [fetchReports]);
-
-// Realtime subscription — subscribes once, calls stable fetchReports ref
-useEffect(() => {
-  const channel = supabase
-    .channel("reports-updates")
-    .on("postgres_changes", { event: "*", schema: "public", table: "user_reports" },
-      () => fetchReports()
-    )
-    .subscribe();
-  return () => { supabase.removeChannel(channel); };
-}, []); // eslint-disable-line react-hooks/exhaustive-deps
-```
-
-In `updateReportStatus` (line 156): replace `const { data: { user } } = await supabase.auth.getUser()` with nothing — use component-level `user` directly.
-
-In `saveAdminNotes` (line 186): same replacement.
-
-In `handleDismissReport` (line 296): same replacement.
-
-The `getSession()` calls at lines 212 and 256 (for direct `fetch()` to edge functions) are **left completely unchanged**.
-
-#### Fix 2 — AnnouncementsModule.tsx
-
-Add `useSessionAuth` import from `@/contexts/SessionAuthContext`. At top of `AnnouncementsModule` component body add:
-```typescript
-const { user } = useSessionAuth();
-```
-
-In `sendMutation.mutationFn` (lines 109–148): Remove `const { data: { user } } = await supabase.auth.getUser()`. The guard becomes `if (!user) throw new Error('Non authenticated')`. The `sent_by: user.id` at line 129 becomes `sent_by: user!.id` (or `sent_by: user?.id ?? ''`). The `mutationFn` no longer needs `async` for the auth call but remains async for the supabase calls.
-
-Also remove the local `Announcement` interface (lines 22–35) and add to the imports line: `import { Announcement, ACADEMIC_GRADES } from '../types'`. The locally declared `ACADEMIC_GRADES` constant at line 18–20 is also removed since it's already in types.ts.
-
-Wait — `ACADEMIC_GRADES` in types.ts is typed as `const` with `as const`. The local declaration in AnnouncementsModule is identical. We can safely remove the local one and import from types. The type of `selectedGrades` state (`string[]`) remains compatible.
-
-#### Fix 3 — UsersModule.tsx
-
-Replace lines 44–52 (the `GRADES` const) with:
-```typescript
-const GRADES = [
-  { value: "all", label: "Tous les niveaux" },
-  { value: "7AF", label: "7ème AF" },
-  { value: "7e", label: "7ème" },
-  { value: "8AF", label: "8ème AF" },
-  { value: "8e", label: "8ème" },
-  { value: "9AF", label: "9ème AF" },
-  { value: "NS1", label: "NS1" },
-  { value: "NS3", label: "NS3" },
-  { value: "NS4", label: "NS4" },
-  { value: "Philo", label: "Philo" },
-  { value: "S1", label: "S1" },
-];
-```
-
-Note: `PHILO` → `Philo` (exact case match to `ACADEMIC_GRADES` in types.ts). Students who registered with grade `"PHILO"` stored in the DB will no longer match the `Philo` filter — but since the data was previously stored under `"PHILO"` (uppercase), this is a data issue, not a UI issue. The filter value must match the stored DB value. To be safe: keep **both** — add `PHILO` as a separate entry labeled "Philo (legacy)" or simply keep the value as `"PHILO"` and label it `"Philo"`. Given the types.ts canonical value is `"Philo"`, keep value `"Philo"` for new registrations and drop the `"PHILO"` legacy option, as the plan says "make it match types.ts exactly."
-
-#### Fix 4 — PaymentsModule.tsx
-
-Line 180: Change `"Rechercher par ID, référence, téléphone..."` to `"Rechercher par ID de commande..."`.
-
-Lines 76–83 (`verifyMutation`): Add after the existing `if (action === 'approve') updateData.status = 'completed'` block:
-```typescript
-if (action === 'reject') updateData.status = 'rejected';
-```
-
-This sets `status` to `'rejected'` in the same DB write as `admin_verified: false`. Result: rejected payments show correctly under the `status: 'rejected'` filter.
-
-#### Fix 5 — ContactModule.tsx pagination
-
-Replace line 333:
-```typescript
-{Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-  const pageNum = i + 1;
-```
-
-With the sliding window approach:
-```typescript
-{(() => {
-  // 5-page sliding window centered on currentPage — never caps at page 5
-  const windowSize = 5;
-  const halfWindow = Math.floor(windowSize / 2);
-  let startPage = Math.max(1, currentPage - halfWindow);
-  let endPage = Math.min(totalPages, startPage + windowSize - 1);
-  if (endPage - startPage < windowSize - 1) {
-    startPage = Math.max(1, endPage - windowSize + 1);
-  }
-  return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
-})().map((pageNum) => (
-  <PaginationItem key={pageNum}>
-    <PaginationLink
-      onClick={() => setCurrentPage(pageNum)}
-      isActive={currentPage === pageNum}
-      className="cursor-pointer"
-    >
-      {pageNum}
-    </PaginationLink>
-  </PaginationItem>
-))}
-```
-
-Also fix: the realtime subscription at lines 122–142 has `[statusFilter, currentPage]` deps — apply the same `useCallback` + split-`useEffect` pattern as ReportsModule.
-
-#### Fix 6 — ContactModule.tsx realtime fix (included above in Fix 5 section)
-
-Wrap `fetchSubmissions` in `useCallback([statusFilter, currentPage])`. Split the combined effect at lines 118–142 into two separate `useEffect` blocks — one with `[fetchSubmissions]` for data fetching, one with `[]` for subscription.
-
-#### Fix 7 — quizBattleUtils.ts + founderConstants.ts
-
-In `src/lib/quizBattleUtils.ts`, remove lines 77–89 (the `FOUNDER_USER_IDS` array and `isFounder` function). Replace with a re-export:
-```typescript
-// Single source of truth — imported from founderConstants to avoid duplication
-export { FOUNDER_USER_IDS, isFounder } from '@/lib/founderConstants';
-```
-
-In `src/lib/founderConstants.ts`, remove the comment on line 3: `// NOTE: Keep in sync with src/lib/quizBattleUtils.ts` since it's no longer needed.
-
-No changes needed to `BattleLeaderboardPreview.tsx` or `QuizBattleLeaderboard.tsx` — their import paths (`from '@/lib/quizBattleUtils'`) continue to work because `quizBattleUtils` re-exports the symbols.
-
----
-
-### Files changed
-
-| File | Changes |
+| File | Change |
 |---|---|
-| `src/pages/control-center/modules/ReportsModule.tsx` | Import `useSessionAuth` + `useCallback`. Hoist `user` to component level. Remove 3x `supabase.auth.getUser()`. Wrap `fetchReports` in `useCallback`. Split combined `useEffect` into data-fetch + subscription effects. |
-| `src/pages/control-center/modules/AnnouncementsModule.tsx` | Import `useSessionAuth`. Remove `Announcement` local interface. Remove local `ACADEMIC_GRADES` constant. Import both from `../types`. Hoist `user` to component level. Remove `supabase.auth.getUser()` from `sendMutation`. |
-| `src/pages/control-center/modules/UsersModule.tsx` | Replace `GRADES` array to match `ACADEMIC_GRADES` from types.ts exactly (add `7e`, `8e`, `NS1`, `S1`; fix `PHILO` → `Philo`). |
-| `src/pages/control-center/modules/PaymentsModule.tsx` | Fix search placeholder text. Add `if (action === 'reject') updateData.status = 'rejected'` to `verifyMutation`. |
-| `src/pages/control-center/modules/ContactModule.tsx` | Fix pagination sliding window (remove `Math.min(5, ...)`). Wrap `fetchSubmissions` in `useCallback`. Split realtime subscription into standalone `useEffect([])`. |
-| `src/lib/quizBattleUtils.ts` | Remove `FOUNDER_USER_IDS` array and `isFounder` function. Add re-export from `founderConstants`. |
-| `src/lib/founderConstants.ts` | Remove "keep in sync" comment (no longer applicable). |
+| `src/components/content-editor/VersionHistory.tsx` | Fix compareVersions crash + add restore disclosure note |
+| `src/components/content-editor/WorkflowManagement.tsx` | Add `rejected` step to timeline |
+| `src/pages/ContentEditor.tsx` | Import all three components + render revision panel in the right column |
 
-**No DB migrations. No edge function changes. No other files touched.**
+No DB migrations. No edge function changes. No other component files touched.
+
+---
+
+### Fix 1 — VersionHistory.tsx: compareVersions crash + disclosure note
+
+**The crash (line 110–132):**
+
+The current guard at line 110 is:
+```tsx
+{index < versions.length - 1 && (
+```
+
+This hides the "Voir les changements" button for the **oldest** version (last in the DESC-ordered array, `index === versions.length - 1`). But the **newest** version (`index === 0`) has no guard, and `versions[index - 1]` = `versions[-1]` = `undefined`. Clicking "Voir les changements" at index 0 calls `compareVersions(version, undefined)` which crashes on `undefined.title`.
+
+**The fix:** Change the guard from `index < versions.length - 1` to `index > 0 && index < versions.length - 1`. This means the "Voir les changements" button only appears for versions that have both a newer version above them (index > 0) and an older version to compare against (index < versions.length - 1).
+
+Wait — re-examining the logic. Versions are DESC. `versions[0]` is the newest (`is_current = true`). `versions[index - 1]` is the version NEWER than the current row. The button label says "Différences avec la version {version.version_number + 1}" — comparing to the next-newer version. So the comparison is: current card's version vs. the card one step newer (lower index). For `index === 0` there is no newer version — `versions[-1]` is `undefined`. For `index === versions.length - 1` (the oldest) there is a newer version at `index - 1`. The existing guard `index < versions.length - 1` is WRONG — it should be `index > 0` (show button for all versions except the newest, since only the newest has no version above it to compare to). The label is also consistent: `version.version_number + 1` is the newer version number.
+
+Correct guard: `{index > 0 && (` — show "Voir les changements" for every version except the newest (index 0), since every other version has a version above it to compare against.
+
+**The disclosure note:** Add below the Restaurer button (inside `{!version.is_current && (...)}`), after the button closing tag. It uses a `<p>` with `text-xs text-muted-foreground mt-1` to keep it visually subordinate:
+
+```tsx
+<p className="text-xs text-muted-foreground mt-1 leading-snug">
+  La restauration remet en place le titre, l'objectif, l'introduction, le contenu et les exemples. Le quiz, les activités, et le statut de publication ne sont pas affectés.
+</p>
+```
+
+**Exact change in VersionHistory.tsx:**
+
+Line 84–93 (the Restaurer button block):
+```tsx
+{!version.is_current && (
+  <div className="flex flex-col gap-1">
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => handleRestore(version.id)}
+    >
+      <RotateCcw className="mr-2 h-3 w-3" />
+      Restaurer
+    </Button>
+    {/* Partial-restore disclosure — version snapshot only covers text fields */}
+    <p className="text-xs text-muted-foreground leading-snug">
+      La restauration remet en place le titre, l'objectif, l'introduction, le contenu et les exemples. Le quiz, les activités, et le statut de publication ne sont pas affectés.
+    </p>
+  </div>
+)}
+```
+
+Line 110: change `index < versions.length - 1` → `index > 0`.
+
+---
+
+### Fix 2 — WorkflowManagement.tsx: Add `rejected` step to timeline
+
+**The current timeline (lines 237–254):** Four dots — Brouillon, En révision, Approuvé, Publié. No `rejected` step. A lesson with `workflow_status = 'rejected'` falls through all conditions and all four dots show `bg-muted`. The user sees a blank timeline with no highlighted dot.
+
+**The fix:** Add a `rejected` step between En révision and Approuvé. Style it distinctly: when `currentStatus === 'rejected'`, use `bg-destructive` (red) for this dot and dim all other dots. The label should say "Rejeté" in `text-destructive` when active to make clear it is not a progression step.
+
+**Exact replacement for the timeline section (lines 237–254):**
+
+```tsx
+<div className="space-y-2">
+  <div className="flex items-center gap-2">
+    <div className={`h-2 w-2 rounded-full ${currentStatus === 'draft' ? 'bg-primary' : 'bg-muted'}`} />
+    <span className="text-sm">Brouillon</span>
+  </div>
+  <div className="flex items-center gap-2">
+    <div className={`h-2 w-2 rounded-full ${currentStatus === 'in_review' ? 'bg-primary' : 'bg-muted'}`} />
+    <span className="text-sm">En révision</span>
+  </div>
+  {/* Rejected is a dead-end state — shown in red, not a normal progression step */}
+  <div className="flex items-center gap-2">
+    <div className={`h-2 w-2 rounded-full ${currentStatus === 'rejected' ? 'bg-destructive' : 'bg-muted'}`} />
+    <span className={`text-sm ${currentStatus === 'rejected' ? 'text-destructive font-medium' : ''}`}>
+      Rejeté
+    </span>
+  </div>
+  <div className="flex items-center gap-2">
+    <div className={`h-2 w-2 rounded-full ${currentStatus === 'approved' ? 'bg-primary' : 'bg-muted'}`} />
+    <span className="text-sm">Approuvé</span>
+  </div>
+  <div className="flex items-center gap-2">
+    <div className={`h-2 w-2 rounded-full ${currentStatus === 'published' ? 'bg-primary' : 'bg-muted'}`} />
+    <span className="text-sm">Publié</span>
+  </div>
+</div>
+```
+
+For a published lesson (the current state of all 2,832 lessons), the "Publié" dot is `bg-primary`, "Rejeté" is `bg-muted` — clean and correct.
+
+---
+
+### Fix 3 — ContentEditor.tsx: Import and render the revision panel
+
+**Three imports to add** at the top of `ContentEditor.tsx` (after the existing content-editor imports, lines 10–27):
+
+```tsx
+import { WorkflowManagement } from "@/components/content-editor/WorkflowManagement";
+import { VersionHistory } from "@/components/content-editor/VersionHistory";
+import { ChangeLog } from "@/components/content-editor/ChangeLog";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+```
+
+`GitBranch`, `History` icons are already in their respective component files — not needed in ContentEditor.
+
+**The revision panel — where it goes:**
+
+Inside the right column of TabsContent[review] (lines 341–410), after the `LessonComments` block (after line 408, before the closing `</div>` of the right column at line 410):
+
+```tsx
+{/* Revision Panel — shown only when a lesson is selected */}
+{selectedLesson && (
+  <Accordion type="multiple" defaultValue={["workflow"]} className="space-y-0">
+    {/* Workflow section — open by default, most actionable */}
+    <AccordionItem value="workflow" className="border rounded-lg px-0 mb-2">
+      <AccordionTrigger className="px-4 py-3 hover:no-underline">
+        <span className="flex items-center gap-2 font-semibold text-sm">
+          Workflow
+        </span>
+      </AccordionTrigger>
+      <AccordionContent className="px-4 pb-4">
+        <WorkflowManagement
+          selectedLesson={selectedLesson}
+          onUpdate={refreshLesson}
+        />
+      </AccordionContent>
+    </AccordionItem>
+
+    {/* Version history section */}
+    <AccordionItem value="versions" className="border rounded-lg px-0 mb-2">
+      <AccordionTrigger className="px-4 py-3 hover:no-underline">
+        <span className="flex items-center gap-2 font-semibold text-sm">
+          Historique des versions
+        </span>
+      </AccordionTrigger>
+      <AccordionContent className="px-4 pb-4">
+        <VersionHistory
+          selectedLesson={selectedLesson}
+          onRestore={refreshLesson}
+        />
+      </AccordionContent>
+    </AccordionItem>
+
+    {/* Change log section */}
+    <AccordionItem value="changelog" className="border rounded-lg px-0">
+      <AccordionTrigger className="px-4 py-3 hover:no-underline">
+        <span className="flex items-center gap-2 font-semibold text-sm">
+          Journal des modifications
+        </span>
+      </AccordionTrigger>
+      <AccordionContent className="px-4 pb-4">
+        <ChangeLog selectedLesson={selectedLesson} />
+      </AccordionContent>
+    </AccordionItem>
+  </Accordion>
+)}
+```
+
+**Key decisions:**
+- `type="multiple"` — all three sections can be expanded simultaneously and independently.
+- `defaultValue={["workflow"]}` — Workflow is open by default; the other two are collapsed.
+- The entire `Accordion` block is gated with `{selectedLesson && ...}` — nothing renders when no lesson is selected.
+- `onUpdate={refreshLesson}` passed to `WorkflowManagement` — when an admin changes workflow state, `refreshLesson` re-fetches the lesson from the DB and calls `setSelectedLesson(data)`, which updates all components receiving `selectedLesson` as a prop.
+- `onRestore={refreshLesson}` passed to `VersionHistory` — same pattern; after a restore the lesson state in DB has changed, `refreshLesson` syncs it.
+- `WorkflowManagement` already has a `!selectedLesson` guard at line 112 that renders a placeholder card — but since the panel itself is already gated on `selectedLesson`, this guard is never reached from inside the panel. It remains as defensive code.
+- `ChangeLog` and `VersionHistory` have similar guards — also never reached in this context but harmless.
+
+**Prop compatibility check:**
+- `WorkflowManagement`: expects `{ selectedLesson: any; onUpdate: () => void }` — `refreshLesson` is `() => Promise<void>` which is assignable to `() => void`. ✓
+- `VersionHistory`: expects `{ selectedLesson: any; onRestore: () => void }` — same. ✓
+- `ChangeLog`: expects `{ selectedLesson: any }` — direct pass. ✓
+
+**ScrollArea heights inside collapsed accordion:** Both `VersionHistory` and `ChangeLog` render a `ScrollArea` with `h-[600px]`. Inside a collapsed `AccordionContent` these don't exist in the DOM (Radix animates out but the content is still rendered hidden). When expanded, the full 600px ScrollArea appears. This is the correct UX — the accordion collapse gives the user control over vertical space. No height adjustment needed.
+
+---
+
+### What the user sees after this plan
+
+**Before selecting a lesson:** The right column shows only the existing tools (CurriculumAnalyzer, SingleLessonGenerator, LessonValidationPanel, LessonImageManager, LessonPreview, YouTubeManager, LessonComments). No revision panel.
+
+**After selecting a lesson:** Below LessonComments, a three-section Accordion appears:
+- "Workflow" — expanded by default, shows WorkflowManagement card with current status badge, review notes textarea, action buttons (role-gated), and the five-dot timeline (Brouillon → En révision → Rejeté → Approuvé → Publié).
+- "Historique des versions" — collapsed by default, click to expand VersionHistory with its ScrollArea of version cards and "Restaurer" buttons with disclosure note.
+- "Journal des modifications" — collapsed by default, click to expand ChangeLog with its realtime-subscribed change list.
+
+**For all 2,832 existing lessons (workflow_status = 'published'):** WorkflowManagement renders correctly — "Publié" badge, no action buttons (no transitions from published are defined), five-dot timeline with the rightmost dot highlighted. No broken UI.
 
 ---
 
@@ -278,15 +207,14 @@ No changes needed to `BattleLeaderboardPreview.tsx` or `QuizBattleLeaderboard.ts
 
 | Check | Status |
 |---|---|
-| Realtime subscriptions fire correctly after dependency array change | Yes — the subscription `useEffect([])` mounts once. The channel callback calls `fetchReports()` / `fetchSubmissions()` which are `useCallback` refs. Because `useCallback` recreates when its deps change (filter/page), the ref inside the channel closure stays current via the closure over the stable `useCallback` reference. The channel never re-registers. |
-| Realtime subscriptions do not fire stale data on filter change | Yes — changing `statusFilter` or `currentPage` causes `fetchReports`/`fetchSubmissions` `useCallback` to update, which triggers the data-fetch `useEffect`. The subscription channel is unaffected. The callback always points to the latest fetch function. |
-| Grade filter in UsersModule now matches ACADEMIC_GRADES in types.ts exactly | Yes — after fix, `GRADES` values are: `all, 7AF, 7e, 8AF, 8e, 9AF, NS1, NS3, NS4, Philo, S1` — identical to the `ACADEMIC_GRADES` tuple in types.ts. |
-| `FOUNDER_USER_IDS` consolidation does not break quiz battle founder exclusion | Yes — `BattleLeaderboardPreview` and `QuizBattleLeaderboard` import `{ FOUNDER_USER_IDS }` from `@/lib/quizBattleUtils`. After the fix, `quizBattleUtils` re-exports `FOUNDER_USER_IDS` from `founderConstants`. The import path is unchanged, the exported value is identical. |
-| `isFounder` function still works in all consumers | Yes — `isFounder` is also re-exported from `quizBattleUtils`. The `founderConstants` version handles `null | undefined` input (returns `false`). The `quizBattleUtils` version typed `userId: string`. After the fix, the re-exported version comes from `founderConstants` which is more defensive — no regression. |
-| Reject mutation correctly sets status: 'rejected' in same write | Yes — `updateData.status = 'rejected'` is added inside `verifyMutation` for `action === 'reject'`. This is the same DB write that already sets `admin_verified: false`. |
-| Payments with `rejected` status now appear under the "Échoués" filter | Yes — the filter at line 57 (`query.eq('status', statusFilter)`) will now match `rejected` when `statusFilter === 'failed'`... actually wait: `statusFilter === 'failed'` filters for `status = 'failed'`, not `status = 'rejected'`. The plan says fix `status` to `'rejected'`. The filter dropdown has no `rejected` option — it has `failed`. A separate filter option for `rejected` may be needed, or the status value should be `'failed'`. Re-reading the plan: "fix the reject mutation so it updates status to 'rejected'" — so the DB value becomes `'rejected'`. The existing filter options (`pending`, `pending_verification`, `completed`, `failed`) do not include `rejected`. To make rejected payments visible, either: (a) add a `rejected` option to the filter dropdown, or (b) fold `rejected` into `failed` filter. The cleanest fix matching the plan is to add a `rejected` filter option to the Select. This will be added. |
-| Announcement local interface removal does not break types | Yes — the local `Announcement` interface is byte-for-byte identical to the one in types.ts (confirmed by reading both). Replacing with the import is a pure deduplication. |
-| Local `ACADEMIC_GRADES` removal in AnnouncementsModule does not break grade picker | Yes — the local array is identical to types.ts. The import path `'../types'` resolves correctly from `src/pages/control-center/modules/`. |
-| `supabase.auth.getSession()` calls in ReportsModule for edge functions left unchanged | Yes — lines 212 and 256 (`handleDeletePost`, `handleDeleteUser`) use `getSession()` for the `Authorization: Bearer` header in raw `fetch()` calls. These are NOT replaced. Only the three `getUser()` calls for `reviewed_by: user?.id` are replaced. |
-| ContactModule pagination: pages beyond 5 are now reachable | Yes — the sliding window computes `startPage` and `endPage` around `currentPage`. At page 7, the window shows `[5, 6, 7, 8, 9]`. All pages are reachable via sequential Next clicks or direct number click. |
-| AppShell, Provider Stack, all other modules unaffected | Yes — all changes are scoped to 5 module files and 2 lib files. No global hooks, no routing, no contexts modified. |
+| Revision panel only appears when a lesson is selected | Yes — the entire `{selectedLesson && <Accordion ...>}` block is conditional. When `selectedLesson` is null the panel does not render. |
+| compareVersions crash is fixed | Yes — guard changed from `index < versions.length - 1` to `index > 0`. The "Voir les changements" button no longer renders for `index === 0` (the newest version), which was the only path to `versions[-1]` being `undefined`. |
+| Existing lessons (all `published`) show correctly in the workflow timeline | Yes — `currentStatus === 'published'` matches the last dot (`bg-primary`). All other four dots including "Rejeté" are `bg-muted`. No action buttons render for `published` status. |
+| `rejected` status has visible, distinct representation | Yes — the new "Rejeté" dot uses `bg-destructive` (red) and its label gets `text-destructive font-medium` when `currentStatus === 'rejected'`. For all other statuses the dot is `bg-muted` and the label is unstyled. |
+| Three components render without errors when a lesson is selected | Yes — all three receive the correct `selectedLesson` object (the full lesson row with joined subjects from the DB fetch in `onSelectLesson`). `refreshLesson` is a stable function reference (defined at module level in ContentEditor, not inside a render). |
+| WorkflowManagement `onUpdate` triggers correct lesson refresh | Yes — `onUpdate={refreshLesson}` calls `refreshLesson` which re-fetches `lessons.*, subjects(id, name)` from the DB and calls `setSelectedLesson(data)`. All components receiving `selectedLesson` as a prop re-render with the updated data. |
+| VersionHistory `onRestore` triggers correct lesson refresh | Yes — same `refreshLesson`. After a restore the DB content for `title`, `objectif`, `introduction`, `contenu`, `exemples_exercices` changes, and `refreshLesson` syncs those back to `selectedLesson` state. |
+| Accordion `defaultValue={["workflow"]}` is correct for `type="multiple"` | Yes — Radix Accordion `type="multiple"` accepts `defaultValue` as a `string[]`. Passing `["workflow"]` opens only the Workflow item on first render. ✓ |
+| Accordion `type="multiple"` allows independent expand/collapse of all three sections | Yes — this is exactly the behavior of `type="multiple"` vs `type="single"`. Users can have all three open, all closed, or any combination. |
+| No new dependencies added | Yes — `Accordion`, `AccordionItem`, `AccordionTrigger`, `AccordionContent` are imported from `@/components/ui/accordion` which already exists and uses `@radix-ui/react-accordion` (already installed). |
+| AppShell, Provider Stack, other tabs unaffected | Yes — all changes are scoped to three files. No global context, no routes, no other tabs modified. |
