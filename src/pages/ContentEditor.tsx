@@ -26,6 +26,11 @@ import { StudyMusicManager } from "@/components/content-editor/StudyMusicManager
 import { BatchOperationsPanel } from "@/components/content-editor/BatchOperationsPanel";
 import type { BatchPanelData } from "@/components/content-editor/BatchOperationsPanel";
 import { ContentEditorPermissionsProvider } from "@/contexts/ContentEditorPermissionsContext";
+// Revision panel — workflow, version history, and change log for selected lessons
+import { WorkflowManagement } from "@/components/content-editor/WorkflowManagement";
+import { VersionHistory } from "@/components/content-editor/VersionHistory";
+import { ChangeLog } from "@/components/content-editor/ChangeLog";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const CONTENT_EDITOR_STORAGE_KEY = 'content_editor_preferences';
 
@@ -407,6 +412,47 @@ const ContentEditor = () => {
                     />
                     <LessonComments lesson={selectedLesson} />
                   </div>
+
+                  {/* Revision Panel — visible only when a lesson is selected */}
+                  {selectedLesson && (
+                    <Accordion type="multiple" defaultValue={["workflow"]} className="space-y-0">
+                      {/* Workflow section — open by default, most actionable */}
+                      <AccordionItem value="workflow" className="border rounded-lg px-0 mb-2">
+                        <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                          <span className="font-semibold text-sm">Workflow</span>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-4 pb-4">
+                          <WorkflowManagement
+                            selectedLesson={selectedLesson}
+                            onUpdate={refreshLesson}
+                          />
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      {/* Version history section — collapsed by default */}
+                      <AccordionItem value="versions" className="border rounded-lg px-0 mb-2">
+                        <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                          <span className="font-semibold text-sm">Historique des versions</span>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-4 pb-4">
+                          <VersionHistory
+                            selectedLesson={selectedLesson}
+                            onRestore={refreshLesson}
+                          />
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      {/* Change log section — collapsed by default */}
+                      <AccordionItem value="changelog" className="border rounded-lg px-0">
+                        <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                          <span className="font-semibold text-sm">Journal des modifications</span>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-4 pb-4">
+                          <ChangeLog selectedLesson={selectedLesson} />
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  )}
                 </div>
               </div>
             </TabsContent>
