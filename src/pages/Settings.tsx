@@ -47,6 +47,7 @@ import { debounce } from "@/utils/performanceOptimization";
 import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { validateUserText } from "@/lib/textModeration";
 import { StripeRenewalButton } from "@/components/subscription/StripeRenewalButton";
+import { isFounder } from "@/lib/founderConstants";
 import { RenewalGiftLink } from "@/components/subscription/RenewalGiftLink";
 
 // Lazy load heavy components
@@ -87,6 +88,8 @@ const Settings = () => {
   
   const userId = user?.id ?? null;
   const userEmail = user?.email ?? "";
+  // Founders bypass the 3-day avatar regeneration cooldown
+  const isFounderUser = isFounder(userId);
   
   const [activeTab, setActiveTab] = useState(() => {
     return searchParams.get('tab') || "profile";
@@ -587,6 +590,7 @@ const Settings = () => {
                           selectedAvatar={selectedAvatar}
                           onSelect={handleAvatarSelect}
                           userId={userId || undefined}
+                          isSuperUser={isFounderUser}
                         />
                       </Suspense>
                     ) : (

@@ -8,9 +8,11 @@ interface AvatarSelectorProps {
   selectedAvatar?: string;
   onSelect: (avatarId: string) => void;
   userId?: string;
+  /** Founders bypass the 3-day avatar regeneration cooldown */
+  isSuperUser?: boolean;
 }
 
-export const AvatarSelector = ({ selectedAvatar, onSelect, userId }: AvatarSelectorProps) => {
+export const AvatarSelector = ({ selectedAvatar, onSelect, userId, isSuperUser }: AvatarSelectorProps) => {
   const [showAIGenerator, setShowAIGenerator] = useState(false);
 
   // Check if selectedAvatar is a custom URL
@@ -62,6 +64,7 @@ export const AvatarSelector = ({ selectedAvatar, onSelect, userId }: AvatarSelec
           onOpenChange={setShowAIGenerator}
           onAvatarGenerated={handleAIAvatarGenerated}
           userId={userId}
+          isSuperUser={isSuperUser}
         />
       )}
     </>

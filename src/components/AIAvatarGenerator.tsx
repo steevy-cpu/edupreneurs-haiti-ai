@@ -171,7 +171,8 @@ export const AIAvatarGenerator = ({ open, onOpenChange, onAvatarGenerated, userI
         // During onboarding, show inline fallback UI instead of raw error toast
         setGenerationFailed(true);
       } else {
-        toast.error(error instanceof Error ? error.message : "Erreur lors de la génération");
+      // User-friendly message instead of raw API errors (e.g. "AI Gateway error: 500")
+      toast.error("La génération d'avatar est temporairement indisponible. Réessaie plus tard.");
       }
     } finally {
       setIsGenerating(false);
