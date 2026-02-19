@@ -78,7 +78,8 @@ export function ExamDetailEditor({ exam, onBack }: ExamDetailEditorProps) {
     switch (f) {
       case 'missing-answer': return 'Sans réponse';
       case 'missing-explanation': return 'Sans explication';
-      case 'missing-blocks': return 'Sans contenu structuré';
+      // Updated to match new QualityIndicators label
+      case 'missing-blocks': return 'Sans extraction IA';
       default: return '';
     }
   };
@@ -178,13 +179,16 @@ export function ExamDetailEditor({ exam, onBack }: ExamDetailEditorProps) {
             <ScrollArea className="h-[calc(100vh-400px)] min-h-[400px]">
               <div className="space-y-3 pr-4">
                 {filteredExercises.map((exercise) => (
-                  <ExerciseCard
-                    key={exercise.id}
-                    exercise={exercise}
-                    onUpdate={(updates) => handleUpdateExercise(exercise.id, updates)}
-                    onDelete={() => handleDeleteExercise(exercise.id)}
-                    isUpdating={updatingId === exercise.id}
-                  />
+                   <ExerciseCard
+                     key={exercise.id}
+                     exercise={exercise}
+                     onUpdate={(updates) => handleUpdateExercise(exercise.id, updates)}
+                     onDelete={() => handleDeleteExercise(exercise.id)}
+                     isUpdating={updatingId === exercise.id}
+                     examSubject={exam.subject}
+                     examGradeLevel={exam.grade_level}
+                     examSeries={exam.series ?? undefined}
+                   />
                 ))}
               </div>
             </ScrollArea>
