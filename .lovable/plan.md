@@ -1,287 +1,224 @@
 
-## Plan C: Content Editor Structural Cleanup — 4 Fixes
+## Plan A: Control Center — Two High-Severity Bug Fixes
 
-### Audit Summary Before Implementation
+### Pre-implementation findings
 
-**Fix 1 — Shared permission context:**
-- `useContentEditorPermissions` is currently called independently in 6 locations:
-  - `WorkflowManagement.tsx` (calls `supabase.auth.getUser()` + `content_editor_roles` query)
-  - `BulkOperations.tsx` (same two queries)
-  - `PermissionGuard.tsx` (same two queries)
-  - `EbookManager.tsx` via `PermissionGuard` (indirect)
-  - `BatchQuizRegenerator.tsx` (same two queries, `role === 'admin'` check)
-  - `BatchActivitiesRegenerator.tsx` (same two queries, `role === 'admin'` check)
-- `ContentEditor.tsx` already performs its own access check at load time (`checkAccess`), so the permission role is already known at the page level before any child renders.
-- `RoleManagement.tsx` does **not** use `useContentEditorPermissions` — confirmed via search. The plan instruction's reference to it was inaccurate; `RoleManagement` manages its own `fetchCurrentUser` logic. It is out of scope.
-- `WorkflowManagement.tsx` calls `supabase.auth.getUser()` directly inside `updateWorkflowStatus` at line 73. This must be replaced with `useSessionAuth()` per the plan.
+#### Fix 1 — DonationsModule.tsx
 
-**Fix 2 — Move batch operation buttons out of LessonBrowser:**
-- All 6 batch wrappers (`BatchQuizValidator`, `BatchActivitiesValidator`, `BatchQuizRegenerator`, `BatchActivitiesRegenerator`, `BatchQuizGeneratorNew`, `BatchContentGenerator`) are rendered inside `LessonBrowser.tsx` in the `CardHeader` stats block (lines 511–602).
-- The data they receive (`lessonsMissingContent`, `lessonsMissingQuiz`, `lessonsWithValidQuiz`, `lessonsWithValidActivities`, `gradeLevel`) is computed from `lessonsBySubject` inside `LessonBrowser`. These are derived arrays — they need to be lifted to `ContentEditor.tsx` or the `BatchOperationsPanel` needs to receive them as props from `LessonBrowser`.
-- The `activeBatchOperation` state that prevents two batch operations running simultaneously also lives in `LessonBrowser`. This coordination state must follow the batch buttons.
-- The `loadSubjects` callback (called on batch completion) must also be preserved. It becomes an `onRefresh` callback passed to `BatchOperationsPanel`.
-- The correct architecture: `LessonBrowser` exposes a `batchData` output prop (or the `BatchOperationsPanel` is passed the derived lesson lists). Since `LessonBrowser` already owns the data loading, the cleanest approach is to lift the stats computation and expose it via a callback: `onLessonsLoaded?: (stats: BatchPanelData) => void`. `ContentEditor.tsx` stores the stats in its own state and passes them to a new `BatchOperationsPanel`.
-- The coverage stats UI (quiz/content percentage bars) stays inside `LessonBrowser` because it is part of the browsing experience, not the batch operation UI.
+Three problems exist, not two:
 
-**Fix 3 — Worker pool race condition in `useBatchOperation.ts`:**
-- In `useBatchOperation.ts`, `operationResults` is a plain array closed over in each worker closure. Workers push results to it directly (`operationResults.push(...)`) and then call `setResults([...operationResults])`. With `concurrency > 1`, two workers resolving in the same microtask batch both read the same intermediate `operationResults` snapshot — one push overwrites the other in the React state because both spread the same pre-push version.
-- The fix: replace `setResults([...operationResults])` with `setResults(prev => [...prev, newResult])` where `newResult` is the just-computed result object. The `operationResults` local array is still used for final toast computation and session persistence (those are sequential, so no race there). Only the React state update is changed.
+1. **Double USD division** — Line 61: `usd: usd / 100` in stats. Line 91: `(amount / 100).toFixed(2)` in `formatAmount`. Both divide by 100. Since the DB stores Stripe USD amounts already in dollars (e.g. `5.00`), dividing produces `$0.05` instead of `$5.00`. Fix: remove both `/100` divisions.
 
-**Fix 4 — Dead component deletion:**
-- `QuizActivityValidator.tsx` — not imported anywhere (confirmed by search). Safe to delete.
-- `LessonReview.tsx` — not imported anywhere (confirmed by search). Safe to delete.
-- `ContentTemplates.tsx` — not imported anywhere (confirmed by search). Safe to delete.
+2. **No reject mutation exists** — The entire `DonationsModule.tsx` has no `useMutation`, no approve button, no reject button. The plan requires adding a reject action that sets `status: 'rejected'` in the DB. This is a net-new addition (the plan says "also fix the reject mutation" which implies it was intended but is simply missing).
 
----
+3. **No pagination** — The query at line 18–37 fetches all rows with no `.limit()`. Fix: add `.limit(50)` and a pagination state variable with a "Charger plus" button.
 
-### Fix 1: ContentEditorPermissionsContext
+#### Fix 2 — WordsModule.tsx + send-daily-word-notification
 
-**New file:** `src/contexts/ContentEditorPermissionsContext.tsx`
+**Three algorithms, all different:**
 
-This context wraps the existing `useContentEditorPermissions` hook logic into a single provider. The hook itself can remain unchanged as an implementation detail — the provider calls it once and exposes the result through context.
+| Location | Algorithm | Ordering |
+|---|---|---|
+| `useWordOfTheDay.ts` | `daysSince(2026-01-01) % totalWords + 1` → maps to `display_order` | `display_order` ASC |
+| `WordsModule.tsx calculateTodaysWord` | reads `app_settings.word_of_day` → `(lastOrder % maxOrder) + 1` | `display_order` ASC |
+| `send-daily-word-notification` | djb2 hash of date string → `abs(hash) % totalWords` as array index | `id` ASC |
 
-However, the cleanest approach is to inline the logic directly in the provider (avoid calling the hook from within a Provider — hooks must be called at the component render level, which is valid inside a Provider component). The provider runs the single `supabase.auth.getUser()` + `content_editor_roles` query once on mount. Consumer components read from context with `useContentEditorPermissionsContext()`.
+Target after fix: all three use the **exact same algorithm** as `useWordOfTheDay.ts`.
 
+**The correct algorithm (from `useWordOfTheDay.ts`):**
 ```typescript
-// src/contexts/ContentEditorPermissionsContext.tsx
+const REFERENCE_DATE = new Date('2026-01-01T00:00:00');
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { supabase } from "@/integrations/supabase/client";
-
-export type ContentEditorRole = 'admin' | 'editor' | 'viewer' | null;
-
-interface ContentEditorPermissionsState {
-  role: ContentEditorRole;
-  isLoading: boolean;
-  hasAccess: boolean;
-  canEdit: boolean;
-  canDelete: boolean;
-  canManageRoles: boolean;
-  canPublish: boolean;
-  canView: boolean;
-  refetch: () => void;
-}
-
-const ContentEditorPermissionsContext = createContext<
-  ContentEditorPermissionsState | undefined
->(undefined);
-
-export const ContentEditorPermissionsProvider = ({ children }: { children: ReactNode }) => {
-  // Single permission check at the page level — shared across all children
-  const [role, setRole] = useState<ContentEditorRole>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const checkPermissions = async () => { /* same logic as existing hook */ };
-
-  useEffect(() => { checkPermissions(); }, []);
-
-  const value: ContentEditorPermissionsState = {
-    role,
-    isLoading,
-    hasAccess: role !== null,
-    canEdit: role === 'admin' || role === 'editor',
-    canDelete: role === 'admin',
-    canManageRoles: role === 'admin',
-    canPublish: role === 'admin' || role === 'editor',
-    canView: role !== null,
-    refetch: checkPermissions,
-  };
-
-  return (
-    <ContentEditorPermissionsContext.Provider value={value}>
-      {children}
-    </ContentEditorPermissionsContext.Provider>
+const computeDisplayOrder = (haitiDate: string, totalWords: number): number => {
+  const today = new Date(haitiDate + 'T00:00:00');
+  const daysSince = Math.floor(
+    (today.getTime() - REFERENCE_DATE.getTime()) / (1000 * 60 * 60 * 24)
   );
-};
-
-export const useContentEditorPermissionsContext = (): ContentEditorPermissionsState => {
-  const ctx = useContext(ContentEditorPermissionsContext);
-  if (!ctx) throw new Error('useContentEditorPermissionsContext must be used inside ContentEditorPermissionsProvider');
-  return ctx;
+  return (((daysSince % totalWords) + totalWords) % totalWords) + 1;
 };
 ```
 
-**Where the provider is mounted:** At the top of `ContentEditor.tsx`'s JSX return, wrapping the entire page — placed after `hasAccess` is confirmed (line 206, after the `if (!hasAccess) return null` guard). This means the provider only mounts for authenticated editors, avoiding permission queries for users who will be redirected.
+Then fetch `daily_words WHERE is_active = true AND display_order = computeDisplayOrder(...)`.
 
-**Consumer updates (replacing `useContentEditorPermissions()` with `useContentEditorPermissionsContext()`):**
-
-| File | Change |
-|---|---|
-| `WorkflowManagement.tsx` | Replace `useContentEditorPermissions` import + call with `useContentEditorPermissionsContext` |
-| `BulkOperations.tsx` | Same replacement |
-| `PermissionGuard.tsx` | Same replacement |
-| `BatchQuizRegenerator.tsx` | Same replacement |
-| `BatchActivitiesRegenerator.tsx` | Same replacement |
-| `EbookManager.tsx` | `PermissionGuard` now uses context internally — no change needed to `EbookManager` itself |
-
-**WorkflowManagement.tsx — `supabase.auth.getUser()` replacement:**
-
-Inside `updateWorkflowStatus`, the existing code calls:
-```typescript
-const { data: { user } } = await supabase.auth.getUser();
-if (!user) throw new Error("Non authentifié");
-```
-
-This becomes a hook call at the top of the component (outside `updateWorkflowStatus`):
-```typescript
-import { useSessionAuth } from "@/contexts/SessionAuthContext";
-// ...
-const { user } = useSessionAuth(); // replaces in-function supabase.auth.getUser()
-```
-
-Inside `updateWorkflowStatus`:
-```typescript
-// user comes from useSessionAuth() at component level — no async call needed
-if (!user) throw new Error("Non authentifié");
-updates.reviewed_by = user.id;
-```
-
-**The existing `useContentEditorPermissions` hook is NOT deleted.** It is still called independently by `YouTubeManager.tsx`. That component is not on the instructions list. The hook remains for its use in `YouTubeManager` (and any future standalone use outside the ContentEditor page).
+**Other bugs in WordsModule.tsx:**
+- Line 421: ElevenLabs voice label says "Sarah" — platform standard is "Eric" per `generate-word-audio/index.ts` which does use ElevenLabs voice `EXAVITQu4vr4xnSDxMaL` (Sarah) but the platform standard voice is Eric per custom knowledge. The label is the fix — change the descriptive text from "voix naturelle (Sarah)" to "voix naturelle (Eric)".
+- Lines 197–201: `await supabase.auth.getSession()` before `supabase.functions.invoke("generate-word-audio", ...)` — redundant. `supabase.functions.invoke` attaches the auth header automatically. Remove the session check and the early return.
+- Lines 251–255: Same redundant `supabase.auth.getSession()` before `supabase.functions.invoke("send-daily-word-notification", ...)` — same fix.
 
 ---
 
-### Fix 2: BatchOperationsPanel
+### Technical Implementation
 
-**Architecture decision — how data flows from LessonBrowser to BatchOperationsPanel:**
+#### DonationsModule.tsx — exact changes
 
-`LessonBrowser` owns the loaded lesson data. It already computes all the derived lists (`lessonsMissingContent`, `lessonsMissingQuiz`, `lessonsWithValidQuiz`, `lessonsWithValidActivities`) and the stats (`totalLessons`, `gradeLevel`). Moving the batch buttons out of `LessonBrowser` requires these lists to flow upward.
-
-The approach: add a new optional callback prop to `LessonBrowser`:
+**Change 1 — Remove USD /100 from stats (line 61):**
 ```typescript
-onBatchDataUpdate?: (data: BatchPanelData) => void;
+// Before:
+return { total: donations.length, htg, usd: usd / 100 };
+
+// After:
+return { total: donations.length, htg, usd };
 ```
 
-This callback fires at the end of `loadLessons` whenever the lesson lists change. `ContentEditor.tsx` stores the data in `useState<BatchPanelData | null>` and passes it to `BatchOperationsPanel`.
-
-**New type `BatchPanelData`:**
+**Change 2 — Remove USD /100 from formatAmount (line 91):**
 ```typescript
-interface BatchPanelData {
-  lessonsMissingContent: any[];
-  lessonsMissingQuiz: any[];
-  lessonsWithValidQuiz: any[];
-  lessonsWithValidActivities: any[];
-  gradeLevel: string;
-  totalLessons: number;
-  missingContentTotal: number;
-  missingQuizzesTotal: number;
+// Before:
+if (currency === "USD") return `$${(amount / 100).toFixed(2)} USD`;
+
+// After:
+if (currency === "USD") return `$${amount.toFixed(2)} USD`;
+```
+
+**Change 3 — Add reject action mutation + approve/reject buttons per donation row:**
+
+The mutation fires `supabase.from('donations').update({ status: 'rejected', admin_verified: false }).eq('id', id)` for reject, and `{ status: 'completed', admin_verified: true }` for approve. Use TanStack `useMutation` + `invalidateQueries` on completion.
+
+The reject mutation per the plan: `status: 'rejected'` must be set in the same write. The `DonationAdmin` type in `types.ts` does not have an `admin_verified` field — only the `donations` table may have it. The mutation update object for reject is: `{ status: 'rejected' }`. For approve (bonus, not in plan but needed to make the feature useful): `{ status: 'completed' }`.
+
+Buttons are added to each donation card, conditionally shown only for `pending` status donations.
+
+**Change 4 — Add pagination:**
+
+Add `const [page, setPage] = useState(0)` state. The query adds `.range(page * 50, page * 50 + 49)`. A "Charger plus" button appears below the list if `donations?.length === 50`. The `queryKey` includes `page`. The search client-side filter operates on the current page only (this is acceptable and matches the plan's "limit 50 rows per page" framing).
+
+#### WordsModule.tsx — exact changes
+
+**Change 1 — Replace `calculateTodaysWord` with deterministic algorithm:**
+
+Remove the entire `calculateTodaysWord` function (lines 107–145). Replace with a pure synchronous function matching `useWordOfTheDay.ts` exactly:
+
+```typescript
+// Reference date matches useWordOfTheDay.ts
+const REFERENCE_DATE = new Date('2026-01-01T00:00:00');
+
+const computeDisplayOrder = (haitiDate: string, totalWords: number): number => {
+  const today = new Date(haitiDate + 'T00:00:00');
+  const daysSince = Math.floor(
+    (today.getTime() - REFERENCE_DATE.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  // Double-mod guards against negative daysSince (dates before reference)
+  return (((daysSince % totalWords) + totalWords) % totalWords) + 1;
+};
+```
+
+In `fetchWords`, after loading the word list, compute today's word synchronously:
+
+```typescript
+if (wordsList.length > 0) {
+  const haitiDate = getHaitiDate();
+  const displayOrder = computeDisplayOrder(haitiDate, wordsList.length);
+  // Find word with matching display_order
+  const todayWord = wordsList.find(w => w.display_order === displayOrder);
+  // Fallback if gap in display_order sequence
+  setTodaysWord(todayWord ?? wordsList[0]);
 }
 ```
 
-**New file:** `src/components/content-editor/BatchOperationsPanel.tsx`
+The `fetchWords` function no longer needs to be `async` for the word-selection step — but the supabase query is already async, so it stays async. The `calculateTodaysWord` call at line 97 is replaced with the above inline synchronous logic. No `app_settings` query is made. The `async` on `fetchWords` is unaffected.
 
-This component receives `BatchPanelData` and renders the 6 batch buttons in the same logical groupings (Generation, Validation, Regeneration sections). It owns the `activeBatchOperation` mutex state (preventing two operations from running simultaneously).
-
+**Change 2 — Fix ElevenLabs voice label (line 421):**
 ```typescript
-interface BatchOperationsPanelProps {
-  data: BatchPanelData | null;
-  onRefresh: () => void;
-  onDashboardRefresh?: () => void;
+// Before:
+'✨ Volume plus élevé, meilleur français, voix naturelle (Sarah)'
+
+// After:
+'✨ Volume plus élevé, meilleur français, voix naturelle (Eric)'
+```
+
+**Change 3 — Remove redundant `supabase.auth.getSession()` in `generateAudio` (lines 197–201):**
+```typescript
+// Before:
+const { data: session } = await supabase.auth.getSession();
+if (!session?.session?.access_token) {
+  toast.error("Session expirée, veuillez vous reconnecter");
+  return;
 }
+
+const response = await supabase.functions.invoke("generate-word-audio", { ... });
+
+// After:
+// (lines 197–201 deleted — supabase.functions.invoke handles auth automatically)
+const response = await supabase.functions.invoke("generate-word-audio", { ... });
 ```
 
-When `data` is null (LessonBrowser hasn't loaded yet), `BatchOperationsPanel` renders a skeleton placeholder.
+**Change 4 — Remove redundant `supabase.auth.getSession()` in `sendDailyWordNotification` (lines 251–255):**
+Same removal. The `supabase.functions.invoke("send-daily-word-notification", ...)` call remains; only the session check preceding it is removed.
 
-**Where it renders in `ContentEditor.tsx`:** Above the `LessonBrowser` in the `review` tab — or as a collapsible panel above the lesson list in the left sidebar column. The plan instruction says "above or below the LessonBrowser sidebar." It will be rendered above the `LessonBrowser` in the same `md:col-span-5 lg:col-span-4` column, so both remain in the left sidebar, just stacked vertically. The sidebar will scroll if needed.
+#### send-daily-word-notification edge function — exact changes
 
-**What is removed from `LessonBrowser.tsx`:**
-- All 6 batch wrapper imports
-- The `activeBatchOperation` state
-- The entire Generation section (lines ~511–542)
-- The entire Validation section (lines ~544–577)
-- The entire Regeneration section (lines ~579–601)
-- The `isLessonMissingContent` import (moves to `BatchOperationsPanel`)
-- The `onDashboardRefresh` prop (can stay, but the batch callback is no longer in `LessonBrowser`)
-- The coverage stat bars (quiz/content percentages) **stay** in `LessonBrowser` — they are browsing UI, not batch operation UI. Only the action buttons move.
+The current algorithm (djb2 hash → array index by `id` ordering) diverges completely from `useWordOfTheDay.ts` (daysSince → `display_order`). Must be replaced.
 
-**What stays in `LessonBrowser.tsx`:**
-- Grade/series filters
-- Search input
-- Filter checkboxes (missing quiz, missing content)
-- Coverage stat bars with progress percentages
-- The `loadSubjects` / `loadLessons` data loading functions
-- All lesson list rendering
-- `ValidationDetailsPanel` inline in lesson items
-- The `onBatchDataUpdate` callback called at end of `loadLessons`
+**Replace `getGlobalWordIndex` with the deterministic date-math algorithm:**
 
----
-
-### Fix 3: Worker Pool Race Condition
-
-**File:** `src/features/content-editor/batch-operations/hooks/useBatchOperation.ts`
-
-**Current code (inside the worker loop):**
 ```typescript
-operationResults.push({
-  lessonId: lesson.id,
-  lessonTitle: lesson.title,
-  success: result.success,
-  // ...
-});
-// ...
-setResults([...operationResults]);  // ← reads shared mutable array
-```
+const REFERENCE_DATE_MS = new Date('2026-01-01T00:00:00').getTime();
 
-**Fixed code:**
-```typescript
-const newResult: OperationResult = {
-  lessonId: lesson.id,
-  lessonTitle: lesson.title,
-  success: result.success,
-  aligned: result.aligned,
-  confidence: result.confidence,
-  offContentCount: result.offContentCount,
+const computeDisplayOrder = (haitiDate: string, totalWords: number): number => {
+  const today = new Date(haitiDate + 'T00:00:00').getTime();
+  const daysSince = Math.floor((today - REFERENCE_DATE_MS) / (1000 * 60 * 60 * 24));
+  return (((daysSince % totalWords) + totalWords) % totalWords) + 1;
 };
-operationResults.push(newResult);  // still needed for session persistence and toast
-
-// Functional update guarantees append-to-latest-state regardless of concurrency
-setResults(prev => [...prev, newResult]);
 ```
 
-The `operationResults` array is still maintained for:
-1. `saveBatchSession(...)` — needs the full accumulated results to persist
-2. The post-loop toast computation (`successCount`, `errorCount`, etc.) — reads the final accumulated array after all workers finish
+**Replace the word fetch + selection logic:**
 
-These are both safe: `saveBatchSession` runs after `operationResults.push(newResult)` within a single worker's sequential execution, and the final toast computation runs after `await Promise.all(...)` which means all workers have completed. No race condition exists in these paths.
+Currently the edge function:
+1. Fetches all active words ordered by `id` (line 104–105)
+2. Uses `getGlobalWordIndex(haitiDate, allWords.length)` as an array index into that list
 
-**This fix only changes the `setResults(...)` call — it does not change operation logic, session persistence, or toast behavior.**
+After fix:
+1. Fetches the **count** of active words (HEAD request)
+2. Computes `displayOrder = computeDisplayOrder(haitiDate, count)`
+3. Fetches the word with `display_order = displayOrder` (with fallback to first word by `display_order` ASC if gap)
 
-**Behavior at concurrency = 1 (the current default for all batch operations):** Identical to before — with one worker, there is no concurrent resolution, so the functional update and the array spread produce the same result. The fix is a no-op at concurrency = 1. Only concurrency > 1 configurations benefit.
+```typescript
+// 1. Get count
+const { count, error: countError } = await supabase
+  .from('daily_words')
+  .select('*', { count: 'exact', head: true })
+  .eq('is_active', true);
+
+if (countError || !count || count === 0) { /* error response */ }
+
+// 2. Compute display_order
+const displayOrder = computeDisplayOrder(haitiDate, count);
+
+// 3. Fetch the word
+let { data: todaysWord } = await supabase
+  .from('daily_words')
+  .select('id, word, phonetic, definition')
+  .eq('is_active', true)
+  .eq('display_order', displayOrder)
+  .maybeSingle();
+
+// 4. Fallback if display_order gap
+if (!todaysWord) {
+  const { data: fallback } = await supabase
+    .from('daily_words')
+    .select('id, word, phonetic, definition')
+    .eq('is_active', true)
+    .order('display_order', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  todaysWord = fallback;
+}
+
+if (!todaysWord) { /* no active words error */ }
+```
+
+The `specificWordId` override path is preserved as-is — it bypasses the algorithm entirely and uses the explicitly requested word for testing.
 
 ---
 
-### Fix 4: Dead Component Deletion
+### Files changed
 
-Three files are confirmed orphaned (zero imports found anywhere in `src/`):
-
-1. `src/components/content-editor/QuizActivityValidator.tsx` — 1,553 lines, large System B validator. Confirmed no imports.
-2. `src/components/content-editor/LessonReview.tsx` — provided in the task context, confirmed no imports.
-3. `src/components/content-editor/ContentTemplates.tsx` — confirmed no imports.
-
-All three are deleted.
-
-**Important caveat on deletion:** The `QuizActivityValidator` file has a `default export` on line 1,553 (`export default QuizActivityValidator`). This is unusual — it suggests it may have been used via a dynamic import or lazy route at some point. The import search using both static import patterns returned zero results. It is safe to delete.
-
----
-
-### Files Changed Summary
-
-| File | Action |
+| File | Changes |
 |---|---|
-| `src/contexts/ContentEditorPermissionsContext.tsx` | **Create** — new shared permission context and provider |
-| `src/pages/ContentEditor.tsx` | Wrap content in `ContentEditorPermissionsProvider`; add `batchData` state; pass `onBatchDataUpdate` to `LessonBrowser`; render `BatchOperationsPanel` |
-| `src/components/content-editor/BatchOperationsPanel.tsx` | **Create** — new component containing the 6 batch wrappers + `activeBatchOperation` mutex |
-| `src/components/content-editor/LessonBrowser.tsx` | Remove 6 batch wrapper imports, all batch button JSX, `activeBatchOperation` state; add `onBatchDataUpdate` callback prop; call it after `loadLessons` |
-| `src/components/content-editor/WorkflowManagement.tsx` | Replace `useContentEditorPermissions` with `useContentEditorPermissionsContext`; replace `supabase.auth.getUser()` inside `updateWorkflowStatus` with `useSessionAuth()` |
-| `src/components/content-editor/BulkOperations.tsx` | Replace `useContentEditorPermissions` with `useContentEditorPermissionsContext` |
-| `src/components/content-editor/PermissionGuard.tsx` | Replace `useContentEditorPermissions` with `useContentEditorPermissionsContext` |
-| `src/features/content-editor/batch-operations/wrappers/BatchQuizRegenerator.tsx` | Replace `useContentEditorPermissions` with `useContentEditorPermissionsContext` |
-| `src/features/content-editor/batch-operations/wrappers/BatchActivitiesRegenerator.tsx` | Replace `useContentEditorPermissions` with `useContentEditorPermissionsContext` |
-| `src/features/content-editor/batch-operations/hooks/useBatchOperation.ts` | Replace `setResults([...operationResults])` with `setResults(prev => [...prev, newResult])` |
-| `src/components/content-editor/QuizActivityValidator.tsx` | **Delete** |
-| `src/components/content-editor/LessonReview.tsx` | **Delete** |
-| `src/components/content-editor/ContentTemplates.tsx` | **Delete** |
+| `src/pages/control-center/modules/DonationsModule.tsx` | Remove `/ 100` from `usd` in stats (line 61). Remove `/ 100` from `formatAmount` (line 91). Add `useMutation` for reject action. Add reject button to pending donation cards. Add `page` state + `.range()` pagination with "Charger plus" button. |
+| `src/pages/control-center/modules/WordsModule.tsx` | Remove `calculateTodaysWord` function (lines 107–145). Add `REFERENCE_DATE` constant + `computeDisplayOrder` pure function. Inline deterministic word selection in `fetchWords`. Fix ElevenLabs label "Sarah" → "Eric" (line 421). Remove both redundant `supabase.auth.getSession()` calls (lines 197–201 and 251–255). |
+| `supabase/functions/send-daily-word-notification/index.ts` | Remove `getGlobalWordIndex` hash function. Add `computeDisplayOrder` date-math function (identical logic to `useWordOfTheDay.ts`). Replace word-fetch logic: count → computeDisplayOrder → fetch by `display_order` → fallback. Preserve `specificWordId` override path. |
 
-**No DB migrations. No edge function changes. `BatchGenerationValidation.tsx` untouched.**
+**No DB migrations. No schema changes. No other files touched.**
 
 ---
 
@@ -289,16 +226,14 @@ All three are deleted.
 
 | Check | Status |
 |---|---|
-| Shared permission context correctly gates admin-only actions | Yes — `ContentEditorPermissionsProvider` runs the same query as the old hook, once. Children read from context. `canDelete: role === 'admin'` and `canManageRoles: role === 'admin'` logic is identical. `BatchQuizRegenerator` and `BatchActivitiesRegenerator` return null if `role !== 'admin'` — same behavior as before. |
-| `useContentEditorPermissions` hook is not deleted — `YouTubeManager` still uses it | Yes — the hook file is untouched. Only the 5 consumers inside the ContentEditor page are switched to context. |
-| `PermissionGuard` still works correctly after switch | Yes — it reads the same fields (role, isLoading, canEdit, canDelete, canManageRoles, canPublish) from context instead of a standalone hook. Behavior is identical, with the bonus that it uses the already-resolved permission state from parent instead of re-querying. |
-| Batch operations panel renders correctly outside LessonBrowser | Yes — `BatchOperationsPanel` receives `BatchPanelData` via props. The data is lifted from `LessonBrowser` via the `onBatchDataUpdate` callback. The `activeBatchOperation` mutex moves into `BatchOperationsPanel` so operations still correctly disable each other. |
-| Batch operation button behavior (onComplete, onStart, onDashboardRefresh) preserved | Yes — each wrapper still receives all props through `BatchOperationsPanel`. `onComplete` still calls `loadSubjects` via the `onRefresh` prop. `onDashboardRefresh` is still wired through. |
-| Worker pool fix does not change behavior at concurrency = 1 | Yes — with one worker there is no concurrent resolution. `setResults(prev => [...prev, newResult])` and `setResults([...operationResults])` produce identical state values at concurrency = 1. |
-| Worker pool fix does not break session persistence | Yes — `saveBatchSession` is called with `operationResults` (the local accumulated array), not from React state. The `operationResults.push(newResult)` still happens before `saveBatchSession`, unchanged. |
-| No imported component is accidentally deleted | Yes — search confirmed zero imports for all three deleted files. `QuizActivityValidator`, `LessonReview`, and `ContentTemplates` are not referenced anywhere in `src/`. |
-| `EbookManager.tsx` still works after `PermissionGuard` switches to context | Yes — `PermissionGuard` reads from the context internally. `EbookManager` does not need to change since it simply renders `<PermissionGuard>` as a wrapper. The context is mounted at the `ContentEditor.tsx` page level, which is an ancestor of `EbookManager` in the render tree. |
-| `WorkflowManagement` user ID access works after removing `supabase.auth.getUser()` | Yes — `useSessionAuth()` at the component top level provides `user.id` synchronously from the in-memory session. The `user` object from `SessionAuthContext` includes all User fields including `id`. Since the ContentEditor page is only reachable when authenticated, `user` will never be null at this point. |
-| ContentEditor `checkAccess` (the page-level auth gate) is not removed | Correct — `checkAccess` in `ContentEditor.tsx` remains unchanged. It serves a different purpose: it redirects non-editors before any content editor UI mounts. The new `ContentEditorPermissionsProvider` supplements it by providing the role to all children without re-querying. |
-| Realtime subscriptions, AppShell, Provider Stack unaffected | Yes — `ContentEditorPermissionsProvider` is a local provider mounted only inside the `/content-editor` route. It does not touch the global Provider Stack. |
-| 3G performance | Fix 1 reduces total `content_editor_roles` queries from 5+ independent calls to 1. Fix 3 has zero performance impact. Fix 2 does not change query patterns. Net improvement. |
+| USD donation amounts now display correctly | Yes — both `/100` divisions removed. DB stores `5.00` → displays `$5.00 USD`. Previously displayed `$0.05 USD`. HTG path (`return \`${amount} HTG\``) is untouched — no division was applied to HTG. |
+| HTG donation formatting unchanged | Yes — `formatAmount` early-returns `${amount} HTG` for non-USD currency with no arithmetic. Stats compute `htg += d.amount` unchanged. Both untouched. |
+| Reject mutation correctly sets `status: 'rejected'` | Yes — the new `useMutation` calls `supabase.from('donations').update({ status: 'rejected' }).eq('id', donationId)`. The `status` field is updated in the same write. |
+| Reject mutation only appears on pending donations | Yes — the reject/approve buttons are conditionally rendered: `donation.status === 'pending'`. |
+| Pagination does not lose existing data | Yes — page 0 returns rows 0–49 (the most recent 50). "Charger plus" advances to page 1 (rows 50–99). Search filters client-side within the loaded page. The `queryKey` includes `page` so TanStack Query caches each page independently. |
+| Admin word preview matches what students see on their dashboard | Yes — `WordsModule.tsx` now uses `computeDisplayOrder` with the same `REFERENCE_DATE = 2026-01-01` and the same formula: `(((daysSince % totalWords) + totalWords) % totalWords) + 1`. Both the admin panel and `useWordOfTheDay.ts` select the same `display_order` value on the same Haiti-timezone date. |
+| `send-daily-word-notification` sends the correct word | Yes — the edge function now uses `computeDisplayOrder` (same algorithm, same reference date) and fetches by `display_order` (same field as the frontend hook). All three systems converge. |
+| The `specificWordId` override in the edge function still works | Yes — the override path is structurally identical: it bypasses the algorithm and finds the word by ID. No change to this path. |
+| ElevenLabs voice label corrected | Yes — line 421 "Sarah" → "Eric". This is a display label only; it does not change which voice is used in the edge function (that is configured server-side). |
+| Redundant session calls removed without breaking auth | Yes — `supabase.functions.invoke()` automatically includes the auth token from the Supabase JS client's in-memory session. The manual `getSession()` + early-return was a redundant guard. Removing it does not change the auth header sent to the edge function. |
+| AppShell, Provider Stack, payment flows unaffected | Yes — all changes are scoped to two module files and one edge function. No shared context, no global hooks, no payment gateway code is touched. |
