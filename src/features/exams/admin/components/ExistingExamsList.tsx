@@ -43,6 +43,7 @@ interface ExistingExamsListProps {
   onReanalyze: (exam: ExistingExam) => void;
   reanalyzingExamId?: string | null;
   onEditExam?: (exam: ExistingExam) => void;
+  refreshTrigger?: number; // increments after each successful save to trigger reload
 }
 
 export function ExistingExamsList({ 
@@ -50,16 +51,18 @@ export function ExistingExamsList({
   selectedSeries = [],
   onReanalyze,
   reanalyzingExamId,
-  onEditExam
+  onEditExam,
+  refreshTrigger = 0,
 }: ExistingExamsListProps) {
   const [exams, setExams] = useState<ExistingExam[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [examToDelete, setExamToDelete] = useState<ExistingExam | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Re-fetch when track, series filter, or save counter changes
   useEffect(() => {
     loadExams();
-  }, [track, selectedSeries]);
+  }, [track, selectedSeries, refreshTrigger]);
 
   const loadExams = async () => {
     try {

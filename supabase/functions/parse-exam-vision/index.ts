@@ -11,7 +11,8 @@ serve(async (req) => {
   }
 
   try {
-    const { subject, year, pageImages } = await req.json();
+    // gradeLevel and series provide exam-type context for the AI — default to '9AF' for safety
+    const { subject, year, pageImages, gradeLevel = '9AF', series } = await req.json();
 
     if (!subject || !year || !pageImages || !Array.isArray(pageImages) || pageImages.length === 0) {
       return new Response(
@@ -20,7 +21,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Processing ${pageImages.length} page images for ${subject} ${year}`);
+    console.log(`Processing ${pageImages.length} page images for ${subject} ${year} [${gradeLevel}${series ? `/${series}` : ''}]`);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -35,16 +36,38 @@ serve(async (req) => {
       },
     }));
 
-    const systemPrompt = `Tu es un expert OCR spécialisé dans l'extraction d'examens officiels haïtiens pour la 9ème année fondamentale (9AF) et le Baccalauréat (NS4).
+    // Build exam-type-specific context so the AI knows which structure to expect
+    const examContext = gradeLevel === 'NS4'
+      ? `Tu analyses un examen du BACCALAURÉAT haïtien (NS4)${series ? ` — Série ${series}` : ''}.
 
-INSTRUCTIONS CRITIQUES:
+SPÉCIFICITÉS NS4 À RESPECTER ABSOLUMENT:
+- Les examens NS4 sont composés principalement de questions ouvertes (open_ended) et de problèmes multi-parties
+- Les QCM (multiple_choice) sont rares dans les examens NS4, sauf en Anglais/Espagnol/Créole
+- Chaque exercice peut contenir plusieurs sous-questions numérotées (a, b, c, d) — traite chaque sous-question comme un exercice distinct
+- Les formules mathématiques et physiques doivent être extraites en notation LaTeX
+- Les points par question sont souvent indiqués en marge (ex: "4 pts", "/4") — extrait-les précisément
+- La structure typique NS4: Texte du problème → sous-questions → données/formules en annexe
+- Pour la série ${series || 'NS4'}: les matières scientifiques (Physique, Chimie, Maths, SVT) sont à dominante calcul et démonstration`
+      : `Tu analyses un examen de la 9ÈME ANNÉE FONDAMENTALE haïtienne (9AF).
+
+SPÉCIFICITÉS 9AF À RESPECTER ABSOLUMENT:
+- Les examens 9AF contiennent un mélange de QCM (multiple_choice) et de questions ouvertes (open_ended)
+- Les QCM ont toujours 4 options: A), B), C), D) — extrait les options précisément
+- Les textes de référence (Reading, Texte de lecture) précèdent souvent plusieurs questions
+- Structure typique 9AF: texte de référence → questions de compréhension → exercices de grammaire → rédaction`;
+
+    const systemPrompt = `Tu es un expert OCR spécialisé dans l'extraction d'examens officiels haïtiens.
+
+${examContext}
+
+INSTRUCTIONS GÉNÉRALES:
 1. Analyse attentivement CHAQUE page de l'examen
-2. Identifie et extrait TOUS les TEXTES DE RÉFÉRENCE (Reading, Texte, Lecture, passages) - EXTRAIT LE TEXTE COMPLET
+2. Identifie et extrait TOUS les TEXTES DE RÉFÉRENCE (Reading, Texte, Lecture, passages) — EXTRAIT LE TEXTE COMPLET
 3. Identifie TOUS les exercices/questions avec leurs numéros
 4. Pour les QCM, extrait précisément les options A), B), C), D)
 5. Préserve les accents français et créoles (é, è, à, ç, ô, etc.)
 6. Identifie les points attribués à chaque question si visibles
-7. Détermine le type: "multiple_choice" ou "open_ended"
+7. Détermine le type: "multiple_choice" ou "open_ended" en respectant les spécificités ci-dessus
 8. Pour les formules mathématiques, utilise la notation LaTeX
 
 IMPORTANT:
@@ -53,7 +76,7 @@ IMPORTANT:
 - Si les points ne sont pas visibles: 5 pts pour QCM, 8 pts pour questions ouvertes
 - Utilise la fonction extract_exam_data pour retourner les résultats`;
 
-    const userPrompt = `Analyse cet examen officiel de ${subject} ${year}. Extrait TOUTES les questions, options, textes de référence. Utilise la fonction extract_exam_data.`;
+    const userPrompt = `Analyse cet examen officiel de ${subject} ${year}${gradeLevel === 'NS4' && series ? ` (${series})` : ''}. Extrait TOUTES les questions, options, textes de référence. Utilise la fonction extract_exam_data.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

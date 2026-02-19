@@ -90,9 +90,6 @@ verify_jwt = false
 [functions.exam-tutor]
 verify_jwt = false
 
-[functions.parse-exam-text]
-verify_jwt = true
-
 [functions.parse-exam-vision]
 verify_jwt = false
 
