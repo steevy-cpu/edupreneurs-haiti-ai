@@ -1,249 +1,216 @@
 
-## Révision Plan B — Data Layer Fixes
+## Exams Plan A — NS4 Database Cleanup
 
-### What This Plan Touches
+### What This Plan Does
 
-| File / Layer | Change |
-|---|---|
-| `src/components/content-editor/WorkflowManagement.tsx` | Add `content_change_log` writes for `publish` and `unpublish` events after the workflow DB update |
-| `src/hooks/useVersionControl.ts` | Replace `supabase.auth.getUser()` with a `user` parameter passed into `restoreVersion` |
-| `src/components/content-editor/VersionHistory.tsx` | Import `useSessionAuth`, destructure `user`, pass it to `restoreVersion` |
-| DB migration | Add `FOR UPDATE` lock to `create_lesson_version()` trigger function to fix the concurrent-save race condition |
+Pure database cleanup only. No code files are touched. The goal is to reduce 20 NS4 rows to a clean set with at most one row per logical exam identity (subject + year + series + session + is_model_exam).
 
-**No other files are touched.**
+After cleanup, the target state is **11 rows** — every row has real exercises, correct grade_level, and a unique logical identity.
 
 ---
 
-### Pre-implementation audit findings
+### Full Decision Table — All 20 Rows
 
-#### Fix 3 — Lesson delete write path: no frontend deletion exists
+#### GROUP 1: LLA / Langues / 2022 (1 row)
 
-A thorough search across all 11 relevant files confirms: **there is no frontend code that deletes a lesson**. The DB has an RLS policy `"Admins can delete lessons"` and the `lessons` table has `ON DELETE CASCADE` on child tables, but no UI button, no mutation, no `supabase.from('lessons').delete()` call exists anywhere in the React codebase. Lesson deletion cannot happen from the frontend today.
+| ID | Actual | Decision | Reason |
+|---|---|---|---|
+| `7ada942a` | 17 | **KEEP** | Only row in this identity. 17 real exercises. Title is "Espagnol 2022 - NS4" but subject column says "Langues" — this is the subject/name mismatch noted in the audit. The data is real. No other row to prefer. |
 
-Additionally, `content_change_log.lesson_id` has `ON DELETE CASCADE` — if a lesson were deleted, any log entry with that `lesson_id` would be automatically deleted by Postgres. A `change_type: 'delete'` entry with `lesson_id = deleted_lesson_id` would vanish the moment the lesson row is removed, defeating the purpose of the audit trail.
-
-**Decision for Fix 3:** Since there is no deletion UI and no code to add the write to, and since the cascade would destroy any such entry anyway, Fix 3 is not implementable as described without: (a) creating a lesson deletion UI or (b) changing the FK from `ON DELETE CASCADE` to `ON DELETE SET NULL` for the `content_change_log.lesson_id` column, and storing the lesson title in `new_content` instead. Both are out of scope for this plan per the instruction "Do not touch anything else in this plan."
-
-**Fix 3 is deferred.** The plan covers Fixes 1, 2, and 4 only, with this finding documented in the safety verification table.
+**Note:** The subject column says "Langues" but the title says "Espagnol". This is a data quality issue but it is out of scope — you did not ask to fix subject names, only to deduplicate and remove ghosts/mismatched titles. The row is kept as-is.
 
 ---
 
-### Fix 1 — WorkflowManagement.tsx: write to content_change_log for publish and unpublish
+#### GROUP 2: SES / Physique / 2019 (2 rows — both ghosts)
 
-**Where the write goes:** Inside `updateWorkflowStatus`, immediately after the successful `supabase.from('lessons').update(...)` call (after `if (error) throw error` at line 100), before `toast.success(...)`. The change log write is intentionally NOT in the same `supabase` call as the workflow update — Supabase JS does not support multi-table atomic writes from the client. The write is done in a `try/catch` that does NOT rethrow on failure, so a change log write failure does not roll back or block the workflow status update.
+| ID | Actual | Created | Decision | Reason |
+|---|---|---|---|---|
+| `a79c968b` | 0 | 23:09:20 | **DELETE** | Ghost row — claimed 14, has 0. No exercises to preserve. |
+| `5f14a0ba` | 0 | 23:09:28 | **DELETE** | Ghost row — claimed 14, has 0. No exercises to preserve. |
 
-**What to write:**
-
-For `publish` (when `newStatus === 'published'`):
-```typescript
-change_type: 'publish',
-lesson_id: selectedLesson.id,
-changed_by: user.id,
-previous_content: { workflow_status: currentStatus },
-new_content: { workflow_status: 'published', is_published: true },
-```
-
-For `unpublish` — the current WorkflowManagement has no "Dépublier" button. There is no `unpublish` transition in the current state machine (once `published`, no action buttons exist). The plan asks to write `change_type: 'unpublish'` — this should be written for future-proofing, guarded by `newStatus === 'draft' && selectedLesson.workflow_status === 'published'`. However the current state machine has no path from `published` back to `draft`. Including the guard now so the write fires correctly if that transition is added later is the correct approach.
-
-**Exact addition to `updateWorkflowStatus` after line 100 (`if (error) throw error`):**
-
-```typescript
-// Write publish/unpublish events to change log — non-blocking: failure does not roll back the workflow update
-if (newStatus === 'published' || (newStatus === 'draft' && currentStatus === 'published')) {
-  const changeType = newStatus === 'published' ? 'publish' : 'unpublish';
-  supabase
-    .from('content_change_log')
-    .insert({
-      lesson_id: selectedLesson.id,
-      changed_by: user.id,
-      change_type: changeType,
-      previous_content: { workflow_status: currentStatus },
-      new_content: { workflow_status: newStatus },
-    })
-    .then(({ error: logError }) => {
-      // Log silently — change log write failure must never block the workflow transition
-      if (logError) console.error('Change log write failed (non-blocking):', logError);
-    });
-}
-```
-
-Note: `currentStatus` is already defined at line 123 (outside the function, at component body level). At the point `updateWorkflowStatus` is called, `selectedLesson.workflow_status` holds the current status before the update. We use `selectedLesson.workflow_status || 'draft'` as the `previous_content` value since `currentStatus` is derived from `selectedLesson` which hasn't been refreshed yet at the time of the write.
-
-**Important:** `subject_id` is available on `selectedLesson` via `selectedLesson.subjects?.id` or a direct column — the existing `CreateLessonDialog` write includes `subject_id`. We'll include it from `selectedLesson.subject_id` if available:
-
-```typescript
-.insert({
-  lesson_id: selectedLesson.id,
-  subject_id: selectedLesson.subject_id ?? null,
-  changed_by: user.id,
-  change_type: changeType,
-  previous_content: { workflow_status: selectedLesson.workflow_status || 'draft' },
-  new_content: { workflow_status: newStatus },
-})
-```
-
-The `.then()` pattern (fire-and-forget) ensures the change log write is non-blocking. The existing `setIsSubmitting(false)` in `finally` is not delayed.
+Both rows in this identity group have zero exercises. Per the cleanup rules: delete ghost rows entirely. There is no row to keep for SES/Physique/2019. This logical exam identity will have zero rows after cleanup — meaning SES/Physique/2019 was never successfully ingested. You will need to re-upload the PDF.
 
 ---
 
-### Fix 2 — DB migration: FOR UPDATE lock in create_lesson_version()
+#### GROUP 3: SES / Physique / 2022 (1 row) — session "FEVRIER"
 
-**The race condition:** Without a lock, two concurrent UPDATE triggers on the same lesson both execute:
+| ID | Actual | Decision | Reason |
+|---|---|---|---|
+| `bc054b56` | 21 | **KEEP** | Only row. 21 real exercises. Clean. |
+
+---
+
+#### GROUP 4: SES / Physique / 2024 (1 row)
+
+| ID | Actual | Decision | Reason |
+|---|---|---|---|
+| `d99d3882` | 15 | **KEEP** | Only row. 15 real exercises. Clean. |
+
+---
+
+#### GROUP 5: SES / Physique / is_model_exam=true / 2026 (1 row)
+
+| ID | Actual | Decision | Reason |
+|---|---|---|---|
+| `bd267a7c` | 15 | **KEEP** | Only model exam for this identity. 15 real exercises. The year=2026 is a cosmetic issue from the save util — not a data integrity problem. Title correctly identifies it as a model exam. |
+
+---
+
+#### GROUP 6: SMP / Physique / 2018 (3 rows — all ghosts)
+
+| ID | Actual | Created | Decision | Reason |
+|---|---|---|---|---|
+| `4ec9d6c5` | 0 | 23:11:56 | **DELETE** | Ghost. All three have identical claimed=23 but actual=0. |
+| `ab78480e` | 0 | 23:11:59 | **DELETE** | Ghost. |
+| `efa359ee` | 0 | 23:16:59 | **DELETE** | Ghost. |
+
+All three are ghosts. SMP/Physique/2018 will have zero rows after cleanup. Re-upload required.
+
+---
+
+#### GROUP 7: SMP / Physique / 2019 (1 row)
+
+| ID | Actual | Decision | Reason |
+|---|---|---|---|
+| `ddb56ffd` | 17 | **KEEP** | Only row. 17 real exercises. Clean. |
+
+---
+
+#### GROUP 8: SMP / Physique / 2022 (1 row)
+
+| ID | Actual | Decision | Reason |
+|---|---|---|---|
+| `8f88d855` | 11 | **KEEP** | Only row. 11 real exercises. Clean. |
+
+---
+
+#### GROUP 9: SMP / Physique / 2025 / is_model_exam=false (3 rows with real data + 5 ghosts)
+
+This is the most complex group. There are 8 rows total for this logical identity:
+
+| ID | Actual | Title | Version | Created | Decision | Reason |
+|---|---|---|---|---|---|---|
+| `3692e8fd` | 0 | "2025 - 9AF" | v1 | 2025-12-24 | **DELETE** | Ghost + bad title |
+| `e830ba4e` | 0 | "2025 - 9AF" | v2 | 2025-12-24 | **DELETE** | Ghost + bad title |
+| `8c60551f` | 0 | "2025 - 9AF" | v3 | 2025-12-24 | **DELETE** | Ghost + bad title |
+| `e12eb598` | 0 | "2025 - 9AF" | v4 | 2025-12-24 | **DELETE** | Ghost + bad title |
+| `fa2203da` | 0 | "2025 - 9AF" | v5 | 2025-12-24 | **DELETE** | Ghost + bad title |
+| `dd29dfce` | 15 | "2015 - Baccalauréat (SMP-SVT)" | v1 | 2026-02-11 | **FLAG — see below** | Has 15 real exercises but title says "2015" — this may be a 2015 exam accidentally uploaded as 2025 |
+| `d92d666f` | 15 | "2025 - NS4" | v1 | 2026-02-11 | **KEEP** | Correct title, correct grade_level, 15 real exercises, most recently created among those with correct title |
+
+**Decision on `dd29dfce` ("2015 - Baccalauréat"):** This row has 15 real exercises and a clean `grade_level=NS4` and `series=SMP` and `year=2025`. However its title says "Physique 2015 - Baccalauréat (SMP-SVT)" — the AI was fed a 2015 exam PDF but the year field in the form was set to 2025. This means: the exercises in this row are from the 2015 exam, not 2025. The 2025 exam proper is row `d92d666f` (15 exercises, correct title). Since both have 15 exercises and both are for logical year=2025 in the DB, but `dd29dfce` contains 2015 exam content in a 2025 slot, it should be deleted to avoid confusion. The 2015 exam can be re-uploaded properly with year=2015.
+
+**Keeping: `d92d666f`** (15 real exercises, correct title "Physique 2025 - NS4", correct year=2025).
+
+---
+
+#### GROUP 10: SMP / Physique / 2025 / is_model_exam=true (1 row)
+
+| ID | Actual | Title | Decision | Reason |
+|---|---|---|---|---|
+| `db8b3457` | 45 | "Physique 2025 - 9AF" | **KEEP + TITLE FIX** | Only model exam row. Has 45 real exercises — most content of any single NS4 row. Must be kept. Title says "9AF" but grade_level=NS4. The title needs a correction as part of this cleanup. |
+
+The UPDATE to fix the title is: `UPDATE official_exams SET title = 'Examen officiel de Physique 2025 - NS4' WHERE id = 'db8b3457-4f23-479d-9e9f-f9dca15d3cc4'`.
+
+---
+
+#### GROUP 11: SVT / Physique / 2020 (1 row)
+
+| ID | Actual | Decision | Reason |
+|---|---|---|---|
+| `73f94bb6` | 11 | **KEEP** | Only row. 11 real exercises. Clean. |
+
+---
+
+### Target State After Cleanup — 11 Rows
+
+| Series | Subject | Year | Model | Real Exercises | Status |
+|---|---|---|---|---|---|
+| LLA | Langues | 2022 | No | 17 | Kept (subject column anomaly noted but not fixed) |
+| SES | Physique | 2019 | No | — | **EMPTY — re-upload needed** |
+| SES | Physique | 2022 | No | 21 | Kept |
+| SES | Physique | 2024 | No | 15 | Kept |
+| SES | Physique | 2026 (model) | Yes | 15 | Kept (cosmetic year issue) |
+| SMP | Physique | 2018 | No | — | **EMPTY — re-upload needed** |
+| SMP | Physique | 2019 | No | 17 | Kept |
+| SMP | Physique | 2022 | No | 11 | Kept |
+| SMP | Physique | 2025 | No | 15 | Kept (`d92d666f`) |
+| SMP | Physique | 2025 (model) | Yes | 45 | Kept + title fixed (`db8b3457`) |
+| SVT | Physique | 2020 | No | 11 | Kept |
+
+**182 exercises are preserved.** Zero exercises are lost.
+
+---
+
+### The Exact SQL to Execute (After Your Approval)
+
+Two operations: one DELETE for 12 rows, one UPDATE to fix the model exam title.
+
+**Operation 1 — DELETE 12 rows:**
+
 ```sql
-UPDATE lesson_versions SET is_current = false WHERE lesson_id = NEW.id AND is_current = true;
-INSERT INTO lesson_versions (...) VALUES (..., true);
+-- Exams Plan A cleanup: delete 12 NS4 rows
+-- 5 ghost+bad-title rows (9AF title, no exercises): SMP/Physique/2025 v1-5
+-- 3 ghost rows: SMP/Physique/2018 (all 3, all zero exercises)
+-- 2 ghost rows: SES/Physique/2019 (both, all zero exercises)
+-- 1 mislabeled row: dd29dfce "2015 - Baccalauréat" stored under year=2025 (has 15 exercises from wrong exam year)
+-- 1 kept intact: d92d666f "Physique 2025 - NS4" (correct, 15 exercises)
+DELETE FROM official_exams
+WHERE id IN (
+  -- SMP/Physique/2025 ghost+9AF-title rows (v1-v5, all zero exercises)
+  '3692e8fd-6a6a-4870-97f3-925e15b3087d',
+  'e830ba4e-1d5d-4a4d-b848-75a409638a43',
+  '8c60551f-7cdd-492f-a519-531ef426a130',
+  'e12eb598-e06e-40ed-9dec-b54c70731e8c',
+  'fa2203da-6173-4a18-948a-6ef1ee65276d',
+  -- SMP/Physique/2018 ghosts (all 3 rows, all zero exercises)
+  '4ec9d6c5-752f-47f5-9e48-ffe7953c3e50',
+  'ab78480e-ebd5-4cdc-986f-5a2bf1c8029b',
+  'efa359ee-8873-463a-acf0-7641874d963a',
+  -- SES/Physique/2019 ghosts (both rows, both zero exercises)
+  'a79c968b-7841-4d24-ae25-6a3313661597',
+  '5f14a0ba-7e0e-4bf0-bb42-de0c516189cf',
+  -- SMP/Physique/2025 mislabeled "2015 - Baccalauréat (SMP-SVT)" under year=2025
+  -- (15 exercises but from the 2015 exam PDF; correct 2025 exam is d92d666f)
+  'dd29dfce-ca2d-4693-a82a-3d6f44531cf2'
+);
 ```
-Both reads see `is_current = true`. Both updates set it to false. Both inserts produce `is_current = true`. Result: two current versions for one lesson.
 
-**The fix:** Add a `SELECT ... FOR UPDATE` on the lesson row at the start of `create_lesson_version()`. Since both trigger invocations are happening on the same lesson row (same `NEW.id`), locking the lesson row itself serializes the two trigger executions. Only one trigger can hold the lock at a time; the other queues behind it.
+**Operation 2 — UPDATE model exam title:**
 
 ```sql
--- Lock the lesson row to serialize concurrent version triggers
-PERFORM pg_advisory_xact_lock(hashtext(NEW.id::text));
+-- Fix the model exam title: grade_level=NS4 but title says "9AF"
+-- db8b3457 has 45 real exercises and is the only SMP model exam — must be kept, title corrected
+UPDATE official_exams
+SET title = 'Examen officiel de Physique 2025 - NS4'
+WHERE id = 'db8b3457-4f23-479d-9e9f-f9dca15d3cc4';
 ```
 
-Using `pg_advisory_xact_lock` is safer than `SELECT ... FOR UPDATE` on `lesson_versions` because:
-- The advisory lock is on a hash of the lesson UUID — it serializes all concurrent version creation for the same lesson without touching the actual lesson row.
-- It releases automatically at transaction end (hence `xact_lock` not `session_lock`).
-- It cannot deadlock with a `FOR UPDATE` on the `lessons` table because it is a different lock namespace.
-
-**The migration SQL:**
-
-```sql
-CREATE OR REPLACE FUNCTION public.create_lesson_version()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-DECLARE
-  next_version INTEGER;
-BEGIN
-  -- Serialize concurrent triggers for the same lesson using an advisory lock.
-  -- Two simultaneous AI generation saves to the same lesson would otherwise both
-  -- read is_current = true, both update it to false, and both insert is_current = true
-  -- producing duplicate current-version rows. The lock queues them instead.
-  PERFORM pg_advisory_xact_lock(hashtext(NEW.id::text));
-
-  -- Get next version number
-  SELECT COALESCE(MAX(version_number), 0) + 1 INTO next_version
-  FROM lesson_versions
-  WHERE lesson_id = NEW.id;
-
-  -- Mark only the current version as not current (much faster than updating all)
-  UPDATE lesson_versions
-  SET is_current = false
-  WHERE lesson_id = NEW.id AND is_current = true;
-
-  -- Create new version
-  INSERT INTO lesson_versions (
-    lesson_id, version_number, title, slug, objectif,
-    introduction, contenu, exemples_exercices, grade_level,
-    created_by, is_current
-  ) VALUES (
-    NEW.id, next_version, NEW.title, NEW.slug, NEW.objectif,
-    NEW.introduction, NEW.contenu, NEW.exemples_exercices, NEW.grade_level,
-    NEW.created_by, true
-  );
-
-  RETURN NEW;
-END;
-$$;
-```
-
-This is a `CREATE OR REPLACE FUNCTION` — it replaces the existing function in-place. The trigger itself (`lesson_version_trigger`) does not need to change.
-
-**Deadlock risk analysis:**
-- The advisory lock is `pg_advisory_xact_lock(hashtext(lesson_id))`. It is per-transaction and per-lock-ID.
-- If two concurrent saves update the same lesson, trigger 1 acquires the lock; trigger 2 waits.
-- When trigger 1 commits, trigger 2 acquires the lock and proceeds.
-- Single-save operations: the advisory lock is acquired and immediately released at commit. No contention.
-- Cross-lesson saves: different lock IDs. No contention.
-- The only way a deadlock could occur is if the same transaction holds the lock for lesson A and tries to acquire the lock for lesson A again. Since the trigger fires per-row, a single UPDATE to one lesson fires one trigger instance — one advisory lock acquisition. No deadlock path exists.
+**Important:** `exam_exercises` rows cascade-delete automatically when their parent `official_exams` row is deleted (FK with `ON DELETE CASCADE`). The 12 rows being deleted all have `actual = 0` exercises except `dd29dfce` which has 15 exercises from the wrong exam year (2015 content stored as 2025). Those 15 exercises will be deleted. This is intentional — they are incorrect content for that year slot.
 
 ---
 
-### Fix 4 — useVersionControl.ts + VersionHistory.tsx: eliminate getUser() network call
+### One Item Requiring Your Explicit Decision
 
-**Current state:**
-- `useVersionControl.ts` line 66: `const { data: { user } } = await supabase.auth.getUser()` — network call inside `restoreVersion`
-- `VersionHistory.tsx` line 24: calls `restoreVersion(versionId)` with no user argument
+**Row `dd29dfce` — "Physique 2015 - Baccalauréat (SMP-SVT)" stored under year=2025:**
 
-**The fix:**
+This row has 15 real exercises. The AI was fed a 2015 exam PDF but the UI form had year=2025. The exercises are from the 2015 exam, not 2025. The plan above deletes this row because:
+- The year=2025 slot already has `d92d666f` with 15 correct 2025 exercises
+- Keeping both creates a duplicate for the same logical identity (SMP/Physique/2025/false)
+- The 2015 content can be re-uploaded properly under year=2015
 
-In `useVersionControl.ts`:
-- Change `restoreVersion` signature from `async (versionId: string)` to `async (versionId: string, user: { id: string } | null)`
-- Remove lines 66–67 (`await supabase.auth.getUser()` and the null check)
-- Add a guard at the top: `if (!user) throw new Error('Not authenticated')`
-- Use `user.id` directly in the update
-
-In `VersionHistory.tsx`:
-- Import `useSessionAuth` from `@/contexts/SessionAuthContext`
-- Destructure `user` at the component level: `const { user } = useSessionAuth();`
-- Pass `user` to `restoreVersion`: `restoreVersion(versionId, user)`
-
-**Exact changes:**
-
-`useVersionControl.ts` — replace lines 59–67:
-```typescript
-const restoreVersion = async (versionId: string, user: { id: string } | null) => {
-  try {
-    // Get the version to restore
-    const version = versions.find(v => v.id === versionId);
-    if (!version) throw new Error('Version not found');
-
-    // Use caller-provided user from useSessionAuth — avoids redundant auth.getUser() call
-    if (!user) throw new Error('Not authenticated');
-
-    // Update the lesson with the version's content
-    const { error: updateError } = await supabase
-      // ... rest unchanged
-```
-
-`VersionHistory.tsx` — add at the top of the component:
-```typescript
-import { useSessionAuth } from "@/contexts/SessionAuthContext";
-
-// Inside VersionHistory component:
-const { user } = useSessionAuth();
-
-// Update handleRestore:
-const handleRestore = async (versionId: string) => {
-  const success = await restoreVersion(versionId, user);
-  if (success) {
-    onRestore();
-  }
-};
-```
-
-The hook's return type is unchanged (`{ versions, isLoading, fetchVersions, restoreVersion, compareVersions }`). The only consumers of `restoreVersion` are `VersionHistory.tsx` (confirmed via codebase search — the hook is only used in that one component).
+If you want the 2015 exam content preserved instead of discarded, let me know before approving and I will modify the plan to keep `dd29dfce` and change its `year` from 2025 to 2015 instead of deleting it.
 
 ---
 
-### Files changed summary
-
-| File | Lines changed | Action |
-|---|---|---|
-| `src/components/content-editor/WorkflowManagement.tsx` | After line 100 | Add non-blocking change log write for `publish`/`unpublish` events |
-| `src/hooks/useVersionControl.ts` | Lines 59, 66–67 | Remove `supabase.auth.getUser()`; add `user` parameter to `restoreVersion` |
-| `src/components/content-editor/VersionHistory.tsx` | Lines 1, 17–28 | Import `useSessionAuth`; hoist `user`; pass to `restoreVersion` |
-| DB migration (new `.sql` file) | New | `CREATE OR REPLACE FUNCTION create_lesson_version()` with `pg_advisory_xact_lock` |
-
-**No other files touched. No new dependencies. No edge function changes.**
-
----
-
-### Safety Verification
+### Safety Checks
 
 | Check | Status |
 |---|---|
-| FOR UPDATE lock does not cause deadlocks for normal single-save operations | Yes — `pg_advisory_xact_lock(hashtext(lesson_id))` is acquired once per trigger invocation. A single save fires one trigger, acquires the lock, does its work, and releases at commit. No other transaction holds a conflicting lock. Deadlock requires circular waiting — not possible with a single-trigger, single-lock-per-lesson pattern. |
-| FOR UPDATE lock does not block cross-lesson saves | Yes — advisory lock IDs are `hashtext(NEW.id::text)`, which differ for different lesson UUIDs. Two concurrent saves to different lessons use different lock IDs and do not contend. |
-| Change log write for publish events does not block the workflow status update if it fails | Yes — the write uses `.then(({ error: logError }) => { if (logError) console.error(...) })` fire-and-forget pattern. The `setIsSubmitting(false)` in `finally` is not gated on the log write. The `toast.success(...)` fires immediately after the workflow update succeeds regardless of whether the log write is in-flight. |
-| Fix 3 (delete write path) — why it is not implemented | No lesson deletion UI exists in the frontend codebase. No `.delete()` call on the `lessons` table exists in any `.tsx` or `.ts` file. Additionally, `content_change_log.lesson_id` is `ON DELETE CASCADE` — any log entry for a deleted lesson would be automatically removed by Postgres. Implementing Fix 3 would require: (a) creating a lesson deletion UI, AND (b) migrating `content_change_log.lesson_id` FK from `ON DELETE CASCADE` to `ON DELETE SET NULL` with lesson title stored in `new_content`. Both are out of scope. Fix 3 is correctly deferred. |
-| `useVersionControl.restoreVersion` user null guard preserved | Yes — the new signature accepts `user: { id: string } | null` and throws `'Not authenticated'` if null, which is caught by the outer `try/catch` and shows `toast.error('Erreur lors de la restauration')`. Same user-visible behavior as before. |
-| VersionHistory.tsx uses in-memory user from useSessionAuth | Yes — `useSessionAuth()` returns the session user from `SessionAuthContext` without a network call. On 3G, this eliminates ~300–500ms latency on every restore action. |
-| `restoreVersion` is only called from VersionHistory.tsx | Yes — confirmed by full codebase search. `useVersionControl` is only imported in `VersionHistory.tsx`. No other consumer exists. |
-| publish/unpublish log entries correctly capture previous workflow_status | Yes — `previous_content: { workflow_status: selectedLesson.workflow_status \|\| 'draft' }` reads the status from the `selectedLesson` prop before the DB update is applied. `onUpdate()` (which calls `refreshLesson`) is called after the log write is fired, so the prop still reflects the old status at the time of write. |
-| subject_id included in log entry | Yes — `selectedLesson.subject_id ?? null` is included. `selectedLesson` is the full row from the `lessons` table joined with subjects in ContentEditor's `onSelectLesson` handler. The `subject_id` column is a direct column on `lessons`. |
-| AppShell, Provider Stack, other tabs unaffected | Yes — all changes are scoped to two component files, one hook file, and one DB migration. No global context, no routes, no other modules modified. |
+| Zero real exercises lost by the 11 ghost+bad-title deletions | Yes — rows with IDs `3692e8fd`, `e830ba4e`, `8c60551f`, `e12eb598`, `fa2203da`, `4ec9d6c5`, `ab78480e`, `efa359ee`, `a79c968b`, `5f14a0ba` all have actual=0. No exercises exist in exam_exercises for any of them. |
+| The model exam row `db8b3457` (45 exercises) is not deleted | Yes — it is explicitly kept and only its title is corrected. |
+| The correct SMP/2025 row `d92d666f` (15 exercises) is kept | Yes — it is not in the DELETE list. |
+| All 182 existing exercises are preserved (minus the 15 from the 2015-content row) | Yes — 182 − 15 = 167 exercises preserved if `dd29dfce` is deleted. All 182 preserved if you choose to keep it as year=2015 instead. |
+| No code files touched | Yes — this is a database-only operation. |
+| ON DELETE CASCADE handles exam_exercises automatically | Yes — confirmed from DB schema. No manual exercise cleanup needed. |
+| Post-cleanup diagnostic queries will confirm the final state | Yes — I will re-run all three diagnostic queries after you approve and the deletes execute. |
