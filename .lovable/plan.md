@@ -1,247 +1,404 @@
 
-# Exams Plan B — NS4 UX Fixes + Pipeline Improvements
+# Exams Plan C — Data Quality Improvements for Exercise Editor
 
 ## Scope
-5 targeted fixes across 3 files + 1 edge function + 2 file deletions + 1 config entry removal. No database changes. No SQL.
-
----
-
-## Pre-Delete Verification (Confirmed Safe)
-
-Before any deletions:
-
-| File | Import search result | Safe to delete? |
-|---|---|---|
-| `src/components/content-editor/ExamManager.tsx` | Zero imports found in all `.tsx`/`.ts` files | Yes |
-| `src/components/content-editor/BaccExamManager.tsx` | Zero imports found in all `.tsx`/`.ts` files | Yes |
-| `supabase/functions/parse-exam-text/index.ts` | Zero calls to `parse-exam-text` in all `src/` files | Yes |
-
-The `parse-exam-text` entry also exists in `supabase/config.toml` at line 93–94 and must be removed alongside the function directory.
-
----
-
-## Fix 1 — Default Series Pre-selection on Track Switch
-
-**File:** `src/features/exams/admin/ExamAdminPage.tsx`  
-**Current behavior:** `handleTrackChange` (line 92–104) always resets `selectedSeries` to `[]`. On NS4, the list shows all rows unfiltered.  
-**Fix:** When `newTrack === 'NS4'`, pre-select all four series so the list is filtered from first render and shows all available NS4 exams organized. When switching back to `9AF`, reset to `[]` as before.
-
-**Change in `handleTrackChange` (lines 92–104):**
-```ts
-// Before — always resets to empty
-setSelectedSeries([]);
-
-// After — pre-select all NS4 series on switch to NS4
-setSelectedSeries(newTrack === 'NS4' ? ["SMP", "SES", "SVT", "LLA"] : []);
-```
-
-**Why all four?** After the database cleanup, there are 9 clean rows spread across LLA, SES, SMP, SVT. Pre-selecting all four means the admin immediately sees the full organized list in a filtered state. The user can then narrow by deselecting a series.
-
-**Impact on `availableSubjects`:** The subject dropdown uses `selectedSeries[0]` (line 86). With all four pre-selected, `selectedSeries[0]` will be `"SMP"` — so the subject dropdown will show SMP subjects by default. This is acceptable: when the user picks a specific series for upload, they deselect the others first, which narrows the subject list correctly. The form validation already blocks submission if `selectedSeries.length === 0` (line 136–138), which cannot trigger since they start with all 4 selected.
-
----
-
-## Fix 2 — Empty Subject Dropdown Guidance
-
-**File:** `src/features/exams/admin/ExamAdminPage.tsx`  
-**Current behavior:** Lines 459–465 render `SelectContent` with only `availableSubjects.map(...)`. When `availableSubjects = []`, the dropdown opens but shows nothing.  
-**Fix:** Add a disabled placeholder `SelectItem` that renders when `availableSubjects.length === 0`.
-
-**Change in the subject `SelectContent` block (lines 459–465):**
-```tsx
-<SelectContent>
-  {availableSubjects.length === 0 ? (
-    // Informative disabled placeholder — only shown when no series is selected
-    <SelectItem value="__placeholder__" disabled>
-      Sélectionnez d'abord une série
-    </SelectItem>
-  ) : (
-    availableSubjects.map((subj) => (
-      <SelectItem key={subj} value={subj}>
-        {subj}
-      </SelectItem>
-    ))
-  )}
-</SelectContent>
-```
-
-**Note:** After Fix 1, this placeholder will only appear in the edge case where the user manually deselects all series via `SeriesMultiSelect`. It will not appear on initial NS4 render since Fix 1 pre-selects all series. The `value="__placeholder__"` cannot be selected by the user (it is `disabled`) and cannot equal any real subject name, so it will never pollute the form state.
-
----
-
-## Fix 3 — Pass gradeLevel and series into parse-exam-vision System Prompt
-
-**File:** `supabase/functions/parse-exam-vision/index.ts`  
-**Current behavior:** Line 14 destructures only `{ subject, year, pageImages }`. `gradeLevel` and `series` are sent by the frontend (verified at lines 122–124 of `ExamAdminPage.tsx`) but silently ignored. The system prompt (line 38) is generic for both exam types.
-
-**Two-part change:**
-
-**Part A — Destructure gradeLevel and series from request body (line 14):**
-```ts
-// Before
-const { subject, year, pageImages } = await req.json();
-
-// After — read gradeLevel and series (optional, default to '9AF' for safety)
-const { subject, year, pageImages, gradeLevel = '9AF', series } = await req.json();
-```
-
-**Part B — Build a context-aware system prompt instead of the generic one (lines 38–54):**
-
-The new prompt diverges based on `gradeLevel`:
-
-```ts
-// Build exam-type-specific context for the AI
-const examContext = gradeLevel === 'NS4'
-  ? `Tu analyses un examen du BACCALAURÉAT haïtien (NS4)${series ? ` — Série ${series}` : ''}.
-
-SPÉCIFICITÉS NS4 À RESPECTER ABSOLUMENT:
-- Les examens NS4 sont composés principalement de questions ouvertes (open_ended) et de problèmes multi-parties
-- Les QCM (multiple_choice) sont rares dans les examens NS4, sauf en Anglais/Espagnol/Créole
-- Chaque exercice peut contenir plusieurs sous-questions numérotées (a, b, c, d) — traite chaque sous-question comme un exercice distinct
-- Les formules mathématiques et physiques doivent être extraites en notation LaTeX
-- Les points par question sont souvent indiqués en marge (ex: "4 pts", "/4") — extrait-les précisément
-- La structure typique NS4: Texte du problème → sous-questions → données/formules en annexe
-- Pour la série ${series || 'NS4'}: les matières scientifiques (Physique, Chimie, Maths, SVT) sont à dominante calcul et démonstration`
-  : `Tu analyses un examen de la 9ÈME ANNÉE FONDAMENTALE haïtienne (9AF).
-
-SPÉCIFICITÉS 9AF À RESPECTER ABSOLUMENT:
-- Les examens 9AF contiennent un mélange de QCM (multiple_choice) et de questions ouvertes (open_ended)
-- Les QCM ont toujours 4 options: A), B), C), D) — extrait les options précisément
-- Les textes de référence (Reading, Texte de lecture) précèdent souvent plusieurs questions
-- Structure typique 9AF: texte de référence → questions de compréhension → exercices de grammaire → rédaction`;
-
-const systemPrompt = `Tu es un expert OCR spécialisé dans l'extraction d'examens officiels haïtiens.
-
-${examContext}
-
-INSTRUCTIONS GÉNÉRALES:
-1. Analyse attentivement CHAQUE page de l'examen
-2. Identifie et extrait TOUS les TEXTES DE RÉFÉRENCE (Reading, Texte, Lecture, passages) — EXTRAIT LE TEXTE COMPLET
-3. Identifie TOUS les exercices/questions avec leurs numéros
-4. Pour les QCM, extrait précisément les options A), B), C), D)
-5. Préserve les accents français et créoles (é, è, à, ç, ô, etc.)
-6. Identifie les points attribués à chaque question si visibles
-7. Détermine le type: "multiple_choice" ou "open_ended" en respectant les spécificités ci-dessus
-8. Pour les formules mathématiques, utilise la notation LaTeX
-
-IMPORTANT:
-- EXTRAIT TOUS les textes de référence COMPLETS dans referenceTexts
-- Ne rate AUCUNE question
-- Si les points ne sont pas visibles: 5 pts pour QCM, 8 pts pour questions ouvertes
-- Utilise la fonction extract_exam_data pour retourner les résultats`;
-```
-
-**The user prompt also gains context (line 56):**
-```ts
-// Before
-const userPrompt = `Analyse cet examen officiel de ${subject} ${year}. Extrait TOUTES les questions, options, textes de référence. Utilise la fonction extract_exam_data.`;
-
-// After
-const userPrompt = `Analyse cet examen officiel de ${subject} ${year}${gradeLevel === 'NS4' && series ? ` (${series})` : ''}. Extrait TOUTES les questions, options, textes de référence. Utilise la fonction extract_exam_data.`;
-```
-
-**The tool calling schema, `tool_choice`, and normalization logic are not touched.** Only the system prompt and user prompt strings change.
-
-**The log line also gains context (line 23):**
-```ts
-console.log(`Processing ${pageImages.length} page images for ${subject} ${year} [${gradeLevel}${series ? `/${series}` : ''}]`);
-```
-
----
-
-## Fix 4 — Auto-Refresh ExistingExamsList After Save
-
-**Files:**  
-- `src/features/exams/admin/ExamAdminPage.tsx` — add `refreshTrigger` state, increment after save  
-- `src/features/exams/admin/components/ExistingExamsList.tsx` — add `refreshTrigger` prop, add to `useEffect` deps
-
-**Part A — ExamAdminPage (add state + increment after save):**
-
-Add new state at line 53 (alongside existing state):
-```ts
-// Counter that increments after each successful save to trigger list refresh
-const [refreshTrigger, setRefreshTrigger] = useState(0);
-```
-
-In `handleConfirmAndSave` (line 292, after `resetForm()`):
-```ts
-resetForm();
-// Increment to signal ExistingExamsList to reload
-setRefreshTrigger(prev => prev + 1);
-```
-
-Pass it to `ExistingExamsList` (line 574–580):
-```tsx
-<ExistingExamsList
-  track={track}
-  selectedSeries={selectedSeries}
-  onReanalyze={handleReanalyze}
-  reanalyzingExamId={reanalyzingExamId}
-  onEditExam={handleEditExam}
-  refreshTrigger={refreshTrigger}
-/>
-```
-
-**Part B — ExistingExamsList (add prop + add to useEffect):**
-
-Update `ExistingExamsListProps` interface (line 40–46):
-```ts
-interface ExistingExamsListProps {
-  track: ExamTrack;
-  selectedSeries?: string[];
-  onReanalyze: (exam: ExistingExam) => void;
-  reanalyzingExamId?: string | null;
-  onEditExam?: (exam: ExistingExam) => void;
-  refreshTrigger?: number; // increments after each successful save
-}
-```
-
-Destructure it (line 48–54):
-```ts
-export function ExistingExamsList({ 
-  track, 
-  selectedSeries = [],
-  onReanalyze,
-  reanalyzingExamId,
-  onEditExam,
-  refreshTrigger = 0,
-}: ExistingExamsListProps) {
-```
-
-Update `useEffect` (line 60–62):
-```ts
-// Re-fetch when track, series filter, or save counter changes
-useEffect(() => {
-  loadExams();
-}, [track, selectedSeries, refreshTrigger]);
-```
-
-**No infinite re-fetch risk:** `refreshTrigger` is a number managed by `useState` in the parent. It only changes when `setRefreshTrigger(prev => prev + 1)` is called inside the `try` block of `handleConfirmAndSave`, which only runs on a successful save. `loadExams()` does not call `setRefreshTrigger`. The only way the value changes is explicit user action (confirming a save). The `selectedSeries` reference-equality concern from the audit is already present before this change and is not made worse.
-
----
-
-## Fix 5 — Delete Dead Code
-
-### Files to delete:
-1. `src/components/content-editor/ExamManager.tsx` — 891 lines, zero imports
-2. `src/components/content-editor/BaccExamManager.tsx` — 927 lines, zero imports
-3. `supabase/functions/parse-exam-text/index.ts` (entire `parse-exam-text/` directory)
-4. Remove the `[functions.parse-exam-text]` block from `supabase/config.toml` (lines 93–94)
-5. Use `supabase--delete_edge_functions` to undeploy `parse-exam-text` from the live environment
+4 targeted fixes across 4 files + 1 new edge function. No database changes. No SQL. No existing functionality touched outside these files.
 
 ---
 
 ## File Change Summary
 
-| File | Change type | Scope |
+| File | Change | Fix |
 |---|---|---|
-| `src/features/exams/admin/ExamAdminPage.tsx` | Edit | Fix 1 (1 line), Fix 2 (8 lines), Fix 4 (3 lines + 1 prop) |
-| `src/features/exams/admin/components/ExistingExamsList.tsx` | Edit | Fix 4 (interface + destructure + useEffect dep) |
-| `supabase/functions/parse-exam-vision/index.ts` | Edit | Fix 3 (destructure line, system prompt, user prompt, log) |
-| `src/components/content-editor/ExamManager.tsx` | **Delete** | Fix 5 |
-| `src/components/content-editor/BaccExamManager.tsx` | **Delete** | Fix 5 |
-| `supabase/functions/parse-exam-text/index.ts` | **Delete** | Fix 5 |
-| `supabase/config.toml` | Edit (remove 2 lines) | Fix 5 (remove `[functions.parse-exam-text]` block) |
+| `src/features/exams/admin/components/QualityIndicators.tsx` | Rename label + add tooltip | Fix 1 |
+| `src/features/exams/admin/components/ExamDetailEditor.tsx` | Update filter label + pass exam context to ExerciseCard | Fix 1 + Fix 2 |
+| `src/features/exams/admin/components/ExerciseCard.tsx` | Add AI generate button + Textarea for open_ended | Fix 2 + Fix 3 |
+| `src/features/exams/admin/components/ExistingExamsList.tsx` | Zero-exercise warning badge + disable edit button | Fix 4 |
+| `supabase/functions/generate-exercise-explanation/index.ts` | New edge function for AI explanation generation | Fix 2 |
+| `supabase/config.toml` | Add `[functions.generate-exercise-explanation]` entry | Fix 2 |
+
+---
+
+## Fix 1 — Improve Quality Indicator Labels
+
+### Part A — QualityIndicators.tsx
+
+**Change 1:** Replace label `"Contenu structuré"` (line 127) with `"Contenu extrait par IA"`.
+
+**Change 2:** Add a small info icon with a tooltip next to the new label. Import `{ Tooltip, TooltipContent, TooltipTrigger }` from `@/components/ui/tooltip` and `{ Info }` from `lucide-react`.
+
+```tsx
+// Before (line 126-127):
+<div className="flex items-center gap-2">
+  {getIcon(metrics.blocksPercent)}
+  <span>Contenu structuré</span>
+</div>
+
+// After:
+<div className="flex items-center gap-2">
+  {getIcon(metrics.blocksPercent)}
+  <span>Contenu extrait par IA</span>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+    </TooltipTrigger>
+    <TooltipContent side="right" className="max-w-xs">
+      Les exercices dont le contenu a été extrait automatiquement par l'IA depuis le PDF.
+    </TooltipContent>
+  </Tooltip>
+</div>
+```
+
+**Note:** The `TooltipProvider` is already mounted at the root level of the app (in the provider stack), so no local `TooltipProvider` wrapper is needed here.
+
+### Part B — ExamDetailEditor.tsx
+
+Update `getFilterLabel` (line 81) to rename the filter button label:
+```ts
+// Before:
+case 'missing-blocks': return 'Sans contenu structuré';
+
+// After:
+case 'missing-blocks': return 'Sans extraction IA';
+```
+
+---
+
+## Fix 2 — AI Explanation Generation for Open-Ended Exercises
+
+This is the most complex fix. It requires a new edge function and changes to ExerciseCard's interface and internal state.
+
+### Part A — New Edge Function: `generate-exercise-explanation`
+
+**File:** `supabase/functions/generate-exercise-explanation/index.ts`
+
+A simple, non-streaming POST endpoint. Receives `{ questionText, subject, gradeLevel, series }` and returns `{ explanation: string }`.
+
+```ts
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { questionText, subject, gradeLevel = 'NS4', series } = await req.json();
+
+    if (!questionText || !subject) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields: questionText, subject" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    // Build context-aware system prompt for the Haitian Baccalauréat
+    const examContext = gradeLevel === 'NS4'
+      ? `Baccalauréat haïtien (NS4)${series ? ` — Série ${series}` : ''}`
+      : `9ème Année Fondamentale haïtienne (9AF)`;
+
+    const systemPrompt = `Tu es un professeur expert en ${subject} pour le ${examContext}.
+Génère une réponse modèle complète et pédagogique pour la question suivante.
+La réponse doit:
+- Être adaptée au niveau ${gradeLevel} haïtien
+- Inclure toutes les étapes de raisonnement (pour les matières scientifiques)
+- Utiliser la notation LaTeX pour les formules mathématiques (ex: $E = mc^2$)
+- Être rédigée en français académique clair
+- Ne pas dépasser 300 mots
+Retourne uniquement la réponse modèle, sans introduction ni conclusion sur ta tâche.`;
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Question: ${questionText}` },
+        ],
+        stream: false,
+      }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Limite de requêtes atteinte. Réessayez dans quelques instants." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "Crédits insuffisants pour générer une explication." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      throw new Error(`AI gateway error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const explanation = data.choices?.[0]?.message?.content?.trim();
+
+    if (!explanation) throw new Error("Empty response from AI");
+
+    return new Response(
+      JSON.stringify({ explanation }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (e) {
+    console.error("generate-exercise-explanation error:", e);
+    return new Response(
+      JSON.stringify({ error: e instanceof Error ? e.message : "Erreur inconnue" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});
+```
+
+**config.toml addition** (after the `parse-exam-vision` block):
+```toml
+[functions.generate-exercise-explanation]
+verify_jwt = false
+```
+
+### Part B — ExamDetailEditor.tsx: Pass exam context to ExerciseCard
+
+ExerciseCard currently receives no context about the exam it belongs to. The `ExamDetailEditor` has `exam.subject`, `exam.grade_level`, and `exam.series` readily available.
+
+Add three new props to each `ExerciseCard` call in the `filteredExercises.map()` (line 181–188):
+```tsx
+<ExerciseCard
+  key={exercise.id}
+  exercise={exercise}
+  onUpdate={(updates) => handleUpdateExercise(exercise.id, updates)}
+  onDelete={() => handleDeleteExercise(exercise.id)}
+  isUpdating={updatingId === exercise.id}
+  examSubject={exam.subject}
+  examGradeLevel={exam.grade_level}
+  examSeries={exam.series ?? undefined}
+/>
+```
+
+### Part C — ExerciseCard.tsx: Generate button + preview state
+
+**New props added to `ExerciseCardProps` interface:**
+```ts
+interface ExerciseCardProps {
+  exercise: DbExamExercise;
+  onUpdate: (updates: Partial<Pick<DbExamExercise, 'correct_answer' | 'explanation' | 'concept' | 'points'>>) => void;
+  onDelete: () => void;
+  isUpdating?: boolean;
+  isExpanded?: boolean;
+  // Exam context for AI explanation generation
+  examSubject?: string;
+  examGradeLevel?: string;
+  examSeries?: string;
+}
+```
+
+**New state inside the component:**
+```ts
+// AI explanation generation state
+const [generatedPreview, setGeneratedPreview] = useState<string | null>(null);
+const [isGenerating, setIsGenerating] = useState(false);
+```
+
+**New handler:**
+```ts
+const handleGenerateExplanation = useCallback(async () => {
+  setIsGenerating(true);
+  try {
+    const { data, error } = await supabase.functions.invoke('generate-exercise-explanation', {
+      body: {
+        questionText: exercise.question_text,
+        subject: examSubject,
+        gradeLevel: examGradeLevel,
+        series: examSeries,
+      },
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+    // Show preview — do not overwrite explanation directly
+    setGeneratedPreview(data.explanation);
+  } catch (err: any) {
+    toast.error(err.message || "Erreur lors de la génération de l'explication");
+  } finally {
+    setIsGenerating(false);
+  }
+}, [exercise.question_text, examSubject, examGradeLevel, examSeries]);
+```
+
+Need to add `import { supabase } from "@/integrations/supabase/client"` and `import { toast } from "sonner"`.
+
+**Render logic below the Explanation Textarea:**
+
+Show the generate button only when: `!isMCQ` (open_ended) AND `!hasExplanation` AND no preview is already showing.
+
+Show the preview panel when `generatedPreview !== null`.
+
+```tsx
+{/* AI Explanation Generator — only for open_ended exercises with empty explanation */}
+{!isMCQ && !hasExplanation && !generatedPreview && (
+  <Button
+    variant="outline"
+    size="sm"
+    onClick={handleGenerateExplanation}
+    disabled={isGenerating}
+    className="w-full"
+  >
+    {isGenerating ? (
+      <>
+        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+        Génération en cours...
+      </>
+    ) : (
+      <>
+        <Sparkles className="h-4 w-4 mr-2" />
+        Générer une explication
+      </>
+    )}
+  </Button>
+)}
+
+{/* AI-generated explanation preview — user must click Appliquer to apply */}
+{generatedPreview !== null && (
+  <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg space-y-2">
+    <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-400">
+      <Sparkles className="h-4 w-4" />
+      Explication générée par l'IA
+    </div>
+    <p className="text-sm whitespace-pre-wrap">{generatedPreview}</p>
+    <div className="flex gap-2 pt-1">
+      <Button
+        size="sm"
+        onClick={() => {
+          // Apply the AI preview to the explanation field
+          setExplanation(generatedPreview);
+          setGeneratedPreview(null);
+        }}
+      >
+        Appliquer
+      </Button>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => setGeneratedPreview(null)}
+      >
+        Annuler
+      </Button>
+    </div>
+  </div>
+)}
+```
+
+Add `Sparkles` to the lucide-react import list.
+
+**Safety guarantee:** `setExplanation(generatedPreview)` only runs inside the "Appliquer" click handler. The existing `explanation` state is never mutated by `handleGenerateExplanation` itself. The preview is a separate `generatedPreview` state. Clicking "Annuler" clears `generatedPreview` without touching `explanation`.
+
+---
+
+## Fix 3 — Textarea for Open-Ended Correct Answer
+
+**File:** `src/features/exams/admin/components/ExerciseCard.tsx`
+
+In the `{/* Correct Answer */}` block, the `else` branch (line 185–192) currently renders a single-line `Input`. Replace it with a `Textarea`:
+
+```tsx
+// Before (lines 185-192):
+) : (
+  <Input
+    id={`answer-${exercise.id}`}
+    value={correctAnswer}
+    onChange={(e) => setCorrectAnswer(e.target.value)}
+    placeholder="Entrer la réponse..."
+  />
+)}
+
+// After:
+) : (
+  // Textarea for open_ended: NS4 model answers can be multi-line
+  <Textarea
+    id={`answer-${exercise.id}`}
+    value={correctAnswer}
+    onChange={(e) => setCorrectAnswer(e.target.value)}
+    placeholder="Entrer la réponse modèle..."
+    rows={3}
+    className="resize-y"
+  />
+)}
+```
+
+`Textarea` is already imported at line 8. No new imports needed.
+
+**MCQ safety:** `isMCQ` is computed at line 112. The `Select` component renders when `isMCQ === true`, the `Textarea` only renders when `isMCQ === false`. These are mutually exclusive branches — MCQ display is unchanged.
+
+---
+
+## Fix 4 — Zero Exercise Warning in ExistingExamsList
+
+**File:** `src/features/exams/admin/components/ExistingExamsList.tsx`
+
+Add a computed boolean per exam card:
+```ts
+const hasNoExercises = exam.total_exercises === 0;
+```
+
+**In the exam card's badge row** (after line 180 in the flex wrap div), add:
+```tsx
+{hasNoExercises && (
+  <Badge variant="outline" className="border-yellow-500 text-yellow-600 dark:text-yellow-500 text-xs">
+    Aucun exercice — Re-upload requis
+  </Badge>
+)}
+```
+
+**Disable the Pencil edit button** when `hasNoExercises`:
+```tsx
+{onEditExam && (
+  <Button
+    variant="ghost"
+    size="icon"
+    onClick={() => !hasNoExercises && onEditExam(exam)}
+    disabled={hasNoExercises}  // nothing to edit if no exercises
+    title={hasNoExercises ? "Aucun exercice à modifier" : "Modifier les exercices"}
+  >
+    <Pencil className="h-4 w-4" />
+  </Button>
+)}
+```
+
+**Precision:** `total_exercises` is the value stored in the `official_exams` row. After Plan A cleanup, all remaining rows with `total_exercises = 0` are ghost entries. For future ghost entries (e.g. failed ingestion runs), this warning will appear automatically. For non-zero rows, the badge is never rendered.
+
+---
+
+## Data Flow for Fix 2 (AI Generation)
+
+```text
+ExamDetailEditor (has exam.subject, exam.grade_level, exam.series)
+    ↓ props: examSubject, examGradeLevel, examSeries
+ExerciseCard (button visible when !isMCQ && !hasExplanation && !generatedPreview)
+    ↓ supabase.functions.invoke('generate-exercise-explanation')
+generate-exercise-explanation edge function
+    ↓ fetch("https://ai.gateway.lovable.dev/v1/chat/completions")
+Lovable AI Gateway (google/gemini-2.5-flash)
+    ↓ response.explanation
+ExerciseCard → setGeneratedPreview(explanation)  [preview panel shown]
+    ↓ user clicks "Appliquer"
+setExplanation(generatedPreview)  [explanation field updated, preview cleared]
+    ↓ user clicks "Enregistrer"
+onUpdate({ explanation: ... })  [saved to database]
+```
 
 ---
 
@@ -249,11 +406,11 @@ useEffect(() => {
 
 | Risk | Analysis | Status |
 |---|---|---|
-| Pre-selecting all 4 NS4 series breaks subject dropdown | `availableSubjects` uses `selectedSeries[0]` which will be `"SMP"` — SMP subjects show by default. Valid behavior. User narrows by deselecting series. | Safe |
-| Placeholder `__placeholder__` value leaks into form state | It is `disabled` on the `SelectItem` — Radix UI `Select` ignores disabled items on selection. Cannot be chosen. | Safe |
-| gradeLevel/series changes break parse-exam-vision tool calling schema | Only the `systemPrompt` and `userPrompt` strings change. The `tools` array, `tool_choice`, and normalization code are untouched. | Safe |
-| Auto-refresh causes infinite loop | `refreshTrigger` only increments inside the `try` block of a successful save. `loadExams()` does not mutate `refreshTrigger`. Loop impossible. | Safe |
-| ExamManager or BaccExamManager deletion breaks a UI | Codebase search confirmed zero imports in all `src/` files. | Safe |
-| parse-exam-text deletion breaks a running feature | Codebase search confirmed zero calls to `parse-exam-text` in all `src/` files. | Safe |
-| Removing config.toml entry breaks other functions | The entry only applies to `parse-exam-text`. Removing it has no effect on other functions. | Safe |
-| Default `gradeLevel = '9AF'` if not sent breaks existing behavior | All existing callers already send `gradeLevel`. The default is purely defensive for edge cases. | Safe |
+| AI preview overwrites existing explanation without "Appliquer" | `handleGenerateExplanation` only calls `setGeneratedPreview()`, never `setExplanation()`. `setExplanation()` is called exclusively inside the "Appliquer" click handler. | Safe |
+| Textarea for correct_answer breaks MCQ display | The `Select` (MCQ) and `Textarea` (open_ended) are in mutually exclusive branches of `isMCQ` conditional. MCQ exercises are unchanged. | Safe |
+| Zero-exercise badge appears on valid exams | `hasNoExercises = exam.total_exercises === 0`. Valid exams always have `total_exercises > 0` after Plan A cleanup. Badge only renders when condition is true. | Safe |
+| "Générer une explication" button shows on MCQ exercises | Button render condition: `!isMCQ && !hasExplanation && !generatedPreview`. `!isMCQ` is false for all MCQ exercises. Button cannot appear. | Safe |
+| Adding tooltip to QualityIndicators without local TooltipProvider | `TooltipProvider` is mounted at app root in the provider stack. All descendants can use Tooltip without wrapping locally. | Safe |
+| New edge function uses LOVABLE_API_KEY | `LOVABLE_API_KEY` is auto-provisioned as a Supabase secret. No user input required. Matches existing pattern from `parse-exam-vision`. | Safe |
+| Edge function cold start blocks the UI | The generate button shows a loading spinner with `isGenerating` state. The UI remains interactive. No page-level blocking. | Safe |
+| `examSubject/examGradeLevel/examSeries` props are undefined for 9AF exams | All three are optional props with `undefined` as the valid fallback. The edge function defaults `gradeLevel = 'NS4'` if omitted, which is fine since the generate button only appears for open_ended exercises which are predominantly NS4. | Safe |
