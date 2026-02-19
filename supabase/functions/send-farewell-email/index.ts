@@ -120,7 +120,7 @@ const getEmailTemplate = (fullName: string) => `
                   Edupreneurs - Merci pour tout
                 </p>
                 <p style="margin: 0; font-size: 13px; color: #94a3b8;">
-                  © 2025 Edupreneurs. Tous droits réservés.
+                  © ${new Date().getFullYear()} Edupreneurs. Tous droits réservés.
                 </p>
               </td>
             </tr>
@@ -184,10 +184,15 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("[send-farewell-email] Farewell email sent successfully:", emailResponse);
 
-    return secureJsonResponse(emailResponse, 200, true);
+    // Standardized response format
+    return secureJsonResponse({ success: true, messageId: emailResponse?.data?.id || null }, 200, true);
   } catch (error: any) {
     console.error("[send-farewell-email] Error:", error);
-    return secureErrorResponse(error.message || 'Internal server error', 500);
+    // Manual response instead of secureErrorResponse to include success: false
+    return new Response(
+      JSON.stringify({ success: false, error: error.message || 'Internal server error' }),
+      { status: 500, headers: { "Content-Type": "application/json", "X-Content-Type-Options": "nosniff" } }
+    );
   }
 };
 

@@ -187,7 +187,7 @@ const getEmailTemplate = (fullName: string, email: string, timestamp: string, de
                   Edupreneurs - Votre sécurité est notre priorité
                 </p>
                 <p style="margin: 0 0 8px 0; font-size: 13px; color: #94a3b8;">
-                  © 2025 Edupreneurs. Tous droits réservés.
+                  © ${new Date().getFullYear()} Edupreneurs. Tous droits réservés.
                 </p>
                 <p style="margin: 0; font-size: 12px; color: #cbd5e1;">
                   Cet email a été envoyé automatiquement. Merci de ne pas y répondre.
@@ -249,14 +249,15 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Login notification sent successfully:", emailResponse);
 
-    return new Response(JSON.stringify(emailResponse), {
+    // Standardized response format — success includes messageId
+    return new Response(JSON.stringify({ success: true, messageId: emailResponse?.data?.id || null }), {
       status: 200,
       headers: responseHeaders,
     });
   } catch (error: any) {
     console.error("Error sending login notification:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ success: false, error: error.message }),
       { status: 500, headers: responseHeaders }
     );
   }

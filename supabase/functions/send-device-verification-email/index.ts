@@ -130,7 +130,7 @@ const getEmailTemplate = (
                   Si vous n'avez pas demandé cette vérification, ignorez cet email.
                 </p>
                 <p style="margin: 0; font-size: 13px; color: #94a3b8;">
-                  © 2025 Edupreneurs. Tous droits réservés.
+                  © ${new Date().getFullYear()} Edupreneurs. Tous droits réservés.
                 </p>
               </td>
             </tr>
@@ -204,21 +204,22 @@ const handler = async (req: Request): Promise<Response> => {
     if (emailResponse.error) {
       console.error("Resend delivery failed:", JSON.stringify(emailResponse.error));
       return new Response(
-        JSON.stringify({ error: "Erreur de livraison email", details: emailResponse.error }),
+        JSON.stringify({ success: false, error: "Erreur de livraison email", details: emailResponse.error }),
         { status: 500, headers: responseHeaders }
       );
     }
 
     console.log("Device verification email delivered. id:", emailResponse.data?.id);
 
-    return new Response(JSON.stringify({ success: true, id: emailResponse.data?.id }), {
+    // Standardized response format
+    return new Response(JSON.stringify({ success: true, messageId: emailResponse.data?.id || null }), {
       status: 200,
       headers: responseHeaders,
     });
   } catch (error: any) {
     console.error("Error sending device verification email:", error.message);
     return new Response(
-      JSON.stringify({ error: "Erreur lors de l'envoi de l'email" }),
+      JSON.stringify({ success: false, error: "Erreur lors de l'envoi de l'email" }),
       {
         status: 500,
         headers: responseHeaders,

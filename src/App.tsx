@@ -86,7 +86,7 @@ const DevPush = lazy(() => import("./pages/DevPush"));
 const DynamicCoursePage = lazy(() => import("./pages/DynamicCoursePage"));
 const DynamicLessonPage = lazy(() => import("./pages/DynamicLessonPage"));
 const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
-const EmailTest = lazy(() => import("./pages/EmailTest"));
+
 const UploadEmailAssets = lazy(() => import("./pages/UploadEmailAssets"));
 const CustomizeAI = lazy(() => import("./pages/CustomizeAI"));
 
@@ -478,11 +478,6 @@ const App = () => (
                           <Route path="/dev/push" element={
                             <Suspense fallback={<GenericPageSkeleton />}>
                               <DevPush />
-                            </Suspense>
-                          } />
-                          <Route path="/email-test" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <EmailTest />
                             </Suspense>
                           } />
                           <Route path="/upload-email-assets" element={

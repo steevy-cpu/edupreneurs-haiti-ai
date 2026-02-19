@@ -144,7 +144,7 @@ const handler = async (req: Request): Promise<Response> => {
     <!-- Footer -->
     <div style="text-align: center; margin-top: 30px;">
       <p style="color: rgba(255, 255, 255, 0.8); font-size: 12px; margin: 0;">
-        © 2025 Edupreneurs. Tous droits réservés.
+        © ${new Date().getFullYear()} Edupreneurs. Tous droits réservés.
       </p>
     </div>
   </div>
