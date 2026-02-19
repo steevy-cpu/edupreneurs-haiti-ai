@@ -1,79 +1,98 @@
 
-# Fix: Email Verification Broken After Signup Redesign
+
+# Fix: Avatar Generation 500 Error + User-Friendly Fallback
 
 ## Problem
-The `confirmationEmailSchema` in `supabase/functions/_shared/validation.ts` requires `nickname` (string, min 2) and `academicGrade` (string) as mandatory fields. After the signup redesign, `signup.service.ts` sends `null` for both, causing Zod validation to reject the request before Resend is ever called.
-
-## Solution
-Make `nickname` and `academicGrade` nullable/optional in the `confirmationEmailSchema`, and update the email template to handle null values gracefully.
-
----
+The `generate-custom-avatar` edge function uses `google/gemini-2.5-flash-image-preview` which is returning 500 errors from the AI Gateway. This is an upstream model issue, not related to the signup redesign.
 
 ## Changes
 
-### 1. Update `confirmationEmailSchema` in `supabase/functions/_shared/validation.ts`
+### 1. Edge Function: Switch model + add fallback retry (`supabase/functions/generate-custom-avatar/index.ts`)
 
-Change lines 190-206:
+- **Primary model**: `google/gemini-2.5-flash-image` (confirmed working name per Lovable AI docs)
+- **Fallback model**: `google/gemini-3-pro-image-preview` (next-gen image model)
+- Logic: Try primary model. If it returns 500, retry once with fallback model. If both fail, return a clean error.
 
-```typescript
-export const confirmationEmailSchema = z.object({
-  email: z.string()
-    .email("Email invalide")
-    .max(255, "Email trop long"),
-  fullName: z.string()
-    .min(2, "Nom trop court")
-    .max(200, "Nom trop long")
-    .transform(s => s.trim()),
-  nickname: z.string()
-    .max(50, "Pseudo trop long")
-    .transform(s => s.trim())
-    .nullable()
-    .optional(),
-  academicGrade: z.string()
-    .max(50)
-    .nullable()
-    .optional(),
-  confirmationCode: z.string()
-    .length(6, "Code doit etre 6 chiffres")
-    .regex(/^\d{6}$/, "Code invalide"),
-}).strict();
-```
+Specific changes at line 110-121:
+- Extract the fetch call into a helper function `tryGenerateWithModel(model, prompt, apiKey)`
+- Call with primary model first, on 500 retry with fallback
+- Keep existing 429/402 handling unchanged
 
-Key changes:
-- `nickname`: Remove `.min(2)`, add `.nullable().optional()`
-- `academicGrade`: Add `.nullable().optional()`
-- `fullName`: Keep as required (signup.service.ts already passes email as fallback)
+### 2. Frontend: Graceful error in `AIAvatarGenerator.tsx` during onboarding (lines 165-168)
 
-### 2. Update email template in `supabase/functions/send-confirmation-email/index.ts`
+In `handleGenerate()`, when `isOnboarding` is true and an error occurs:
+- Instead of showing a raw toast error, set a new `generationFailed` state to `true`
+- Render a fallback UI in the dialog showing:
+  - Message: "La generation d'avatar est temporairement indisponible. Tu pourras en creer un depuis tes parametres plus tard."
+  - A "Continuer sans avatar" button that calls `onAvatarGenerated('')` (empty string signals skip) or closes the dialog so the parent `AvatarGenerationStep` skip button is accessible
 
-Update the `getEmailTemplate` function signature to accept nullable values:
+Actually, since `AIAvatarGenerator` receives `onOpenChange` and the parent `AvatarGenerationStep` has a "Plus tard" skip button visible when the dialog is closed, the simplest approach is:
+- On error during onboarding: show a friendly toast + close the dialog automatically, revealing the existing "Plus tard" skip button
+- Add a dedicated "Continuer sans avatar" button inside the dialog's error state for direct skip
 
-```typescript
-const getEmailTemplate = (
-  fullName: string,
-  nickname: string | null,
-  academicGrade: string | null,
-  email: string,
-  confirmationCode: string
-) => ...
-```
-
-In the template body, conditionally render the Pseudo and Niveau rows only when values are present:
-- Hide the "Pseudo" row if `nickname` is null
-- Hide the "Niveau" row if `academicGrade` is null
-- The "Nom complet" row will show the email address (already handled by the signup service fallback)
-
-### 3. Redeploy the edge function
-
-After updating the shared validation and the edge function, deploy `send-confirmation-email`.
+### 3. No changes to `AvatarGenerationStep.tsx`
+The existing skip flow ("Plus tard" button calling `skipAvatarGeneration()`) already handles the case. We just need the dialog to not trap the user on error.
 
 ---
 
-## No other files need changes
+## Detailed Changes
 
-- `signup.service.ts` is already correct -- it sends `nickname: null` and `academicGrade: null`
-- The profile insert works fine -- confirmed by the auth logs showing successful signup
-- The `createAccount()` flow completes and returns `success: true` regardless of the email result (the invoke call is fire-and-forget within the try block)
+### File: `supabase/functions/generate-custom-avatar/index.ts`
+
+**Add helper function** (before `serve`):
+```typescript
+async function tryGenerateImage(model: string, prompt: string, apiKey: string) {
+  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: 'user', content: prompt }],
+      modalities: ['image', 'text']
+    }),
+  });
+  return response;
+}
+```
+
+**Replace lines 110-121** with:
+```typescript
+// Try primary model, fall back to alternative on 500
+const PRIMARY_MODEL = 'google/gemini-2.5-flash-image';
+const FALLBACK_MODEL = 'google/gemini-3-pro-image-preview';
+
+let response = await tryGenerateImage(PRIMARY_MODEL, prompt, LOVABLE_API_KEY);
+
+if (response.status === 500) {
+  console.warn(`Primary model ${PRIMARY_MODEL} returned 500, trying fallback ${FALLBACK_MODEL}`);
+  response = await tryGenerateImage(FALLBACK_MODEL, prompt, LOVABLE_API_KEY);
+}
+```
+
+Keep the existing `if (!response.ok)` block after this (lines 123-140) unchanged.
+
+### File: `src/components/AIAvatarGenerator.tsx`
+
+**Add state** (after line 91):
+```typescript
+const [generationFailed, setGenerationFailed] = useState(false);
+```
+
+**Update `handleGenerate`** (lines 143-171):
+- In the catch block, if `isOnboarding` is true, set `generationFailed = true` instead of just showing a toast
+- Reset `generationFailed` when dialog opens or user retries
+
+**Add fallback UI** in the preview/footer section:
+- When `generationFailed && isOnboarding`, render:
+  - Warning icon + French message about temporary unavailability
+  - "Continuer sans avatar" button that calls `onOpenChange(false)` (closes dialog, revealing the skip button in AvatarGenerationStep)
+  - "Reessayer" button that resets `generationFailed` and retries
+
+### Redeploy
+Deploy `generate-custom-avatar` edge function after changes.
 
 ---
 
@@ -81,9 +100,10 @@ After updating the shared validation and the edge function, deploy `send-confirm
 
 | Check | Status |
 |---|---|
-| Schema accepts null nickname and academicGrade | Fixed by `.nullable().optional()` |
-| Schema still validates email and confirmationCode strictly | Unchanged -- still required |
-| Email template does not crash on null nickname/grade | Template conditionally renders those rows |
-| Existing users with nickname/grade still get full email | Yes -- template shows rows when values are present |
-| Edge function redeploy needed | Yes -- validation.ts is a shared import |
-| No other edge functions use confirmationEmailSchema | Correct -- only send-confirmation-email uses it |
+| No signup redesign code touched | Correct -- only avatar edge function + AIAvatarGenerator |
+| Primary model is confirmed available | `google/gemini-2.5-flash-image` per Lovable AI docs |
+| Fallback model is confirmed available | `google/gemini-3-pro-image-preview` per Lovable AI docs |
+| User not blocked during onboarding | "Continuer sans avatar" button + existing "Plus tard" skip |
+| Non-onboarding avatar generation unchanged | Error toast behavior preserved when `isOnboarding` is false |
+| Edge function retry is bounded | Single retry only (primary + fallback = max 2 attempts) |
+
