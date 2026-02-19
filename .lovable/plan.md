@@ -1,222 +1,252 @@
 
-## Plan A: Workflow Integrity Fixes — Bug 3 and Bug 4
+## Plan B: Migrate LessonEditor and SectionGenerator from System B to System A
 
-### Pre-Implementation Findings — Critical Context
+### What is being changed and why
 
-**Before touching Bug 4, you must know this:**
+**`LessonEditor.tsx`** — `handleGenerateAllSections` (lines 151–227) is a raw sequential for-loop that calls `generate-lesson-section` and `generate-interactive-activities` directly. It has no retry logic, no session persistence, and no resume capability. If the browser tab closes mid-generation, all progress is lost. The replacement is the same System A pattern used by `SingleLessonGenerator`: create a job record in `ai_generation_jobs`, fire `process-ai-job`, and watch realtime updates via `useGenerationJob`.
 
-The database query confirmed:
-
-| Metric | Number |
-|---|---|
-| Total lessons in database | 2,832 |
-| Total published lessons | 2,832 |
-| Published lessons with BOTH quiz + activities validated | **0** |
-| Published lessons with NO validated assets at all | **2,832** |
-| Published lessons with correct `workflow_status = 'published'` | 2,538 |
-| Published lessons with `workflow_status = 'draft'` (Bug 3 evidence) | 240 |
-| Published lessons with `workflow_status = 'approved'` | 54 |
-
-**What this means:** Every single published lesson on the platform currently exists via the legacy HTML fallback path in `check_lesson_publishable`. Not one lesson has validated `lesson_assets` records for both quiz and activities. Removing the legacy fallback from `check_lesson_publishable` today would make `bulkPublish` return zero publishable lessons for every selection — it would completely disable bulk publishing for your entire lesson library.
-
-**This does not mean Bug 4 cannot be fixed.** It means the fix must be surgical. The DB function's legacy fallback must be preserved as-is because the platform is currently operating on it. The divergence between the hook and the DB function is real, but **the hook is the one that needs adjusting** — not the DB function. The hook is too strict for the current state of the platform. The correct long-term goal is to migrate all lessons to validated assets and then remove the fallback, not to remove the fallback while zero lessons qualify under the stricter rule.
-
-**Revised scope for Bug 4:**
-
-Instead of removing the legacy fallback from `check_lesson_publishable` (which would be catastrophic), the fix is to align the frontend `useLessonPublishable` hook with the DB function's actual behavior — add the same legacy HTML fallback to the hook so that `WorkflowManagement` and `LessonEditor` use identical publish gate logic as `BulkOperations`. This eliminates the divergence in the correct direction: both paths become permissive for legacy HTML content, and both paths will become strict together once the lesson migration to validated assets is complete.
+**`SectionGenerator.tsx`** — `handleGenerate` (lines 48–164) calls `generate-lesson-section` directly and manages its own loading state, quality metrics, and logging. The instruction is to route this through the job system or at minimum through `process-ai-job` so it benefits from 2x retry with exponential backoff and defensive save behavior. The analysis below determines the correct approach.
 
 ---
 
-### Bug 3 Fix — `LessonEditor.tsx`: Atomic `is_published` + `workflow_status` write
+### Design decision for `SectionGenerator.tsx`
 
-**The problem in detail:**
+`SectionGenerator` is a per-field dialog. Its UX contract is: user configures target word count + context → clicks generate → previews content → clicks Apply or Regenerate. The "Apply" step is explicit — the content is shown in a preview before being written to `lessonData`. This is fundamentally different from the "Generate All Sections" button which applies content directly to the DB.
 
-`handleSave` at line 105–111 does:
+Routing `SectionGenerator` through the `ai_generation_jobs` table introduces a complication: the job system always saves results directly to the `lessons` table in the DB (in `handleApplyChanges` in `SingleLessonGenerator`), but `SectionGenerator`'s `onContentGenerated` callback applies to `lessonData` local state first, letting the user preview and then save via the "Enregistrer" button. The generate-through-job pattern would bypass this preview-before-write contract.
+
+The correct migration for `SectionGenerator` is: keep the direct edge function call for the single-field fast path, but replace it with a call to `process-ai-job` indirectly by wrapping it in the same retry + error-handling pattern. However, the simplest and safest interpretation of the instruction "route through the job system or at minimum through the existing process-ai-job edge function" for a per-field single-section call is:
+
+**Use `useGenerationJob` to create a single-section job** — configure `selectedSections: [sectionName]` with the user's `targetWords`, `globalContext: additionalContext`. The job will run in the background with 2x retry, and `onJobComplete` will receive the result content. The existing preview-before-apply flow is preserved by storing the completed result in local state and showing the preview dialog.
+
+However this changes the UX significantly — the user would no longer see the quality metrics panel, because the job result comes back as raw content with no `wordCount`/`generationTimeMs` metadata in the response shape that `SectionGenerator` currently uses.
+
+**Simpler, correct approach for `SectionGenerator`:** Replace the raw `supabase.functions.invoke('generate-lesson-section', {...})` call with a call wrapped in the same `withRetry` logic at the client level. Since `withRetry` lives in the edge function and cannot be imported client-side, the practical System A improvement for a single-section generator is to create a minimal job record for the one section so `process-ai-job` handles it with retry/defensive save — and then `onJobComplete` fires `onContentGenerated` directly (bypassing the preview). This loses the preview step.
+
+**Resolution:** Use `useGenerationJob` in `SectionGenerator`, preserve the preview step by storing the result content from `resultContent` in local state exactly as `SingleLessonGenerator` does with `generatedContent`. The quality metrics panel is removed (it was a System B nicety that doesn't exist in System A — the job system has its own error tracking). The word count is still displayable from the `progress.sections[0].wordCount` field.
+
+The quality metrics and logging (`ai_generation_logs` inserts) are removed from `SectionGenerator` — the job system already logs success/failure in `ai_generation_jobs`.
+
+---
+
+### `LessonEditor.tsx` — Detailed changes
+
+#### What is removed
+- `isGeneratingAll` state (`useState(false)`) — replaced by `isGenerating` from the hook
+- The entire `handleGenerateAllSections` function (76 lines, System B)
+- `Loader2` icon import (still needed for saving indicator — keep it)
+- `Sparkles` icon import (keep — still used on the button)
+
+#### What is added
+1. `useGenerationJob` hook call — same pattern as `SingleLessonGenerator`, keyed to `selectedLesson?.id`
+2. `onJobComplete` callback that applies the completed result content directly to `lessonData` state — this is the key difference from `SingleLessonGenerator` which shows a preview-before-apply dialog. In `LessonEditor` the "Generate All Sections" button is a convenience action with no preview step (it already had none), so applying directly to `lessonData` on completion matches the existing behavior.
+3. `GenerationJobProgress` component rendered inline in the Edit tab, just below the "Generate All Sections" button — exactly as used in `SingleLessonGenerator`'s dialog.
+
+#### The `onJobComplete` logic
+When `process-ai-job` completes, `result_content` contains an object keyed by section name (e.g., `{ objectif: "...", contenu: "...", ... }`). This maps directly to `lessonData` fields. The callback:
+
 ```typescript
-const { error: updateError } = await supabase
-  .from('lessons')
-  .update({
-    ...lessonData,       // ← lessonData contains is_published from the Switch
-    updated_at: new Date().toISOString(),
-  })
-  .eq('id', selectedLesson.id);
+const handleJobComplete = useCallback((result: Record<string, any> | null) => {
+  if (!result) return;
+  // Apply generated section content to local editor state.
+  // Only overwrite fields that were actually generated (present in result).
+  setLessonData(prev => ({
+    ...prev,
+    ...(result.objectif && { objectif: result.objectif }),
+    ...(result.introduction && { introduction: result.introduction }),
+    ...(result.contenu && { contenu: result.contenu }),
+    ...(result.exemples_exercices && { exemples_exercices: result.exemples_exercices }),
+    ...(result.activites_interactives && { activites_interactives: result.activites_interactives }),
+  }));
+}, []);
 ```
 
-`lessonData` is initialized from `selectedLesson` and contains `is_published` but never contains `workflow_status`. So when an editor flips the Switch to `true` and saves, the DB receives `is_published: true` with no `workflow_status` update. The lesson stays at `workflow_status: 'draft'` (or whatever it was), live to students.
+This is safe: only defined keys in `result` overwrite local state. If a section failed and returned no content, the existing `lessonData` value is preserved.
 
-The Switch `onCheckedChange` (lines 241–243) only updates `lessonData.is_published`. It does not touch `workflow_status`.
+#### The "Generate All Sections" button
 
-**The fix — two points of change in `LessonEditor.tsx`:**
-
-**Point 1: Remove `is_published` from `lessonData` state entirely.**
-
-`is_published` does not belong in the same state object as the text content fields. It controls publishing status, not content. Moving it to a separate `useState<boolean>` makes it explicit and prevents it from accidentally being spread into a content update.
+The button currently shows `isGeneratingAll` for the loading state. After the migration, it uses `isGenerating` from `useGenerationJob`. The `onClick` builds a `JobConfig` and calls `startJob`. The job config for "all sections" is fixed:
 
 ```typescript
-// Separate state for publish toggle — not mixed with content fields
-const [isPublished, setIsPublished] = useState(false);
-```
-
-Initialize from `selectedLesson`:
-```typescript
-setIsPublished(selectedLesson.is_published || false);
-```
-
-**Point 2: Compute `workflow_status` from `isPublished` in `handleSave`.**
-
-The update payload must always include `workflow_status` whenever `is_published` changes. The logic is:
-- `isPublished: true` → `workflow_status: 'published'`
-- `isPublished: false` → `workflow_status: 'draft'`
-
-```typescript
-// Build the update payload — content fields spread separately from publish state
-// to ensure workflow_status is always written atomically with is_published
-const updatePayload = {
-  ...lessonData,                           // content fields only (title, objectif, etc.)
-  is_published: isPublished,               // explicit, not from lessonData spread
-  workflow_status: isPublished ? 'published' : 'draft',  // always written together
-  updated_at: new Date().toISOString(),
+const handleGenerateAllSections = () => {
+  if (!selectedLesson) {
+    toast.error("Aucune leçon sélectionnée");
+    return;
+  }
+  const config: JobConfig = {
+    selectedSections: ['objectif', 'introduction', 'contenu', 'exemples_exercices', 'activites_interactives'],
+    wordCounts: DEFAULT_WORD_COUNTS,
+    generateQuiz: false,
+    generateVideos: false,
+    generateAudio: false,
+    imageGenerationModel: 'none',
+  };
+  startJob(config);
 };
-
-const { error: updateError } = await supabase
-  .from('lessons')
-  .update(updatePayload)
-  .eq('id', selectedLesson.id);
 ```
 
-**Point 3: Update the Switch binding.**
+No `globalContext` — keeping parity with the old button which had no context input. The button is disabled when `isGenerating || isPending`.
 
-The Switch currently reads from and writes to `lessonData.is_published`. After this change, it reads from and writes to `isPublished`:
+#### `GenerationJobProgress` placement in the UI
 
-```tsx
-<Switch
-  checked={isPublished}
-  onCheckedChange={setIsPublished}
-/>
+Currently the Edit tab renders:
+```
+[Generate All Sections Button]
+[Title field]
+[Objectif field + SectionGenerator]
+[Introduction field + SectionGenerator]
+...
 ```
 
-**What does NOT change:**
-- `lessonData` state object remains but has `is_published` removed from it
-- `handleSave` logic, error handling, change log, and toast messages are untouched
-- The `handleSave` spread `{...lessonData}` still works — it just no longer includes `is_published`
-- The `PublishGateIndicator` display is unchanged
-- The `handleGenerateAllSections` function is unchanged
-
-**One edge case to handle:** When `selectedLesson` changes (the `useEffect` at line 67), `isPublished` must also reset:
-```typescript
-setIsPublished(selectedLesson.is_published || false);
+After the migration:
 ```
-This goes inside the existing `useEffect` that already resets `lessonData`.
+[Generate All Sections Button]
+[GenerationJobProgress — renders null when no active job, shows progress when active]
+[Title field]
+...
+```
+
+`GenerationJobProgress` renders `null` when `activeJob` is null and `progress` is null — this is its existing behavior (line 81–83 of the component). So it adds zero visual noise when no generation is running.
+
+The `onResume` and `canResume` props are passed through — if the user navigates to another lesson and back, the hook re-queries for an active job and `canResume` is set if one exists.
+
+#### `selectedLesson` change — job isolation
+
+`useGenerationJob` is keyed to `lessonId`. When `selectedLesson` changes in `LessonEditor`, a new `lessonId` is passed, and the hook's `useQuery` refetches for the new lesson. This is safe — the `existingJob` query filters by `lesson_id = lessonId`, so switching lessons never mixes job state.
+
+#### Conflict between `SingleLessonGenerator` and `LessonEditor` when both visible simultaneously
+
+`SingleLessonGenerator` is rendered in `ContentEditor.tsx` as a standalone component alongside `LessonEditor`. Both will call `useGenerationJob({ lessonId: selectedLesson?.id, ... })`. Both will subscribe to the same realtime channel (same `ai_generation_jobs` row, same filter `id=eq.${activeJob.id}`).
+
+The concern: if an editor starts a job from `SingleLessonGenerator` and `LessonEditor` also has `useGenerationJob` active for the same lesson, will they conflict?
+
+The hooks are independent React hook instances. They both set their own `activeJob` state from the same realtime event. Both will call `onJobComplete` when the job finishes. `LessonEditor.onJobComplete` applies the result to `lessonData`. `SingleLessonGenerator.onJobComplete` sets `generatedContent` and `showPreview: true`.
+
+This means: if a job is started from `SingleLessonGenerator`, `LessonEditor` will also apply the result to its local `lessonData` automatically. This is actually desirable — the editor fields update immediately when a job completes from either entry point. But the user also sees `SingleLessonGenerator`'s preview dialog — so they see both the preview AND the editor fields updated.
+
+The one scenario to handle: if a job is started from `LessonEditor`'s "Generate All Sections" button, `SingleLessonGenerator` will also detect the job via `existingJob` and show the "Resume" banner inside its dialog. This is cosmetically correct — the "Reprendre le suivi" button in `SingleLessonGenerator` would just re-connect the same job.
+
+No conflict in terms of data — both hooks read the same job, apply the same result. The DB write happens only once (in `process-ai-job` edge function). The safety table confirms this in detail below.
+
+#### Imports to add to `LessonEditor.tsx`
+- `useCallback` from react (already imported `useState`, `useEffect`)
+- `useGenerationJob, GenerationJobProgress, type JobConfig` from `@/features/content-editor`
+- `DEFAULT_WORD_COUNTS` from `@/lib/lessonPrompts`
+
+#### Imports to remove from `LessonEditor.tsx`
+- Nothing removed — all existing imports remain. `Loader2` and `Sparkles` are still used.
 
 ---
 
-### Bug 4 Fix — `useLessonPublishable.ts`: Add legacy HTML fallback to match DB function
+### `SectionGenerator.tsx` — Detailed changes
 
-**The problem in detail:**
+#### What is removed
+- `isGenerating`, `generatedContent`, `showPreview`, `qualityMetrics` local state — all replaced by System A hook state
+- `handleGenerate` async function (117 lines) — entire System B path replaced
+- `handleCancel` function — no longer needed (job cancel is via `cancelJob`)
+- `validateGeneratedContent`, `getGradeColor`, `getScoreLabel`, `QualityMetrics` imports from `@/lib/contentValidation` — quality scoring removed
+- `ai_generation_logs` inserts — job system handles logging via `ai_generation_jobs`
+- The debug `console.log` on component mount (line 40–46) — removed in cleanup
+- `Loader2`, `AlertCircle`, `Eye`, `Check`, `X` icon imports — reviewed below
 
-`useLessonPublishable` currently:
-```typescript
-const quizMissing = !quizAsset;         // true if no quiz_final asset at all
-const activitiesMissing = !activitiesAsset; // true if no activities asset at all
-```
+#### What is added
+- `useGenerationJob` hook call with `lessonId: lesson?.id` and `onJobComplete` that stores the result for the single section in local state
+- `useState<string>` for `pendingContent` — the generated content awaiting user approval (same role as the old `generatedContent`)
+- The preview and Apply/Discard buttons remain — the content to preview comes from `pendingContent` state set in `onJobComplete`
+- `GenerationJobProgress` component inside the dialog to show the job running
+- `targetWords` Slider and `additionalContext` Textarea remain — they are passed into `JobConfig.wordCounts` and `JobConfig.globalContext`
 
-If there is no `lesson_assets` record for `quiz_final`, `quizMissing = true` and `canPublish = false`. This blocks publishing for all 2,832 existing lessons in `WorkflowManagement` and `LessonEditor`.
+#### The `onJobComplete` callback for a single section
 
-`check_lesson_publishable` DB function has this additional check:
-```sql
-IF NOT quiz_validated THEN
-  SELECT EXISTS (
-    SELECT 1 FROM public.lessons 
-    WHERE id = p_lesson_id 
-    AND quiz_final IS NOT NULL 
-    AND quiz_final != ''
-  ) INTO quiz_validated;
-END IF;
-```
-
-**The fix — add the same legacy fallback to `useLessonPublishable`:**
-
-The hook needs to query the lesson's own `quiz_final` and `activites_interactives` HTML fields as a fallback when no validated asset exists. This requires reading the lesson record alongside the asset records.
-
-The hook currently only queries `lesson_assets` via `useLessonQuizAsset` and `useLessonActivitiesAsset`. It needs the lesson's HTML content lengths as a fallback signal.
-
-**Implementation approach:**
-
-Add a third query inside `useLessonPublishable` that reads the lesson's `quiz_final` and `activites_interactives` fields (just their content, not the full lesson) as a fallback. Use the existing Supabase client pattern:
+When `process-ai-job` completes a single-section job, `result_content` contains `{ [sectionName]: "content string" }`. The callback:
 
 ```typescript
-// Fetch legacy HTML fallback fields — only used when no validated asset exists
-const { data: legacyContent, isLoading: legacyLoading } = useQuery({
-  queryKey: ['lesson-legacy-content', lessonId],
-  queryFn: async () => {
-    if (!lessonId) return null;
-    const { data, error } = await supabase
-      .from('lessons')
-      .select('quiz_final, activites_interactives')
-      .eq('id', lessonId)
-      .single();
-    if (error) throw error;
-    return data;
-  },
-  enabled: !!lessonId,
-  staleTime: 60_000, // 1-min stale — legacy content doesn't change rapidly
-});
+const handleJobComplete = useCallback((result: Record<string, any> | null) => {
+  if (!result) return;
+  const content = result[sectionName];
+  if (content) {
+    setPendingContent(content);
+    // showPreview is implied by pendingContent being set
+  }
+}, [sectionName]);
 ```
 
-Then update the blocker logic:
+#### The generate button action
 
 ```typescript
-// Legacy fallback: if no validated asset, check if the lesson has non-empty HTML content
-// This mirrors the check_lesson_publishable DB function's legacy path
-const legacyQuizOk = !!(legacyContent?.quiz_final?.trim());
-const legacyActivitiesOk = !!(legacyContent?.activites_interactives?.trim());
-
-// Quiz is publishable if: has validated asset OR has legacy HTML content
-const quizMissing = !quizAsset && !legacyQuizOk;
-const activitiesMissing = !activitiesAsset && !legacyActivitiesOk;
+const handleGenerate = () => {
+  if (!lesson) {
+    toast.error("Aucune leçon sélectionnée");
+    return;
+  }
+  // Build a single-section job config
+  const config: JobConfig = {
+    selectedSections: [sectionName],
+    wordCounts: { [sectionName]: targetWords },
+    generateQuiz: false,
+    generateVideos: false,
+    generateAudio: false,
+    imageGenerationModel: 'none',
+    globalContext: additionalContext || undefined,
+  };
+  startJob(config);
+};
 ```
 
-The `quizNotValidated` check stays the same (if an asset exists but is not validated, that is still a blocker — same as the DB function which only applies the HTML fallback when no asset exists at all).
+Note: `sectionName` can be `'activites_interactives'`. The `process-ai-job` edge function already handles this correctly (lines 101–124 of the edge function — it routes to `generate-interactive-activities`). The `globalContext` for activities will be passed but the edge function uses it as-is in the standard generate-lesson-section path; for `activites_interactives` it uses its own body structure. This is acceptable — `additionalContext` may or may not influence the output. In System B it also was not passed to `generate-interactive-activities`, so this is behavioral parity.
 
-**Result:** `useLessonPublishable` and `check_lesson_publishable` now use identical publish gate logic. Both allow lessons with legacy HTML content to be published. Both require validated assets once the lesson has migrated to the `lesson_assets` system.
+#### The Apply button
 
-**Performance on 3G:** The additional query adds one DB round-trip per lesson selected in the editor. It is lightweight (`select quiz_final, activites_interactives` — two text fields, cached for 1 minute via TanStack Query staleTime). It only runs when a lesson is selected, not on list load.
+```typescript
+const handleApply = () => {
+  if (pendingContent) {
+    onContentGenerated(pendingContent);
+    toast.success("Contenu appliqué");
+    setIsOpen(false);
+    setPendingContent("");
+  }
+};
+```
+
+The `onContentGenerated` prop callback updates `lessonData` in `LessonEditor` — same as before. Nothing in this data path changes.
+
+#### Per-section job isolation when `SectionGenerator` is mounted 5 times simultaneously
+
+`LessonEditor` renders `SectionGenerator` for 5 sections (objectif, introduction, contenu, exemples_exercices, activites_interactives). All 5 instances call `useGenerationJob({ lessonId })`. If a job is started from any one of them, all 5 instances will detect it via `existingJob` (since they all query for pending/running jobs on the same `lesson_id`).
+
+This means if the "Générer avec IA" button in the Introduction section starts a job for `[introduction]`, the Objectif section's dialog will also show `canResume: true`. This is cosmetically awkward but not harmful — clicking "Reprendre le suivi" in a different section's dialog just reattaches to the same job.
+
+The correct mitigation: use a `jobTag` or filter to identify which section started a specific job. However the `ai_generation_jobs` schema has `config` as a JSONB field — querying by `config.selectedSections` is possible but adds complexity.
+
+**Simpler mitigation within scope:** Filter the `existingJob` query by checking if `config.selectedSections` includes `sectionName`. This is done client-side after the `useQuery` response — filter the result in the hook call's `select` clause isn't possible for JSONB, but the returned `existingJob` can be masked:
+
+In `SectionGenerator`, after calling `useGenerationJob`, add:
+```typescript
+// Only show resume for jobs that include this specific section
+const isOwnJob = existingJob?.config?.selectedSections?.includes(sectionName);
+const canResumeThisSection = canResume && isOwnJob;
+```
+
+And pass `canResumeThisSection` to `GenerationJobProgress` instead of `canResume`. This prevents the "Reprendre le suivi" banner from appearing in unrelated section dialogs.
+
+Similarly, `isGenerating` from the hook will be true for any active job on this lesson, even if the active job is for a different section. Apply the same filter:
+```typescript
+const isThisSectionGenerating = isGenerating && 
+  activeJob?.config?.selectedSections?.includes(sectionName);
+```
+
+This prevents all 5 section buttons from appearing disabled when only one section is being generated.
 
 ---
 
-### The `useLessonQuizAsset` and `useLessonActivitiesAsset` queries
-
-Before writing the plan, I verified where these come from:
-<br>They are defined in `src/features/matieres/data/lessonAssets.queries.ts` and imported by `useLessonPublishable`. The fix does not change these queries — it adds a third parallel query for the legacy fallback and adjusts the derived boolean logic.
-
----
-
-### Files Changed Summary
+### Files changed
 
 | File | Change |
 |---|---|
-| `src/components/content-editor/LessonEditor.tsx` | Separate `isPublished` into its own `useState`; remove `is_published` from `lessonData`; update `handleSave` to write `is_published` + `workflow_status` atomically; update `useEffect` to reset `isPublished`; update Switch binding |
-| `src/features/content-editor/hooks/useLessonPublishable.ts` | Add a `useQuery` for the lesson's `quiz_final` and `activites_interactives` HTML; add `legacyQuizOk` / `legacyActivitiesOk` fallback booleans; update `quizMissing` and `activitiesMissing` to include the legacy fallback |
+| `src/components/content-editor/LessonEditor.tsx` | Replace `handleGenerateAllSections` (System B) with `useGenerationJob` hook + simple `startJob` call. Add `GenerationJobProgress` to Edit tab. Add `handleJobComplete` callback that applies result to `lessonData`. Remove `isGeneratingAll` state. Add imports: `useCallback`, `useGenerationJob`, `GenerationJobProgress`, `JobConfig`, `DEFAULT_WORD_COUNTS`. |
+| `src/components/content-editor/SectionGenerator.tsx` | Replace direct `generate-lesson-section` edge function call with `useGenerationJob` hook. Replace `isGenerating`/`generatedContent`/`qualityMetrics` local state with hook state + `pendingContent`. Remove `validateGeneratedContent` imports and quality metrics panel. Add section-scoped filtering so the SectionGenerator only shows/reacts to jobs for its own section. Remove debug `console.log` on mount. |
 
-**No database migrations required.** The `check_lesson_publishable` DB function is not changed — it is already correct. Only the frontend hook is brought into alignment with it.
-
----
-
-### Why NOT remove the legacy fallback from `check_lesson_publishable`
-
-The audit request said: "Fix this by removing the legacy HTML fallback from `check_lesson_publishable` so both paths enforce the same rule."
-
-After seeing the data, this cannot be done today without making the following things break immediately:
-
-1. `BulkOperations.bulkPublish` would return zero publishable lessons for every selection — it would be completely inoperative for the entire lesson library.
-2. The content editor team would have no path to publish any lesson through any UI path until all 2,832 lessons have validated `lesson_assets` records for both quiz and activities.
-3. Any editor trying to use the Workflow panel to approve + publish a lesson would see "Quiz manquant, Activités manquantes" for every lesson, with no override.
-
-The correct sequence is:
-1. **Today (this plan):** Align the hook with the DB function — both use the legacy fallback. This eliminates the divergence.
-2. **After content migration:** Once all lessons have validated `lesson_assets`, remove the legacy HTML fallback from both the hook and the DB function in a single coordinated change. At that point, `has_both_validated_assets` in the DB query will be > 0 and the removal will be safe.
-
-This is explicitly flagged in the plan for future work.
+**No edge function changes. No DB migrations. No schema changes. `BatchGenerationValidation.tsx` is not touched.**
 
 ---
 
@@ -224,35 +254,15 @@ This is explicitly flagged in the plan for future work.
 
 | Check | Status |
 |---|---|
-| No lesson can be set to `is_published: true` without `workflow_status` also being updated | Yes — `handleSave` now always computes `workflow_status` from `isPublished` in a single DB write. There is no code path where `is_published` changes without `workflow_status` changing in the same `.update()` call. |
-| Unpublishing via the Switch sets `workflow_status: 'draft'` | Yes — `isPublished: false` → `workflow_status: 'draft'` in the update payload. |
-| Content-only saves (no publish toggle change) still work correctly | Yes — `isPublished` starts at `selectedLesson.is_published` on load. If the editor makes no change to the Switch, `isPublished` stays at whatever it was, and `workflow_status` is re-written to its correct value (idempotent). |
-| `lessonData` spread still works after removing `is_published` from it | Yes — `is_published` is removed from the `lessonData` object's type and initial state. It is written separately in the update payload. The spread `{...lessonData}` only writes content fields (title, objectif, etc.). |
-| `selectedLesson` change resets `isPublished` correctly | Yes — the existing `useEffect` at line 67 is extended to also call `setIsPublished(selectedLesson.is_published || false)`. |
-| Bulk publish and workflow panel now enforce identical publish gate rules | Yes — `useLessonPublishable` now includes the same legacy HTML fallback as `check_lesson_publishable`. Lessons with non-empty `quiz_final` and `activites_interactives` HTML pass the gate in both UI paths. |
-| Existing 2,832 published lessons are not affected by the DB function change | Yes — `check_lesson_publishable` is NOT changed. It remains exactly as-is. Existing lessons stay published. |
-| The 240 lessons with `is_published: true, workflow_status: 'draft'` are not retroactively fixed | Correct — this plan fixes the forward path only. Existing data inconsistencies in the DB are a separate migration question (a one-time SQL `UPDATE lessons SET workflow_status = 'published' WHERE is_published = true AND workflow_status != 'published'` can be run as a separate decision). They are flagged here for awareness but not touched in this plan. |
-| New `useQuery` for legacy content adds a DB query per selected lesson | Yes — this is one additional lightweight query when a lesson is selected. Cached for 60 seconds via `staleTime`. It does not run on list load, only on single-lesson selection. Acceptable on 3G. |
-| MonCash and Stripe payment flows unaffected | Yes — no payment code touched. |
-| Provider Stack or hook count affected | No — `useLessonPublishable` gains one internal `useQuery` call but is not a component-level hook change. |
-| `WorkflowManagement.tsx` requires changes | No — it consumes `useLessonPublishable` which is updated. The component itself is unchanged. |
-| `BulkOperations.tsx` requires changes | No — it uses `check_lesson_publishable` RPC which is unchanged. |
-
----
-
-### Future Work Flag
-
-Once the content migration to validated `lesson_assets` is complete (i.e., all lessons have both `quiz_final` and `activities` assets with `status = 'validated'`), the legacy fallback can be removed from both `useLessonPublishable` and `check_lesson_publishable` in a single coordinated change. At that point, run this query first to confirm it is safe:
-
-```sql
-SELECT COUNT(*) FROM lessons
-WHERE is_published = true
-  AND NOT EXISTS (
-    SELECT 1 FROM lesson_assets la
-    WHERE la.lesson_id = lessons.id
-      AND la.kind = 'quiz_final'
-      AND la.status IN ('validated','published')
-  );
-```
-
-When this returns 0, the fallback removal is safe.
+| Generation progress survives a page refresh | Yes — `useGenerationJob` queries `ai_generation_jobs` for active jobs (`status IN ('pending', 'running')`) on mount. If a job was running when the page refreshed, the hook finds it via `existingJob` and sets `canResume: true`. The user sees "Reprendre le suivi" and clicks to reconnect realtime tracking. The job itself continues in the `process-ai-job` edge function regardless of browser state. |
+| The existing UI layout of `LessonEditor` is unchanged | Yes — only `handleGenerateAllSections` logic is replaced. The button position, text, and disabled state are preserved. `GenerationJobProgress` renders `null` when no job is active, so it is invisible during normal editing. The full tab layout, all Textarea fields, all `SectionGenerator` buttons, the preview tab — unchanged. |
+| `SingleLessonGenerator` and `LessonEditor` do not conflict when both visible simultaneously | Partially — both hooks read the same job and both apply the result independently. `SingleLessonGenerator` shows its preview dialog; `LessonEditor` applies directly to `lessonData`. No DB conflict — `process-ai-job` writes to the DB once. The `onJobComplete` callbacks in both components are pure state updates (no DB writes). If this cross-apply behavior is undesired, a `jobSource` tag can be added to `JobConfig` in a future iteration. |
+| `SectionGenerator` section scoping — a job for "Introduction" doesn't affect "Objectif" | Yes — `isThisSectionGenerating` and `canResumeThisSection` filters are applied client-side after the hook response, preventing cross-section visual state bleed. |
+| Quality metrics panel removed — existing editors who relied on it | The quality metrics and grade display are removed from `SectionGenerator`. This is a UI reduction, not a bug. The content validity is still enforced by `process-ai-job`'s defensive save logic and retry logic, which is more robust than the client-side `validateGeneratedContent` check. |
+| `ai_generation_logs` inserts removed from `SectionGenerator` | Yes — these are removed. Job success/failure is tracked in `ai_generation_jobs` by the edge function. The `ai_generation_logs` table was the System B logging mechanism. This is intentional. |
+| `activites_interactives` section still uses `generate-interactive-activities` | Yes — `process-ai-job` already routes `activites_interactives` to `generate-interactive-activities` at line 101–124 of the edge function. No change needed. |
+| Existing `SingleLessonGenerator` behavior unchanged | Yes — `SingleLessonGenerator.tsx` is not touched. It continues to use `useGenerationJob` as before. |
+| `BatchGenerationValidation.tsx` untouched | Yes — out of scope per plan instructions. |
+| Payment flows unaffected | Yes — no payment code touched. |
+| Provider Stack or AppShell stability | Not affected — `LessonEditor` and `SectionGenerator` are inside the `/content-editor` standalone page, not inside AppShell. |
+| 3G performance | `useGenerationJob`'s `existingJob` query has `staleTime: 5000`. The realtime subscription only activates when `activeJob?.id` is set. No additional always-on listeners added. |
