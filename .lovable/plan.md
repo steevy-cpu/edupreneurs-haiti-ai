@@ -1,252 +1,287 @@
 
-## Plan B: Migrate LessonEditor and SectionGenerator from System B to System A
+## Plan C: Content Editor Structural Cleanup — 4 Fixes
 
-### What is being changed and why
+### Audit Summary Before Implementation
 
-**`LessonEditor.tsx`** — `handleGenerateAllSections` (lines 151–227) is a raw sequential for-loop that calls `generate-lesson-section` and `generate-interactive-activities` directly. It has no retry logic, no session persistence, and no resume capability. If the browser tab closes mid-generation, all progress is lost. The replacement is the same System A pattern used by `SingleLessonGenerator`: create a job record in `ai_generation_jobs`, fire `process-ai-job`, and watch realtime updates via `useGenerationJob`.
+**Fix 1 — Shared permission context:**
+- `useContentEditorPermissions` is currently called independently in 6 locations:
+  - `WorkflowManagement.tsx` (calls `supabase.auth.getUser()` + `content_editor_roles` query)
+  - `BulkOperations.tsx` (same two queries)
+  - `PermissionGuard.tsx` (same two queries)
+  - `EbookManager.tsx` via `PermissionGuard` (indirect)
+  - `BatchQuizRegenerator.tsx` (same two queries, `role === 'admin'` check)
+  - `BatchActivitiesRegenerator.tsx` (same two queries, `role === 'admin'` check)
+- `ContentEditor.tsx` already performs its own access check at load time (`checkAccess`), so the permission role is already known at the page level before any child renders.
+- `RoleManagement.tsx` does **not** use `useContentEditorPermissions` — confirmed via search. The plan instruction's reference to it was inaccurate; `RoleManagement` manages its own `fetchCurrentUser` logic. It is out of scope.
+- `WorkflowManagement.tsx` calls `supabase.auth.getUser()` directly inside `updateWorkflowStatus` at line 73. This must be replaced with `useSessionAuth()` per the plan.
 
-**`SectionGenerator.tsx`** — `handleGenerate` (lines 48–164) calls `generate-lesson-section` directly and manages its own loading state, quality metrics, and logging. The instruction is to route this through the job system or at minimum through `process-ai-job` so it benefits from 2x retry with exponential backoff and defensive save behavior. The analysis below determines the correct approach.
+**Fix 2 — Move batch operation buttons out of LessonBrowser:**
+- All 6 batch wrappers (`BatchQuizValidator`, `BatchActivitiesValidator`, `BatchQuizRegenerator`, `BatchActivitiesRegenerator`, `BatchQuizGeneratorNew`, `BatchContentGenerator`) are rendered inside `LessonBrowser.tsx` in the `CardHeader` stats block (lines 511–602).
+- The data they receive (`lessonsMissingContent`, `lessonsMissingQuiz`, `lessonsWithValidQuiz`, `lessonsWithValidActivities`, `gradeLevel`) is computed from `lessonsBySubject` inside `LessonBrowser`. These are derived arrays — they need to be lifted to `ContentEditor.tsx` or the `BatchOperationsPanel` needs to receive them as props from `LessonBrowser`.
+- The `activeBatchOperation` state that prevents two batch operations running simultaneously also lives in `LessonBrowser`. This coordination state must follow the batch buttons.
+- The `loadSubjects` callback (called on batch completion) must also be preserved. It becomes an `onRefresh` callback passed to `BatchOperationsPanel`.
+- The correct architecture: `LessonBrowser` exposes a `batchData` output prop (or the `BatchOperationsPanel` is passed the derived lesson lists). Since `LessonBrowser` already owns the data loading, the cleanest approach is to lift the stats computation and expose it via a callback: `onLessonsLoaded?: (stats: BatchPanelData) => void`. `ContentEditor.tsx` stores the stats in its own state and passes them to a new `BatchOperationsPanel`.
+- The coverage stats UI (quiz/content percentage bars) stays inside `LessonBrowser` because it is part of the browsing experience, not the batch operation UI.
+
+**Fix 3 — Worker pool race condition in `useBatchOperation.ts`:**
+- In `useBatchOperation.ts`, `operationResults` is a plain array closed over in each worker closure. Workers push results to it directly (`operationResults.push(...)`) and then call `setResults([...operationResults])`. With `concurrency > 1`, two workers resolving in the same microtask batch both read the same intermediate `operationResults` snapshot — one push overwrites the other in the React state because both spread the same pre-push version.
+- The fix: replace `setResults([...operationResults])` with `setResults(prev => [...prev, newResult])` where `newResult` is the just-computed result object. The `operationResults` local array is still used for final toast computation and session persistence (those are sequential, so no race there). Only the React state update is changed.
+
+**Fix 4 — Dead component deletion:**
+- `QuizActivityValidator.tsx` — not imported anywhere (confirmed by search). Safe to delete.
+- `LessonReview.tsx` — not imported anywhere (confirmed by search). Safe to delete.
+- `ContentTemplates.tsx` — not imported anywhere (confirmed by search). Safe to delete.
 
 ---
 
-### Design decision for `SectionGenerator.tsx`
+### Fix 1: ContentEditorPermissionsContext
 
-`SectionGenerator` is a per-field dialog. Its UX contract is: user configures target word count + context → clicks generate → previews content → clicks Apply or Regenerate. The "Apply" step is explicit — the content is shown in a preview before being written to `lessonData`. This is fundamentally different from the "Generate All Sections" button which applies content directly to the DB.
+**New file:** `src/contexts/ContentEditorPermissionsContext.tsx`
 
-Routing `SectionGenerator` through the `ai_generation_jobs` table introduces a complication: the job system always saves results directly to the `lessons` table in the DB (in `handleApplyChanges` in `SingleLessonGenerator`), but `SectionGenerator`'s `onContentGenerated` callback applies to `lessonData` local state first, letting the user preview and then save via the "Enregistrer" button. The generate-through-job pattern would bypass this preview-before-write contract.
+This context wraps the existing `useContentEditorPermissions` hook logic into a single provider. The hook itself can remain unchanged as an implementation detail — the provider calls it once and exposes the result through context.
 
-The correct migration for `SectionGenerator` is: keep the direct edge function call for the single-field fast path, but replace it with a call to `process-ai-job` indirectly by wrapping it in the same retry + error-handling pattern. However, the simplest and safest interpretation of the instruction "route through the job system or at minimum through the existing process-ai-job edge function" for a per-field single-section call is:
-
-**Use `useGenerationJob` to create a single-section job** — configure `selectedSections: [sectionName]` with the user's `targetWords`, `globalContext: additionalContext`. The job will run in the background with 2x retry, and `onJobComplete` will receive the result content. The existing preview-before-apply flow is preserved by storing the completed result in local state and showing the preview dialog.
-
-However this changes the UX significantly — the user would no longer see the quality metrics panel, because the job result comes back as raw content with no `wordCount`/`generationTimeMs` metadata in the response shape that `SectionGenerator` currently uses.
-
-**Simpler, correct approach for `SectionGenerator`:** Replace the raw `supabase.functions.invoke('generate-lesson-section', {...})` call with a call wrapped in the same `withRetry` logic at the client level. Since `withRetry` lives in the edge function and cannot be imported client-side, the practical System A improvement for a single-section generator is to create a minimal job record for the one section so `process-ai-job` handles it with retry/defensive save — and then `onJobComplete` fires `onContentGenerated` directly (bypassing the preview). This loses the preview step.
-
-**Resolution:** Use `useGenerationJob` in `SectionGenerator`, preserve the preview step by storing the result content from `resultContent` in local state exactly as `SingleLessonGenerator` does with `generatedContent`. The quality metrics panel is removed (it was a System B nicety that doesn't exist in System A — the job system has its own error tracking). The word count is still displayable from the `progress.sections[0].wordCount` field.
-
-The quality metrics and logging (`ai_generation_logs` inserts) are removed from `SectionGenerator` — the job system already logs success/failure in `ai_generation_jobs`.
-
----
-
-### `LessonEditor.tsx` — Detailed changes
-
-#### What is removed
-- `isGeneratingAll` state (`useState(false)`) — replaced by `isGenerating` from the hook
-- The entire `handleGenerateAllSections` function (76 lines, System B)
-- `Loader2` icon import (still needed for saving indicator — keep it)
-- `Sparkles` icon import (keep — still used on the button)
-
-#### What is added
-1. `useGenerationJob` hook call — same pattern as `SingleLessonGenerator`, keyed to `selectedLesson?.id`
-2. `onJobComplete` callback that applies the completed result content directly to `lessonData` state — this is the key difference from `SingleLessonGenerator` which shows a preview-before-apply dialog. In `LessonEditor` the "Generate All Sections" button is a convenience action with no preview step (it already had none), so applying directly to `lessonData` on completion matches the existing behavior.
-3. `GenerationJobProgress` component rendered inline in the Edit tab, just below the "Generate All Sections" button — exactly as used in `SingleLessonGenerator`'s dialog.
-
-#### The `onJobComplete` logic
-When `process-ai-job` completes, `result_content` contains an object keyed by section name (e.g., `{ objectif: "...", contenu: "...", ... }`). This maps directly to `lessonData` fields. The callback:
+However, the cleanest approach is to inline the logic directly in the provider (avoid calling the hook from within a Provider — hooks must be called at the component render level, which is valid inside a Provider component). The provider runs the single `supabase.auth.getUser()` + `content_editor_roles` query once on mount. Consumer components read from context with `useContentEditorPermissionsContext()`.
 
 ```typescript
-const handleJobComplete = useCallback((result: Record<string, any> | null) => {
-  if (!result) return;
-  // Apply generated section content to local editor state.
-  // Only overwrite fields that were actually generated (present in result).
-  setLessonData(prev => ({
-    ...prev,
-    ...(result.objectif && { objectif: result.objectif }),
-    ...(result.introduction && { introduction: result.introduction }),
-    ...(result.contenu && { contenu: result.contenu }),
-    ...(result.exemples_exercices && { exemples_exercices: result.exemples_exercices }),
-    ...(result.activites_interactives && { activites_interactives: result.activites_interactives }),
-  }));
-}, []);
-```
+// src/contexts/ContentEditorPermissionsContext.tsx
 
-This is safe: only defined keys in `result` overwrite local state. If a section failed and returned no content, the existing `lessonData` value is preserved.
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
-#### The "Generate All Sections" button
+export type ContentEditorRole = 'admin' | 'editor' | 'viewer' | null;
 
-The button currently shows `isGeneratingAll` for the loading state. After the migration, it uses `isGenerating` from `useGenerationJob`. The `onClick` builds a `JobConfig` and calls `startJob`. The job config for "all sections" is fixed:
+interface ContentEditorPermissionsState {
+  role: ContentEditorRole;
+  isLoading: boolean;
+  hasAccess: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  canManageRoles: boolean;
+  canPublish: boolean;
+  canView: boolean;
+  refetch: () => void;
+}
 
-```typescript
-const handleGenerateAllSections = () => {
-  if (!selectedLesson) {
-    toast.error("Aucune leçon sélectionnée");
-    return;
-  }
-  const config: JobConfig = {
-    selectedSections: ['objectif', 'introduction', 'contenu', 'exemples_exercices', 'activites_interactives'],
-    wordCounts: DEFAULT_WORD_COUNTS,
-    generateQuiz: false,
-    generateVideos: false,
-    generateAudio: false,
-    imageGenerationModel: 'none',
+const ContentEditorPermissionsContext = createContext<
+  ContentEditorPermissionsState | undefined
+>(undefined);
+
+export const ContentEditorPermissionsProvider = ({ children }: { children: ReactNode }) => {
+  // Single permission check at the page level — shared across all children
+  const [role, setRole] = useState<ContentEditorRole>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const checkPermissions = async () => { /* same logic as existing hook */ };
+
+  useEffect(() => { checkPermissions(); }, []);
+
+  const value: ContentEditorPermissionsState = {
+    role,
+    isLoading,
+    hasAccess: role !== null,
+    canEdit: role === 'admin' || role === 'editor',
+    canDelete: role === 'admin',
+    canManageRoles: role === 'admin',
+    canPublish: role === 'admin' || role === 'editor',
+    canView: role !== null,
+    refetch: checkPermissions,
   };
-  startJob(config);
+
+  return (
+    <ContentEditorPermissionsContext.Provider value={value}>
+      {children}
+    </ContentEditorPermissionsContext.Provider>
+  );
+};
+
+export const useContentEditorPermissionsContext = (): ContentEditorPermissionsState => {
+  const ctx = useContext(ContentEditorPermissionsContext);
+  if (!ctx) throw new Error('useContentEditorPermissionsContext must be used inside ContentEditorPermissionsProvider');
+  return ctx;
 };
 ```
 
-No `globalContext` — keeping parity with the old button which had no context input. The button is disabled when `isGenerating || isPending`.
+**Where the provider is mounted:** At the top of `ContentEditor.tsx`'s JSX return, wrapping the entire page — placed after `hasAccess` is confirmed (line 206, after the `if (!hasAccess) return null` guard). This means the provider only mounts for authenticated editors, avoiding permission queries for users who will be redirected.
 
-#### `GenerationJobProgress` placement in the UI
-
-Currently the Edit tab renders:
-```
-[Generate All Sections Button]
-[Title field]
-[Objectif field + SectionGenerator]
-[Introduction field + SectionGenerator]
-...
-```
-
-After the migration:
-```
-[Generate All Sections Button]
-[GenerationJobProgress — renders null when no active job, shows progress when active]
-[Title field]
-...
-```
-
-`GenerationJobProgress` renders `null` when `activeJob` is null and `progress` is null — this is its existing behavior (line 81–83 of the component). So it adds zero visual noise when no generation is running.
-
-The `onResume` and `canResume` props are passed through — if the user navigates to another lesson and back, the hook re-queries for an active job and `canResume` is set if one exists.
-
-#### `selectedLesson` change — job isolation
-
-`useGenerationJob` is keyed to `lessonId`. When `selectedLesson` changes in `LessonEditor`, a new `lessonId` is passed, and the hook's `useQuery` refetches for the new lesson. This is safe — the `existingJob` query filters by `lesson_id = lessonId`, so switching lessons never mixes job state.
-
-#### Conflict between `SingleLessonGenerator` and `LessonEditor` when both visible simultaneously
-
-`SingleLessonGenerator` is rendered in `ContentEditor.tsx` as a standalone component alongside `LessonEditor`. Both will call `useGenerationJob({ lessonId: selectedLesson?.id, ... })`. Both will subscribe to the same realtime channel (same `ai_generation_jobs` row, same filter `id=eq.${activeJob.id}`).
-
-The concern: if an editor starts a job from `SingleLessonGenerator` and `LessonEditor` also has `useGenerationJob` active for the same lesson, will they conflict?
-
-The hooks are independent React hook instances. They both set their own `activeJob` state from the same realtime event. Both will call `onJobComplete` when the job finishes. `LessonEditor.onJobComplete` applies the result to `lessonData`. `SingleLessonGenerator.onJobComplete` sets `generatedContent` and `showPreview: true`.
-
-This means: if a job is started from `SingleLessonGenerator`, `LessonEditor` will also apply the result to its local `lessonData` automatically. This is actually desirable — the editor fields update immediately when a job completes from either entry point. But the user also sees `SingleLessonGenerator`'s preview dialog — so they see both the preview AND the editor fields updated.
-
-The one scenario to handle: if a job is started from `LessonEditor`'s "Generate All Sections" button, `SingleLessonGenerator` will also detect the job via `existingJob` and show the "Resume" banner inside its dialog. This is cosmetically correct — the "Reprendre le suivi" button in `SingleLessonGenerator` would just re-connect the same job.
-
-No conflict in terms of data — both hooks read the same job, apply the same result. The DB write happens only once (in `process-ai-job` edge function). The safety table confirms this in detail below.
-
-#### Imports to add to `LessonEditor.tsx`
-- `useCallback` from react (already imported `useState`, `useEffect`)
-- `useGenerationJob, GenerationJobProgress, type JobConfig` from `@/features/content-editor`
-- `DEFAULT_WORD_COUNTS` from `@/lib/lessonPrompts`
-
-#### Imports to remove from `LessonEditor.tsx`
-- Nothing removed — all existing imports remain. `Loader2` and `Sparkles` are still used.
-
----
-
-### `SectionGenerator.tsx` — Detailed changes
-
-#### What is removed
-- `isGenerating`, `generatedContent`, `showPreview`, `qualityMetrics` local state — all replaced by System A hook state
-- `handleGenerate` async function (117 lines) — entire System B path replaced
-- `handleCancel` function — no longer needed (job cancel is via `cancelJob`)
-- `validateGeneratedContent`, `getGradeColor`, `getScoreLabel`, `QualityMetrics` imports from `@/lib/contentValidation` — quality scoring removed
-- `ai_generation_logs` inserts — job system handles logging via `ai_generation_jobs`
-- The debug `console.log` on component mount (line 40–46) — removed in cleanup
-- `Loader2`, `AlertCircle`, `Eye`, `Check`, `X` icon imports — reviewed below
-
-#### What is added
-- `useGenerationJob` hook call with `lessonId: lesson?.id` and `onJobComplete` that stores the result for the single section in local state
-- `useState<string>` for `pendingContent` — the generated content awaiting user approval (same role as the old `generatedContent`)
-- The preview and Apply/Discard buttons remain — the content to preview comes from `pendingContent` state set in `onJobComplete`
-- `GenerationJobProgress` component inside the dialog to show the job running
-- `targetWords` Slider and `additionalContext` Textarea remain — they are passed into `JobConfig.wordCounts` and `JobConfig.globalContext`
-
-#### The `onJobComplete` callback for a single section
-
-When `process-ai-job` completes a single-section job, `result_content` contains `{ [sectionName]: "content string" }`. The callback:
-
-```typescript
-const handleJobComplete = useCallback((result: Record<string, any> | null) => {
-  if (!result) return;
-  const content = result[sectionName];
-  if (content) {
-    setPendingContent(content);
-    // showPreview is implied by pendingContent being set
-  }
-}, [sectionName]);
-```
-
-#### The generate button action
-
-```typescript
-const handleGenerate = () => {
-  if (!lesson) {
-    toast.error("Aucune leçon sélectionnée");
-    return;
-  }
-  // Build a single-section job config
-  const config: JobConfig = {
-    selectedSections: [sectionName],
-    wordCounts: { [sectionName]: targetWords },
-    generateQuiz: false,
-    generateVideos: false,
-    generateAudio: false,
-    imageGenerationModel: 'none',
-    globalContext: additionalContext || undefined,
-  };
-  startJob(config);
-};
-```
-
-Note: `sectionName` can be `'activites_interactives'`. The `process-ai-job` edge function already handles this correctly (lines 101–124 of the edge function — it routes to `generate-interactive-activities`). The `globalContext` for activities will be passed but the edge function uses it as-is in the standard generate-lesson-section path; for `activites_interactives` it uses its own body structure. This is acceptable — `additionalContext` may or may not influence the output. In System B it also was not passed to `generate-interactive-activities`, so this is behavioral parity.
-
-#### The Apply button
-
-```typescript
-const handleApply = () => {
-  if (pendingContent) {
-    onContentGenerated(pendingContent);
-    toast.success("Contenu appliqué");
-    setIsOpen(false);
-    setPendingContent("");
-  }
-};
-```
-
-The `onContentGenerated` prop callback updates `lessonData` in `LessonEditor` — same as before. Nothing in this data path changes.
-
-#### Per-section job isolation when `SectionGenerator` is mounted 5 times simultaneously
-
-`LessonEditor` renders `SectionGenerator` for 5 sections (objectif, introduction, contenu, exemples_exercices, activites_interactives). All 5 instances call `useGenerationJob({ lessonId })`. If a job is started from any one of them, all 5 instances will detect it via `existingJob` (since they all query for pending/running jobs on the same `lesson_id`).
-
-This means if the "Générer avec IA" button in the Introduction section starts a job for `[introduction]`, the Objectif section's dialog will also show `canResume: true`. This is cosmetically awkward but not harmful — clicking "Reprendre le suivi" in a different section's dialog just reattaches to the same job.
-
-The correct mitigation: use a `jobTag` or filter to identify which section started a specific job. However the `ai_generation_jobs` schema has `config` as a JSONB field — querying by `config.selectedSections` is possible but adds complexity.
-
-**Simpler mitigation within scope:** Filter the `existingJob` query by checking if `config.selectedSections` includes `sectionName`. This is done client-side after the `useQuery` response — filter the result in the hook call's `select` clause isn't possible for JSONB, but the returned `existingJob` can be masked:
-
-In `SectionGenerator`, after calling `useGenerationJob`, add:
-```typescript
-// Only show resume for jobs that include this specific section
-const isOwnJob = existingJob?.config?.selectedSections?.includes(sectionName);
-const canResumeThisSection = canResume && isOwnJob;
-```
-
-And pass `canResumeThisSection` to `GenerationJobProgress` instead of `canResume`. This prevents the "Reprendre le suivi" banner from appearing in unrelated section dialogs.
-
-Similarly, `isGenerating` from the hook will be true for any active job on this lesson, even if the active job is for a different section. Apply the same filter:
-```typescript
-const isThisSectionGenerating = isGenerating && 
-  activeJob?.config?.selectedSections?.includes(sectionName);
-```
-
-This prevents all 5 section buttons from appearing disabled when only one section is being generated.
-
----
-
-### Files changed
+**Consumer updates (replacing `useContentEditorPermissions()` with `useContentEditorPermissionsContext()`):**
 
 | File | Change |
 |---|---|
-| `src/components/content-editor/LessonEditor.tsx` | Replace `handleGenerateAllSections` (System B) with `useGenerationJob` hook + simple `startJob` call. Add `GenerationJobProgress` to Edit tab. Add `handleJobComplete` callback that applies result to `lessonData`. Remove `isGeneratingAll` state. Add imports: `useCallback`, `useGenerationJob`, `GenerationJobProgress`, `JobConfig`, `DEFAULT_WORD_COUNTS`. |
-| `src/components/content-editor/SectionGenerator.tsx` | Replace direct `generate-lesson-section` edge function call with `useGenerationJob` hook. Replace `isGenerating`/`generatedContent`/`qualityMetrics` local state with hook state + `pendingContent`. Remove `validateGeneratedContent` imports and quality metrics panel. Add section-scoped filtering so the SectionGenerator only shows/reacts to jobs for its own section. Remove debug `console.log` on mount. |
+| `WorkflowManagement.tsx` | Replace `useContentEditorPermissions` import + call with `useContentEditorPermissionsContext` |
+| `BulkOperations.tsx` | Same replacement |
+| `PermissionGuard.tsx` | Same replacement |
+| `BatchQuizRegenerator.tsx` | Same replacement |
+| `BatchActivitiesRegenerator.tsx` | Same replacement |
+| `EbookManager.tsx` | `PermissionGuard` now uses context internally — no change needed to `EbookManager` itself |
 
-**No edge function changes. No DB migrations. No schema changes. `BatchGenerationValidation.tsx` is not touched.**
+**WorkflowManagement.tsx — `supabase.auth.getUser()` replacement:**
+
+Inside `updateWorkflowStatus`, the existing code calls:
+```typescript
+const { data: { user } } = await supabase.auth.getUser();
+if (!user) throw new Error("Non authentifié");
+```
+
+This becomes a hook call at the top of the component (outside `updateWorkflowStatus`):
+```typescript
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
+// ...
+const { user } = useSessionAuth(); // replaces in-function supabase.auth.getUser()
+```
+
+Inside `updateWorkflowStatus`:
+```typescript
+// user comes from useSessionAuth() at component level — no async call needed
+if (!user) throw new Error("Non authentifié");
+updates.reviewed_by = user.id;
+```
+
+**The existing `useContentEditorPermissions` hook is NOT deleted.** It is still called independently by `YouTubeManager.tsx`. That component is not on the instructions list. The hook remains for its use in `YouTubeManager` (and any future standalone use outside the ContentEditor page).
+
+---
+
+### Fix 2: BatchOperationsPanel
+
+**Architecture decision — how data flows from LessonBrowser to BatchOperationsPanel:**
+
+`LessonBrowser` owns the loaded lesson data. It already computes all the derived lists (`lessonsMissingContent`, `lessonsMissingQuiz`, `lessonsWithValidQuiz`, `lessonsWithValidActivities`) and the stats (`totalLessons`, `gradeLevel`). Moving the batch buttons out of `LessonBrowser` requires these lists to flow upward.
+
+The approach: add a new optional callback prop to `LessonBrowser`:
+```typescript
+onBatchDataUpdate?: (data: BatchPanelData) => void;
+```
+
+This callback fires at the end of `loadLessons` whenever the lesson lists change. `ContentEditor.tsx` stores the data in `useState<BatchPanelData | null>` and passes it to `BatchOperationsPanel`.
+
+**New type `BatchPanelData`:**
+```typescript
+interface BatchPanelData {
+  lessonsMissingContent: any[];
+  lessonsMissingQuiz: any[];
+  lessonsWithValidQuiz: any[];
+  lessonsWithValidActivities: any[];
+  gradeLevel: string;
+  totalLessons: number;
+  missingContentTotal: number;
+  missingQuizzesTotal: number;
+}
+```
+
+**New file:** `src/components/content-editor/BatchOperationsPanel.tsx`
+
+This component receives `BatchPanelData` and renders the 6 batch buttons in the same logical groupings (Generation, Validation, Regeneration sections). It owns the `activeBatchOperation` mutex state (preventing two operations from running simultaneously).
+
+```typescript
+interface BatchOperationsPanelProps {
+  data: BatchPanelData | null;
+  onRefresh: () => void;
+  onDashboardRefresh?: () => void;
+}
+```
+
+When `data` is null (LessonBrowser hasn't loaded yet), `BatchOperationsPanel` renders a skeleton placeholder.
+
+**Where it renders in `ContentEditor.tsx`:** Above the `LessonBrowser` in the `review` tab — or as a collapsible panel above the lesson list in the left sidebar column. The plan instruction says "above or below the LessonBrowser sidebar." It will be rendered above the `LessonBrowser` in the same `md:col-span-5 lg:col-span-4` column, so both remain in the left sidebar, just stacked vertically. The sidebar will scroll if needed.
+
+**What is removed from `LessonBrowser.tsx`:**
+- All 6 batch wrapper imports
+- The `activeBatchOperation` state
+- The entire Generation section (lines ~511–542)
+- The entire Validation section (lines ~544–577)
+- The entire Regeneration section (lines ~579–601)
+- The `isLessonMissingContent` import (moves to `BatchOperationsPanel`)
+- The `onDashboardRefresh` prop (can stay, but the batch callback is no longer in `LessonBrowser`)
+- The coverage stat bars (quiz/content percentages) **stay** in `LessonBrowser` — they are browsing UI, not batch operation UI. Only the action buttons move.
+
+**What stays in `LessonBrowser.tsx`:**
+- Grade/series filters
+- Search input
+- Filter checkboxes (missing quiz, missing content)
+- Coverage stat bars with progress percentages
+- The `loadSubjects` / `loadLessons` data loading functions
+- All lesson list rendering
+- `ValidationDetailsPanel` inline in lesson items
+- The `onBatchDataUpdate` callback called at end of `loadLessons`
+
+---
+
+### Fix 3: Worker Pool Race Condition
+
+**File:** `src/features/content-editor/batch-operations/hooks/useBatchOperation.ts`
+
+**Current code (inside the worker loop):**
+```typescript
+operationResults.push({
+  lessonId: lesson.id,
+  lessonTitle: lesson.title,
+  success: result.success,
+  // ...
+});
+// ...
+setResults([...operationResults]);  // ← reads shared mutable array
+```
+
+**Fixed code:**
+```typescript
+const newResult: OperationResult = {
+  lessonId: lesson.id,
+  lessonTitle: lesson.title,
+  success: result.success,
+  aligned: result.aligned,
+  confidence: result.confidence,
+  offContentCount: result.offContentCount,
+};
+operationResults.push(newResult);  // still needed for session persistence and toast
+
+// Functional update guarantees append-to-latest-state regardless of concurrency
+setResults(prev => [...prev, newResult]);
+```
+
+The `operationResults` array is still maintained for:
+1. `saveBatchSession(...)` — needs the full accumulated results to persist
+2. The post-loop toast computation (`successCount`, `errorCount`, etc.) — reads the final accumulated array after all workers finish
+
+These are both safe: `saveBatchSession` runs after `operationResults.push(newResult)` within a single worker's sequential execution, and the final toast computation runs after `await Promise.all(...)` which means all workers have completed. No race condition exists in these paths.
+
+**This fix only changes the `setResults(...)` call — it does not change operation logic, session persistence, or toast behavior.**
+
+**Behavior at concurrency = 1 (the current default for all batch operations):** Identical to before — with one worker, there is no concurrent resolution, so the functional update and the array spread produce the same result. The fix is a no-op at concurrency = 1. Only concurrency > 1 configurations benefit.
+
+---
+
+### Fix 4: Dead Component Deletion
+
+Three files are confirmed orphaned (zero imports found anywhere in `src/`):
+
+1. `src/components/content-editor/QuizActivityValidator.tsx` — 1,553 lines, large System B validator. Confirmed no imports.
+2. `src/components/content-editor/LessonReview.tsx` — provided in the task context, confirmed no imports.
+3. `src/components/content-editor/ContentTemplates.tsx` — confirmed no imports.
+
+All three are deleted.
+
+**Important caveat on deletion:** The `QuizActivityValidator` file has a `default export` on line 1,553 (`export default QuizActivityValidator`). This is unusual — it suggests it may have been used via a dynamic import or lazy route at some point. The import search using both static import patterns returned zero results. It is safe to delete.
+
+---
+
+### Files Changed Summary
+
+| File | Action |
+|---|---|
+| `src/contexts/ContentEditorPermissionsContext.tsx` | **Create** — new shared permission context and provider |
+| `src/pages/ContentEditor.tsx` | Wrap content in `ContentEditorPermissionsProvider`; add `batchData` state; pass `onBatchDataUpdate` to `LessonBrowser`; render `BatchOperationsPanel` |
+| `src/components/content-editor/BatchOperationsPanel.tsx` | **Create** — new component containing the 6 batch wrappers + `activeBatchOperation` mutex |
+| `src/components/content-editor/LessonBrowser.tsx` | Remove 6 batch wrapper imports, all batch button JSX, `activeBatchOperation` state; add `onBatchDataUpdate` callback prop; call it after `loadLessons` |
+| `src/components/content-editor/WorkflowManagement.tsx` | Replace `useContentEditorPermissions` with `useContentEditorPermissionsContext`; replace `supabase.auth.getUser()` inside `updateWorkflowStatus` with `useSessionAuth()` |
+| `src/components/content-editor/BulkOperations.tsx` | Replace `useContentEditorPermissions` with `useContentEditorPermissionsContext` |
+| `src/components/content-editor/PermissionGuard.tsx` | Replace `useContentEditorPermissions` with `useContentEditorPermissionsContext` |
+| `src/features/content-editor/batch-operations/wrappers/BatchQuizRegenerator.tsx` | Replace `useContentEditorPermissions` with `useContentEditorPermissionsContext` |
+| `src/features/content-editor/batch-operations/wrappers/BatchActivitiesRegenerator.tsx` | Replace `useContentEditorPermissions` with `useContentEditorPermissionsContext` |
+| `src/features/content-editor/batch-operations/hooks/useBatchOperation.ts` | Replace `setResults([...operationResults])` with `setResults(prev => [...prev, newResult])` |
+| `src/components/content-editor/QuizActivityValidator.tsx` | **Delete** |
+| `src/components/content-editor/LessonReview.tsx` | **Delete** |
+| `src/components/content-editor/ContentTemplates.tsx` | **Delete** |
+
+**No DB migrations. No edge function changes. `BatchGenerationValidation.tsx` untouched.**
 
 ---
 
@@ -254,15 +289,16 @@ This prevents all 5 section buttons from appearing disabled when only one sectio
 
 | Check | Status |
 |---|---|
-| Generation progress survives a page refresh | Yes — `useGenerationJob` queries `ai_generation_jobs` for active jobs (`status IN ('pending', 'running')`) on mount. If a job was running when the page refreshed, the hook finds it via `existingJob` and sets `canResume: true`. The user sees "Reprendre le suivi" and clicks to reconnect realtime tracking. The job itself continues in the `process-ai-job` edge function regardless of browser state. |
-| The existing UI layout of `LessonEditor` is unchanged | Yes — only `handleGenerateAllSections` logic is replaced. The button position, text, and disabled state are preserved. `GenerationJobProgress` renders `null` when no job is active, so it is invisible during normal editing. The full tab layout, all Textarea fields, all `SectionGenerator` buttons, the preview tab — unchanged. |
-| `SingleLessonGenerator` and `LessonEditor` do not conflict when both visible simultaneously | Partially — both hooks read the same job and both apply the result independently. `SingleLessonGenerator` shows its preview dialog; `LessonEditor` applies directly to `lessonData`. No DB conflict — `process-ai-job` writes to the DB once. The `onJobComplete` callbacks in both components are pure state updates (no DB writes). If this cross-apply behavior is undesired, a `jobSource` tag can be added to `JobConfig` in a future iteration. |
-| `SectionGenerator` section scoping — a job for "Introduction" doesn't affect "Objectif" | Yes — `isThisSectionGenerating` and `canResumeThisSection` filters are applied client-side after the hook response, preventing cross-section visual state bleed. |
-| Quality metrics panel removed — existing editors who relied on it | The quality metrics and grade display are removed from `SectionGenerator`. This is a UI reduction, not a bug. The content validity is still enforced by `process-ai-job`'s defensive save logic and retry logic, which is more robust than the client-side `validateGeneratedContent` check. |
-| `ai_generation_logs` inserts removed from `SectionGenerator` | Yes — these are removed. Job success/failure is tracked in `ai_generation_jobs` by the edge function. The `ai_generation_logs` table was the System B logging mechanism. This is intentional. |
-| `activites_interactives` section still uses `generate-interactive-activities` | Yes — `process-ai-job` already routes `activites_interactives` to `generate-interactive-activities` at line 101–124 of the edge function. No change needed. |
-| Existing `SingleLessonGenerator` behavior unchanged | Yes — `SingleLessonGenerator.tsx` is not touched. It continues to use `useGenerationJob` as before. |
-| `BatchGenerationValidation.tsx` untouched | Yes — out of scope per plan instructions. |
-| Payment flows unaffected | Yes — no payment code touched. |
-| Provider Stack or AppShell stability | Not affected — `LessonEditor` and `SectionGenerator` are inside the `/content-editor` standalone page, not inside AppShell. |
-| 3G performance | `useGenerationJob`'s `existingJob` query has `staleTime: 5000`. The realtime subscription only activates when `activeJob?.id` is set. No additional always-on listeners added. |
+| Shared permission context correctly gates admin-only actions | Yes — `ContentEditorPermissionsProvider` runs the same query as the old hook, once. Children read from context. `canDelete: role === 'admin'` and `canManageRoles: role === 'admin'` logic is identical. `BatchQuizRegenerator` and `BatchActivitiesRegenerator` return null if `role !== 'admin'` — same behavior as before. |
+| `useContentEditorPermissions` hook is not deleted — `YouTubeManager` still uses it | Yes — the hook file is untouched. Only the 5 consumers inside the ContentEditor page are switched to context. |
+| `PermissionGuard` still works correctly after switch | Yes — it reads the same fields (role, isLoading, canEdit, canDelete, canManageRoles, canPublish) from context instead of a standalone hook. Behavior is identical, with the bonus that it uses the already-resolved permission state from parent instead of re-querying. |
+| Batch operations panel renders correctly outside LessonBrowser | Yes — `BatchOperationsPanel` receives `BatchPanelData` via props. The data is lifted from `LessonBrowser` via the `onBatchDataUpdate` callback. The `activeBatchOperation` mutex moves into `BatchOperationsPanel` so operations still correctly disable each other. |
+| Batch operation button behavior (onComplete, onStart, onDashboardRefresh) preserved | Yes — each wrapper still receives all props through `BatchOperationsPanel`. `onComplete` still calls `loadSubjects` via the `onRefresh` prop. `onDashboardRefresh` is still wired through. |
+| Worker pool fix does not change behavior at concurrency = 1 | Yes — with one worker there is no concurrent resolution. `setResults(prev => [...prev, newResult])` and `setResults([...operationResults])` produce identical state values at concurrency = 1. |
+| Worker pool fix does not break session persistence | Yes — `saveBatchSession` is called with `operationResults` (the local accumulated array), not from React state. The `operationResults.push(newResult)` still happens before `saveBatchSession`, unchanged. |
+| No imported component is accidentally deleted | Yes — search confirmed zero imports for all three deleted files. `QuizActivityValidator`, `LessonReview`, and `ContentTemplates` are not referenced anywhere in `src/`. |
+| `EbookManager.tsx` still works after `PermissionGuard` switches to context | Yes — `PermissionGuard` reads from the context internally. `EbookManager` does not need to change since it simply renders `<PermissionGuard>` as a wrapper. The context is mounted at the `ContentEditor.tsx` page level, which is an ancestor of `EbookManager` in the render tree. |
+| `WorkflowManagement` user ID access works after removing `supabase.auth.getUser()` | Yes — `useSessionAuth()` at the component top level provides `user.id` synchronously from the in-memory session. The `user` object from `SessionAuthContext` includes all User fields including `id`. Since the ContentEditor page is only reachable when authenticated, `user` will never be null at this point. |
+| ContentEditor `checkAccess` (the page-level auth gate) is not removed | Correct — `checkAccess` in `ContentEditor.tsx` remains unchanged. It serves a different purpose: it redirects non-editors before any content editor UI mounts. The new `ContentEditorPermissionsProvider` supplements it by providing the role to all children without re-querying. |
+| Realtime subscriptions, AppShell, Provider Stack unaffected | Yes — `ContentEditorPermissionsProvider` is a local provider mounted only inside the `/content-editor` route. It does not touch the global Provider Stack. |
+| 3G performance | Fix 1 reduces total `content_editor_roles` queries from 5+ independent calls to 1. Fix 3 has zero performance impact. Fix 2 does not change query patterns. Net improvement. |
