@@ -1,5 +1,7 @@
 import { ReactNode } from "react";
-import { useContentEditorPermissions, ContentEditorRole } from "@/hooks/useContentEditorPermissions";
+// Context replaces independent hook call — reads from the shared provider in ContentEditor
+import { useContentEditorPermissionsContext } from "@/contexts/ContentEditorPermissionsContext";
+import type { ContentEditorRole } from "@/contexts/ContentEditorPermissionsContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ShieldAlert } from "lucide-react";
 
@@ -29,7 +31,7 @@ export const PermissionGuard = ({
     canDelete,
     canManageRoles,
     canPublish,
-  } = useContentEditorPermissions();
+  } = useContentEditorPermissionsContext();
 
   if (isLoading) {
     return (

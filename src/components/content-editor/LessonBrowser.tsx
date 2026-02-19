@@ -17,21 +17,18 @@ import { toast } from "sonner";
 import { Search, ChevronDown, ChevronRight, BookOpen, Calculator, FlaskConical, Book, RefreshCw, AlertCircle, RotateCcw, FileX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
-  BatchQuizValidator, 
-  BatchActivitiesValidator,
-  BatchQuizRegenerator,
-  BatchActivitiesRegenerator,
-  BatchQuizGeneratorNew,
-  BatchContentGenerator,
   isLessonMissingContent,
 } from "@/features/content-editor/batch-operations";
 import { ValidationDetailsPanel } from "./ValidationDetailsPanel";
+import type { BatchPanelData } from "./BatchOperationsPanel";
 
 interface LessonBrowserProps {
   onSelectLesson: (lesson: any) => void;
   selectedLesson: any;
   refreshKey?: number;
   onDashboardRefresh?: () => void;
+  /** Fires after every lesson load with derived batch data for BatchOperationsPanel */
+  onBatchDataUpdate?: (data: BatchPanelData) => void;
 }
 
 // Helper function to check if a lesson has a valid quiz (uses content flags)
@@ -58,7 +55,7 @@ activities: (details.activities?.offContentActivities || []).map((issue: any) =>
   };
 };
 
-export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDashboardRefresh }: LessonBrowserProps) => {
+export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDashboardRefresh, onBatchDataUpdate }: LessonBrowserProps) => {
   const [gradeLevel, setGradeLevel] = useState<string>("all");
   const [series, setSeries] = useState<string>("all");
   const [availableSubjects, setAvailableSubjects] = useState<any[]>([]);
@@ -70,7 +67,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
   const [showOnlyMissingQuiz, setShowOnlyMissingQuiz] = useState(false);
   const [showOnlyMissingContent, setShowOnlyMissingContent] = useState(false);
   const [regeneratingLessonId, setRegeneratingLessonId] = useState<string | null>(null);
-  const [activeBatchOperation, setActiveBatchOperation] = useState<string | null>(null);
+  // activeBatchOperation mutex moved to BatchOperationsPanel
 
   const gradeLevels = [
     { value: "all", label: "Tous les niveaux" },
@@ -200,6 +197,27 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
       });
 
       setLessonsBySubject(grouped);
+
+      // Lift derived batch data to parent so BatchOperationsPanel can render outside LessonBrowser
+      if (onBatchDataUpdate) {
+        const flat = Object.values(grouped).flat();
+        const total = flat.length;
+        const missingContent = flat.filter(l => isLessonMissingContent(l));
+        const missingQuiz = flat.filter(l => !hasValidQuiz(l));
+        const validQuiz = flat.filter(l => hasValidQuiz(l));
+        const validActivities = flat.filter(l => hasValidActivities(l));
+        onBatchDataUpdate({
+          lessonsMissingContent: missingContent,
+          lessonsMissingQuiz: missingQuiz,
+          lessonsWithValidQuiz: validQuiz,
+          lessonsWithValidActivities: validActivities,
+          // gradeLevel state is in closure — accurate at call time
+          gradeLevel: gradeLevel,
+          totalLessons: total,
+          missingContentTotal: missingContent.length,
+          missingQuizzesTotal: missingQuiz.length,
+        });
+      }
     } catch (error) {
       console.error('Error loading lessons:', error);
       toast.error("Erreur lors du chargement des leçons");
@@ -321,16 +339,8 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
   const lessonsWithContent = allLessons.filter(l => !isLessonMissingContent(l)).length;
   const missingContentTotal = totalLessons - lessonsWithContent;
   const contentPercentage = totalLessons > 0 ? Math.round((lessonsWithContent / totalLessons) * 100) : 0;
-  const lessonsMissingContent = allLessons.filter(l => isLessonMissingContent(l));
-
-  // Get all lessons missing quizzes for batch generation
-  const lessonsMissingQuiz = allLessons.filter(lesson => !hasValidQuiz(lesson));
-  
-  // Get all lessons WITH valid quizzes for content validation
-  const lessonsWithValidQuiz = allLessons.filter(lesson => hasValidQuiz(lesson));
-  
-  // Get all lessons WITH valid activities for content validation
-  const lessonsWithValidActivities = allLessons.filter(lesson => hasValidActivities(lesson));
+  // lessonsMissingContent/Quiz/ValidQuiz/ValidActivities are computed and lifted
+  // via onBatchDataUpdate callback — kept here only for coverage stat bars below
 
   const filteredSubjects = availableSubjects.map(subject => {
     const subjectLessons = lessonsBySubject[subject.id] || [];
@@ -508,97 +518,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey, onDa
               </p>
             )}
 
-            {/* Generation Section */}
-            {(missingContentTotal > 0 || missingQuizzesTotal > 0) && (
-              <div className="space-y-1.5 pt-1">
-                <Label className="text-xs text-muted-foreground">Génération</Label>
-                {missingContentTotal > 0 && (
-                  <BatchContentGenerator 
-                    lessons={lessonsMissingContent}
-                    gradeLevel={gradeLevel}
-                    onComplete={() => {
-                      setActiveBatchOperation(null);
-                      loadSubjects();
-                    }}
-                    onStart={() => setActiveBatchOperation('content-generate')}
-                    onDashboardRefresh={onDashboardRefresh}
-                    disabled={activeBatchOperation !== null && activeBatchOperation !== 'content-generate'}
-                  />
-                )}
-                {missingQuizzesTotal > 0 && (
-                  <BatchQuizGeneratorNew 
-                    lessons={lessonsMissingQuiz}
-                    gradeLevel={gradeLevel}
-                    onComplete={() => {
-                      setActiveBatchOperation(null);
-                      loadSubjects();
-                    }}
-                    onStart={() => setActiveBatchOperation('quiz-generate')}
-                    onDashboardRefresh={onDashboardRefresh}
-                    disabled={activeBatchOperation !== null && activeBatchOperation !== 'quiz-generate'}
-                  />
-                )}
-              </div>
-            )}
-
-            {/* Validation Section */}
-            {(lessonsWithValidQuiz.length > 0 || lessonsWithValidActivities.length > 0) && (
-              <div className="space-y-1.5 pt-1">
-                <Label className="text-xs text-muted-foreground">Validation</Label>
-                <div className="space-y-1.5">
-                  {lessonsWithValidQuiz.length > 0 && (
-                    <BatchQuizValidator 
-                      lessons={lessonsWithValidQuiz}
-                      gradeLevel={gradeLevel}
-                      onComplete={() => {
-                        setActiveBatchOperation(null);
-                        loadSubjects();
-                      }}
-                      onStart={() => setActiveBatchOperation('quiz-validate')}
-                      onDashboardRefresh={onDashboardRefresh}
-                      disabled={activeBatchOperation !== null && activeBatchOperation !== 'quiz-validate'}
-                    />
-                  )}
-                  {lessonsWithValidActivities.length > 0 && (
-                    <BatchActivitiesValidator 
-                      lessons={lessonsWithValidActivities}
-                      gradeLevel={gradeLevel}
-                      onComplete={() => {
-                        setActiveBatchOperation(null);
-                        loadSubjects();
-                      }}
-                      onStart={() => setActiveBatchOperation('activities-validate')}
-                      onDashboardRefresh={onDashboardRefresh}
-                      disabled={activeBatchOperation !== null && activeBatchOperation !== 'activities-validate'}
-                    />
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Regeneration Section - only shows if flagged items exist */}
-            <BatchQuizRegenerator 
-              lessons={lessonsWithValidQuiz}
-              gradeLevel={gradeLevel}
-              onComplete={() => {
-                setActiveBatchOperation(null);
-                loadSubjects();
-              }}
-              onStart={() => setActiveBatchOperation('quiz-regenerate')}
-              onDashboardRefresh={onDashboardRefresh}
-              disabled={activeBatchOperation !== null && activeBatchOperation !== 'quiz-regenerate'}
-            />
-            <BatchActivitiesRegenerator 
-              lessons={lessonsWithValidActivities}
-              gradeLevel={gradeLevel}
-              onComplete={() => {
-                setActiveBatchOperation(null);
-                loadSubjects();
-              }}
-              onStart={() => setActiveBatchOperation('activities-regenerate')}
-              onDashboardRefresh={onDashboardRefresh}
-              disabled={activeBatchOperation !== null && activeBatchOperation !== 'activities-regenerate'}
-            />
+            {/* Batch operation buttons moved to BatchOperationsPanel — rendered in ContentEditor */}
           </div>
         )}
       </CardHeader>
