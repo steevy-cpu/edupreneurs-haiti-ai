@@ -1,3 +1,5 @@
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { useLessonQuizAsset, useLessonActivitiesAsset } from '@/features/matieres/data/lessonAssets.queries';
 import type { LessonAsset } from '@/features/matieres/validation/validation-report.types';
 
@@ -20,21 +22,51 @@ export interface PublishGateStatus {
 
 /**
  * Hook to check if a lesson can be published.
- * Validates that both quiz and activities assets exist and are validated.
- * Falls back gracefully for legacy lessons with HTML content.
+ *
+ * Mirrors the check_lesson_publishable DB function exactly:
+ *   1. Prefer validated lesson_assets records (quiz_final / activities kinds).
+ *   2. Legacy fallback: if no validated asset exists, accept a non-empty HTML
+ *      string in the lesson's own quiz_final / activites_interactives columns.
+ *
+ * Both the hook and the DB function must change together when the platform
+ * migrates all lessons to validated lesson_assets (see future-work note in plan).
  */
 export function useLessonPublishable(lessonId: string | undefined): PublishGateStatus {
   const { data: quizAsset, isLoading: quizLoading } = useLessonQuizAsset(lessonId);
   const { data: activitiesAsset, isLoading: activitiesLoading } = useLessonActivitiesAsset(lessonId);
 
-  const isLoading = quizLoading || activitiesLoading;
+  // Fetch legacy HTML fields — only used when no validated asset exists.
+  // Lightweight select of two text fields; cached for 60 s so it doesn't
+  // fire on every render during an editor session.
+  const { data: legacyContent, isLoading: legacyLoading } = useQuery({
+    queryKey: ['lesson-legacy-content', lessonId],
+    queryFn: async () => {
+      if (!lessonId) return null;
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('quiz_final, activites_interactives')
+        .eq('id', lessonId)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!lessonId,
+    staleTime: 60_000, // 1-min stale — legacy HTML doesn't change rapidly
+  });
 
-  // Check quiz status
-  const quizMissing = !quizAsset;
+  const isLoading = quizLoading || activitiesLoading || legacyLoading;
+
+  // Legacy fallback booleans — parallel to the DB function's IF NOT quiz_validated block
+  const legacyQuizOk = !!(legacyContent?.quiz_final?.trim());
+  const legacyActivitiesOk = !!(legacyContent?.activites_interactives?.trim());
+
+  // Quiz is publishable if: has validated asset OR has legacy HTML content
+  const quizMissing = !quizAsset && !legacyQuizOk;
+  // Validated asset exists but is not in a publishable status → still a blocker
   const quizNotValidated = !!quizAsset && quizAsset.status !== 'validated' && quizAsset.status !== 'published';
 
-  // Check activities status
-  const activitiesMissing = !activitiesAsset;
+  // Activities is publishable if: has validated asset OR has legacy HTML content
+  const activitiesMissing = !activitiesAsset && !legacyActivitiesOk;
   const activitiesNotValidated = !!activitiesAsset && activitiesAsset.status !== 'validated' && activitiesAsset.status !== 'published';
 
   const blockers: PublishBlockers = {
@@ -68,3 +100,4 @@ export function useLessonPublishable(lessonId: string | undefined): PublishGateS
     blockReason,
   };
 }
+
