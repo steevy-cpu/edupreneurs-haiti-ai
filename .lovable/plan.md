@@ -1,142 +1,193 @@
 
-## Plan N3: Sentry Error Reporting Integration
+## Plan A: Workflow Integrity Fixes — Bug 3 and Bug 4
 
-Three files change. One new dependency (`@sentry/react`). No database migrations. No edge function changes. No existing UI or logic is altered.
+### Pre-Implementation Findings — Critical Context
+
+**Before touching Bug 4, you must know this:**
+
+The database query confirmed:
+
+| Metric | Number |
+|---|---|
+| Total lessons in database | 2,832 |
+| Total published lessons | 2,832 |
+| Published lessons with BOTH quiz + activities validated | **0** |
+| Published lessons with NO validated assets at all | **2,832** |
+| Published lessons with correct `workflow_status = 'published'` | 2,538 |
+| Published lessons with `workflow_status = 'draft'` (Bug 3 evidence) | 240 |
+| Published lessons with `workflow_status = 'approved'` | 54 |
+
+**What this means:** Every single published lesson on the platform currently exists via the legacy HTML fallback path in `check_lesson_publishable`. Not one lesson has validated `lesson_assets` records for both quiz and activities. Removing the legacy fallback from `check_lesson_publishable` today would make `bulkPublish` return zero publishable lessons for every selection — it would completely disable bulk publishing for your entire lesson library.
+
+**This does not mean Bug 4 cannot be fixed.** It means the fix must be surgical. The DB function's legacy fallback must be preserved as-is because the platform is currently operating on it. The divergence between the hook and the DB function is real, but **the hook is the one that needs adjusting** — not the DB function. The hook is too strict for the current state of the platform. The correct long-term goal is to migrate all lessons to validated assets and then remove the fallback, not to remove the fallback while zero lessons qualify under the stricter rule.
+
+**Revised scope for Bug 4:**
+
+Instead of removing the legacy fallback from `check_lesson_publishable` (which would be catastrophic), the fix is to align the frontend `useLessonPublishable` hook with the DB function's actual behavior — add the same legacy HTML fallback to the hook so that `WorkflowManagement` and `LessonEditor` use identical publish gate logic as `BulkOperations`. This eliminates the divergence in the correct direction: both paths become permissive for legacy HTML content, and both paths will become strict together once the lesson migration to validated assets is complete.
 
 ---
 
-### Dependency
+### Bug 3 Fix — `LessonEditor.tsx`: Atomic `is_published` + `workflow_status` write
 
-**New package:** `@sentry/react` — the official Sentry SDK for React applications.
+**The problem in detail:**
 
-- Current bundle already includes `@react-three/fiber`, `framer-motion`, TipTap, PDF.js, and chess. The Sentry SDK adds ~35–45 KB gzipped to the vendor chunk. This is justified because it is infrastructure code (error observability), not a feature-facing library. It only initialises once at startup and has negligible runtime overhead.
-- No other packages are needed. `@sentry/react` bundles its own transport and tracing integrations.
-
----
-
-### Change 1 — `src/main.tsx`: Sentry initialisation before React render
-
-**Where:** Top of the file, before `createRoot` is called. Sentry must be the very first thing that runs so it can catch any error that occurs during React's own initialisation.
-
-**What to add:**
-
+`handleSave` at line 105–111 does:
 ```typescript
-import * as Sentry from '@sentry/react';
-
-// Initialise Sentry before React renders
-// DSN is injected at build time via VITE_SENTRY_DSN — never falls back to a hardcoded value
-const sentryDsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
-
-if (sentryDsn) {
-  Sentry.init({
-    dsn: sentryDsn,
-    // Set environment based on Vite build mode (production | development)
-    environment: import.meta.env.MODE,
-    // 10% transaction sampling — keeps tracing overhead minimal on 3G
-    tracesSampleRate: 0.1,
-    // Drop errors originating from browser extensions — they are noise
-    // from students' installed extensions, not platform bugs
-    beforeSend(event) {
-      const frames = event.exception?.values?.flatMap(
-        (v) => v.stacktrace?.frames ?? []
-      ) ?? [];
-      const fromExtension = frames.some((frame) => {
-        const filename = frame.filename ?? '';
-        return (
-          filename.startsWith('chrome-extension://') ||
-          filename.startsWith('moz-extension://') ||
-          filename.startsWith('safari-extension://')
-        );
-      });
-      // Return null to drop the event entirely
-      return fromExtension ? null : event;
-    },
-  });
-}
+const { error: updateError } = await supabase
+  .from('lessons')
+  .update({
+    ...lessonData,       // ← lessonData contains is_published from the Switch
+    updated_at: new Date().toISOString(),
+  })
+  .eq('id', selectedLesson.id);
 ```
 
-**Key design decisions:**
+`lessonData` is initialized from `selectedLesson` and contains `is_published` but never contains `workflow_status`. So when an editor flips the Switch to `true` and saves, the DB receives `is_published: true` with no `workflow_status` update. The lesson stays at `workflow_status: 'draft'` (or whatever it was), live to students.
 
-1. **Guarded by `if (sentryDsn)`** — If `VITE_SENTRY_DSN` is not configured (e.g. local dev without the secret), Sentry never initialises. No errors thrown, no traffic sent, React renders normally. This means the DSN is optional at dev time and mandatory at production deploy time.
+The Switch `onCheckedChange` (lines 241–243) only updates `lessonData.is_published`. It does not touch `workflow_status`.
 
-2. **`import.meta.env.MODE`** — Vite sets this to `"production"` in `vite build` and `"development"` in `vite dev`. This gives Sentry the correct environment tag automatically, matching the existing `process.env.NODE_ENV` pattern already used in `ErrorBoundary.tsx` line 167.
+**The fix — two points of change in `LessonEditor.tsx`:**
 
-3. **`tracesSampleRate: 0.1`** — Exactly as requested. 10% of page loads will emit a performance transaction to Sentry. Sentry's free tier limit is 10,000 transactions/month; 10% sampling keeps the platform well within that limit even at scale.
+**Point 1: Remove `is_published` from `lessonData` state entirely.**
 
-4. **`beforeSend` extension filter** — Iterates over all stack frames in all exception values. Checks `filename` for `chrome-extension://`, `moz-extension://`, and `safari-extension://` prefixes. Returns `null` to drop the event if any frame matches. Safari extensions are included because some Haitian students use Safari on iOS.
+`is_published` does not belong in the same state object as the text content fields. It controls publishing status, not content. Moving it to a separate `useState<boolean>` makes it explicit and prevents it from accidentally being spread into a content update.
 
-5. **Sentry init is synchronous and non-blocking** — `Sentry.init()` returns void immediately. It sets up a global error handler and an in-memory event queue internally, but does not block the JS thread. `createRoot` and `root.render()` execute immediately after, exactly as before.
+```typescript
+// Separate state for publish toggle — not mixed with content fields
+const [isPublished, setIsPublished] = useState(false);
+```
 
-**Position in file:** The `import * as Sentry from '@sentry/react'` goes at line 2 (after the existing React import). The `Sentry.init()` block goes after the import block and before the `serviceWorker` registration block. The service worker registration and all React rendering code are completely unchanged.
+Initialize from `selectedLesson`:
+```typescript
+setIsPublished(selectedLesson.is_published || false);
+```
+
+**Point 2: Compute `workflow_status` from `isPublished` in `handleSave`.**
+
+The update payload must always include `workflow_status` whenever `is_published` changes. The logic is:
+- `isPublished: true` → `workflow_status: 'published'`
+- `isPublished: false` → `workflow_status: 'draft'`
+
+```typescript
+// Build the update payload — content fields spread separately from publish state
+// to ensure workflow_status is always written atomically with is_published
+const updatePayload = {
+  ...lessonData,                           // content fields only (title, objectif, etc.)
+  is_published: isPublished,               // explicit, not from lessonData spread
+  workflow_status: isPublished ? 'published' : 'draft',  // always written together
+  updated_at: new Date().toISOString(),
+};
+
+const { error: updateError } = await supabase
+  .from('lessons')
+  .update(updatePayload)
+  .eq('id', selectedLesson.id);
+```
+
+**Point 3: Update the Switch binding.**
+
+The Switch currently reads from and writes to `lessonData.is_published`. After this change, it reads from and writes to `isPublished`:
+
+```tsx
+<Switch
+  checked={isPublished}
+  onCheckedChange={setIsPublished}
+/>
+```
+
+**What does NOT change:**
+- `lessonData` state object remains but has `is_published` removed from it
+- `handleSave` logic, error handling, change log, and toast messages are untouched
+- The `handleSave` spread `{...lessonData}` still works — it just no longer includes `is_published`
+- The `PublishGateIndicator` display is unchanged
+- The `handleGenerateAllSections` function is unchanged
+
+**One edge case to handle:** When `selectedLesson` changes (the `useEffect` at line 67), `isPublished` must also reset:
+```typescript
+setIsPublished(selectedLesson.is_published || false);
+```
+This goes inside the existing `useEffect` that already resets `lessonData`.
 
 ---
 
-### Change 2 — `src/components/ErrorBoundary.tsx`: Add `Sentry.captureException()` in `componentDidCatch`
+### Bug 4 Fix — `useLessonPublishable.ts`: Add legacy HTML fallback to match DB function
 
-**Where:** Inside `componentDidCatch`, after the existing `console.error` call, before the chunk-load error check.
+**The problem in detail:**
 
-**Current `componentDidCatch` (lines 30–38):**
+`useLessonPublishable` currently:
 ```typescript
-componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-  console.error('ErrorBoundary caught an error:', error, errorInfo);
-  
-  // Check if this is a chunk loading error (stale cache)
-  if (isChunkLoadError(error)) {
-    handleChunkLoadError(error);
-    return;
-  }
-}
+const quizMissing = !quizAsset;         // true if no quiz_final asset at all
+const activitiesMissing = !activitiesAsset; // true if no activities asset at all
 ```
 
-**New `componentDidCatch`:**
-```typescript
-import * as Sentry from '@sentry/react';
+If there is no `lesson_assets` record for `quiz_final`, `quizMissing = true` and `canPublish = false`. This blocks publishing for all 2,832 existing lessons in `WorkflowManagement` and `LessonEditor`.
 
-componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-  // Keep existing console log for local debugging
-  console.error('ErrorBoundary caught an error:', error, errorInfo);
-
-  // Report to Sentry with React component stack for meaningful traces
-  // Only fires if Sentry was initialised (i.e. VITE_SENTRY_DSN is set)
-  Sentry.captureException(error, {
-    contexts: {
-      react: {
-        componentStack: errorInfo.componentStack,
-      },
-    },
-  });
-
-  // Chunk loading errors (stale cache) trigger auto-reload — no user action needed
-  if (isChunkLoadError(error)) {
-    handleChunkLoadError(error);
-    return;
-  }
-}
+`check_lesson_publishable` DB function has this additional check:
+```sql
+IF NOT quiz_validated THEN
+  SELECT EXISTS (
+    SELECT 1 FROM public.lessons 
+    WHERE id = p_lesson_id 
+    AND quiz_final IS NOT NULL 
+    AND quiz_final != ''
+  ) INTO quiz_validated;
+END IF;
 ```
 
-**Key design decisions:**
+**The fix — add the same legacy fallback to `useLessonPublishable`:**
 
-1. **`Sentry.captureException` is a no-op if Sentry was never initialised** — If `VITE_SENTRY_DSN` was not set and `Sentry.init()` was skipped, calling `captureException` does nothing (Sentry SDK is designed this way — it checks internal state). So calling it unconditionally in the boundary is safe.
+The hook needs to query the lesson's own `quiz_final` and `activites_interactives` HTML fields as a fallback when no validated asset exists. This requires reading the lesson record alongside the asset records.
 
-2. **`errorInfo.componentStack` as context** — This is the React component tree at the time of the crash. It tells you exactly which component chain caused the failure — far more useful than a raw JS stack trace when debugging a React render error. It is passed as `contexts.react.componentStack` which is the idiomatic Sentry React pattern.
+The hook currently only queries `lesson_assets` via `useLessonQuizAsset` and `useLessonActivitiesAsset`. It needs the lesson's HTML content lengths as a fallback signal.
 
-3. **Chunk load errors are still reported to Sentry** — The `captureException` call is placed *before* the `isChunkLoadError` check. This is intentional: if a chunk load error escapes to the boundary (rather than being caught by `lazyWithRetry`), we want to know about it in Sentry. The subsequent `handleChunkLoadError` → `window.location.reload()` still fires exactly as before.
+**Implementation approach:**
 
-4. **No changes to render logic, state, or UI** — The `render()` method, `getDerivedStateFromError`, `handleReload`, and all JSX are completely untouched. The only change is the addition of two imports and one `captureException` call inside `componentDidCatch`.
+Add a third query inside `useLessonPublishable` that reads the lesson's `quiz_final` and `activites_interactives` fields (just their content, not the full lesson) as a fallback. Use the existing Supabase client pattern:
+
+```typescript
+// Fetch legacy HTML fallback fields — only used when no validated asset exists
+const { data: legacyContent, isLoading: legacyLoading } = useQuery({
+  queryKey: ['lesson-legacy-content', lessonId],
+  queryFn: async () => {
+    if (!lessonId) return null;
+    const { data, error } = await supabase
+      .from('lessons')
+      .select('quiz_final, activites_interactives')
+      .eq('id', lessonId)
+      .single();
+    if (error) throw error;
+    return data;
+  },
+  enabled: !!lessonId,
+  staleTime: 60_000, // 1-min stale — legacy content doesn't change rapidly
+});
+```
+
+Then update the blocker logic:
+
+```typescript
+// Legacy fallback: if no validated asset, check if the lesson has non-empty HTML content
+// This mirrors the check_lesson_publishable DB function's legacy path
+const legacyQuizOk = !!(legacyContent?.quiz_final?.trim());
+const legacyActivitiesOk = !!(legacyContent?.activites_interactives?.trim());
+
+// Quiz is publishable if: has validated asset OR has legacy HTML content
+const quizMissing = !quizAsset && !legacyQuizOk;
+const activitiesMissing = !activitiesAsset && !legacyActivitiesOk;
+```
+
+The `quizNotValidated` check stays the same (if an asset exists but is not validated, that is still a blocker — same as the DB function which only applies the HTML fallback when no asset exists at all).
+
+**Result:** `useLessonPublishable` and `check_lesson_publishable` now use identical publish gate logic. Both allow lessons with legacy HTML content to be published. Both require validated assets once the lesson has migrated to the `lesson_assets` system.
+
+**Performance on 3G:** The additional query adds one DB round-trip per lesson selected in the editor. It is lightweight (`select quiz_final, activites_interactives` — two text fields, cached for 1 minute via TanStack Query staleTime). It only runs when a lesson is selected, not on list load.
 
 ---
 
-### Environment Variable Documentation
+### The `useLessonQuizAsset` and `useLessonActivitiesAsset` queries
 
-`VITE_SENTRY_DSN` must be added as a Vite environment variable. Since the `.env` file is auto-managed by Lovable Cloud, this requires adding it via the **Lovable project settings → Environment Variables** (or the Supabase secrets panel for any server-side usage — but this is frontend-only so it goes in Vite env).
-
-**How to obtain the DSN:**
-1. Create a free account at sentry.io
-2. Create a new project → select React as the platform
-3. Copy the DSN from the Sentry project setup page (format: `https://<key>@<org>.ingest.sentry.io/<project-id>`)
-4. Add it to the project's environment config as `VITE_SENTRY_DSN`
-
-The DSN is a publishable key — it is intentionally designed to be embedded in client-side code and has no server-side privileges. It is safe to store as a `VITE_` prefixed variable.
+Before writing the plan, I verified where these come from:
+<br>They are defined in `src/features/matieres/data/lessonAssets.queries.ts` and imported by `useLessonPublishable`. The fix does not change these queries — it adds a third parallel query for the legacy fallback and adjusts the derived boolean logic.
 
 ---
 
@@ -144,9 +195,28 @@ The DSN is a publishable key — it is intentionally designed to be embedded in 
 
 | File | Change |
 |---|---|
-| `src/main.tsx` | Add `@sentry/react` import; add `Sentry.init()` block with DSN guard, environment, tracesSampleRate, and `beforeSend` extension filter — placed before `createRoot` |
-| `src/components/ErrorBoundary.tsx` | Add `@sentry/react` import; add `Sentry.captureException()` call inside `componentDidCatch` with `componentStack` context — placed after `console.error`, before chunk-load check |
-| `package.json` | Add `@sentry/react` to dependencies (Lovable installs it automatically) |
+| `src/components/content-editor/LessonEditor.tsx` | Separate `isPublished` into its own `useState`; remove `is_published` from `lessonData`; update `handleSave` to write `is_published` + `workflow_status` atomically; update `useEffect` to reset `isPublished`; update Switch binding |
+| `src/features/content-editor/hooks/useLessonPublishable.ts` | Add a `useQuery` for the lesson's `quiz_final` and `activites_interactives` HTML; add `legacyQuizOk` / `legacyActivitiesOk` fallback booleans; update `quizMissing` and `activitiesMissing` to include the legacy fallback |
+
+**No database migrations required.** The `check_lesson_publishable` DB function is not changed — it is already correct. Only the frontend hook is brought into alignment with it.
+
+---
+
+### Why NOT remove the legacy fallback from `check_lesson_publishable`
+
+The audit request said: "Fix this by removing the legacy HTML fallback from `check_lesson_publishable` so both paths enforce the same rule."
+
+After seeing the data, this cannot be done today without making the following things break immediately:
+
+1. `BulkOperations.bulkPublish` would return zero publishable lessons for every selection — it would be completely inoperative for the entire lesson library.
+2. The content editor team would have no path to publish any lesson through any UI path until all 2,832 lessons have validated `lesson_assets` records for both quiz and activities.
+3. Any editor trying to use the Workflow panel to approve + publish a lesson would see "Quiz manquant, Activités manquantes" for every lesson, with no override.
+
+The correct sequence is:
+1. **Today (this plan):** Align the hook with the DB function — both use the legacy fallback. This eliminates the divergence.
+2. **After content migration:** Once all lessons have validated `lesson_assets`, remove the legacy HTML fallback from both the hook and the DB function in a single coordinated change. At that point, `has_both_validated_assets` in the DB query will be > 0 and the removal will be safe.
+
+This is explicitly flagged in the plan for future work.
 
 ---
 
@@ -154,16 +224,35 @@ The DSN is a publishable key — it is intentionally designed to be embedded in 
 
 | Check | Status |
 |---|---|
-| Sentry initialisation does not block React render | Yes — `Sentry.init()` is synchronous and non-blocking. It sets up internal state and returns void immediately. `createRoot` and `root.render()` execute right after with no delay. The mount watchdog timer is unaffected. |
-| Sentry is skipped entirely if DSN is not configured | Yes — the `if (sentryDsn)` guard means `Sentry.init()` is never called in local dev without the env var. `captureException` in the ErrorBoundary is a no-op when Sentry has not been initialised. |
-| `beforeSend` filter correctly drops extension errors | Yes — the filter iterates `event.exception.values[].stacktrace.frames[]` and checks the `filename` field for `chrome-extension://`, `moz-extension://`, and `safari-extension://` prefixes. Returns `null` to drop; returns the event unchanged otherwise. |
-| `beforeSend` does not accidentally drop real platform errors | Yes — platform errors originate from filenames like `/assets/index-abc.js` or `https://edupreneurs-haiti-ai.lovable.app/...`. None of these match the extension prefix pattern. |
-| Chunk load errors are still reported to Sentry | Yes — `captureException` fires before the `isChunkLoadError` branch. Chunk load errors are reported to Sentry AND the auto-reload still fires. |
-| Chunk load errors still trigger auto-reload | Yes — `handleChunkLoadError` path is completely unchanged. Adding `captureException` before it does not alter its execution. |
-| ErrorBoundary UI unchanged for users | Yes — no changes to `render()`, `getDerivedStateFromError`, `handleReload`, or any JSX. Students see the exact same error screen as before. |
-| `VITE_SENTRY_DSN` is a publishable key (safe to use as VITE_ prefix) | Yes — Sentry DSNs are intentionally client-side-safe. Sentry's own documentation recommends embedding them in frontend code. |
-| tracesSampleRate of 0.1 is appropriate for free tier | Yes — 10% sampling on a platform with thousands of page views still provides representative performance data while staying within Sentry's 10,000 transaction/month free tier limit. |
-| 3G performance impact | Negligible — Sentry SDK initialises synchronously (no network on init). Error events are sent asynchronously via a background fetch after the error occurs, never on the critical render path. |
+| No lesson can be set to `is_published: true` without `workflow_status` also being updated | Yes — `handleSave` now always computes `workflow_status` from `isPublished` in a single DB write. There is no code path where `is_published` changes without `workflow_status` changing in the same `.update()` call. |
+| Unpublishing via the Switch sets `workflow_status: 'draft'` | Yes — `isPublished: false` → `workflow_status: 'draft'` in the update payload. |
+| Content-only saves (no publish toggle change) still work correctly | Yes — `isPublished` starts at `selectedLesson.is_published` on load. If the editor makes no change to the Switch, `isPublished` stays at whatever it was, and `workflow_status` is re-written to its correct value (idempotent). |
+| `lessonData` spread still works after removing `is_published` from it | Yes — `is_published` is removed from the `lessonData` object's type and initial state. It is written separately in the update payload. The spread `{...lessonData}` only writes content fields (title, objectif, etc.). |
+| `selectedLesson` change resets `isPublished` correctly | Yes — the existing `useEffect` at line 67 is extended to also call `setIsPublished(selectedLesson.is_published || false)`. |
+| Bulk publish and workflow panel now enforce identical publish gate rules | Yes — `useLessonPublishable` now includes the same legacy HTML fallback as `check_lesson_publishable`. Lessons with non-empty `quiz_final` and `activites_interactives` HTML pass the gate in both UI paths. |
+| Existing 2,832 published lessons are not affected by the DB function change | Yes — `check_lesson_publishable` is NOT changed. It remains exactly as-is. Existing lessons stay published. |
+| The 240 lessons with `is_published: true, workflow_status: 'draft'` are not retroactively fixed | Correct — this plan fixes the forward path only. Existing data inconsistencies in the DB are a separate migration question (a one-time SQL `UPDATE lessons SET workflow_status = 'published' WHERE is_published = true AND workflow_status != 'published'` can be run as a separate decision). They are flagged here for awareness but not touched in this plan. |
+| New `useQuery` for legacy content adds a DB query per selected lesson | Yes — this is one additional lightweight query when a lesson is selected. Cached for 60 seconds via `staleTime`. It does not run on list load, only on single-lesson selection. Acceptable on 3G. |
 | MonCash and Stripe payment flows unaffected | Yes — no payment code touched. |
-| Provider Stack or hook count affected | No — Sentry init is outside React. `captureException` is a plain function call inside a class component lifecycle method. |
-| New dependencies | One: `@sentry/react`. No transitive dependencies that conflict with existing packages. |
+| Provider Stack or hook count affected | No — `useLessonPublishable` gains one internal `useQuery` call but is not a component-level hook change. |
+| `WorkflowManagement.tsx` requires changes | No — it consumes `useLessonPublishable` which is updated. The component itself is unchanged. |
+| `BulkOperations.tsx` requires changes | No — it uses `check_lesson_publishable` RPC which is unchanged. |
+
+---
+
+### Future Work Flag
+
+Once the content migration to validated `lesson_assets` is complete (i.e., all lessons have both `quiz_final` and `activities` assets with `status = 'validated'`), the legacy fallback can be removed from both `useLessonPublishable` and `check_lesson_publishable` in a single coordinated change. At that point, run this query first to confirm it is safe:
+
+```sql
+SELECT COUNT(*) FROM lessons
+WHERE is_published = true
+  AND NOT EXISTS (
+    SELECT 1 FROM lesson_assets la
+    WHERE la.lesson_id = lessons.id
+      AND la.kind = 'quiz_final'
+      AND la.status IN ('validated','published')
+  );
+```
+
+When this returns 0, the fallback removal is safe.
