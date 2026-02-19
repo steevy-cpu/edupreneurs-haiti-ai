@@ -243,6 +243,13 @@ export const WorkflowManagement = ({ selectedLesson, onUpdate }: WorkflowManagem
               <div className={`h-2 w-2 rounded-full ${currentStatus === 'in_review' ? 'bg-primary' : 'bg-muted'}`} />
               <span className="text-sm">En révision</span>
             </div>
+            {/* Rejected is a terminal dead-end state — shown in red to distinguish from normal flow */}
+            <div className="flex items-center gap-2">
+              <div className={`h-2 w-2 rounded-full ${currentStatus === 'rejected' ? 'bg-destructive' : 'bg-muted'}`} />
+              <span className={`text-sm ${currentStatus === 'rejected' ? 'text-destructive font-medium' : ''}`}>
+                Rejeté
+              </span>
+            </div>
             <div className="flex items-center gap-2">
               <div className={`h-2 w-2 rounded-full ${currentStatus === 'approved' ? 'bg-primary' : 'bg-muted'}`} />
               <span className="text-sm">Approuvé</span>

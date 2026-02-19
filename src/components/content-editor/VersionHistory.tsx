@@ -81,15 +81,21 @@ export const VersionHistory = ({ selectedLesson, onRestore }: VersionHistoryProp
                           </Badge>
                         )}
                       </div>
-                      {!version.is_current && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleRestore(version.id)}
-                        >
-                          <RotateCcw className="mr-2 h-3 w-3" />
-                          Restaurer
-                        </Button>
+                    {!version.is_current && (
+                        <div className="flex flex-col gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleRestore(version.id)}
+                          >
+                            <RotateCcw className="mr-2 h-3 w-3" />
+                            Restaurer
+                          </Button>
+                          {/* Partial-restore disclosure — snapshot only covers core text fields */}
+                          <p className="text-xs text-muted-foreground leading-snug">
+                            La restauration remet en place le titre, l'objectif, l'introduction, le contenu et les exemples. Le quiz, les activités, et le statut de publication ne sont pas affectés.
+                          </p>
+                        </div>
                       )}
                     </div>
 
@@ -107,7 +113,8 @@ export const VersionHistory = ({ selectedLesson, onRestore }: VersionHistoryProp
                       </div>
                     </div>
 
-                    {index < versions.length - 1 && (
+                    {/* Guard: only show for versions that have a newer version above them to compare against */}
+                    {index > 0 && (
                       <div className="mt-3">
                         <Button
                           variant="ghost"
