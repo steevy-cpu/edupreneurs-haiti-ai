@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +58,8 @@ const PROTECTED_USER_IDS = [
 
 export default function ReportsModule() {
   const navigate = useNavigate();
+  // Use in-memory session user — eliminates 3 redundant auth.getUser() network calls
+  const { user } = useSessionAuth();
   const [reports, setReports] = useState<UserReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -74,32 +77,10 @@ export default function ReportsModule() {
   // Computed flag to disable all actions while one is in progress
   const isActionInProgress = isDeletingPost || isDeletingUser || isDismissing || isSavingNotes || isUpdating;
 
-  useEffect(() => {
-    fetchReports();
-    
-    // Subscribe to realtime updates
-    const channel = supabase
-      .channel("reports-updates")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "user_reports" },
-        () => fetchReports()
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [statusFilter, currentPage]);
-
-  // Sync selectedStatus when a report is selected
-  useEffect(() => {
-    if (selectedReport) {
-      setSelectedStatus(selectedReport.status);
-    }
-  }, [selectedReport]);
-
-  const fetchReports = async () => {
+  // Wrapped in useCallback — declared before useEffects that reference it.
+  // Deps: filter + page so realtime callback always uses the latest query params
+  // without needing to re-subscribe to the channel on every filter or page change.
+  const fetchReports = useCallback(async () => {
     setIsLoading(true);
     try {
       let query = supabase
@@ -148,12 +129,41 @@ export default function ReportsModule() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [statusFilter, currentPage]);
+
+  // Data fetch — re-runs when filters or page change (fetchReports dep changes accordingly)
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
+
+  // Realtime subscription — subscribes ONCE on mount, never re-registers on filter/page changes.
+  // fetchReports is stable per useCallback; the closure always invokes the latest version.
+  useEffect(() => {
+    const channel = supabase
+      .channel("reports-updates")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "user_reports" },
+        () => fetchReports()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sync selectedStatus when a report is selected
+  useEffect(() => {
+    if (selectedReport) {
+      setSelectedStatus(selectedReport.status);
+    }
+  }, [selectedReport]);
 
   const updateReportStatus = async (reportId: string, newStatus: string) => {
     setIsUpdating(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // user is hoisted from useSessionAuth — no extra network call needed
       
       const { error } = await supabase
         .from("user_reports")
@@ -183,7 +193,7 @@ export default function ReportsModule() {
     if (!selectedReport) return;
     setIsSavingNotes(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // user is hoisted from useSessionAuth — no extra network call needed
       
       const { error } = await supabase
         .from("user_reports")
@@ -293,7 +303,7 @@ export default function ReportsModule() {
     if (!selectedReport) return;
     setIsDismissing(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // user is hoisted from useSessionAuth — no extra network call needed
       
       const { error } = await supabase
         .from("user_reports")

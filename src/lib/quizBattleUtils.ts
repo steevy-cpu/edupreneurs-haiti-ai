@@ -73,20 +73,9 @@ export const getLevelProgress = (totalXp: number): number => {
   return Math.round((xpInCurrentLevel / xpNeededForLevel) * 100);
 };
 
-/**
- * Founder user IDs to exclude from leaderboards
- */
-export const FOUNDER_USER_IDS = [
-  '0de08330-4183-48f9-b169-19b92f4d114f', // Steevy
-  '7580cd10-e18c-4b2f-ac50-def28d046c9d', // Djood
-];
-
-/**
- * Check if a user is a founder
- */
-export const isFounder = (userId: string): boolean => {
-  return FOUNDER_USER_IDS.includes(userId);
-};
+// Single source of truth — re-exported from founderConstants to eliminate duplication.
+// BattleLeaderboardPreview and QuizBattleLeaderboard import from here; import path unchanged.
+export { FOUNDER_USER_IDS, isFounder } from '@/lib/founderConstants';
 
 /**
  * Subject names that count for the math_expert badge

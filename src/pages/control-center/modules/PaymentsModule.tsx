@@ -80,6 +80,9 @@ const PaymentsModule = () => {
       };
       if (notes) updateData.verification_notes = notes;
       if (action === 'approve') updateData.status = 'completed';
+      // Rejected payments need their status updated too — otherwise they stay
+      // in 'pending_verification' which breaks the filter view
+      if (action === 'reject') updateData.status = 'rejected';
 
       const { error } = await supabase
         .from('payment_transactions')
@@ -177,7 +180,7 @@ const PaymentsModule = () => {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Rechercher par ID, référence, téléphone..."
+                placeholder="Rechercher par ID de commande..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -194,6 +197,7 @@ const PaymentsModule = () => {
                 <SelectItem value="pending_verification">À vérifier</SelectItem>
                 <SelectItem value="completed">Complétés</SelectItem>
                 <SelectItem value="failed">Échoués</SelectItem>
+                <SelectItem value="rejected">Rejetés</SelectItem>
               </SelectContent>
             </Select>
             <Select value={providerFilter} onValueChange={setProviderFilter}>

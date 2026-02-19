@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
+import { Announcement, ACADEMIC_GRADES } from '../types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,27 +17,12 @@ import { Megaphone, Users, GraduationCap, BadgeCheck, Send, Clock, Loader2, Refr
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
-const ACADEMIC_GRADES = [
-  '7AF', '7e', '8AF', '8e', '9AF', 'NS1', 'NS3', 'NS4', 'Philo', 'S1'
-] as const;
-
-interface Announcement {
-  id: string;
-  title: string;
-  message: string;
-  target_type: 'all' | 'grade' | 'verified';
-  target_grades: string[] | null;
-  scheduled_for: string | null;
-  sent_at: string | null;
-  sent_by: string;
-  status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'cancelled';
-  recipients_count: number;
-  success_count: number;
-  created_at: string;
-}
+// ACADEMIC_GRADES and Announcement are imported from ../types (removed local duplicates)
 
 const AnnouncementsModule = () => {
   const queryClient = useQueryClient();
+  // Use in-memory session user — eliminates auth.getUser() call inside mutationFn
+  const { user } = useSessionAuth();
   
   // Form state
   const [title, setTitle] = useState("");
@@ -107,8 +94,8 @@ const AnnouncementsModule = () => {
   // Send announcement mutation
   const sendMutation = useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      // user is hoisted from useSessionAuth at the component level — no auth network call
+      if (!user) throw new Error('Non authentifié');
 
       // Calculate scheduled_for if scheduling
       let scheduledFor: string | null = null;
