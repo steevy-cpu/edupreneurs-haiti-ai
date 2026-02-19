@@ -70,7 +70,7 @@ const getFarewellEmailTemplate = (fullName: string, deletedByAdmin: boolean = fa
             <tr>
               <td style="padding: 40px 20px; text-align: center;">
                 <p style="margin: 0; font-size: 13px; color: #94a3b8;">
-                  © 2025 Edupreneurs. Tous droits réservés.
+                  © ${new Date().getFullYear()} Edupreneurs. Tous droits réservés.
                 </p>
               </td>
             </tr>

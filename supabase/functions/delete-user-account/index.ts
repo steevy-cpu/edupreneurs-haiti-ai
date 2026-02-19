@@ -111,7 +111,7 @@ const getFarewellEmailTemplate = (fullName: string) => `
                   Edupreneurs - Merci pour tout
                 </p>
                 <p style="margin: 0; font-size: 13px; color: #94a3b8;">
-                  © 2025 Edupreneurs. Tous droits réservés.
+                  © ${new Date().getFullYear()} Edupreneurs. Tous droits réservés.
                 </p>
               </td>
             </tr>

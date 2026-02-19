@@ -54,8 +54,6 @@ verify_jwt = false
 [functions.send-whatsapp-confirmation]
 verify_jwt = false
 
-[functions.send-test-email]
-verify_jwt = false
 
 [functions.send-welcome-email]
 verify_jwt = false
@@ -69,8 +67,6 @@ verify_jwt = false
 [functions.send-farewell-email]
 verify_jwt = false
 
-[functions.send-birthday-email]
-verify_jwt = false
 
 [functions.check-birthdays]
 verify_jwt = false

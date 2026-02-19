@@ -118,7 +118,7 @@ const getEmailTemplate = (fullName: string) => `
             <tr>
               <td style="padding: 40px 20px; text-align: center;">
                 <p style="margin: 0; font-size: 13px; color: #94a3b8;">
-                  © 2025 Edupreneurs. Tous droits réservés.
+                  © ${new Date().getFullYear()} Edupreneurs. Tous droits réservés.
                 </p>
               </td>
             </tr>
@@ -182,14 +182,15 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Welcome email sent successfully");
 
-    return new Response(JSON.stringify(emailResponse), {
+    // Standardized response format
+    return new Response(JSON.stringify({ success: true, messageId: emailResponse?.data?.id || null }), {
       status: 200,
       headers: responseHeaders,
     });
   } catch (error: any) {
     console.error("Error sending welcome email:", error.message);
     return new Response(
-      JSON.stringify({ error: "Erreur lors de l'envoi de l'email" }),
+      JSON.stringify({ success: false, error: "Erreur lors de l'envoi de l'email" }),
       {
         status: 500,
         headers: responseHeaders,

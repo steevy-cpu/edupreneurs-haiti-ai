@@ -63,7 +63,7 @@ const getReportConfirmationTemplate = (fullName: string) => `
             <tr>
               <td style="padding: 40px 20px; text-align: center;">
                 <p style="margin: 0; font-size: 13px; color: #94a3b8;">
-                  © 2025 Edupreneurs. Tous droits réservés.
+                  © ${new Date().getFullYear()} Edupreneurs. Tous droits réservés.
                 </p>
               </td>
             </tr>
@@ -114,26 +114,27 @@ serve(async (req) => {
 
     const fullName = profile?.full_name || 'Utilisateur';
 
-    // Send confirmation email
+    // Send confirmation email and capture response for standardized format
+    let messageId: string | null = null;
     if (user.email) {
-      await resend.emails.send({
+      const emailResponse = await resend.emails.send({
         from: "Edupreneurs <noreply@mon-edupreneur.com>",
         to: [user.email],
         subject: "📬 Signalement reçu - Merci de votre vigilance",
         html: getReportConfirmationTemplate(fullName),
       });
-
+      messageId = emailResponse?.data?.id || null;
       console.log('Report confirmation email sent to:', user.email);
     }
 
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ success: true, messageId }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
   } catch (error) {
     console.error('Error sending report confirmation:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Unknown error' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
     );
   }
