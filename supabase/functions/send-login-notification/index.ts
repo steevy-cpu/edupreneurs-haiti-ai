@@ -7,7 +7,7 @@
  * - Security headers
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@2.0.0";
+import { Resend } from "https://esm.sh/resend@4.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
 import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
@@ -25,7 +25,8 @@ const loginNotificationSchema = z.object({
   userId: z.string().uuid().optional(),
 });
 
-const getEmailTemplate = (fullName: string, email: string, timestamp: string, resetUrl: string, device?: string, location?: string) => `
+// Template signature: resetUrl removed — login notification is purely informational
+const getEmailTemplate = (fullName: string, email: string, timestamp: string, device?: string, location?: string) => `
 <!DOCTYPE html>
 <html lang="fr">
   <head>
@@ -153,10 +154,10 @@ const getEmailTemplate = (fullName: string, email: string, timestamp: string, re
                               ⚠️ Ce n'était pas vous ?
                             </p>
                             <p style="margin: 0 0 20px 0; font-size: 14px; color: #b91c1c; line-height: 1.6;">
-                              Si vous ne reconnaissez pas cette connexion, sécurisez immédiatement votre compte en changeant votre mot de passe.
+                              Si vous ne reconnaissez pas cette connexion, sécurisez immédiatement votre compte.
                             </p>
-                            <a href="${resetUrl}" style="display: inline-block; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 10px; font-weight: 600; font-size: 14px;">
-                              🔐 Changer mon mot de passe
+                            <a href="https://mon-edupreneur.com/settings" style="display: inline-block; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 10px; font-weight: 600; font-size: 14px;">
+                              🔐 Sécuriser mon compte
                             </a>
                           </td>
                         </tr>
@@ -238,31 +239,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending login notification to:", email);
 
-    // Generate password reset token for the "change password" button
-    let resetUrl = 'https://mon-edupreneur.com/auth/login';
-    
-    try {
-      const { data: tokenData, error: tokenError } = await supabase.rpc(
-        'generate_password_reset_token',
-        { user_email: email }
-      );
-
-      if (!tokenError && tokenData && tokenData.length > 0) {
-        resetUrl = `https://mon-edupreneur.com/reset-password?token=${tokenData[0].token}`;
-        console.log("Password reset token generated successfully");
-      } else if (tokenError) {
-        console.error("Error generating reset token:", tokenError);
-      }
-    } catch (tokenGenError) {
-      console.error("Exception generating reset token:", tokenGenError);
-      // Continue with fallback URL
-    }
-
+    // Send login notification — purely informational, no reset token needed
     const emailResponse = await resend.emails.send({
       from: "Edupreneurs <noreply@mon-edupreneur.com>",
       to: [email],
       subject: "🔔 Nouvelle connexion à votre compte - Edupreneurs",
-      html: getEmailTemplate(fullName, email, timestamp, resetUrl, device, location),
+      html: getEmailTemplate(fullName, email, timestamp, device, location),
     });
 
     console.log("Login notification sent successfully:", emailResponse);
