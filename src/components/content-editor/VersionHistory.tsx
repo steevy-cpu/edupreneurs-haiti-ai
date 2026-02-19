@@ -7,6 +7,7 @@ import { History, RotateCcw, Clock, User, CheckCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useVersionControl } from "@/hooks/useVersionControl";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { useState } from "react";
 
 interface VersionHistoryProps {
@@ -18,10 +19,13 @@ export const VersionHistory = ({ selectedLesson, onRestore }: VersionHistoryProp
   const { versions, isLoading, restoreVersion, compareVersions } = useVersionControl(
     selectedLesson?.id
   );
+  // In-memory user from SessionAuthContext — avoids a redundant auth.getUser() call on restore
+  const { user } = useSessionAuth();
   const [expandedVersion, setExpandedVersion] = useState<string | null>(null);
 
   const handleRestore = async (versionId: string) => {
-    const success = await restoreVersion(versionId);
+    // Pass user directly; restoreVersion signature accepts { id: string } | null
+    const success = await restoreVersion(versionId, user);
     if (success) {
       onRestore();
     }

@@ -56,14 +56,15 @@ export const useVersionControl = (lessonId?: string) => {
     }
   };
 
-  const restoreVersion = async (versionId: string) => {
+  // user is passed in by the caller (from useSessionAuth) to avoid a redundant
+  // supabase.auth.getUser() network round-trip on every restore action (~300-500ms on 3G)
+  const restoreVersion = async (versionId: string, user: { id: string } | null) => {
     try {
       // Get the version to restore
       const version = versions.find(v => v.id === versionId);
       if (!version) throw new Error('Version not found');
 
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      // Guard: user is provided by the caller; null means session has expired
       if (!user) throw new Error('Not authenticated');
 
       // Update the lesson with the version's content
