@@ -42,11 +42,28 @@ interface DailyWord {
 
 type TTSProvider = 'openai' | 'elevenlabs';
 
+// Get today's date string in Haiti timezone (YYYY-MM-DD)
 const getHaitiDate = (): string => {
   return new Date().toLocaleDateString('en-CA', { 
     timeZone: 'America/Port-au-Prince' 
   });
 };
+
+// ─── Deterministic word selection ──────────────────────────────────────────
+// MUST match useWordOfTheDay.ts exactly — both systems must compute the same
+// display_order on the same Haiti date, ensuring the admin preview shows
+// the exact word that students see on their dashboard.
+const REFERENCE_DATE = new Date('2026-01-01T00:00:00');
+
+const computeDisplayOrder = (haitiDate: string, totalWords: number): number => {
+  const today = new Date(haitiDate + 'T00:00:00');
+  const daysSince = Math.floor(
+    (today.getTime() - REFERENCE_DATE.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  // Double-mod guards against negative daysSince (pre-reference dates)
+  return (((daysSince % totalWords) + totalWords) % totalWords) + 1;
+};
+// ───────────────────────────────────────────────────────────────────────────
 
 const WordsModule = () => {
   const [words, setWords] = useState<DailyWord[]>([]);
@@ -80,7 +97,7 @@ const WordsModule = () => {
   const fetchWords = async () => {
     try {
       setIsLoading(true);
-      // Fetch with display_order for sequential rotation
+      // Fetch ordered by display_order — same ordering as useWordOfTheDay.ts
       const { data, error } = await supabase
         .from("daily_words")
         .select("id, word, phonetic, part_of_speech, definition, audio_url, is_active, display_order")
@@ -92,9 +109,14 @@ const WordsModule = () => {
       const wordsList = data || [];
       setWords(wordsList);
       
-      // Calculate today's word using sequential rotation
+      // Deterministic selection — no app_settings query, no state mutation needed.
+      // Uses the same algorithm as useWordOfTheDay.ts so preview == what students see.
       if (wordsList.length > 0) {
-        await calculateTodaysWord(wordsList);
+        const haitiDate = getHaitiDate();
+        const displayOrder = computeDisplayOrder(haitiDate, wordsList.length);
+        const todayWord = wordsList.find(w => w.display_order === displayOrder);
+        // Fallback to first word if display_order has a gap in the sequence
+        setTodaysWord(todayWord ?? wordsList[0]);
       }
     } catch (err) {
       console.error("Error fetching words:", err);
@@ -104,50 +126,10 @@ const WordsModule = () => {
     }
   };
 
-  const calculateTodaysWord = async (wordsList: DailyWord[]) => {
-    try {
-      const haitiDate = getHaitiDate();
-      
-      // Get current rotation state from app_settings
-      const { data: settings } = await supabase
-        .from('app_settings')
-        .select('value')
-        .eq('key', 'word_of_day')
-        .single();
-      
-      const settingsValue = settings?.value as { last_date?: string; last_order?: number } | null;
-      const lastDate = settingsValue?.last_date;
-      const lastOrder = settingsValue?.last_order || 0;
-      
-      let currentOrder = lastOrder;
-      
-      // If it's a new day, we show the next word
-      if (lastDate !== haitiDate) {
-        const maxOrder = Math.max(...wordsList.map(w => w.display_order || 0));
-        currentOrder = (lastOrder % maxOrder) + 1;
-      }
-      
-      // Find the word with this display_order
-      const todayWord = wordsList.find(w => w.display_order === currentOrder);
-      if (todayWord) {
-        setTodaysWord(todayWord);
-      } else {
-        // Fallback to first word if display_order not found
-        setTodaysWord(wordsList[0]);
-      }
-    } catch (err) {
-      console.error("Error calculating today's word:", err);
-      // Fallback to first word
-      if (wordsList.length > 0) {
-        setTodaysWord(wordsList[0]);
-      }
-    }
-  };
-
   const playAudio = async (word: DailyWord) => {
     if (!word.audio_url) return;
 
-    // Stop any currently playing audio
+    // Stop any currently playing audio before starting a new one
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
@@ -181,10 +163,10 @@ const WordsModule = () => {
 
   const handleRegenerateClick = (word: DailyWord) => {
     if (word.audio_url) {
-      // Show confirmation dialog for existing audio
+      // Confirm before overwriting existing audio
       setConfirmDialog({ open: true, word, type: 'regenerate' });
     } else {
-      // Generate directly if no audio exists
+      // No existing audio — generate directly without confirmation
       generateAudio(word);
     }
   };
@@ -194,12 +176,8 @@ const WordsModule = () => {
     setGeneratingWordId(word.id);
 
     try {
-      const { data: session } = await supabase.auth.getSession();
-      if (!session?.session?.access_token) {
-        toast.error("Session expirée, veuillez vous reconnecter");
-        return;
-      }
-
+      // supabase.functions.invoke automatically attaches the auth session header —
+      // no manual getSession() call needed here.
       const response = await supabase.functions.invoke("generate-word-audio", {
         body: { 
           wordId: word.id, 
@@ -213,14 +191,14 @@ const WordsModule = () => {
       }
 
       if (response.data?.success && response.data?.audioUrl) {
-        // Update local state
+        // Optimistically update local word list without a full refetch
         setWords(prev =>
           prev.map(w =>
             w.id === word.id ? { ...w, audio_url: response.data.audioUrl } : w
           )
         );
         
-        // Update today's word if it matches
+        // Also update the today's word preview if this is the current day word
         if (todaysWord?.id === word.id) {
           setTodaysWord(prev => prev ? { ...prev, audio_url: response.data.audioUrl } : null);
         }
@@ -238,7 +216,6 @@ const WordsModule = () => {
   };
 
   const handleSendNotificationClick = () => {
-    // Show confirmation dialog for sending notification
     setConfirmDialog({ open: true, word: null, type: 'notification' });
   };
 
@@ -248,12 +225,8 @@ const WordsModule = () => {
     setNotificationResult(null);
 
     try {
-      const { data: session } = await supabase.auth.getSession();
-      if (!session?.session?.access_token) {
-        toast.error("Session expirée, veuillez vous reconnecter");
-        return;
-      }
-
+      // supabase.functions.invoke automatically attaches the auth session header —
+      // no manual getSession() call needed here.
       const response = await supabase.functions.invoke("send-daily-word-notification", {
         body: {}
       });
@@ -282,7 +255,7 @@ const WordsModule = () => {
     }
   };
 
-  // Cleanup audio on unmount
+  // Pause audio on component unmount to prevent audio leaks
   useEffect(() => {
     return () => {
       if (audioRef.current) {
@@ -324,7 +297,7 @@ const WordsModule = () => {
             qui ont activé cette catégorie de notification.
           </p>
           
-          {/* Today's word preview */}
+          {/* Today's word preview — deterministic algorithm, matches what students see */}
           {todaysWord && (
             <div className="p-3 rounded-lg bg-background border">
               <p className="text-xs text-muted-foreground mb-1">Mot du jour (sera envoyé) :</p>
@@ -418,7 +391,8 @@ const WordsModule = () => {
           
           <p className="text-xs text-muted-foreground">
             {selectedProvider === 'elevenlabs' 
-              ? '✨ Volume plus élevé, meilleur français, voix naturelle (Sarah)' 
+              // Platform standard voice is Eric (ElevenLabs)
+              ? '✨ Volume plus élevé, meilleur français, voix naturelle (Eric)' 
               : '🔉 Volume plus bas, voix Nova, alternative rapide'}
           </p>
         </CardContent>
@@ -446,7 +420,7 @@ const WordsModule = () => {
         </div>
       </div>
 
-      {/* Words without audio first */}
+      {/* Words without audio — shown first so they're easy to action */}
       {wordsWithoutAudio.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
@@ -498,7 +472,7 @@ const WordsModule = () => {
         </CardContent>
       </Card>
 
-      {/* Confirmation Dialog */}
+      {/* Confirmation Dialog — shared for both regenerate and notification actions */}
       <AlertDialog
         open={confirmDialog.open}
         onOpenChange={open => !open && setConfirmDialog({ open: false, word: null, type: 'regenerate' })}
@@ -578,7 +552,7 @@ const WordRow = ({ word, isGenerating, isPlaying, onPlay, onRegenerate }: WordRo
       </div>
 
       <div className="flex items-center gap-2 ml-4">
-        {/* Play button - only if audio exists */}
+        {/* Play button — only rendered when audio exists */}
         {word.audio_url && (
           <Button
             variant="ghost"
@@ -594,7 +568,7 @@ const WordRow = ({ word, isGenerating, isPlaying, onPlay, onRegenerate }: WordRo
           </Button>
         )}
 
-        {/* Generate/Regenerate button */}
+        {/* Generate / Regenerate button */}
         <Button
           variant={word.audio_url ? "outline" : "default"}
           size="sm"

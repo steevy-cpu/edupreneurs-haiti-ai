@@ -1,12 +1,17 @@
 /**
  * Send Daily Word of the Day Push Notification
- * 
+ *
  * Sends a push notification to all users who have:
  * 1. Push subscriptions enabled
  * 2. word_of_day notification category enabled (or no preference set = default enabled)
- * 
+ *
  * Triggered manually by founders from Control Center.
  * In production, can be triggered by external cron/scheduler.
+ *
+ * Word selection uses the SAME deterministic date-math algorithm as:
+ *   - useWordOfTheDay.ts (frontend hook)
+ *   - WordsModule.tsx (admin preview)
+ * All three systems are kept in lockstep to prevent divergence.
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -16,7 +21,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Founder user IDs who can trigger this function
+// Founder UUIDs — must match is_founder() DB function
 const FOUNDER_IDS = [
   '0de08330-4183-48f9-b169-19b92f4d114f',
   '7580cd10-e18c-4b2f-ac50-def28d046c9d'
@@ -29,20 +34,27 @@ interface DailyWord {
   definition: string;
 }
 
-// Deterministic word selection based on date - ensures same word for everyone
-const getGlobalWordIndex = (date: string, totalWords: number): number => {
-  let hash = 0;
-  for (let i = 0; i < date.length; i++) {
-    hash = ((hash << 5) - hash) + date.charCodeAt(i);
-    hash |= 0; // Convert to 32-bit integer
-  }
-  return Math.abs(hash) % totalWords;
+// ─── Deterministic word selection ──────────────────────────────────────────
+// Reference date must match REFERENCE_DATE in useWordOfTheDay.ts and
+// WordsModule.tsx — do NOT change this value independently.
+const REFERENCE_DATE_MS = new Date('2026-01-01T00:00:00').getTime();
+
+/**
+ * Given today's Haiti date string and the total active word count,
+ * returns the display_order value for today's word.
+ * Double-mod handles negative daysSince for dates before reference.
+ */
+const computeDisplayOrder = (haitiDate: string, totalWords: number): number => {
+  const today = new Date(haitiDate + 'T00:00:00').getTime();
+  const daysSince = Math.floor((today - REFERENCE_DATE_MS) / (1000 * 60 * 60 * 24));
+  return (((daysSince % totalWords) + totalWords) % totalWords) + 1;
 };
+// ───────────────────────────────────────────────────────────────────────────
 
 // Get today's date in Haiti timezone (YYYY-MM-DD format)
 const getHaitiDate = (): string => {
-  return new Date().toLocaleDateString('en-CA', { 
-    timeZone: 'America/Port-au-Prince' 
+  return new Date().toLocaleDateString('en-CA', {
+    timeZone: 'America/Port-au-Prince'
   });
 };
 
@@ -69,7 +81,7 @@ serve(async (req) => {
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
+
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Invalid token' }),
@@ -85,40 +97,30 @@ serve(async (req) => {
       );
     }
 
-    // Get request body (optional: specific word ID)
+    // Parse optional specific word override (for testing)
     let specificWordId: string | null = null;
     try {
       const body = await req.json();
       specificWordId = body.wordId || null;
     } catch {
-      // No body, use random word
+      // No body provided — use deterministic selection
     }
 
-    // Get today's word using deterministic selection (same as frontend)
     const haitiDate = getHaitiDate();
-    
-    // Fetch all active words with consistent ordering
-    const { data: allWords, error: wordsError } = await supabase
-      .from('daily_words')
-      .select('id, word, phonetic, definition')
-      .eq('is_active', true)
-      .order('id', { ascending: true });
+    console.log(`📅 Haiti date: ${haitiDate}`);
 
-    if (wordsError || !allWords || allWords.length === 0) {
-      console.error('Error fetching words:', wordsError);
-      return new Response(
-        JSON.stringify({ error: 'No active words found' }),
-        { status: 404, headers: responseHeaders }
-      );
-    }
-
-    // Use deterministic selection - same word everyone sees today
     let todaysWord: DailyWord;
-    
+
     if (specificWordId) {
-      // If a specific word is requested, use it (for testing)
-      const specificWord = allWords.find(w => w.id === specificWordId);
-      if (!specificWord) {
+      // ── Testing override path ─────────────────────────────────────────
+      // Bypass algorithm entirely and use the explicitly requested word.
+      const { data: specificWord, error: specificError } = await supabase
+        .from('daily_words')
+        .select('id, word, phonetic, definition')
+        .eq('id', specificWordId)
+        .maybeSingle();
+
+      if (specificError || !specificWord) {
         return new Response(
           JSON.stringify({ error: 'Specified word not found' }),
           { status: 404, headers: responseHeaders }
@@ -126,17 +128,63 @@ serve(async (req) => {
       }
       todaysWord = specificWord;
     } else {
-      // Deterministic selection based on date
-      const wordIndex = getGlobalWordIndex(haitiDate, allWords.length);
-      todaysWord = allWords[wordIndex];
+      // ── Deterministic selection ───────────────────────────────────────
+      // Step 1: Get the count of active words (cheap HEAD request)
+      const { count, error: countError } = await supabase
+        .from('daily_words')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true);
+
+      if (countError || !count || count === 0) {
+        console.error('Error fetching word count:', countError);
+        return new Response(
+          JSON.stringify({ error: 'No active words found' }),
+          { status: 404, headers: responseHeaders }
+        );
+      }
+
+      // Step 2: Compute today's display_order (same formula as frontend)
+      const displayOrder = computeDisplayOrder(haitiDate, count);
+      console.log(`📖 Computed display_order: ${displayOrder} (from ${count} active words)`);
+
+      // Step 3: Fetch the word matching this display_order
+      const { data: wordByOrder, error: wordError } = await supabase
+        .from('daily_words')
+        .select('id, word, phonetic, definition')
+        .eq('is_active', true)
+        .eq('display_order', displayOrder)
+        .maybeSingle();
+
+      if (wordError) {
+        console.error('Error fetching word by display_order:', wordError);
+      }
+
+      // Step 4: Fallback to first word if display_order has a gap in the sequence
+      if (!wordByOrder) {
+        console.warn(`⚠️ No word found for display_order=${displayOrder}, falling back to first word`);
+        const { data: fallbackWord, error: fallbackError } = await supabase
+          .from('daily_words')
+          .select('id, word, phonetic, definition')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (fallbackError || !fallbackWord) {
+          return new Response(
+            JSON.stringify({ error: 'No active words found' }),
+            { status: 404, headers: responseHeaders }
+          );
+        }
+        todaysWord = fallbackWord;
+      } else {
+        todaysWord = wordByOrder;
+      }
     }
-    
-    console.log(`📅 Haiti date: ${haitiDate}`);
-    console.log(`📖 Today's word (deterministic): "${todaysWord.word}" [${todaysWord.phonetic}]`);
 
-    
+    console.log(`📖 Today's word: "${todaysWord.word}" [${todaysWord.phonetic}]`);
 
-    // Get all users with push subscriptions
+    // Fetch all users with push subscriptions
     const { data: subscriptions, error: subError } = await supabase
       .from('push_subscriptions')
       .select('user_id')
@@ -150,34 +198,32 @@ serve(async (req) => {
       );
     }
 
-    // Get unique user IDs
     const uniqueUserIds = [...new Set(subscriptions?.map(s => s.user_id) || [])];
     console.log(`👥 Found ${uniqueUserIds.length} users with push subscriptions`);
 
     if (uniqueUserIds.length === 0) {
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           message: 'No users with push subscriptions',
           word: todaysWord.word,
-          sentCount: 0 
+          sentCount: 0
         }),
         { headers: responseHeaders }
       );
     }
 
-    // Get notification preferences for word_of_day category
+    // Check notification preferences for word_of_day category
     const { data: preferences } = await supabase
       .from('notification_preferences')
       .select('user_id, enabled')
       .eq('category', 'word_of_day')
       .in('user_id', uniqueUserIds);
 
-    // Build map of user preferences (default to enabled if no preference set)
+    // Build preference map — absence of a preference defaults to enabled
     const prefMap = new Map<string, boolean>();
     preferences?.forEach(p => prefMap.set(p.user_id, p.enabled));
 
-    // Filter users who have word_of_day enabled (or no preference = default enabled)
     const eligibleUserIds = uniqueUserIds.filter(userId => {
       const pref = prefMap.get(userId);
       return pref === undefined || pref === true;
@@ -187,11 +233,11 @@ serve(async (req) => {
 
     if (eligibleUserIds.length === 0) {
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           message: 'All users have word_of_day notifications disabled',
           word: todaysWord.word,
-          sentCount: 0 
+          sentCount: 0
         }),
         { headers: responseHeaders }
       );
@@ -205,7 +251,7 @@ serve(async (req) => {
       url: '/dashboard',
     };
 
-    // Send notifications in batches of 10 with delay to avoid rate limits
+    // Send in batches of 10 with a short delay to avoid rate limits
     const BATCH_SIZE = 10;
     const BATCH_DELAY_MS = 100;
     let successCount = 0;
@@ -240,7 +286,6 @@ serve(async (req) => {
       successCount += batchResults.filter(r => r).length;
       failCount += batchResults.filter(r => !r).length;
 
-      // Delay between batches
       if (i + BATCH_SIZE < eligibleUserIds.length) {
         await new Promise(resolve => setTimeout(resolve, BATCH_DELAY_MS));
       }
