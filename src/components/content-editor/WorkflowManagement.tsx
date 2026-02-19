@@ -99,6 +99,27 @@ export const WorkflowManagement = ({ selectedLesson, onUpdate }: WorkflowManagem
 
       if (error) throw error;
 
+      // Write publish/unpublish events to content_change_log — fire-and-forget.
+      // Failure here must never block the workflow status update that already succeeded.
+      if (newStatus === 'published' || (newStatus === 'draft' && currentStatus === 'published')) {
+        const changeType = newStatus === 'published' ? 'publish' : 'unpublish';
+        supabase
+          .from('content_change_log')
+          .insert({
+            lesson_id: selectedLesson.id,
+            // subject_id captured for filtering in ChangeLog
+            subject_id: selectedLesson.subject_id ?? null,
+            changed_by: user.id,
+            change_type: changeType,
+            // Snapshot the previous status from the prop (not yet refreshed by onUpdate)
+            previous_content: { workflow_status: selectedLesson.workflow_status || 'draft' },
+            new_content: { workflow_status: newStatus },
+          })
+          .then(({ error: logError }) => {
+            if (logError) console.error('Change log write failed (non-blocking):', logError);
+          });
+      }
+
       toast.success(`Statut mis à jour: ${getStatusLabel(newStatus)}`);
       onUpdate();
     } catch (error) {
