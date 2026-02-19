@@ -25,6 +25,7 @@ interface LessonEditorProps {
 }
 
 export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorProps) => {
+  // Content-only fields — publish state is managed separately to enforce atomic writes
   const [lessonData, setLessonData] = useState({
     title: "",
     slug: "",
@@ -34,9 +35,11 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
     exemples_exercices: "",
     activites_interactives: "",
     grade_level: "",
-    is_published: false,
     youtube_url: "",
   });
+  // Separate publish state — never mixed with content fields so workflow_status
+  // can always be written together with is_published in a single DB update
+  const [isPublished, setIsPublished] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("edit");
   const [currentUserId, setCurrentUserId] = useState<string>();
@@ -75,9 +78,10 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
         exemples_exercices: selectedLesson.exemples_exercices || "",
         activites_interactives: selectedLesson.activites_interactives || "",
         grade_level: selectedLesson.grade_level || "",
-        is_published: selectedLesson.is_published || false,
         youtube_url: selectedLesson.youtube_url || "",
       });
+      // Reset publish toggle separately so it never gets spread into content updates
+      setIsPublished(selectedLesson.is_published || false);
     }
   }, [selectedLesson]);
 
@@ -101,13 +105,21 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
         exemples_exercices: selectedLesson.exemples_exercices,
       };
 
-      // Update lesson
+      // Build update payload — is_published and workflow_status are always written
+      // together in one atomic DB call so they can never diverge from each other.
+      // isPublished: true  → workflow_status: 'published'
+      // isPublished: false → workflow_status: 'draft'
+      const updatePayload = {
+        ...lessonData,                                               // content fields only
+        is_published: isPublished,                                   // explicit, not spread
+        // Cast to the DB enum — Supabase TS types are strict on workflow_status values
+        workflow_status: (isPublished ? 'published' : 'draft') as 'published' | 'draft',
+        updated_at: new Date().toISOString(),
+      };
+
       const { error: updateError } = await supabase
         .from('lessons')
-        .update({
-          ...lessonData,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updatePayload)
         .eq('id', selectedLesson.id);
 
       if (updateError) throw updateError;
@@ -237,10 +249,8 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <div className="flex items-center gap-2">
                 <Switch
-                  checked={lessonData.is_published}
-                  onCheckedChange={(checked) =>
-                    setLessonData({ ...lessonData, is_published: checked })
-                  }
+                  checked={isPublished}
+                  onCheckedChange={setIsPublished}
                 />
                 <span className="text-xs md:text-sm whitespace-nowrap">Publié</span>
                 <PublishGateIndicator
