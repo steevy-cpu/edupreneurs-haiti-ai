@@ -1,17 +1,15 @@
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { Sparkles, RefreshCw, Check, X, Eye, Loader2, AlertCircle } from "lucide-react";
+import { Sparkles, RefreshCw, Check, X, Eye } from "lucide-react";
 import { DEFAULT_WORD_COUNTS, SECTION_RANGES, SECTION_DESCRIPTIONS, SectionName } from "@/lib/lessonPrompts";
-import { validateGeneratedContent, getGradeColor, getScoreLabel, QualityMetrics } from "@/lib/contentValidation";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { useGenerationJob, GenerationJobProgress, type JobConfig } from "@/features/content-editor";
 
 interface SectionGeneratorProps {
   lesson: any;
@@ -27,166 +25,93 @@ export const SectionGenerator = ({
   onContentGenerated,
 }: SectionGeneratorProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [targetWords, setTargetWords] = useState<number>(DEFAULT_WORD_COUNTS[sectionName]);
   const [additionalContext, setAdditionalContext] = useState("");
-  const [generatedContent, setGeneratedContent] = useState("");
+  // pendingContent holds the generated result awaiting user approval (preview-before-apply)
+  const [pendingContent, setPendingContent] = useState("");
   const [showPreview, setShowPreview] = useState(false);
-  const [qualityMetrics, setQualityMetrics] = useState<QualityMetrics | null>(null);
 
   const hasExistingContent = currentContent && currentContent.trim().length > 0;
 
-  // Debug: Log lesson data when component mounts or lesson changes
-  console.log('🔍 SectionGenerator lesson data:', {
-    hasLesson: !!lesson,
-    lessonId: lesson?.id,
-    lessonTitle: lesson?.title,
-    subject: lesson?.subjects,
-    gradeLevel: lesson?.grade_level
+  // Called when the background job completes — store result for user preview
+  const handleJobComplete = useCallback((result: Record<string, any> | null) => {
+    if (!result) return;
+    const content = result[sectionName];
+    if (content) {
+      setPendingContent(content);
+      setShowPreview(true); // Auto-show preview when content arrives
+    }
+  }, [sectionName]);
+
+  const {
+    activeJob,
+    existingJob,
+    isGenerating,
+    isPending,
+    progress,
+    progressPercentage,
+    currentSection: activeSection,
+    startJob,
+    cancelJob,
+    resumeJob,
+    canResume,
+  } = useGenerationJob({
+    lessonId: lesson?.id || '',
+    onJobComplete: handleJobComplete,
   });
 
-  const handleGenerate = async () => {
+  // Scope isGenerating and canResume to only this section's jobs.
+  // Prevents all 5 SectionGenerators from appearing disabled when one section is running.
+  const isOwnJob = (job: typeof activeJob | typeof existingJob) =>
+    !!job?.config?.selectedSections?.includes(sectionName);
+
+  const isThisSectionGenerating = isGenerating && isOwnJob(activeJob);
+  const canResumeThisSection = canResume && isOwnJob(existingJob);
+
+  const handleGenerate = () => {
     if (!lesson) {
       toast.error("Aucune leçon sélectionnée");
       return;
     }
+    // Clear any previous pending content before starting a new job
+    setPendingContent("");
+    setShowPreview(false);
 
-    setIsGenerating(true);
-    setGeneratedContent("");
-    setQualityMetrics(null);
-
-    const startTime = Date.now();
-
-    try {
-      // Fetch complete lesson data with subject to ensure we have the subject name
-      const { data: fullLesson, error: fetchError } = await supabase
-        .from('lessons')
-        .select('*, subjects(name)')
-        .eq('id', lesson.id)
-        .single();
-
-      if (fetchError) {
-        console.error('Error fetching lesson:', fetchError);
-        toast.error("Erreur lors de la récupération de la leçon");
-        setIsGenerating(false);
-        return;
-      }
-
-      const subjectName = fullLesson.subjects?.name || 'Général';
-      console.log('🔵 Generating with:', { 
-        lessonId: lesson.id, 
-        sectionName, 
-        subjectName, 
-        gradeLevel: lesson.grade_level 
-      });
-
-      const { data, error } = await supabase.functions.invoke('generate-lesson-section', {
-        body: {
-          lessonId: lesson.id,
-          sectionName,
-          lessonTitle: lesson.title,
-          subject: subjectName,
-          gradeLevel: lesson.grade_level || '7AF',
-          targetWords,
-          context: additionalContext || undefined,
-          currentContent: hasExistingContent ? currentContent : undefined,
-        },
-      });
-
-      if (error) {
-        console.error('Generation error:', error);
-        
-        // Log failed generation
-        await supabase.from('ai_generation_logs').insert({
-          lesson_id: lesson.id,
-          section_name: sectionName,
-          target_words: targetWords,
-          additional_context: additionalContext,
-          success: false,
-          error_message: error.message,
-          generation_time_ms: Date.now() - startTime,
-          generated_by: (await supabase.auth.getUser()).data.user?.id,
-        });
-
-        if (error.message?.includes('429')) {
-          toast.error("Trop de requêtes. Veuillez attendre quelques secondes.");
-        } else if (error.message?.includes('402')) {
-          toast.error("Crédits IA épuisés. Veuillez recharger votre compte.");
-        } else {
-          toast.error("Erreur lors de la génération");
-        }
-        return;
-      }
-
-      if (!data?.content) {
-        toast.error("Aucun contenu généré");
-        return;
-      }
-
-      setGeneratedContent(data.content);
-      setShowPreview(true);
-
-      // Validate quality
-      const metrics = validateGeneratedContent(data.content, {
-        minWords: SECTION_RANGES[sectionName].min,
-        maxWords: SECTION_RANGES[sectionName].max,
-        requireHtml: true,
-        requireEmojis: true,
-        requireHaitianContext: true,
-      });
-      setQualityMetrics(metrics);
-
-      // Log successful generation
-      await supabase.from('ai_generation_logs').insert({
-        lesson_id: lesson.id,
-        section_name: sectionName,
-        target_words: targetWords,
-        additional_context: additionalContext,
-        response_content: data.content,
-        word_count: metrics.wordCount,
-        generation_time_ms: Date.now() - startTime,
-        quality_score: metrics.overallScore,
-        has_html_tags: metrics.hasHtmlTags,
-        has_tailwind_classes: metrics.hasTailwindClasses,
-        has_emojis: metrics.hasEmojis,
-        mentions_haiti: metrics.mentionsHaiti,
-        success: true,
-        generated_by: (await supabase.auth.getUser()).data.user?.id,
-      });
-
-      toast.success(`Section générée (${data.wordCount} mots, ${data.generationTimeMs}ms)`);
-    } catch (error) {
-      console.error('Generation error:', error);
-      toast.error("Erreur lors de la génération");
-    } finally {
-      setIsGenerating(false);
-    }
+    const config: JobConfig = {
+      selectedSections: [sectionName],
+      // Pass per-section word count; other sections default via DEFAULT_WORD_COUNTS in the edge fn
+      wordCounts: { ...DEFAULT_WORD_COUNTS, [sectionName]: targetWords },
+      generateQuiz: false,
+      generateVideos: false,
+      generateAudio: false,
+      imageGenerationModel: 'none',
+      globalContext: additionalContext || undefined,
+    };
+    startJob(config);
   };
 
   const handleApply = () => {
-    if (generatedContent) {
-      onContentGenerated(generatedContent);
+    if (pendingContent) {
+      // Write generated content to parent's lessonData — user still saves explicitly via "Enregistrer"
+      onContentGenerated(pendingContent);
       toast.success("Contenu appliqué");
       setIsOpen(false);
-      setGeneratedContent("");
-      setQualityMetrics(null);
+      setPendingContent("");
+      setShowPreview(false);
     }
   };
 
-  const handleCancel = () => {
-    setGeneratedContent("");
-    setQualityMetrics(null);
+  const handleDiscard = () => {
+    setPendingContent("");
     setShowPreview(false);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
-      console.log('🔵 Dialog state changing:', open);
       setIsOpen(open);
       if (!open) {
-        // Reset state when closing
-        setGeneratedContent("");
-        setQualityMetrics(null);
+        // Reset preview state when closing — generation job continues in background
+        setPendingContent("");
         setShowPreview(false);
       }
     }}>
@@ -196,9 +121,8 @@ export const SectionGenerator = ({
           size="sm"
           className="gap-2"
           onClick={() => {
-            console.log('🔵 Generate button clicked for lesson:', lesson?.id);
             if (!lesson) {
-              toast.error("Aucune leçon sélectionnée - veuillez sélectionner une leçon dans la liste");
+              toast.error("Aucune leçon sélectionnée — veuillez sélectionner une leçon dans la liste");
               return;
             }
           }}
@@ -262,16 +186,13 @@ export const SectionGenerator = ({
             </div>
 
             <Button
-              onClick={() => {
-                console.log('🔵 Générer button clicked in dialog');
-                handleGenerate();
-              }}
-              disabled={isGenerating}
+              onClick={handleGenerate}
+              disabled={isThisSectionGenerating || isPending}
               className="w-full"
             >
-              {isGenerating ? (
+              {isThisSectionGenerating || isPending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Sparkles className="mr-2 h-4 w-4 animate-pulse" />
                   Génération en cours...
                 </>
               ) : (
@@ -283,49 +204,32 @@ export const SectionGenerator = ({
             </Button>
           </div>
 
-          {/* Quality Metrics */}
-          {qualityMetrics && (
-            <div className={`border rounded-lg p-4 ${getGradeColor(qualityMetrics.grade).split(' ')[2]}`}>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">Qualité du contenu:</span>
-                  <Badge className={getGradeColor(qualityMetrics.grade)}>
-                    {qualityMetrics.grade} - {getScoreLabel(qualityMetrics.overallScore)}
-                  </Badge>
-                </div>
-                <Badge variant="outline">
-                  {qualityMetrics.wordCount} mots
-                </Badge>
-              </div>
-
-              {qualityMetrics.warnings.length > 0 && (
-                <Alert variant="destructive" className="mb-3">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    <ul className="list-disc list-inside text-sm space-y-1">
-                      {qualityMetrics.warnings.map((warning, i) => (
-                        <li key={i}>{warning}</li>
-                      ))}
-                    </ul>
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {qualityMetrics.suggestions.length > 0 && (
-                <div className="text-sm text-muted-foreground">
-                  <p className="font-medium mb-1">Suggestions d'amélioration:</p>
-                  <ul className="list-disc list-inside space-y-1">
-                    {qualityMetrics.suggestions.map((suggestion, i) => (
-                      <li key={i}>{suggestion}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
+          {/* System A job progress — only shown for this section's job */}
+          {isThisSectionGenerating && (
+            <GenerationJobProgress
+              job={activeJob}
+              progress={progress}
+              currentSection={activeSection}
+              progressPercentage={progressPercentage}
+              onCancel={cancelJob}
+            />
           )}
 
-          {/* Generated Content Preview */}
-          {generatedContent && (
+          {/* Resume banner — shown only when this section has a resumable job */}
+          {canResumeThisSection && existingJob && !isThisSectionGenerating && (
+            <GenerationJobProgress
+              job={null}
+              progress={existingJob.progress}
+              currentSection={existingJob.current_section}
+              progressPercentage={0}
+              existingJob={existingJob}
+              canResume={true}
+              onResume={() => resumeJob(existingJob)}
+            />
+          )}
+
+          {/* Generated Content Preview — shown when job completes and content is ready */}
+          {pendingContent && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label>Aperçu du contenu généré</Label>
@@ -343,7 +247,7 @@ export const SectionGenerator = ({
                 <div className="border rounded-lg p-4 bg-background max-h-[400px] overflow-y-auto">
                   <div
                     className="prose prose-sm dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(generatedContent) }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(pendingContent) }}
                   />
                 </div>
               )}
@@ -353,11 +257,11 @@ export const SectionGenerator = ({
                   <Check className="mr-2 h-4 w-4" />
                   Appliquer
                 </Button>
-                <Button variant="outline" onClick={handleGenerate} disabled={isGenerating}>
+                <Button variant="outline" onClick={handleGenerate} disabled={isThisSectionGenerating || isPending}>
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Régénérer
                 </Button>
-                <Button variant="ghost" onClick={handleCancel}>
+                <Button variant="ghost" onClick={handleDiscard}>
                   <X className="mr-2 h-4 w-4" />
                   Annuler
                 </Button>
