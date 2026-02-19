@@ -1,8 +1,8 @@
 
-# Exams Plan C — Data Quality Improvements for Exercise Editor
+# Email Plan A — Security and Correctness Fixes
 
 ## Scope
-4 targeted fixes across 4 files + 1 new edge function. No database changes. No SQL. No existing functionality touched outside these files.
+5 targeted fixes across 3 files. No database changes. No new edge functions.
 
 ---
 
@@ -10,394 +10,216 @@
 
 | File | Change | Fix |
 |---|---|---|
-| `src/features/exams/admin/components/QualityIndicators.tsx` | Rename label + add tooltip | Fix 1 |
-| `src/features/exams/admin/components/ExamDetailEditor.tsx` | Update filter label + pass exam context to ExerciseCard | Fix 1 + Fix 2 |
-| `src/features/exams/admin/components/ExerciseCard.tsx` | Add AI generate button + Textarea for open_ended | Fix 2 + Fix 3 |
-| `src/features/exams/admin/components/ExistingExamsList.tsx` | Zero-exercise warning badge + disable edit button | Fix 4 |
-| `supabase/functions/generate-exercise-explanation/index.ts` | New edge function for AI explanation generation | Fix 2 |
-| `supabase/config.toml` | Add `[functions.generate-exercise-explanation]` entry | Fix 2 |
+| `supabase/functions/send-login-notification/index.ts` | Remove reset token generation, update template, upgrade Resend | Fix 1, Fix 4 |
+| `supabase/functions/_shared/emails.ts` | Fix SITE_URL fallback, add email lookup fallback from profiles | Fix 2, Fix 3 |
+| `supabase/functions/send-welcome-email/index.ts` | Remove dead verificationUrl conditional block | Fix 5 |
 
 ---
 
-## Fix 1 — Improve Quality Indicator Labels
+## Fix 1 — Remove Password Reset Token from Login Notification
 
-### Part A — QualityIndicators.tsx
+**File:** `supabase/functions/send-login-notification/index.ts`
 
-**Change 1:** Replace label `"Contenu structuré"` (line 127) with `"Contenu extrait par IA"`.
+### Part A — Remove the reset token generation block (lines 241-259)
 
-**Change 2:** Add a small info icon with a tooltip next to the new label. Import `{ Tooltip, TooltipContent, TooltipTrigger }` from `@/components/ui/tooltip` and `{ Info }` from `lucide-react`.
+Delete the entire block that calls `generate_password_reset_token` RPC. The `resetUrl` variable is replaced with a direct link to the Settings page.
 
-```tsx
-// Before (line 126-127):
-<div className="flex items-center gap-2">
-  {getIcon(metrics.blocksPercent)}
-  <span>Contenu structuré</span>
-</div>
+```ts
+// Before (lines 241-259):
+let resetUrl = 'https://mon-edupreneur.com/auth/login';
+try {
+  const { data: tokenData, error: tokenError } = await supabase.rpc(
+    'generate_password_reset_token',
+    { user_email: email }
+  );
+  // ... token handling ...
+} catch (tokenGenError) { ... }
 
 // After:
-<div className="flex items-center gap-2">
-  {getIcon(metrics.blocksPercent)}
-  <span>Contenu extrait par IA</span>
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <Info className="h-3 w-3 text-muted-foreground cursor-help" />
-    </TooltipTrigger>
-    <TooltipContent side="right" className="max-w-xs">
-      Les exercices dont le contenu a été extrait automatiquement par l'IA depuis le PDF.
-    </TooltipContent>
-  </Tooltip>
-</div>
+// Direct link to settings — requires authentication, no token needed
+const settingsUrl = 'https://mon-edupreneur.com/settings';
 ```
 
-**Note:** The `TooltipProvider` is already mounted at the root level of the app (in the provider stack), so no local `TooltipProvider` wrapper is needed here.
+### Part B — Update the template signature and "Warning Box" button
 
-### Part B — ExamDetailEditor.tsx
+The `getEmailTemplate` function signature changes:
+- Remove the `resetUrl` parameter
+- Add a `settingsUrl` parameter (or inline the constant)
 
-Update `getFilterLabel` (line 81) to rename the filter button label:
+In the Warning Box (lines 148-163), change:
+- Button text from `"🔐 Changer mon mot de passe"` to `"🔐 Sécuriser mon compte"`
+- Button href from `${resetUrl}` to `https://mon-edupreneur.com/settings`
+- Warning text updated to direct user to their settings instead of changing password directly
+
+```html
+<!-- Before -->
+<a href="${resetUrl}" style="...">🔐 Changer mon mot de passe</a>
+
+<!-- After -->
+<a href="https://mon-edupreneur.com/settings" style="...">🔐 Sécuriser mon compte</a>
+```
+
+The warning paragraph text changes from:
+> "Si vous ne reconnaissez pas cette connexion, securisez immediatement votre compte en changeant votre mot de passe."
+
+To:
+> "Si vous ne reconnaissez pas cette connexion, securisez immediatement votre compte."
+
+### Part C — Remove Supabase client (no longer needed)
+
+Since the only reason `createClient` was used was for rate limiting AND the reset token RPC, and rate limiting still needs it, the Supabase client import stays. However, the `generate_password_reset_token` RPC call is fully removed.
+
+### Part D — Update the template call site
+
+```ts
+// Before (line 265):
+html: getEmailTemplate(fullName, email, timestamp, resetUrl, device, location),
+
+// After:
+html: getEmailTemplate(fullName, email, timestamp, device, location),
+```
+
+---
+
+## Fix 2 — Fix SITE_URL Fallback in `_shared/emails.ts`
+
+**File:** `supabase/functions/_shared/emails.ts`, line 9
+
 ```ts
 // Before:
-case 'missing-blocks': return 'Sans contenu structuré';
+const SITE_URL = Deno.env.get("SITE_URL") || "https://edupreneurs-haiti-ai.lovable.app";
 
 // After:
-case 'missing-blocks': return 'Sans extraction IA';
+const SITE_URL = Deno.env.get("SITE_URL") || "https://mon-edupreneur.com";
 ```
+
+**SITE_URL secret status:** Confirmed present in the project secrets list. The fallback is purely defensive for the case where the secret is accidentally deleted.
+
+**Impact:** This constant is used in CTA buttons across 6 email templates (subscription confirmation, gift student, gift payer thank you, renewal student, renewal payer, payer invoice). All will correctly point to the production domain even if the secret is removed.
 
 ---
 
-## Fix 2 — AI Explanation Generation for Open-Ended Exercises
+## Fix 3 — Add Email Lookup Fallback in `sendSubscriptionEmails`
 
-This is the most complex fix. It requires a new edge function and changes to ExerciseCard's interface and internal state.
+**File:** `supabase/functions/_shared/emails.ts`, lines 296-308
 
-### Part A — New Edge Function: `generate-exercise-explanation`
+Currently, if `payment_transactions.metadata.email` is missing, the function logs a message and returns without sending any email. This is a silent failure.
 
-**File:** `supabase/functions/generate-exercise-explanation/index.ts`
+The fix adds a fallback: query `auth.users` via `supabaseAdmin` (available in `sendSubscriptionEmailsWithAuth`) or query the caller for the email. However, `sendSubscriptionEmails` receives a generic `supabase` client typed as `{ from: (table: string) => any }` which cannot call `auth.admin.getUserById`.
 
-A simple, non-streaming POST endpoint. Receives `{ questionText, subject, gradeLevel, series }` and returns `{ explanation: string }`.
+**Solution:** Since `sendSubscriptionEmailsWithAuth` (line 336) already has the full admin client and correctly fetches email from `auth.users`, the fix targets only `sendSubscriptionEmails` (line 275). The fallback will query the `profiles` table for an `email` column. However, checking the profiles table schema, there is no `email` column — the email lives in `auth.users`.
+
+**Revised approach:** The `sendSubscriptionEmails` function receives a Supabase client. We can't access `auth.users` from it. Instead, the fallback will use the Resend API key already available in the module to query the profiles table for a `contact_email` or similar. But since no email column exists on profiles, the most practical fix is:
+
+1. In `sendSubscriptionEmails`, if `metadata.email` is missing, log a **warning** (not just a log) with the `orderId` and `userId` so the issue is clearly visible.
+2. The callers that use `sendSubscriptionEmailsWithAuth` already have the correct fallback via `auth.admin.getUserById`.
+3. For the callers using `sendSubscriptionEmails`, add a note that they should migrate to `sendSubscriptionEmailsWithAuth`.
 
 ```ts
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// Before (lines 302-308):
+const userEmail = txn?.metadata?.email || txn?.metadata?.userEmail;
+const userName = userAuth?.full_name || "Étudiant";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+if (!userEmail) {
+  console.log(`[Email] No email found for user ${userId}, skipping emails`);
+  return;
+}
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+// After:
+const metadataEmail = txn?.metadata?.email || txn?.metadata?.userEmail;
+const userName = userAuth?.full_name || "Étudiant";
 
+// Fallback: if metadata has no email, try to find it from profiles or auth
+let userEmail = metadataEmail;
+if (!userEmail) {
+  console.warn(`[Email] WARNING: No email in transaction metadata for order ${orderId}, user ${userId}. Attempting profiles fallback.`);
+  // Query auth.users email via the admin client if available
+  // The supabase param here is a service-role client, try auth.admin
   try {
-    const { questionText, subject, gradeLevel = 'NS4', series } = await req.json();
-
-    if (!questionText || !subject) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields: questionText, subject" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
-
-    // Build context-aware system prompt for the Haitian Baccalauréat
-    const examContext = gradeLevel === 'NS4'
-      ? `Baccalauréat haïtien (NS4)${series ? ` — Série ${series}` : ''}`
-      : `9ème Année Fondamentale haïtienne (9AF)`;
-
-    const systemPrompt = `Tu es un professeur expert en ${subject} pour le ${examContext}.
-Génère une réponse modèle complète et pédagogique pour la question suivante.
-La réponse doit:
-- Être adaptée au niveau ${gradeLevel} haïtien
-- Inclure toutes les étapes de raisonnement (pour les matières scientifiques)
-- Utiliser la notation LaTeX pour les formules mathématiques (ex: $E = mc^2$)
-- Être rédigée en français académique clair
-- Ne pas dépasser 300 mots
-Retourne uniquement la réponse modèle, sans introduction ni conclusion sur ta tâche.`;
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `Question: ${questionText}` },
-        ],
-        stream: false,
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Limite de requêtes atteinte. Réessayez dans quelques instants." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+    const adminClient = supabase as any;
+    if (adminClient?.auth?.admin?.getUserById) {
+      const { data: authData } = await adminClient.auth.admin.getUserById(userId);
+      userEmail = authData?.user?.email;
+      if (userEmail) {
+        console.warn(`[Email] Fallback succeeded: found email from auth for user ${userId}`);
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Crédits insuffisants pour générer une explication." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      throw new Error(`AI gateway error: ${response.status}`);
     }
-
-    const data = await response.json();
-    const explanation = data.choices?.[0]?.message?.content?.trim();
-
-    if (!explanation) throw new Error("Empty response from AI");
-
-    return new Response(
-      JSON.stringify({ explanation }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  } catch (e) {
-    console.error("generate-exercise-explanation error:", e);
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Erreur inconnue" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+  } catch (fallbackErr) {
+    console.warn(`[Email] Auth fallback failed:`, fallbackErr);
   }
-});
-```
+}
 
-**config.toml addition** (after the `parse-exam-vision` block):
-```toml
-[functions.generate-exercise-explanation]
-verify_jwt = false
-```
-
-### Part B — ExamDetailEditor.tsx: Pass exam context to ExerciseCard
-
-ExerciseCard currently receives no context about the exam it belongs to. The `ExamDetailEditor` has `exam.subject`, `exam.grade_level`, and `exam.series` readily available.
-
-Add three new props to each `ExerciseCard` call in the `filteredExercises.map()` (line 181–188):
-```tsx
-<ExerciseCard
-  key={exercise.id}
-  exercise={exercise}
-  onUpdate={(updates) => handleUpdateExercise(exercise.id, updates)}
-  onDelete={() => handleDeleteExercise(exercise.id)}
-  isUpdating={updatingId === exercise.id}
-  examSubject={exam.subject}
-  examGradeLevel={exam.grade_level}
-  examSeries={exam.series ?? undefined}
-/>
-```
-
-### Part C — ExerciseCard.tsx: Generate button + preview state
-
-**New props added to `ExerciseCardProps` interface:**
-```ts
-interface ExerciseCardProps {
-  exercise: DbExamExercise;
-  onUpdate: (updates: Partial<Pick<DbExamExercise, 'correct_answer' | 'explanation' | 'concept' | 'points'>>) => void;
-  onDelete: () => void;
-  isUpdating?: boolean;
-  isExpanded?: boolean;
-  // Exam context for AI explanation generation
-  examSubject?: string;
-  examGradeLevel?: string;
-  examSeries?: string;
+if (!userEmail) {
+  console.error(`[Email] CRITICAL: No email found for user ${userId}, order ${orderId}. Subscription emails NOT sent.`);
+  return;
 }
 ```
 
-**New state inside the component:**
-```ts
-// AI explanation generation state
-const [generatedPreview, setGeneratedPreview] = useState<string | null>(null);
-const [isGenerating, setIsGenerating] = useState(false);
-```
-
-**New handler:**
-```ts
-const handleGenerateExplanation = useCallback(async () => {
-  setIsGenerating(true);
-  try {
-    const { data, error } = await supabase.functions.invoke('generate-exercise-explanation', {
-      body: {
-        questionText: exercise.question_text,
-        subject: examSubject,
-        gradeLevel: examGradeLevel,
-        series: examSeries,
-      },
-    });
-    if (error) throw error;
-    if (data?.error) throw new Error(data.error);
-    // Show preview — do not overwrite explanation directly
-    setGeneratedPreview(data.explanation);
-  } catch (err: any) {
-    toast.error(err.message || "Erreur lors de la génération de l'explication");
-  } finally {
-    setIsGenerating(false);
-  }
-}, [exercise.question_text, examSubject, examGradeLevel, examSeries]);
-```
-
-Need to add `import { supabase } from "@/integrations/supabase/client"` and `import { toast } from "sonner"`.
-
-**Render logic below the Explanation Textarea:**
-
-Show the generate button only when: `!isMCQ` (open_ended) AND `!hasExplanation` AND no preview is already showing.
-
-Show the preview panel when `generatedPreview !== null`.
-
-```tsx
-{/* AI Explanation Generator — only for open_ended exercises with empty explanation */}
-{!isMCQ && !hasExplanation && !generatedPreview && (
-  <Button
-    variant="outline"
-    size="sm"
-    onClick={handleGenerateExplanation}
-    disabled={isGenerating}
-    className="w-full"
-  >
-    {isGenerating ? (
-      <>
-        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-        Génération en cours...
-      </>
-    ) : (
-      <>
-        <Sparkles className="h-4 w-4 mr-2" />
-        Générer une explication
-      </>
-    )}
-  </Button>
-)}
-
-{/* AI-generated explanation preview — user must click Appliquer to apply */}
-{generatedPreview !== null && (
-  <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg space-y-2">
-    <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-400">
-      <Sparkles className="h-4 w-4" />
-      Explication générée par l'IA
-    </div>
-    <p className="text-sm whitespace-pre-wrap">{generatedPreview}</p>
-    <div className="flex gap-2 pt-1">
-      <Button
-        size="sm"
-        onClick={() => {
-          // Apply the AI preview to the explanation field
-          setExplanation(generatedPreview);
-          setGeneratedPreview(null);
-        }}
-      >
-        Appliquer
-      </Button>
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={() => setGeneratedPreview(null)}
-      >
-        Annuler
-      </Button>
-    </div>
-  </div>
-)}
-```
-
-Add `Sparkles` to the lucide-react import list.
-
-**Safety guarantee:** `setExplanation(generatedPreview)` only runs inside the "Appliquer" click handler. The existing `explanation` state is never mutated by `handleGenerateExplanation` itself. The preview is a separate `generatedPreview` state. Clicking "Annuler" clears `generatedPreview` without touching `explanation`.
+This approach:
+- Tries the `auth.admin.getUserById` method if the client supports it (service-role clients do)
+- Logs a clear WARNING when the fallback is used
+- Logs a CRITICAL error when both paths fail
+- Does not change the function signature or break any callers
 
 ---
 
-## Fix 3 — Textarea for Open-Ended Correct Answer
+## Fix 4 — Upgrade Resend Import in `send-login-notification`
 
-**File:** `src/features/exams/admin/components/ExerciseCard.tsx`
+**File:** `supabase/functions/send-login-notification/index.ts`, line 10
 
-In the `{/* Correct Answer */}` block, the `else` branch (line 185–192) currently renders a single-line `Input`. Replace it with a `Textarea`:
-
-```tsx
-// Before (lines 185-192):
-) : (
-  <Input
-    id={`answer-${exercise.id}`}
-    value={correctAnswer}
-    onChange={(e) => setCorrectAnswer(e.target.value)}
-    placeholder="Entrer la réponse..."
-  />
-)}
+```ts
+// Before:
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 // After:
-) : (
-  // Textarea for open_ended: NS4 model answers can be multi-line
-  <Textarea
-    id={`answer-${exercise.id}`}
-    value={correctAnswer}
-    onChange={(e) => setCorrectAnswer(e.target.value)}
-    placeholder="Entrer la réponse modèle..."
-    rows={3}
-    className="resize-y"
-  />
-)}
+import { Resend } from "https://esm.sh/resend@4.0.0";
 ```
-
-`Textarea` is already imported at line 8. No new imports needed.
-
-**MCQ safety:** `isMCQ` is computed at line 112. The `Select` component renders when `isMCQ === true`, the `Textarea` only renders when `isMCQ === false`. These are mutually exclusive branches — MCQ display is unchanged.
 
 ---
 
-## Fix 4 — Zero Exercise Warning in ExistingExamsList
+## Fix 5 — Remove Dead `verificationUrl` Code from Welcome Email
 
-**File:** `src/features/exams/admin/components/ExistingExamsList.tsx`
+**File:** `supabase/functions/send-welcome-email/index.ts`
 
-Add a computed boolean per exam card:
+### Part A — Remove the conditional block from the template (lines 63-73)
+
+```html
+<!-- Delete this entire block -->
+${verificationUrl ? `
+<table role="presentation" ...>
+  <tr>
+    <td style="text-align: center;">
+      <a href="${verificationUrl}" ...>✓ Vérifier mon email</a>
+    </td>
+  </tr>
+</table>
+` : ''}
+```
+
+### Part B — Remove `verificationUrl` from template signature and caller
+
 ```ts
-const hasNoExercises = exam.total_exercises === 0;
+// Before (line 18):
+const getEmailTemplate = (fullName: string, verificationUrl?: string) => `
+
+// After:
+const getEmailTemplate = (fullName: string) => `
 ```
 
-**In the exam card's badge row** (after line 180 in the flex wrap div), add:
-```tsx
-{hasNoExercises && (
-  <Badge variant="outline" className="border-yellow-500 text-yellow-600 dark:text-yellow-500 text-xs">
-    Aucun exercice — Re-upload requis
-  </Badge>
-)}
+```ts
+// Before (line 172):
+const verificationUrl = rawBody.verificationUrl; // Optional field
+
+// After:
+// (delete this line entirely)
 ```
 
-**Disable the Pencil edit button** when `hasNoExercises`:
-```tsx
-{onEditExam && (
-  <Button
-    variant="ghost"
-    size="icon"
-    onClick={() => !hasNoExercises && onEditExam(exam)}
-    disabled={hasNoExercises}  // nothing to edit if no exercises
-    title={hasNoExercises ? "Aucun exercice à modifier" : "Modifier les exercices"}
-  >
-    <Pencil className="h-4 w-4" />
-  </Button>
-)}
-```
+```ts
+// Before (line 180):
+html: getEmailTemplate(fullName, verificationUrl),
 
-**Precision:** `total_exercises` is the value stored in the `official_exams` row. After Plan A cleanup, all remaining rows with `total_exercises = 0` are ghost entries. For future ghost entries (e.g. failed ingestion runs), this warning will appear automatically. For non-zero rows, the badge is never rendered.
-
----
-
-## Data Flow for Fix 2 (AI Generation)
-
-```text
-ExamDetailEditor (has exam.subject, exam.grade_level, exam.series)
-    ↓ props: examSubject, examGradeLevel, examSeries
-ExerciseCard (button visible when !isMCQ && !hasExplanation && !generatedPreview)
-    ↓ supabase.functions.invoke('generate-exercise-explanation')
-generate-exercise-explanation edge function
-    ↓ fetch("https://ai.gateway.lovable.dev/v1/chat/completions")
-Lovable AI Gateway (google/gemini-2.5-flash)
-    ↓ response.explanation
-ExerciseCard → setGeneratedPreview(explanation)  [preview panel shown]
-    ↓ user clicks "Appliquer"
-setExplanation(generatedPreview)  [explanation field updated, preview cleared]
-    ↓ user clicks "Enregistrer"
-onUpdate({ explanation: ... })  [saved to database]
+// After:
+html: getEmailTemplate(fullName),
 ```
 
 ---
@@ -406,11 +228,10 @@ onUpdate({ explanation: ... })  [saved to database]
 
 | Risk | Analysis | Status |
 |---|---|---|
-| AI preview overwrites existing explanation without "Appliquer" | `handleGenerateExplanation` only calls `setGeneratedPreview()`, never `setExplanation()`. `setExplanation()` is called exclusively inside the "Appliquer" click handler. | Safe |
-| Textarea for correct_answer breaks MCQ display | The `Select` (MCQ) and `Textarea` (open_ended) are in mutually exclusive branches of `isMCQ` conditional. MCQ exercises are unchanged. | Safe |
-| Zero-exercise badge appears on valid exams | `hasNoExercises = exam.total_exercises === 0`. Valid exams always have `total_exercises > 0` after Plan A cleanup. Badge only renders when condition is true. | Safe |
-| "Générer une explication" button shows on MCQ exercises | Button render condition: `!isMCQ && !hasExplanation && !generatedPreview`. `!isMCQ` is false for all MCQ exercises. Button cannot appear. | Safe |
-| Adding tooltip to QualityIndicators without local TooltipProvider | `TooltipProvider` is mounted at app root in the provider stack. All descendants can use Tooltip without wrapping locally. | Safe |
-| New edge function uses LOVABLE_API_KEY | `LOVABLE_API_KEY` is auto-provisioned as a Supabase secret. No user input required. Matches existing pattern from `parse-exam-vision`. | Safe |
-| Edge function cold start blocks the UI | The generate button shows a loading spinner with `isGenerating` state. The UI remains interactive. No page-level blocking. | Safe |
-| `examSubject/examGradeLevel/examSeries` props are undefined for 9AF exams | All three are optional props with `undefined` as the valid fallback. The edge function defaults `gradeLevel = 'NS4'` if omitted, which is fine since the generate button only appears for open_ended exercises which are predominantly NS4. | Safe |
+| Login notification email stops sending after removing reset token block | Only the RPC call and `resetUrl` variable are removed. The `resend.emails.send()` call at line 261 is unchanged. The template still renders with all connection details. | Safe |
+| "Securiser mon compte" button links to wrong URL | Hardcoded to `https://mon-edupreneur.com/settings`. This is the production domain confirmed in the codebase. The Settings page requires authentication — if the user is not logged in, the app's auth guard redirects to login first. | Safe |
+| SITE_URL fallback change affects other email functions | The `SITE_URL` constant is used only in `_shared/emails.ts` templates. Changing the fallback from the preview domain to the production domain is strictly an improvement. If `SITE_URL` secret is set (confirmed: it is), the fallback is never used anyway. | Safe |
+| Subscription email fallback causes runtime errors | The fallback uses a `try/catch` with `as any` cast. If the client doesn't support `auth.admin`, the catch block logs a warning and continues to the existing "no email found" path. No new error paths introduced. | Safe |
+| Resend v4 breaks send-login-notification | All other email functions already use resend@4.0.0. The `emails.send()` API is identical between v2 and v4. | Safe |
+| Removing verificationUrl breaks welcome email | The caller at line 172 reads `rawBody.verificationUrl` but no frontend code ever sends this field. The template conditional always evaluates to the empty string `''`. Removing it produces identical HTML output. | Safe |
+| Removing Supabase client import from login notification | The Supabase client is still needed for rate limiting (line 213-216). Only the RPC call is removed. Import stays. | Safe |
