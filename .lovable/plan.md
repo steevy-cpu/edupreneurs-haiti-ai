@@ -1,8 +1,8 @@
 
-# Email Plan A — Security and Correctness Fixes
+# Email Plan B — Email System Cleanup
 
 ## Scope
-5 targeted fixes across 3 files. No database changes. No new edge functions.
+2 file deletions + 1 page deletion + copyright year fix across 11 files + response format standardization across 8 send- functions. No database changes.
 
 ---
 
@@ -10,217 +10,173 @@
 
 | File | Change | Fix |
 |---|---|---|
-| `supabase/functions/send-login-notification/index.ts` | Remove reset token generation, update template, upgrade Resend | Fix 1, Fix 4 |
-| `supabase/functions/_shared/emails.ts` | Fix SITE_URL fallback, add email lookup fallback from profiles | Fix 2, Fix 3 |
-| `supabase/functions/send-welcome-email/index.ts` | Remove dead verificationUrl conditional block | Fix 5 |
+| `supabase/functions/send-birthday-email/` | **Delete directory** | Fix 1 |
+| `supabase/functions/send-test-email/` | **Delete directory** | Fix 2 |
+| `src/pages/EmailTest.tsx` | **Delete file** | Fix 2 (only caller of send-test-email) |
+| `src/App.tsx` | Remove EmailTest import + route | Fix 2 |
+| `supabase/config.toml` | Remove 2 function entries | Fix 1 + Fix 2 |
+| `supabase/functions/check-birthdays/index.ts` | Dynamic copyright year | Fix 3 |
+| `supabase/functions/send-login-notification/index.ts` | Dynamic year + standardized response | Fix 3 + Fix 4 |
+| `supabase/functions/send-confirmation-email/index.ts` | Dynamic year + standardized response | Fix 3 + Fix 4 |
+| `supabase/functions/send-welcome-email/index.ts` | Dynamic year + standardized response | Fix 3 + Fix 4 |
+| `supabase/functions/send-password-reset-email/index.ts` | Dynamic year + standardized response | Fix 3 + Fix 4 |
+| `supabase/functions/send-farewell-email/index.ts` | Dynamic year + standardized response | Fix 3 + Fix 4 |
+| `supabase/functions/send-device-verification-email/index.ts` | Dynamic year + standardized response | Fix 3 + Fix 4 |
+| `supabase/functions/send-report-confirmation/index.ts` | Dynamic year + standardized response | Fix 3 + Fix 4 |
+| `supabase/functions/admin-delete-user-account/index.ts` | Dynamic year | Fix 3 |
+| `supabase/functions/admin-delete-post/index.ts` | Dynamic year | Fix 3 |
+| `supabase/functions/delete-user-account/index.ts` | Dynamic year | Fix 3 |
 
 ---
 
-## Fix 1 — Remove Password Reset Token from Login Notification
+## Pre-Delete Verification
 
-**File:** `supabase/functions/send-login-notification/index.ts`
+| File | Caller search | Result | Safe to delete? |
+|---|---|---|---|
+| `supabase/functions/send-birthday-email/` | Zero matches in all `src/` files. Zero matches in all `supabase/functions/` files except its own directory. `check-birthdays` has its own inline template. | No callers | Yes |
+| `supabase/functions/send-test-email/` | Only caller is `src/pages/EmailTest.tsx` (dev test page). No other callers in `src/` or `supabase/functions/`. | 1 caller (dev page, also being deleted) | Yes |
+| `src/pages/EmailTest.tsx` | Only referenced in `src/App.tsx` (import + route). No other file imports or links to it. The page is a developer utility at `/email-test` with no navigation link in the app shell. | 1 reference (App.tsx, being cleaned) | Yes |
 
-### Part A — Remove the reset token generation block (lines 241-259)
+---
 
-Delete the entire block that calls `generate_password_reset_token` RPC. The `resetUrl` variable is replaced with a direct link to the Settings page.
+## Fix 1 — Delete send-birthday-email
 
-```ts
-// Before (lines 241-259):
-let resetUrl = 'https://mon-edupreneur.com/auth/login';
-try {
-  const { data: tokenData, error: tokenError } = await supabase.rpc(
-    'generate_password_reset_token',
-    { user_email: email }
-  );
-  // ... token handling ...
-} catch (tokenGenError) { ... }
+- Delete `supabase/functions/send-birthday-email/` directory
+- Remove `[functions.send-birthday-email]` + `verify_jwt = false` from `supabase/config.toml`
+- Use `supabase--delete_edge_functions` to undeploy from live environment
 
-// After:
-// Direct link to settings — requires authentication, no token needed
-const settingsUrl = 'https://mon-edupreneur.com/settings';
-```
+---
 
-### Part B — Update the template signature and "Warning Box" button
+## Fix 2 — Delete send-test-email + EmailTest Page
 
-The `getEmailTemplate` function signature changes:
-- Remove the `resetUrl` parameter
-- Add a `settingsUrl` parameter (or inline the constant)
+- Delete `supabase/functions/send-test-email/` directory
+- Delete `src/pages/EmailTest.tsx`
+- Remove `[functions.send-test-email]` + `verify_jwt = false` from `supabase/config.toml`
+- In `src/App.tsx`:
+  - Remove the lazy import: `const EmailTest = lazy(() => import("./pages/EmailTest"));` (line 89)
+  - Remove the route block: `<Route path="/email-test" element={...}` (lines 483-487)
+- Use `supabase--delete_edge_functions` to undeploy from live environment
 
-In the Warning Box (lines 148-163), change:
-- Button text from `"🔐 Changer mon mot de passe"` to `"🔐 Sécuriser mon compte"`
-- Button href from `${resetUrl}` to `https://mon-edupreneur.com/settings`
-- Warning text updated to direct user to their settings instead of changing password directly
+---
+
+## Fix 3 — Dynamic Copyright Year
+
+Replace every hardcoded `© 2025` with a dynamic year using `new Date().getFullYear()`.
+
+**Pattern:** Each email function has a `getEmailTemplate` function that returns an HTML string. The copyright line is always in the footer.
+
+For functions that use template literals directly (most of them), the fix is:
 
 ```html
 <!-- Before -->
-<a href="${resetUrl}" style="...">🔐 Changer mon mot de passe</a>
+© 2025 Edupreneurs. Tous droits réservés.
 
 <!-- After -->
-<a href="https://mon-edupreneur.com/settings" style="...">🔐 Sécuriser mon compte</a>
+© ${new Date().getFullYear()} Edupreneurs. Tous droits réservés.
 ```
 
-The warning paragraph text changes from:
-> "Si vous ne reconnaissez pas cette connexion, securisez immediatement votre compte en changeant votre mot de passe."
+**Files requiring this change (11 total):**
 
-To:
-> "Si vous ne reconnaissez pas cette connexion, securisez immediatement votre compte."
+| File | Line | Current |
+|---|---|---|
+| `check-birthdays/index.ts` | 147 | `© 2025` |
+| `send-login-notification/index.ts` | 190 | `© 2025` |
+| `send-confirmation-email/index.ts` | 171 | `© 2025` |
+| `send-welcome-email/index.ts` | 121 | `© 2025` |
+| `send-password-reset-email/index.ts` | 102 | `© 2025` |
+| `send-farewell-email/index.ts` | 123 | `© 2025` |
+| `send-device-verification-email/index.ts` | 133 | `© 2025` |
+| `send-report-confirmation/index.ts` | 66 | `© 2025` |
+| `admin-delete-user-account/index.ts` | 73 | `© 2025` |
+| `admin-delete-post/index.ts` | 64 | `© 2025` |
+| `delete-user-account/index.ts` | 114 | `© 2025` |
 
-### Part C — Remove Supabase client (no longer needed)
-
-Since the only reason `createClient` was used was for rate limiting AND the reset token RPC, and rate limiting still needs it, the Supabase client import stays. However, the `generate_password_reset_token` RPC call is fully removed.
-
-### Part D — Update the template call site
-
-```ts
-// Before (line 265):
-html: getEmailTemplate(fullName, email, timestamp, resetUrl, device, location),
-
-// After:
-html: getEmailTemplate(fullName, email, timestamp, device, location),
-```
+**Note:** `send-birthday-email` and `send-test-email` also have hardcoded years but are being deleted in Fix 1 and Fix 2. The `_shared/emails.ts` templates are not in this list because they don't have a hardcoded `© 2025` footer (confirmed during audit).
 
 ---
 
-## Fix 2 — Fix SITE_URL Fallback in `_shared/emails.ts`
+## Fix 4 — Standardize Response Format
 
-**File:** `supabase/functions/_shared/emails.ts`, line 9
+All `send-*` email edge functions should return:
+- **Success:** `{ success: true, messageId: "<resend-id>" }`
+- **Failure:** `{ success: false, error: "<message>" }`
 
+### Current response formats by function:
+
+| Function | Current success response | Current error response |
+|---|---|---|
+| `send-login-notification` | Raw Resend object `emailResponse` | `{ error: "..." }` |
+| `send-confirmation-email` | Raw Resend object `emailResponse` | `{ error: "..." }` |
+| `send-welcome-email` | Raw Resend object `emailResponse` | `{ error: "..." }` |
+| `send-password-reset-email` | Raw Resend object `emailResponse` | `{ error: "..." }` |
+| `send-farewell-email` | Raw Resend object via `secureJsonResponse(emailResponse)` | `secureErrorResponse("...")` |
+| `send-device-verification-email` | `{ success: true, id: "..." }` | `{ error: "..." }` |
+| `send-report-confirmation` | `{ success: true }` | `{ error: "..." }` |
+
+### Standardization changes:
+
+**For functions using raw `JSON.stringify(emailResponse)`** (login-notification, confirmation-email, welcome-email, password-reset-email):
 ```ts
 // Before:
-const SITE_URL = Deno.env.get("SITE_URL") || "https://edupreneurs-haiti-ai.lovable.app";
+return new Response(JSON.stringify(emailResponse), { status: 200, headers: responseHeaders });
 
 // After:
-const SITE_URL = Deno.env.get("SITE_URL") || "https://mon-edupreneur.com";
+return new Response(
+  JSON.stringify({ success: true, messageId: emailResponse?.data?.id || null }),
+  { status: 200, headers: responseHeaders }
+);
 ```
 
-**SITE_URL secret status:** Confirmed present in the project secrets list. The fallback is purely defensive for the case where the secret is accidentally deleted.
-
-**Impact:** This constant is used in CTA buttons across 6 email templates (subscription confirmation, gift student, gift payer thank you, renewal student, renewal payer, payer invoice). All will correctly point to the production domain even if the secret is removed.
-
----
-
-## Fix 3 — Add Email Lookup Fallback in `sendSubscriptionEmails`
-
-**File:** `supabase/functions/_shared/emails.ts`, lines 296-308
-
-Currently, if `payment_transactions.metadata.email` is missing, the function logs a message and returns without sending any email. This is a silent failure.
-
-The fix adds a fallback: query `auth.users` via `supabaseAdmin` (available in `sendSubscriptionEmailsWithAuth`) or query the caller for the email. However, `sendSubscriptionEmails` receives a generic `supabase` client typed as `{ from: (table: string) => any }` which cannot call `auth.admin.getUserById`.
-
-**Solution:** Since `sendSubscriptionEmailsWithAuth` (line 336) already has the full admin client and correctly fetches email from `auth.users`, the fix targets only `sendSubscriptionEmails` (line 275). The fallback will query the `profiles` table for an `email` column. However, checking the profiles table schema, there is no `email` column — the email lives in `auth.users`.
-
-**Revised approach:** The `sendSubscriptionEmails` function receives a Supabase client. We can't access `auth.users` from it. Instead, the fallback will use the Resend API key already available in the module to query the profiles table for a `contact_email` or similar. But since no email column exists on profiles, the most practical fix is:
-
-1. In `sendSubscriptionEmails`, if `metadata.email` is missing, log a **warning** (not just a log) with the `orderId` and `userId` so the issue is clearly visible.
-2. The callers that use `sendSubscriptionEmailsWithAuth` already have the correct fallback via `auth.admin.getUserById`.
-3. For the callers using `sendSubscriptionEmails`, add a note that they should migrate to `sendSubscriptionEmailsWithAuth`.
-
-```ts
-// Before (lines 302-308):
-const userEmail = txn?.metadata?.email || txn?.metadata?.userEmail;
-const userName = userAuth?.full_name || "Étudiant";
-
-if (!userEmail) {
-  console.log(`[Email] No email found for user ${userId}, skipping emails`);
-  return;
-}
-
-// After:
-const metadataEmail = txn?.metadata?.email || txn?.metadata?.userEmail;
-const userName = userAuth?.full_name || "Étudiant";
-
-// Fallback: if metadata has no email, try to find it from profiles or auth
-let userEmail = metadataEmail;
-if (!userEmail) {
-  console.warn(`[Email] WARNING: No email in transaction metadata for order ${orderId}, user ${userId}. Attempting profiles fallback.`);
-  // Query auth.users email via the admin client if available
-  // The supabase param here is a service-role client, try auth.admin
-  try {
-    const adminClient = supabase as any;
-    if (adminClient?.auth?.admin?.getUserById) {
-      const { data: authData } = await adminClient.auth.admin.getUserById(userId);
-      userEmail = authData?.user?.email;
-      if (userEmail) {
-        console.warn(`[Email] Fallback succeeded: found email from auth for user ${userId}`);
-      }
-    }
-  } catch (fallbackErr) {
-    console.warn(`[Email] Auth fallback failed:`, fallbackErr);
-  }
-}
-
-if (!userEmail) {
-  console.error(`[Email] CRITICAL: No email found for user ${userId}, order ${orderId}. Subscription emails NOT sent.`);
-  return;
-}
-```
-
-This approach:
-- Tries the `auth.admin.getUserById` method if the client supports it (service-role clients do)
-- Logs a clear WARNING when the fallback is used
-- Logs a CRITICAL error when both paths fail
-- Does not change the function signature or break any callers
-
----
-
-## Fix 4 — Upgrade Resend Import in `send-login-notification`
-
-**File:** `supabase/functions/send-login-notification/index.ts`, line 10
-
+**For send-farewell-email** (uses `secureJsonResponse`):
 ```ts
 // Before:
-import { Resend } from "https://esm.sh/resend@2.0.0";
+return secureJsonResponse(emailResponse, 200, true);
 
 // After:
-import { Resend } from "https://esm.sh/resend@4.0.0";
+return secureJsonResponse({ success: true, messageId: emailResponse?.data?.id || null }, 200, true);
 ```
 
----
-
-## Fix 5 — Remove Dead `verificationUrl` Code from Welcome Email
-
-**File:** `supabase/functions/send-welcome-email/index.ts`
-
-### Part A — Remove the conditional block from the template (lines 63-73)
-
-```html
-<!-- Delete this entire block -->
-${verificationUrl ? `
-<table role="presentation" ...>
-  <tr>
-    <td style="text-align: center;">
-      <a href="${verificationUrl}" ...>✓ Vérifier mon email</a>
-    </td>
-  </tr>
-</table>
-` : ''}
-```
-
-### Part B — Remove `verificationUrl` from template signature and caller
-
+**For send-device-verification-email** (already close):
 ```ts
-// Before (line 18):
-const getEmailTemplate = (fullName: string, verificationUrl?: string) => `
+// Before:
+return new Response(JSON.stringify({ success: true, id: emailResponse.data?.id }), ...);
 
 // After:
-const getEmailTemplate = (fullName: string) => `
+return new Response(JSON.stringify({ success: true, messageId: emailResponse.data?.id || null }), ...);
 ```
 
+**For send-report-confirmation** (missing messageId):
 ```ts
-// Before (line 172):
-const verificationUrl = rawBody.verificationUrl; // Optional field
+// Before:
+return new Response(JSON.stringify({ success: true }), ...);
 
-// After:
-// (delete this line entirely)
+// After — need to capture emailResponse first, then:
+return new Response(JSON.stringify({ success: true, messageId: emailResponse?.data?.id || null }), ...);
 ```
 
+**Error responses:** Most already return `{ error: "..." }`. Standardize to `{ success: false, error: "..." }`:
 ```ts
-// Before (line 180):
-html: getEmailTemplate(fullName, verificationUrl),
+// Before:
+JSON.stringify({ error: error.message })
 
 // After:
-html: getEmailTemplate(fullName),
+JSON.stringify({ success: false, error: error.message })
 ```
+
+### Caller compatibility analysis:
+
+| Caller | File | What it reads | Compatible? |
+|---|---|---|---|
+| Device verification | `device-verify.service.ts` | `emailData?.error` (truthy check) | Yes - `{ success: false, error: "..." }` still has truthy `.error` |
+| Login notification | `login.service.ts` | Fire-and-forget (`await` but no response check) | Yes |
+| Welcome email | `verify.service.ts` | Fire-and-forget | Yes |
+| Confirmation email | `verify.service.ts`, `login.service.ts`, `signup.service.ts` | Fire-and-forget | Yes |
+| Password reset | `loginAttempts.service.ts`, `ForgotPasswordPage.tsx` | Checks `error` from invoke, not response body | Yes |
+| Report confirmation | `ReportDialog.tsx` | Fire-and-forget (`.catch()`) | Yes |
+| Farewell email | `delete-user-account/index.ts` (edge fn) | Fire-and-forget (inline call) | Yes |
+| EmailTest.tsx | Being deleted | N/A | N/A |
+
+No caller reads `.data.id` or any Resend-specific field from the response body. All callers either fire-and-forget or check the `error` field. The standardized format preserves `.error` on failure and adds `.success` which no existing caller conflicts with.
 
 ---
 
@@ -228,10 +184,11 @@ html: getEmailTemplate(fullName),
 
 | Risk | Analysis | Status |
 |---|---|---|
-| Login notification email stops sending after removing reset token block | Only the RPC call and `resetUrl` variable are removed. The `resend.emails.send()` call at line 261 is unchanged. The template still renders with all connection details. | Safe |
-| "Securiser mon compte" button links to wrong URL | Hardcoded to `https://mon-edupreneur.com/settings`. This is the production domain confirmed in the codebase. The Settings page requires authentication — if the user is not logged in, the app's auth guard redirects to login first. | Safe |
-| SITE_URL fallback change affects other email functions | The `SITE_URL` constant is used only in `_shared/emails.ts` templates. Changing the fallback from the preview domain to the production domain is strictly an improvement. If `SITE_URL` secret is set (confirmed: it is), the fallback is never used anyway. | Safe |
-| Subscription email fallback causes runtime errors | The fallback uses a `try/catch` with `as any` cast. If the client doesn't support `auth.admin`, the catch block logs a warning and continues to the existing "no email found" path. No new error paths introduced. | Safe |
-| Resend v4 breaks send-login-notification | All other email functions already use resend@4.0.0. The `emails.send()` API is identical between v2 and v4. | Safe |
-| Removing verificationUrl breaks welcome email | The caller at line 172 reads `rawBody.verificationUrl` but no frontend code ever sends this field. The template conditional always evaluates to the empty string `''`. Removing it produces identical HTML output. | Safe |
-| Removing Supabase client import from login notification | The Supabase client is still needed for rate limiting (line 213-216). Only the RPC call is removed. Import stays. | Safe |
+| send-birthday-email deletion breaks birthday flow | `check-birthdays` sends emails inline with its own template. Zero callers to `send-birthday-email` confirmed. | Safe |
+| send-test-email deletion breaks a feature | Only caller is `EmailTest.tsx` (dev page at `/email-test`), which is also being deleted. No user-facing feature depends on it. | Safe |
+| EmailTest.tsx deletion breaks navigation | No sidebar, shell, or component links to `/email-test`. It's only accessible by typing the URL directly. Removing the route + import is clean. | Safe |
+| Dynamic copyright year renders incorrectly | `new Date().getFullYear()` inside a template literal evaluates at function execution time (email send time). Returns a 4-digit integer (e.g. 2026). Standard JavaScript behavior in Deno. | Safe |
+| Standardized response breaks device-verify caller | `device-verify.service.ts` checks `emailData?.error` (lines 228, 361). The new error format `{ success: false, error: "..." }` still has a truthy `.error` field. The success format `{ success: true, messageId: "..." }` has no `.error` field (undefined = falsy). Behavior is identical. | Safe |
+| Standardized response breaks other callers | All other callers fire-and-forget or only check the `error` return from `supabase.functions.invoke()` (transport error), not the response body. No caller reads Resend-specific fields. | Safe |
+| secureErrorResponse already returns `{ error: "..." }` without `success: false` | The `secureErrorResponse` helper in `_shared/securityHeaders.ts` returns `{ error: message }`. For `send-farewell-email`, which uses this helper, we should NOT modify the shared helper (it's used by non-email functions too). Instead, for farewell's catch block, we replace the `secureErrorResponse` call with a manual response that includes `success: false`. | Safe |
+| Removing config.toml entries affects other functions | Each entry only applies to its own function. Removing them has no effect on other functions. | Safe |
