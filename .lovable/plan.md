@@ -1,195 +1,274 @@
 
-## Plan B: Control Center Performance Fixes — 3 Fixes
+## Plan C: Control Center — 7 Low-Severity Cleanup Fixes
 
-### Audit of Current State
+### Pre-implementation audit findings
 
-**Fix 1 — `useModuleBadges.ts` (lines 8–26):**
-The `refreshBadges` function iterates `CONTROL_CENTER_MODULES` in a `for...of` loop and `await`s each `module.badge()` call before starting the next. There are 8 badge-bearing modules (users has none, stats has none). Each badge is a Supabase COUNT query with a cold-start round trip on 3G. Running them in sequence can take 3–5 seconds before any badges appear. The `try/catch` inside the loop correctly isolates individual failures already — but the sequential dependency means one slow query delays all subsequent ones.
+**Fix 1 — Auth calls in ReportsModule.tsx**
 
-**Fix 2 — `ControlCenter.tsx` (lines 91–97):**
-The `TabsContent` block maps all 10 `CONTROL_CENTER_MODULES` and renders `<module.component />` inside every `TabsContent`. Radix `TabsContent` does render all children into the DOM (it uses CSS visibility, not conditional rendering). This means all 10 `React.lazy` boundaries are hit immediately, all 10 `Suspense` fallbacks can fire, and every module's `useEffect` or TanStack Query on mount fires simultaneously — 10+ Supabase queries on page load when only 1 tab is visible.
+Three independent `supabase.auth.getUser()` calls:
+- Line 156 in `updateReportStatus`
+- Line 186 in `saveAdminNotes`
+- Line 296 in `handleDismissReport`
 
-The fix: maintain a `mountedTabs` state (`Set<string>`) tracking which tab IDs have been visited. Only render `<module.component />` when `mountedTabs.has(module.id)`. The set is updated via `onValueChange` — adding `activeTab` each time the user switches. Initial tab (`CONTROL_CENTER_MODULES[0].id`, i.e. "users") is pre-added to the set so it renders immediately on load. Once a tab is added to the set it is never removed — so switching back to a previously-visited tab preserves its React state.
+Each makes a network round-trip to the auth server. The fix: import `useSessionAuth` from `@/contexts/SessionAuthContext`, call it once at the top of the component, and use the returned `user` object in all three functions. The `user` object from `useSessionAuth` is the same in-memory session user that these calls return — no behavior change, just eliminates 3 redundant network calls.
 
-**Fix 3 — `StatsModule.tsx` (lines 25–80):**
-`fetchStats` runs 7 sequential `await supabase` calls — `profiles` total, `profiles` filtered by `gte`, `posts`, and 4 `user_reports` filtered by `status`. Since these are all independent COUNT queries, they can be fired simultaneously with `Promise.all`. Additionally, `fetchStats` is called only once in `useEffect([], [])` and never again — there is no way to refresh without navigating away. A refresh button with a spinning indicator while loading is added in the header area of the module.
+Note: Lines 212 and 256 (`supabase.auth.getSession()`) feed the `Authorization` header for direct `fetch()` calls to edge functions — these are **not** redundant and must stay unchanged. Only the three `getUser()` calls for `reviewed_by: user?.id` are replaced.
+
+**Fix 2 — Auth call in AnnouncementsModule.tsx**
+
+Line 110 in `sendMutation.mutationFn`: `const { data: { user } } = await supabase.auth.getUser()`. The `user.id` is only used for `sent_by: user.id` (line 129). Fix: import `useSessionAuth`, call it at the component level, use `user?.id` in the mutation body. Add a guard: if `!user` throw `new Error('Non authentifié')` (the existing guard on line 111 already does this).
+
+**Fix 3 — UsersModule GRADES vs ACADEMIC_GRADES in types.ts**
+
+Current `GRADES` array in `UsersModule.tsx` (lines 44–52):
+```
+7AF, 8AF, 9AF, NS3, NS4, PHILO
+```
+
+`ACADEMIC_GRADES` in `types.ts` (line 19):
+```
+'7AF', '7e', '8AF', '8e', '9AF', 'NS1', 'NS3', 'NS4', 'Philo', 'S1'
+```
+
+Missing from UsersModule: `7e`, `8e`, `NS1`, `S1`. Also `PHILO` is cased wrong — types.ts uses `Philo`. The fix: replace the entire `GRADES` array to exactly mirror `ACADEMIC_GRADES` from types.ts, preserving the "Tous les niveaux" sentinel and adding proper labels for each entry.
+
+**Fix 4 — PaymentsModule search placeholder and reject status**
+
+- Line 180: Placeholder `"Rechercher par ID, référence, téléphone..."` — the actual filter at line 143–146 only searches `order_id`. Fix: change placeholder to `"Rechercher par ID de commande..."`.
+- Lines 76–83 (`verifyMutation`): when `action === 'reject'`, `updateData` only sets `admin_verified: false`, `verified_at`, and optionally `verification_notes`. The `status` field is NOT updated — a rejected payment keeps its `pending_verification` status. This makes the "Échoués" filter useless for rejected manual payments. Fix: add `if (action === 'reject') updateData.status = 'rejected'` in the same update object. This mirrors the existing `if (action === 'approve') updateData.status = 'completed'` pattern at line 82.
+
+**Fix 5 — ContactModule pagination cap**
+
+Line 333:
+```typescript
+Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+  const pageNum = i + 1;
+```
+
+This hard-caps numbered page links at 5, making pages 6+ unreachable via numbered links. The `PaginationNext` button at line 348–352 still works for sequential navigation, but the user has no direct-jump access to pages beyond 5.
+
+Fix: Replace the static capped array with a sliding window approach that always shows at most 5 page links but centered around the current page, so pages 6+ are always accessible when navigating forward:
+
+```typescript
+// Compute visible page range — 5-page sliding window centered on currentPage
+const windowSize = 5;
+const halfWindow = Math.floor(windowSize / 2);
+let startPage = Math.max(1, currentPage - halfWindow);
+let endPage = Math.min(totalPages, startPage + windowSize - 1);
+// Adjust start if we're near the end
+if (endPage - startPage < windowSize - 1) {
+  startPage = Math.max(1, endPage - windowSize + 1);
+}
+const pageNumbers = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+```
+
+Then render `pageNumbers.map(...)` instead of the `Array.from({ length: Math.min(5, totalPages) })` block. This makes all pages reachable.
+
+**Fix 6 — Realtime re-subscription churn in ContactModule and ReportsModule**
+
+**ContactModule.tsx (lines 118–142):**
+Two `useEffect` blocks both have `[statusFilter, currentPage]` as dependencies:
+- Lines 118–120: `useEffect(() => { fetchSubmissions(); }, [statusFilter, currentPage])` — correct
+- Lines 122–142: realtime subscription `useEffect` also has `[statusFilter, currentPage]` — **wrong**. Every filter or page change tears down and re-creates the Supabase channel.
+
+Fix: The realtime subscription effect gets an **empty dependency array** `[]`. The `fetchSubmissions` function it calls must be wrapped in `useCallback` with its actual dependencies (`[statusFilter, currentPage]`) so the channel callback always invokes the latest version. The subscription itself only subscribes once.
+
+```typescript
+// Stable fetch function — recreated when filters/page change
+const fetchSubmissions = useCallback(async () => {
+  // ... existing body unchanged
+}, [statusFilter, currentPage]);
+
+// Data fetching effect — re-runs when filters/page change
+useEffect(() => {
+  fetchSubmissions();
+}, [fetchSubmissions]);
+
+// Realtime subscription — subscribes ONCE on mount only
+useEffect(() => {
+  const channel = supabase
+    .channel('contact_submissions_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_submissions' },
+      () => { fetchSubmissions(); }  // always calls latest via closure
+    )
+    .subscribe();
+  return () => { supabase.removeChannel(channel); };
+}, []); // empty — subscribe once, never re-register
+```
+
+**ReportsModule.tsx (lines 77–93):**
+Same problem: single `useEffect` handles both the data fetch AND the subscription, with `[statusFilter, currentPage]` deps. Every filter/page change unsubscribes and re-subscribes.
+
+Fix: Same pattern — wrap `fetchReports` in `useCallback([statusFilter, currentPage])`. Split into two `useEffect` blocks: one for data fetching (`[fetchReports]`), one for subscription (`[]`).
+
+**Fix 7 — Consolidate FOUNDER_USER_IDS**
+
+Current state:
+- `src/lib/founderConstants.ts` exports `FOUNDER_USER_IDS` (lines 5–8) and `isFounder` (lines 10–13)
+- `src/lib/quizBattleUtils.ts` re-declares `FOUNDER_USER_IDS` (lines 79–82) and `isFounder` (lines 87–89)
+
+Two consumers import from `quizBattleUtils`:
+1. `src/components/quiz-battle/BattleLeaderboardPreview.tsx` line 10: `import { FOUNDER_USER_IDS, calculateLevel } from '@/lib/quizBattleUtils'`
+2. `src/pages/QuizBattleLeaderboard.tsx` line 11: `import { FOUNDER_USER_IDS, calculateLevel } from '@/lib/quizBattleUtils'`
+
+**Plan:**
+- In `quizBattleUtils.ts`: Remove the `FOUNDER_USER_IDS` array and `isFounder` function. Add `export { FOUNDER_USER_IDS, isFounder } from '@/lib/founderConstants'` — this re-exports from the canonical source. This preserves backward compatibility for `BattleLeaderboardPreview` and `QuizBattleLeaderboard` without touching those files. The comment "NOTE: Keep in sync with..." in `founderConstants.ts` is also removed as it's no longer needed.
+- Result: single source of truth in `founderConstants.ts`, all existing imports continue to work.
 
 ---
 
 ### Technical Implementation
 
-#### Fix 1 — `useModuleBadges.ts`
+#### Fix 1 + Fix 6 — ReportsModule.tsx
 
-Replace the `for...of await` loop with `Promise.allSettled` over all badge-bearing modules simultaneously:
-
+Add `useCallback` to imports. Import `useSessionAuth`. At component top level add:
 ```typescript
-const refreshBadges = useCallback(async () => {
-  setIsLoading(true);
-
-  // Collect only modules that have a badge function
-  const badgeModules = CONTROL_CENTER_MODULES.filter(m => m.badge);
-
-  // Fire all badge queries simultaneously — allSettled ensures one failure
-  // does not cancel the others; failed badges fall back to 0
-  const results = await Promise.allSettled(
-    badgeModules.map(m => m.badge!())
-  );
-
-  const newBadges: Record<string, number> = {};
-  results.forEach((result, index) => {
-    const moduleId = badgeModules[index].id;
-    if (result.status === 'fulfilled') {
-      newBadges[moduleId] = result.value;
-    } else {
-      console.error(`Error fetching badge for ${moduleId}:`, result.reason);
-      newBadges[moduleId] = 0; // failed badge silently falls back to 0
-    }
-  });
-
-  setBadges(newBadges);
-  setIsLoading(false);
-}, []);
+const { user } = useSessionAuth();
 ```
 
-The 30-second interval and cleanup are unchanged. The external API (`{ badges, refreshBadges, isLoading }`) is unchanged — `ControlCenter.tsx` does not need to change for this fix.
-
-**Performance impact:** 8 badge queries that previously ran in series (each waiting for the previous) now run in parallel. Total time drops from `sum(all_query_times)` to `max(all_query_times)` — roughly 5× faster on 3G.
-
-#### Fix 2 — `ControlCenter.tsx`
-
-Add `mountedTabs` state initialized with the first tab pre-mounted. Update `onValueChange` to add the incoming tab ID to the set. Conditionally render the module component only when its ID is in the set.
-
+Wrap `fetchReports` in `useCallback`:
 ```typescript
-// Track which tabs have been visited — once mounted they stay mounted
-// to preserve component state when switching between tabs
-const [mountedTabs, setMountedTabs] = useState<Set<string>>(
-  () => new Set([CONTROL_CENTER_MODULES[0]?.id || "users"])
-);
-
-const handleTabChange = (value: string) => {
-  setActiveTab(value);
-  // Add to mounted set — never remove, preserves state on tab switch-back
-  setMountedTabs(prev => new Set([...prev, value]));
-};
+const fetchReports = useCallback(async () => {
+  // ... existing body unchanged
+}, [statusFilter, currentPage]);
 ```
 
-The `TabsContent` render block changes from always rendering to conditional:
-
+Replace the single combined `useEffect` (lines 77–93) with two separate effects:
 ```typescript
-{CONTROL_CENTER_MODULES.map((module) => (
-  <TabsContent key={module.id} value={module.id} className="mt-6">
-    {/* Only mount when first visited — stays mounted to preserve state */}
-    {mountedTabs.has(module.id) && (
-      <Suspense fallback={<ModuleLoader />}>
-        <module.component />
-      </Suspense>
-    )}
-  </TabsContent>
+// Data fetch — re-runs when filter/page change
+useEffect(() => {
+  fetchReports();
+}, [fetchReports]);
+
+// Realtime subscription — subscribes once, calls stable fetchReports ref
+useEffect(() => {
+  const channel = supabase
+    .channel("reports-updates")
+    .on("postgres_changes", { event: "*", schema: "public", table: "user_reports" },
+      () => fetchReports()
+    )
+    .subscribe();
+  return () => { supabase.removeChannel(channel); };
+}, []); // eslint-disable-line react-hooks/exhaustive-deps
+```
+
+In `updateReportStatus` (line 156): replace `const { data: { user } } = await supabase.auth.getUser()` with nothing — use component-level `user` directly.
+
+In `saveAdminNotes` (line 186): same replacement.
+
+In `handleDismissReport` (line 296): same replacement.
+
+The `getSession()` calls at lines 212 and 256 (for direct `fetch()` to edge functions) are **left completely unchanged**.
+
+#### Fix 2 — AnnouncementsModule.tsx
+
+Add `useSessionAuth` import from `@/contexts/SessionAuthContext`. At top of `AnnouncementsModule` component body add:
+```typescript
+const { user } = useSessionAuth();
+```
+
+In `sendMutation.mutationFn` (lines 109–148): Remove `const { data: { user } } = await supabase.auth.getUser()`. The guard becomes `if (!user) throw new Error('Non authenticated')`. The `sent_by: user.id` at line 129 becomes `sent_by: user!.id` (or `sent_by: user?.id ?? ''`). The `mutationFn` no longer needs `async` for the auth call but remains async for the supabase calls.
+
+Also remove the local `Announcement` interface (lines 22–35) and add to the imports line: `import { Announcement, ACADEMIC_GRADES } from '../types'`. The locally declared `ACADEMIC_GRADES` constant at line 18–20 is also removed since it's already in types.ts.
+
+Wait — `ACADEMIC_GRADES` in types.ts is typed as `const` with `as const`. The local declaration in AnnouncementsModule is identical. We can safely remove the local one and import from types. The type of `selectedGrades` state (`string[]`) remains compatible.
+
+#### Fix 3 — UsersModule.tsx
+
+Replace lines 44–52 (the `GRADES` const) with:
+```typescript
+const GRADES = [
+  { value: "all", label: "Tous les niveaux" },
+  { value: "7AF", label: "7ème AF" },
+  { value: "7e", label: "7ème" },
+  { value: "8AF", label: "8ème AF" },
+  { value: "8e", label: "8ème" },
+  { value: "9AF", label: "9ème AF" },
+  { value: "NS1", label: "NS1" },
+  { value: "NS3", label: "NS3" },
+  { value: "NS4", label: "NS4" },
+  { value: "Philo", label: "Philo" },
+  { value: "S1", label: "S1" },
+];
+```
+
+Note: `PHILO` → `Philo` (exact case match to `ACADEMIC_GRADES` in types.ts). Students who registered with grade `"PHILO"` stored in the DB will no longer match the `Philo` filter — but since the data was previously stored under `"PHILO"` (uppercase), this is a data issue, not a UI issue. The filter value must match the stored DB value. To be safe: keep **both** — add `PHILO` as a separate entry labeled "Philo (legacy)" or simply keep the value as `"PHILO"` and label it `"Philo"`. Given the types.ts canonical value is `"Philo"`, keep value `"Philo"` for new registrations and drop the `"PHILO"` legacy option, as the plan says "make it match types.ts exactly."
+
+#### Fix 4 — PaymentsModule.tsx
+
+Line 180: Change `"Rechercher par ID, référence, téléphone..."` to `"Rechercher par ID de commande..."`.
+
+Lines 76–83 (`verifyMutation`): Add after the existing `if (action === 'approve') updateData.status = 'completed'` block:
+```typescript
+if (action === 'reject') updateData.status = 'rejected';
+```
+
+This sets `status` to `'rejected'` in the same DB write as `admin_verified: false`. Result: rejected payments show correctly under the `status: 'rejected'` filter.
+
+#### Fix 5 — ContactModule.tsx pagination
+
+Replace line 333:
+```typescript
+{Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+  const pageNum = i + 1;
+```
+
+With the sliding window approach:
+```typescript
+{(() => {
+  // 5-page sliding window centered on currentPage — never caps at page 5
+  const windowSize = 5;
+  const halfWindow = Math.floor(windowSize / 2);
+  let startPage = Math.max(1, currentPage - halfWindow);
+  let endPage = Math.min(totalPages, startPage + windowSize - 1);
+  if (endPage - startPage < windowSize - 1) {
+    startPage = Math.max(1, endPage - windowSize + 1);
+  }
+  return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+})().map((pageNum) => (
+  <PaginationItem key={pageNum}>
+    <PaginationLink
+      onClick={() => setCurrentPage(pageNum)}
+      isActive={currentPage === pageNum}
+      className="cursor-pointer"
+    >
+      {pageNum}
+    </PaginationLink>
+  </PaginationItem>
 ))}
 ```
 
-`onValueChange={handleTabChange}` replaces `onValueChange={setActiveTab}`.
+Also fix: the realtime subscription at lines 122–142 has `[statusFilter, currentPage]` deps — apply the same `useCallback` + split-`useEffect` pattern as ReportsModule.
 
-**Behavior:**
-- On load: only the "users" tab (`CONTROL_CENTER_MODULES[0]`) mounts and fires its queries. The other 9 modules do not mount, their lazy chunks are not fetched, their `useEffect`s do not fire.
-- First visit to any other tab: the module mounts for the first time (shows `ModuleLoader` skeleton while lazy chunk loads, then normal loading state).
-- Return visit to a tab: the module was already mounted and is still in the DOM (Radix hides it with CSS). Its state (loaded data, pagination, filters) is preserved exactly as left.
+#### Fix 6 — ContactModule.tsx realtime fix (included above in Fix 5 section)
 
-**Radix `TabsContent` note:** Radix `TabsContent` uses `hidden` attribute / CSS to hide non-active tabs — it does not unmount them. The conditional `{mountedTabs.has(module.id) && ...}` inside `TabsContent` means the Radix wrapper node exists for all 10 tabs, but the React component tree inside only mounts when first visited. This is correct behavior and does not fight Radix's tab accessibility model.
+Wrap `fetchSubmissions` in `useCallback([statusFilter, currentPage])`. Split the combined effect at lines 118–142 into two separate `useEffect` blocks — one with `[fetchSubmissions]` for data fetching, one with `[]` for subscription.
 
-#### Fix 3 — `StatsModule.tsx`
+#### Fix 7 — quizBattleUtils.ts + founderConstants.ts
 
-Two changes: parallelize the queries with `Promise.all`, and add a refresh button.
-
-**Parallel queries — replace the sequential `fetchStats` body:**
-
+In `src/lib/quizBattleUtils.ts`, remove lines 77–89 (the `FOUNDER_USER_IDS` array and `isFounder` function). Replace with a re-export:
 ```typescript
-const fetchStats = useCallback(async () => {
-  setIsLoading(true);
-  try {
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-    // All 7 COUNT queries fire simultaneously
-    const [
-      { count: totalUsers },
-      { count: newUsersThisWeek },
-      { count: totalPosts },
-      { count: pendingReports },
-      { count: reviewingReports },
-      { count: resolvedReports },
-      { count: dismissedReports },
-    ] = await Promise.all([
-      supabase.from("profiles").select("id", { count: "exact", head: true }),
-      supabase.from("profiles").select("id", { count: "exact", head: true }).gte("created_at", oneWeekAgo.toISOString()),
-      supabase.from("posts").select("id", { count: "exact", head: true }),
-      supabase.from("user_reports").select("id", { count: "exact", head: true }).eq("status", "pending"),
-      supabase.from("user_reports").select("id", { count: "exact", head: true }).eq("status", "reviewing"),
-      supabase.from("user_reports").select("id", { count: "exact", head: true }).eq("status", "resolved"),
-      supabase.from("user_reports").select("id", { count: "exact", head: true }).eq("status", "dismissed"),
-    ]);
-
-    setStats({
-      totalUsers: totalUsers || 0,
-      newUsersThisWeek: newUsersThisWeek || 0,
-      totalPosts: totalPosts || 0,
-      pendingReports: pendingReports || 0,
-      reviewingReports: reviewingReports || 0,
-      resolvedReports: resolvedReports || 0,
-      dismissedReports: dismissedReports || 0,
-    });
-  } catch (error) {
-    console.error("Error fetching stats:", error);
-  } finally {
-    setIsLoading(false);
-  }
-}, []);
+// Single source of truth — imported from founderConstants to avoid duplication
+export { FOUNDER_USER_IDS, isFounder } from '@/lib/founderConstants';
 ```
 
-`fetchStats` gains `useCallback` with an empty dep array — stable reference needed for the refresh button.
+In `src/lib/founderConstants.ts`, remove the comment on line 3: `// NOTE: Keep in sync with src/lib/quizBattleUtils.ts` since it's no longer needed.
 
-**Refresh button — added to the top of the returned JSX:**
-
-Above the stats card grid, add a header row with a title and a refresh button:
-
-```tsx
-import { RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
-// In the return:
-<div className="flex items-center justify-between mb-2">
-  <h2 className="text-lg font-semibold">Statistiques générales</h2>
-  <Button
-    variant="outline"
-    size="sm"
-    onClick={fetchStats}
-    disabled={isLoading}
-    className="gap-2"
-  >
-    <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-    Actualiser
-  </Button>
-</div>
-```
-
-The `RefreshCw` icon spins while `isLoading` is true (the same state already used for the skeleton). `disabled={isLoading}` prevents double-clicks from firing overlapping requests.
-
-`useEffect` remains calling `fetchStats()` on mount. The only change to `useEffect` is removing the dependency array comment — it now depends on `fetchStats` which is now a stable `useCallback`:
-```typescript
-useEffect(() => {
-  fetchStats();
-}, [fetchStats]);
-```
+No changes needed to `BattleLeaderboardPreview.tsx` or `QuizBattleLeaderboard.tsx` — their import paths (`from '@/lib/quizBattleUtils'`) continue to work because `quizBattleUtils` re-exports the symbols.
 
 ---
 
-### Files Changed
+### Files changed
 
-| File | Lines changed | Action |
-|---|---|---|
-| `src/pages/control-center/hooks/useModuleBadges.ts` | 8–26 | Replace `for...of await` loop with `Promise.allSettled` parallel execution |
-| `src/pages/ControlCenter.tsx` | 1–2, 23, 66, 91–97 | Add `mountedTabs` state; add `handleTabChange`; conditionally render module components |
-| `src/pages/control-center/modules/StatsModule.tsx` | 1–5, 17–81, 155–175 | Wrap `fetchStats` in `useCallback`; replace sequential awaits with `Promise.all`; add refresh button with `RefreshCw` icon |
+| File | Changes |
+|---|---|
+| `src/pages/control-center/modules/ReportsModule.tsx` | Import `useSessionAuth` + `useCallback`. Hoist `user` to component level. Remove 3x `supabase.auth.getUser()`. Wrap `fetchReports` in `useCallback`. Split combined `useEffect` into data-fetch + subscription effects. |
+| `src/pages/control-center/modules/AnnouncementsModule.tsx` | Import `useSessionAuth`. Remove `Announcement` local interface. Remove local `ACADEMIC_GRADES` constant. Import both from `../types`. Hoist `user` to component level. Remove `supabase.auth.getUser()` from `sendMutation`. |
+| `src/pages/control-center/modules/UsersModule.tsx` | Replace `GRADES` array to match `ACADEMIC_GRADES` from types.ts exactly (add `7e`, `8e`, `NS1`, `S1`; fix `PHILO` → `Philo`). |
+| `src/pages/control-center/modules/PaymentsModule.tsx` | Fix search placeholder text. Add `if (action === 'reject') updateData.status = 'rejected'` to `verifyMutation`. |
+| `src/pages/control-center/modules/ContactModule.tsx` | Fix pagination sliding window (remove `Math.min(5, ...)`). Wrap `fetchSubmissions` in `useCallback`. Split realtime subscription into standalone `useEffect([])`. |
+| `src/lib/quizBattleUtils.ts` | Remove `FOUNDER_USER_IDS` array and `isFounder` function. Add re-export from `founderConstants`. |
+| `src/lib/founderConstants.ts` | Remove "keep in sync" comment (no longer applicable). |
 
 **No DB migrations. No edge function changes. No other files touched.**
 
@@ -199,13 +278,15 @@ useEffect(() => {
 
 | Check | Status |
 |---|---|
-| A failed badge query does not prevent other badges from loading | Yes — `Promise.allSettled` never rejects; each settled result is checked individually. A `rejected` result logs the error and sets that badge to `0`. All other badge results are processed regardless. This is strictly better than the current `try/catch` inside the sequential loop (which already isolated failures but still ran them sequentially). |
-| Tabs that have been visited maintain their state when switching away and back | Yes — `mountedTabs.has(module.id)` only adds to the set, never removes. Once a module component mounts, it stays mounted in the DOM. Radix `TabsContent` hides it with CSS when inactive but does not unmount it. The module's React state (pagination, filter values, loaded data) survives tab switches. |
-| Tabs that have NOT been visited do not fire any data fetches | Yes — `{mountedTabs.has(module.id) && <Suspense>...}` means the React component never mounts, so no `useEffect`, no TanStack Query `onMount`, no lazy chunk fetch. |
-| The first tab ("users") renders immediately without requiring a tab click | Yes — `mountedTabs` is initialized as `new Set([CONTROL_CENTER_MODULES[0]?.id || "users"])`, so the first module is pre-included and mounts on initial render. |
-| Stats refresh button correctly re-fetches all counts simultaneously | Yes — the button calls `fetchStats` (stable `useCallback` ref). `fetchStats` runs all 7 queries via `Promise.all`. The button shows a spinning icon and is disabled during the fetch to prevent double-submit. |
-| Stats module still shows skeleton on initial load | Yes — `isLoading` starts as `true`, `fetchStats` sets it `false` in `finally`. The skeleton render path at line 83 is unchanged. |
-| Performance gain at concurrency = 7 (stats) | 7 independent COUNT queries go from sequential (sum of all RTTs) to parallel (max RTT). On 3G with ~400ms per query, this drops from ~2.8 seconds to ~400ms. |
-| Performance gain for badges (8 concurrent) | Same — all 8 badge queries now fire simultaneously. Previously a single slow query (e.g. the `count_lesson_feedback_for_admin` RPC) blocked all remaining badge updates. |
-| No other files affected | Yes — `useModuleBadges` public API unchanged (`{ badges, refreshBadges, isLoading }`). `StatsModule` public API unchanged (default export, no props). `ControlCenter` behavior is a strict superset of current behavior. |
-| AppShell, Provider Stack, routing unaffected | Yes — all changes are scoped to the three listed files. No global context, hooks, or routes are modified. |
+| Realtime subscriptions fire correctly after dependency array change | Yes — the subscription `useEffect([])` mounts once. The channel callback calls `fetchReports()` / `fetchSubmissions()` which are `useCallback` refs. Because `useCallback` recreates when its deps change (filter/page), the ref inside the channel closure stays current via the closure over the stable `useCallback` reference. The channel never re-registers. |
+| Realtime subscriptions do not fire stale data on filter change | Yes — changing `statusFilter` or `currentPage` causes `fetchReports`/`fetchSubmissions` `useCallback` to update, which triggers the data-fetch `useEffect`. The subscription channel is unaffected. The callback always points to the latest fetch function. |
+| Grade filter in UsersModule now matches ACADEMIC_GRADES in types.ts exactly | Yes — after fix, `GRADES` values are: `all, 7AF, 7e, 8AF, 8e, 9AF, NS1, NS3, NS4, Philo, S1` — identical to the `ACADEMIC_GRADES` tuple in types.ts. |
+| `FOUNDER_USER_IDS` consolidation does not break quiz battle founder exclusion | Yes — `BattleLeaderboardPreview` and `QuizBattleLeaderboard` import `{ FOUNDER_USER_IDS }` from `@/lib/quizBattleUtils`. After the fix, `quizBattleUtils` re-exports `FOUNDER_USER_IDS` from `founderConstants`. The import path is unchanged, the exported value is identical. |
+| `isFounder` function still works in all consumers | Yes — `isFounder` is also re-exported from `quizBattleUtils`. The `founderConstants` version handles `null | undefined` input (returns `false`). The `quizBattleUtils` version typed `userId: string`. After the fix, the re-exported version comes from `founderConstants` which is more defensive — no regression. |
+| Reject mutation correctly sets status: 'rejected' in same write | Yes — `updateData.status = 'rejected'` is added inside `verifyMutation` for `action === 'reject'`. This is the same DB write that already sets `admin_verified: false`. |
+| Payments with `rejected` status now appear under the "Échoués" filter | Yes — the filter at line 57 (`query.eq('status', statusFilter)`) will now match `rejected` when `statusFilter === 'failed'`... actually wait: `statusFilter === 'failed'` filters for `status = 'failed'`, not `status = 'rejected'`. The plan says fix `status` to `'rejected'`. The filter dropdown has no `rejected` option — it has `failed`. A separate filter option for `rejected` may be needed, or the status value should be `'failed'`. Re-reading the plan: "fix the reject mutation so it updates status to 'rejected'" — so the DB value becomes `'rejected'`. The existing filter options (`pending`, `pending_verification`, `completed`, `failed`) do not include `rejected`. To make rejected payments visible, either: (a) add a `rejected` option to the filter dropdown, or (b) fold `rejected` into `failed` filter. The cleanest fix matching the plan is to add a `rejected` filter option to the Select. This will be added. |
+| Announcement local interface removal does not break types | Yes — the local `Announcement` interface is byte-for-byte identical to the one in types.ts (confirmed by reading both). Replacing with the import is a pure deduplication. |
+| Local `ACADEMIC_GRADES` removal in AnnouncementsModule does not break grade picker | Yes — the local array is identical to types.ts. The import path `'../types'` resolves correctly from `src/pages/control-center/modules/`. |
+| `supabase.auth.getSession()` calls in ReportsModule for edge functions left unchanged | Yes — lines 212 and 256 (`handleDeletePost`, `handleDeleteUser`) use `getSession()` for the `Authorization: Bearer` header in raw `fetch()` calls. These are NOT replaced. Only the three `getUser()` calls for `reviewed_by: user?.id` are replaced. |
+| ContactModule pagination: pages beyond 5 are now reachable | Yes — the sliding window computes `startPage` and `endPage` around `currentPage`. At page 7, the window shows `[5, 6, 7, 8, 9]`. All pages are reachable via sequential Next clicks or direct number click. |
+| AppShell, Provider Stack, all other modules unaffected | Yes — all changes are scoped to 5 module files and 2 lib files. No global hooks, no routing, no contexts modified. |
