@@ -1,216 +1,259 @@
 
-## Exams Plan A — NS4 Database Cleanup
+# Exams Plan B — NS4 UX Fixes + Pipeline Improvements
 
-### What This Plan Does
-
-Pure database cleanup only. No code files are touched. The goal is to reduce 20 NS4 rows to a clean set with at most one row per logical exam identity (subject + year + series + session + is_model_exam).
-
-After cleanup, the target state is **11 rows** — every row has real exercises, correct grade_level, and a unique logical identity.
+## Scope
+5 targeted fixes across 3 files + 1 edge function + 2 file deletions + 1 config entry removal. No database changes. No SQL.
 
 ---
 
-### Full Decision Table — All 20 Rows
+## Pre-Delete Verification (Confirmed Safe)
 
-#### GROUP 1: LLA / Langues / 2022 (1 row)
+Before any deletions:
 
-| ID | Actual | Decision | Reason |
-|---|---|---|---|
-| `7ada942a` | 17 | **KEEP** | Only row in this identity. 17 real exercises. Title is "Espagnol 2022 - NS4" but subject column says "Langues" — this is the subject/name mismatch noted in the audit. The data is real. No other row to prefer. |
+| File | Import search result | Safe to delete? |
+|---|---|---|
+| `src/components/content-editor/ExamManager.tsx` | Zero imports found in all `.tsx`/`.ts` files | Yes |
+| `src/components/content-editor/BaccExamManager.tsx` | Zero imports found in all `.tsx`/`.ts` files | Yes |
+| `supabase/functions/parse-exam-text/index.ts` | Zero calls to `parse-exam-text` in all `src/` files | Yes |
 
-**Note:** The subject column says "Langues" but the title says "Espagnol". This is a data quality issue but it is out of scope — you did not ask to fix subject names, only to deduplicate and remove ghosts/mismatched titles. The row is kept as-is.
-
----
-
-#### GROUP 2: SES / Physique / 2019 (2 rows — both ghosts)
-
-| ID | Actual | Created | Decision | Reason |
-|---|---|---|---|---|
-| `a79c968b` | 0 | 23:09:20 | **DELETE** | Ghost row — claimed 14, has 0. No exercises to preserve. |
-| `5f14a0ba` | 0 | 23:09:28 | **DELETE** | Ghost row — claimed 14, has 0. No exercises to preserve. |
-
-Both rows in this identity group have zero exercises. Per the cleanup rules: delete ghost rows entirely. There is no row to keep for SES/Physique/2019. This logical exam identity will have zero rows after cleanup — meaning SES/Physique/2019 was never successfully ingested. You will need to re-upload the PDF.
+The `parse-exam-text` entry also exists in `supabase/config.toml` at line 93–94 and must be removed alongside the function directory.
 
 ---
 
-#### GROUP 3: SES / Physique / 2022 (1 row) — session "FEVRIER"
+## Fix 1 — Default Series Pre-selection on Track Switch
 
-| ID | Actual | Decision | Reason |
-|---|---|---|---|
-| `bc054b56` | 21 | **KEEP** | Only row. 21 real exercises. Clean. |
+**File:** `src/features/exams/admin/ExamAdminPage.tsx`  
+**Current behavior:** `handleTrackChange` (line 92–104) always resets `selectedSeries` to `[]`. On NS4, the list shows all rows unfiltered.  
+**Fix:** When `newTrack === 'NS4'`, pre-select all four series so the list is filtered from first render and shows all available NS4 exams organized. When switching back to `9AF`, reset to `[]` as before.
 
----
+**Change in `handleTrackChange` (lines 92–104):**
+```ts
+// Before — always resets to empty
+setSelectedSeries([]);
 
-#### GROUP 4: SES / Physique / 2024 (1 row)
-
-| ID | Actual | Decision | Reason |
-|---|---|---|---|
-| `d99d3882` | 15 | **KEEP** | Only row. 15 real exercises. Clean. |
-
----
-
-#### GROUP 5: SES / Physique / is_model_exam=true / 2026 (1 row)
-
-| ID | Actual | Decision | Reason |
-|---|---|---|---|
-| `bd267a7c` | 15 | **KEEP** | Only model exam for this identity. 15 real exercises. The year=2026 is a cosmetic issue from the save util — not a data integrity problem. Title correctly identifies it as a model exam. |
-
----
-
-#### GROUP 6: SMP / Physique / 2018 (3 rows — all ghosts)
-
-| ID | Actual | Created | Decision | Reason |
-|---|---|---|---|---|
-| `4ec9d6c5` | 0 | 23:11:56 | **DELETE** | Ghost. All three have identical claimed=23 but actual=0. |
-| `ab78480e` | 0 | 23:11:59 | **DELETE** | Ghost. |
-| `efa359ee` | 0 | 23:16:59 | **DELETE** | Ghost. |
-
-All three are ghosts. SMP/Physique/2018 will have zero rows after cleanup. Re-upload required.
-
----
-
-#### GROUP 7: SMP / Physique / 2019 (1 row)
-
-| ID | Actual | Decision | Reason |
-|---|---|---|---|
-| `ddb56ffd` | 17 | **KEEP** | Only row. 17 real exercises. Clean. |
-
----
-
-#### GROUP 8: SMP / Physique / 2022 (1 row)
-
-| ID | Actual | Decision | Reason |
-|---|---|---|---|
-| `8f88d855` | 11 | **KEEP** | Only row. 11 real exercises. Clean. |
-
----
-
-#### GROUP 9: SMP / Physique / 2025 / is_model_exam=false (3 rows with real data + 5 ghosts)
-
-This is the most complex group. There are 8 rows total for this logical identity:
-
-| ID | Actual | Title | Version | Created | Decision | Reason |
-|---|---|---|---|---|---|---|
-| `3692e8fd` | 0 | "2025 - 9AF" | v1 | 2025-12-24 | **DELETE** | Ghost + bad title |
-| `e830ba4e` | 0 | "2025 - 9AF" | v2 | 2025-12-24 | **DELETE** | Ghost + bad title |
-| `8c60551f` | 0 | "2025 - 9AF" | v3 | 2025-12-24 | **DELETE** | Ghost + bad title |
-| `e12eb598` | 0 | "2025 - 9AF" | v4 | 2025-12-24 | **DELETE** | Ghost + bad title |
-| `fa2203da` | 0 | "2025 - 9AF" | v5 | 2025-12-24 | **DELETE** | Ghost + bad title |
-| `dd29dfce` | 15 | "2015 - Baccalauréat (SMP-SVT)" | v1 | 2026-02-11 | **FLAG — see below** | Has 15 real exercises but title says "2015" — this may be a 2015 exam accidentally uploaded as 2025 |
-| `d92d666f` | 15 | "2025 - NS4" | v1 | 2026-02-11 | **KEEP** | Correct title, correct grade_level, 15 real exercises, most recently created among those with correct title |
-
-**Decision on `dd29dfce` ("2015 - Baccalauréat"):** This row has 15 real exercises and a clean `grade_level=NS4` and `series=SMP` and `year=2025`. However its title says "Physique 2015 - Baccalauréat (SMP-SVT)" — the AI was fed a 2015 exam PDF but the year field in the form was set to 2025. This means: the exercises in this row are from the 2015 exam, not 2025. The 2025 exam proper is row `d92d666f` (15 exercises, correct title). Since both have 15 exercises and both are for logical year=2025 in the DB, but `dd29dfce` contains 2015 exam content in a 2025 slot, it should be deleted to avoid confusion. The 2015 exam can be re-uploaded properly with year=2015.
-
-**Keeping: `d92d666f`** (15 real exercises, correct title "Physique 2025 - NS4", correct year=2025).
-
----
-
-#### GROUP 10: SMP / Physique / 2025 / is_model_exam=true (1 row)
-
-| ID | Actual | Title | Decision | Reason |
-|---|---|---|---|---|
-| `db8b3457` | 45 | "Physique 2025 - 9AF" | **KEEP + TITLE FIX** | Only model exam row. Has 45 real exercises — most content of any single NS4 row. Must be kept. Title says "9AF" but grade_level=NS4. The title needs a correction as part of this cleanup. |
-
-The UPDATE to fix the title is: `UPDATE official_exams SET title = 'Examen officiel de Physique 2025 - NS4' WHERE id = 'db8b3457-4f23-479d-9e9f-f9dca15d3cc4'`.
-
----
-
-#### GROUP 11: SVT / Physique / 2020 (1 row)
-
-| ID | Actual | Decision | Reason |
-|---|---|---|---|
-| `73f94bb6` | 11 | **KEEP** | Only row. 11 real exercises. Clean. |
-
----
-
-### Target State After Cleanup — 11 Rows
-
-| Series | Subject | Year | Model | Real Exercises | Status |
-|---|---|---|---|---|---|
-| LLA | Langues | 2022 | No | 17 | Kept (subject column anomaly noted but not fixed) |
-| SES | Physique | 2019 | No | — | **EMPTY — re-upload needed** |
-| SES | Physique | 2022 | No | 21 | Kept |
-| SES | Physique | 2024 | No | 15 | Kept |
-| SES | Physique | 2026 (model) | Yes | 15 | Kept (cosmetic year issue) |
-| SMP | Physique | 2018 | No | — | **EMPTY — re-upload needed** |
-| SMP | Physique | 2019 | No | 17 | Kept |
-| SMP | Physique | 2022 | No | 11 | Kept |
-| SMP | Physique | 2025 | No | 15 | Kept (`d92d666f`) |
-| SMP | Physique | 2025 (model) | Yes | 45 | Kept + title fixed (`db8b3457`) |
-| SVT | Physique | 2020 | No | 11 | Kept |
-
-**182 exercises are preserved.** Zero exercises are lost.
-
----
-
-### The Exact SQL to Execute (After Your Approval)
-
-Two operations: one DELETE for 12 rows, one UPDATE to fix the model exam title.
-
-**Operation 1 — DELETE 12 rows:**
-
-```sql
--- Exams Plan A cleanup: delete 12 NS4 rows
--- 5 ghost+bad-title rows (9AF title, no exercises): SMP/Physique/2025 v1-5
--- 3 ghost rows: SMP/Physique/2018 (all 3, all zero exercises)
--- 2 ghost rows: SES/Physique/2019 (both, all zero exercises)
--- 1 mislabeled row: dd29dfce "2015 - Baccalauréat" stored under year=2025 (has 15 exercises from wrong exam year)
--- 1 kept intact: d92d666f "Physique 2025 - NS4" (correct, 15 exercises)
-DELETE FROM official_exams
-WHERE id IN (
-  -- SMP/Physique/2025 ghost+9AF-title rows (v1-v5, all zero exercises)
-  '3692e8fd-6a6a-4870-97f3-925e15b3087d',
-  'e830ba4e-1d5d-4a4d-b848-75a409638a43',
-  '8c60551f-7cdd-492f-a519-531ef426a130',
-  'e12eb598-e06e-40ed-9dec-b54c70731e8c',
-  'fa2203da-6173-4a18-948a-6ef1ee65276d',
-  -- SMP/Physique/2018 ghosts (all 3 rows, all zero exercises)
-  '4ec9d6c5-752f-47f5-9e48-ffe7953c3e50',
-  'ab78480e-ebd5-4cdc-986f-5a2bf1c8029b',
-  'efa359ee-8873-463a-acf0-7641874d963a',
-  -- SES/Physique/2019 ghosts (both rows, both zero exercises)
-  'a79c968b-7841-4d24-ae25-6a3313661597',
-  '5f14a0ba-7e0e-4bf0-bb42-de0c516189cf',
-  -- SMP/Physique/2025 mislabeled "2015 - Baccalauréat (SMP-SVT)" under year=2025
-  -- (15 exercises but from the 2015 exam PDF; correct 2025 exam is d92d666f)
-  'dd29dfce-ca2d-4693-a82a-3d6f44531cf2'
-);
+// After — pre-select all NS4 series on switch to NS4
+setSelectedSeries(newTrack === 'NS4' ? ["SMP", "SES", "SVT", "LLA"] : []);
 ```
 
-**Operation 2 — UPDATE model exam title:**
+**Why all four?** After the database cleanup, there are 9 clean rows spread across LLA, SES, SMP, SVT. Pre-selecting all four means the admin immediately sees the full organized list in a filtered state. The user can then narrow by deselecting a series.
 
-```sql
--- Fix the model exam title: grade_level=NS4 but title says "9AF"
--- db8b3457 has 45 real exercises and is the only SMP model exam — must be kept, title corrected
-UPDATE official_exams
-SET title = 'Examen officiel de Physique 2025 - NS4'
-WHERE id = 'db8b3457-4f23-479d-9e9f-f9dca15d3cc4';
+**Impact on `availableSubjects`:** The subject dropdown uses `selectedSeries[0]` (line 86). With all four pre-selected, `selectedSeries[0]` will be `"SMP"` — so the subject dropdown will show SMP subjects by default. This is acceptable: when the user picks a specific series for upload, they deselect the others first, which narrows the subject list correctly. The form validation already blocks submission if `selectedSeries.length === 0` (line 136–138), which cannot trigger since they start with all 4 selected.
+
+---
+
+## Fix 2 — Empty Subject Dropdown Guidance
+
+**File:** `src/features/exams/admin/ExamAdminPage.tsx`  
+**Current behavior:** Lines 459–465 render `SelectContent` with only `availableSubjects.map(...)`. When `availableSubjects = []`, the dropdown opens but shows nothing.  
+**Fix:** Add a disabled placeholder `SelectItem` that renders when `availableSubjects.length === 0`.
+
+**Change in the subject `SelectContent` block (lines 459–465):**
+```tsx
+<SelectContent>
+  {availableSubjects.length === 0 ? (
+    // Informative disabled placeholder — only shown when no series is selected
+    <SelectItem value="__placeholder__" disabled>
+      Sélectionnez d'abord une série
+    </SelectItem>
+  ) : (
+    availableSubjects.map((subj) => (
+      <SelectItem key={subj} value={subj}>
+        {subj}
+      </SelectItem>
+    ))
+  )}
+</SelectContent>
 ```
 
-**Important:** `exam_exercises` rows cascade-delete automatically when their parent `official_exams` row is deleted (FK with `ON DELETE CASCADE`). The 12 rows being deleted all have `actual = 0` exercises except `dd29dfce` which has 15 exercises from the wrong exam year (2015 content stored as 2025). Those 15 exercises will be deleted. This is intentional — they are incorrect content for that year slot.
+**Note:** After Fix 1, this placeholder will only appear in the edge case where the user manually deselects all series via `SeriesMultiSelect`. It will not appear on initial NS4 render since Fix 1 pre-selects all series. The `value="__placeholder__"` cannot be selected by the user (it is `disabled`) and cannot equal any real subject name, so it will never pollute the form state.
 
 ---
 
-### One Item Requiring Your Explicit Decision
+## Fix 3 — Pass gradeLevel and series into parse-exam-vision System Prompt
 
-**Row `dd29dfce` — "Physique 2015 - Baccalauréat (SMP-SVT)" stored under year=2025:**
+**File:** `supabase/functions/parse-exam-vision/index.ts`  
+**Current behavior:** Line 14 destructures only `{ subject, year, pageImages }`. `gradeLevel` and `series` are sent by the frontend (verified at lines 122–124 of `ExamAdminPage.tsx`) but silently ignored. The system prompt (line 38) is generic for both exam types.
 
-This row has 15 real exercises. The AI was fed a 2015 exam PDF but the UI form had year=2025. The exercises are from the 2015 exam, not 2025. The plan above deletes this row because:
-- The year=2025 slot already has `d92d666f` with 15 correct 2025 exercises
-- Keeping both creates a duplicate for the same logical identity (SMP/Physique/2025/false)
-- The 2015 content can be re-uploaded properly under year=2015
+**Two-part change:**
 
-If you want the 2015 exam content preserved instead of discarded, let me know before approving and I will modify the plan to keep `dd29dfce` and change its `year` from 2025 to 2015 instead of deleting it.
+**Part A — Destructure gradeLevel and series from request body (line 14):**
+```ts
+// Before
+const { subject, year, pageImages } = await req.json();
+
+// After — read gradeLevel and series (optional, default to '9AF' for safety)
+const { subject, year, pageImages, gradeLevel = '9AF', series } = await req.json();
+```
+
+**Part B — Build a context-aware system prompt instead of the generic one (lines 38–54):**
+
+The new prompt diverges based on `gradeLevel`:
+
+```ts
+// Build exam-type-specific context for the AI
+const examContext = gradeLevel === 'NS4'
+  ? `Tu analyses un examen du BACCALAURÉAT haïtien (NS4)${series ? ` — Série ${series}` : ''}.
+
+SPÉCIFICITÉS NS4 À RESPECTER ABSOLUMENT:
+- Les examens NS4 sont composés principalement de questions ouvertes (open_ended) et de problèmes multi-parties
+- Les QCM (multiple_choice) sont rares dans les examens NS4, sauf en Anglais/Espagnol/Créole
+- Chaque exercice peut contenir plusieurs sous-questions numérotées (a, b, c, d) — traite chaque sous-question comme un exercice distinct
+- Les formules mathématiques et physiques doivent être extraites en notation LaTeX
+- Les points par question sont souvent indiqués en marge (ex: "4 pts", "/4") — extrait-les précisément
+- La structure typique NS4: Texte du problème → sous-questions → données/formules en annexe
+- Pour la série ${series || 'NS4'}: les matières scientifiques (Physique, Chimie, Maths, SVT) sont à dominante calcul et démonstration`
+  : `Tu analyses un examen de la 9ÈME ANNÉE FONDAMENTALE haïtienne (9AF).
+
+SPÉCIFICITÉS 9AF À RESPECTER ABSOLUMENT:
+- Les examens 9AF contiennent un mélange de QCM (multiple_choice) et de questions ouvertes (open_ended)
+- Les QCM ont toujours 4 options: A), B), C), D) — extrait les options précisément
+- Les textes de référence (Reading, Texte de lecture) précèdent souvent plusieurs questions
+- Structure typique 9AF: texte de référence → questions de compréhension → exercices de grammaire → rédaction`;
+
+const systemPrompt = `Tu es un expert OCR spécialisé dans l'extraction d'examens officiels haïtiens.
+
+${examContext}
+
+INSTRUCTIONS GÉNÉRALES:
+1. Analyse attentivement CHAQUE page de l'examen
+2. Identifie et extrait TOUS les TEXTES DE RÉFÉRENCE (Reading, Texte, Lecture, passages) — EXTRAIT LE TEXTE COMPLET
+3. Identifie TOUS les exercices/questions avec leurs numéros
+4. Pour les QCM, extrait précisément les options A), B), C), D)
+5. Préserve les accents français et créoles (é, è, à, ç, ô, etc.)
+6. Identifie les points attribués à chaque question si visibles
+7. Détermine le type: "multiple_choice" ou "open_ended" en respectant les spécificités ci-dessus
+8. Pour les formules mathématiques, utilise la notation LaTeX
+
+IMPORTANT:
+- EXTRAIT TOUS les textes de référence COMPLETS dans referenceTexts
+- Ne rate AUCUNE question
+- Si les points ne sont pas visibles: 5 pts pour QCM, 8 pts pour questions ouvertes
+- Utilise la fonction extract_exam_data pour retourner les résultats`;
+```
+
+**The user prompt also gains context (line 56):**
+```ts
+// Before
+const userPrompt = `Analyse cet examen officiel de ${subject} ${year}. Extrait TOUTES les questions, options, textes de référence. Utilise la fonction extract_exam_data.`;
+
+// After
+const userPrompt = `Analyse cet examen officiel de ${subject} ${year}${gradeLevel === 'NS4' && series ? ` (${series})` : ''}. Extrait TOUTES les questions, options, textes de référence. Utilise la fonction extract_exam_data.`;
+```
+
+**The tool calling schema, `tool_choice`, and normalization logic are not touched.** Only the system prompt and user prompt strings change.
+
+**The log line also gains context (line 23):**
+```ts
+console.log(`Processing ${pageImages.length} page images for ${subject} ${year} [${gradeLevel}${series ? `/${series}` : ''}]`);
+```
 
 ---
 
-### Safety Checks
+## Fix 4 — Auto-Refresh ExistingExamsList After Save
 
-| Check | Status |
-|---|---|
-| Zero real exercises lost by the 11 ghost+bad-title deletions | Yes — rows with IDs `3692e8fd`, `e830ba4e`, `8c60551f`, `e12eb598`, `fa2203da`, `4ec9d6c5`, `ab78480e`, `efa359ee`, `a79c968b`, `5f14a0ba` all have actual=0. No exercises exist in exam_exercises for any of them. |
-| The model exam row `db8b3457` (45 exercises) is not deleted | Yes — it is explicitly kept and only its title is corrected. |
-| The correct SMP/2025 row `d92d666f` (15 exercises) is kept | Yes — it is not in the DELETE list. |
-| All 182 existing exercises are preserved (minus the 15 from the 2015-content row) | Yes — 182 − 15 = 167 exercises preserved if `dd29dfce` is deleted. All 182 preserved if you choose to keep it as year=2015 instead. |
-| No code files touched | Yes — this is a database-only operation. |
-| ON DELETE CASCADE handles exam_exercises automatically | Yes — confirmed from DB schema. No manual exercise cleanup needed. |
-| Post-cleanup diagnostic queries will confirm the final state | Yes — I will re-run all three diagnostic queries after you approve and the deletes execute. |
+**Files:**  
+- `src/features/exams/admin/ExamAdminPage.tsx` — add `refreshTrigger` state, increment after save  
+- `src/features/exams/admin/components/ExistingExamsList.tsx` — add `refreshTrigger` prop, add to `useEffect` deps
+
+**Part A — ExamAdminPage (add state + increment after save):**
+
+Add new state at line 53 (alongside existing state):
+```ts
+// Counter that increments after each successful save to trigger list refresh
+const [refreshTrigger, setRefreshTrigger] = useState(0);
+```
+
+In `handleConfirmAndSave` (line 292, after `resetForm()`):
+```ts
+resetForm();
+// Increment to signal ExistingExamsList to reload
+setRefreshTrigger(prev => prev + 1);
+```
+
+Pass it to `ExistingExamsList` (line 574–580):
+```tsx
+<ExistingExamsList
+  track={track}
+  selectedSeries={selectedSeries}
+  onReanalyze={handleReanalyze}
+  reanalyzingExamId={reanalyzingExamId}
+  onEditExam={handleEditExam}
+  refreshTrigger={refreshTrigger}
+/>
+```
+
+**Part B — ExistingExamsList (add prop + add to useEffect):**
+
+Update `ExistingExamsListProps` interface (line 40–46):
+```ts
+interface ExistingExamsListProps {
+  track: ExamTrack;
+  selectedSeries?: string[];
+  onReanalyze: (exam: ExistingExam) => void;
+  reanalyzingExamId?: string | null;
+  onEditExam?: (exam: ExistingExam) => void;
+  refreshTrigger?: number; // increments after each successful save
+}
+```
+
+Destructure it (line 48–54):
+```ts
+export function ExistingExamsList({ 
+  track, 
+  selectedSeries = [],
+  onReanalyze,
+  reanalyzingExamId,
+  onEditExam,
+  refreshTrigger = 0,
+}: ExistingExamsListProps) {
+```
+
+Update `useEffect` (line 60–62):
+```ts
+// Re-fetch when track, series filter, or save counter changes
+useEffect(() => {
+  loadExams();
+}, [track, selectedSeries, refreshTrigger]);
+```
+
+**No infinite re-fetch risk:** `refreshTrigger` is a number managed by `useState` in the parent. It only changes when `setRefreshTrigger(prev => prev + 1)` is called inside the `try` block of `handleConfirmAndSave`, which only runs on a successful save. `loadExams()` does not call `setRefreshTrigger`. The only way the value changes is explicit user action (confirming a save). The `selectedSeries` reference-equality concern from the audit is already present before this change and is not made worse.
+
+---
+
+## Fix 5 — Delete Dead Code
+
+### Files to delete:
+1. `src/components/content-editor/ExamManager.tsx` — 891 lines, zero imports
+2. `src/components/content-editor/BaccExamManager.tsx` — 927 lines, zero imports
+3. `supabase/functions/parse-exam-text/index.ts` (entire `parse-exam-text/` directory)
+4. Remove the `[functions.parse-exam-text]` block from `supabase/config.toml` (lines 93–94)
+5. Use `supabase--delete_edge_functions` to undeploy `parse-exam-text` from the live environment
+
+---
+
+## File Change Summary
+
+| File | Change type | Scope |
+|---|---|---|
+| `src/features/exams/admin/ExamAdminPage.tsx` | Edit | Fix 1 (1 line), Fix 2 (8 lines), Fix 4 (3 lines + 1 prop) |
+| `src/features/exams/admin/components/ExistingExamsList.tsx` | Edit | Fix 4 (interface + destructure + useEffect dep) |
+| `supabase/functions/parse-exam-vision/index.ts` | Edit | Fix 3 (destructure line, system prompt, user prompt, log) |
+| `src/components/content-editor/ExamManager.tsx` | **Delete** | Fix 5 |
+| `src/components/content-editor/BaccExamManager.tsx` | **Delete** | Fix 5 |
+| `supabase/functions/parse-exam-text/index.ts` | **Delete** | Fix 5 |
+| `supabase/config.toml` | Edit (remove 2 lines) | Fix 5 (remove `[functions.parse-exam-text]` block) |
+
+---
+
+## Safety Verification Table
+
+| Risk | Analysis | Status |
+|---|---|---|
+| Pre-selecting all 4 NS4 series breaks subject dropdown | `availableSubjects` uses `selectedSeries[0]` which will be `"SMP"` — SMP subjects show by default. Valid behavior. User narrows by deselecting series. | Safe |
+| Placeholder `__placeholder__` value leaks into form state | It is `disabled` on the `SelectItem` — Radix UI `Select` ignores disabled items on selection. Cannot be chosen. | Safe |
+| gradeLevel/series changes break parse-exam-vision tool calling schema | Only the `systemPrompt` and `userPrompt` strings change. The `tools` array, `tool_choice`, and normalization code are untouched. | Safe |
+| Auto-refresh causes infinite loop | `refreshTrigger` only increments inside the `try` block of a successful save. `loadExams()` does not mutate `refreshTrigger`. Loop impossible. | Safe |
+| ExamManager or BaccExamManager deletion breaks a UI | Codebase search confirmed zero imports in all `src/` files. | Safe |
+| parse-exam-text deletion breaks a running feature | Codebase search confirmed zero calls to `parse-exam-text` in all `src/` files. | Safe |
+| Removing config.toml entry breaks other functions | The entry only applies to `parse-exam-text`. Removing it has no effect on other functions. | Safe |
+| Default `gradeLevel = '9AF'` if not sent breaks existing behavior | All existing callers already send `gradeLevel`. The default is purely defensive for edge cases. | Safe |
