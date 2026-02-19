@@ -6,7 +6,8 @@
  */
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const SITE_URL = Deno.env.get("SITE_URL") || "https://edupreneurs-haiti-ai.lovable.app";
+// Fallback to production domain if SITE_URL secret is missing
+const SITE_URL = Deno.env.get("SITE_URL") || "https://mon-edupreneur.com";
 
 // ─── Core send function ───
 
@@ -299,11 +300,29 @@ export async function sendSubscriptionEmails(
       .eq('order_id', orderId)
       .maybeSingle();
 
-    const userEmail = txn?.metadata?.email || txn?.metadata?.userEmail;
+    const metadataEmail = txn?.metadata?.email || txn?.metadata?.userEmail;
     const userName = userAuth?.full_name || "Étudiant";
 
+    // Fallback: if metadata has no email, try auth.admin if the client supports it
+    let userEmail = metadataEmail;
     if (!userEmail) {
-      console.log(`[Email] No email found for user ${userId}, skipping emails`);
+      console.warn(`[Email] WARNING: No email in transaction metadata for order ${orderId}, user ${userId}. Attempting auth fallback.`);
+      try {
+        const adminClient = supabase as any;
+        if (adminClient?.auth?.admin?.getUserById) {
+          const { data: authData } = await adminClient.auth.admin.getUserById(userId);
+          userEmail = authData?.user?.email;
+          if (userEmail) {
+            console.warn(`[Email] Fallback succeeded: found email from auth for user ${userId}`);
+          }
+        }
+      } catch (fallbackErr) {
+        console.warn(`[Email] Auth fallback failed:`, fallbackErr);
+      }
+    }
+
+    if (!userEmail) {
+      console.error(`[Email] CRITICAL: No email found for user ${userId}, order ${orderId}. Subscription emails NOT sent.`);
       return;
     }
 

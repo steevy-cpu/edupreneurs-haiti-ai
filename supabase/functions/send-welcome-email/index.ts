@@ -15,7 +15,8 @@ import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } f
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-const getEmailTemplate = (fullName: string, verificationUrl?: string) => `
+// Template: welcome email — no verification URL needed (custom OTP flow handles it)
+const getEmailTemplate = (fullName: string) => `
 <!DOCTYPE html>
 <html lang="fr">
   <head>
@@ -169,7 +170,6 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const { email, fullName, nickname } = validation.data;
-    const verificationUrl = rawBody.verificationUrl; // Optional field
 
     console.log("Sending welcome email to:", email.substring(0, 3) + "***");
 
@@ -177,7 +177,7 @@ const handler = async (req: Request): Promise<Response> => {
       from: "Edupreneurs <noreply@mon-edupreneur.com>",
       to: [email],
       subject: "🎉 Bienvenue sur Edupreneurs !",
-      html: getEmailTemplate(fullName, verificationUrl),
+      html: getEmailTemplate(fullName),
     });
 
     console.log("Welcome email sent successfully");
