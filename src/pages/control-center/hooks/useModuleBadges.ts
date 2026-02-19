@@ -7,20 +7,27 @@ export function useModuleBadges() {
 
   const refreshBadges = useCallback(async () => {
     setIsLoading(true);
+
+    // Only modules that declare a badge function
+    const badgeModules = CONTROL_CENTER_MODULES.filter(m => m.badge);
+
+    // Fire all badge queries simultaneously — allSettled ensures one failure
+    // does not cancel the others; failed badges fall back to 0 silently
+    const results = await Promise.allSettled(
+      badgeModules.map(m => m.badge!())
+    );
+
     const newBadges: Record<string, number> = {};
-    
-    for (const module of CONTROL_CENTER_MODULES) {
-      if (module.badge) {
-        try {
-          const count = await module.badge();
-          newBadges[module.id] = count;
-        } catch (error) {
-          console.error(`Error fetching badge for ${module.id}:`, error);
-          newBadges[module.id] = 0;
-        }
+    results.forEach((result, index) => {
+      const moduleId = badgeModules[index].id;
+      if (result.status === "fulfilled") {
+        newBadges[moduleId] = result.value;
+      } else {
+        console.error(`Error fetching badge for ${moduleId}:`, result.reason);
+        newBadges[moduleId] = 0;
       }
-    }
-    
+    });
+
     setBadges(newBadges);
     setIsLoading(false);
   }, []);

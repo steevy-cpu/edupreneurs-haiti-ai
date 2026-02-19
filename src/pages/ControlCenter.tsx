@@ -22,6 +22,18 @@ export default function ControlCenter() {
   const { badges } = useModuleBadges();
   const [activeTab, setActiveTab] = useState(CONTROL_CENTER_MODULES[0]?.id || "users");
 
+  // Track which tabs have been visited — once mounted they stay mounted
+  // to preserve component state when switching between tabs
+  const [mountedTabs, setMountedTabs] = useState<Set<string>>(
+    () => new Set([CONTROL_CENTER_MODULES[0]?.id || "users"])
+  );
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // Add to mounted set — never remove, preserves state on tab switch-back
+    setMountedTabs(prev => new Set([...prev, value]));
+  };
+
   // Show loading while checking founder status
   if (isCheckingFounder) {
     return (
@@ -63,7 +75,7 @@ export default function ControlCenter() {
 
       {/* Main Content */}
       <main className="container max-w-screen-2xl px-4 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           {/* Tabs Navigation */}
           <TabsList className="w-full justify-start overflow-x-auto flex-nowrap h-auto p-1 bg-muted/50">
             {CONTROL_CENTER_MODULES.map((module) => (
@@ -87,12 +99,15 @@ export default function ControlCenter() {
             ))}
           </TabsList>
 
-          {/* Tab Contents */}
+          {/* Tab Contents — only mount a module when first visited to prevent
+              all modules from firing their queries simultaneously on load */}
           {CONTROL_CENTER_MODULES.map((module) => (
             <TabsContent key={module.id} value={module.id} className="mt-6">
-              <Suspense fallback={<ModuleLoader />}>
-                <module.component />
-              </Suspense>
+              {mountedTabs.has(module.id) && (
+                <Suspense fallback={<ModuleLoader />}>
+                  <module.component />
+                </Suspense>
+              )}
             </TabsContent>
           ))}
         </Tabs>
