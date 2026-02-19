@@ -102,25 +102,9 @@ export function validateStep3(data: SignupFormData): { valid: boolean; error?: s
  * Complete signup process
  */
 export async function createAccount(data: SignupFormData, referralCode?: string): Promise<SignupResult> {
-  // Final validation
-  const fullData = {
-    email: data.email!,
-    emailConfirm: data.emailConfirm!,
-    fullName: data.fullName || '',
-    nickname: data.nickname!,
-    academicGrade: data.academicGrade!,
-    phoneNumber: data.phoneNumber || '',
-    password: data.password!,
-    school: data.school || '',
-    gender: data.gender!,
-    dateOfBirth: data.dateOfBirth || '',
-    privacy: data.privacy!,
-    payment: 'promo_code',
-  };
-
-  const validation = signupSchema.safeParse(fullData);
-  if (!validation.success) {
-    return { success: false, error: validation.error.errors[0]?.message };
+  // Lightweight validation — profile fields moved to post-login onboarding quiz
+  if (!data.email || !data.password || !data.privacy) {
+    return { success: false, error: "Données manquantes pour l'inscription" };
   }
 
   try {
@@ -143,24 +127,14 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
     const isMonCash = accessMethod === 'moncash' && data.paymentCompleted;
     const isGift = accessMethod === 'gift';
     
-    // Determine subscription status:
-    // - MonCash paid: 'active' with 30-day end date
-    // - Gift tab: 'pending_gift' (waiting for family payment)
-    // - Promo code: 'none' (has_free_access handles gating)
     const subscriptionStatus = isMonCash ? 'active' : isGift ? 'pending_gift' : 'none';
     
-    // Create profile
+    // Minimal profile insert — profile fields (name, grade, etc.) are
+    // collected during the post-login OnboardingQuiz, not at signup
     const { error: profileError } = await supabase
       .from('profiles')
       .insert({
         user_id: authData.user.id,
-        full_name: data.fullName || data.nickname!,
-        nickname: data.nickname,
-        academic_grade: data.academicGrade!,
-        phone_number: data.phoneNumber,
-        school: data.school,
-        gender: data.gender,
-        date_of_birth: data.dateOfBirth || null,
         email_confirmed: false,
         phone_confirmed: false,
         confirmation_code: confirmationCode.trim(),
@@ -180,9 +154,7 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
     }
 
     // Check for any completed gift payments matching this email and activate subscription
-    // IMPORTANT: This runs BEFORE signOut so the user session is still active for RLS
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: completedGifts } = await (supabase as any)
         .from("gift_subscriptions")
         .select("id")
@@ -191,15 +163,12 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
         .is("student_user_id", null);
 
       if (completedGifts && completedGifts.length > 0) {
-        // Link gift records to the new user
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (supabase as any)
           .from("gift_subscriptions")
           .update({ student_user_id: authData.user.id })
           .eq("student_email", data.email)
           .is("student_user_id", null);
 
-        // Activate subscription (30 days from now)
         const newEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
         await supabase
           .from("profiles")
@@ -213,13 +182,13 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
       console.error("Gift link activation check error:", giftErr);
     }
 
-    // Send confirmation email
+    // Send confirmation email — use email as fallback since name not yet collected
     await supabase.functions.invoke('send-confirmation-email', {
       body: {
         email: data.email,
-        fullName: data.fullName || data.nickname,
-        nickname: data.nickname,
-        academicGrade: data.academicGrade,
+        fullName: data.email,
+        nickname: null,
+        academicGrade: null,
         confirmationCode: confirmationCode,
       }
     });

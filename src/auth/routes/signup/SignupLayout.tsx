@@ -1,29 +1,29 @@
 /**
- * SignupLayout - Progress bar + outlet for signup steps
+ * SignupLayout - Progress bar + outlet for signup steps.
+ * Streamlined to 2 steps: Compte (step-1) and Finalisation (step-3).
  */
 
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Telescope } from "lucide-react";
 import { VisitorTypeSelector } from "@/components/visitor";
-import { getAuthFlow } from "../../store/authFlow.store";
 
 export default function SignupLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [showVisitorSelector, setShowVisitorSelector] = useState(false);
   
-  // Determine current step from URL
+  // Determine current step from URL — 2-step flow (Step 2 removed)
   const getStepFromPath = (): number => {
     if (location.pathname.includes('step-1')) return 1;
-    if (location.pathname.includes('step-2')) return 2;
-    if (location.pathname.includes('step-3')) return 3;
+    // step-3 is now step 2 in the visual progress
+    if (location.pathname.includes('step-3')) return 2;
     return 1;
   };
   
   const currentStep = getStepFromPath();
-  const totalSteps = 3;
+  const totalSteps = 2;
 
   return (
     <>
@@ -64,10 +64,10 @@ export default function SignupLayout() {
 
       {/* Content with Progress */}
       <div className="auth-content p-5">
-        {/* Visual Step Progress Indicator */}
+        {/* Visual Step Progress Indicator — 2 steps */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
-            {[1, 2, 3].map((step) => (
+            {[1, 2].map((step) => (
               <div key={step} className="flex items-center flex-1">
                 <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-all duration-300 ${
                   currentStep >= step 
@@ -76,7 +76,7 @@ export default function SignupLayout() {
                 }`}>
                   {currentStep > step ? '✓' : step}
                 </div>
-                {step < 3 && (
+                {step < 2 && (
                   <div className={`flex-1 h-1 mx-2 rounded-full transition-all duration-300 ${
                     currentStep > step ? 'bg-primary' : 'bg-muted'
                   }`} />
@@ -86,8 +86,7 @@ export default function SignupLayout() {
           </div>
           <div className="flex justify-between text-xs text-muted-foreground">
             <span className={currentStep >= 1 ? 'text-primary font-medium' : ''}>Compte</span>
-            <span className={currentStep >= 2 ? 'text-primary font-medium' : ''}>Profil</span>
-            <span className={currentStep >= 3 ? 'text-primary font-medium' : ''}>Finalisation</span>
+            <span className={currentStep >= 2 ? 'text-primary font-medium' : ''}>Finalisation</span>
           </div>
           <div className="w-full h-2 bg-muted rounded-full overflow-hidden mt-3">
             <div

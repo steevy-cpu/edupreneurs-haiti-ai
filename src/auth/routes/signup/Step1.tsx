@@ -48,11 +48,11 @@ export default function SignupStep1() {
       return;
     }
 
-    // Save progress and update flow state
+    // Save progress and skip directly to step 3 (finalization)
     saveSignupProgress({ email, emailConfirm, password });
-    saveAuthFlow({ flow: 'signup', step: 2 });
+    saveAuthFlow({ flow: 'signup', step: 3 });
     
-    navigate('/auth/signup/step-2');
+    navigate('/auth/signup/step-3');
   };
 
   return (

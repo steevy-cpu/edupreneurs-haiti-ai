@@ -102,12 +102,13 @@ export default function SignupStep3() {
     window.location.href = result.redirectUrl;
   };
 
+  // Navigate back to step 1 (step 2 was removed)
   const handleBack = () => {
     saveSignupProgress({ 
       promoCode, promoCodeValid, promoGrantsFreeAccess, privacy,
       accessMethod: activeTab === 'gift' ? 'promo' : activeTab, paymentCompleted, paymentOrderId
     });
-    navigate('/auth/signup/step-2');
+    navigate('/auth/signup/step-1');
   };
 
   // Gift tab: student can create account and wait for gift payment (pending_gift status)

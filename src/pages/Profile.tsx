@@ -308,7 +308,7 @@ export default function Profile() {
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-24 lg:pb-8 space-y-4 sm:space-y-6">
         <PageHeader
-          title={profile.nickname}
+          title={profile.nickname ?? 'Étudiant'}
           subtitle={profile.full_name}
           variant="simple"
           backPath="/dashboard"
@@ -320,12 +320,12 @@ export default function Profile() {
           <div className="flex flex-col items-center space-y-3 sm:space-y-4">
             <Avatar className={profile.is_system_account ? "w-48 h-48 sm:w-64 sm:h-64" : "w-24 h-24 sm:w-32 sm:h-32"}>
               <AvatarImage src={getAvatarUrl(profile.avatar_url)} />
-              <AvatarFallback>{profile.nickname[0].toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{(profile.nickname ?? 'E')[0].toUpperCase()}</AvatarFallback>
             </Avatar>
 
             <div className="text-center space-y-1 sm:space-y-2">
               <div className="flex items-center justify-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-bold">{profile.nickname}</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold">{profile.nickname ?? 'Étudiant'}</h1>
                 {profile.verified && (
                   <BadgeCheck className="w-6 h-6 text-primary fill-primary/20" />
                 )}

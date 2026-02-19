@@ -184,7 +184,7 @@ const Leaderboard = () => {
                           )}
                         </div>
                         <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                          {user.academic_grade}
+                          {user.academic_grade ?? '-'}
                         </p>
                       </div>
 
