@@ -1,27 +1,35 @@
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Heart, Loader2, RefreshCw, Search, Filter, Clock, Mail, MessageSquare, User } from "lucide-react";
+import { Heart, Loader2, RefreshCw, Search, Filter, Clock, Mail, MessageSquare, User, CheckCircle, XCircle, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import type { DonationAdmin } from "../types";
 
+// Stripe USD amounts are stored in dollars (not cents) — do NOT divide by 100
 const DonationsModule = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [providerFilter, setProviderFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  // Pagination: 50 rows per page, append-style with "Charger plus"
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 50;
+
+  const queryClient = useQueryClient();
 
   const { data: donations, isLoading, refetch } = useQuery({
-    queryKey: ["admin-donations", statusFilter, providerFilter],
+    queryKey: ["admin-donations", statusFilter, providerFilter, page],
     queryFn: async () => {
       let query = supabase
         .from("donations")
         .select("id, order_id, amount, currency, provider, donor_name, donor_email, donor_message, status, created_at")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        // 50 rows per page — prevents unbounded fetches as donation count grows
+        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
 
       if (statusFilter !== "all") {
         query = query.eq("status", statusFilter);
@@ -33,6 +41,35 @@ const DonationsModule = () => {
       const { data, error } = await query;
       if (error) throw error;
       return data as DonationAdmin[];
+    },
+  });
+
+  // Mutation: set status to 'rejected' in a single DB write
+  const rejectMutation = useMutation({
+    mutationFn: async (donationId: string) => {
+      const { error } = await supabase
+        .from("donations")
+        .update({ status: "rejected" })
+        .eq("id", donationId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      // Invalidate all pages of this query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ["admin-donations"] });
+    },
+  });
+
+  // Mutation: mark a pending donation as completed
+  const approveMutation = useMutation({
+    mutationFn: async (donationId: string) => {
+      const { error } = await supabase
+        .from("donations")
+        .update({ status: "completed" })
+        .eq("id", donationId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-donations"] });
     },
   });
 
@@ -55,10 +92,11 @@ const DonationsModule = () => {
     for (const d of donations) {
       if (d.status === "completed") {
         if (d.currency === "HTG") htg += d.amount;
+        // USD amounts are already in dollars — no /100 division needed
         if (d.currency === "USD") usd += d.amount;
       }
     }
-    return { total: donations.length, htg, usd: usd / 100 };
+    return { total: donations.length, htg, usd };
   }, [donations]);
 
   const pendingCount = donations?.filter((d) => d.status === "pending").length || 0;
@@ -71,6 +109,8 @@ const DonationsModule = () => {
         return <Badge className="bg-green-500">Complété</Badge>;
       case "failed":
         return <Badge variant="destructive">Échoué</Badge>;
+      case "rejected":
+        return <Badge variant="destructive">Rejeté</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -88,9 +128,13 @@ const DonationsModule = () => {
   };
 
   const formatAmount = (amount: number, currency: string) => {
-    if (currency === "USD") return `$${(amount / 100).toFixed(2)} USD`;
+    // USD: stored in dollars — display as-is with 2 decimal places
+    if (currency === "USD") return `$${amount.toFixed(2)} USD`;
+    // HTG: stored in gourdes — display as integer
     return `${amount} HTG`;
   };
+
+  const isActionInProgress = rejectMutation.isPending || approveMutation.isPending;
 
   return (
     <div className="space-y-6">
@@ -113,11 +157,11 @@ const DonationsModule = () => {
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Stats — current page only (resets on page change) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-sm text-muted-foreground">Total dons</p>
+            <p className="text-sm text-muted-foreground">Total dons (page)</p>
             <p className="text-2xl font-bold">{stats.total}</p>
           </CardContent>
         </Card>
@@ -148,7 +192,7 @@ const DonationsModule = () => {
                 className="pl-9"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0); }}>
               <SelectTrigger className="w-full sm:w-[180px]">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Statut" />
@@ -158,9 +202,10 @@ const DonationsModule = () => {
                 <SelectItem value="pending">En attente</SelectItem>
                 <SelectItem value="completed">Complétés</SelectItem>
                 <SelectItem value="failed">Échoués</SelectItem>
+                <SelectItem value="rejected">Rejetés</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={providerFilter} onValueChange={setProviderFilter}>
+            <Select value={providerFilter} onValueChange={(v) => { setProviderFilter(v); setPage(0); }}>
               <SelectTrigger className="w-full sm:w-[150px]">
                 <SelectValue placeholder="Fournisseur" />
               </SelectTrigger>
@@ -223,14 +268,57 @@ const DonationsModule = () => {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5" />
-                    {format(new Date(donation.created_at), "dd/MM/yyyy HH:mm")}
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Clock className="h-3.5 w-3.5" />
+                      {format(new Date(donation.created_at), "dd/MM/yyyy HH:mm")}
+                    </div>
+
+                    {/* Approve/Reject actions — only for pending donations */}
+                    {donation.status === "pending" && (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5 text-green-600 border-green-300 hover:bg-green-50 dark:hover:bg-green-950"
+                          disabled={isActionInProgress}
+                          onClick={() => approveMutation.mutate(donation.id)}
+                        >
+                          <CheckCircle className="h-3.5 w-3.5" />
+                          Approuver
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10"
+                          disabled={isActionInProgress}
+                          onClick={() => rejectMutation.mutate(donation.id)}
+                        >
+                          <XCircle className="h-3.5 w-3.5" />
+                          Rejeter
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
             </Card>
           ))}
+
+          {/* Load more: shown when a full page was returned, indicating more rows exist */}
+          {donations?.length === PAGE_SIZE && (
+            <div className="flex justify-center pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setPage((p) => p + 1)}
+                className="gap-2"
+                disabled={isLoading}
+              >
+                <ChevronRight className="h-4 w-4" />
+                Charger plus
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
