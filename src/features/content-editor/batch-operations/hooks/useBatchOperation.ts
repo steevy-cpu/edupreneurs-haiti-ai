@@ -111,28 +111,35 @@ export const useBatchOperation = ({
 
           await config.updateLesson(lesson.id, result, existing?.validation_details_json);
 
-          operationResults.push({
+          const newResult: OperationResult = {
             lessonId: lesson.id,
             lessonTitle: lesson.title,
             success: result.success,
             aligned: result.aligned,
             confidence: result.confidence,
             offContentCount: result.offContentCount,
-          });
+          };
+          // Keep local array for session persistence + final toast (sequential, no race)
+          operationResults.push(newResult);
+          // Functional update guarantees append-to-latest React state regardless of
+          // concurrent resolution timing when concurrency > 1
+          setResults(prev => [...prev, newResult]);
         } catch (error) {
           console.error(`Error processing ${lesson.title}:`, error);
-          operationResults.push({
+          const newResult: OperationResult = {
             lessonId: lesson.id,
             lessonTitle: lesson.title,
             success: false,
             error: error instanceof Error ? error.message : 'Erreur inconnue',
-          });
+          };
+          operationResults.push(newResult);
+          setResults(prev => [...prev, newResult]);
         }
 
         completedCount++;
         const currentProgress = { current: completedCount, total: itemsToProcess.length };
         setProgress(currentProgress);
-        setResults([...operationResults]);
+        // Note: setResults is called inside try/catch above via functional update
 
         // Persist to sessionStorage after each lesson
         saveBatchSession(

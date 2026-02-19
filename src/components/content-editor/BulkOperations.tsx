@@ -7,10 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { Package, Trash2, Eye, EyeOff, Download, Upload } from "lucide-react";
-import { useContentEditorPermissions } from "@/hooks/useContentEditorPermissions";
+// Context replaces independent hook call — reads from the shared provider in ContentEditor
+import { useContentEditorPermissionsContext } from "@/contexts/ContentEditorPermissionsContext";
 
 export const BulkOperations = () => {
-  const { role } = useContentEditorPermissions();
+  const { role } = useContentEditorPermissionsContext();
   const [lessons, setLessons] = useState<any[]>([]);
   const [selectedLessons, setSelectedLessons] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);

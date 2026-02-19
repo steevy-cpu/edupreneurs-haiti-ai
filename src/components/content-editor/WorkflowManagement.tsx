@@ -7,7 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { GitBranch, CheckCircle, XCircle, Send, Calendar } from "lucide-react";
-import { useContentEditorPermissions } from "@/hooks/useContentEditorPermissions";
+// Context replaces independent useContentEditorPermissions to avoid redundant queries
+import { useContentEditorPermissionsContext } from "@/contexts/ContentEditorPermissionsContext";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { useLessonPublishable } from "@/features/content-editor/hooks/useLessonPublishable";
 import { PublishGateIndicator } from "@/features/content-editor/components/PublishGateIndicator";
 
@@ -19,7 +21,9 @@ interface WorkflowManagementProps {
 type WorkflowStatus = 'draft' | 'in_review' | 'approved' | 'published' | 'rejected';
 
 export const WorkflowManagement = ({ selectedLesson, onUpdate }: WorkflowManagementProps) => {
-  const { role } = useContentEditorPermissions();
+  const { role } = useContentEditorPermissionsContext();
+  // User from in-memory session — avoids a redundant auth.getUser() call inside updateWorkflowStatus
+  const { user } = useSessionAuth();
   const [reviewNotes, setReviewNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -68,7 +72,7 @@ export const WorkflowManagement = ({ selectedLesson, onUpdate }: WorkflowManagem
 
     setIsSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // user is already available from useSessionAuth() at component level
       if (!user) throw new Error("Non authentifié");
 
       const updates: any = {

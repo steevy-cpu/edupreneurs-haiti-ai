@@ -8,7 +8,8 @@ import {
   BatchLesson
 } from "@/features/content-editor/batch-operations";
 import type { QuizProvider } from "@/features/content-editor/batch-operations";
-import { useContentEditorPermissions } from "@/hooks/useContentEditorPermissions";
+// Context replaces independent hook call — reads from the shared provider in ContentEditor
+import { useContentEditorPermissionsContext } from "@/contexts/ContentEditorPermissionsContext";
 
 interface BatchQuizRegeneratorProps {
   lessons: BatchLesson[];
@@ -27,7 +28,7 @@ export const BatchQuizRegenerator = ({
   onStart,
   disabled = false,
 }: BatchQuizRegeneratorProps) => {
-  const { role } = useContentEditorPermissions();
+  const { role } = useContentEditorPermissionsContext();
   const [provider, setProvider] = useState<QuizProvider>('lovable');
   const config = useMemo(() => createQuizRegeneratorConfig(provider), [provider]);
   

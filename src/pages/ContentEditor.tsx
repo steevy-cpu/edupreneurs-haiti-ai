@@ -23,6 +23,9 @@ import { DailyWordsManager } from "@/components/content-editor/DailyWordsManager
 import { EbookManager } from "@/components/content-editor/EbookManager";
 import { ContentQualityDashboard } from "@/components/content-editor/ContentQualityDashboard";
 import { StudyMusicManager } from "@/components/content-editor/StudyMusicManager";
+import { BatchOperationsPanel } from "@/components/content-editor/BatchOperationsPanel";
+import type { BatchPanelData } from "@/components/content-editor/BatchOperationsPanel";
+import { ContentEditorPermissionsProvider } from "@/contexts/ContentEditorPermissionsContext";
 
 const CONTENT_EDITOR_STORAGE_KEY = 'content_editor_preferences';
 
@@ -54,6 +57,10 @@ const ContentEditor = () => {
   const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
   const [showCreateMatiere, setShowCreateMatiere] = useState(false);
   const [activeTab, setActiveTab] = useState<string>(() => getStoredPreferences().activeTab);
+  // Batch data lifted from LessonBrowser to feed BatchOperationsPanel
+  const [batchData, setBatchData] = useState<BatchPanelData | null>(null);
+  // Track latest loadSubjects trigger so BatchOperationsPanel can request a refresh
+  const [browserRefreshKey, setBrowserRefreshKey] = useState(0);
 
   const savePreferences = (tab: string, lessonId?: string) => {
     const prefs: EditorPreferences = {
@@ -204,6 +211,8 @@ const ContentEditor = () => {
   }
 
   return (
+    // Provider mounts only after hasAccess is confirmed — single permission check for all children
+    <ContentEditorPermissionsProvider>
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-4 md:p-6 lg:p-8">
       <div className="max-w-[1920px] mx-auto space-y-6">
         {/* Header */}
@@ -286,11 +295,16 @@ const ContentEditor = () => {
 
             <TabsContent value="review" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-6">
-                {/* Lesson Browser - Left Sidebar */}
-                <div className="md:col-span-5 lg:col-span-4 h-[calc(100vh-200px)]">
+                {/* Left Sidebar: BatchOperationsPanel stacked above LessonBrowser */}
+                <div className="md:col-span-5 lg:col-span-4 flex flex-col gap-3 h-[calc(100vh-200px)]">
+                  <BatchOperationsPanel
+                    data={batchData}
+                    onRefresh={() => setBrowserRefreshKey(prev => prev + 1)}
+                    onDashboardRefresh={refreshDashboard}
+                  />
+                  <div className="flex-1 min-h-0">
                   <LessonBrowser
                     onSelectLesson={async (lesson) => {
-                      console.log('✅ Lesson selected:', lesson);
                       try {
                         const { data, error } = await supabase
                           .from('lessons')
@@ -301,9 +315,8 @@ const ContentEditor = () => {
                         if (error) throw error;
                         if (data) {
                           setSelectedLesson(data);
-                          savePreferences(activeTab, data.id); // Save lesson to localStorage
+                          savePreferences(activeTab, data.id);
                           
-                          // Fetch all lessons for this subject for CurriculumAnalyzer
                           const { data: allLessons } = await supabase
                             .from('lessons')
                             .select('id, title, slug')
@@ -316,10 +329,13 @@ const ContentEditor = () => {
                       }
                     }}
                     selectedLesson={selectedLesson}
-                    refreshKey={refreshKey}
+                    refreshKey={browserRefreshKey || refreshKey}
                     onDashboardRefresh={refreshDashboard}
+                    onBatchDataUpdate={setBatchData}
                   />
+                  </div>
                 </div>
+
 
                 {/* Content - Right Column */}
                 <div className="md:col-span-7 lg:col-span-8 space-y-4">
@@ -432,6 +448,7 @@ const ContentEditor = () => {
         onMatiereCreated={() => setRefreshKey(prev => prev + 1)}
       />
     </div>
+    </ContentEditorPermissionsProvider>
   );
 };
 
