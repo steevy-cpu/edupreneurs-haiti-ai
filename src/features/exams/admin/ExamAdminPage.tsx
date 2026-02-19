@@ -71,6 +71,9 @@ export function ExamAdminPage() {
   const cachedPageImagesRef = useRef<string[] | null>(null);
   const [canRetryAnalysis, setCanRetryAnalysis] = useState(false);
 
+  // Trigger ExistingExamsList reload after successful save (avoids stale data)
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
   // Preview state
   const [parsedPreview, setParsedPreview] = useState<ParsedPreview | null>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -88,10 +91,10 @@ export function ExamAdminPage() {
     return [];
   }, [track, selectedSeries]);
 
-  // Reset form when track changes
+  // Reset form when track changes — pre-select all NS4 series for immediate usable list
   const handleTrackChange = useCallback((newTrack: ExamTrack) => {
     setTrack(newTrack);
-    setSelectedSeries([]);
+    setSelectedSeries(newTrack === 'NS4' ? ["SMP", "SES", "SVT", "LLA"] : []);
     setSubject("");
     setSession("principale");
     setIsModelExam(false);
@@ -290,6 +293,8 @@ export function ExamAdminPage() {
       }
 
       resetForm();
+      // Increment to signal ExistingExamsList to reload without page remount
+      setRefreshTrigger(prev => prev + 1);
     } catch (error: any) {
       console.error("Error saving exam:", error);
       toast.error(error.message || "Erreur lors de la sauvegarde");
@@ -457,11 +462,18 @@ export function ExamAdminPage() {
                   <SelectValue placeholder="Sélectionner une matière" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableSubjects.map((subj) => (
-                    <SelectItem key={subj} value={subj}>
-                      {subj}
+                  {availableSubjects.length === 0 ? (
+                    // Guidance when no NS4 series is selected yet
+                    <SelectItem value="__placeholder__" disabled>
+                      Sélectionnez d'abord une série
                     </SelectItem>
-                  ))}
+                  ) : (
+                    availableSubjects.map((subj) => (
+                      <SelectItem key={subj} value={subj}>
+                        {subj}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -570,13 +582,14 @@ export function ExamAdminPage() {
         />
       )}
 
-      {/* Existing Exams List */}
+      {/* Existing Exams List — refreshTrigger causes reload after each successful save */}
       <ExistingExamsList
         track={track}
         selectedSeries={selectedSeries}
         onReanalyze={handleReanalyze}
         reanalyzingExamId={reanalyzingExamId}
         onEditExam={handleEditExam}
+        refreshTrigger={refreshTrigger}
       />
     </div>
   );
