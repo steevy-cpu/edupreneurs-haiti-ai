@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,8 @@ import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitie
 import { createSanitizedMarkup } from "@/lib/sanitize";
 import { useLessonPublishable } from "@/features/content-editor/hooks/useLessonPublishable";
 import { PublishGateIndicator } from "@/features/content-editor/components/PublishGateIndicator";
+import { useGenerationJob, GenerationJobProgress, type JobConfig } from "@/features/content-editor";
+import { DEFAULT_WORD_COUNTS } from "@/lib/lessonPrompts";
 
 interface LessonEditorProps {
   selectedLesson: any;
@@ -43,7 +45,6 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("edit");
   const [currentUserId, setCurrentUserId] = useState<string>();
-  const [isGeneratingAll, setIsGeneratingAll] = useState(false);
   const [showActivitiesPreview, setShowActivitiesPreview] = useState(false);
 
   // Get realtime collaboration features
@@ -148,83 +149,56 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
     }
   };
 
-    const handleGenerateAllSections = async () => {
+
+  // System A: callback that applies completed job results to local editor state.
+  // Only overwrites sections that were actually generated (non-null keys in result).
+  const handleJobComplete = useCallback((result: Record<string, any> | null) => {
+    if (!result) return;
+    setLessonData(prev => ({
+      ...prev,
+      ...(result.objectif && { objectif: result.objectif }),
+      ...(result.introduction && { introduction: result.introduction }),
+      ...(result.contenu && { contenu: result.contenu }),
+      ...(result.exemples_exercices && { exemples_exercices: result.exemples_exercices }),
+      ...(result.activites_interactives && { activites_interactives: result.activites_interactives }),
+    }));
+  }, []);
+
+  const {
+    activeJob,
+    existingJob,
+    isGenerating,
+    isPending,
+    progress,
+    currentSection: activeSection,
+    progressPercentage,
+    startJob,
+    cancelJob,
+    resumeJob,
+    canResume,
+  } = useGenerationJob({
+    lessonId: selectedLesson?.id || '',
+    onJobComplete: handleJobComplete,
+  });
+
+  // System A: replace the old System B sequential for-loop with a single job record.
+  // The edge function handles retry logic and defensive saves — no client-side loop needed.
+  const handleGenerateAllSections = () => {
     if (!selectedLesson) {
       toast.error("Aucune leçon sélectionnée");
       return;
     }
-
-    setIsGeneratingAll(true);
-    const sections = ['objectif', 'introduction', 'contenu', 'exemples_exercices', 'activites_interactives'] as const;
-    let successCount = 0;
-    let errorCount = 0;
-
-    for (const section of sections) {
-      try {
-        toast.info(`Génération de ${section}...`);
-        
-        let generatedContent: string;
-
-        if (section === 'activites_interactives') {
-          // Special handling for interactive activities
-          // Combine both contenu and exemples_exercices to get all exercises
-          const fullContent = [
-            lessonData.contenu || selectedLesson.contenu || '',
-            lessonData.exemples_exercices || selectedLesson.exemples_exercices || ''
-          ].filter(Boolean).join('\n\n');
-          
-          const { data, error } = await supabase.functions.invoke('generate-interactive-activities', {
-            body: {
-              exercisesContent: fullContent,
-              lessonTitle: selectedLesson.title,
-              gradeLevel: selectedLesson.grade_level || '7AF',
-              subject: selectedLesson.subjects?.name || 'Matière',
-            }
-          });
-
-          if (error) throw error;
-          if (!data?.content) throw new Error('Aucun contenu généré');
-          generatedContent = data.content;
-        } else {
-          // Standard generation for other sections
-          const { data, error } = await supabase.functions.invoke('generate-lesson-section', {
-            body: {
-              lessonId: selectedLesson.id,
-              sectionName: section,
-              lessonTitle: selectedLesson.title,
-              subject: selectedLesson.subjects?.name || 'Matière',
-              gradeLevel: selectedLesson.grade_level || '7AF',
-              targetWords: section === 'contenu' ? 1000 : section === 'exemples_exercices' ? 500 : section === 'introduction' ? 300 : 200,
-            },
-          });
-
-          if (error) throw error;
-          if (!data?.content) throw new Error('Aucun contenu généré');
-          generatedContent = data.content;
-        }
-
-        setLessonData(prev => ({ ...prev, [section]: generatedContent }));
-        successCount++;
-        
-        // Rate limiting: wait 3 seconds between requests
-        if (section !== sections[sections.length - 1]) {
-          await new Promise(resolve => setTimeout(resolve, 3000));
-        }
-      } catch (error) {
-        console.error(`Error generating ${section}:`, error);
-        errorCount++;
-        toast.error(`Erreur lors de la génération de ${section}`);
-      }
-    }
-
-    setIsGeneratingAll(false);
-    
-    if (successCount > 0) {
-      toast.success(`${successCount} sections générées avec succès${errorCount > 0 ? `, ${errorCount} erreurs` : ''}`);
-    } else {
-      toast.error("Aucune section n'a pu être générée");
-    }
+    const config: JobConfig = {
+      selectedSections: ['objectif', 'introduction', 'contenu', 'exemples_exercices', 'activites_interactives'],
+      wordCounts: DEFAULT_WORD_COUNTS,
+      generateQuiz: false,
+      generateVideos: false,
+      generateAudio: false,
+      imageGenerationModel: 'none',
+    };
+    startJob(config);
   };
+
 
   if (!selectedLesson) {
     return (
@@ -322,14 +296,14 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
           </TabsList>
 
           <TabsContent value="edit" className="space-y-3 md:space-y-4 mt-3 md:mt-4 flex-1 overflow-auto">
-            {/* Generate All Sections Button */}
+            {/* Generate All Sections Button — System A: creates a job record, no client-side loop */}
             <Button 
               onClick={handleGenerateAllSections}
-              disabled={isGeneratingAll}
+              disabled={isGenerating || isPending}
               variant="outline"
               className="w-full"
             >
-              {isGeneratingAll ? (
+              {isGenerating || isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Génération en cours...
@@ -341,6 +315,19 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
                 </>
               )}
             </Button>
+
+            {/* System A progress tracker — renders null when no job is active */}
+            <GenerationJobProgress
+              job={activeJob}
+              progress={progress}
+              currentSection={activeSection}
+              progressPercentage={progressPercentage}
+              onCancel={cancelJob}
+              existingJob={existingJob}
+              canResume={canResume}
+              onResume={existingJob ? () => resumeJob(existingJob) : undefined}
+            />
+
             <div className="space-y-2">
               <Label htmlFor="title" className="text-xs md:text-sm">Titre de la leçon</Label>
               <Input
