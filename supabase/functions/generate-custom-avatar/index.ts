@@ -5,6 +5,23 @@ import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../
 import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
+// Helper: attempt image generation with a specific model
+async function tryGenerateImage(model: string, prompt: string, apiKey: string) {
+  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: 'user', content: prompt }],
+      modalities: ['image', 'text']
+    }),
+  });
+  return response;
+}
+
 // Input validation schema
 const avatarSchema = z.object({
   style: z.enum(['anime', 'manga', 'chibi', 'cartoon', 'realistic']).optional().default('anime'),
@@ -107,18 +124,17 @@ MANDATORY REQUIREMENTS:
 
     console.log('Generating avatar with prompt:', prompt);
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image-preview',
-        messages: [{ role: 'user', content: prompt }],
-        modalities: ['image', 'text']
-      }),
-    });
+    // Try primary model, fall back to alternative on 500
+    const PRIMARY_MODEL = 'google/gemini-2.5-flash-image';
+    const FALLBACK_MODEL = 'google/gemini-3-pro-image-preview';
+
+    let response = await tryGenerateImage(PRIMARY_MODEL, prompt, LOVABLE_API_KEY);
+
+    // Retry with fallback model if primary returns 500 (upstream issue)
+    if (response.status === 500) {
+      console.warn(`Primary model ${PRIMARY_MODEL} returned 500, trying fallback ${FALLBACK_MODEL}`);
+      response = await tryGenerateImage(FALLBACK_MODEL, prompt, LOVABLE_API_KEY);
+    }
 
     if (!response.ok) {
       const errorText = await response.text();

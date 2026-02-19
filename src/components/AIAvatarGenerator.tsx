@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Sparkles, Loader2, RefreshCw, Check, User, Clock } from "lucide-react";
+import { Sparkles, Loader2, RefreshCw, Check, User, Clock, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -89,6 +89,8 @@ export const AIAvatarGenerator = ({ open, onOpenChange, onAvatarGenerated, userI
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [canRegenerate, setCanRegenerate] = useState(true);
+  // Tracks if generation failed during onboarding so we can show a skip option
+  const [generationFailed, setGenerationFailed] = useState(false);
   const [nextRegenerateDate, setNextRegenerateDate] = useState<Date | null>(null);
 
   // Check if user can regenerate avatar (3-day limit, except for super users)
@@ -143,6 +145,7 @@ export const AIAvatarGenerator = ({ open, onOpenChange, onAvatarGenerated, userI
   const handleGenerate = async () => {
     setIsGenerating(true);
     setGeneratedImage(null);
+    setGenerationFailed(false);
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-custom-avatar', {
@@ -164,7 +167,12 @@ export const AIAvatarGenerator = ({ open, onOpenChange, onAvatarGenerated, userI
       toast.success("Avatar généré avec succès!");
     } catch (error) {
       console.error("Error generating avatar:", error);
-      toast.error(error instanceof Error ? error.message : "Erreur lors de la génération");
+      if (isOnboarding) {
+        // During onboarding, show inline fallback UI instead of raw error toast
+        setGenerationFailed(true);
+      } else {
+        toast.error(error instanceof Error ? error.message : "Erreur lors de la génération");
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -459,7 +467,36 @@ export const AIAvatarGenerator = ({ open, onOpenChange, onAvatarGenerated, userI
               </span>
             </div>
           )}
-          {!generatedImage ? (
+
+          {/* Onboarding fallback: friendly error with skip option */}
+          {generationFailed && isOnboarding && (
+            <div className="space-y-3">
+              <div className="flex items-start gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
+                <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5 text-amber-500" />
+                <span>
+                  La génération d'avatar est temporairement indisponible. Tu pourras en créer un depuis tes paramètres plus tard.
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => { setGenerationFailed(false); handleGenerate(); }}
+                  className="flex-1 h-12"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Réessayer
+                </Button>
+                <Button
+                  onClick={() => onOpenChange(false)}
+                  className="flex-1 h-12"
+                >
+                  Continuer sans avatar
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {!generationFailed && !generatedImage ? (
             <Button
               onClick={handleGenerate}
               disabled={isGenerating || !canRegenerate}
