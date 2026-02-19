@@ -1,109 +1,34 @@
 
 
-# Fix: Avatar Generation 500 Error + User-Friendly Fallback
+# Improve Avatar Generator Error Handling in Settings Page
 
-## Problem
-The `generate-custom-avatar` edge function uses `google/gemini-2.5-flash-image-preview` which is returning 500 errors from the AI Gateway. This is an upstream model issue, not related to the signup redesign.
+## What This Fixes
+Currently, when avatar generation fails from the Settings page, users see a raw technical error message like "AI Gateway error: 500". Additionally, founder users (Steevy and Djood) are subject to the 3-day avatar regeneration cooldown on the Settings page because `isSuperUser` is not passed through.
 
 ## Changes
 
-### 1. Edge Function: Switch model + add fallback retry (`supabase/functions/generate-custom-avatar/index.ts`)
+### 1. AvatarSelector.tsx -- Accept and forward `isSuperUser`
+- Add `isSuperUser?: boolean` to the `AvatarSelectorProps` interface
+- Pass it through to `AIAvatarGenerator`
 
-- **Primary model**: `google/gemini-2.5-flash-image` (confirmed working name per Lovable AI docs)
-- **Fallback model**: `google/gemini-3-pro-image-preview` (next-gen image model)
-- Logic: Try primary model. If it returns 500, retry once with fallback model. If both fail, return a clean error.
+### 2. Settings.tsx -- Detect founders and pass `isSuperUser`
+- Import `isFounder` from `src/lib/founderConstants.ts`
+- Compute `isSuperUser` from the current `userId`
+- Pass `isSuperUser` to `AvatarSelector`
 
-Specific changes at line 110-121:
-- Extract the fetch call into a helper function `tryGenerateWithModel(model, prompt, apiKey)`
-- Call with primary model first, on 500 retry with fallback
-- Keep existing 429/402 handling unchanged
+### 3. AIAvatarGenerator.tsx -- Friendly error for non-onboarding too
+- In the `handleGenerate` catch block, replace the raw `toast.error` with a cleaner French message: "La generation d'avatar est temporairement indisponible. Reessaie plus tard."
+- This applies when `isOnboarding` is false (the onboarding path already has the inline fallback UI)
 
-### 2. Frontend: Graceful error in `AIAvatarGenerator.tsx` during onboarding (lines 165-168)
-
-In `handleGenerate()`, when `isOnboarding` is true and an error occurs:
-- Instead of showing a raw toast error, set a new `generationFailed` state to `true`
-- Render a fallback UI in the dialog showing:
-  - Message: "La generation d'avatar est temporairement indisponible. Tu pourras en creer un depuis tes parametres plus tard."
-  - A "Continuer sans avatar" button that calls `onAvatarGenerated('')` (empty string signals skip) or closes the dialog so the parent `AvatarGenerationStep` skip button is accessible
-
-Actually, since `AIAvatarGenerator` receives `onOpenChange` and the parent `AvatarGenerationStep` has a "Plus tard" skip button visible when the dialog is closed, the simplest approach is:
-- On error during onboarding: show a friendly toast + close the dialog automatically, revealing the existing "Plus tard" skip button
-- Add a dedicated "Continuer sans avatar" button inside the dialog's error state for direct skip
-
-### 3. No changes to `AvatarGenerationStep.tsx`
-The existing skip flow ("Plus tard" button calling `skipAvatarGeneration()`) already handles the case. We just need the dialog to not trap the user on error.
-
----
-
-## Detailed Changes
-
-### File: `supabase/functions/generate-custom-avatar/index.ts`
-
-**Add helper function** (before `serve`):
-```typescript
-async function tryGenerateImage(model: string, prompt: string, apiKey: string) {
-  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      messages: [{ role: 'user', content: prompt }],
-      modalities: ['image', 'text']
-    }),
-  });
-  return response;
-}
-```
-
-**Replace lines 110-121** with:
-```typescript
-// Try primary model, fall back to alternative on 500
-const PRIMARY_MODEL = 'google/gemini-2.5-flash-image';
-const FALLBACK_MODEL = 'google/gemini-3-pro-image-preview';
-
-let response = await tryGenerateImage(PRIMARY_MODEL, prompt, LOVABLE_API_KEY);
-
-if (response.status === 500) {
-  console.warn(`Primary model ${PRIMARY_MODEL} returned 500, trying fallback ${FALLBACK_MODEL}`);
-  response = await tryGenerateImage(FALLBACK_MODEL, prompt, LOVABLE_API_KEY);
-}
-```
-
-Keep the existing `if (!response.ok)` block after this (lines 123-140) unchanged.
-
-### File: `src/components/AIAvatarGenerator.tsx`
-
-**Add state** (after line 91):
-```typescript
-const [generationFailed, setGenerationFailed] = useState(false);
-```
-
-**Update `handleGenerate`** (lines 143-171):
-- In the catch block, if `isOnboarding` is true, set `generationFailed = true` instead of just showing a toast
-- Reset `generationFailed` when dialog opens or user retries
-
-**Add fallback UI** in the preview/footer section:
-- When `generationFailed && isOnboarding`, render:
-  - Warning icon + French message about temporary unavailability
-  - "Continuer sans avatar" button that calls `onOpenChange(false)` (closes dialog, revealing the skip button in AvatarGenerationStep)
-  - "Reessayer" button that resets `generationFailed` and retries
-
-### Redeploy
-Deploy `generate-custom-avatar` edge function after changes.
-
----
-
-## Safety Verification
-
-| Check | Status |
+## Files Modified
+| File | Change |
 |---|---|
-| No signup redesign code touched | Correct -- only avatar edge function + AIAvatarGenerator |
-| Primary model is confirmed available | `google/gemini-2.5-flash-image` per Lovable AI docs |
-| Fallback model is confirmed available | `google/gemini-3-pro-image-preview` per Lovable AI docs |
-| User not blocked during onboarding | "Continuer sans avatar" button + existing "Plus tard" skip |
-| Non-onboarding avatar generation unchanged | Error toast behavior preserved when `isOnboarding` is false |
-| Edge function retry is bounded | Single retry only (primary + fallback = max 2 attempts) |
+| `src/components/AvatarSelector.tsx` | Add `isSuperUser` prop, forward to AIAvatarGenerator |
+| `src/pages/Settings.tsx` | Import `isFounder`, compute and pass `isSuperUser` |
+| `src/components/AIAvatarGenerator.tsx` | Replace raw error toast with user-friendly French message |
 
+## Safety
+- No signup/onboarding code touched
+- No database or edge function changes
+- Existing onboarding error handling (generationFailed state + "Continuer sans avatar") unchanged
+- Only improves Settings page experience and founder cooldown bypass
