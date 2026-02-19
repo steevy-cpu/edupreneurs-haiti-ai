@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Mail, Trash2, MessageSquare, ExternalLink, Loader2 } from 'lucide-react';
@@ -79,7 +79,9 @@ export default function ContactModule() {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const { toast } = useToast();
 
-  const fetchSubmissions = async () => {
+  // Wrapped in useCallback so the realtime subscription never needs to re-register
+  // when filters or page change — the closure always calls the latest version
+  const fetchSubmissions = useCallback(async () => {
     setLoading(true);
     try {
       let query = supabase
@@ -113,13 +115,15 @@ export default function ContactModule() {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchSubmissions();
   }, [statusFilter, currentPage]);
 
-  // Realtime subscription
+  // Data fetch — re-runs when filter or page change
+  useEffect(() => {
+    fetchSubmissions();
+  }, [fetchSubmissions]);
+
+  // Realtime subscription — subscribes ONCE on mount, never re-registers on filter/page changes.
+  // fetchSubmissions is captured by closure and always invokes the latest version.
   useEffect(() => {
     const channel = supabase
       .channel('contact_submissions_changes')
@@ -139,7 +143,7 @@ export default function ContactModule() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [statusFilter, currentPage]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateStatus = async (id: string, newStatus: string) => {
     setUpdatingStatus(true);
@@ -330,20 +334,27 @@ export default function ContactModule() {
                     className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                   />
                 </PaginationItem>
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  const pageNum = i + 1;
-                  return (
-                    <PaginationItem key={pageNum}>
-                      <PaginationLink
-                        onClick={() => setCurrentPage(pageNum)}
-                        isActive={currentPage === pageNum}
-                        className="cursor-pointer"
-                      >
-                        {pageNum}
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                })}
+                {(() => {
+                  // 5-page sliding window centered on currentPage — pages 6+ are always reachable
+                  const windowSize = 5;
+                  const halfWindow = Math.floor(windowSize / 2);
+                  let startPage = Math.max(1, currentPage - halfWindow);
+                  let endPage = Math.min(totalPages, startPage + windowSize - 1);
+                  if (endPage - startPage < windowSize - 1) {
+                    startPage = Math.max(1, endPage - windowSize + 1);
+                  }
+                  return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+                })().map((pageNum) => (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      onClick={() => setCurrentPage(pageNum)}
+                      isActive={currentPage === pageNum}
+                      className="cursor-pointer"
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
                 <PaginationItem>
                   <PaginationNext
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}

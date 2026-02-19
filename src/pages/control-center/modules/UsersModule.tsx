@@ -41,14 +41,19 @@ interface UserProfile {
   gold_earned: number;
 }
 
+// Mirrors ACADEMIC_GRADES from types.ts exactly — keeping both in sync prevents filter gaps
 const GRADES = [
   { value: "all", label: "Tous les niveaux" },
   { value: "7AF", label: "7ème AF" },
+  { value: "7e", label: "7ème" },
   { value: "8AF", label: "8ème AF" },
+  { value: "8e", label: "8ème" },
   { value: "9AF", label: "9ème AF" },
+  { value: "NS1", label: "NS1" },
   { value: "NS3", label: "NS3" },
   { value: "NS4", label: "NS4" },
-  { value: "PHILO", label: "Philo" },
+  { value: "Philo", label: "Philo" },
+  { value: "S1", label: "S1" },
 ];
 
 const PAGE_SIZE = 20;
