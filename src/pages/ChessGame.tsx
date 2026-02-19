@@ -102,7 +102,7 @@ const ChessGame: React.FC = () => {
           .select('nickname')
           .eq('user_id', user.id)
           .single();
-        if (profile) setUserNickname(profile.nickname);
+        if (profile) setUserNickname(profile.nickname ?? 'Étudiant');
       }
     };
     fetchProfile();

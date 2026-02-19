@@ -36,6 +36,8 @@ export const loginSchema = z.object({
 });
 
 // Signup validation schema
+// Signup schema — only validates fields collected during signup (email, password, privacy).
+// Profile fields (nickname, grade, gender, school) are collected post-login in OnboardingQuiz.
 export const signupSchema = z.object({
   email: z
     .string()
@@ -48,6 +50,31 @@ export const signupSchema = z.object({
     .trim()
     .min(1, "La confirmation d'email est requise")
     .email("Format d'email invalide"),
+  password: z
+    .string()
+    .min(8, "Le mot de passe doit contenir au moins 8 caractères")
+    .max(128, "Le mot de passe ne peut pas dépasser 128 caractères")
+    .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre")
+    .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule"),
+  privacy: z.literal(true, { 
+    errorMap: () => ({ message: "Vous devez accepter les politiques de confidentialité" }) 
+  }),
+  // Profile fields — optional at signup, collected during onboarding quiz
+  fullName: z.string().trim().max(100).optional().or(z.literal('')),
+  nickname: z.string().trim().optional().or(z.literal('')),
+  academicGrade: z.string().optional().or(z.literal('')),
+  phoneNumber: z.string().trim().optional().or(z.literal('')),
+  school: z.string().trim().optional().or(z.literal('')),
+  gender: z.string().optional().or(z.literal('')),
+  dateOfBirth: z.string().trim().optional(),
+  payment: z.string().optional(),
+}).refine((data) => data.email === data.emailConfirm, {
+  message: "Les emails ne correspondent pas",
+  path: ["emailConfirm"],
+});
+
+// Full profile validation schema — used in Settings page for profile updates
+export const profileUpdateSchema = z.object({
   fullName: z
     .string()
     .trim()
@@ -74,19 +101,9 @@ export const signupSchema = z.object({
     .refine((val) => ACADEMIC_GRADES.includes(val as AcademicGrade), {
       message: "Niveau académique invalide",
     }),
-  phoneNumber: z
+  gender: z
     .string()
-    .trim()
-    .max(20, "Le numéro de téléphone ne peut pas dépasser 20 caractères")
-    .regex(/^[\d\s\-\+\(\)]*$/, "Format de téléphone invalide")
-    .optional()
-    .or(z.literal('')),
-  password: z
-    .string()
-    .min(8, "Le mot de passe doit contenir au moins 8 caractères")
-    .max(128, "Le mot de passe ne peut pas dépasser 128 caractères")
-    .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre")
-    .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule"),
+    .min(1, "Le genre est requis"),
   school: z
     .string()
     .trim()
@@ -94,28 +111,6 @@ export const signupSchema = z.object({
     .optional()
     .or(z.literal('N/A'))
     .or(z.literal('')),
-  gender: z
-    .string()
-    .min(1, "Le genre est requis"),
-  dateOfBirth: z
-    .string()
-    .trim()
-    .optional(),
-  privacy: z.literal(true, { 
-    errorMap: () => ({ message: "Vous devez accepter les politiques de confidentialité" }) 
-  }),
-  payment: z.string().optional(),
-}).refine((data) => data.email === data.emailConfirm, {
-  message: "Les emails ne correspondent pas",
-  path: ["emailConfirm"],
-}).refine((data) => {
-  // School is NOT required if grade is "NONE"
-  if (data.academicGrade === 'NONE') return true;
-  // School IS required for all other grades (including UNIV)
-  return data.school && data.school.trim().length > 0;
-}, {
-  message: "L'école est requise",
-  path: ["school"],
 });
 
 // Password reset validation schema

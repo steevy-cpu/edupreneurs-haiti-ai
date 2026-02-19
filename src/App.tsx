@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense, ComponentType } from "react";
 import { AppProviders } from "@/providers/AppProviders";
 import { LegacyRedirect } from "@/components/LegacyRedirect";
@@ -53,7 +53,7 @@ const AuthLayout = lazy(() => import("./auth/layout/AuthLayout").then(m => ({ de
 const LoginPage = lazy(() => import("./auth/routes/LoginPage"));
 const SignupLayout = lazy(() => import("./auth/routes/signup/SignupLayout"));
 const SignupStep1 = lazy(() => import("./auth/routes/signup/Step1"));
-const SignupStep2 = lazy(() => import("./auth/routes/signup/Step2"));
+// SignupStep2 removed — profile fields moved to post-login OnboardingQuiz
 const SignupStep3 = lazy(() => import("./auth/routes/signup/Step3"));
 const SignupPaymentCallback = lazy(() => import("./auth/routes/signup/SignupPaymentCallback"));
 const VerifyEmailPage = lazy(() => import("./auth/routes/VerifyEmailPage"));
@@ -243,7 +243,8 @@ const App = () => (
                           <Route path="signup" element={<SignupLayout />}>
                             <Route index element={<SignupStep1 />} />
                             <Route path="step-1" element={<SignupStep1 />} />
-                            <Route path="step-2" element={<SignupStep2 />} />
+                            {/* Step 2 removed — redirect legacy URLs to step 3 */}
+                            <Route path="step-2" element={<Navigate to="/auth/signup/step-3" replace />} />
                             <Route path="step-3" element={<SignupStep3 />} />
                           </Route>
                           <Route path="signup/payment-callback" element={<SignupPaymentCallback />} />

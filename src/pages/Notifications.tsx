@@ -355,7 +355,7 @@ export default function Notifications() {
   };
 
   const getNotificationText = (notification: Notification) => {
-    const actor = notification.actorProfile.nickname;
+    const actor = notification.actorProfile.nickname ?? 'Étudiant';
     switch (notification.type) {
       case "like":
         return `${actor} a aimé votre publication`;
@@ -670,7 +670,7 @@ export default function Notifications() {
                       />
                     )}
                     <AvatarFallback className="text-xs sm:text-sm font-medium">
-                      {notification.actorProfile.nickname
+                      {(notification.actorProfile.nickname ?? '??')
                         .substring(0, 2)
                         .toUpperCase()}
                     </AvatarFallback>

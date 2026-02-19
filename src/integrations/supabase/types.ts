@@ -2968,7 +2968,7 @@ export type Database = {
       }
       profiles: {
         Row: {
-          academic_grade: string
+          academic_grade: string | null
           affiliation_points: number | null
           avatar_url: string | null
           bio: string | null
@@ -2976,7 +2976,7 @@ export type Database = {
           created_at: string | null
           date_of_birth: string | null
           email_confirmed: boolean | null
-          full_name: string
+          full_name: string | null
           gender: string | null
           gold_earned: number
           has_free_access: boolean | null
@@ -2985,17 +2985,18 @@ export type Database = {
           last_avatar_generated_at: string | null
           last_feed_visit: string | null
           last_seen: string | null
-          nickname: string
+          nickname: string | null
           onboarding_tour_completed: boolean | null
           onboarding_tour_completed_at: string | null
           payment_order_id: string | null
           phone_confirmed: boolean | null
-          phone_number: string
+          phone_number: string | null
           phone_verification_request_id: string | null
           phone_verification_sent_at: string | null
           promo_code_used: string | null
           promo_code_used_at: string | null
           referral_code: string | null
+          referral_source: string | null
           referred_by: string | null
           school: string | null
           subscription_end_date: string | null
@@ -3005,7 +3006,7 @@ export type Database = {
           verified: boolean | null
         }
         Insert: {
-          academic_grade: string
+          academic_grade?: string | null
           affiliation_points?: number | null
           avatar_url?: string | null
           bio?: string | null
@@ -3013,7 +3014,7 @@ export type Database = {
           created_at?: string | null
           date_of_birth?: string | null
           email_confirmed?: boolean | null
-          full_name: string
+          full_name?: string | null
           gender?: string | null
           gold_earned?: number
           has_free_access?: boolean | null
@@ -3022,17 +3023,18 @@ export type Database = {
           last_avatar_generated_at?: string | null
           last_feed_visit?: string | null
           last_seen?: string | null
-          nickname: string
+          nickname?: string | null
           onboarding_tour_completed?: boolean | null
           onboarding_tour_completed_at?: string | null
           payment_order_id?: string | null
           phone_confirmed?: boolean | null
-          phone_number: string
+          phone_number?: string | null
           phone_verification_request_id?: string | null
           phone_verification_sent_at?: string | null
           promo_code_used?: string | null
           promo_code_used_at?: string | null
           referral_code?: string | null
+          referral_source?: string | null
           referred_by?: string | null
           school?: string | null
           subscription_end_date?: string | null
@@ -3042,7 +3044,7 @@ export type Database = {
           verified?: boolean | null
         }
         Update: {
-          academic_grade?: string
+          academic_grade?: string | null
           affiliation_points?: number | null
           avatar_url?: string | null
           bio?: string | null
@@ -3050,7 +3052,7 @@ export type Database = {
           created_at?: string | null
           date_of_birth?: string | null
           email_confirmed?: boolean | null
-          full_name?: string
+          full_name?: string | null
           gender?: string | null
           gold_earned?: number
           has_free_access?: boolean | null
@@ -3059,17 +3061,18 @@ export type Database = {
           last_avatar_generated_at?: string | null
           last_feed_visit?: string | null
           last_seen?: string | null
-          nickname?: string
+          nickname?: string | null
           onboarding_tour_completed?: boolean | null
           onboarding_tour_completed_at?: string | null
           payment_order_id?: string | null
           phone_confirmed?: boolean | null
-          phone_number?: string
+          phone_number?: string | null
           phone_verification_request_id?: string | null
           phone_verification_sent_at?: string | null
           promo_code_used?: string | null
           promo_code_used_at?: string | null
           referral_code?: string | null
+          referral_source?: string | null
           referred_by?: string | null
           school?: string | null
           subscription_end_date?: string | null

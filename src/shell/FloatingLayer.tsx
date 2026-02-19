@@ -17,11 +17,12 @@ const GlobalMusicPlayer = lazy(() => import('@/components/GlobalMusicPlayer').th
 const QuickMessageFAB = lazy(() => import('@/components/shared/QuickMessageFAB'));
 const CookieConsent = lazy(() => import('@/components/CookieConsent').then(m => ({ default: m.CookieConsent })));
 
-// Visitor-specific components (VisitorMusicSync is in App.tsx to survive logout navigation)
+// Visitor-specific components
 const VisitorTour = lazy(() => import('@/components/visitor/VisitorTour').then(m => ({ default: m.VisitorTour })));
 
-// First-time user overlays
+// First-time user overlays (sequence: welcome → quiz → avatar → tour)
 const FirstTimeUserWelcome = lazy(() => import('@/components/firsttime/FirstTimeUserWelcome'));
+const OnboardingQuiz = lazy(() => import('@/components/firsttime/OnboardingQuiz'));
 const AvatarGenerationStep = lazy(() => import('@/components/firsttime/AvatarGenerationStep'));
 const FirstTimeUserTour = lazy(() => import('@/components/firsttime/FirstTimeUserTour'));
 
@@ -101,8 +102,10 @@ function OnboardingOverlays() {
     <>
       <Suspense fallback={null}>
         <FirstTimeUserWelcome />
+        <OnboardingQuiz />
         <AvatarGenerationStep />
       </Suspense>
+      {/* Tour MUST have its own Suspense — see comment above */}
       <Suspense fallback={null}>
         <FirstTimeUserTour />
       </Suspense>
