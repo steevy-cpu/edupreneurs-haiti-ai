@@ -160,7 +160,11 @@ export function ExistingExamsList({
         <CardContent>
           <ScrollArea className="h-96">
             <div className="space-y-3">
-              {exams.map((exam) => (
+              {exams.map((exam) => {
+                // Fix 4: detect ghost rows with no exercises so we can warn + disable edit
+                const hasNoExercises = exam.total_exercises === 0;
+
+                return (
                 <div
                   key={exam.id}
                   className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -177,6 +181,12 @@ export function ExistingExamsList({
                       )}
                       {exam.version_number && exam.version_number > 1 && (
                         <Badge variant="outline">v{exam.version_number}</Badge>
+                      )}
+                      {/* Warning badge — only for zero-exercise ghost rows */}
+                      {hasNoExercises && (
+                        <Badge variant="outline" className="border-yellow-500 text-yellow-600 dark:text-yellow-400 text-xs">
+                          Aucun exercice — Re-upload requis
+                        </Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
@@ -196,7 +206,9 @@ export function ExistingExamsList({
                         variant="ghost"
                         size="icon"
                         onClick={() => onEditExam(exam)}
-                        title="Modifier les exercices"
+                        // Disable edit when there are no exercises — nothing to edit
+                        disabled={hasNoExercises}
+                        title={hasNoExercises ? "Aucun exercice à modifier" : "Modifier les exercices"}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -235,7 +247,8 @@ export function ExistingExamsList({
                     </Button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </ScrollArea>
         </CardContent>

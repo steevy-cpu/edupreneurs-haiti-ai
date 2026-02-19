@@ -1,5 +1,6 @@
 /**
  * ExerciseCard - Single exercise editor component
+ * Supports AI-powered explanation generation for open-ended exercises.
  */
 import { useState, useCallback } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -37,8 +38,11 @@ import {
   Trash2, 
   CheckCircle2, 
   AlertCircle,
-  Loader2 
+  Loader2,
+  Sparkles
 } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import type { DbExamExercise } from "../hooks/useExamExercises";
 
 interface ExerciseCardProps {
@@ -47,6 +51,10 @@ interface ExerciseCardProps {
   onDelete: () => void;
   isUpdating?: boolean;
   isExpanded?: boolean;
+  // Exam context for AI explanation generation — passed from ExamDetailEditor
+  examSubject?: string;
+  examGradeLevel?: string;
+  examSeries?: string;
 }
 
 const MCQ_OPTIONS = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -56,7 +64,10 @@ export function ExerciseCard({
   onUpdate, 
   onDelete, 
   isUpdating = false,
-  isExpanded: defaultExpanded = false 
+  isExpanded: defaultExpanded = false,
+  examSubject,
+  examGradeLevel,
+  examSeries,
 }: ExerciseCardProps) {
   const [isOpen, setIsOpen] = useState(defaultExpanded);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -66,6 +77,10 @@ export function ExerciseCard({
   const [explanation, setExplanation] = useState(exercise.explanation || '');
   const [concept, setConcept] = useState(exercise.concept || '');
   const [points, setPoints] = useState(exercise.points || 1);
+
+  // AI explanation generation state — preview is separate from the saved field
+  const [generatedPreview, setGeneratedPreview] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
   
   // Track if form has unsaved changes
   const hasChanges = 
@@ -91,6 +106,33 @@ export function ExerciseCard({
     setShowDeleteDialog(false);
     onDelete();
   };
+
+  /**
+   * Calls the generate-exercise-explanation edge function.
+   * Only sets generatedPreview — never overwrites the explanation field directly.
+   * The user must click "Appliquer" to apply the preview.
+   */
+  const handleGenerateExplanation = useCallback(async () => {
+    setIsGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-exercise-explanation', {
+        body: {
+          questionText: exercise.question_text,
+          subject: examSubject,
+          gradeLevel: examGradeLevel,
+          series: examSeries,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      // Show in preview panel only — explanation state is untouched
+      setGeneratedPreview(data.explanation);
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors de la génération de l'explication");
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [exercise.question_text, examSubject, examGradeLevel, examSeries]);
 
   // Parse options for display
   const getOptionsDisplay = () => {
@@ -183,11 +225,14 @@ export function ExerciseCard({
                       </SelectContent>
                     </Select>
                   ) : (
-                    <Input
+                    // Fix 3: Textarea for open_ended — NS4 model answers can be multi-line
+                    <Textarea
                       id={`answer-${exercise.id}`}
                       value={correctAnswer}
                       onChange={(e) => setCorrectAnswer(e.target.value)}
-                      placeholder="Entrer la réponse..."
+                      placeholder="Entrer la réponse modèle..."
+                      rows={3}
+                      className="resize-y"
                     />
                   )}
                 </div>
@@ -241,6 +286,59 @@ export function ExerciseCard({
                   rows={3}
                   className="resize-y"
                 />
+
+                {/* Fix 2: AI generation button — only for open_ended with empty explanation */}
+                {!isMCQ && !hasExplanation && !generatedPreview && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleGenerateExplanation}
+                    disabled={isGenerating}
+                    className="w-full"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Génération en cours...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Générer une explication
+                      </>
+                    )}
+                  </Button>
+                )}
+
+                {/* AI-generated preview — user must click Appliquer to apply to explanation field */}
+                {generatedPreview !== null && (
+                  <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                      <Sparkles className="h-4 w-4" />
+                      Explication générée par l'IA
+                    </div>
+                    <p className="text-sm whitespace-pre-wrap">{generatedPreview}</p>
+                    <div className="flex gap-2 pt-1">
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          // Apply: populate explanation field, clear preview
+                          setExplanation(generatedPreview);
+                          setGeneratedPreview(null);
+                        }}
+                      >
+                        Appliquer
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setGeneratedPreview(null)}
+                      >
+                        Annuler
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Actions */}

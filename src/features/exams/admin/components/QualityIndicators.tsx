@@ -3,7 +3,8 @@
  */
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, AlertCircle, XCircle } from "lucide-react";
+import { CheckCircle2, AlertCircle, XCircle, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface QualityMetrics {
   totalExercises: number;
@@ -124,7 +125,16 @@ export function QualityIndicators({ metrics, compact = false, onFilterClick }: Q
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">
             {getIcon(metrics.blocksPercent)}
-            <span>Contenu structuré</span>
+            {/* Updated label: reflects AI extraction, not manual structuring */}
+            <span>Contenu extrait par IA</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-xs">
+                Les exercices dont le contenu a été extrait automatiquement par l'IA depuis le PDF.
+              </TooltipContent>
+            </Tooltip>
           </div>
           <span className={getColorClass(metrics.blocksPercent)}>
             {metrics.withBlocks}/{metrics.totalExercises} ({metrics.blocksPercent}%)
