@@ -135,7 +135,7 @@ const Leaderboard = () => {
                 <p className="text-[10px] sm:text-xs font-medium truncate max-w-[75px] sm:max-w-[80px]">{leaderboard[1].nickname || leaderboard[1].full_name}</p>
                 <p className="text-xs sm:text-sm font-bold">{leaderboard[1].gold_earned} 🏆</p>
               </div>
-              <div className="bg-gray-400/80 w-full h-12 sm:h-16 rounded-b-lg"></div>
+              <div className="bg-gray-400/80 w-full h-14 sm:h-20 rounded-b-lg"></div>
             </div>
 
             {/* 1st place — center, tallest */}
@@ -149,7 +149,7 @@ const Leaderboard = () => {
                 <p className="text-[10px] sm:text-xs font-medium truncate max-w-[80px] sm:max-w-[80px]">{leaderboard[0].nickname || leaderboard[0].full_name}</p>
                 <p className="text-xs sm:text-sm font-bold">{leaderboard[0].gold_earned} 🏆</p>
               </div>
-              <div className="bg-yellow-500/80 w-full h-18 sm:h-24 rounded-b-lg"></div>
+              <div className="bg-yellow-500/80 w-full h-24 sm:h-32 rounded-b-lg"></div>
             </div>
 
             {/* 3rd place — right */}
@@ -163,7 +163,7 @@ const Leaderboard = () => {
                 <p className="text-[10px] sm:text-xs font-medium truncate max-w-[70px] sm:max-w-[70px]">{leaderboard[2].nickname || leaderboard[2].full_name}</p>
                 <p className="text-xs sm:text-sm font-bold">{leaderboard[2].gold_earned} 🏆</p>
               </div>
-              <div className="bg-amber-600/80 w-full h-10 sm:h-12 rounded-b-lg"></div>
+              <div className="bg-amber-600/80 w-full h-10 sm:h-14 rounded-b-lg"></div>
             </div>
           </div>
         </div>
