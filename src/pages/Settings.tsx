@@ -27,6 +27,8 @@ import {
   Users,
   UserCheck,
   Loader2,
+  LogOut,
+  CalendarDays,
 } from "lucide-react";
 import ericArmsCrossed from "@/assets/eric-main01.png";
 import {
@@ -63,6 +65,8 @@ interface UserProfile {
   bio: string | null;
   school: string | null;
   avatar_url: string | null;
+  gender: string | null;
+  date_of_birth: string | null;
 }
 
 interface NotificationCategory {
@@ -110,6 +114,8 @@ const Settings = () => {
     phoneNumber: "",
     bio: "",
     school: "",
+    gender: "",
+    dateOfBirth: "",
   });
   const [passwordForm, setPasswordForm] = useState({
     newPassword: "",
@@ -177,6 +183,8 @@ const Settings = () => {
       phoneNumber: profileData.phone_number || "",
       bio: profileData.bio || "",
       school: profileData.school || "",
+      gender: profileData.gender || "",
+      dateOfBirth: profileData.date_of_birth || "",
     });
 
     setFollowerCount(followersResult.count || 0);
@@ -304,6 +312,8 @@ const Settings = () => {
           phone_number: profileForm.phoneNumber.trim(),
           bio: profileForm.bio.trim() || null,
           school: profileForm.school.trim() || null,
+          gender: profileForm.gender || null,
+          date_of_birth: profileForm.dateOfBirth || null,
         })
         .eq("user_id", profile?.user_id);
 
@@ -646,6 +656,7 @@ const Settings = () => {
                         <GraduationCap size={16} />
                         Niveau académique *
                       </Label>
+                      {/* Standardized grade values matching authValidation.ts */}
                       <select
                         id="academicGrade"
                         value={profileForm.academicGrade}
@@ -654,12 +665,15 @@ const Settings = () => {
                         required
                       >
                         <option value="">Sélectionnez...</option>
-                        <option>7e</option>
-                        <option>8e</option>
-                        <option>9e</option>
-                        <option>S1</option>
-                        <option>S2</option>
-                        <option>Philo</option>
+                        <option value="7AF">7ème Année Fondamentale</option>
+                        <option value="8AF">8ème Année Fondamentale</option>
+                        <option value="9AF">9ème Année Fondamentale</option>
+                        <option value="NS1">Première (NS1)</option>
+                        <option value="NS2">Seconde (NS2)</option>
+                        <option value="NS3">Rhéto (NS3)</option>
+                        <option value="NS4">Philosophie (NS4)</option>
+                        <option value="UNIV">Université</option>
+                        <option value="NONE">Autre / Non scolarisé</option>
                       </select>
                     </div>
                     <div className="space-y-2">
@@ -674,6 +688,51 @@ const Settings = () => {
                         placeholder="+509 XXXX XXXX"
                         maxLength={20}
                       />
+                    </div>
+                  </div>
+
+                  {/* Gender selector — toggle buttons matching onboarding quiz style */}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <User size={16} />
+                        Genre
+                      </Label>
+                      <div className="flex gap-3">
+                        <Button
+                          type="button"
+                          variant={profileForm.gender === "male" ? "default" : "outline"}
+                          className={`flex-1 h-12 text-base ${profileForm.gender === "male" ? "bg-primary text-primary-foreground" : ""}`}
+                          onClick={() => setProfileForm({ ...profileForm, gender: "male" })}
+                        >
+                          👦 Garçon
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={profileForm.gender === "female" ? "default" : "outline"}
+                          className={`flex-1 h-12 text-base ${profileForm.gender === "female" ? "bg-primary text-primary-foreground" : ""}`}
+                          onClick={() => setProfileForm({ ...profileForm, gender: "female" })}
+                        >
+                          👧 Fille
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="dateOfBirth" className="flex items-center gap-2">
+                        <CalendarDays size={16} />
+                        Date de naissance
+                      </Label>
+                      <Input
+                        id="dateOfBirth"
+                        type="date"
+                        value={profileForm.dateOfBirth}
+                        onChange={(e) => setProfileForm({ ...profileForm, dateOfBirth: e.target.value })}
+                        max={new Date().toISOString().split('T')[0]}
+                        min="1950-01-01"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Pour recevoir un email spécial le jour de ton anniversaire! 🎂
+                      </p>
                     </div>
                   </div>
 
@@ -747,6 +806,16 @@ const Settings = () => {
                     <span className="font-medium text-sm sm:text-base break-all">{userEmail}</span>
                     <span className="text-xs text-muted-foreground whitespace-nowrap">Email vérifié ✓</span>
                   </div>
+
+                  {/* Logout button — uses existing handleLogout (L218) */}
+                  <Button
+                    variant="outline"
+                    className="w-full mt-4"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Se déconnecter
+                  </Button>
                 </CardContent>
               </Card>
 
