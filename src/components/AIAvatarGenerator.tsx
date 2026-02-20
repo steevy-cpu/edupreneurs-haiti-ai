@@ -9,6 +9,8 @@ import { Sparkles, Loader2, RefreshCw, Check, User, Clock, AlertTriangle } from 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+// Proper Vite asset import so the image is hashed and served correctly in all envs
+import judeProfile from '@/assets/eric-new-profile.png';
 
 // ─── Props (unchanged) ───
 interface AIAvatarGeneratorProps {
@@ -614,7 +616,7 @@ export const AIAvatarGenerator = ({
             {/* Jude reaction area */}
             <div className="flex flex-col items-center gap-1 min-w-0">
               <img
-                src="/eric-new-profile.png"
+                src={judeProfile}
                 alt="Jude"
                 className="h-12 w-12 md:h-16 md:w-16 rounded-full object-cover"
               />

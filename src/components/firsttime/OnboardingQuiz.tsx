@@ -299,8 +299,8 @@ const OnboardingQuiz = () => {
   if (!firstTimeUser.showOnboardingQuiz || firstTimeUser.isLoading || !firstTimeUser.userId) return null;
   if (!profileLoaded) return null;
 
-  // Determine if current step is skippable (Q1 and Q2 are required)
-  const isSkippable = currentStep >= 2;
+  // Steps 0-2 (full_name, academic_grade, gender) are required — gender affects Jude's speech
+  const isSkippable = currentStep >= 3;
   // Q5 (school) is required for academic grades, optional for UNIV/NONE
   const schoolRequired = academicGrade && !NON_ACADEMIC_GRADES.includes(academicGrade as AcademicGrade);
 
