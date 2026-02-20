@@ -1,40 +1,42 @@
 
 
-# Switch Avatar Generation to OpenAI DALL-E 3
+# Fix Avatar Save: Return Base64 from Edge Function
 
-## Why
-The Lovable AI Gateway Gemini image models are returning persistent 500 errors. The `OPENAI_API_KEY` is already configured as a secret, so we can switch to DALL-E 3 with no secret setup needed.
+## Problem
+DALL-E 3 returns a temporary cross-origin URL (`oaidalleapiprodscus.blob.core.windows.net`). The frontend draws this onto a canvas for 256x256 compression, but the browser taints the canvas because of CORS. `canvas.toBlob()` fails with a `SecurityError`, and the avatar never uploads to storage.
+
+## Solution
+Modify the edge function to fetch the DALL-E 3 image bytes server-side and return a base64 data URL. The frontend canvas then processes same-origin data with no CORS issue.
 
 ## Single File Change
 
 **`supabase/functions/generate-custom-avatar/index.ts`**
 
-### Remove
-- The `tryGenerateImage()` helper function (lines 8-23)
-- `LOVABLE_API_KEY` env read and check (lines 89-92)
-- Primary/fallback model constants and Gemini gateway calls (lines 127-137)
-- Gemini-specific response parsing (`choices[0].message.images[0].image_url.url`)
+After extracting `imageUrl` from the DALL-E 3 response (line 146), add:
 
-### Add
-- Read `OPENAI_API_KEY` from `Deno.env`
-- Single `fetch` to `https://api.openai.com/v1/images/generations` with:
-  - `Authorization: Bearer ${OPENAI_API_KEY}`
-  - Body: `{ model: "dall-e-3", prompt, n: 1, size: "1024x1024", quality: "standard", response_format: "url" }`
-- Extract `data[0].url` from response
+1. `fetch(imageUrl)` to download the image bytes on the server
+2. Convert the response to `ArrayBuffer`, then to base64
+3. Return `data:image/png;base64,...` as the `imageUrl` instead of the temporary URL
 
-### Keep unchanged
-- Zod input validation schema
-- JWT authentication check
-- Rate limiting (RESOURCE_INTENSIVE)
-- Prompt construction logic (same detailed prompt text)
-- Response shape: `{ success: true, imageUrl: string }`
-- CORS and security headers
-- Error handling for 429 (rate limit) and generic errors
-- The 402 check can be removed (OpenAI uses different error codes)
+Everything else stays identical: same Zod validation, auth, rate limiting, prompt, response shape.
 
-### Post-deploy
-- Deploy the function
-- Test with a sample invocation to confirm it works
+## What Changes
+
+```text
+Current flow:
+  Edge function -> returns DALL-E URL -> frontend canvas taints -> toBlob fails
+
+Fixed flow:
+  Edge function -> fetches DALL-E image -> encodes base64 -> returns data URL
+  -> frontend canvas works -> toBlob succeeds -> uploads to Storage -> saves to profiles
+```
+
+## What Does NOT Change
+- Frontend (`AIAvatarGenerator.tsx`) -- zero modifications
+- Response shape: `{ success: true, imageUrl: string }` -- same key, just base64 value
+- Database writes, RLS policies, storage bucket
+- Auth check, rate limiting, input validation
+- Error handling and French fallback UI
 
 ## Safety
 
@@ -42,9 +44,24 @@ The Lovable AI Gateway Gemini image models are returning persistent 500 errors. 
 |---|---|
 | Frontend changes? | None |
 | Database changes? | None |
-| New secrets needed? | No -- OPENAI_API_KEY already exists |
-| Response shape preserved? | Yes |
-| Auth/rate limiting preserved? | Yes |
-| Prompt logic preserved? | Yes |
-| Fallback UI preserved? | Yes -- frontend unchanged |
+| New secrets? | None |
+| Response shape preserved? | Yes -- imageUrl is now base64 instead of URL |
+| Edge function size increase? | ~1.3MB base64 string per response (acceptable for avatar generation) |
+| 3G concern? | One-time transfer during avatar creation only, not on every page load |
+| Existing avatars affected? | No -- they are already permanent Storage URLs |
+
+## Technical Detail
+
+Add roughly 10 lines after line 146 in the edge function:
+
+```text
+1. const imageResponse = await fetch(imageUrl);
+2. if (!imageResponse.ok) throw new Error('Failed to fetch generated image');
+3. const arrayBuffer = await imageResponse.arrayBuffer();
+4. const uint8Array = new Uint8Array(arrayBuffer);
+5. let binary = ''; for (const byte of uint8Array) binary += String.fromCharCode(byte);
+6. const base64 = btoa(binary);
+7. const base64DataUrl = `data:image/png;base64,${base64}`;
+8. Return base64DataUrl as imageUrl in the response
+```
 
