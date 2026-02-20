@@ -30,7 +30,9 @@ import {
   Upload,
   Plus,
   Pencil,
-  Trash2
+  Trash2,
+  ArrowUp,
+  ArrowDown
 } from "lucide-react";
 import {
   AlertDialog,
@@ -76,6 +78,31 @@ const computeDisplayOrder = (haitiDate: string, totalWords: number): number => {
   return (((daysSince % totalWords) + totalWords) % totalWords) + 1;
 };
 // ───────────────────────────────────────────────────────────────────────────
+
+/** Reverse-calculate the next calendar date when a given display_order will be active */
+const getScheduledDate = (displayOrder: number, totalActive: number): Date | null => {
+  if (!displayOrder || totalActive === 0) return null;
+  const haitiDate = getHaitiDate();
+  const today = new Date(haitiDate + 'T00:00:00');
+  const daysSince = Math.floor(
+    (today.getTime() - REFERENCE_DATE.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  const target = displayOrder - 1;
+  // Which display_order index is active today
+  const currentMod = ((daysSince % totalActive) + totalActive) % totalActive;
+  // How many days until target comes up next
+  const offset = ((target - currentMod) + totalActive) % totalActive;
+  return new Date(today.getTime() + offset * 86400000);
+};
+
+/** Render audio source badge based on audio_source column */
+const AudioSourceBadge = ({ source }: { source: string | null }) => {
+  if (!source) return null;
+  if (source === 'elevenlabs') return <Badge className="text-[10px] px-1 py-0 bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700">EL</Badge>;
+  if (source === 'openai') return <Badge className="text-[10px] px-1 py-0 bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700">OAI</Badge>;
+  if (source === 'recording') return <Badge className="text-[10px] px-1 py-0 bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700">🎙️</Badge>;
+  return null;
+};
 
 const WordsModule = () => {
   const [words, setWords] = useState<DailyWord[]>([]);
@@ -284,6 +311,31 @@ const WordsModule = () => {
     }
   };
 
+  // ─── Reorder handlers (Plan C — display order management) ───────────────
+
+  /** Swap display_order between two adjacent words */
+  const swapDisplayOrder = async (wordA: DailyWord, wordB: DailyWord) => {
+    try {
+      const { error: errA } = await supabase
+        .from('daily_words')
+        .update({ display_order: wordB.display_order })
+        .eq('id', wordA.id);
+      if (errA) throw errA;
+
+      const { error: errB } = await supabase
+        .from('daily_words')
+        .update({ display_order: wordA.display_order })
+        .eq('id', wordB.id);
+      if (errB) throw errB;
+
+      toast.success('Ordre mis à jour');
+      fetchWords();
+    } catch (err) {
+      console.error('Swap error:', err);
+      toast.error("Erreur lors du réordonnancement");
+    }
+  };
+
   // ─── Recording handlers (Plan B — browser mic) ─────────────────────────
 
   /** Open the recording dialog for a specific word */
@@ -412,10 +464,10 @@ const WordsModule = () => {
 
       const audioUrl = `${publicUrlData.publicUrl}?t=${Date.now()}`;
 
-      // Persist URL in daily_words table
+      // Persist URL and source in daily_words table
       const { error: updateError } = await supabase
         .from('daily_words')
-        .update({ audio_url: audioUrl })
+        .update({ audio_url: audioUrl, audio_source: 'recording' })
         .eq('id', recordingWord.id);
 
       if (updateError) throw updateError;
@@ -498,14 +550,16 @@ const WordsModule = () => {
       if (response.error) throw response.error;
 
       if (response.data?.success && response.data?.audioUrl) {
+        // Update local state with new audio URL and source provider
+        const provider = response.data.provider || selectedProvider;
         setWords(prev =>
           prev.map(w =>
-            w.id === word.id ? { ...w, audio_url: response.data.audioUrl } : w
+            w.id === word.id ? { ...w, audio_url: response.data.audioUrl, audio_source: provider } : w
           )
         );
         
         if (todaysWord?.id === word.id) {
-          setTodaysWord(prev => prev ? { ...prev, audio_url: response.data.audioUrl } : null);
+          setTodaysWord(prev => prev ? { ...prev, audio_url: response.data.audioUrl, audio_source: provider } : null);
         }
         
         toast.success(`Audio généré pour "${word.word}" (${response.data.provider})`);
@@ -754,6 +808,8 @@ const WordsModule = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12">#</TableHead>
+                    <TableHead className="w-20">Ordre</TableHead>
+                    <TableHead>Date prévue</TableHead>
                     <TableHead>Mot</TableHead>
                     <TableHead>Phonétique</TableHead>
                     <TableHead>Type</TableHead>
@@ -764,11 +820,59 @@ const WordsModule = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {words.map((word) => (
+                  {words.map((word, index) => {
+                    const activeWords = words.filter(w => w.is_active);
+                    const scheduledDate = word.is_active && word.display_order
+                      ? getScheduledDate(word.display_order, activeWords.length)
+                      : null;
+                    const isToday = scheduledDate && scheduledDate.toDateString() === new Date(getHaitiDate() + 'T00:00:00').toDateString();
+
+                    return (
                     <TableRow key={word.id} className={!word.is_active ? 'opacity-50' : ''}>
-                      {/* display_order column so founders see scheduling position */}
+                      {/* display_order column */}
                       <TableCell className="font-mono text-xs text-muted-foreground">
                         {word.display_order ?? '–'}
+                      </TableCell>
+                      {/* Reorder arrows */}
+                      <TableCell>
+                        <div className="flex items-center gap-0.5">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            disabled={index === 0}
+                            onClick={() => swapDisplayOrder(word, words[index - 1])}
+                            title="Monter"
+                          >
+                            <ArrowUp className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            disabled={index === words.length - 1}
+                            onClick={() => swapDisplayOrder(word, words[index + 1])}
+                            title="Descendre"
+                          >
+                            <ArrowDown className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                      {/* Scheduled date column — shows next appearance for active words */}
+                      <TableCell className="text-xs">
+                        {word.is_active && scheduledDate ? (
+                          isToday ? (
+                            <Badge className="bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700">
+                              Aujourd'hui
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground">
+                              {scheduledDate.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
+                            </span>
+                          )
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
                       </TableCell>
                       <TableCell className="font-medium">{word.word}</TableCell>
                       <TableCell className="font-mono text-sm text-muted-foreground">
@@ -820,6 +924,7 @@ const WordsModule = () => {
                             >
                               <Mic className="h-3 w-3 text-amber-600" />
                             </Button>
+                            <AudioSourceBadge source={word.audio_source} />
                           </div>
                         ) : (
                           <div className="flex items-center gap-1">
@@ -879,7 +984,9 @@ const WordsModule = () => {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                    );
+                  })}
+
                 </TableBody>
               </Table>
             </div>

@@ -7,6 +7,7 @@ export interface DailyWord {
   definition: string;
   example: string;
   audio_url: string | null;
+  audio_source: string | null;
   category: string | null;
   is_active: boolean;
   display_order: number | null;

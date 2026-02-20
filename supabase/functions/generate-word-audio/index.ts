@@ -162,10 +162,10 @@ Deno.serve(async (req) => {
     const audioUrl = publicUrlData.publicUrl + cacheBuster;
     console.log(`Audio uploaded to: ${audioUrl}`);
 
-    // Update the daily_words table with the audio URL
+    // Update the daily_words table with the audio URL and source provider
     const { error: updateError } = await supabase
       .from('daily_words')
-      .update({ audio_url: audioUrl })
+      .update({ audio_url: audioUrl, audio_source: ttsProvider })
       .eq('id', wordId);
 
     if (updateError) {
