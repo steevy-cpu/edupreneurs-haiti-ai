@@ -1,150 +1,117 @@
 
-# Mot du Jour Plan A — Consolidate Management into Control Center
+
+# Mot du Jour Plan B — Browser Voice Recording
 
 ## Overview
 
-Consolidate all word CRUD operations into `WordsModule.tsx` (Control Center), create a shared type, redirect the Content Editor tab, and add a DB function for auto-assigning `display_order`.
+Add a third audio option (microphone recording) alongside ElevenLabs and OpenAI in `WordsModule.tsx`. Uses the browser's built-in `MediaRecorder` API — no new dependencies.
 
 ---
 
-## Fix 1 — Add full CRUD to WordsModule.tsx
+## Changes (single file: `src/pages/control-center/modules/WordsModule.tsx`)
 
-**File:** `src/pages/control-center/modules/WordsModule.tsx`
-
-Add the CRUD capabilities currently only in `DailyWordsManager.tsx`:
-
-- **New imports:** `Dialog, DialogContent, DialogHeader, DialogTitle`, `Input`, `Label`, `Textarea`, `Select/SelectContent/SelectItem/SelectTrigger/SelectValue`, `Switch`, `Table/TableBody/TableCell/TableHead/TableHeader/TableRow`, `Plus, Trash2, Pencil` from lucide
-- **New state variables:**
-  - `isDialogOpen`, `editingWord`, `isSaving`
-  - Form fields: `formWord`, `formPhonetic`, `formPartOfSpeech`, `formDefinition`, `formExample`, `formCategory`
-- **Constants:** `PART_OF_SPEECH_OPTIONS` and `CATEGORY_OPTIONS` (copied from DailyWordsManager)
-- **Update `DailyWord` interface:** Add `example`, `category`, `created_at` fields to match full schema
-- **Update `fetchWords`:** Remove `is_active` filter so inactive words are also visible. Select all columns. Keep `display_order ASC` ordering.
-- **New functions:**
-  - `resetForm()` — clears all form fields
-  - `openEditDialog(word)` — populates form and opens dialog
-  - `handleSave()` — INSERT (with RPC for display_order) or UPDATE
-  - `handleDelete(wordId)` — confirmation via AlertDialog, then DELETE
-  - `toggleActive(wordId, currentState)` — inline switch UPDATE
-- **New UI sections:**
-  - "Ajouter un mot" button at top of the word management section
-  - Add/Edit dialog with all 6 fields (word, phonetic, part_of_speech, definition, example, category)
-  - Replace the current `WordRow` list with a proper Table showing: `#` (display_order), Mot, Phonetique, Type, Categorie, Audio (play/generate), Actif (switch), Actions (edit/delete)
-  - Delete confirmation reuses the existing `AlertDialog` pattern (add a new confirm type)
-- **Keep existing sections unchanged:** Notification card, TTS provider selector, audio stats
-
-## Fix 2 — Unify ordering
-
-**File:** `src/pages/control-center/modules/WordsModule.tsx`
-
-Already orders by `display_order ASC` (line 105). No change needed here. The `DailyWordsManager.tsx` used `created_at DESC` but will no longer be rendered.
-
-## Fix 3 — Create shared DailyWord type
-
-**New file:** `src/types/dailyWord.ts`
+### 1. New State Variables (~10 lines, after line 111)
 
 ```typescript
-/** Canonical DailyWord type — used by student hook, admin modules, and content editor */
-export interface DailyWord {
-  id: string;
-  word: string;
-  phonetic: string;
-  part_of_speech: string;
-  definition: string;
-  example: string;
-  audio_url: string | null;
-  category: string | null;
-  is_active: boolean;
-  display_order: number | null;
-  created_at: string;
-}
+// Recording state
+const [recordingWordId, setRecordingWordId] = useState<string | null>(null);
+const [recordingWord, setRecordingWord] = useState<DailyWord | null>(null);
+const [isRecording, setIsRecording] = useState(false);
+const [recordingDuration, setRecordingDuration] = useState(0);
+const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
+const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
+const [isUploading, setIsUploading] = useState(false);
+const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+const mediaStreamRef = useRef<MediaStream | null>(null);
+const chunksRef = useRef<Blob[]>([]);
+const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 ```
 
-**Update imports in 3 files:**
-- `src/hooks/useWordOfTheDay.ts` (line 6-16): Remove local `DailyWord` interface, import from `@/types/dailyWord`
-- `src/pages/control-center/modules/WordsModule.tsx` (line 32-41): Remove local interface, import from `@/types/dailyWord`
-- `src/components/content-editor/DailyWordsManager.tsx` (line 16-27): Remove local interface, import from `@/types/dailyWord`
+### 2. New Icon Import (line 26)
 
-## Fix 4 — Redirect Content Editor DailyWordsManager tab
+Add `MicOff, Square, Play, Upload` to the existing lucide imports.
 
-**File:** `src/pages/ContentEditor.tsx` (lines 476-478)
+### 3. Recording Functions (~80 lines, after toggleActive)
 
-Replace the `<DailyWordsManager />` render with a redirect card:
+- **`openRecordingDialog(word)`** — sets `recordingWord`, opens the recording modal
+- **`cleanupRecording()`** — stops MediaRecorder, releases mic stream (`track.stop()`), revokes object URL, clears timer, resets all recording state
+- **`startRecording()`** — requests mic via `getUserMedia({ audio: true })`, creates `MediaRecorder` with `audio/webm` (fallback `audio/ogg`), starts collecting chunks, starts duration timer, auto-stops at 30 seconds
+- **`stopRecording()`** — stops MediaRecorder, combines chunks into Blob, creates preview URL
+- **`uploadRecording()`** — converts Blob to File, uploads to `lesson-audio/word-of-day/{wordId}.webm` via `supabase.storage.from('lesson-audio').upload()` with `upsert: true`, updates `daily_words.audio_url` with public URL + cache-busting timestamp, refreshes word list, shows success toast
+- **`closeRecordingDialog()`** — calls `cleanupRecording()`, clears `recordingWord`
+
+### 4. Mic Button in Table (after line 638, in the Audio column)
+
+Add a microphone button alongside the existing play/regenerate buttons:
 
 ```tsx
-<TabsContent value="daily-words">
-  <Card>
-    <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-      <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
-      <h3 className="text-lg font-semibold mb-2">Gestion deplacee</h3>
-      <p className="text-muted-foreground mb-4">
-        La gestion des mots du jour a ete deplacee vers le Centre de Controle.
-      </p>
-      <Button onClick={() => navigate('/control-center')}>
-        Ouvrir le Centre de Controle
-      </Button>
-    </CardContent>
-  </Card>
-</TabsContent>
+<Button
+  variant="ghost"
+  size="icon"
+  className="h-7 w-7"
+  onClick={() => openRecordingDialog(word)}
+  title="Enregistrer avec le micro"
+>
+  <Mic className="h-3 w-3 text-amber-600" />
+</Button>
 ```
 
-- Remove the `DailyWordsManager` import (line 22)
-- Add `BookOpen` to existing lucide imports
-- Ensure `useNavigate` is already imported (check existing code)
-- Keep `DailyWordsManager.tsx` file intact for now
+Also add the mic button for words without audio (alongside the "Generer" button).
 
-## Fix 5 — DB function for display_order auto-assignment
+### 5. Recording Dialog (~80 lines, after the Add/Edit Dialog)
 
-**Migration SQL:**
+A new `Dialog` controlled by `recordingWord !== null`:
 
-```sql
-CREATE OR REPLACE FUNCTION public.get_next_display_order()
-RETURNS integer
-LANGUAGE sql
-STABLE SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-  SELECT COALESCE(MAX(display_order), 0) + 1 FROM daily_words;
-$$;
+```
++------------------------------------------+
+|  Enregistrer: "{word}"                    |
+|  [{phonetic}] — {definition}             |
+|                                          |
+|  [ Record button: large red circle ]     |
+|  Duration: 0:12 / 0:30                   |
+|                                          |
+|  --- After recording ---                 |
+|  [ Play preview ]  [ Re-record ]         |
+|                                          |
+|  [ Annuler ]  [ Utiliser cet enreg. ]    |
++------------------------------------------+
 ```
 
-**Usage in WordsModule.tsx `handleSave` (INSERT path):**
+- Record button: red pulsing circle when recording, gray mic when idle
+- Duration counter updates every second via `setInterval`
+- After recording stops: shows playback button + re-record button
+- "Utiliser cet enregistrement" triggers upload
+- Cancel and close both call `cleanupRecording()`
 
-```typescript
-// Get next display_order via RPC before inserting
-const { data: nextOrder } = await supabase.rpc('get_next_display_order');
+### 6. Cleanup on Unmount (update existing useEffect at line 391)
 
-const { error } = await supabase
-  .from('daily_words')
-  .insert({
-    ...wordData,
-    is_active: true,
-    display_order: nextOrder ?? 1,
-  });
-```
+Add cleanup for recording resources alongside existing audio cleanup.
 
 ---
 
-## Technical Summary
+## Technical Details
 
-| Change | File | Impact |
-|--------|------|--------|
-| Full CRUD in WordsModule | `WordsModule.tsx` | Add ~200 lines (dialog, table, handlers) |
-| Shared type | `src/types/dailyWord.ts` (new) | 12 lines |
-| Type imports | 3 files | Remove local interfaces, add import |
-| Content Editor redirect | `ContentEditor.tsx` | Replace 1 line render with redirect card |
-| DB function | Migration | 1 new function |
+| Aspect | Implementation |
+|--------|---------------|
+| Mime type | `audio/webm` primary, `audio/ogg` fallback via `MediaRecorder.isTypeSupported()` |
+| Max duration | 30 seconds, enforced by `setTimeout` calling `stopRecording()` |
+| Storage path | `lesson-audio/word-of-day/{wordId}.webm` (upsert overwrites existing) |
+| Audio URL update | Same pattern as edge function: public URL + `?t={timestamp}` |
+| Mic release | `mediaStreamRef.current.getTracks().forEach(t => t.stop())` |
+| Object URL cleanup | `URL.revokeObjectURL(recordedUrl)` in `cleanupRecording()` |
+| Permission error | Caught in `getUserMedia` catch block, shown via `toast.error()` |
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| CRUD works in Control Center | Add/Edit/Delete/Toggle all implemented |
-| New words get display_order | RPC `get_next_display_order` called before INSERT |
-| Content Editor shows redirect | DailyWordsManager replaced with message + button |
-| Shared DailyWord type in all 3 files | Single source in `src/types/dailyWord.ts` |
-| Student-facing components untouched | useWordOfTheDay.ts and WordOfTheDayCard.tsx only get import change |
-| Existing word data unaffected | No schema changes to daily_words table |
-| Deterministic algorithm unchanged | computeDisplayOrder logic not modified |
-| No new dependencies | Uses existing UI components |
-| RLS policies unchanged | Existing policies cover all CRUD operations |
+| No new dependencies | MediaRecorder is built-in browser API |
+| Only WordsModule.tsx modified | Single file change |
+| Existing ElevenLabs/OpenAI unchanged | Mic button added alongside, not replacing |
+| Mic released on close | cleanupRecording() stops all tracks |
+| Object URL revoked | Prevents memory leaks |
+| 30s auto-stop | Prevents accidentally long recordings |
+| Upload uses existing bucket | lesson-audio bucket, same path pattern |
+| Student-facing code untouched | useWordOfTheDay.ts reads audio_url regardless of source |
+
