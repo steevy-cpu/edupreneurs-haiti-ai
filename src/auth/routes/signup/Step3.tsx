@@ -226,6 +226,18 @@ export default function SignupStep3() {
               {isValidatingPromo ? <Loader2 className="h-4 w-4 animate-spin" /> : "Vérifier"}
             </Button>
           </div>
+          {/* Testing hint — auto-fills promo input on tap */}
+          <p className="text-xs text-muted-foreground">
+            Utilisez le code{" "}
+            <button
+              type="button"
+              onClick={() => handlePromoCodeChange('CSCP2026')}
+              className="font-mono bg-muted px-1.5 py-0.5 rounded cursor-pointer hover:bg-muted/80 transition-colors font-semibold"
+            >
+              cscp2026
+            </button>
+            {" "}pour un accès gratuit (période de test)
+          </p>
           {promoCode && promoCode.trim().length >= 3 && !isValidatingPromo && promoValidationAttempted && (
             <>
               {promoNetworkError ? (
