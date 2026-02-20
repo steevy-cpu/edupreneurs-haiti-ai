@@ -1,117 +1,157 @@
 
 
-# Mot du Jour Plan B — Browser Voice Recording
+# Mot du Jour Plan C — UX Improvements
 
 ## Overview
 
-Add a third audio option (microphone recording) alongside ElevenLabs and OpenAI in `WordsModule.tsx`. Uses the browser's built-in `MediaRecorder` API — no new dependencies.
+Three UX enhancements for the Control Center words table: scheduled date display, audio source badges, and inline reordering. Requires a DB migration (new column), an edge function update, and changes to WordsModule.tsx and the shared type.
 
 ---
 
-## Changes (single file: `src/pages/control-center/modules/WordsModule.tsx`)
+## Fix 1 — Scheduled Date Column
 
-### 1. New State Variables (~10 lines, after line 111)
+**File:** `src/pages/control-center/modules/WordsModule.tsx`
+
+Add a helper function that reverse-calculates the next calendar date for a given `display_order`:
 
 ```typescript
-// Recording state
-const [recordingWordId, setRecordingWordId] = useState<string | null>(null);
-const [recordingWord, setRecordingWord] = useState<DailyWord | null>(null);
-const [isRecording, setIsRecording] = useState(false);
-const [recordingDuration, setRecordingDuration] = useState(0);
-const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
-const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
-const [isUploading, setIsUploading] = useState(false);
-const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-const mediaStreamRef = useRef<MediaStream | null>(null);
-const chunksRef = useRef<Blob[]>([]);
-const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+/** Compute the next date (>= today) when this display_order will be the active word */
+const getScheduledDate = (displayOrder: number, totalActive: number): Date | null => {
+  if (!displayOrder || totalActive === 0) return null;
+  const haitiDate = getHaitiDate();
+  const today = new Date(haitiDate + 'T00:00:00');
+  const daysSinceToday = Math.floor(
+    (today.getTime() - REFERENCE_DATE.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  const target = displayOrder - 1;
+  const currentMod = ((daysSinceToday % totalActive) + totalActive) % totalActive;
+  const offset = ((target - currentMod) + totalActive) % totalActive;
+  return new Date(today.getTime() + offset * 86400000);
+};
 ```
 
-### 2. New Icon Import (line 26)
+Add a "Date prevue" column in the table header (after `#`). For each active word row, display the formatted date using `toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })`. If the date is today, show an amber "Aujourd'hui" badge instead.
 
-Add `MicOff, Square, Play, Upload` to the existing lucide imports.
+Inactive words show "—" in this column (they're excluded from the rotation).
 
-### 3. Recording Functions (~80 lines, after toggleActive)
+## Fix 2 — Audio Source Column (DB + Edge Function + UI)
 
-- **`openRecordingDialog(word)`** — sets `recordingWord`, opens the recording modal
-- **`cleanupRecording()`** — stops MediaRecorder, releases mic stream (`track.stop()`), revokes object URL, clears timer, resets all recording state
-- **`startRecording()`** — requests mic via `getUserMedia({ audio: true })`, creates `MediaRecorder` with `audio/webm` (fallback `audio/ogg`), starts collecting chunks, starts duration timer, auto-stops at 30 seconds
-- **`stopRecording()`** — stops MediaRecorder, combines chunks into Blob, creates preview URL
-- **`uploadRecording()`** — converts Blob to File, uploads to `lesson-audio/word-of-day/{wordId}.webm` via `supabase.storage.from('lesson-audio').upload()` with `upsert: true`, updates `daily_words.audio_url` with public URL + cache-busting timestamp, refreshes word list, shows success toast
-- **`closeRecordingDialog()`** — calls `cleanupRecording()`, clears `recordingWord`
+### Migration
 
-### 4. Mic Button in Table (after line 638, in the Audio column)
+Add a nullable `audio_source` column to `daily_words`:
 
-Add a microphone button alongside the existing play/regenerate buttons:
+```sql
+ALTER TABLE public.daily_words
+ADD COLUMN IF NOT EXISTS audio_source text;
 
-```tsx
-<Button
-  variant="ghost"
-  size="icon"
-  className="h-7 w-7"
-  onClick={() => openRecordingDialog(word)}
-  title="Enregistrer avec le micro"
->
-  <Mic className="h-3 w-3 text-amber-600" />
-</Button>
+COMMENT ON COLUMN public.daily_words.audio_source
+IS 'Tracks which method generated the audio: elevenlabs, openai, or recording';
 ```
 
-Also add the mic button for words without audio (alongside the "Generer" button).
+### Shared Type Update
 
-### 5. Recording Dialog (~80 lines, after the Add/Edit Dialog)
+**File:** `src/types/dailyWord.ts`
 
-A new `Dialog` controlled by `recordingWord !== null`:
+Add `audio_source: string | null;` to the `DailyWord` interface.
 
-```
-+------------------------------------------+
-|  Enregistrer: "{word}"                    |
-|  [{phonetic}] — {definition}             |
-|                                          |
-|  [ Record button: large red circle ]     |
-|  Duration: 0:12 / 0:30                   |
-|                                          |
-|  --- After recording ---                 |
-|  [ Play preview ]  [ Re-record ]         |
-|                                          |
-|  [ Annuler ]  [ Utiliser cet enreg. ]    |
-+------------------------------------------+
+### Edge Function Update
+
+**File:** `supabase/functions/generate-word-audio/index.ts`
+
+In the existing DB update (around line 133), add `audio_source` to the update payload:
+
+```typescript
+const { error: updateError } = await supabase
+  .from('daily_words')
+  .update({ audio_url: audioUrl, audio_source: ttsProvider })
+  .eq('id', wordId);
 ```
 
-- Record button: red pulsing circle when recording, gray mic when idle
-- Duration counter updates every second via `setInterval`
-- After recording stops: shows playback button + re-record button
-- "Utiliser cet enregistrement" triggers upload
-- Cancel and close both call `cleanupRecording()`
+### Upload Recording Update
 
-### 6. Cleanup on Unmount (update existing useEffect at line 391)
+**File:** `src/pages/control-center/modules/WordsModule.tsx` (uploadRecording function, ~line 416)
 
-Add cleanup for recording resources alongside existing audio cleanup.
+Add `audio_source: 'recording'` to the update payload:
+
+```typescript
+const { error: updateError } = await supabase
+  .from('daily_words')
+  .update({ audio_url: audioUrl, audio_source: 'recording' })
+  .eq('id', recordingWord.id);
+```
+
+### TTS Generate Update
+
+**File:** `src/pages/control-center/modules/WordsModule.tsx` (generateAudio function, ~line 500)
+
+After successful generation, also update the local state with the provider info from `response.data.provider`.
+
+### UI Badge
+
+In the Audio column of the table, after the play button, show a small badge based on `word.audio_source`:
+- `"elevenlabs"` -- purple badge showing "EL"
+- `"openai"` -- blue badge showing "OAI"  
+- `"recording"` -- amber badge showing mic emoji
+- `null` (legacy audio with no source tracked) -- no badge
+
+## Fix 3 — Display Order Reordering
+
+**File:** `src/pages/control-center/modules/WordsModule.tsx`
+
+Add `ArrowUp, ArrowDown` to lucide imports.
+
+Add a `swapDisplayOrder` handler:
+
+```typescript
+const swapDisplayOrder = async (wordA: DailyWord, wordB: DailyWord) => {
+  try {
+    // Swap display_order values between two words
+    const { error: errA } = await supabase
+      .from('daily_words')
+      .update({ display_order: wordB.display_order })
+      .eq('id', wordA.id);
+    if (errA) throw errA;
+
+    const { error: errB } = await supabase
+      .from('daily_words')
+      .update({ display_order: wordA.display_order })
+      .eq('id', wordB.id);
+    if (errB) throw errB;
+
+    toast.success('Ordre mis a jour');
+    fetchWords();
+  } catch (err) {
+    console.error('Swap error:', err);
+    toast.error("Erreur lors du reordonnancement");
+  }
+};
+```
+
+Add a new "Ordre" column (or append to the `#` column) with up/down arrow buttons:
+- Up arrow: calls `swapDisplayOrder(currentWord, previousWord)` -- disabled on the first row
+- Down arrow: calls `swapDisplayOrder(currentWord, nextWord)` -- disabled on the last row
+- Both use small ghost icon buttons with `ArrowUp` / `ArrowDown` icons
 
 ---
 
-## Technical Details
+## Files Changed
 
-| Aspect | Implementation |
-|--------|---------------|
-| Mime type | `audio/webm` primary, `audio/ogg` fallback via `MediaRecorder.isTypeSupported()` |
-| Max duration | 30 seconds, enforced by `setTimeout` calling `stopRecording()` |
-| Storage path | `lesson-audio/word-of-day/{wordId}.webm` (upsert overwrites existing) |
-| Audio URL update | Same pattern as edge function: public URL + `?t={timestamp}` |
-| Mic release | `mediaStreamRef.current.getTracks().forEach(t => t.stop())` |
-| Object URL cleanup | `URL.revokeObjectURL(recordedUrl)` in `cleanupRecording()` |
-| Permission error | Caught in `getUserMedia` catch block, shown via `toast.error()` |
+| File | Change |
+|------|--------|
+| `src/pages/control-center/modules/WordsModule.tsx` | Date column, audio source badge, reorder buttons, uploadRecording audio_source |
+| `src/types/dailyWord.ts` | Add `audio_source` field |
+| `supabase/functions/generate-word-audio/index.ts` | Write `audio_source` on generation |
+| Migration SQL | Add `audio_source` column to `daily_words` |
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| No new dependencies | MediaRecorder is built-in browser API |
-| Only WordsModule.tsx modified | Single file change |
-| Existing ElevenLabs/OpenAI unchanged | Mic button added alongside, not replacing |
-| Mic released on close | cleanupRecording() stops all tracks |
-| Object URL revoked | Prevents memory leaks |
-| 30s auto-stop | Prevents accidentally long recordings |
-| Upload uses existing bucket | lesson-audio bucket, same path pattern |
-| Student-facing code untouched | useWordOfTheDay.ts reads audio_url regardless of source |
+| Plans A and B code paths unchanged | Only additive changes (new column, new UI elements) |
+| Deterministic algorithm unchanged | `computeDisplayOrder` not modified; `getScheduledDate` is read-only reverse calc |
+| Student-facing hook unchanged | `useWordOfTheDay.ts` not touched; new column is nullable so no breakage |
+| Edge function backward compatible | Just adds one more field to existing UPDATE |
+| Existing audio_url unaffected | `audio_source` is nullable; old words simply show no badge |
+| Swap is atomic per word | Two sequential UPDATEs; display_order values are unique |
+| No new dependencies | ArrowUp/ArrowDown already in lucide-react |
 
