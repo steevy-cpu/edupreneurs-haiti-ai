@@ -533,7 +533,7 @@ const Settings = () => {
 
                   {/* Profile Info */}
                   <div className="flex-1 text-center sm:text-left">
-                    <h2 className="text-2xl font-bold">{profile?.nickname || "Utilisateur"}</h2>
+                    <h2 className="text-2xl font-bold">{profile?.nickname ?? profile?.full_name?.split(' ')[0] ?? 'toi'}</h2>
                     <p className="text-muted-foreground">{profile?.full_name}</p>
                     {profile?.bio && (
                       <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{profile.bio}</p>

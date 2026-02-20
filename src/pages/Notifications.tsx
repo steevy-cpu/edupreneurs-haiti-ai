@@ -230,8 +230,8 @@ export default function Notifications() {
         const actorProfile = profileMap.get(notification.actor_id) || {
           id: "",
           user_id: notification.actor_id,
-          nickname: "Utilisateur inconnu",
-          full_name: "Utilisateur inconnu",
+          nickname: "Étudiant",
+          full_name: "Étudiant",
           avatar_url: null,
           affiliation_points: 0,
           academic_grade: "",

@@ -103,7 +103,7 @@ const fetchConversations = async (): Promise<ConversationWithDetails[]> => {
         profile: profiles?.find(pr => pr.user_id === p.user_id) || {
           id: p.user_id,
           user_id: p.user_id,
-          full_name: "Utilisateur",
+          full_name: "Étudiant",
           nickname: "user",
           avatar_url: null,
           verified: false,

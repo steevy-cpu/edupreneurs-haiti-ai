@@ -893,7 +893,7 @@ const Feed = () => {
               className="font-semibold text-xs cursor-pointer hover:underline"
               onClick={() => navigate(`/profile/${comment.user_id}`)}
             >
-              {comment.profile?.nickname || "Utilisateur"}
+              {comment.profile?.nickname ?? comment.profile?.full_name ?? 'Étudiant'}
             </p>
             {comment.profile?.verified && (
               <BadgeCheck className="w-3 h-3 text-primary fill-primary/20" />
@@ -1080,7 +1080,7 @@ const Feed = () => {
                         className="font-semibold text-sm cursor-pointer hover:underline truncate"
                         onClick={() => navigate(`/profile/${post.user_id}`)}
                       >
-                        {post.profile?.full_name || "Utilisateur"}
+                        {post.profile?.full_name ?? post.profile?.nickname ?? 'Étudiant'}
                       </p>
                       {post.profile?.verified && (
                         <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />

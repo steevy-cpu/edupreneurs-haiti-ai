@@ -264,7 +264,7 @@ export const RoleManagement = () => {
                           <div>
                             <div className="flex items-center gap-2">
                               <h4 className="font-semibold">
-                                {editor.profiles?.full_name || editor.profiles?.nickname || 'Utilisateur'}
+                                {editor.profiles?.full_name ?? editor.profiles?.nickname ?? 'Étudiant'}
                               </h4>
                               <Badge variant={getRoleBadgeVariant(editor.role)}>
                                 {editor.role}

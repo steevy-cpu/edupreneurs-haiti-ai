@@ -68,7 +68,7 @@ export const LessonComments = ({ lesson }: LessonCommentsProps) => {
         const combinedData = commentsData.map(comment => ({
           ...comment,
           profiles: profilesMap.get(comment.user_id) || {
-            nickname: 'Utilisateur',
+            nickname: 'Étudiant',
             avatar_url: null
           }
         }));

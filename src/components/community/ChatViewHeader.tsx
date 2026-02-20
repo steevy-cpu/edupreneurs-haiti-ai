@@ -88,7 +88,7 @@ export const ChatViewHeader = ({
           >
             {isGroup 
               ? conversation.group?.name 
-              : (conversation?.otherUser?.nickname || conversation?.otherUser?.full_name || "Utilisateur")
+              : (conversation?.otherUser?.nickname ?? conversation?.otherUser?.full_name ?? 'Étudiant')
             }
           </p>
           {isGroup && (
