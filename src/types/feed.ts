@@ -7,6 +7,7 @@ export interface Profile {
   nickname: string;
   avatar_url: string | null;
   verified: boolean;
+  academic_grade?: string | null; // Grade level for badge display (7AF–NS4)
 }
 
 export interface Comment {
