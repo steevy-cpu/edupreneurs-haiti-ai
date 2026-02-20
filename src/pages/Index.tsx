@@ -2,7 +2,7 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { Helmet } from "react-helmet";
 import { useVisitor } from "@/contexts/VisitorContext";
 
-// Critical components (immediate render)
+// Critical components (immediate render — above the fold)
 import { VisitorBanner } from "@/components/visitor";
 import { HeaderNav } from "@/components/home/HeaderNav";
 import { HeroSection } from "@/components/home/HeroSection";
@@ -10,16 +10,18 @@ import { HeroSection } from "@/components/home/HeroSection";
 // Deferred content wrapper
 import { DeferredContent } from "@/components/home/DeferredContent";
 
-// Section components
-import { FeaturesSection } from "@/components/home/FeaturesSection";
-import { HowItWorksSection } from "@/components/home/HowItWorksSection";
-import { PlatformFeaturesSection } from "@/components/home/PlatformFeaturesSection";
-import { CoursesSection } from "@/components/home/CoursesSection";
-import { FAQSection } from "@/components/home/FAQSection";
-import { AboutSection } from "@/components/home/AboutSection";
-import { TeamSection } from "@/components/home/TeamSection";
-import { ContactSection } from "@/components/home/ContactSection";
-import { BlogSectionWrapper } from "@/components/home/BlogSectionWrapper";
+// Below-the-fold sections — lazy loaded to reduce initial JS bundle
+const FeaturesSection = lazy(() => import("@/components/home/FeaturesSection"));
+const HowItWorksSection = lazy(() => import("@/components/home/HowItWorksSection"));
+const PlatformFeaturesSection = lazy(() => import("@/components/home/PlatformFeaturesSection"));
+const CoursesSection = lazy(() => import("@/components/home/CoursesSection"));
+const FAQSection = lazy(() => import("@/components/home/FAQSection"));
+const AboutSection = lazy(() => import("@/components/home/AboutSection"));
+const TeamSection = lazy(() => import("@/components/home/TeamSection"));
+const ContactSection = lazy(() => import("@/components/home/ContactSection"));
+const BlogSectionWrapper = lazy(() => import("@/components/home/BlogSectionWrapper"));
+
+// Lightweight — keep static
 import { CTASection } from "@/components/home/CTASection";
 import { Footer } from "@/components/Footer";
 
@@ -101,17 +103,17 @@ const Index = () => {
           onVisitorClick={() => setShowVisitorSelector(true)}
         />
         
-        {/* Deferred Content - renders when idle/visible */}
+        {/* Deferred Content — lazy sections wrapped in Suspense for code splitting */}
         <DeferredContent minHeight="400px" timeout={2000}>
-          <FeaturesSection />
-          <HowItWorksSection />
-          <PlatformFeaturesSection examsCount={stats.exams} />
-          <CoursesSection />
-          <FAQSection />
-          <AboutSection />
-          <TeamSection />
-          <ContactSection />
-          <BlogSectionWrapper />
+          <Suspense fallback={null}><FeaturesSection /></Suspense>
+          <Suspense fallback={null}><HowItWorksSection /></Suspense>
+          <Suspense fallback={null}><PlatformFeaturesSection examsCount={stats.exams} /></Suspense>
+          <Suspense fallback={null}><CoursesSection /></Suspense>
+          <Suspense fallback={null}><FAQSection /></Suspense>
+          <Suspense fallback={null}><AboutSection /></Suspense>
+          <Suspense fallback={null}><TeamSection /></Suspense>
+          <Suspense fallback={null}><ContactSection /></Suspense>
+          <Suspense fallback={null}><BlogSectionWrapper /></Suspense>
         </DeferredContent>
         
         <CTASection />

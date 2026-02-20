@@ -390,6 +390,8 @@ const OnboardingQuiz = () => {
                 src={image}
                 alt="Jude"
                 className="h-32 md:h-64 object-contain drop-shadow-2xl"
+                /* Only eager-load the first step image; lazy-load the rest for 3G perf */
+                loading={currentStep === 0 && !showReaction && !isOutro ? 'eager' : 'lazy'}
               />
             </motion.div>
           </AnimatePresence>

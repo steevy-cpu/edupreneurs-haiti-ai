@@ -6,6 +6,9 @@ const STATIC_CACHE_NAME = `edupreneurs-static-v${SW_VERSION}`;
 const API_CACHE_NAME = `edupreneurs-api-v${SW_VERSION}`;
 const JS_CACHE_NAME = `edupreneurs-js-v${SW_VERSION}`;
 const MAX_CACHE_ITEMS = 50;
+// TTL constants for cache expiry — prevents serving stale assets on slow connections
+const MAX_IMAGE_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days for images
+const MAX_JS_AGE_MS = 7 * 24 * 60 * 60 * 1000;     // 7 days for JS/CSS (Vite content-hashed)
 const MAX_API_CACHE_ITEMS = 100;
 
 // Supabase host for API caching
@@ -139,6 +142,14 @@ async function trimCache(cacheName, maxItems) {
   }
 }
 
+/** Check if a cached response is older than maxAgeMs using its date header */
+function isCacheExpired(response, maxAgeMs) {
+  const dateHeader = response.headers.get('date');
+  if (!dateHeader) return false; // No date header — assume fresh
+  const cachedTime = new Date(dateHeader).getTime();
+  return (Date.now() - cachedTime) > maxAgeMs;
+}
+
 // Check if an endpoint should never be cached
 function shouldNeverCache(pathname) {
   return NO_CACHE_ENDPOINTS.some(endpoint => pathname.includes(endpoint));
@@ -178,23 +189,25 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       caches.open(JS_CACHE_NAME).then(cache => {
         return cache.match(request).then(cached => {
-          // Fetch in background to update cache
           const fetchPromise = fetch(request).then(response => {
             if (response.ok) {
               cache.put(request, response.clone());
             }
             return response;
-          }).catch(() => cached); // Fallback to cache on network error
+          }).catch(() => cached);
           
-          // Return cached immediately if available
-          return cached || fetchPromise;
+          // Serve cached if fresh; bypass if expired (7-day TTL)
+          if (cached && !isCacheExpired(cached, MAX_JS_AGE_MS)) {
+            return cached;
+          }
+          return fetchPromise;
         });
       })
     );
     return;
   }
   
-  // Cache-first for CSS files
+  // Cache-first for CSS files with 7-day TTL
   if (request.destination === 'style' || url.pathname.match(/\.css$/i)) {
     event.respondWith(
       caches.open(STATIC_CACHE_NAME).then(cache => {
@@ -206,7 +219,10 @@ self.addEventListener('fetch', (event) => {
             return response;
           }).catch(() => cached);
           
-          return cached || fetchPromise;
+          if (cached && !isCacheExpired(cached, MAX_JS_AGE_MS)) {
+            return cached;
+          }
+          return fetchPromise;
         });
       })
     );
@@ -264,8 +280,11 @@ self.addEventListener('fetch', (event) => {
             return response;
           }).catch(() => cached);
           
-          // Return cached immediately, update in background
-          return cached || fetchPromise;
+          // Serve cached if within 30-day TTL; refetch if expired
+          if (cached && !isCacheExpired(cached, MAX_IMAGE_AGE_MS)) {
+            return cached;
+          }
+          return fetchPromise;
         });
       })
     );
