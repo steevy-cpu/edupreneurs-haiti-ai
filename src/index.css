@@ -257,10 +257,6 @@ All colors MUST be HSL.
     @apply bg-gradient-to-r from-accent to-yellow-500 bg-clip-text text-transparent;
   }
 
-  .card-glow {
-    box-shadow: var(--shadow-card), var(--shadow-glow);
-  }
-
   .logo-no-filter {
     filter: none !important;
     -webkit-filter: none !important;
