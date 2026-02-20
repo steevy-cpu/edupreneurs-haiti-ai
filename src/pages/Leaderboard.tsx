@@ -123,16 +123,16 @@ const Leaderboard = () => {
       {/* Top-3 Podium — only when 3+ users loaded */}
       {!isLoading && leaderboard.length >= 3 && (
         <div className="max-w-4xl mx-auto px-3 sm:px-4 pt-4">
-          <div className="flex justify-center items-end gap-1 sm:gap-2 py-4">
+          <div className="flex justify-center items-end gap-2 sm:gap-3 py-4">
             {/* 2nd place — left */}
             <div className="flex flex-col items-center cursor-pointer" onClick={() => handleUserClick(leaderboard[1].user_id)}>
               <Avatar className="h-10 w-10 sm:h-14 sm:w-14 border-2 border-gray-400">
                 <AvatarImage src={getAvatarUrl(leaderboard[1].avatar_url)} loading="lazy" />
                 <AvatarFallback className="text-sm">{leaderboard[1].nickname?.[0]?.toUpperCase() || '?'}</AvatarFallback>
               </Avatar>
-              <div className="bg-gray-400 text-white rounded-t-lg px-3 sm:px-6 py-1.5 sm:py-2 mt-2 text-center">
+              <div className="bg-gray-400 text-white rounded-t-lg px-4 sm:px-6 py-1.5 sm:py-2 mt-2 text-center">
                 <Medal className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-0.5 sm:mb-1" />
-                <p className="text-[10px] sm:text-xs font-medium truncate max-w-[60px] sm:max-w-[80px]">{leaderboard[1].nickname || leaderboard[1].full_name}</p>
+                <p className="text-[10px] sm:text-xs font-medium truncate max-w-[75px] sm:max-w-[80px]">{leaderboard[1].nickname || leaderboard[1].full_name}</p>
                 <p className="text-xs sm:text-sm font-bold">{leaderboard[1].gold_earned} 🏆</p>
               </div>
               <div className="bg-gray-400/80 w-full h-12 sm:h-16 rounded-b-lg"></div>
@@ -146,7 +146,7 @@ const Leaderboard = () => {
               </Avatar>
               <div className="bg-yellow-500 text-white rounded-t-lg px-4 sm:px-8 py-1.5 sm:py-2 mt-2 text-center">
                 <Crown className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-0.5 sm:mb-1" />
-                <p className="text-[10px] sm:text-xs font-medium truncate max-w-[60px] sm:max-w-[80px]">{leaderboard[0].nickname || leaderboard[0].full_name}</p>
+                <p className="text-[10px] sm:text-xs font-medium truncate max-w-[80px] sm:max-w-[80px]">{leaderboard[0].nickname || leaderboard[0].full_name}</p>
                 <p className="text-xs sm:text-sm font-bold">{leaderboard[0].gold_earned} 🏆</p>
               </div>
               <div className="bg-yellow-500/80 w-full h-18 sm:h-24 rounded-b-lg"></div>
@@ -158,9 +158,9 @@ const Leaderboard = () => {
                 <AvatarImage src={getAvatarUrl(leaderboard[2].avatar_url)} loading="lazy" />
                 <AvatarFallback className="text-xs sm:text-sm">{leaderboard[2].nickname?.[0]?.toUpperCase() || '?'}</AvatarFallback>
               </Avatar>
-              <div className="bg-amber-600 text-white rounded-t-lg px-2.5 sm:px-5 py-1.5 sm:py-2 mt-2 text-center">
+              <div className="bg-amber-600 text-white rounded-t-lg px-3 sm:px-5 py-1.5 sm:py-2 mt-2 text-center">
                 <Medal className="w-3.5 h-3.5 sm:w-4 sm:h-4 mx-auto mb-0.5 sm:mb-1" />
-                <p className="text-[10px] sm:text-xs font-medium truncate max-w-[55px] sm:max-w-[70px]">{leaderboard[2].nickname || leaderboard[2].full_name}</p>
+                <p className="text-[10px] sm:text-xs font-medium truncate max-w-[70px] sm:max-w-[70px]">{leaderboard[2].nickname || leaderboard[2].full_name}</p>
                 <p className="text-xs sm:text-sm font-bold">{leaderboard[2].gold_earned} 🏆</p>
               </div>
               <div className="bg-amber-600/80 w-full h-10 sm:h-12 rounded-b-lg"></div>
