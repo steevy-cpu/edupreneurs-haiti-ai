@@ -150,11 +150,26 @@ MANDATORY REQUIREMENTS:
       throw new Error('No image generated');
     }
 
+    // Fetch image bytes server-side to avoid CORS canvas tainting in the browser
+    const imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) {
+      throw new Error(`Failed to fetch generated image: ${imageResponse.status}`);
+    }
+    const arrayBuffer = await imageResponse.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    // Convert binary to base64 — loop is required because btoa needs a binary string
+    let binary = '';
+    for (const byte of uint8Array) binary += String.fromCharCode(byte);
+    const base64 = btoa(binary);
+    const base64DataUrl = `data:image/png;base64,${base64}`;
+
+    console.log('Image fetched and encoded to base64 successfully');
+
     // Preserve exact response shape for frontend compatibility
     return new Response(
       JSON.stringify({ 
         success: true,
-        imageUrl,
+        imageUrl: base64DataUrl,
         message: 'Avatar generated successfully'
       }),
       { headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
