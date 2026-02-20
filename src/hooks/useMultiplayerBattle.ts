@@ -50,15 +50,7 @@ interface UseMultiplayerBattleReturn {
   cancelBattle: () => Promise<void>;
 }
 
-// Generate a 6-character invite code
-const generateInviteCode = (): string => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Avoid confusing chars
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
-};
+// Client-side invite code generation removed — now uses DB RPC for uniqueness guarantees
 
 export const useMultiplayerBattle = ({
   mode,
@@ -242,7 +234,8 @@ export const useMultiplayerBattle = ({
     setIsHost(true);
     
     try {
-      const code = generateInviteCode();
+      // Generate invite code server-side for uniqueness guarantees
+      const { data: code } = await supabase.rpc('generate_invite_code');
       
       // Create battle
       const { data: battle, error } = await supabase
@@ -428,11 +421,10 @@ export const useMultiplayerBattle = ({
     updatePhase('waiting');
     
     try {
-      // Server-side cleanup of stale/orphaned games before matchmaking
-      // Server-side cleanup — cast needed until types regenerate after migration
-      await (supabase.rpc as any)('cleanup_stale_games').catch((err: any) => 
-        console.error('[Multiplayer] Cleanup RPC failed:', err)
-      );
+      // Server-side cleanup of stale/orphaned games before matchmaking — fire-and-forget
+      try { await supabase.rpc('cleanup_stale_games'); } catch (err) {
+        console.error('[Multiplayer] Cleanup RPC failed:', err);
+      }
 
       // Check for existing opponent waiting
       const { data: existingMatch } = await supabase

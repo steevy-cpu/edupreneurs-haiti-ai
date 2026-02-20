@@ -90,15 +90,7 @@ export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   expert: 'Expert',
 };
 
-// Generate invite code
-const generateInviteCode = (): string => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let result = '';
-  for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-};
+// Client-side invite code generation removed — now uses DB RPC for uniqueness guarantees
 
 // Helper to calculate actual remaining time accounting for elapsed time since last move
 const calculateActualTimeRemaining = (
@@ -177,9 +169,13 @@ export const useChessMultiplayer = ({
   const [error, setError] = useState<string | null>(null);
   const [eloChanges, setEloChanges] = useState<EloChanges | null>(null);
   
-  // Refs for stable callbacks
+  // Refs for stable callbacks — prevents realtime channel churn from dependency changes
   const matchRef = useRef(match);
   matchRef.current = match;
+  const opponentRef = useRef<PlayerInfo | null>(opponent);
+  opponentRef.current = opponent;
+  const fetchOpponentRef = useRef<(id: string) => Promise<void>>(null!);
+  const fetchChatMessagesRef = useRef<(id: string) => Promise<void>>(null!);
   
   // Derived state
   const myColor = match 
@@ -224,6 +220,9 @@ export const useChessMultiplayer = ({
       console.error('Failed to fetch chat:', err);
     }
   }, []);
+  // Update refs after function declarations — avoids "used before declaration" errors
+  fetchOpponentRef.current = fetchOpponent;
+  fetchChatMessagesRef.current = fetchChatMessages;
 
   // Refresh match data - accepts optional matchId for initial load
   const refreshMatch = useCallback(async (matchIdParam?: string) => {
@@ -318,13 +317,13 @@ export const useChessMultiplayer = ({
           
           setMatch(updatedMatch);
           
-          // Check if opponent just joined
-          if (updatedMatch.black_player_id && !opponent) {
+          // Check if opponent just joined — use ref to avoid dependency on opponent state
+          if (updatedMatch.black_player_id && !opponentRef.current) {
             const opponentId = userId === updatedMatch.white_player_id 
               ? updatedMatch.black_player_id 
               : updatedMatch.white_player_id;
             if (opponentId) {
-              fetchOpponent(opponentId);
+              fetchOpponentRef.current(opponentId);
             }
           }
         }
@@ -349,13 +348,14 @@ export const useChessMultiplayer = ({
       )
       .subscribe();
 
-    // Fetch initial chat
-    fetchChatMessages(match.id);
+    // Fetch initial chat via ref — stable reference prevents channel churn
+    fetchChatMessagesRef.current(match.id);
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [match?.id, enabled, userId, opponent, fetchOpponent, fetchChatMessages]);
+    // Only recreate channel when match ID, enabled, or user changes — not on callback/opponent changes
+  }, [match?.id, enabled, userId]);
 
   // Create a new match — runs server-side stale game cleanup first
   const createMatch = useCallback(async (options: CreateMatchOptions): Promise<string | null> => {
@@ -368,13 +368,13 @@ export const useChessMultiplayer = ({
     setError(null);
 
     try {
-      // Cleanup stale games before creating a new one
-      // Cleanup stale games — cast needed until types regenerate after migration
-      await (supabase.rpc as any)('cleanup_stale_games').catch((err: any) =>
-        console.error('[Chess] Cleanup RPC failed:', err)
-      );
+      // Cleanup stale games before creating a new one — fire-and-forget
+      try { await supabase.rpc('cleanup_stale_games'); } catch (err) {
+        console.error('[Chess] Cleanup RPC failed:', err);
+      }
 
-      const inviteCode = generateInviteCode();
+      // Generate invite code server-side for uniqueness guarantees
+      const { data: inviteCode } = await supabase.rpc('generate_chess_invite_code');
       const timePerPlayer = TIME_CONTROL_SECONDS[options.timeControl];
 
       const { data, error: insertError } = await supabase
