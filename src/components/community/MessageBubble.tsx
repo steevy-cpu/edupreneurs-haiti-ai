@@ -526,6 +526,9 @@ export function MessageBubble({
             <span className="text-xs text-muted-foreground">
               {formatTime(message.created_at)}
             </span>
+            {message.edited_at && (
+              <span className="text-xs text-muted-foreground italic">· modifié</span>
+            )}
             {isOwn && (
               <span className="inline-flex">
                 {message.read ? (

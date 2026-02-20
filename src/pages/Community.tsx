@@ -1745,13 +1745,15 @@ const Community = () => {
     try {
       const { error } = await supabase
         .from("messages")
-        .update({ content: editedContent.trim() })
+        .update({ content: editedContent.trim(), edited_at: new Date().toISOString() })
         .eq("id", messageId);
 
       if (error) throw error;
 
+      // Update local state with edited content and timestamp
+      const nowISO = new Date().toISOString();
       setMessages(messages.map(msg => 
-        msg.id === messageId ? { ...msg, content: editedContent.trim() } : msg
+        msg.id === messageId ? { ...msg, content: editedContent.trim(), edited_at: nowISO } : msg
       ));
 
       setEditingMessageId(null);
@@ -1980,25 +1982,37 @@ const Community = () => {
           throw fetchError;
         }
 
-        // Update visible_from_message_id to exclude all current messages
-        const { error: updateError } = await supabase
-          .from("conversation_participants")
-          .update({ 
-            visible_from_message_id: lastMessage?.id || null
-          })
-          .eq("conversation_id", conversationId)
-          .eq("user_id", user.id);
+        if (!lastMessage) {
+          // Empty conversation — delete participant row entirely so it disappears
+          const { error: deleteError } = await supabase
+            .from("conversation_participants")
+            .delete()
+            .eq("conversation_id", conversationId)
+            .eq("user_id", user.id);
 
-        if (updateError) {
-          logger.error("Error updating visibility:", updateError);
-          throw updateError;
+          if (deleteError) {
+            logger.error("Error deleting participant row:", deleteError);
+            throw deleteError;
+          }
+        } else {
+          // Has messages — soft delete via visibility threshold (existing logic)
+          const { error: updateError } = await supabase
+            .from("conversation_participants")
+            .update({ visible_from_message_id: lastMessage.id })
+            .eq("conversation_id", conversationId)
+            .eq("user_id", user.id);
+
+          if (updateError) {
+            logger.error("Error updating visibility:", updateError);
+            throw updateError;
+          }
         }
       }
 
-      // Clear local messages state
+      // Remove conversation from local state directly — avoids expensive refetch
+      setConversations(prev => prev.filter(c => c.id !== conversationId));
       setMessages([]);
 
-      // Clear selection if this conversation was selected
       if (selectedConversation === conversationId) {
         setSelectedConversation(null);
         navigate('/community');
@@ -2009,9 +2023,6 @@ const Community = () => {
           ? "Vos messages ont été supprimés" 
           : "La conversation a été supprimée de votre liste",
       });
-
-      // Refresh conversations list
-      await fetchConversations();
     } catch (error) {
       logger.error("Error deleting conversation:", error);
       toast({

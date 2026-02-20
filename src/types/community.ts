@@ -49,6 +49,7 @@ export interface Message {
   replied_to?: Message;
   image_url?: string | null;
   video_url?: string | null;
+  edited_at?: string | null;
   shared_post?: {
     id: string;
     content: string;
