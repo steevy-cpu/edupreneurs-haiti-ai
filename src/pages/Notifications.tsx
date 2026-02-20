@@ -596,7 +596,7 @@ export default function Notifications() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate('/notification-settings')}
+                onClick={() => navigate('/settings?tab=notifications')}
                 className="h-8 w-8 sm:h-9 sm:w-9"
                 title="Paramètres de notification"
               >

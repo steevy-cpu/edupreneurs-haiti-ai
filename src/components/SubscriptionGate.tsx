@@ -244,7 +244,7 @@ function PendingGiftPrompt() {
         </div>
 
         <div className="space-y-2">
-          <Button size="lg" className="w-full" onClick={() => navigate('/settings?tab=preferences#subscription')}>
+          <Button size="lg" className="w-full" onClick={() => navigate('/settings?tab=account#subscription')}>
             <CreditCard className="mr-2 h-5 w-5" />Payer moi-même (200 HTG)
           </Button>
         </div>

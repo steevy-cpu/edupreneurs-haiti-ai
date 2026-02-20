@@ -29,6 +29,7 @@ import {
   Loader2,
   LogOut,
   CalendarDays,
+  Smartphone,
 } from "lucide-react";
 import ericArmsCrossed from "@/assets/eric-main01.png";
 import {
@@ -51,6 +52,7 @@ import { validateUserText } from "@/lib/textModeration";
 import { StripeRenewalButton } from "@/components/subscription/StripeRenewalButton";
 import { isFounder } from "@/lib/founderConstants";
 import { RenewalGiftLink } from "@/components/subscription/RenewalGiftLink";
+import { initializePushNotifications } from "@/utils/pushNotifications";
 
 // Lazy load heavy components
 const AvatarSelector = lazy(() => import('@/components/AvatarSelector').then(m => ({ default: m.AvatarSelector })));
@@ -123,9 +125,12 @@ const Settings = () => {
   });
   const [notificationCategories, setNotificationCategories] = useState<NotificationCategory[]>([]);
   const [savingNotification, setSavingNotification] = useState<string | null>(null);
-  const [language, setLanguage] = useState(() => {
-    return localStorage.getItem("lessonLanguage") || "fr";
-  });
+
+  // Push notification toggle state
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
+  // Track if browser has denied push permission (requires manual browser settings change)
+  const [pushPermissionDenied, setPushPermissionDenied] = useState(false);
   
   // Stability guard for lazy-loaded AvatarSelector (prevents React error #310)
   const [avatarSectionReady, setAvatarSectionReady] = useState(false);
@@ -147,6 +152,33 @@ const Settings = () => {
     });
     return () => cancelAnimationFrame(frame1);
   }, []);
+
+  // Check push subscription status on mount
+  useEffect(() => {
+    if (!userId) return;
+    
+    // Check browser permission state
+    if ('Notification' in window) {
+      setPushPermissionDenied(Notification.permission === 'denied');
+    }
+
+    // Check if a push subscription exists for this device
+    const deviceId = localStorage.getItem('edupreneurs_device_id');
+    if (!deviceId) {
+      setPushEnabled(false);
+      return;
+    }
+
+    supabase
+      .from('push_subscriptions' as any)
+      .select('id')
+      .eq('user_id', userId)
+      .eq('device_id', deviceId)
+      .maybeSingle()
+      .then(({ data }) => {
+        setPushEnabled(!!data);
+      });
+  }, [userId]);
 
   // Fetch all data in parallel
   const fetchUserData = useCallback(async () => {
@@ -210,18 +242,14 @@ const Settings = () => {
     }
   }, [userId, authLoading, fetchUserData]);
 
-  // Scroll to subscription card if hash is present
+  // Scroll to subscription card if hash is present — now in account tab
   useEffect(() => {
-    if (activeTab === 'preferences' && window.location.hash === '#subscription') {
+    if (activeTab === 'account' && window.location.hash === '#subscription') {
       setTimeout(() => {
         document.getElementById('subscription')?.scrollIntoView({ behavior: 'smooth' });
       }, 300);
     }
   }, [activeTab]);
-
-  useEffect(() => {
-    localStorage.setItem("lessonLanguage", language);
-  }, [language]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -406,6 +434,56 @@ const Settings = () => {
     // Debounced database update
     debouncedNotificationUpdate(category, enabled, userId);
   }, [userId, debouncedNotificationUpdate]);
+
+  // Push notification toggle handler — uses existing initializePushNotifications
+  const handlePushToggle = useCallback(async (enabled: boolean) => {
+    if (!userId) return;
+    setPushLoading(true);
+
+    try {
+      if (enabled) {
+        // Subscribe: delegates to existing push infra (permission + SW + DB upsert)
+        await initializePushNotifications(userId);
+        // Verify it worked by checking if permission was granted
+        if ('Notification' in window && Notification.permission === 'granted') {
+          setPushEnabled(true);
+          toast.success("Notifications push activées");
+        } else if ('Notification' in window && Notification.permission === 'denied') {
+          setPushPermissionDenied(true);
+          toast.error("Permission refusée — changez dans les paramètres du navigateur");
+        }
+      } else {
+        // Unsubscribe: remove SW subscription + delete DB row for this device
+        // Unsubscribe from browser push — cast needed since TS lib doesn't include pushManager
+        if ('serviceWorker' in navigator) {
+          const registration = await navigator.serviceWorker.ready;
+          const pm = (registration as any).pushManager;
+          if (pm) {
+            const subscription = await pm.getSubscription();
+            if (subscription) {
+              await subscription.unsubscribe();
+            }
+          }
+        }
+        // Delete push_subscriptions row for this device
+        const deviceId = localStorage.getItem('edupreneurs_device_id');
+        if (deviceId) {
+          await supabase
+            .from('push_subscriptions' as any)
+            .delete()
+            .eq('user_id', userId)
+            .eq('device_id', deviceId);
+        }
+        setPushEnabled(false);
+        toast.success("Notifications push désactivées");
+      }
+    } catch (error: any) {
+      console.error("Push toggle error:", error);
+      toast.error("Erreur lors de la modification");
+    } finally {
+      setPushLoading(false);
+    }
+  }, [userId]);
 
   const handleDeleteAccount = async () => {
     setLoading(true);
@@ -788,9 +866,166 @@ const Settings = () => {
             </Card>
           </TabsContent>
 
-          {/* Account Tab */}
+          {/* Account Tab — Subscription card moved here as first child */}
           <TabsContent value="account" className="mt-4 sm:mt-6">
             <div className="space-y-4 sm:space-y-6">
+              {/* Subscription Section — moved from Preferences for visibility */}
+              <Card id="subscription" className="border-none rounded-[20px] shadow-md">
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                    <CreditCard className="text-primary shrink-0" size={20} />
+                    Abonnement actuel
+                  </CardTitle>
+                  <CardDescription className="text-sm">
+                    Gérez votre abonnement et votre facturation
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0 space-y-4 sm:space-y-6">
+                  {subscriptionInfo?.state === 'free' ? (
+                    <div className="p-4 sm:p-6 bg-gradient-to-br from-[hsl(var(--success))]/10 to-[hsl(var(--primary))]/10 rounded-xl border-2 border-[hsl(var(--success))]/20">
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="px-3 py-1 rounded-full bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] text-xs font-semibold uppercase tracking-wide">
+                          Accès Gratuit
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Vous bénéficiez d'un accès gratuit à la plateforme. Aucun renouvellement nécessaire.
+                      </p>
+                    </div>
+                  ) : subscriptionInfo?.state === 'active' ? (
+                    <div className="p-4 sm:p-6 bg-gradient-to-br from-[hsl(var(--primary))]/10 to-[hsl(var(--success))]/10 rounded-xl border-2 border-[hsl(var(--primary))]/20">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                        <div>
+                          <div className="flex items-center gap-3 mb-1">
+                            <span className="px-3 py-1 rounded-full bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] text-xs font-semibold uppercase tracking-wide">
+                              Actif
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Expire le <strong>{subscriptionInfo.formattedDate}</strong>
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {subscriptionInfo.daysLeft} jour{subscriptionInfo.daysLeft !== 1 ? 's' : ''} restant{subscriptionInfo.daysLeft !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                        <div className="text-left sm:text-right">
+                          <div className="text-2xl sm:text-3xl font-extrabold text-primary">200 HTG</div>
+                          <div className="text-sm text-muted-foreground">/ 30 jours</div>
+                        </div>
+                      </div>
+                      
+                      {/* Payment method tabs */}
+                      <div className="space-y-3">
+                        <div className="flex rounded-lg border border-input overflow-hidden">
+                          <button
+                            type="button"
+                            className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
+                              paymentMethod === "moncash"
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-background text-muted-foreground hover:bg-muted"
+                            }`}
+                            onClick={() => setPaymentMethod("moncash")}
+                          >
+                            MonCash
+                          </button>
+                          <button
+                            type="button"
+                            className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
+                              paymentMethod === "stripe"
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-background text-muted-foreground hover:bg-muted"
+                            }`}
+                            onClick={() => setPaymentMethod("stripe")}
+                          >
+                            Carte
+                          </button>
+                        </div>
+
+                        {paymentMethod === "moncash" ? (
+                          <Button
+                            className="w-full"
+                            onClick={handleRenewSubscription}
+                            disabled={renewLoading}
+                          >
+                            {renewLoading ? (
+                              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Préparation...</>
+                            ) : (
+                              <><CreditCard className="mr-2 h-4 w-4" />Renouveler avec MonCash (+30 jours)</>
+                            )}
+                          </Button>
+                        ) : (
+                          <StripeRenewalButton />
+                        )}
+
+                        {/* Shareable renewal links */}
+                        <RenewalGiftLink />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 sm:p-6 bg-gradient-to-br from-destructive/10 to-destructive/5 rounded-xl border-2 border-destructive/20">
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="px-3 py-1 rounded-full bg-destructive/15 text-destructive text-xs font-semibold uppercase tracking-wide">
+                          Expiré
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Votre abonnement a expiré. Renouvelez pour continuer à accéder à toutes les fonctionnalités.
+                      </p>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                        <div className="text-2xl font-extrabold text-primary">200 HTG <span className="text-sm font-normal text-muted-foreground">/ 30 jours</span></div>
+                      </div>
+                      {/* Payment method tabs */}
+                      <div className="space-y-3">
+                        <div className="flex rounded-lg border border-input overflow-hidden">
+                          <button
+                            type="button"
+                            className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
+                              paymentMethod === "moncash"
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-background text-muted-foreground hover:bg-muted"
+                            }`}
+                            onClick={() => setPaymentMethod("moncash")}
+                          >
+                            MonCash
+                          </button>
+                          <button
+                            type="button"
+                            className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
+                              paymentMethod === "stripe"
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-background text-muted-foreground hover:bg-muted"
+                            }`}
+                            onClick={() => setPaymentMethod("stripe")}
+                          >
+                            Carte
+                          </button>
+                        </div>
+
+                        {paymentMethod === "moncash" ? (
+                          <Button
+                            className="w-full"
+                            size="lg"
+                            onClick={handleRenewSubscription}
+                            disabled={renewLoading}
+                          >
+                            {renewLoading ? (
+                              <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Préparation...</>
+                            ) : (
+                              <><CreditCard className="mr-2 h-5 w-5" />Renouveler avec MonCash — 200 HTG</>
+                            )}
+                          </Button>
+                        ) : (
+                          <StripeRenewalButton size="lg" />
+                        )}
+
+                        {/* Shareable renewal links */}
+                        <RenewalGiftLink />
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               <Card className="border-none rounded-[20px] shadow-md">
                 <CardHeader className="p-4 sm:p-6">
                   <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
@@ -807,7 +1042,7 @@ const Settings = () => {
                     <span className="text-xs text-muted-foreground whitespace-nowrap">Email vérifié ✓</span>
                   </div>
 
-                  {/* Logout button — uses existing handleLogout (L218) */}
+                  {/* Logout button — uses existing handleLogout */}
                   <Button
                     variant="outline"
                     className="w-full mt-4"
@@ -930,8 +1165,39 @@ const Settings = () => {
             </div>
           </TabsContent>
 
-          {/* Notifications Tab */}
-          <TabsContent value="notifications" className="mt-4 sm:mt-6">
+          {/* Notifications Tab — push toggle added above category toggles */}
+          <TabsContent value="notifications" className="mt-4 sm:mt-6 space-y-6">
+            {/* Push notification master toggle */}
+            <Card className="border-none rounded-[20px] shadow-md">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-start gap-3">
+                    <Smartphone className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                    <div className="space-y-0.5">
+                      <Label htmlFor="push-toggle" className="text-base font-medium">Notifications push</Label>
+                      <p className="text-sm text-muted-foreground">
+                        {pushPermissionDenied
+                          ? "Bloqué — changez dans les paramètres du navigateur"
+                          : "Recevoir des notifications sur cet appareil"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {pushLoading && (
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    )}
+                    <Switch
+                      id="push-toggle"
+                      checked={pushEnabled}
+                      onCheckedChange={handlePushToggle}
+                      disabled={pushLoading || pushPermissionDenied}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Notification category preferences */}
             <Card className="border-none rounded-[20px] shadow-md">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
@@ -971,166 +1237,8 @@ const Settings = () => {
             </Card>
           </TabsContent>
 
-          {/* Preferences Tab - Now includes Subscription */}
+          {/* Preferences Tab — subscription moved to Account, theme card removed, language replaced with info */}
           <TabsContent value="preferences" className="mt-4 sm:mt-6 space-y-6">
-            {/* Subscription Section */}
-            <Card id="subscription" className="border-none rounded-[20px] shadow-md">
-              <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                  <CreditCard className="text-primary shrink-0" size={20} />
-                  Abonnement actuel
-                </CardTitle>
-                <CardDescription className="text-sm">
-                  Gérez votre abonnement et votre facturation
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-6 pt-0 space-y-4 sm:space-y-6">
-                {subscriptionInfo?.state === 'free' ? (
-                  <div className="p-4 sm:p-6 bg-gradient-to-br from-[hsl(var(--success))]/10 to-[hsl(var(--primary))]/10 rounded-xl border-2 border-[hsl(var(--success))]/20">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="px-3 py-1 rounded-full bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] text-xs font-semibold uppercase tracking-wide">
-                        Accès Gratuit
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Vous bénéficiez d'un accès gratuit à la plateforme. Aucun renouvellement nécessaire.
-                    </p>
-                  </div>
-                ) : subscriptionInfo?.state === 'active' ? (
-                  <div className="p-4 sm:p-6 bg-gradient-to-br from-[hsl(var(--primary))]/10 to-[hsl(var(--success))]/10 rounded-xl border-2 border-[hsl(var(--primary))]/20">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                      <div>
-                        <div className="flex items-center gap-3 mb-1">
-                          <span className="px-3 py-1 rounded-full bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] text-xs font-semibold uppercase tracking-wide">
-                            Actif
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Expire le <strong>{subscriptionInfo.formattedDate}</strong>
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {subscriptionInfo.daysLeft} jour{subscriptionInfo.daysLeft !== 1 ? 's' : ''} restant{subscriptionInfo.daysLeft !== 1 ? 's' : ''}
-                        </p>
-                      </div>
-                      <div className="text-left sm:text-right">
-                        <div className="text-2xl sm:text-3xl font-extrabold text-primary">200 HTG</div>
-                        <div className="text-sm text-muted-foreground">/ 30 jours</div>
-                      </div>
-                    </div>
-                    
-                    {/* Payment method tabs */}
-                    <div className="space-y-3">
-                      <div className="flex rounded-lg border border-input overflow-hidden">
-                        <button
-                          type="button"
-                          className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
-                            paymentMethod === "moncash"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-background text-muted-foreground hover:bg-muted"
-                          }`}
-                          onClick={() => setPaymentMethod("moncash")}
-                        >
-                          MonCash
-                        </button>
-                        <button
-                          type="button"
-                          className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
-                            paymentMethod === "stripe"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-background text-muted-foreground hover:bg-muted"
-                          }`}
-                          onClick={() => setPaymentMethod("stripe")}
-                        >
-                          Carte
-                        </button>
-                      </div>
-
-                      {paymentMethod === "moncash" ? (
-                        <Button
-                          className="w-full"
-                          onClick={handleRenewSubscription}
-                          disabled={renewLoading}
-                        >
-                          {renewLoading ? (
-                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Préparation...</>
-                          ) : (
-                            <><CreditCard className="mr-2 h-4 w-4" />Renouveler avec MonCash (+30 jours)</>
-                          )}
-                        </Button>
-                      ) : (
-                        <StripeRenewalButton />
-                      )}
-
-                      {/* Shareable renewal links */}
-                      <RenewalGiftLink />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-4 sm:p-6 bg-gradient-to-br from-destructive/10 to-destructive/5 rounded-xl border-2 border-destructive/20">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="px-3 py-1 rounded-full bg-destructive/15 text-destructive text-xs font-semibold uppercase tracking-wide">
-                        Expiré
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Votre abonnement a expiré. Renouvelez pour continuer à accéder à toutes les fonctionnalités.
-                    </p>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                      <div className="text-2xl font-extrabold text-primary">200 HTG <span className="text-sm font-normal text-muted-foreground">/ 30 jours</span></div>
-                    </div>
-                    {/* Payment method tabs */}
-                    <div className="space-y-3">
-                      <div className="flex rounded-lg border border-input overflow-hidden">
-                        <button
-                          type="button"
-                          className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
-                            paymentMethod === "moncash"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-background text-muted-foreground hover:bg-muted"
-                          }`}
-                          onClick={() => setPaymentMethod("moncash")}
-                        >
-                          MonCash
-                        </button>
-                        <button
-                          type="button"
-                          className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
-                            paymentMethod === "stripe"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-background text-muted-foreground hover:bg-muted"
-                          }`}
-                          onClick={() => setPaymentMethod("stripe")}
-                        >
-                          Carte
-                        </button>
-                      </div>
-
-                      {paymentMethod === "moncash" ? (
-                        <Button
-                          className="w-full"
-                          size="lg"
-                          onClick={handleRenewSubscription}
-                          disabled={renewLoading}
-                        >
-                          {renewLoading ? (
-                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Préparation...</>
-                          ) : (
-                            <><CreditCard className="mr-2 h-5 w-5" />Renouveler avec MonCash — 200 HTG</>
-                          )}
-                        </Button>
-                      ) : (
-                        <StripeRenewalButton size="lg" />
-                      )}
-
-                      {/* Shareable renewal links */}
-                      <RenewalGiftLink />
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* App Preferences Section */}
             <Card className="border-none rounded-[20px] shadow-md">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
@@ -1141,29 +1249,11 @@ const Settings = () => {
                   Personnalisez votre expérience d'apprentissage
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-4 sm:p-6 pt-0 space-y-4 sm:space-y-6">
-                <div className="space-y-4">
-                  <Label htmlFor="language">Langue de l'interface</Label>
-                  <select
-                    id="language"
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                    className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                  >
-                    <option value="fr">Français</option>
-                    <option value="ht">Kreyòl Ayisyen</option>
-                  </select>
+              <CardContent className="p-4 sm:p-6 pt-0">
+                {/* Static language info — no i18n system exists yet */}
+                <div className="bg-muted rounded-lg p-4">
                   <p className="text-sm text-muted-foreground">
-                    Cette option changera la langue de l'interface utilisateur
-                  </p>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-4">
-                  <Label>Thème de l'application</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Utilisez le bouton de thème en haut à droite pour changer entre le mode clair et sombre
+                    La plateforme est disponible en Français. Le support du Kreyòl est en cours de développement.
                   </p>
                 </div>
               </CardContent>
