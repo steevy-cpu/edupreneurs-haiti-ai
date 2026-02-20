@@ -1,102 +1,215 @@
 
 
-# Notifications Plan A — Fix 3 Critical Issues
+# Notifications Plan B — Connect Missing Push Notifications and Clean Up Dead Code
 
 ## Overview
 
-Three targeted fixes across 3 files. No new tables, no new edge functions, no new dependencies.
+5 fixes across multiple files. Connects push notifications to events that currently only create in-app notifications, adds missing UI rendering, and removes unused utility files.
 
-## Fix 1 — Replace cosmetic Settings toggles with real category groups
+## Pre-Implementation Findings
 
-**File:** `src/pages/Settings.tsx`
+Key discoveries from the audit:
 
-### Remove old infrastructure
-- Delete `DEFAULT_NOTIFICATION_CATEGORIES` constant (lines 81-86) with its 4 fake categories
-- Delete `notificationCategories` state (line 126) and `savingNotification` state (line 127)
-- Delete the merge logic in `fetchUserData` (lines 225-234) that maps saved prefs to fake categories
-- Delete `debouncedNotificationUpdate` (lines 397-422) and `handleNotificationToggle` (lines 424-436)
+- **Fix 2 scope correction**: The user's prompt mentions `subscription_renewed` in `verify-moncash-gift`, `verify-gift-payment`, and `stripe-gift-webhook`, but these 3 functions actually use `gift_payment` as the notification type, not `subscription_renewed`. Only `verify-stripe-renewal` uses `subscription_renewed`. The plan adds push calls to all 4 functions, matching each one's actual notification type.
+- **Type map gap**: Neither `subscription_renewed` nor `gift_payment` exist in the `getCategoryFromType()` map in `send-push-notification`. Both must be added, mapping to the `system` category (controlled by the Systeme toggle from Plan A).
+- **Fix 4 confirmed safe**: Zero imports of `sendPushNotification` or `pushNotificationService` exist anywhere in the codebase. All call sites use `supabase.functions.invoke()` directly.
 
-### Add new group-based infrastructure
+## Fix 1 — Add push notification for new_post
 
-New constant defining the 5 real groups:
+**File:** `src/components/feed/CreatePostDialog.tsx` (lines 410-431, after mention processing)
 
-```
-NOTIFICATION_GROUPS = [
-  { key: 'interactions', categories: ['like','comment','share','mention'], label: 'Interactions', description: 'Likes, commentaires, partages et mentions' },
-  { key: 'social', categories: ['follow'], label: 'Social', description: 'Nouvelles abonnements et demandes de suivi' },
-  { key: 'messages', categories: ['message'], label: 'Messages', description: 'Messages prives et messages de groupe' },
-  { key: 'contenu', categories: ['post','lesson','word_of_day'], label: 'Contenu', description: 'Nouveaux posts, commentaires de lecons et mot du jour' },
-  { key: 'system', categories: ['system'], label: 'Systeme', description: "Renouvellements d'abonnement et annonces" },
-]
-```
+The DB trigger `notify_followers_on_new_post()` creates in-app notifications for all followers when a post is inserted. But no push is sent.
 
-New state: `groupToggles: Record<string, boolean>` initialized to all `true`.
+**Approach:** After the post is successfully created (line 410) and mentions processed (line 431), query the user's accepted followers from the `follows` table, then fire a push notification to each follower. This matches the pattern used for likes (Feed.tsx line 563) and comments (Feed.tsx line 641).
 
-On mount (inside `fetchUserData`): query all `notification_preferences` rows for this user. For each group, check if ANY of its categories have `enabled: false`. If so, that group toggle is OFF. Otherwise ON.
+Add after the mention processing block (after line 431):
 
-Toggle OFF handler: for all categories in the group, upsert rows with `enabled: false`.
+```typescript
+// Send push notification to followers for the new post
+// The DB trigger handles in-app notifications; this adds browser push
+try {
+  const { data: followers } = await supabase
+    .from('follows')
+    .select('follower_id')
+    .eq('following_id', currentUser.id)
+    .eq('status', 'accepted');
 
-Toggle ON handler: delete all rows for that group's categories (revert to implicit default = enabled).
-
-### UI replacement
-
-Replace the existing `notificationCategories.map(...)` block (lines 1212-1234) with a `NOTIFICATION_GROUPS.map(...)` rendering the same Switch layout but using the group key, label, description, and the new toggle handler.
-
-### Cleanup migration
-
-A one-time DELETE to remove orphaned cosmetic rows:
-```sql
-DELETE FROM notification_preferences WHERE category IN ('email', 'lesson_reminders', 'achievements', 'weekly_progress');
-```
-
-This only affects fake categories. The 1 real row (`message`, `enabled: true`) is untouched.
-
-## Fix 2 — Add user filter to AppShell realtime listener
-
-**File:** `src/shell/AppShell.tsx` (lines 131-139)
-
-Current code subscribes to ALL inserts on `notifications` table with no filter. Add a server-side filter:
-
-```
-filter: `user_id=eq.${userId}`
+  if (followers && followers.length > 0) {
+    // Fire-and-forget — don't block UI on push delivery
+    Promise.all(
+      followers.map(f =>
+        supabase.functions.invoke('send-push-notification', {
+          body: {
+            recipientUserId: f.follower_id,
+            actorId: currentUser.id,
+            type: 'new_post',
+            entityId: newPost.id,
+            url: '/feed',
+          }
+        })
+      )
+    ).catch(err => console.error('Push notification error for new_post:', err));
+  }
+} catch (pushErr) {
+  console.error('Error sending new_post push notifications:', pushErr);
+}
 ```
 
-This matches the pattern already used for the messages channel (line 112 uses `filter: sender_id=neq.${userId}`). The notification callback already works correctly with the filtered payload — no other changes needed.
+**Safety**: The DB trigger already targets followers only (not the post author). The push mirrors this by querying `following_id = currentUser.id` with `status = 'accepted'`. The push uses `type: 'new_post'` which maps to category `post` in the edge function, controlled by the **Contenu** toggle from Plan A.
 
-The toast notification behavior (sound + toast with action link) is unchanged because the callback logic is identical; it just stops firing for other users' notifications.
+## Fix 2 — Add push notifications for subscription renewal/gift payment
 
-## Fix 3 — Add ownership check to mark-notification-read
+**4 edge functions** need push calls added after their in-app notification inserts. Also need to add `subscription_renewed` and `gift_payment` to the type map.
 
-**File:** `supabase/functions/mark-notification-read/index.ts`
+### 2a. Update type map in `send-push-notification`
 
-After the user is authenticated (line 36) and after input validation (line 62), add:
+**File:** `supabase/functions/send-push-notification/index.ts` (lines 94-117)
 
-1. Require authentication — return 401 if `userId` is null
-2. Query the notification by ID: `SELECT user_id FROM notifications WHERE id = notificationId`
-3. If not found, return 404
-4. If `notification.user_id !== userId`, return 403 `{ error: "Forbidden" }`
-5. Only then proceed with the UPDATE
+Add two entries to `getCategoryFromType()`:
+```
+'subscription_renewed': 'system',
+'gift_payment': 'system',
+```
 
-This does not break the service worker's mark-as-read flow because the SW sends the user's own auth token, which matches the notification's `user_id`.
+### 2b. Add push to `verify-stripe-renewal`
+
+**File:** `supabase/functions/verify-stripe-renewal/index.ts` (after line 154, inside the notification try block)
+
+```typescript
+// Send push notification for subscription renewal
+await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-push-notification`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+  },
+  body: JSON.stringify({
+    recipientUserId: userId,
+    title: 'Abonnement renouvelé!',
+    body: `Votre abonnement est actif jusqu'au ${newEnd.toLocaleDateString("fr-FR")}`,
+    type: 'subscription_renewed',
+    url: '/settings?tab=compte',
+  }),
+});
+```
+
+### 2c. Add push to `verify-gift-payment` (after line 170)
+
+Same pattern, using `type: 'gift_payment'`.
+
+### 2d. Add push to `verify-moncash-gift` (after line 209)
+
+Same pattern, using `type: 'gift_payment'`.
+
+### 2e. Add push to `stripe-gift-webhook` (after line 169)
+
+Same pattern, using `type: 'gift_payment'`.
+
+All 4 use `fetch()` to call the push edge function internally (server-to-server), which is the standard Deno pattern since `supabase.functions.invoke()` is not available server-side.
+
+## Fix 3 — Add UI rendering for subscription_renewed and gift_payment
+
+**File:** `src/pages/Notifications.tsx`
+
+### 3a. Update the Notification type union (line 43)
+
+Add `subscription_renewed` and `gift_payment` to the type union string.
+
+### 3b. Add icon case in `getNotificationIcon()` (after line 351)
+
+```typescript
+case "subscription_renewed":
+case "gift_payment":
+  return <CheckCircle size={16} className="text-green-500" />;
+```
+
+Import `CheckCircle` from `lucide-react` (add to existing import on line 6).
+
+### 3c. Add text case in `getNotificationText()` (after line 384)
+
+```typescript
+case "subscription_renewed":
+  return "Ton abonnement a ete renouvele avec succes! 🎉";
+case "gift_payment":
+  return notification.content || "Un proche a paye votre abonnement! 🎁";
+```
+
+## Fix 4 — Delete duplicate push utility files
+
+**Confirmed zero imports:**
+- `src/utils/sendPushNotification.ts` — zero imports anywhere
+- `src/utils/pushNotificationService.ts` — zero imports anywhere
+
+Both files define helper functions that wrap `supabase.functions.invoke('send-push-notification')`, but every actual call site uses `supabase.functions.invoke()` directly. Both files are dead code.
+
+**Action:** Delete both files.
+
+## Fix 5 — Add push notification for group_deleted
+
+**File:** `src/components/GroupInfoDialog.tsx` (after line 361, after the `notify_group_deletion` RPC call)
+
+The `notify_group_deletion()` DB function creates in-app notifications for all group members except the admin. After this RPC completes, send push to each affected member.
+
+```typescript
+// Send push notifications to group members for group deletion
+// DB function already created in-app notifications; this adds browser push
+try {
+  const { data: members } = await supabase
+    .from('group_members')
+    .select('user_id')
+    .eq('group_id', groupId)
+    .neq('user_id', currentUserId);
+
+  if (members && members.length > 0) {
+    Promise.all(
+      members.map(m =>
+        supabase.functions.invoke('send-push-notification', {
+          body: {
+            recipientUserId: m.user_id,
+            actorId: currentUserId,
+            type: 'group_deleted',
+            title: 'Groupe supprime',
+            body: `Le groupe "${group?.name}" a ete supprime`,
+            url: '/community',
+          }
+        })
+      )
+    ).catch(err => console.error('Push error for group_deleted:', err));
+  }
+} catch (pushErr) {
+  console.error('Error sending group_deleted push:', pushErr);
+}
+```
+
+**Note:** This query must happen BEFORE the group is actually deleted (line 364-367), because cascade delete will remove `group_members` rows. The code is correctly positioned after the RPC call but before the DELETE.
 
 ## Files Changed
 
 | File | Change |
 |---|---|
-| `src/pages/Settings.tsx` | Replace 4 cosmetic toggles with 5 real group toggles |
-| `src/shell/AppShell.tsx` | Add `user_id` filter to realtime subscription |
-| `supabase/functions/mark-notification-read/index.ts` | Add ownership check before update |
+| `src/components/feed/CreatePostDialog.tsx` | Add push to followers after post creation |
+| `supabase/functions/send-push-notification/index.ts` | Add `subscription_renewed` and `gift_payment` to type map |
+| `supabase/functions/verify-stripe-renewal/index.ts` | Add push call after in-app notification |
+| `supabase/functions/verify-gift-payment/index.ts` | Add push call after in-app notification |
+| `supabase/functions/verify-moncash-gift/index.ts` | Add push call after in-app notification |
+| `supabase/functions/stripe-gift-webhook/index.ts` | Add push call after in-app notification |
+| `src/pages/Notifications.tsx` | Add icon + text for `subscription_renewed` and `gift_payment` |
+| `src/utils/sendPushNotification.ts` | Delete (zero imports) |
+| `src/utils/pushNotificationService.ts` | Delete (zero imports) |
+| `src/components/GroupInfoDialog.tsx` | Add push to members after group deletion notification |
 
 ## Safety Verification
 
 | Check | Status |
 |---|---|
-| Implicit default preserved (no row = enabled) | Yes — toggle ON deletes rows, reverting to default |
-| Existing users with no pref rows still get all notifications | Yes — no rows means all groups show as ON |
-| The 1 real `message` row is not deleted by cleanup | Yes — cleanup only targets 4 fake category names |
-| AppShell filter does not break toast behavior | Yes — same callback, just scoped to current user |
-| Ownership check does not break SW mark-as-read | Yes — SW uses the legitimate user's auth token |
-| No new dependencies | Correct |
-| No data layer changes beyond cleanup DELETE | Correct |
-| 3G performance | Improved — fewer realtime events processed |
+| new_post push targets followers, not author | Yes — queries `following_id = currentUser.id` |
+| subscription_renewed maps to `system` category | Yes — added to type map, controlled by Systeme toggle |
+| gift_payment maps to `system` category | Yes — same mapping |
+| Both utility files have zero imports | Confirmed — safe to delete |
+| subscription_renewed UI renders for existing DB rows | Yes — case added to both icon and text functions |
+| gift_payment UI renders for existing DB rows | Yes — case added, falls back to notification.content |
+| group_deleted push fires before cascade DELETE | Yes — positioned after RPC, before DELETE query |
+| No new dependencies added | Correct |
+| 3G impact | Minimal — push calls are fire-and-forget, non-blocking |
+| Existing functionality unchanged | Yes — all changes are additive |
 
