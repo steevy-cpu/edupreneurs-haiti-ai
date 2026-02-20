@@ -14,7 +14,7 @@ export default function AuthSidebar() {
         src={authImage} 
         alt="Eric - Assistant EDUPRENEURS" 
         className="w-28 md:w-36 h-auto drop-shadow-lg" 
-        loading="eager"
+        loading="lazy"
         decoding="async"
       />
       
