@@ -70,20 +70,14 @@ const fetchConversations = async (): Promise<ConversationWithDetails[]> => {
     .select("id, user_id, full_name, nickname, avatar_url, verified, last_seen")
     .in("user_id", allUserIds);
 
-  // Fetch last messages for each conversation
-  const { data: lastMessages } = await supabase
-    .from("messages")
-    .select("conversation_id, content, created_at, sender_id")
-    .in("conversation_id", conversationIds)
-    .order("created_at", { ascending: false });
+  // Fetch conversation previews via optimized DB function (replaces fetch-all-messages)
+  const { data: previews } = await supabase.rpc('get_conversation_previews', {
+    p_user_id: user.id
+  });
 
-  // Fetch unread counts
-  const { data: unreadMessages } = await supabase
-    .from("messages")
-    .select("id, conversation_id")
-    .in("conversation_id", conversationIds)
-    .eq("read", false)
-    .neq("sender_id", user.id);
+  // Build preview lookup map for O(1) access
+  const previewMap = new Map<string, any>();
+  previews?.forEach((p: any) => previewMap.set(p.conversation_id, p));
 
   // Fetch group details
   const groupIds = conversations.filter(c => c.group_id).map(c => c.group_id!);
@@ -111,12 +105,16 @@ const fetchConversations = async (): Promise<ConversationWithDetails[]> => {
         }
       })) || [];
 
-    // Get last message for this conversation
-    const convMessages = lastMessages?.filter(m => m.conversation_id === conv.id) || [];
-    const lastMessage = convMessages[0];
+    // Get preview data from the optimized DB function
+    const preview = previewMap.get(conv.id);
+    const lastMessage = preview?.last_message_id ? {
+      content: preview.last_message_content,
+      created_at: preview.last_message_at,
+      sender_id: preview.last_message_sender_id,
+    } : undefined;
 
-    // Get unread count
-    const unreadCount = unreadMessages?.filter(m => m.conversation_id === conv.id).length || 0;
+    // Get unread count from preview
+    const unreadCount = Number(preview?.unread_count || 0);
 
     // Get group info if applicable
     const group = conv.group_id 

@@ -4547,6 +4547,18 @@ export type Database = {
         }[]
       }
       generate_referral_code: { Args: never; Returns: string }
+      get_conversation_previews: {
+        Args: { p_user_id: string }
+        Returns: {
+          conversation_id: string
+          last_message_at: string
+          last_message_content: string
+          last_message_id: string
+          last_message_sender_id: string
+          unread_count: number
+          visible_from_message_id: string
+        }[]
+      }
       get_gift_info_by_token: {
         Args: { p_token: string }
         Returns: {
