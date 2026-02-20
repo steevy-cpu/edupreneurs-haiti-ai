@@ -59,7 +59,7 @@ const Dashboard = () => {
   const { user: authUser, isLoading: isAuthLoading, isAuthenticated } = useSessionAuth();
 
   const [profileFeature, setProfileFeature] = useState<FeatureState<{ name: string; gold: number }>>({
-    data: { name: isVisitor ? "Visiteur" : "Utilisateur", gold: isVisitor ? visitorDashboardData.goldEarned : 0 },
+    data: { name: isVisitor ? "Visiteur" : "toi", gold: isVisitor ? visitorDashboardData.goldEarned : 0 },
     loading: !isVisitor,
     error: null
   });
@@ -112,12 +112,12 @@ const Dashboard = () => {
     setRecentSubjectsFeature(prev => ({ ...prev, loading: true, error: null }));
     try {
       const [profileResult, recentActivityResult] = await Promise.all([
-        supabase.from("profiles").select("nickname, gold_earned, academic_grade").eq("user_id", currentUserId).maybeSingle(),
+        supabase.from("profiles").select("nickname, full_name, gold_earned, academic_grade").eq("user_id", currentUserId).maybeSingle(),
         supabase.from("lesson_completions").select("subject, lesson_slug, completed_at").eq("user_id", currentUserId).order("completed_at", { ascending: false }).limit(20),
       ]);
       if (profileResult.data) {
         setProfileFeature({
-          data: { name: profileResult.data.nickname || "Utilisateur", gold: profileResult.data.gold_earned || 0 },
+          data: { name: profileResult.data.nickname ?? profileResult.data.full_name?.split(' ')[0] ?? 'toi', gold: profileResult.data.gold_earned || 0 },
           loading: false, error: null
         });
       } else {
