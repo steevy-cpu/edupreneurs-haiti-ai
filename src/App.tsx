@@ -85,7 +85,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const DevPush = lazy(() => import("./pages/DevPush"));
 const DynamicCoursePage = lazy(() => import("./pages/DynamicCoursePage"));
 const DynamicLessonPage = lazy(() => import("./pages/DynamicLessonPage"));
-const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
+// NotificationSettings removed — consolidated into Settings notifications tab
 
 const UploadEmailAssets = lazy(() => import("./pages/UploadEmailAssets"));
 const CustomizeAI = lazy(() => import("./pages/CustomizeAI"));
@@ -394,11 +394,8 @@ const App = () => (
                               <Settings />
                             </Suspense>
                           } />
-                          <Route path="/notification-settings" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <NotificationSettings />
-                            </Suspense>
-                          } />
+                          {/* /notification-settings redirects to Settings notifications tab */}
+                          <Route path="/notification-settings" element={<Navigate to="/settings?tab=notifications" replace />} />
                           <Route path="/customize-ai" element={
                             <Suspense fallback={<GenericPageSkeleton />}>
                               <CustomizeAI />

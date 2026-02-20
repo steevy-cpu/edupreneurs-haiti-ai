@@ -32,7 +32,7 @@ export function SubscriptionExpiryBanner({ subscriptionEndDate, hasFreeAccess }:
   if (isBannerDismissed(BANNER_ID)) return null;
 
   const handleRenew = () => {
-    navigate('/settings?tab=preferences#subscription');
+    navigate('/settings?tab=account#subscription');
   };
 
   const handleDismiss = () => {

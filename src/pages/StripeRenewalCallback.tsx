@@ -104,7 +104,7 @@ const StripeRenewalCallback = () => {
             </div>
             <h2 className="text-2xl font-bold">Erreur</h2>
             <p className="text-muted-foreground">{errorMsg}</p>
-            <Button onClick={() => navigate("/settings?tab=preferences#subscription")}>
+            <Button onClick={() => navigate("/settings?tab=account#subscription")}>
               Retour aux paramètres
             </Button>
           </>

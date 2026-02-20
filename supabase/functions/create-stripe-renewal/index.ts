@@ -91,7 +91,7 @@ serve(async (req) => {
       ],
       mode: "payment",
       success_url: `${origin}/payment/stripe-renewal-callback?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/settings?tab=preferences#subscription`,
+      cancel_url: `${origin}/settings?tab=account#subscription`,
       metadata: {
         user_id: userId,
         type: "renewal",
