@@ -1,44 +1,60 @@
 
 
-# Fix: Warmer Greeting Fallback in Dashboard
+# Fix: Replace Jude Flash with Skeleton/Initial in Sidebar Avatar
 
 ## Location
-**File:** `src/pages/Dashboard.tsx`
+**File:** `src/shell/components/AppSidebar.tsx`
 
-The greeting is rendered at **line 263**: `Bienvenue, ${profileFeature.data.name}!`
+## Change 1 — Import Skeleton and extract isLoading
 
-The name is set at **line 120** from the profile query, and the initial default is at **line 62**.
+**Line 17 (imports area):** Add `import { Skeleton } from '@/components/ui/skeleton';`
 
-## Changes (3 lines in one file)
+**Line 84:** Change `const { profile } = useUserProfile();` to `const { profile, isLoading: isProfileLoading } = useUserProfile();`
 
-### Line 62 — Initial default
-Change `"Utilisateur"` to `"toi"` in the initial state so the fallback is warm even before the query returns.
+## Change 2 — Conditional avatar rendering (lines 172-182)
 
-### Line 115 — Profile query
-Add `full_name` to the select so it is available for the fallback chain:
-`select("nickname, full_name, gold_earned, academic_grade")`
+Replace the current `<img>` block inside the avatar container with conditional logic:
 
-### Line 120 — Fallback logic
-Replace:
-```ts
-name: profileResult.data.nickname || "Utilisateur"
+```tsx
+{isProfileLoading ? (
+  /* Skeleton placeholder — prevents Jude flash during query */
+  <Skeleton className="w-full h-full rounded-full" />
+) : userAvatar && userAvatar !== dashboardImage ? (
+  /* Real avatar from profile */
+  <img
+    src={userAvatar}
+    alt="User Avatar"
+    className="w-full h-full object-cover"
+    loading="lazy"
+    decoding="async"
+  />
+) : (
+  /* Neutral initial-based fallback when no avatar is saved */
+  <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground font-bold text-lg">
+    {(userNickname ?? '?').charAt(0).toUpperCase()}
+  </div>
+)}
 ```
-With:
-```ts
-name: profileResult.data.nickname ?? profileResult.data.full_name?.split(' ')[0] ?? 'toi'
-```
 
-Priority order: nickname, then first word of full_name, then "toi".
+**Line 14 (imports area):** Add `import dashboardImage from '@/assets/dashboard00.png';` so we can compare against it to detect the Jude fallback.
+
+## What this achieves
+
+- **During loading:** A pulsing skeleton circle appears (no Jude face)
+- **After loading, real avatar exists:** The user's saved avatar renders normally
+- **After loading, no avatar:** A neutral gray circle with the user's first initial shows instead of Jude
+- **No global changes:** `FALLBACK_PROFILE.avatarUrl` is untouched — other components are unaffected
 
 ## Safety Verification
 
 | Check | Status |
 |---|---|
-| Greeting renders correctly with nickname | Yes -- nickname is first priority (unchanged) |
-| Falls back to first name if nickname is null | Yes -- uses full_name split |
-| Falls back to "toi" if both null | Yes -- warm, Jude-friendly default |
-| Profile query still works | Yes -- just added one more column to select |
-| Other profileFeature consumers affected? | No -- only `.name` and `.gold` are read |
-| Database changes? | None |
-| Bundle size? | No change |
+| Jude image during loading | Eliminated — skeleton shown instead |
+| Real avatar renders correctly | Yes — unchanged path when avatarUrl is valid |
+| No-avatar fallback | Neutral initial circle, not Jude |
+| FALLBACK_PROFILE changed? | No — sidebar-only fix |
+| Other sidebar elements affected? | No — only avatar container touched |
+| Nickname display below avatar | Unchanged |
+| Collapsed sidebar avatar | Works — same container, same sizing |
+| Bundle impact | None — Skeleton already in project |
 
