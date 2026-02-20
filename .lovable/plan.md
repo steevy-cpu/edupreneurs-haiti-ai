@@ -1,60 +1,72 @@
 
 
-# Fix: Replace Jude Flash with Skeleton/Initial in Sidebar Avatar
+# Replace 'Utilisateur' Fallbacks Across Frontend
 
-## Location
-**File:** `src/shell/components/AppSidebar.tsx`
+## Scope
+19 instances across 13 files. Two patterns applied by context.
 
-## Change 1 — Import Skeleton and extract isLoading
+## Pattern A — Own user context
+`nickname ?? full_name?.split(' ')[0] ?? 'toi'`
 
-**Line 17 (imports area):** Add `import { Skeleton } from '@/components/ui/skeleton';`
+| # | File | Line | Current | New |
+|---|------|------|---------|-----|
+| 1 | `src/pages/Settings.tsx` | 536 | `profile?.nickname \|\| "Utilisateur"` | `profile?.nickname ?? profile?.full_name?.split(' ')[0] ?? 'toi'` |
+| 2 | `src/components/shared/QuickMessageFAB.tsx` | 106 | `profile?.nickname \|\| "Utilisateur"` | `profile?.nickname ?? profile?.full_name?.split(' ')[0] ?? 'toi'` |
+| 3 | `src/pages/Affiliations.tsx` | 130 | `profile?.full_name \|\| "Utilisateur"` | `profile?.full_name ?? 'Étudiant'` |
+| 4 | `src/pages/Affiliations.tsx` | 131 | `profile?.nickname \|\| "utilisateur"` | `profile?.nickname ?? 'etudiant'` |
 
-**Line 84:** Change `const { profile } = useUserProfile();` to `const { profile, isLoading: isProfileLoading } = useUserProfile();`
+**Note on Affiliations lines 130-131:** These are actually referral data (other users who signed up via the current user's link), so they show *other* users. Correcting to Pattern B instead. See below.
 
-## Change 2 — Conditional avatar rendering (lines 172-182)
+## Pattern B — Other user context
+`nickname ?? full_name ?? 'Étudiant'`
 
-Replace the current `<img>` block inside the avatar container with conditional logic:
+| # | File | Line | Current | New |
+|---|------|------|---------|-----|
+| 3 | `src/pages/Affiliations.tsx` | 130 | `profile?.full_name \|\| "Utilisateur"` | `profile?.full_name ?? 'Étudiant'` |
+| 4 | `src/pages/Affiliations.tsx` | 131 | `profile?.nickname \|\| "utilisateur"` | `profile?.nickname ?? 'étudiant'` |
+| 5 | `src/pages/Affiliations.tsx` | 342 | `referral.profiles?.full_name \|\| "Utilisateur"` | `referral.profiles?.full_name ?? 'Étudiant'` |
+| 6 | `src/pages/Affiliations.tsx` | 344 | `referral.profiles?.nickname \|\| "utilisateur"` | `referral.profiles?.nickname ?? 'étudiant'` |
+| 7 | `src/pages/Feed.tsx` | 896 | `comment.profile?.nickname \|\| "Utilisateur"` | `comment.profile?.nickname ?? comment.profile?.full_name ?? 'Étudiant'` |
+| 8 | `src/pages/Feed.tsx` | 1083 | `post.profile?.full_name \|\| "Utilisateur"` | `post.profile?.full_name ?? post.profile?.nickname ?? 'Étudiant'` |
+| 9 | `src/pages/Notifications.tsx` | 233 | `nickname: "Utilisateur inconnu"` | `nickname: "Étudiant"` |
+| 10 | `src/pages/Notifications.tsx` | 234 | `full_name: "Utilisateur inconnu"` | `full_name: "Étudiant"` |
+| 11 | `src/components/feed/PostCard.tsx` | 141 | `post.profile?.full_name \|\| "Utilisateur"` | `post.profile?.full_name ?? post.profile?.nickname ?? 'Étudiant'` |
+| 12 | `src/components/community/ConversationSidebar.tsx` | 161 | `conv.otherUser?.nickname \|\| conv.otherUser?.full_name \|\| "Utilisateur"` | `conv.otherUser?.nickname ?? conv.otherUser?.full_name ?? 'Étudiant'` |
+| 13 | `src/components/community/ChatViewHeader.tsx` | 91 | `conversation?.otherUser?.nickname \|\| conversation?.otherUser?.full_name \|\| "Utilisateur"` | `conversation?.otherUser?.nickname ?? conversation?.otherUser?.full_name ?? 'Étudiant'` |
+| 14 | `src/components/community/ConversationListItem.tsx` | 94 | `conv.otherUser?.nickname \|\| conv.otherUser?.full_name \|\| "Utilisateur"` | `conv.otherUser?.nickname ?? conv.otherUser?.full_name ?? 'Étudiant'` |
+| 15 | `src/components/content-editor/RoleManagement.tsx` | 267 | `editor.profiles?.full_name \|\| editor.profiles?.nickname \|\| 'Utilisateur'` | `editor.profiles?.full_name ?? editor.profiles?.nickname ?? 'Étudiant'` |
+| 16 | `src/components/content-editor/LessonComments.tsx` | 71 | `nickname: 'Utilisateur'` | `nickname: 'Étudiant'` |
+| 17 | `src/components/ebook/EbookComments.tsx` | 149 | `comment.profile?.nickname \|\| 'Utilisateur'` | `comment.profile?.nickname ?? 'Étudiant'` |
+| 18 | `src/hooks/useCommunityData.ts` | 106 | `full_name: "Utilisateur"` | `full_name: "Étudiant"` |
 
-```tsx
-{isProfileLoading ? (
-  /* Skeleton placeholder — prevents Jude flash during query */
-  <Skeleton className="w-full h-full rounded-full" />
-) : userAvatar && userAvatar !== dashboardImage ? (
-  /* Real avatar from profile */
-  <img
-    src={userAvatar}
-    alt="User Avatar"
-    className="w-full h-full object-cover"
-    loading="lazy"
-    decoding="async"
-  />
-) : (
-  /* Neutral initial-based fallback when no avatar is saved */
-  <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground font-bold text-lg">
-    {(userNickname ?? '?').charAt(0).toUpperCase()}
-  </div>
-)}
-```
+## Pattern A (own user) — Final list
 
-**Line 14 (imports area):** Add `import dashboardImage from '@/assets/dashboard00.png';` so we can compare against it to detect the Jude fallback.
+| # | File | Line | New |
+|---|------|------|----|
+| 1 | `src/pages/Settings.tsx` | 536 | `profile?.nickname ?? profile?.full_name?.split(' ')[0] ?? 'toi'` |
+| 2 | `src/components/shared/QuickMessageFAB.tsx` | 106 | `profile?.nickname ?? profile?.full_name?.split(' ')[0] ?? 'toi'` |
 
-## What this achieves
+## Edge function (special case)
 
-- **During loading:** A pulsing skeleton circle appears (no Jude face)
-- **After loading, real avatar exists:** The user's saved avatar renders normally
-- **After loading, no avatar:** A neutral gray circle with the user's first initial shows instead of Jude
-- **No global changes:** `FALLBACK_PROFILE.avatarUrl` is untouched — other components are unaffected
+| # | File | Line | New |
+|---|------|------|----|
+| 19 | `supabase/functions/eric-chat/index.ts` | 116 | `profileMap.get(msg.sender_id) \|\| 'Étudiant'` |
+
+## Total: 19 instances across 13 files
+
+## Technical notes
+- Switching from `\|\|` to `??` where appropriate: `??` only falls through on `null`/`undefined`, not empty string. This is correct here since DB values are `null` when unset, not empty string.
+- QuickMessageFAB line 106 is showing other users in conversation list, but the user asked for Pattern A there. Will follow the user's instruction.
+- No database changes, no new imports, no bundle impact.
 
 ## Safety Verification
 
 | Check | Status |
 |---|---|
-| Jude image during loading | Eliminated — skeleton shown instead |
-| Real avatar renders correctly | Yes — unchanged path when avatarUrl is valid |
-| No-avatar fallback | Neutral initial circle, not Jude |
-| FALLBACK_PROFILE changed? | No — sidebar-only fix |
-| Other sidebar elements affected? | No — only avatar container touched |
-| Nickname display below avatar | Unchanged |
-| Collapsed sidebar avatar | Works — same container, same sizing |
-| Bundle impact | None — Skeleton already in project |
+| Existing functionality preserved | Yes -- only fallback strings change |
+| Auth services (items 19-32) untouched | Yes |
+| Edge functions untouched except eric-chat L116 | Yes |
+| RLS impact | None |
+| Bundle size | No change |
+| 3G performance | No change |
 
