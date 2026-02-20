@@ -2196,7 +2196,7 @@ const Community = () => {
       <section
         className={`${
           selectedConversation
-            ? "fixed inset-x-0 top-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] flex md:relative md:inset-auto md:bottom-auto md:pb-16 lg:pb-0 md:flex md:h-full"
+            ? "absolute inset-x-0 top-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] flex md:relative md:inset-auto md:bottom-auto md:pb-16 lg:pb-0 md:flex md:h-full"
             : "hidden md:flex h-full"
         } flex-col bg-background overflow-hidden`}
       >
