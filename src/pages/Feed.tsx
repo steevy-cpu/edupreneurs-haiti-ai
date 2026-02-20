@@ -22,6 +22,8 @@ import { CreatePostDialog } from "@/components/feed/CreatePostDialog";
 import { EditPostDialog } from "@/components/feed/EditPostDialog";
 import { JUDE_USER_ID } from "@/types/community";
 import { isFounder as isFounderUser } from "@/lib/founderConstants";
+// Founders and Jude (AI assistant) — suppress grade tags and public globe icon
+const isSpecialAccount = (userId: string) => isFounderUser(userId) || userId === JUDE_USER_ID;
 import {
   AlertDialog,
   AlertDialogAction,
@@ -1053,7 +1055,7 @@ const Feed = () => {
                       {post.profile?.verified && (
                         <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
                       )}
-                      {post.is_public && (
+                      {post.is_public && !isSpecialAccount(post.user_id) && (
                         <span title="Post public" className="shrink-0">
                           <Globe className="w-3.5 h-3.5 text-muted-foreground" />
                         </span>
@@ -1061,7 +1063,7 @@ const Feed = () => {
                       {/* Fix 5: Grade tag badge — informational, no filtering */}
                       {post.profile?.academic_grade && 
                        post.profile.academic_grade !== 'NONE' && 
-                       !isFounderUser(post.user_id) &&
+                       !isSpecialAccount(post.user_id) &&
                        GRADE_COLORS[post.profile.academic_grade] && (
                         <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0 ${GRADE_COLORS[post.profile.academic_grade]}`}>
                           {post.profile.academic_grade}
