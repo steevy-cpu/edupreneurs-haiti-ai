@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "framer-motion";
+import confetti from "canvas-confetti";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -137,6 +139,8 @@ const PassionDiscoveryContent = () => {
   
   // Chat auto-scroll ref
   const chatEndRef = useRef<HTMLDivElement>(null);
+  // Ref for CTA card scroll target (Fix B1: interactive preview cards)
+  const ctaRef = useRef<HTMLDivElement>(null);
   
   // React Query hooks
   const { data: preferences, isLoading: preferencesLoading } = usePassionPreferences(userId);
@@ -180,6 +184,30 @@ const PassionDiscoveryContent = () => {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isChatLoading]); // Fix 5: scroll on chat loading, not module loading
+
+  // Fix B6: Fire confetti celebration when quiz results are revealed
+  useEffect(() => {
+    if (quizStep === 'results' && shouldShowAnimations) {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { x: 0.5, y: 0.3 },
+        colors: ['#8b5cf6', '#d946ef', '#f59e0b', '#10b981'],
+        disableForReducedMotion: true,
+      });
+    }
+  }, [quizStep, shouldShowAnimations]);
+
+  // Fix B2: Fade transition props — disabled on slow connections
+  const fadeProps = shouldShowAnimations ? {
+    initial: { opacity: 0 } as const,
+    animate: { opacity: 1 } as const,
+    exit: { opacity: 0 } as const,
+    transition: { duration: 0.2 },
+  } : {};
+
+  // Fix B2: Compute a screen key for AnimatePresence transitions
+  const screenKey = `${quizStep}-${selectedCategory ?? 'none'}-${selectedModule ?? 'none'}`;
 
   // For visitors, show intro with overlay
   if (isVisitor) {
@@ -791,18 +819,22 @@ const PassionDiscoveryContent = () => {
   const filteredCivicCategories = useMemo(() => {
     if (!searchQuery.trim()) return civicCategories;
     const query = searchQuery.toLowerCase();
+    // Fix B4: search module titles too, matching passion tab behavior
     return civicCategories.filter(cat => 
       cat.title.toLowerCase().includes(query) ||
-      cat.description.toLowerCase().includes(query)
+      cat.description.toLowerCase().includes(query) ||
+      cat.modules.some(m => m.title.toLowerCase().includes(query))
     );
   }, [civicCategories, searchQuery]);
 
   const filteredDevelopmentCategories = useMemo(() => {
     if (!searchQuery.trim()) return developmentCategories;
     const query = searchQuery.toLowerCase();
+    // Fix B4: search module titles too, matching passion tab behavior
     return developmentCategories.filter(cat => 
       cat.title.toLowerCase().includes(query) ||
-      cat.description.toLowerCase().includes(query)
+      cat.description.toLowerCase().includes(query) ||
+      cat.modules.some(m => m.title.toLowerCase().includes(query))
     );
   }, [developmentCategories, searchQuery]);
 
@@ -843,93 +875,100 @@ const PassionDiscoveryContent = () => {
     );
   }
 
-  // Intro Screen
+  // Intro Screen — wrapped in AnimatePresence for fade transition (Fix B2)
   if (quizStep === "intro") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-50 to-amber-50 dark:from-violet-950/30 dark:via-fuchsia-950/20 dark:to-amber-950/20 flex items-center justify-center p-4">
-        <div className="fixed top-4 right-4 z-50">
-          <ThemeToggle />
-        </div>
-        <div className="max-w-4xl w-full flex flex-col">
-          {/* Hero Section */}
-          <div className="relative mb-6 sm:mb-8">
-            <div className={`absolute inset-0 bg-gradient-to-r from-violet-500/20 via-fuchsia-500/20 to-amber-500/20 ${shouldShowBlur ? 'blur-3xl' : ''} rounded-full`} />
-            <div className="relative flex flex-col items-center gap-4 sm:gap-6 md:flex-row md:gap-10">
-              <div className="relative flex-shrink-0">
-                <img 
-                  src={judePassionDiscovery} 
-                  alt="Jude découvre" 
-                  className={`relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-52 lg:h-52 object-contain ${shouldShowAnimations ? 'animate-scale-in' : ''}`}
-                  loading="lazy" 
-                  decoding="async" 
-                />
-              </div>
-              <div className="text-center md:text-left flex-1 px-2 sm:px-0">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black mb-3 sm:mb-4 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent leading-tight">
-                  Découvre ta Passion!
-                </h1>
-                <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-lg mx-auto md:mx-0">
-                  Salut! Je suis <span className="font-bold text-foreground">Jude</span>, ton guide personnel. En 2 minutes, découvre ce qui te passionne vraiment!
-                </p>
+      <AnimatePresence mode="wait">
+        <motion.div key={screenKey} {...fadeProps} className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-50 to-amber-50 dark:from-violet-950/30 dark:via-fuchsia-950/20 dark:to-amber-950/20 flex items-center justify-center p-4">
+          <div className="fixed top-4 right-4 z-50">
+            <ThemeToggle />
+          </div>
+          <div className="max-w-4xl w-full flex flex-col">
+            {/* Hero Section */}
+            <div className="relative mb-6 sm:mb-8">
+              <div className={`absolute inset-0 bg-gradient-to-r from-violet-500/20 via-fuchsia-500/20 to-amber-500/20 ${shouldShowBlur ? 'blur-3xl' : ''} rounded-full`} />
+              <div className="relative flex flex-col items-center gap-4 sm:gap-6 md:flex-row md:gap-10">
+                <div className="relative flex-shrink-0">
+                  <img 
+                    src={judePassionDiscovery} 
+                    alt="Jude découvre" 
+                    className={`relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-52 lg:h-52 object-contain ${shouldShowAnimations ? 'animate-scale-in' : ''}`}
+                    loading="lazy" 
+                    decoding="async" 
+                  />
+                </div>
+                <div className="text-center md:text-left flex-1 px-2 sm:px-0">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black mb-3 sm:mb-4 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent leading-tight">
+                    Découvre ta Passion!
+                  </h1>
+                  <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-lg mx-auto md:mx-0">
+                    Salut! Je suis <span className="font-bold text-foreground">Jude</span>, ton guide personnel. En 2 minutes, découvre ce qui te passionne vraiment!
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Feature Cards — pushed below CTA on mobile (Fix 1) */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8 order-3 md:order-2">
-            {[
-              { icon: Music, label: "Musique", color: "from-violet-500 to-purple-600", bg: "bg-violet-100 dark:bg-violet-900/30" },
-              { icon: Palette, label: "Arts", color: "from-cyan-500 to-blue-600", bg: "bg-cyan-100 dark:bg-cyan-900/30" },
-              { icon: Brain, label: "Stratégie", color: "from-amber-500 to-orange-600", bg: "bg-amber-100 dark:bg-amber-900/30" },
-              { icon: BookOpen, label: "Littérature", color: "from-emerald-500 to-teal-600", bg: "bg-emerald-100 dark:bg-emerald-900/30" },
-            ].map((item) => (
-              <Card key={item.label} className={`${item.bg} border-0 backdrop-blur-sm ${shouldShowAnimations ? 'hover:scale-105' : ''} transition-transform duration-300`}>
-                <CardContent className="p-4 flex flex-col items-center text-center">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${item.color} text-white mb-2 shadow-lg`}>
-                    <item.icon className="w-5 h-5 md:w-6 md:h-6" />
+            {/* Fix B1: Preview cards — tapping scrolls to CTA */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8 order-3 md:order-2">
+              {[
+                { icon: Music, label: "Musique", color: "from-violet-500 to-purple-600", bg: "bg-violet-100 dark:bg-violet-900/30" },
+                { icon: Palette, label: "Arts", color: "from-cyan-500 to-blue-600", bg: "bg-cyan-100 dark:bg-cyan-900/30" },
+                { icon: Brain, label: "Stratégie", color: "from-amber-500 to-orange-600", bg: "bg-amber-100 dark:bg-amber-900/30" },
+                { icon: BookOpen, label: "Littérature", color: "from-emerald-500 to-teal-600", bg: "bg-emerald-100 dark:bg-emerald-900/30" },
+              ].map((item) => (
+                <Card 
+                  key={item.label} 
+                  className={`${item.bg} border-0 backdrop-blur-sm cursor-pointer ${shouldShowAnimations ? 'hover:scale-105' : ''} transition-transform duration-300`}
+                  onClick={() => ctaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                >
+                  <CardContent className="p-4 flex flex-col items-center text-center">
+                    <div className={`p-3 rounded-xl bg-gradient-to-br ${item.color} text-white mb-2 shadow-lg`}>
+                      <item.icon className="w-5 h-5 md:w-6 md:h-6" />
+                    </div>
+                    <span className="text-sm font-semibold">{item.label}</span>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* CTA Card — shown before preview cards on mobile (Fix 1), ref for scroll target (Fix B1) */}
+            <Card ref={ctaRef} className="backdrop-blur-md bg-background/80 border-2 border-primary/20 shadow-2xl order-2 md:order-3">
+              <CardContent className="p-6 md:p-8">
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                  <div className="flex-1 text-center md:text-left">
+                    <h2 className="text-xl md:text-2xl font-bold mb-2">Prêt(e) à commencer?</h2>
+                    <p className="text-muted-foreground">5 questions rapides pour découvrir tes talents cachés</p>
                   </div>
-                  <span className="text-sm font-semibold">{item.label}</span>
-                </CardContent>
-              </Card>
-            ))}
+                  <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    <Button variant="ghost" onClick={() => navigate("/dashboard")} className="text-muted-foreground">
+                      Plus tard
+                    </Button>
+                    <Button 
+                      onClick={() => setQuizStep("quiz")}
+                      size="lg"
+                      className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-amber-500 hover:opacity-90 text-white font-bold px-8 shadow-lg shadow-fuchsia-500/25"
+                    >
+                      Commencer le quiz
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-
-          {/* CTA Card — shown before preview cards on mobile (Fix 1) */}
-          <Card className="backdrop-blur-md bg-background/80 border-2 border-primary/20 shadow-2xl order-2 md:order-3">
-            <CardContent className="p-6 md:p-8">
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="flex-1 text-center md:text-left">
-                  <h2 className="text-xl md:text-2xl font-bold mb-2">Prêt(e) à commencer?</h2>
-                  <p className="text-muted-foreground">5 questions rapides pour découvrir tes talents cachés</p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                  <Button variant="ghost" onClick={() => navigate("/dashboard")} className="text-muted-foreground">
-                    Plus tard
-                  </Button>
-                  <Button 
-                    onClick={() => setQuizStep("quiz")}
-                    size="lg"
-                    className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-amber-500 hover:opacity-90 text-white font-bold px-8 shadow-lg shadow-fuchsia-500/25"
-                  >
-                    Commencer le quiz
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+        </motion.div>
+      </AnimatePresence>
     );
   }
 
-  // Quiz Screen
+  // Quiz Screen — wrapped for fade transition (Fix B2)
   if (quizStep === "quiz") {
     const question = quizQuestions[currentQuestion];
     const progress = ((currentQuestion + 1) / quizQuestions.length) * 100;
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-50 to-amber-50 dark:from-violet-950/30 dark:via-fuchsia-950/20 dark:to-amber-950/20 flex items-center justify-center p-4">
+      <AnimatePresence mode="wait">
+        <motion.div key={screenKey} {...fadeProps} className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-50 to-amber-50 dark:from-violet-950/30 dark:via-fuchsia-950/20 dark:to-amber-950/20 flex items-center justify-center p-4">
         <div className="fixed top-4 right-4 z-50">
           <ThemeToggle />
         </div>
@@ -1033,7 +1072,8 @@ const PassionDiscoveryContent = () => {
             </p>
           )}
         </div>
-      </div>
+      </motion.div>
+      </AnimatePresence>
     );
   }
 
@@ -1043,11 +1083,12 @@ const PassionDiscoveryContent = () => {
     const topCategories = categories.filter(cat => topPassions.includes(cat.id));
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-50 to-amber-50 dark:from-violet-950/30 dark:via-fuchsia-950/20 dark:to-amber-950/20 flex items-center justify-center p-3 sm:p-4">
-        <div className="fixed top-4 right-4 z-50">
-          <ThemeToggle />
-        </div>
-        <div className="max-w-3xl w-full space-y-4 sm:space-y-6 px-1 sm:px-2">
+      <AnimatePresence mode="wait">
+        <motion.div key={screenKey} {...fadeProps} className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-50 to-amber-50 dark:from-violet-950/30 dark:via-fuchsia-950/20 dark:to-amber-950/20 flex items-center justify-center p-3 sm:p-4">
+          <div className="fixed top-4 right-4 z-50">
+            <ThemeToggle />
+          </div>
+          <div className="max-w-3xl w-full space-y-4 sm:space-y-6 px-1 sm:px-2">
           {/* Celebration Header */}
           <div className="text-center">
             <div className="relative inline-block mb-3 sm:mb-4">
@@ -1112,18 +1153,20 @@ const PassionDiscoveryContent = () => {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </motion.div>
+      </AnimatePresence>
     );
   }
 
   // Category & Module Selection
   if (!selectedModule) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-violet-50/30 to-fuchsia-50/30 dark:from-background dark:via-violet-950/10 dark:to-fuchsia-950/10 pb-24 lg:pb-8">
-        <div className="fixed top-4 right-4 z-50">
-          <ThemeToggle />
-        </div>
-        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
+      <AnimatePresence mode="wait">
+        <motion.div key={screenKey} {...fadeProps} className="min-h-screen bg-gradient-to-br from-background via-violet-50/30 to-fuchsia-50/30 dark:from-background dark:via-violet-950/10 dark:to-fuchsia-950/10 pb-24 lg:pb-8">
+          <div className="fixed top-4 right-4 z-50">
+            <ThemeToggle />
+          </div>
+          <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <Button
               variant="ghost"
@@ -1290,13 +1333,15 @@ const PassionDiscoveryContent = () => {
                   )}
                 </TabsContent>
 
+                {/* Fix B3: Civic tab — unified horizontal layout matching passion tab */}
                 <TabsContent value="civic" className="space-y-6" role="tabpanel" aria-label="Catégories civiques">
                   {filteredCivicCategories.length === 0 && searchQuery ? (
                     <div className="text-center py-12 text-muted-foreground">
+                      <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
                       <p>Aucune catégorie trouvée pour "{searchQuery}"</p>
                     </div>
                   ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                     {filteredCivicCategories.map((category, index) => {
                       const Icon = category.icon;
                       const categoryProgress = getCategoryProgress(category.id, category.modules.length);
@@ -1310,27 +1355,53 @@ const PassionDiscoveryContent = () => {
                         >
                           <div className={`h-2 bg-gradient-to-r ${category.color} group-hover:h-3 transition-all duration-300`} />
                           <CardHeader>
-                            <div className="flex flex-col items-center text-center gap-3">
-                              <div className={`p-4 rounded-full bg-gradient-to-br ${category.color} text-white shadow-lg ${shouldShowAnimations ? 'group-hover:scale-110' : ''} transition-transform duration-300`}>
+                            <div className="flex items-start gap-4">
+                              <div className={`p-3 md:p-4 rounded-xl bg-gradient-to-br ${category.color} text-white shadow-lg ${shouldShowAnimations ? 'group-hover:scale-110' : ''} transition-transform duration-300 flex-shrink-0`}>
                                 <Icon className="w-6 h-6 md:w-8 md:h-8" />
                               </div>
-                              <CardTitle className="text-lg md:text-xl">{category.title}</CardTitle>
-                              <CardDescription className="text-sm">{category.description}</CardDescription>
+                              <div className="flex-1 min-w-0">
+                                <CardTitle className="text-xl md:text-2xl mb-2">{category.title}</CardTitle>
+                                <CardDescription className="text-sm md:text-base">
+                                  {category.description}
+                                </CardDescription>
+                              </div>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
-                            <div>
-                              <div className="flex justify-between text-sm mb-2">
+                            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                              {category.fullDescription}
+                            </p>
+
+                            <div className="relative z-10">
+                              <div className="flex justify-between text-xs sm:text-sm mb-2">
                                 <span className="font-medium">Progression</span>
-                                <span className="text-muted-foreground">{categoryProgress.completed}/{categoryProgress.total}</span>
+                                <span className="text-muted-foreground">{categoryProgress.completed}/{categoryProgress.total} modules</span>
                               </div>
-                              <Progress value={categoryProgress.percentage} className="h-2" />
+                              <Progress value={categoryProgress.percentage} className="h-2 sm:h-3" />
+                            </div>
+
+                            <div className="flex flex-wrap gap-2">
+                              {category.modules.slice(0, 3).map((module) => (
+                                <Badge 
+                                  key={module.id} 
+                                  variant={module.completed ? "default" : "outline"}
+                                  className="text-xs"
+                                >
+                                  {module.completed && <CheckCircle2 className="w-3 h-3 mr-1" />}
+                                  {module.locked && <Lock className="w-3 h-3 mr-1" />}
+                                  {module.title}
+                                </Badge>
+                              ))}
+                              {category.modules.length > 3 && (
+                                <Badge variant="outline" className="text-xs">+{category.modules.length - 3}</Badge>
+                              )}
                             </div>
 
                             <Button 
-                              className={`w-full bg-gradient-to-r ${category.color} hover:opacity-90 text-white font-semibold`}
+                              className={`w-full bg-gradient-to-r ${category.color} hover:opacity-90 text-white font-semibold py-5 md:py-6 text-base md:text-lg ${shouldShowAnimations ? 'group-hover:scale-105' : ''} transition-transform`}
                             >
-                              Explorer
+                              Commencer
+                              <Play className="ml-2 h-4 w-4 md:h-5 md:w-5" />
                             </Button>
                           </CardContent>
                         </Card>
@@ -1340,9 +1411,11 @@ const PassionDiscoveryContent = () => {
                   )}
                 </TabsContent>
 
+                {/* Fix B5: Unified empty state with Search icon */}
                 <TabsContent value="development" className="space-y-6" role="tabpanel" aria-label="Catégories développement personnel">
                   {filteredDevelopmentCategories.length === 0 && searchQuery ? (
                     <div className="text-center py-12 text-muted-foreground">
+                      <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
                       <p>Aucune catégorie trouvée pour "{searchQuery}"</p>
                     </div>
                   ) : (
@@ -1397,6 +1470,7 @@ const PassionDiscoveryContent = () => {
                               })}
                             </div>
 
+                            {/* Fix B3: Standardized CTA text */}
                             <Button 
                               className={`w-full bg-gradient-to-r ${category.color} hover:opacity-90 text-white font-semibold py-5 md:py-6 text-base md:text-lg ${shouldShowAnimations ? 'group-hover:scale-105' : ''} transition-transform`}
                             >
@@ -1494,7 +1568,8 @@ const PassionDiscoveryContent = () => {
             </>
           )}
         </div>
-      </div>
+      </motion.div>
+      </AnimatePresence>
     );
   }
 
