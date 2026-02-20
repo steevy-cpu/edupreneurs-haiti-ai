@@ -2328,6 +2328,8 @@ export type Database = {
           content: string
           conversation_id: string
           created_at: string
+          document_name: string | null
+          document_url: string | null
           edited_at: string | null
           id: string
           image_url: string | null
@@ -2341,6 +2343,8 @@ export type Database = {
           content: string
           conversation_id: string
           created_at?: string
+          document_name?: string | null
+          document_url?: string | null
           edited_at?: string | null
           id?: string
           image_url?: string | null
@@ -2354,6 +2358,8 @@ export type Database = {
           content?: string
           conversation_id?: string
           created_at?: string
+          document_name?: string | null
+          document_url?: string | null
           edited_at?: string | null
           id?: string
           image_url?: string | null
