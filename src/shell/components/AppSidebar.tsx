@@ -23,6 +23,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { useSidebarBadges } from '@/hooks/useSidebarBadges';
 import { useRoutePreloader } from '../hooks/useRoutePreloader';
 import { isFounder } from '@/lib/founderConstants';
+import { isPushHintVisible } from '../hooks/usePushHintVisible';
 
 // Config
 import { SIDEBAR_NAVIGATION, type BadgeKey } from '../config/navigation';
@@ -90,6 +91,9 @@ export const AppSidebar = memo(function AppSidebar({
   const userNickname = profile.nickname;
   const userId = profile.userId;
   const isUserFounder = userId ? isFounder(userId) : false;
+  
+  // Push permission hint — amber dot on notification bell (Plan C)
+  const showPushHint = isPushHintVisible();
   
   // Badge mapping
   const getBadgeCount = (badgeKey?: BadgeKey): number | undefined => {
@@ -238,6 +242,7 @@ export const AppSidebar = memo(function AppSidebar({
                     activeOnPaths={
                       item.to === '/games' ? ['/chess-game', '/quiz-battle'] : undefined
                     }
+                    showPulsingDot={item.to === '/notifications' && showPushHint}
                   />
                 ))}
             </div>

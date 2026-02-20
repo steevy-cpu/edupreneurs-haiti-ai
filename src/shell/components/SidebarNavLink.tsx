@@ -30,6 +30,8 @@ export interface SidebarNavLinkProps {
   onPreload?: () => void;
   /** Additional paths to consider as "active" */
   activeOnPaths?: string[];
+  /** Show a pulsing amber dot hint (e.g. push permission not yet granted) */
+  showPulsingDot?: boolean;
 }
 
 /**
@@ -47,6 +49,7 @@ export function SidebarNavLink({
   onClick,
   onPreload,
   activeOnPaths = [],
+  showPulsingDot = false,
 }: SidebarNavLinkProps) {
   const location = useLocation();
   
@@ -105,9 +108,12 @@ export function SidebarNavLink({
       )}
       title={collapsed ? label : undefined}
     >
-      {/* Icon */}
-      <span className="flex-shrink-0 w-4 h-4 sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]">
+      {/* Icon with optional pulsing dot hint */}
+      <span className="relative flex-shrink-0 w-4 h-4 sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]">
         {icon}
+        {showPulsingDot && (
+          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+        )}
       </span>
       
       {/* Label - hidden when collapsed */}

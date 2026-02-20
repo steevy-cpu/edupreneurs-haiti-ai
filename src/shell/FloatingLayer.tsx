@@ -5,11 +5,14 @@
  * All floating UI lives here with visibility controlled by the shell.
  * 
  * This component NEVER unmounts after login - only individual items hide/show.
+ * Plan C: Added PushPermissionPrompt for smart push permission on second login.
  */
 
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useVisibility } from './hooks/useVisibility';
 import { useKeyboardOpen } from '@/hooks/useKeyboardOpen';
+import { usePushPromptEligible } from './hooks/usePushPromptEligible';
+import { useSessionAuth } from '@/contexts/SessionAuthContext';
 
 // Lazy load floating components for better 3G performance
 const JudeChatbot = lazy(() => import('@/components/JudeChatbot').then(m => ({ default: m.JudeChatbot })));
@@ -25,6 +28,7 @@ const FirstTimeUserWelcome = lazy(() => import('@/components/firsttime/FirstTime
 const OnboardingQuiz = lazy(() => import('@/components/firsttime/OnboardingQuiz'));
 const AvatarGenerationStep = lazy(() => import('@/components/firsttime/AvatarGenerationStep'));
 const FirstTimeUserTour = lazy(() => import('@/components/firsttime/FirstTimeUserTour'));
+const PushPermissionPrompt = lazy(() => import('@/components/firsttime/PushPermissionPrompt'));
 
 // Wrapper components that handle their own props/logic
 import { NotificationBannerWrapper } from './wrappers/NotificationBannerWrapper';
@@ -38,6 +42,9 @@ import { SubscriptionExpiryBannerWrapper } from './wrappers/SubscriptionExpiryBa
 export function FloatingLayer() {
   const keyboardOpen = useKeyboardOpen();
   const visibility = useVisibility({ keyboardOpen });
+  const { user } = useSessionAuth();
+  const showPushPrompt = usePushPromptEligible();
+  const [pushPromptDismissed, setPushPromptDismissed] = useState(false);
   
   return (
     <>
@@ -83,6 +90,16 @@ export function FloatingLayer() {
       
       {/* First-time user onboarding sequence */}
       <OnboardingOverlays />
+      
+      {/* Push permission prompt — Plan C: shown on second login */}
+      {showPushPrompt && !pushPromptDismissed && user?.id && (
+        <Suspense fallback={null}>
+          <PushPermissionPrompt
+            userId={user.id}
+            onDismiss={() => setPushPromptDismissed(true)}
+          />
+        </Suspense>
+      )}
     </>
   );
 }

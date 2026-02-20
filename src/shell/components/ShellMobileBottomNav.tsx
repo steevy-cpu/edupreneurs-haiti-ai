@@ -14,6 +14,7 @@ import { useSidebarBadges } from '@/hooks/useSidebarBadges';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useRoutePreloader } from '../hooks/useRoutePreloader';
 import { useFirstTimeUser } from '@/contexts/FirstTimeUserContext';
+import { isPushHintVisible } from '../hooks/usePushHintVisible';
 import { MOBILE_NAVIGATION, type BadgeKey } from '../config/navigation';
 
 /**
@@ -33,6 +34,9 @@ export const ShellMobileBottomNav = memo(function ShellMobileBottomNav() {
   // Tour highlighting for first-time users
   const { tourActive, tourCompleted, currentTourNavPath, isLoading: tourLoading } = useFirstTimeUser();
   const tourHighlightPath = !tourLoading && tourActive && !tourCompleted ? currentTourNavPath : null;
+  
+  // Push permission hint — amber dot on notification bell (Plan C)
+  const showPushHint = isPushHintVisible();
   
   // Don't render if hidden by visibility rules or keyboard is open
   if (!showBottomNav) {
@@ -89,6 +93,10 @@ export const ShellMobileBottomNav = memo(function ShellMobileBottomNav() {
                     active && 'scale-110'
                   )} 
                 />
+                {/* Push hint amber dot — Plan C */}
+                {item.to === '/notifications' && showPushHint && badgeCount === 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+                )}
                 {badgeCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
                     {badgeCount > 99 ? '99+' : badgeCount}
