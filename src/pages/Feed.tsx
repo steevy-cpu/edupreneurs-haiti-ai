@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, type FocusEvent } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -7,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, MessageCircle, Send, Plus, Image, Share2, Trash2, Smile, Reply, BadgeCheck, ArrowLeft, RefreshCw, Globe, MoreHorizontal, Flag, Pencil } from "lucide-react";
+import { Heart, MessageCircle, Send, Plus, Image, Share2, Trash2, Smile, Reply, BadgeCheck, ArrowLeft, RefreshCw, Globe, MoreHorizontal, Flag, Pencil, ArrowUp } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -159,7 +160,7 @@ const renderContentWithLinks = (content: string) => {
 const Feed = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { posts, isLoading, isRefreshing, refreshFeed, updatePostOptimistically, removePostOptimistically, addPostOptimistically } = useFeedData();
+  const { posts, isLoading, isRefreshing, refreshFeed, updatePostOptimistically, removePostOptimistically, addPostOptimistically, hasMore, isFetchingMore, fetchMorePosts } = useFeedData();
   const { isSlowConnection, imageQuality } = useNetworkAwareLoading();
   // Fix 3: Use session auth context instead of duplicate supabase.auth.getUser() call
   const { user: sessionUser } = useSessionAuth();
@@ -193,6 +194,11 @@ const Feed = () => {
   const [postToReport, setPostToReport] = useState<Post | null>(null);
   const [isFounder, setIsFounder] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+  // Plan B: Queue for realtime posts arriving while user is scrolling
+  const [newPostsQueue, setNewPostsQueue] = useState<Post[]>([]);
+  // Refs for infinite scroll and scroll-position tracking
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Mobile keyboard optimization - scroll input into view
   const handleInputFocus = useCallback((e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -281,14 +287,29 @@ const Feed = () => {
     });
   };
 
-  // Fix 4: Targeted realtime — INSERT/UPDATE/DELETE handlers instead of full refetch
+  // Plan B: IntersectionObserver for infinite scroll — triggers fetchMorePosts
+  useEffect(() => {
+    if (!sentinelRef.current || isVisitor) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isFetchingMore) {
+          fetchMorePosts();
+        }
+      },
+      { rootMargin: '200px' } // Pre-fetch 200px before reaching bottom
+    );
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, isFetchingMore, isVisitor, fetchMorePosts]);
+
+  // Fix 4 + Plan B: Targeted realtime with new-post badge when scrolling
   const subscribeToNewPosts = () => {
     const channel = supabase
       .channel("posts-changes")
       .on("postgres_changes", {
         event: "INSERT", schema: "public", table: "posts",
       }, async (payload) => {
-        // Fetch only the new post's author profile (1 query, not 7)
+        // Fetch only the new post's author profile (1 query, not full refetch)
         const newPost = payload.new as any;
         const { data: profile } = await supabase
           .from("profiles")
@@ -296,13 +317,25 @@ const Feed = () => {
           .eq("user_id", newPost.user_id)
           .single();
 
-        addPostOptimistically({
+        const enrichedPost: Post = {
           ...newPost,
           profile: profile as Profile,
           likes: 0, isLiked: false,
           comments: [], commentCount: 0,
           shareCount: 0, isShared: false,
-        });
+        };
+
+        // Check scroll position to decide: prepend or queue for badge
+        const scrollContainer = scrollContainerRef.current;
+        const isAtTop = scrollContainer ? scrollContainer.scrollTop < 100 : true;
+
+        if (isAtTop) {
+          // User is at top — prepend directly (no scroll jump)
+          addPostOptimistically(enrichedPost);
+        } else {
+          // User is scrolling — queue for "Nouveau post" badge
+          setNewPostsQueue(prev => [enrichedPost, ...prev]);
+        }
       })
       .on("postgres_changes", {
         event: "UPDATE", schema: "public", table: "posts",
@@ -1098,8 +1131,12 @@ const Feed = () => {
         </div>
       </header>
 
-      {/* Feed */}
-      <section className="flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-6">
+      {/* Feed — scroll-anchoring prevents jumps when comments expand */}
+      <section
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-6"
+        style={{ overflowAnchor: 'auto' }}
+      >
         <div className="max-w-2xl mx-auto">
           {isLoading ? (
             // Loading skeleton - show while data is being fetched
@@ -1137,6 +1174,28 @@ const Feed = () => {
             </div>
           ) : (
             <div className="space-y-3 px-3 sm:px-4 pt-3 sm:pt-4" data-tour="feed-content">
+            {/* Plan B: New posts badge — appears when posts arrive while user scrolls */}
+            <AnimatePresence>
+              {newPostsQueue.length > 0 && (
+                <motion.button
+                  initial={{ y: -40, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -40, opacity: 0 }}
+                  onClick={() => {
+                    // Prepend all queued posts and scroll to top
+                    newPostsQueue.forEach(p => addPostOptimistically(p));
+                    setNewPostsQueue([]);
+                    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="sticky top-2 z-30 mx-auto flex items-center gap-1.5 px-3 py-1.5 
+                             bg-primary text-primary-foreground rounded-full shadow-lg text-sm font-medium
+                             hover:bg-primary/90 transition-colors"
+                >
+                  <ArrowUp className="h-3.5 w-3.5" />
+                  {newPostsQueue.length} nouveau{newPostsQueue.length > 1 ? 'x' : ''} post{newPostsQueue.length > 1 ? 's' : ''}
+                </motion.button>
+              )}
+            </AnimatePresence>
             {displayPosts.map((post) => (
               <div
                 key={post.id}
@@ -1395,6 +1454,23 @@ const Feed = () => {
                 )}
               </div>
             ))}
+
+            {/* Plan B: Loading spinner while fetching next page */}
+            {isFetchingMore && (
+              <div className="flex justify-center py-4">
+                <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            )}
+
+            {/* Plan B: End-of-feed message */}
+            {!hasMore && displayPosts.length > 0 && (
+              <div className="text-center py-6 text-sm text-muted-foreground">
+                Tu as tout vu! 🎉
+              </div>
+            )}
+
+            {/* Plan B: Invisible sentinel for IntersectionObserver */}
+            <div ref={sentinelRef} className="h-1" />
             </div>
           )}
         </div>
