@@ -357,7 +357,7 @@ export const useChessMultiplayer = ({
     };
   }, [match?.id, enabled, userId, opponent, fetchOpponent, fetchChatMessages]);
 
-  // Create a new match
+  // Create a new match — runs server-side stale game cleanup first
   const createMatch = useCallback(async (options: CreateMatchOptions): Promise<string | null> => {
     if (!userId) {
       setError('User not authenticated');
@@ -368,6 +368,12 @@ export const useChessMultiplayer = ({
     setError(null);
 
     try {
+      // Cleanup stale games before creating a new one
+      // Cleanup stale games — cast needed until types regenerate after migration
+      await (supabase.rpc as any)('cleanup_stale_games').catch((err: any) =>
+        console.error('[Chess] Cleanup RPC failed:', err)
+      );
+
       const inviteCode = generateInviteCode();
       const timePerPlayer = TIME_CONTROL_SECONDS[options.timeControl];
 
