@@ -1,60 +1,72 @@
 
 
-# Implement Quiz Battle Sound Effects
+# Redesign Main Leaderboard with Podium Layout
 
-## Summary
-Implement 4 empty stub functions in `src/hooks/useQuizBattleSounds.ts` using pure Web Audio API synthesis. No libraries, no audio files, no changes to existing timer/ticking logic.
+## Goal
+Restyle `src/pages/Leaderboard.tsx` to match the Quiz Battle Leaderboard design: a **top-3 podium** section with avatar pillars, followed by the **full ranked list** with rank icons, level info, and gold count.
 
 ## What changes
 
-**File:** `src/hooks/useQuizBattleSounds.ts` — lines 119-123 only
+**File:** `src/pages/Leaderboard.tsx` only. No data-fetching or hook changes needed — `useLeaderboardData` already provides everything.
 
-Replace the 4 empty stubs with synthesized sounds using the existing `getAudioContext()` helper. Each function respects the `isMuted` state.
+### 1. Add Top-3 Podium Section (new section between header and list)
 
-### playCorrect() — Ascending arpeggio (C5-E5-G5)
-- Three sine tones at 523Hz, 659Hz, 784Hz
-- Each 0.08s, staggered by 0.07s for slight overlap
-- Volume 0.3, quick fade per tone
+A visual podium showing positions 1st (center, tallest), 2nd (left), 3rd (right) — same layout as `QuizBattleLeaderboard.tsx` lines 268-312:
 
-### playIncorrect() — Buzzer (G3-E3)
-- Two sawtooth tones at 196Hz, 165Hz
-- Each 0.15s, staggered by 0.12s
-- Volume 0.25, fade over 0.2s
+- **1st place:** Gold ring avatar (h-12/h-16), yellow pillar, Crown icon, name + gold count
+- **2nd place:** Silver ring avatar (h-10/h-14), gray pillar, Medal icon
+- **3rd place:** Bronze ring avatar (h-9/h-12), amber pillar, Medal icon
+- Pillar heights staggered (1st tallest, 3rd shortest)
+- Only renders when `leaderboard.length >= 3`
+- Mobile-responsive with `sm:` breakpoints matching the quiz battle version
 
-### playGameStart() — Ready sound (E5-G5)
-- Two sine tones at 659Hz, 784Hz
-- Each 0.06s, staggered by 0.05s
-- Volume 0.25, quick fade
+### 2. Restyle List Rows
 
-### playGameComplete() — Fanfare (C5-E5-G5-C6)
-- Four sine tones at 523Hz, 659Hz, 784Hz, 1047Hz
-- First three: 0.12s each, final: 0.2s
-- Staggered by 0.1s offsets
-- Volume 0.3, gentle fade
+Replace the current `Card > CardContent` per-row with the cleaner bordered-row pattern from the quiz battle leaderboard:
 
-## Implementation approach
-Each function will:
-1. Check `isMuted` — return early if true
-2. Get the shared AudioContext via `getAudioContext()`
-3. Schedule multiple OscillatorNode + GainNode pairs with precise `ctx.currentTime` offsets
-4. Wrap in try/catch matching existing `playTone` pattern
+- Rank icon (Crown/Medal) for top 3, `#N` text for others
+- Avatar with lazy loading (already present)
+- User info: nickname + academic grade (keep existing data)
+- Right side: gold count with trophy emoji
+- Current user gets `ring-2 ring-primary ring-offset-2` highlight
+- Remove the outer Card wrapper per row — use a single Card containing all rows (matching quiz battle pattern)
 
-The `playQuestionStart` stub stays empty (no spec provided). All other existing code (timer ticking, mute toggle, lobby stubs) is untouched.
+### 3. Keep Everything Else
 
-## Call sites confirmed — no wiring needed
-- `BattleGameplay.tsx`: calls all 4 functions (lines 69, 127, 129, 151)
-- `MultiplayerBattleGameplay.tsx`: calls all 4 functions (lines 184, 242, 309, 311)
+- Header gradient, ThemeToggle, hint bar, visitor logic, auth check — all untouched
+- `useLeaderboardData` hook — untouched
+- Empty state — keep existing
+- `handleUserClick` navigation — keep existing
+- `getAvatarUrl` usage — keep existing
 
-## Safety verification
+## Technical Details
+
+### Podium rendering logic
+```
+if (!isLoading && leaderboard.length >= 3) {
+  // Render podium: leaderboard[1] left, leaderboard[0] center, leaderboard[2] right
+}
+```
+
+### Row styling (matching quiz battle pattern)
+Each row uses `cn()` with rank-based gradient backgrounds and border colors, inside a single wrapping `<Card>`.
+
+### No dependency or data changes
+- Same imports, just reorganized JSX
+- Uses existing `getRankIcon` and `getRankBgColor` (slightly adjusted for podium colors)
+- No new components, no new hooks, no new queries
+
+## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| No new dependencies added | Correct |
-| No audio files loaded | Correct |
-| isMuted respected in all 4 functions | Correct |
-| Timer ticking logic untouched | Correct |
-| Lobby music stubs untouched | Correct |
-| Existing call sites already wired | Confirmed |
-| Web Audio API only (same pattern as playTone) | Correct |
-| Works on 3G (no network requests) | Correct |
+| useLeaderboardData hook untouched | Yes |
+| Visitor mode still works | Yes |
+| Auth redirect untouched | Yes |
+| Profile click navigation preserved | Yes |
+| getAvatarUrl still used for avatars | Yes |
+| No new dependencies | Yes |
+| Mobile responsive (3G-friendly) | Yes — same pattern as quiz battle |
+| Current user highlight preserved | Yes |
+| Empty state preserved | Yes |
 
