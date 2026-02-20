@@ -1,181 +1,222 @@
 
 
-# Feed Plan B — Cursor-Based Pagination and New Post Badge
+# Feed Plan C -- UX Polish
 
 ## Overview
 
-Three targeted fixes: replace the hard 50-post limit with cursor-based infinite scroll (20 per page), replace realtime auto-prepend with a "Nouveau post" badge to prevent scroll jumps, and add scroll-anchoring CSS. No changes to Plan A code paths (parallel queries, lazy comments, grade tags).
+Five targeted fixes: post entry animations with network-awareness, pull-to-refresh on mobile, consolidate duplicate post creation, fix share-via-DM N+1 query, and increase content truncation to 280 characters. No changes to Plan A or Plan B code paths.
 
 ---
 
-## Fix 1 — Cursor-Based Infinite Scroll
+## Fix 1 -- Post Entry Animations
 
-### `src/hooks/useFeedData.ts`
+**File:** `src/pages/Feed.tsx`
 
-Restructure the data layer to support paginated fetching:
-
-**A) Rename `fetchFeedPosts` to accept an optional cursor parameter:**
+Import `useNetworkAwareAnimations` and wrap each post card in a `motion.div`:
 
 ```typescript
-const PAGE_SIZE = 20;
+import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
 
-const fetchFeedPosts = async (cursor?: string): Promise<Post[]> => {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
-  _lastFetchedUserId = user.id;
+// Inside component:
+const { shouldAnimate } = useNetworkAwareAnimations();
+// Track whether we're on the initial load vs paginated load
+const initialLoadCompleteRef = useRef(false);
+```
 
-  // Build query with optional cursor for pagination
-  let query = supabase
-    .from("posts")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(PAGE_SIZE);
+In the `displayPosts.map()` block (line 1199), wrap each post card:
 
-  if (cursor) {
-    query = query.lt("created_at", cursor);
+```tsx
+{displayPosts.map((post, index) => (
+  <motion.div
+    key={post.id}
+    initial={shouldAnimate ? { opacity: 0, y: 16 } : false}
+    animate={{ opacity: 1, y: 0 }}
+    transition={shouldAnimate ? {
+      duration: 0.25,
+      ease: "easeOut",
+      // Stagger only on initial load, capped at 0.3s
+      delay: !initialLoadCompleteRef.current ? Math.min(index * 0.05, 0.3) : 0,
+    } : { duration: 0 }}
+    className="bg-card rounded-xl shadow-sm border border-border/30 overflow-hidden"
+  >
+    {/* ... existing post content ... */}
+  </motion.div>
+))}
+```
+
+After the initial render, set `initialLoadCompleteRef.current = true` using an effect that fires once posts load. This ensures paginated posts animate in simultaneously (no stagger).
+
+When `shouldAnimate` is false (slow connection), `initial` is set to `false` (no animation at all -- instant render).
+
+---
+
+## Fix 2 -- Pull-to-Refresh on Mobile
+
+**File:** `src/pages/Feed.tsx`
+
+Add touch event handlers to the scroll container for pull-to-refresh:
+
+```typescript
+const [pullDistance, setPullDistance] = useState(0);
+const [isPulling, setIsPulling] = useState(false);
+const touchStartY = useRef(0);
+
+const handleTouchStart = (e: React.TouchEvent) => {
+  // Only activate when scrolled to top
+  if (scrollContainerRef.current?.scrollTop === 0) {
+    touchStartY.current = e.touches[0].clientY;
+    setIsPulling(true);
   }
+};
 
-  const { data: postsData, error } = await query;
-  // ... rest of enrichment unchanged (Promise.all for profiles, likes, counts, shares)
+const handleTouchMove = (e: React.TouchEvent) => {
+  if (!isPulling) return;
+  const deltaY = e.touches[0].clientY - touchStartY.current;
+  if (deltaY > 0) {
+    // Resistance factor: indicator moves slower than finger
+    setPullDistance(deltaY * 0.4);
+  }
+};
+
+const handleTouchEnd = () => {
+  if (pullDistance > 60 && !isRefreshing && !isFetchingMore) {
+    refreshFeed();
+    toast({ title: "Actualisation...", description: "Le fil d'actualite est en cours de mise a jour." });
+  }
+  setPullDistance(0);
+  setIsPulling(false);
 };
 ```
 
-**B) Add `fetchMorePosts` and `hasMore` to the hook return:**
-
-- Track `hasMore` by checking if the returned page has `PAGE_SIZE` items (fewer = no more)
-- `fetchMorePosts()` reads the `created_at` of the last post in the current array as cursor, fetches next page, enriches it, and **appends** to the TanStack Query cache
-- `isFetchingMore` loading state to show bottom spinner
-- Keep `initialData` from localStorage for instant first page only
-- Persist only the first page to localStorage (not accumulated pages)
-
-**C) Update `usePrefetchNavigation` to use PAGE_SIZE:**
-
-Just update the limit constant reference; no functional change.
-
-### `src/pages/Feed.tsx`
-
-**A) Add IntersectionObserver for infinite scroll:**
-
-```typescript
-const sentinelRef = useRef<HTMLDivElement>(null);
-const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-useEffect(() => {
-  if (!sentinelRef.current || isVisitor) return;
-  const observer = new IntersectionObserver(
-    (entries) => {
-      if (entries[0].isIntersecting && hasMore && !isFetchingMore) {
-        fetchMorePosts();
-      }
-    },
-    { rootMargin: '200px' } // Trigger 200px before reaching bottom
-  );
-  observer.observe(sentinelRef.current);
-  return () => observer.disconnect();
-}, [hasMore, isFetchingMore, isVisitor]);
-```
-
-**B) Add sentinel div after post list (line ~1397):**
+Add the handlers to the scroll container section element (line 1135):
 
 ```tsx
-{displayPosts.map((post) => (
-  // ... existing post cards
-))}
-
-{/* Infinite scroll sentinel */}
-{isFetchingMore && (
-  <div className="flex justify-center py-4">
-    <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
-  </div>
-)}
-
-{!hasMore && displayPosts.length > 0 && (
-  <div className="text-center py-6 text-sm text-muted-foreground">
-    Tu as tout vu! 🎉
-  </div>
-)}
-
-{/* Invisible trigger for IntersectionObserver */}
-<div ref={sentinelRef} className="h-1" />
-```
-
----
-
-## Fix 2 — New Post Badge Instead of Auto-Prepend
-
-### `src/pages/Feed.tsx`
-
-**A) Add new state for queued posts:**
-
-```typescript
-const [newPostsQueue, setNewPostsQueue] = useState<Post[]>([]);
-const scrollContainerRef = useRef<HTMLDivElement>(null);
-```
-
-**B) Modify the realtime INSERT handler (line 288-306):**
-
-Instead of calling `addPostOptimistically`, check scroll position:
-
-```typescript
-// Inside INSERT handler:
-const scrollContainer = scrollContainerRef.current;
-const isAtTop = scrollContainer ? scrollContainer.scrollTop < 100 : true;
-
-if (isAtTop) {
-  // User is at top — prepend directly (no scroll jump)
-  addPostOptimistically(enrichedPost);
-} else {
-  // User is scrolling — queue for badge
-  setNewPostsQueue(prev => [enrichedPost, ...prev]);
-}
-```
-
-**C) Add floating badge UI (inside the section, above the post list):**
-
-```tsx
-{/* New posts badge — shown when posts arrive while user is scrolling */}
-{newPostsQueue.length > 0 && (
-  <motion.button
-    initial={{ y: -40, opacity: 0 }}
-    animate={{ y: 0, opacity: 1 }}
-    exit={{ y: -40, opacity: 0 }}
-    onClick={() => {
-      // Prepend all queued posts and scroll to top
-      newPostsQueue.forEach(p => addPostOptimistically(p));
-      setNewPostsQueue([]);
-      scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-    }}
-    className="sticky top-2 z-30 mx-auto flex items-center gap-1.5 px-3 py-1.5 
-               bg-primary text-primary-foreground rounded-full shadow-lg text-sm font-medium
-               hover:bg-primary/90 transition-colors"
-  >
-    <ArrowUp className="h-3.5 w-3.5" />
-    {newPostsQueue.length} nouveau{newPostsQueue.length > 1 ? 'x' : ''} post{newPostsQueue.length > 1 ? 's' : ''}
-  </motion.button>
-)}
-```
-
-**D) Add `ref={scrollContainerRef}` to the feed section element (line 1102).**
-
-**E) Import `motion` from framer-motion and `ArrowUp` from lucide-react.**
-
----
-
-## Fix 3 — Scroll Anchoring CSS
-
-### `src/pages/Feed.tsx` (line 1102)
-
-Add `overflow-anchor: auto` to the scrollable feed section and individual post cards:
-
-```tsx
-<section 
+<section
   ref={scrollContainerRef}
   className="flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-6"
   style={{ overflowAnchor: 'auto' }}
+  onTouchStart={handleTouchStart}
+  onTouchMove={handleTouchMove}
+  onTouchEnd={handleTouchEnd}
 >
 ```
 
-This is a one-line CSS addition that prevents scroll jumps when comments expand below the viewport.
+Add a pull-to-refresh indicator at the top of the section, before the max-w-2xl div:
+
+```tsx
+{/* Pull-to-refresh indicator */}
+{pullDistance > 0 && (
+  <div 
+    className="flex justify-center py-2 transition-transform"
+    style={{ transform: `translateY(${Math.min(pullDistance, 80)}px)` }}
+  >
+    <RefreshCw className={`h-5 w-5 text-muted-foreground ${pullDistance > 60 ? 'text-primary animate-spin' : ''}`} />
+  </div>
+)}
+```
+
+---
+
+## Fix 3 -- Consolidate Duplicate Post Creation
+
+**File:** `src/pages/Feed.tsx`
+
+Remove the inline `createPost()` function (lines 432-548) and all its associated state:
+- Remove: `newPostContent`, `isCreatingPost`, `isPublicPost`, `selectedImage`, `selectedVideo`, `imagePreview`, `videoPreview`, `fileInputRef`
+- Remove: `handleImageSelect()` (lines 359-395), `handleVideoSelect()` (lines 397-430)
+- These are all duplicated by `CreatePostDialog.tsx` which has better features (mentions, upload progress)
+
+The `CreatePostDialog` is already used in the header (line 1128). Change its `onPostCreated` callback from `refreshFeed` to an optimistic prepend:
+
+```tsx
+<CreatePostDialog 
+  currentUser={currentUser} 
+  onPostCreated={() => {
+    // Optimistic: realtime INSERT handler will prepend the new post,
+    // but also refresh to ensure data consistency
+    refreshFeed();
+  }} 
+/>
+```
+
+Note: The `onPostCreated` callback currently just calls `refreshFeed()` -- this is already correct since the realtime INSERT handler (Fix 4 from Plan A) will prepend the new post before the refresh completes if the user is at the top. No further change needed to `CreatePostDialog.tsx` itself.
+
+The key benefit is removing ~200 lines of duplicated code from Feed.tsx that lacked @mentions, upload progress tracking, and video thumbnails.
+
+---
+
+## Fix 4 -- Fix Share-via-DM N+1 Query
+
+**File:** `src/pages/Feed.tsx`
+
+Replace the `sendPostAsMessage()` function (lines 818-896) which loops through all conversation participants (N+1 pattern) with a single `start_direct_conversation` RPC call:
+
+```typescript
+const sendPostAsMessage = async (recipientUserId: string) => {
+  if (!currentUser || !selectedPostToShare) return;
+  setSendingMessage(true);
+
+  try {
+    // Single RPC call finds or creates DM conversation (replaces N+1 loop)
+    const { data: conversationId, error: convError } = await supabase
+      .rpc("start_direct_conversation", { other_user_id: recipientUserId });
+
+    if (convError) throw convError;
+
+    // Send the shared post message
+    const { error: messageError } = await supabase
+      .from("messages")
+      .insert({
+        conversation_id: conversationId,
+        sender_id: currentUser.id,
+        content: "📝 Post partage",
+        shared_post_id: selectedPostToShare.id,
+      });
+
+    if (messageError) throw messageError;
+
+    // Record the share
+    await supabase
+      .from("post_shares")
+      .insert({ post_id: selectedPostToShare.id, user_id: currentUser.id });
+
+    toast({ title: "Succes", description: "Post envoye en message" });
+    setShareDialogOpen(false);
+    setSelectedPostToShare(null);
+  } catch (error) {
+    console.error("Error sending message:", error);
+    toast({ title: "Erreur", description: "Impossible d'envoyer le message", variant: "destructive" });
+  } finally {
+    setSendingMessage(false);
+  }
+};
+```
+
+This replaces the N+1 loop (fetch all conversations then check participants for each) with a single `start_direct_conversation` RPC that atomically finds or creates the DM.
+
+---
+
+## Fix 5 -- Content Truncation to 280 Characters
+
+**File:** `src/pages/Feed.tsx`
+
+Change the truncation threshold from 150 to 280 in 3 places (lines 1297, 1300, 1308):
+
+```tsx
+// Add constant at top of component or module
+const MAX_CONTENT_PREVIEW = 280;
+
+// Line 1297: 
+{renderContentWithLinks(post.content.length > MAX_CONTENT_PREVIEW && !expandedPosts[post.id]
+  ? post.content.slice(0, MAX_CONTENT_PREVIEW)
+  : post.content)}
+
+// Line 1300:
+{post.content.length > MAX_CONTENT_PREVIEW && !expandedPosts[post.id] && (
+
+// Line 1308:
+{post.content.length > MAX_CONTENT_PREVIEW && expandedPosts[post.id] && (
+```
 
 ---
 
@@ -183,22 +224,23 @@ This is a one-line CSS addition that prevents scroll jumps when comments expand 
 
 | File | Change |
 |---|---|
-| `src/hooks/useFeedData.ts` | Add cursor param, PAGE_SIZE=20, fetchMorePosts, hasMore, isFetchingMore |
-| `src/pages/Feed.tsx` | IntersectionObserver, sentinel div, new post badge, scroll anchoring, ArrowUp import |
+| `src/pages/Feed.tsx` | Post animations, pull-to-refresh, remove inline createPost, fix share RPC, 280-char truncation |
+
+No new files. No changes to Plan A or Plan B code.
 
 ## Safety Verification
 
 | Check | Expected Result |
 |---|---|
-| Initial load fetches 20 posts instead of 50 | Yes -- PAGE_SIZE = 20, limit(20) in query |
-| Scrolling to bottom loads next 20 posts | Yes -- IntersectionObserver triggers fetchMorePosts with cursor |
-| Enrichment (profiles, likes, counts, shares) works for each page | Yes -- same Promise.all pattern applied per page |
-| New post badge appears when a followed user posts while scrolling | Yes -- scrollTop >= 100 queues post instead of prepending |
-| Clicking badge prepends posts and scrolls to top | Yes -- forEach addPostOptimistically + scrollTo(0) |
-| Auto-prepend when user is already at top | Yes -- scrollTop < 100 bypasses queue |
-| "Tu as tout vu" message when no more posts | Yes -- hasMore=false when returned count < PAGE_SIZE |
-| Existing post interactions (like, share, delete, edit) unaffected | Yes -- no changes to those handlers |
-| Plan A features (parallel queries, lazy comments, grade tags) untouched | Yes -- only cursor/pagination logic added |
-| localStorage persistence still works for first page | Yes -- persistQueryData called with first page only |
-| Visitor mode unaffected | Yes -- visitor posts bypass all pagination logic |
+| Post animations fade-in and slide-up on initial load with stagger | Yes -- index * 0.05 delay capped at 0.3s |
+| Paginated posts animate in simultaneously (no stagger) | Yes -- initialLoadCompleteRef skips delay |
+| Animations disabled on slow connections | Yes -- shouldAnimate=false sets initial to false |
+| Pull-to-refresh triggers reload when pulled 60px from top | Yes -- pullDistance > 60 calls refreshFeed() |
+| Pull-to-refresh disabled during loading states | Yes -- guard on isRefreshing and isFetchingMore |
+| Inline createPost removed, CreatePostDialog used exclusively | Yes -- ~200 lines removed, Dialog already in header |
+| New posts from dialog appear in feed | Yes -- realtime INSERT prepends + refreshFeed fallback |
+| Share-via-DM uses start_direct_conversation RPC (1 query) | Yes -- replaces N+1 conversation_participants loop |
+| Content truncation at 280 characters | Yes -- constant MAX_CONTENT_PREVIEW = 280 |
+| Plan A features (parallel queries, lazy comments, grade tags) untouched | Yes |
+| Plan B features (pagination, new post badge, scroll anchoring) untouched | Yes |
 
