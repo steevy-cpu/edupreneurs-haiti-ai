@@ -1,72 +1,103 @@
 
 
-# Redesign Main Leaderboard with Podium Layout
+# Fix 3 Passion Discovery Issues — Surgical Fixes Only
 
-## Goal
-Restyle `src/pages/Leaderboard.tsx` to match the Quiz Battle Leaderboard design: a **top-3 podium** section with avatar pillars, followed by the **full ranked list** with rank icons, level info, and gold count.
+## Summary
+Three targeted fixes: one RLS migration (DELETE policy), one RLS migration (role tightening), and one code change to replace raw Supabase queries with cached fetches.
 
-## What changes
+---
 
-**File:** `src/pages/Leaderboard.tsx` only. No data-fetching or hook changes needed — `useLeaderboardData` already provides everything.
+## Fix 1 — Add DELETE RLS policy on `user_passion_preferences`
 
-### 1. Add Top-3 Podium Section (new section between header and list)
+**Problem:** The "Refaire le quiz" feature calls `useResetQuiz` which does `supabase.from('user_passion_preferences').delete()`. This fails silently because there is no DELETE policy on the table.
 
-A visual podium showing positions 1st (center, tallest), 2nd (left), 3rd (right) — same layout as `QuizBattleLeaderboard.tsx` lines 268-312:
-
-- **1st place:** Gold ring avatar (h-12/h-16), yellow pillar, Crown icon, name + gold count
-- **2nd place:** Silver ring avatar (h-10/h-14), gray pillar, Medal icon
-- **3rd place:** Bronze ring avatar (h-9/h-12), amber pillar, Medal icon
-- Pillar heights staggered (1st tallest, 3rd shortest)
-- Only renders when `leaderboard.length >= 3`
-- Mobile-responsive with `sm:` breakpoints matching the quiz battle version
-
-### 2. Restyle List Rows
-
-Replace the current `Card > CardContent` per-row with the cleaner bordered-row pattern from the quiz battle leaderboard:
-
-- Rank icon (Crown/Medal) for top 3, `#N` text for others
-- Avatar with lazy loading (already present)
-- User info: nickname + academic grade (keep existing data)
-- Right side: gold count with trophy emoji
-- Current user gets `ring-2 ring-primary ring-offset-2` highlight
-- Remove the outer Card wrapper per row — use a single Card containing all rows (matching quiz battle pattern)
-
-### 3. Keep Everything Else
-
-- Header gradient, ThemeToggle, hint bar, visitor logic, auth check — all untouched
-- `useLeaderboardData` hook — untouched
-- Empty state — keep existing
-- `handleUserClick` navigation — keep existing
-- `getAvatarUrl` usage — keep existing
-
-## Technical Details
-
-### Podium rendering logic
-```
-if (!isLoading && leaderboard.length >= 3) {
-  // Render podium: leaderboard[1] left, leaderboard[0] center, leaderboard[2] right
-}
+**Migration SQL:**
+```sql
+CREATE POLICY "Users can delete own preferences"
+ON user_passion_preferences FOR DELETE
+TO authenticated
+USING (auth.uid() = user_id);
 ```
 
-### Row styling (matching quiz battle pattern)
-Each row uses `cn()` with rank-based gradient backgrounds and border colors, inside a single wrapping `<Card>`.
+---
 
-### No dependency or data changes
-- Same imports, just reorganized JSX
-- Uses existing `getRankIcon` and `getRankBgColor` (slightly adjusted for podium colors)
-- No new components, no new hooks, no new queries
+## Fix 2 — Restrict `passion_module_progress` RLS to authenticated only
+
+**Problem:** All three policies (SELECT, INSERT, UPDATE) currently use `roles: {public}`, which includes the `anon` role. They should be `authenticated` only, matching `user_passion_preferences`.
+
+**Migration SQL:**
+```sql
+DROP POLICY "Users can view own progress" ON passion_module_progress;
+CREATE POLICY "Users can view own progress"
+ON passion_module_progress FOR SELECT
+TO authenticated
+USING (auth.uid() = user_id);
+
+DROP POLICY "Users can insert own progress" ON passion_module_progress;
+CREATE POLICY "Users can insert own progress"
+ON passion_module_progress FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY "Users can update own progress" ON passion_module_progress;
+CREATE POLICY "Users can update own progress"
+ON passion_module_progress FOR UPDATE
+TO authenticated
+USING (auth.uid() = user_id);
+```
+
+---
+
+## Fix 3 — Replace raw Supabase queries in `startModule()` with cached fetches
+
+**Problem:** `PassionDiscovery.tsx` lines 652-663 make two raw `supabase.from()` calls every time a module is opened. The hooks `usePassionModuleRecommendedVideos` and `useBannedVideoIds` already exist with TanStack Query caching, but they are not used.
+
+**Approach:** Since `startModule()` is an imperative async function, we cannot call hooks inside it. Instead:
+
+1. Import `useQueryClient` from TanStack Query
+2. Import `useBannedVideoIds` at the component top level (no params, returns a cached `Set<string>`)
+3. Inside `startModule()`, use `queryClient.fetchQuery()` for recommended videos — this uses the same query key pattern as `usePassionModuleRecommendedVideos`, so data is cached and shared
+
+**File:** `src/pages/PassionDiscovery.tsx`
+
+**Changes:**
+- Add imports: `useQueryClient` from `@tanstack/react-query`, `useBannedVideoIds` from `@/hooks/usePassionRecommendedVideos`
+- Add at component top level: `const queryClient = useQueryClient()` and `const { data: bannedVideoIds } = useBannedVideoIds()`
+- Replace lines 652-663 with:
+  ```typescript
+  // Use cached query for curated videos (same key as usePassionModuleRecommendedVideos)
+  const curatedVideos = await queryClient.fetchQuery({
+    queryKey: ['passion-recommended-videos', categoryId, moduleId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('passion_recommended_videos')
+        .select('*')
+        .eq('category_id', categoryId)
+        .eq('module_id', moduleId)
+        .order('display_order', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 5 * 60 * 1000, // 5 min cache
+  });
+
+  // Use pre-fetched banned IDs from hook (already cached)
+  const bannedIds = bannedVideoIds ?? new Set<string>();
+  ```
+- Rest of the logic (lines 665-682) stays identical, just uses these cached variables
+
+---
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| useLeaderboardData hook untouched | Yes |
-| Visitor mode still works | Yes |
-| Auth redirect untouched | Yes |
-| Profile click navigation preserved | Yes |
-| getAvatarUrl still used for avatars | Yes |
-| No new dependencies | Yes |
-| Mobile responsive (3G-friendly) | Yes — same pattern as quiz battle |
-| Current user highlight preserved | Yes |
-| Empty state preserved | Yes |
+| No component refactoring | Correct — only startModule internals change |
+| No architectural changes | Correct — same data flow, just cached |
+| usePassionData hooks untouched | Yes |
+| usePassionRecommendedVideos hooks untouched | Yes |
+| Quiz retake flow: delete then re-insert | Fixed by DELETE policy |
+| Module progress restricted to auth users | Fixed by role change |
+| Existing 41 users unaffected | Yes — policies only tighten access |
+| No new dependencies | Correct |
 
