@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Trophy, Medal, Award, Crown } from "lucide-react";
+import { Trophy, Medal, Crown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { toast } from "sonner";
 import { useLeaderboardData } from "@/hooks/useLeaderboardData";
+import { cn } from "@/lib/utils";
 
 const Leaderboard = () => {
   const navigate = useNavigate();
@@ -35,29 +36,33 @@ const Leaderboard = () => {
     setCurrentUserId(user.id);
   };
 
-  const getRankIcon = (rank: number) => {
+  /** Rank-based styling for list rows — gradient bg + border color */
+  const getRankStyle = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Crown size={24} className="text-yellow-500" />;
+        return {
+          icon: <Crown className="w-6 h-6 text-yellow-500" />,
+          bg: 'bg-gradient-to-r from-yellow-500/20 via-yellow-400/10 to-transparent border-yellow-500/30',
+          textColor: 'text-yellow-600 dark:text-yellow-400',
+        };
       case 2:
-        return <Medal size={24} className="text-gray-400" />;
+        return {
+          icon: <Medal className="w-6 h-6 text-gray-400" />,
+          bg: 'bg-gradient-to-r from-gray-400/20 via-gray-300/10 to-transparent border-gray-400/30',
+          textColor: 'text-gray-600 dark:text-gray-300',
+        };
       case 3:
-        return <Award size={24} className="text-amber-600" />;
+        return {
+          icon: <Medal className="w-6 h-6 text-amber-600" />,
+          bg: 'bg-gradient-to-r from-amber-600/20 via-amber-500/10 to-transparent border-amber-500/30',
+          textColor: 'text-amber-700 dark:text-amber-400',
+        };
       default:
-        return <Trophy size={20} className="text-muted-foreground" />;
-    }
-  };
-
-  const getRankBgColor = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return "from-yellow-500/20 to-amber-500/20 border-yellow-500/30";
-      case 2:
-        return "from-gray-400/20 to-slate-400/20 border-gray-400/30";
-      case 3:
-        return "from-amber-600/20 to-orange-600/20 border-amber-600/30";
-      default:
-        return "from-muted/50 to-muted/30 border-border/50";
+        return {
+          icon: null,
+          bg: 'bg-muted/30 border-transparent',
+          textColor: 'text-muted-foreground',
+        };
     }
   };
 
@@ -115,98 +120,64 @@ const Leaderboard = () => {
         </div>
       </div>
 
-      {/* Leaderboard */}
+      {/* Top-3 Podium — only when 3+ users loaded */}
+      {!isLoading && leaderboard.length >= 3 && (
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 pt-4">
+          <div className="flex justify-center items-end gap-1 sm:gap-2 py-4">
+            {/* 2nd place — left */}
+            <div className="flex flex-col items-center cursor-pointer" onClick={() => handleUserClick(leaderboard[1].user_id)}>
+              <Avatar className="h-10 w-10 sm:h-14 sm:w-14 border-2 border-gray-400">
+                <AvatarImage src={getAvatarUrl(leaderboard[1].avatar_url)} loading="lazy" />
+                <AvatarFallback className="text-sm">{leaderboard[1].nickname?.[0]?.toUpperCase() || '?'}</AvatarFallback>
+              </Avatar>
+              <div className="bg-gray-400 text-white rounded-t-lg px-3 sm:px-6 py-1.5 sm:py-2 mt-2 text-center">
+                <Medal className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-0.5 sm:mb-1" />
+                <p className="text-[10px] sm:text-xs font-medium truncate max-w-[60px] sm:max-w-[80px]">{leaderboard[1].nickname || leaderboard[1].full_name}</p>
+                <p className="text-xs sm:text-sm font-bold">{leaderboard[1].gold_earned} 🏆</p>
+              </div>
+              <div className="bg-gray-400/80 w-full h-12 sm:h-16 rounded-b-lg"></div>
+            </div>
+
+            {/* 1st place — center, tallest */}
+            <div className="flex flex-col items-center -mt-4 cursor-pointer" onClick={() => handleUserClick(leaderboard[0].user_id)}>
+              <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-yellow-500 ring-2 ring-yellow-300">
+                <AvatarImage src={getAvatarUrl(leaderboard[0].avatar_url)} loading="lazy" />
+                <AvatarFallback className="text-sm sm:text-base">{leaderboard[0].nickname?.[0]?.toUpperCase() || '?'}</AvatarFallback>
+              </Avatar>
+              <div className="bg-yellow-500 text-white rounded-t-lg px-4 sm:px-8 py-1.5 sm:py-2 mt-2 text-center">
+                <Crown className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-0.5 sm:mb-1" />
+                <p className="text-[10px] sm:text-xs font-medium truncate max-w-[60px] sm:max-w-[80px]">{leaderboard[0].nickname || leaderboard[0].full_name}</p>
+                <p className="text-xs sm:text-sm font-bold">{leaderboard[0].gold_earned} 🏆</p>
+              </div>
+              <div className="bg-yellow-500/80 w-full h-18 sm:h-24 rounded-b-lg"></div>
+            </div>
+
+            {/* 3rd place — right */}
+            <div className="flex flex-col items-center cursor-pointer" onClick={() => handleUserClick(leaderboard[2].user_id)}>
+              <Avatar className="h-9 w-9 sm:h-12 sm:w-12 border-2 border-amber-600">
+                <AvatarImage src={getAvatarUrl(leaderboard[2].avatar_url)} loading="lazy" />
+                <AvatarFallback className="text-xs sm:text-sm">{leaderboard[2].nickname?.[0]?.toUpperCase() || '?'}</AvatarFallback>
+              </Avatar>
+              <div className="bg-amber-600 text-white rounded-t-lg px-2.5 sm:px-5 py-1.5 sm:py-2 mt-2 text-center">
+                <Medal className="w-3.5 h-3.5 sm:w-4 sm:h-4 mx-auto mb-0.5 sm:mb-1" />
+                <p className="text-[10px] sm:text-xs font-medium truncate max-w-[55px] sm:max-w-[70px]">{leaderboard[2].nickname || leaderboard[2].full_name}</p>
+                <p className="text-xs sm:text-sm font-bold">{leaderboard[2].gold_earned} 🏆</p>
+              </div>
+              <div className="bg-amber-600/80 w-full h-10 sm:h-12 rounded-b-lg"></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Leaderboard list */}
       <div className="max-w-4xl mx-auto px-3 sm:px-4 pt-4 sm:pt-6" data-tour="leaderboard-list">
         {isLoading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <Card key={i} className="border-none rounded-xl shadow-md">
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="h-8 w-8 rounded-full" />
-                    <Skeleton className="h-10 w-10 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-28" />
-                      <Skeleton className="h-3 w-20" />
-                    </div>
-                    <Skeleton className="h-6 w-16" />
-                  </div>
-                </CardContent>
-              </Card>
+              <Skeleton key={i} className="h-16 w-full rounded-lg" />
             ))}
           </div>
-        ) : (
-          <div className="space-y-2 sm:space-y-3">
-            {leaderboard.map((user) => {
-              const isCurrentUser = user.user_id === currentUserId;
-              
-              return (
-                <Card
-                  key={user.id}
-                  className={`border-none rounded-xl sm:rounded-2xl shadow-md transition-all hover:scale-[1.01] cursor-pointer ${
-                    isCurrentUser ? "ring-2 ring-primary" : ""
-                  }`}
-                  onClick={() => handleUserClick(user.user_id)}
-                >
-                  <CardContent
-                    className={`p-3 sm:p-4 bg-gradient-to-r ${getRankBgColor(user.rank)} border rounded-xl sm:rounded-2xl`}
-                  >
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      {/* Rank */}
-                      <div className="flex items-center justify-center min-w-[32px] sm:min-w-[40px]">
-                        {user.rank <= 3 ? (
-                          getRankIcon(user.rank)
-                        ) : (
-                          <span className="text-base sm:text-lg font-bold text-muted-foreground">
-                            #{user.rank}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Avatar */}
-                      <Avatar className="h-10 w-10 sm:h-12 sm:w-12 ring-2 ring-background">
-                        <AvatarImage src={getAvatarUrl(user.avatar_url)} loading="lazy" />
-                        <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 font-semibold text-xs sm:text-base">
-                          {user.nickname?.[0] || user.full_name?.[0] || "?"}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      {/* User Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1 sm:gap-2">
-                          <p className="font-semibold truncate text-sm sm:text-base">
-                            {user.nickname || user.full_name}
-                          </p>
-                          {isCurrentUser && (
-                            <span className="text-[10px] sm:text-xs bg-primary text-primary-foreground px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
-                              Vous
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                          {user.academic_grade ?? '-'}
-                        </p>
-                      </div>
-
-                      {/* Gold Count */}
-                      <div className="text-right">
-                        <div className="flex items-center gap-0.5 sm:gap-1 text-amber-500 font-bold">
-                          <span className="text-base sm:text-lg">🏆</span>
-                          <span className="text-sm sm:text-base">{user.gold_earned}</span>
-                        </div>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground">
-                          gold
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-
-        {!isLoading && leaderboard.length === 0 && (
+        ) : leaderboard.length === 0 ? (
           <Card className="border-none rounded-xl shadow-md">
             <CardContent className="p-8 sm:p-12 text-center">
               <Trophy size={48} className="mx-auto mb-4 text-muted-foreground" />
@@ -216,6 +187,62 @@ const Leaderboard = () => {
               <p className="text-xs text-muted-foreground mt-2">
                 Complétez des leçons pour apparaître ici!
               </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardContent className="p-4 space-y-2">
+              {leaderboard.map((user) => {
+                const rankStyle = getRankStyle(user.rank);
+                const isCurrentUser = user.user_id === currentUserId;
+
+                return (
+                  <div
+                    key={user.id}
+                    onClick={() => handleUserClick(user.user_id)}
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer hover:scale-[1.01]",
+                      rankStyle.bg,
+                      isCurrentUser && "ring-2 ring-primary ring-offset-2"
+                    )}
+                  >
+                    {/* Rank indicator */}
+                    <div className={cn(
+                      "flex items-center justify-center w-10 font-bold text-lg",
+                      rankStyle.textColor
+                    )}>
+                      {rankStyle.icon || `#${user.rank}`}
+                    </div>
+
+                    {/* Avatar */}
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={getAvatarUrl(user.avatar_url)} loading="lazy" />
+                      <AvatarFallback className="text-sm">
+                        {user.nickname?.[0]?.toUpperCase() || user.full_name?.[0] || '?'}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    {/* User info */}
+                    <div className="flex-1 min-w-0">
+                      <p className={cn(
+                        "font-medium truncate",
+                        isCurrentUser && "text-primary"
+                      )}>
+                        {user.nickname || user.full_name} {isCurrentUser && '(vous)'}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user.academic_grade ?? '-'}
+                      </p>
+                    </div>
+
+                    {/* Gold count */}
+                    <div className="text-right">
+                      <div className="font-bold text-amber-500">{user.gold_earned}</div>
+                      <div className="text-xs text-muted-foreground">🏆 gold</div>
+                    </div>
+                  </div>
+                );
+              })}
             </CardContent>
           </Card>
         )}
