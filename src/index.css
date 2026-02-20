@@ -288,26 +288,6 @@ All colors MUST be HSL.
     to { transform: rotate(360deg); }
   }
 
-  /* Quiz Loading Bar Animation */
-  @keyframes loading-bar {
-    0% {
-      width: 0%;
-      margin-left: 0%;
-    }
-    50% {
-      width: 60%;
-      margin-left: 20%;
-    }
-    100% {
-      width: 0%;
-      margin-left: 100%;
-    }
-  }
-
-  .animate-loading-bar {
-    animation: loading-bar 2s ease-in-out infinite;
-  }
-
 @keyframes gentle-bob {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-4px); }
@@ -810,21 +790,6 @@ All colors MUST be HSL.
     background: linear-gradient(180deg, hsl(180 88% 27%) 0%, hsl(160 84% 39%) 100%);
   }
 
-  .lesson-markdown h2 {
-    @apply text-xl font-bold mb-3 pb-2 relative;
-    border-bottom: 2px solid hsl(180 88% 27% / 0.18);
-  }
-
-  .lesson-markdown h2::after {
-    content: "";
-    display: block;
-    height: 3px;
-    width: 72px;
-    margin-top: 6px;
-    background: linear-gradient(90deg, hsl(180 88% 27%), hsl(160 84% 39%));
-    border-radius: 2px;
-  }
-
   /* Prose content responsive overflow fixes */
   .prose {
     overflow-x: hidden;
@@ -884,41 +849,6 @@ All colors MUST be HSL.
     .prose {
       font-size: 0.9rem;
     }
-  }
-
-  .lesson-markdown h5 {
-    @apply text-sm font-bold uppercase tracking-wide mt-4 mb-2;
-    color: hsl(180 88% 27%);
-  }
-
-  .lesson-markdown p {
-    @apply mb-4 leading-relaxed;
-  }
-
-  .lesson-markdown ul, .lesson-markdown ol {
-    @apply mb-4 pl-6 space-y-2;
-  }
-
-  .lesson-markdown strong {
-    @apply font-bold;
-    color: hsl(180 88% 27%);
-  }
-
-  .lesson-markdown-title {
-    @apply text-sm font-bold uppercase tracking-wide;
-    color: hsl(180 88% 27%);
-  }
-
-  .video-placeholder {
-    @apply h-48 rounded-xl flex items-center justify-center text-center;
-    background: repeating-linear-gradient(
-      45deg,
-      hsl(165 65% 92%),
-      hsl(165 65% 92%) 10px,
-      hsl(165 60% 90%) 10px,
-      hsl(165 60% 90%) 20px
-    );
-    color: hsl(180 88% 27%);
   }
 
 /* Eric Chatbot Styles - Updated with glassmorphism design */
@@ -1285,23 +1215,6 @@ All colors MUST be HSL.
     .mobile-scroll {
       -webkit-overflow-scrolling: touch;
     }
-  }
-  
-  /* Lesson Content Styles */
-  .exercise-box {
-    @apply border-2 border-primary/20 rounded-xl p-6 mb-6 bg-gradient-to-br from-primary/5 to-secondary/5 backdrop-blur-sm;
-  }
-  
-  .exercise-box h4 {
-    @apply text-lg font-bold text-primary mb-4 flex items-center gap-2;
-  }
-  
-  .exercise-box ol, .exercise-box ul {
-    @apply space-y-2 ml-6;
-  }
-  
-  .exercise-box li {
-    @apply text-muted-foreground;
   }
   
   /* Prose styles for lesson content */
