@@ -171,6 +171,26 @@ serve(async (req) => {
       console.error("[GIFT-WEBHOOK] Notification error:", e);
     }
 
+    // Send push notification for gift webhook renewal
+    try {
+      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-push-notification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+        },
+        body: JSON.stringify({
+          recipientUserId: studentUserId,
+          title: 'Abonnement renouvelé!',
+          body: `Votre abonnement a été renouvelé automatiquement! Accès actif jusqu'au ${newEnd.toLocaleDateString("fr-FR")}`,
+          type: 'gift_payment',
+          url: '/settings?tab=compte',
+        }),
+      });
+    } catch (pushErr) {
+      console.error("[GIFT-WEBHOOK] Push notification error:", pushErr);
+    }
+
     // Send emails (using shared module)
     const endDateStr = newEnd.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
     const dateNow = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });

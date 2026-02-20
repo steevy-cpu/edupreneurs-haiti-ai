@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText, MoreVertical, Trash2, Settings, AtSign, UserCheck, Loader2, Megaphone, Swords } from "lucide-react";
+import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText, MoreVertical, Trash2, Settings, AtSign, UserCheck, Loader2, Megaphone, Swords, CheckCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -40,7 +40,7 @@ interface Notification {
   user_id: string;
   actor_id: string;
   post_id: string | null;
-  type: "like" | "comment" | "share" | "follow_request" | "follow_accepted" | "new_post" | "group_invitation" | "group_deleted" | "lesson_comment" | "mention" | "announcement" | "quiz_invite";
+  type: "like" | "comment" | "share" | "follow_request" | "follow_accepted" | "new_post" | "group_invitation" | "group_deleted" | "lesson_comment" | "mention" | "announcement" | "quiz_invite" | "subscription_renewed" | "gift_payment";
   content: string | null;
   read: boolean;
   created_at: string;
@@ -349,6 +349,9 @@ export default function Notifications() {
         return <Megaphone size={16} className="text-orange-500" />;
       case "quiz_invite":
         return <Swords size={16} className="text-primary" />;
+      case "subscription_renewed":
+      case "gift_payment":
+        return <CheckCircle size={16} className="text-green-500" />;
       default:
         return <MessageCircle size={16} className="text-muted-foreground" />;
     }
@@ -382,6 +385,10 @@ export default function Notifications() {
         return notification.content || "📢 Nouvelle annonce de la plateforme";
       case "quiz_invite":
         return `${actor} te défie en Quiz Battle!`;
+      case "subscription_renewed":
+        return "Ton abonnement a été renouvelé avec succès! 🎉";
+      case "gift_payment":
+        return notification.content || "Un proche a payé votre abonnement! 🎁";
       default:
         // Fallback: use content if available, otherwise show generic message
         return notification.content || `${actor} a interagi avec vous`;

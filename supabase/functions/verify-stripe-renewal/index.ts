@@ -156,6 +156,26 @@ serve(async (req) => {
       console.error("Failed to send notification:", notifErr);
     }
 
+    // Send push notification for subscription renewal
+    try {
+      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-push-notification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+        },
+        body: JSON.stringify({
+          recipientUserId: userId,
+          title: 'Abonnement renouvelé!',
+          body: `Votre abonnement est actif jusqu'au ${newEnd.toLocaleDateString("fr-FR")}`,
+          type: 'subscription_renewed',
+          url: '/settings?tab=compte',
+        }),
+      });
+    } catch (pushErr) {
+      console.error("Failed to send push notification:", pushErr);
+    }
+
     // Send emails
     const userName = currentProfile?.full_name || "Étudiant";
     const userEmail = session.customer_email || session.customer_details?.email;

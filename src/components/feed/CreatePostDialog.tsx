@@ -430,6 +430,35 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
       // Don't fail the post creation if mention notifications fail
     }
 
+    // Send push notification to followers for the new post
+    // The DB trigger handles in-app notifications; this adds browser push
+    try {
+      const { data: followers } = await supabase
+        .from('follows')
+        .select('follower_id')
+        .eq('following_id', currentUser.id)
+        .eq('status', 'accepted');
+
+      if (followers && followers.length > 0) {
+        // Fire-and-forget — don't block UI on push delivery
+        Promise.all(
+          followers.map(f =>
+            supabase.functions.invoke('send-push-notification', {
+              body: {
+                recipientUserId: f.follower_id,
+                actorId: currentUser.id,
+                type: 'new_post',
+                entityId: newPost.id,
+                url: '/feed',
+              }
+            })
+          )
+        ).catch(err => console.error('Push notification error for new_post:', err));
+      }
+    } catch (pushErr) {
+      console.error('Error sending new_post push notifications:', pushErr);
+    }
+
     // Clean up video thumbnail URL object to prevent memory leak
     if (videoThumbnail) {
       URL.revokeObjectURL(videoThumbnail);
