@@ -119,8 +119,10 @@ serve(async (req) => {
     const outfitDescription = outfitDescriptions[outfitStyle] || outfitDescriptions['casual'];
     const effectDescription = effectDescriptions[specialEffect] || '';
 
-    // Detailed prompt incorporating all character creator options
-    const prompt = `CRITICAL INSTRUCTIONS - You MUST follow these characteristics EXACTLY:
+    // Detailed prompt incorporating all character creator options — cultural block is non-negotiable
+    const prompt = `MANDATORY CULTURAL CONTEXT: This avatar represents a Haitian student. The character must have features consistent with Caribbean/Haitian heritage — warm skin undertones, facial features reflecting Afro-Caribbean or mixed Caribbean ancestry. The overall aesthetic should feel warm, vibrant, and Caribbean in spirit regardless of the art style chosen. This is non-negotiable and must be reflected in every generated avatar.
+
+CRITICAL INSTRUCTIONS - You MUST follow these characteristics EXACTLY:
 
 CHARACTER SPECIFICATIONS (DO NOT DEVIATE):
 - Gender: ${gender} (MUST be clearly ${gender}, this is NON-NEGOTIABLE)
