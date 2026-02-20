@@ -17,7 +17,7 @@ import { uploadWithProgress } from "@/utils/uploadWithProgress";
 import { CreateGroupDialog } from "@/components/CreateGroupDialog";
 import { GroupInfoDialog } from "@/components/GroupInfoDialog";
 
-import chatBackground from "@/assets/background-chat.png";
+import chatBackground from "@/assets/edupreneur-watermark-patterns.png";
 
 // Use public paths for WebP optimization
 const ericAiHelper = "/images/eric-ai-helper.png";
