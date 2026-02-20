@@ -577,9 +577,9 @@ export const AIAvatarGenerator = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 mx-0 w-[calc(100%-2rem)] max-w-lg max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
+      <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 mx-0 w-[calc(100%-1rem)] sm:w-[calc(100%-2rem)] max-w-lg max-h-[85vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
         {/* ─── Header ─── */}
-        <div className="bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 p-4 shrink-0">
+        <div className="bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 p-3 sm:p-4 shrink-0">
           {isOnboarding && (
             <p className="text-xs font-medium text-primary mb-2 tracking-wide uppercase">
               Étape 2 sur 3 — Ton avatar
@@ -596,9 +596,10 @@ export const AIAvatarGenerator = ({
         {/* ─── Body: two-panel layout ─── */}
         <div className="overflow-y-auto flex-1 flex flex-col md:flex-row">
           {/* ─── Left panel: preview + Jude ─── */}
-          <div className="shrink-0 md:w-48 h-40 md:h-auto flex flex-row md:flex-col items-center gap-3 p-4 border-b md:border-b-0 md:border-r border-border bg-muted/30">
-            {/* Avatar preview or pulsing placeholder */}
-            <div className="w-28 h-28 md:w-36 md:h-36 rounded-xl shadow-lg overflow-hidden bg-muted flex items-center justify-center shrink-0">
+          {/* Left panel: compact on mobile to preserve space for buttons */}
+          <div className="shrink-0 md:w-48 flex flex-row md:flex-col items-center gap-2 sm:gap-3 p-2 sm:p-4 border-b md:border-b-0 md:border-r border-border bg-muted/30">
+            {/* Avatar preview — smaller on mobile to avoid pushing buttons off-screen */}
+            <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-xl shadow-lg overflow-hidden bg-muted flex items-center justify-center shrink-0">
               {generatedImage ? (
                 <img
                   src={generatedImage}
@@ -608,7 +609,7 @@ export const AIAvatarGenerator = ({
               ) : (
                 /* Pulsing silhouette placeholder */
                 <div className="w-full h-full flex items-center justify-center animate-pulse">
-                  <User className="h-16 w-16 text-muted-foreground/30" />
+                  <User className="h-10 w-10 sm:h-16 sm:w-16 text-muted-foreground/30" />
                 </div>
               )}
             </div>
@@ -618,7 +619,7 @@ export const AIAvatarGenerator = ({
               <img
                 src={judeProfile}
                 alt="Jude"
-                className="h-12 w-12 md:h-16 md:w-16 rounded-full object-cover"
+                className="h-10 w-10 sm:h-12 sm:w-12 md:h-16 md:w-16 rounded-full object-cover"
               />
               {/* Speech bubble with AnimatePresence fade */}
               <AnimatePresence mode="wait">
@@ -676,7 +677,8 @@ export const AIAvatarGenerator = ({
         </div>
 
         {/* ─── Footer (logic unchanged, visual refresh) ─── */}
-        <div className="p-4 border-t bg-background shrink-0 space-y-2">
+        {/* Footer: always visible with compact mobile padding */}
+        <div className="p-3 sm:p-4 border-t bg-background shrink-0 space-y-2">
           {/* Cooldown notice */}
           {!canRegenerate && nextRegenerateDate && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg p-3 mb-2">
@@ -722,7 +724,7 @@ export const AIAvatarGenerator = ({
               onClick={handleGenerate}
               disabled={isGenerating || !canRegenerate}
               className={cn(
-                "w-full h-12",
+                "w-full h-10 sm:h-12",
                 canRegenerate && !isGenerating && "bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90"
               )}
             >
@@ -749,22 +751,22 @@ export const AIAvatarGenerator = ({
                 variant="outline"
                 onClick={handleGenerate}
                 disabled={isGenerating || isSaving}
-                className="flex-1 h-12"
+                className="flex-1 h-10 sm:h-12 text-xs sm:text-sm"
               >
-                <RefreshCw className={cn("h-4 w-4 mr-2", isGenerating && "animate-spin")} />
-                🔄 Régénérer
+                <RefreshCw className={cn("h-4 w-4 mr-1 sm:mr-2", isGenerating && "animate-spin")} />
+                Régénérer
               </Button>
               <Button
                 onClick={handleSaveAvatar}
                 disabled={isSaving}
-                className="flex-1 h-12 bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90"
+                className="flex-1 h-10 sm:h-12 text-xs sm:text-sm bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90"
               >
                 {isSaving ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="h-4 w-4 mr-1 sm:mr-2 animate-spin" />
                 ) : (
-                  <Check className="h-4 w-4 mr-2" />
+                  <Check className="h-4 w-4 mr-1 sm:mr-2" />
                 )}
-                ✅ Utiliser cet avatar
+                Utiliser cet avatar
               </Button>
             </div>
           ) : null}
