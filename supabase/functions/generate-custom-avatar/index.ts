@@ -5,16 +5,50 @@ import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../
 import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-// Input validation schema
+// Input validation schema — new optional fields have safe defaults for backward compat
 const avatarSchema = z.object({
   style: z.enum(['anime', 'manga', 'chibi', 'cartoon', 'realistic']).optional().default('anime'),
   hairColor: z.string().max(50).optional().default('black'),
   eyeColor: z.string().max(50).optional().default('brown'),
   expression: z.string().max(100).optional().default('friendly smile'),
-  accessories: z.array(z.string().max(50)).max(5).optional().default([]),
+  accessories: z.array(z.string().max(50)).max(8).optional().default([]),
   skinTone: z.string().max(50).optional().default('medium'),
   gender: z.enum(['male', 'female']),
+  // New parameters added for the character creator redesign
+  hairStyle: z.string().max(50).optional().default('court'),
+  outfitStyle: z.string().max(50).optional().default('casual'),
+  background: z.string().max(100).optional().default('classroom'),
+  specialEffect: z.string().max(100).optional().default('none'),
 }).strict();
+
+// Maps background IDs to descriptive prompt text for DALL-E 3
+const backgroundDescriptions: Record<string, string> = {
+  'classroom': 'A warm, well-lit classroom with bookshelves and a chalkboard in the background',
+  'haitian-beach': 'A beautiful Haitian beach with turquoise water and palm trees',
+  'starry-sky': 'A magical starry night sky with constellations and nebulae',
+  'modern-city': 'A vibrant modern city skyline with glass buildings at golden hour',
+  'tropical-nature': 'Lush tropical vegetation with exotic flowers and greenery',
+  'library': 'An elegant library with tall wooden bookshelves full of books',
+};
+
+// Maps outfit IDs to descriptive prompt text
+const outfitDescriptions: Record<string, string> = {
+  'school-uniform': 'wearing a neat school uniform with a tie',
+  'casual': 'wearing casual comfortable clothing',
+  'sport': 'wearing athletic sportswear',
+  'traditional-haitian': 'wearing traditional Haitian clothing with vibrant colors and patterns',
+  'futuristic': 'wearing futuristic sci-fi inspired clothing with glowing accents',
+};
+
+// Maps special effect IDs to descriptive prompt text
+const effectDescriptions: Record<string, string> = {
+  'none': '',
+  'surrounded-by-books': 'Floating books and pages surround the character magically',
+  'golden-light': 'Warm golden light rays emanate around the character creating a divine glow',
+  'watercolor': 'The entire image has a beautiful watercolor painting effect with soft bleeding colors',
+  'magic-particles': 'Sparkling magical particles and light orbs float around the character',
+  'urban-neon': 'Vibrant neon purple and blue light effects glow around the character',
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -67,7 +101,7 @@ serve(async (req) => {
       );
     }
 
-    const { style, hairColor, eyeColor, expression, accessories, skinTone, gender } = validation.data;
+    const { style, hairColor, eyeColor, expression, accessories, skinTone, gender, hairStyle, outfitStyle, background, specialEffect } = validation.data;
     
     // Read OpenAI key — replaces Lovable AI Gateway which has persistent 500s on image models
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
@@ -80,15 +114,22 @@ serve(async (req) => {
       ? accessories.join(', ') 
       : 'none';
 
-    // Same detailed prompt — only the API target changes
+    // Resolve descriptive text for new parameters
+    const bgDescription = backgroundDescriptions[background] || backgroundDescriptions['classroom'];
+    const outfitDescription = outfitDescriptions[outfitStyle] || outfitDescriptions['casual'];
+    const effectDescription = effectDescriptions[specialEffect] || '';
+
+    // Detailed prompt incorporating all character creator options
     const prompt = `CRITICAL INSTRUCTIONS - You MUST follow these characteristics EXACTLY:
 
 CHARACTER SPECIFICATIONS (DO NOT DEVIATE):
 - Gender: ${gender} (MUST be clearly ${gender}, this is NON-NEGOTIABLE)
 - Skin tone: ${skinTone} (EXACT shade required - if "dark" use dark skin, if "light" use light skin)
 - Hair color: ${hairColor} (MUST be this EXACT color: ${hairColor}, not similar, not close - EXACTLY this color)
+- Hair style: ${hairStyle} (MUST have this hairstyle)
 - Eye color: ${eyeColor} (MUST be this EXACT color: ${eyeColor}, clearly visible)
 - Facial expression: ${expression}
+- Outfit: ${outfitDescription}
 - Accessories: ${accessoryList === 'none' ? 'NO accessories at all - the character must have NO glasses, NO headwear, NO earrings, NOTHING' : `MUST include these and ONLY these: ${accessoryList}`}
 
 STYLE: ${style} style avatar portrait
@@ -97,11 +138,13 @@ ${style === 'chibi' ? '- Cute chibi style with oversized head, small body, very 
 ${style === 'cartoon' ? '- Western cartoon style with bold outlines, bright saturated colors' : ''}
 ${style === 'realistic' ? '- Semi-realistic digital art style with detailed features, natural proportions' : ''}
 
+BACKGROUND: ${bgDescription}
+${effectDescription ? `SPECIAL EFFECT: ${effectDescription}` : ''}
+
 MANDATORY REQUIREMENTS:
 - Head and shoulders portrait, centered composition
 - Clean, vibrant colors with professional quality
 - Suitable for social media profile picture
-- Soft lighting with subtle gradient background
 - Square aspect ratio (1:1)
 - NO text or watermarks
 - The character MUST match ALL specified characteristics EXACTLY as described above
