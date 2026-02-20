@@ -146,7 +146,7 @@ export function EbookComments({ ebookId }: EbookCommentsProps) {
               <div className="flex items-start justify-between">
                 <div>
                   <span className="font-medium">
-                    {comment.profile?.nickname || 'Utilisateur'}
+                    {comment.profile?.nickname ?? 'Étudiant'}
                   </span>
                   <span className="ml-2 text-xs text-muted-foreground">
                     {formatDistanceToNow(new Date(comment.created_at), { 

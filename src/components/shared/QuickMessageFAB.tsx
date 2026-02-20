@@ -103,7 +103,7 @@ export const QuickMessageFAB = ({ isVisitor = false }: QuickMessageFABProps) => 
 
         return {
           id: p.conversation_id,
-          participantName: profile?.nickname || "Utilisateur",
+          participantName: profile?.nickname ?? 'toi',
           participantAvatar: profile?.avatar_url,
           participantId: otherParticipant.user_id,
           lastMessage: lastMessage?.content || "",

@@ -113,7 +113,7 @@ serve(async (req) => {
 
     const conversationHistory = (messages as Array<{sender_id: string; content: string}>)?.map((msg) => {
       const isJude = msg.sender_id === JUDE_USER_ID;
-      const senderName = profileMap.get(msg.sender_id) || 'Utilisateur';
+      const senderName = profileMap.get(msg.sender_id) || 'Étudiant';
       return {
         role: isJude ? 'assistant' : 'user',
         content: isJude ? msg.content : `[${senderName}]: ${msg.content}`

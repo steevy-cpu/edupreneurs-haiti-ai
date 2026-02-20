@@ -158,7 +158,7 @@ export const ConversationSidebar = ({
                         >
                           {conv.is_group 
                             ? conv.group?.name 
-                            : (conv.otherUser?.nickname || conv.otherUser?.full_name || "Utilisateur")
+                            : (conv.otherUser?.nickname ?? conv.otherUser?.full_name ?? 'Étudiant')
                           }
                         </p>
                         {conv.is_group && (

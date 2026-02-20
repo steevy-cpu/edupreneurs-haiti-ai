@@ -127,8 +127,8 @@ const Affiliations = () => {
         enrichedReferrals.push({
           ...referral,
           profiles: {
-            full_name: profile?.full_name || "Utilisateur",
-            nickname: profile?.nickname || "utilisateur"
+            full_name: profile?.full_name ?? 'Étudiant',
+            nickname: profile?.nickname ?? 'étudiant'
           }
         });
       });
@@ -339,9 +339,9 @@ const Affiliations = () => {
                         {referral.profiles?.full_name?.charAt(0) || "?"}
                       </div>
                       <div>
-                        <p className="font-semibold">{referral.profiles?.full_name || "Utilisateur"}</p>
+                        <p className="font-semibold">{referral.profiles?.full_name ?? 'Étudiant'}</p>
                         <p className="text-sm text-muted-foreground">
-                          @{referral.profiles?.nickname || "utilisateur"}
+                          @{referral.profiles?.nickname ?? 'étudiant'}
                         </p>
                       </div>
                     </div>

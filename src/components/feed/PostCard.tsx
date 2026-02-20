@@ -138,7 +138,7 @@ export function PostCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
               <p className="font-semibold text-xs xs:text-sm truncate">
-                {post.profile?.full_name || "Utilisateur"}
+                {post.profile?.full_name ?? post.profile?.nickname ?? 'Étudiant'}
               </p>
               {post.profile?.verified && (
                 <BadgeCheck className="w-3.5 h-3.5 xs:w-4 xs:h-4 text-primary fill-primary/20 shrink-0" />
