@@ -1,166 +1,189 @@
 
 
-# Media Plan A — Fix, Wire, and Harden Media Handling
+# Feed Plan A — Performance Improvements and Grade Tags
 
 ## Overview
 
-Six targeted fixes to harden media handling in the messaging system. No changes to Community Plans A, B, or C code paths.
+Five targeted fixes to the feed page: parallelize queries, lazy-load comments, remove duplicate auth, fix realtime to targeted updates, and add grade tags. No pagination, UX animation, or PostCard refactoring changes.
 
 ---
 
-## Fix 1 — RLS Gap for document_url (CRITICAL)
+## Fix 1 — Parallelize Feed Enrichment Queries
 
-**Database migration** to replace the existing SELECT policy on `storage.objects` for the `message-media` bucket. The current policy only checks `image_url` and `video_url` — it must also check `document_url`.
+**File:** `src/hooks/useFeedData.ts`
 
-```sql
-DROP POLICY IF EXISTS "Users can view message media" ON storage.objects;
+Current `fetchFeedPosts()` runs 7 sequential queries (lines 13-54). Restructure to 3 hops:
 
-CREATE POLICY "Users can view message media"
-ON storage.objects FOR SELECT
-USING (
-  bucket_id = 'message-media' AND (
-    auth.uid()::text = (storage.foldername(name))[1]
-    OR EXISTS (
-      SELECT 1 FROM messages m
-      JOIN conversation_participants cp 
-        ON cp.conversation_id = m.conversation_id
-      WHERE cp.user_id = auth.uid()
-        AND (
-          m.image_url LIKE '%' || name || '%'
-          OR m.video_url LIKE '%' || name || '%'
-          OR m.document_url LIKE '%' || name || '%'
-        )
-    )
-  )
-);
+```text
+Hop 1: auth.getUser()
+Hop 2: posts SELECT (limit 50)
+Hop 3: Promise.all([profiles, likes, commentCounts, shares])
 ```
 
-**Note:** Since the bucket is public, this policy is a defense-in-depth layer. But it must be correct in case the bucket ever becomes private.
+Key changes:
+- Replace the full comments fetch (lines 39-49) with a COUNT query grouped by post_id: `SELECT post_id, count(*) FROM post_comments WHERE post_id IN (...) GROUP BY post_id`
+- Include `academic_grade` in the profiles SELECT (currently `select("*")` already fetches it, but we make it explicit)
+- Remove `comments` and `commentProfiles` from the parallel batch entirely
+- The enrichment loop sets `commentCount` from the count query and `comments: []` (empty -- loaded lazily)
+- Remove the is_founder RPC call from the feed data hook (it belongs in the component, already handled there)
+
+**Impact:** 7 sequential hops reduced to 3. On 3G (300ms RTT): ~2.1s down to ~0.9s.
 
 ---
 
-## Fix 2 — Wire NetworkAwareImage into MessageBubble
+## Fix 2 — Lazy Load Comments Per Post
 
-**File:** `src/components/community/MessageBubble.tsx` (lines 294-305)
+**Files:** `src/hooks/useFeedData.ts`, `src/pages/Feed.tsx`
 
-- Import `NetworkAwareImage` from `@/components/feed/NetworkAwareMedia`
-- Replace the raw `<img>` tag with `<NetworkAwareImage>` keeping identical `src`, `alt`, `className`, and wrapping the `onClick` handler
-
-Before:
-```tsx
-<img src={message.image_url} alt="Image" className="..." loading="lazy" ... />
-```
-
-After:
-```tsx
-<NetworkAwareImage src={message.image_url!} alt="Image" className="..." />
-```
-
-The `onClick` for full-size viewer wraps the component in a clickable div. This gives 3G users automatic quality reduction via the existing `useNetworkAwareLoading` hook.
-
----
-
-## Fix 3 — Wire NetworkAwareVideo into MessageBubble
-
-**File:** `src/components/community/MessageBubble.tsx` (lines 307-327)
-
-- Import `NetworkAwareVideo` from `@/components/feed/NetworkAwareMedia`
-- Replace the raw `<video>` tag with `<NetworkAwareVideo>` keeping the same `src` and `className`
-- Keep the download button overlay as-is
-
-Before:
-```tsx
-<video src={message.video_url} controls className="..." preload="metadata" />
-```
-
-After:
-```tsx
-<NetworkAwareVideo src={message.video_url!} className="rounded-lg w-full max-h-64" />
-```
-
-On slow connections, users see a tap-to-load placeholder instead of auto-downloading the video.
-
----
-
-## Fix 4 — Wire uploadWithProgress for Video Uploads
-
-**File:** `src/pages/Community.tsx`
-
-- Import `uploadWithProgress` from `@/utils/uploadWithProgress`
-- Add state: `const [uploadProgress, setUploadProgress] = useState<number | null>(null)`
-- For video uploads only (line 1492-1494), replace `supabase.storage.upload()` with `uploadWithProgress('message-media', fileName, currentMediaFile, callback)`
-- The callback updates `uploadProgress` state (0-100)
-- Display a small progress indicator in the message input area while uploading (e.g., "Envoi vidéo: 45%")
-- Reset `uploadProgress` to `null` on complete or error
-- Image and document uploads continue using the standard `supabase.storage.upload()` (they are small enough not to need progress)
-
----
-
-## Fix 5 — Set Bucket-Level Limits
-
-**Database migration** to update the `message-media` bucket with server-side enforcement:
-
-```sql
-UPDATE storage.buckets
-SET file_size_limit = 52428800,
-    allowed_mime_types = ARRAY[
-      'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-      'video/mp4', 'video/quicktime', 'video/webm',
-      'application/pdf', 'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'text/plain'
-    ]
-WHERE id = 'message-media';
-```
-
-Current state: `file_size_limit = NULL`, `allowed_mime_types = NULL` (no enforcement). This adds server-side blocking for oversized files and disallowed types.
-
----
-
-## Fix 6 — Thumbnail System for Images
-
-### 6a. Database migration
-
-```sql
-ALTER TABLE messages ADD COLUMN IF NOT EXISTS thumbnail_url text;
-```
-
-### 6b. Type update
-
-**File:** `src/types/community.ts` — Add to Message interface:
-```typescript
-thumbnail_url?: string | null;
-```
-
-### 6c. Thumbnail generation
-
-**File:** `src/utils/mediaOptimization.ts` — Add new function:
+### New hook: `useLazyComments` (add to `useFeedData.ts` or a new file `src/hooks/useLazyComments.ts`)
 
 ```typescript
-export const generateImageThumbnail = async (file: File): Promise<Blob> => {
-  // Canvas-based 300x300 center-crop thumbnail, JPEG 0.6 quality
+export const useLazyComments = () => {
+  const [commentsCache, setCommentsCache] = useState<Record<string, Comment[]>>({});
+  const [loadingComments, setLoadingComments] = useState<Record<string, boolean>>({});
+
+  const fetchCommentsForPost = async (postId: string) => {
+    // Skip if already cached or count is 0
+    if (commentsCache[postId]) return;
+    
+    setLoadingComments(prev => ({ ...prev, [postId]: true }));
+    
+    // Fetch comments + commenter profiles in parallel
+    const [commentsRes, ...] = await Promise.all([...]);
+    
+    // Build nested structure (top-level + replies)
+    // Cache result
+    setCommentsCache(prev => ({ ...prev, [postId]: result }));
+    setLoadingComments(prev => ({ ...prev, [postId]: false }));
+  };
+
+  return { commentsCache, loadingComments, fetchCommentsForPost };
 };
 ```
 
-Uses the same Canvas API pattern already in `compressImage()`. Center-crops to square, outputs ~5-15KB thumbnails.
+### Feed.tsx changes:
 
-### 6d. Upload flow
+- Import and use `useLazyComments`
+- When user clicks comment button (line 1238), call `fetchCommentsForPost(post.id)` if `commentCount > 0` and not already cached
+- In the comments section (line 1267-1318):
+  - If `loadingComments[post.id]` is true: show 2-3 comment skeleton rows
+  - If `commentsCache[post.id]` exists: render those comments
+  - If `commentCount === 0`: show "Aucun commentaire" immediately (no fetch)
+- After adding a new comment successfully, append it to the local `commentsCache` for that post and increment the `commentCount` via `updatePostOptimistically`
 
-**File:** `src/pages/Community.tsx` — When sending an image:
+### Update Post type in `src/types/feed.ts`:
 
-1. Call `compressImage()` (existing) and `generateImageThumbnail()` (new) in parallel
-2. Upload full image to `message-media/{userId}/{timestamp}-full.jpg`
-3. Upload thumbnail to `message-media/{userId}/{timestamp}-thumb.jpg`
-4. Store thumbnail URL in `thumbnail_url` column
-5. Store full image URL in `image_url` column
+- `comments` field becomes optional and is no longer populated by the initial fetch
+- No breaking change since existing code already checks `post.comments && post.comments.length > 0`
 
-### 6e. Display
+---
 
-**File:** `src/components/community/MessageBubble.tsx`:
+## Fix 3 — Remove Duplicate Auth Call
 
-- In the image display section, use `message.thumbnail_url || message.image_url` as the `src` for `NetworkAwareImage`
-- When user clicks to open full-size viewer, pass `message.image_url` (the full image)
-- Existing messages without `thumbnail_url` fall back to `image_url` seamlessly
+**File:** `src/pages/Feed.tsx`
+
+The `checkAuth()` function (line 259-270) calls `supabase.auth.getUser()` redundantly -- `useFeedData` already calls it inside `fetchFeedPosts()`.
+
+Replace `checkAuth()` with a simpler approach:
+- Use the session/user from `SessionAuthProvider` context (already available in the app) or derive `currentUser` from the feed data hook
+- If not available from context, keep the auth call but deduplicate by checking if the user is already set
+
+Simplest safe fix: Add `currentUserId` to the return value of `useFeedData` (captured during the fetch), then in Feed.tsx set `currentUser` from that instead of making a separate auth call.
+
+---
+
+## Fix 4 — Targeted Realtime Cache Updates
+
+**File:** `src/pages/Feed.tsx` (lines 283-302)
+
+Replace the current `refreshFeed()` call on any posts change with targeted handlers:
+
+```typescript
+const subscribeToNewPosts = () => {
+  const channel = supabase
+    .channel("posts-changes")
+    .on("postgres_changes", {
+      event: "INSERT", schema: "public", table: "posts",
+    }, async (payload) => {
+      // Fetch only the new post's author profile
+      const newPost = payload.new;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, user_id, full_name, nickname, avatar_url, verified, academic_grade")
+        .eq("user_id", newPost.user_id)
+        .single();
+      
+      // Prepend to cache with zero counts
+      addPostOptimistically({
+        ...newPost,
+        profile,
+        likes: 0, isLiked: false,
+        comments: [], commentCount: 0,
+        shareCount: 0, isShared: false,
+      });
+    })
+    .on("postgres_changes", {
+      event: "UPDATE", schema: "public", table: "posts",
+    }, (payload) => {
+      updatePostOptimistically(payload.new.id, payload.new);
+    })
+    .on("postgres_changes", {
+      event: "DELETE", schema: "public", table: "posts",
+    }, (payload) => {
+      removePostOptimistically(payload.old.id);
+    })
+    .subscribe();
+
+  return () => supabase.removeChannel(channel);
+};
+```
+
+Note: The INSERT handler must respect RLS -- only posts visible to the current user will arrive via realtime (RLS filters the channel). For the INSERT, we fetch the author profile (1 query) instead of refetching all 50 posts + enrichment.
+
+---
+
+## Fix 5 — Grade Tags on Post Cards
+
+**File:** `src/pages/Feed.tsx` (lines 1107-1126), `src/types/feed.ts`
+
+### Type update (`src/types/feed.ts`):
+
+Add `academic_grade` to the Profile interface:
+```typescript
+export interface Profile {
+  // ... existing fields
+  academic_grade?: string | null;
+}
+```
+
+### Grade color map (add as constant in Feed.tsx or a shared util):
+
+```typescript
+const GRADE_COLORS: Record<string, string> = {
+  '7AF': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+  '8AF': 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
+  '9AF': 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
+  'NS1': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+  'NS2': 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
+  'NS3': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+  'NS4': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+  'UNIV': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+};
+```
+
+### Display (in the post header, line ~1118, after the Globe icon):
+
+```tsx
+{post.profile?.academic_grade && 
+ post.profile.academic_grade !== 'NONE' && 
+ GRADE_COLORS[post.profile.academic_grade] && (
+  <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0 ${GRADE_COLORS[post.profile.academic_grade]}`}>
+    {post.profile.academic_grade}
+  </span>
+)}
+```
+
+Dark mode variants included via `dark:` prefixes to ensure readability in both themes.
 
 ---
 
@@ -168,23 +191,25 @@ Uses the same Canvas API pattern already in `compressImage()`. Center-crops to s
 
 | File | Change |
 |---|---|
-| DB migration | RLS policy update, bucket limits, `thumbnail_url` column |
-| `src/types/community.ts` | Add `thumbnail_url` to Message interface |
-| `src/utils/mediaOptimization.ts` | Add `generateImageThumbnail()` function |
-| `src/pages/Community.tsx` | Wire `uploadWithProgress` for video, thumbnail generation + upload for images, progress state |
-| `src/components/community/MessageBubble.tsx` | Wire `NetworkAwareImage`, `NetworkAwareVideo`, thumbnail display |
+| `src/types/feed.ts` | Add `academic_grade` to Profile interface |
+| `src/hooks/useFeedData.ts` | Parallelize queries 3-7, replace full comments with count, expose `currentUserId` |
+| `src/hooks/useLazyComments.ts` | New hook for on-demand comment loading with cache |
+| `src/pages/Feed.tsx` | Wire lazy comments, remove duplicate auth, targeted realtime, grade tags |
 
 ## Safety Verification
 
-| Check | Status |
+| Check | Result |
 |---|---|
-| Existing images without `thumbnail_url` display correctly via `image_url` fallback | Yes -- `thumbnail_url \|\| image_url` |
-| RLS policy covers `image_url`, `video_url`, and `document_url` | Yes -- all three in OR clause |
-| `NetworkAwareImage` renders correctly with quality adaptation | Yes -- same component used in Feed |
-| `NetworkAwareVideo` shows tap-to-load on 3G | Yes -- same component used in Feed |
-| Video upload shows progress percentage | Yes -- `uploadWithProgress` callback |
-| Bucket rejects files outside allowed MIME types | Yes -- server-side `allowed_mime_types` |
-| Bucket rejects files over 50MB | Yes -- `file_size_limit = 52428800` |
-| No Community Plan A/B/C code touched | Correct |
-| No new dependencies added | Correct |
+| Parallel query structure correctly enriches all 50 posts | Yes -- profiles, likes, counts, shares all keyed by post_id |
+| Comment counts display correctly before lazy load | Yes -- COUNT query grouped by post_id populates `commentCount` |
+| Clicking comment on a post with comments shows skeleton then loads | Yes -- `loadingComments[postId]` triggers skeleton, then cache renders |
+| Clicking comment on post with 0 comments shows empty state immediately | Yes -- `commentCount === 0` skips fetch, shows "Aucun commentaire" |
+| Realtime INSERT prepends without full refetch | Yes -- single profile fetch + `addPostOptimistically` |
+| Realtime UPDATE patches in place | Yes -- `updatePostOptimistically` |
+| Realtime DELETE removes from cache | Yes -- `removePostOptimistically` |
+| Grade tags display correct colors per grade | Yes -- explicit color map with dark mode support |
+| Posts without `academic_grade` show no tag | Yes -- null/NONE/missing key all filtered out |
+| Existing post interactions (like, share, delete, edit, report) unaffected | Yes -- no changes to those code paths |
+| Visitor mode unaffected | Yes -- visitor check runs before any data fetch changes |
+| localStorage persistence still works | Yes -- `persistQueryData` call unchanged |
 
