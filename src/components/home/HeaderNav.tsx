@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X, Rss, Heart } from "lucide-react";
 import { navLinks } from "@/data/homePageData";
-/* Logo uses public WebP with PNG fallback — no static import needed */
+import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 
 /**
  * Sticky header with navigation.
@@ -28,19 +28,16 @@ export const HeaderNav = memo(function HeaderNav() {
       <div className="container mx-auto px-4 sm:px-6 py-2 sm:py-4 flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-1.5 sm:gap-3">
-          {/* WebP with PNG fallback for logo */}
-          <picture>
-            <source srcSet="/images/edupreneurs-new-logo.webp" type="image/webp" />
-            <img 
-              src="/images/edupreneurs-new-logo.png" 
-              alt="EDUPRENEURS Logo" 
-              width={45}
-              height={56}
-              className="h-8 sm:h-12 w-auto object-contain" 
-              loading="eager"
-              fetchPriority="high"
-            />
-          </picture>
+          {/* PNG logo — WebP lost transparent background */}
+          <img 
+            src={edupreneursLogo} 
+            alt="EDUPRENEURS Logo" 
+            width={45}
+            height={56}
+            className="h-8 sm:h-12 w-auto object-contain" 
+            loading="eager"
+            fetchPriority="high"
+          />
         </Link>
         
         {/* Desktop Navigation */}
