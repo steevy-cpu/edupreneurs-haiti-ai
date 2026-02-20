@@ -14,6 +14,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+import dashboardImage from '@/assets/dashboard00.png';
 
 // Hooks
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
@@ -81,7 +83,7 @@ export const AppSidebar = memo(function AppSidebar({
   const { preloadRoute } = useRoutePreloader();
   
   // Auth and profile data
-  const { profile } = useUserProfile();
+  const { profile, isLoading: isProfileLoading } = useUserProfile();
   const { badges } = useSidebarBadges(profile.userId);
   
   const userAvatar = profile.avatarUrl;
@@ -173,13 +175,24 @@ export const AppSidebar = memo(function AppSidebar({
             'mx-auto rounded-full overflow-hidden bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] shadow-md animate-[gentle-bob_8s_ease-in-out_infinite]',
             collapsed ? 'w-10 h-10 lg:mb-0 mb-2' : 'w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mb-2 sm:mb-3 lg:mb-4'
           )}>
-            <img 
-              src={userAvatar} 
-              alt="User Avatar" 
-              className="w-full h-full object-cover" 
-              loading="lazy" 
-              decoding="async" 
-            />
+            {isProfileLoading ? (
+              /* Skeleton placeholder — prevents Jude flash during query */
+              <Skeleton className="w-full h-full rounded-full" />
+            ) : userAvatar && userAvatar !== dashboardImage ? (
+              /* Real avatar from profile */
+              <img
+                src={userAvatar}
+                alt="User Avatar"
+                className="w-full h-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              /* Neutral initial-based fallback when no avatar is saved */
+              <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground font-bold text-lg">
+                {(userNickname ?? '?').charAt(0).toUpperCase()}
+              </div>
+            )}
           </div>
           {!collapsed && (
             <div className="font-bold text-sm sm:text-base lg:text-lg text-foreground truncate">
