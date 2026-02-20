@@ -4,7 +4,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
@@ -39,7 +38,6 @@ import {
 } from "@/components/ui/popover";
 import { LazyEmojiPicker } from "@/components/LazyEmojiPicker";
 import { getAvatarUrl } from "@/lib/avatarMap";
-import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
 
 import { useFeedData } from "@/hooks/useFeedData";
 import { useLazyComments } from "@/hooks/useLazyComments";
@@ -50,6 +48,10 @@ import { useVisitor } from "@/contexts/VisitorContext";
 import { LockedOverlay } from "@/components/visitor";
 import { visitorFeedPosts } from "@/data/visitorDemoData";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
+
+// Plan C Fix 5: Increased truncation for educational content (was 150)
+const MAX_CONTENT_PREVIEW = 280;
 
 // Grade badge color map for academic level display on post cards (Fix 5)
 const GRADE_COLORS: Record<string, string> = {
@@ -166,13 +168,16 @@ const Feed = () => {
   const { user: sessionUser } = useSessionAuth();
   const currentUser = sessionUser;
   const { commentsCache, loadingComments, fetchCommentsForPost, addCommentToCache, removeCommentFromCache } = useLazyComments();
-  const [newPostContent, setNewPostContent] = useState("");
-  const [isCreatingPost, setIsCreatingPost] = useState(false);
-  const [isPublicPost, setIsPublicPost] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  // Plan C Fix 1: Network-aware post entry animations
+  const { shouldAnimate } = useNetworkAwareAnimations();
+  // Track initial load vs paginated — stagger only on first render
+  const initialLoadCompleteRef = useRef(false);
+
+  // Plan C Fix 2: Pull-to-refresh state for mobile
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isPulling, setIsPulling] = useState(false);
+  const touchStartY = useRef(0);
+
   const [commentInputs, setCommentInputs] = useState<{ [key: string]: string }>({});
   const [replyInputs, setReplyInputs] = useState<{ [key: string]: string }>({});
   const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
@@ -187,7 +192,6 @@ const Feed = () => {
   const [selectedPostToShare, setSelectedPostToShare] = useState<Post | null>(null);
   const [followingUsers, setFollowingUsers] = useState<Profile[]>([]);
   const [sendingMessage, setSendingMessage] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { isVisitor } = useVisitor();
   const [visitorPosts, setVisitorPosts] = useState<Post[]>([]);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
@@ -356,196 +360,41 @@ const Feed = () => {
     };
   };
 
-  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      toast({
-        title: "Optimisation...",
-        description: "Compression de l'image en cours...",
-      });
-
-      const { file: optimizedFile, originalSize, optimizedSize, savings } = await optimizeMediaFile(file, 'image');
-      
-      setSelectedImage(optimizedFile);
-      setSelectedVideo(null);
-      setVideoPreview(null);
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(optimizedFile);
-
-      if (savings > 10) {
-        toast({
-          title: "Image optimisée!",
-          description: `Taille réduite de ${savings.toFixed(0)}% (${formatFileSize(originalSize)} → ${formatFileSize(optimizedSize)})`,
-        });
-      }
-    } catch (error) {
-      console.error('Error optimizing image:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'optimiser l'image",
-        variant: "destructive",
-      });
+  // Plan C Fix 2: Pull-to-refresh touch handlers for mobile
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    // Only activate when scrolled to top
+    if (scrollContainerRef.current?.scrollTop === 0) {
+      touchStartY.current = e.touches[0].clientY;
+      setIsPulling(true);
     }
-  };
+  }, []);
 
-  const handleVideoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const { file: validatedFile } = await optimizeMediaFile(file, 'video');
-      
-      setSelectedVideo(validatedFile);
-      setSelectedImage(null);
-      setImagePreview(null);
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setVideoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(validatedFile);
-
-      const sizeInMB = validatedFile.size / (1024 * 1024);
-      if (sizeInMB > 10) {
-        toast({
-          title: "Vidéo volumineuse",
-          description: `Taille: ${formatFileSize(validatedFile.size)}. Envisagez de compresser pour économiser de l'espace.`,
-        });
-      }
-    } catch (error: any) {
-      console.error('Error validating video:', error);
-      toast({
-        title: "Erreur",
-        description: error.message || "Impossible de charger la vidéo",
-        variant: "destructive",
-      });
-      e.target.value = ''; // Reset input
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isPulling) return;
+    const deltaY = e.touches[0].clientY - touchStartY.current;
+    if (deltaY > 0) {
+      // Resistance factor: indicator moves slower than finger
+      setPullDistance(deltaY * 0.4);
     }
-  };
+  }, [isPulling]);
 
-  const createPost = async () => {
-    if ((!newPostContent.trim() && !selectedImage && !selectedVideo) || !currentUser) return;
-
-    setIsCreatingPost(true);
-    let imageUrl = null;
-    let videoUrl = null;
-
-    if (selectedImage) {
-      const fileExt = selectedImage.name.split('.').pop();
-      const fileName = `${currentUser.id}/${Math.random()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('post-images')
-        .upload(fileName, selectedImage);
-
-      if (uploadError) {
-        toast({
-          title: "Erreur",
-          description: "Impossible de télécharger l'image",
-          variant: "destructive",
-        });
-        setIsCreatingPost(false);
-        return;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('post-images')
-        .getPublicUrl(fileName);
-      
-      imageUrl = publicUrl;
+  const handleTouchEnd = useCallback(() => {
+    if (pullDistance > 60 && !isRefreshing && !isFetchingMore) {
+      refreshFeed();
+      toast({ title: "Actualisation...", description: "Le fil d'actualité est en cours de mise à jour." });
     }
+    setPullDistance(0);
+    setIsPulling(false);
+  }, [pullDistance, isRefreshing, isFetchingMore, refreshFeed, toast]);
 
-    if (selectedVideo) {
-      const fileExt = selectedVideo.name.split('.').pop();
-      const fileName = `${currentUser.id}/${Math.random()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('post-images')
-        .upload(fileName, selectedVideo);
-
-      if (uploadError) {
-        toast({
-          title: "Erreur",
-          description: "Impossible de télécharger la vidéo",
-          variant: "destructive",
-        });
-        setIsCreatingPost(false);
-        return;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('post-images')
-        .getPublicUrl(fileName);
-      
-      videoUrl = publicUrl;
+  // Plan C Fix 1: Mark initial load complete after first posts render
+  useEffect(() => {
+    if (posts.length > 0 && !initialLoadCompleteRef.current) {
+      // Small delay to let initial stagger animation play
+      const timer = setTimeout(() => { initialLoadCompleteRef.current = true; }, 600);
+      return () => clearTimeout(timer);
     }
-
-    // Use .select().single() to get the new post ID for push notifications
-    const { data: newPost, error } = await supabase.from("posts").insert({
-      user_id: currentUser.id,
-      content: newPostContent.trim(),
-      image_url: imageUrl,
-      video_url: videoUrl,
-      is_public: isPublicPost,
-    }).select().single();
-
-    if (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de créer le post",
-        variant: "destructive",
-      });
-      setIsCreatingPost(false);
-      return;
-    }
-
-    setNewPostContent("");
-    setSelectedImage(null);
-    setSelectedVideo(null);
-    setImagePreview(null);
-    setVideoPreview(null);
-    setIsPublicPost(false);
-    setIsCreatingPost(false);
-    toast({
-      title: "Succès",
-      description: isPublicPost ? "Post public créé avec succès" : "Post créé avec succès",
-    });
-
-    // Send push notification to followers for the new post
-    // DB trigger handles in-app notifications; this adds browser push
-    try {
-      const { data: followers } = await supabase
-        .from('follows')
-        .select('follower_id')
-        .eq('following_id', currentUser.id)
-        .eq('status', 'accepted');
-
-      if (followers && followers.length > 0 && newPost) {
-        // Fire-and-forget — don't block UI on push delivery
-        Promise.all(
-          followers.map(f =>
-            supabase.functions.invoke('send-push-notification', {
-              body: {
-                recipientUserId: f.follower_id,
-                actorId: currentUser.id,
-                type: 'new_post',
-                entityId: newPost.id,
-                url: '/feed',
-              }
-            })
-          )
-        ).catch(err => console.error('Push notification error for new_post:', err));
-      }
-    } catch (pushErr) {
-      console.error('Error sending new_post push notifications:', pushErr);
-    }
-  };
+  }, [posts.length]);
 
   const deletePost = async (postId: string) => {
     const { error } = await supabase
@@ -815,58 +664,26 @@ const Feed = () => {
     setShareDialogOpen(true);
   };
 
+  // Plan C Fix 4: Single RPC replaces N+1 conversation lookup loop
   const sendPostAsMessage = async (recipientUserId: string) => {
     if (!currentUser || !selectedPostToShare) return;
-
     setSendingMessage(true);
 
     try {
-      // Find existing conversation or create new one
-      const { data: existingConversations } = await supabase
-        .from("conversation_participants")
-        .select("conversation_id")
-        .eq("user_id", currentUser.id);
+      // Single RPC call finds or creates DM conversation atomically
+      const { data: conversationId, error: convError } = await supabase
+        .rpc("start_direct_conversation", { other_user_id: recipientUserId });
 
-      let conversationId: string | null = null;
+      if (convError) throw convError;
 
-      if (existingConversations) {
-        for (const conv of existingConversations) {
-          const { data: participants } = await supabase
-            .from("conversation_participants")
-            .select("user_id")
-            .eq("conversation_id", conv.conversation_id);
-
-          const userIds = participants?.map(p => p.user_id) || [];
-          if (userIds.length === 2 && userIds.includes(recipientUserId)) {
-            conversationId = conv.conversation_id;
-            break;
-          }
-        }
-      }
-
-      // Create new conversation if none exists
-      if (!conversationId) {
-        const { data: newConv, error: convError } = await supabase
-          .rpc("create_conversation");
-
-        if (convError) throw convError;
-        conversationId = newConv;
-
-        // Add participants
-        await supabase.from("conversation_participants").insert([
-          { conversation_id: conversationId, user_id: currentUser.id },
-          { conversation_id: conversationId, user_id: recipientUserId }
-        ]);
-      }
-
-      // Send message with reference to the shared post
+      // Send the shared post message
       const { error: messageError } = await supabase
         .from("messages")
         .insert({
           conversation_id: conversationId,
           sender_id: currentUser.id,
           content: "📝 Post partagé",
-          shared_post_id: selectedPostToShare.id
+          shared_post_id: selectedPostToShare.id,
         });
 
       if (messageError) throw messageError;
@@ -876,20 +693,12 @@ const Feed = () => {
         .from("post_shares")
         .insert({ post_id: selectedPostToShare.id, user_id: currentUser.id });
 
-      toast({
-        title: "Succès",
-        description: "Post envoyé en message"
-      });
-
+      toast({ title: "Succès", description: "Post envoyé en message" });
       setShareDialogOpen(false);
       setSelectedPostToShare(null);
     } catch (error) {
       console.error("Error sending message:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'envoyer le message",
-        variant: "destructive"
-      });
+      toast({ title: "Erreur", description: "Impossible d'envoyer le message", variant: "destructive" });
     } finally {
       setSendingMessage(false);
     }
@@ -1131,12 +940,24 @@ const Feed = () => {
         </div>
       </header>
 
-      {/* Feed — scroll-anchoring prevents jumps when comments expand */}
+      {/* Feed — scroll-anchoring + pull-to-refresh touch handlers */}
       <section
         ref={scrollContainerRef}
         className="flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-6"
         style={{ overflowAnchor: 'auto' }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
+        {/* Plan C Fix 2: Pull-to-refresh indicator */}
+        {pullDistance > 0 && (
+          <div
+            className="flex justify-center py-2 transition-transform"
+            style={{ transform: `translateY(${Math.min(pullDistance, 80)}px)` }}
+          >
+            <RefreshCw className={`h-5 w-5 text-muted-foreground ${pullDistance > 60 ? 'text-primary animate-spin' : ''}`} />
+          </div>
+        )}
         <div className="max-w-2xl mx-auto">
           {isLoading ? (
             // Loading skeleton - show while data is being fetched
@@ -1196,9 +1017,17 @@ const Feed = () => {
                 </motion.button>
               )}
             </AnimatePresence>
-            {displayPosts.map((post) => (
-              <div
+            {displayPosts.map((post, index) => (
+              <motion.div
                 key={post.id}
+                initial={shouldAnimate ? { opacity: 0, y: 16 } : false}
+                animate={{ opacity: 1, y: 0 }}
+                transition={shouldAnimate ? {
+                  duration: 0.25,
+                  ease: "easeOut",
+                  // Stagger only on initial load, capped at 0.3s
+                  delay: !initialLoadCompleteRef.current ? Math.min(index * 0.05, 0.3) : 0,
+                } : { duration: 0 }}
                 className="bg-card rounded-xl shadow-sm border border-border/30 overflow-hidden"
               >
                 {/* Post Header */}
@@ -1294,10 +1123,10 @@ const Feed = () => {
                 {/* Post Content */}
                 <div className="px-4 pb-3">
                   <p className="text-sm whitespace-pre-wrap break-words">
-                    {renderContentWithLinks(post.content.length > 150 && !expandedPosts[post.id] 
-                      ? post.content.slice(0, 150) 
+                    {renderContentWithLinks(post.content.length > MAX_CONTENT_PREVIEW && !expandedPosts[post.id] 
+                      ? post.content.slice(0, MAX_CONTENT_PREVIEW) 
                       : post.content)}
-                    {post.content.length > 150 && !expandedPosts[post.id] && (
+                    {post.content.length > MAX_CONTENT_PREVIEW && !expandedPosts[post.id] && (
                       <button 
                         onClick={() => setExpandedPosts(prev => ({ ...prev, [post.id]: true }))}
                         className="text-muted-foreground hover:text-foreground ml-1 font-medium"
@@ -1305,7 +1134,7 @@ const Feed = () => {
                         ...voir plus
                       </button>
                     )}
-                    {post.content.length > 150 && expandedPosts[post.id] && (
+                    {post.content.length > MAX_CONTENT_PREVIEW && expandedPosts[post.id] && (
                       <button 
                         onClick={() => setExpandedPosts(prev => ({ ...prev, [post.id]: false }))}
                         className="text-muted-foreground hover:text-foreground ml-1 font-medium block mt-1"
@@ -1452,7 +1281,7 @@ const Feed = () => {
                     </div>
                   </div>
                 )}
-              </div>
+              </motion.div>
             ))}
 
             {/* Plan B: Loading spinner while fetching next page */}
