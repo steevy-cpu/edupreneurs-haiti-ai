@@ -1,189 +1,181 @@
 
 
-# Feed Plan A — Performance Improvements and Grade Tags
+# Feed Plan B — Cursor-Based Pagination and New Post Badge
 
 ## Overview
 
-Five targeted fixes to the feed page: parallelize queries, lazy-load comments, remove duplicate auth, fix realtime to targeted updates, and add grade tags. No pagination, UX animation, or PostCard refactoring changes.
+Three targeted fixes: replace the hard 50-post limit with cursor-based infinite scroll (20 per page), replace realtime auto-prepend with a "Nouveau post" badge to prevent scroll jumps, and add scroll-anchoring CSS. No changes to Plan A code paths (parallel queries, lazy comments, grade tags).
 
 ---
 
-## Fix 1 — Parallelize Feed Enrichment Queries
+## Fix 1 — Cursor-Based Infinite Scroll
 
-**File:** `src/hooks/useFeedData.ts`
+### `src/hooks/useFeedData.ts`
 
-Current `fetchFeedPosts()` runs 7 sequential queries (lines 13-54). Restructure to 3 hops:
+Restructure the data layer to support paginated fetching:
 
-```text
-Hop 1: auth.getUser()
-Hop 2: posts SELECT (limit 50)
-Hop 3: Promise.all([profiles, likes, commentCounts, shares])
-```
-
-Key changes:
-- Replace the full comments fetch (lines 39-49) with a COUNT query grouped by post_id: `SELECT post_id, count(*) FROM post_comments WHERE post_id IN (...) GROUP BY post_id`
-- Include `academic_grade` in the profiles SELECT (currently `select("*")` already fetches it, but we make it explicit)
-- Remove `comments` and `commentProfiles` from the parallel batch entirely
-- The enrichment loop sets `commentCount` from the count query and `comments: []` (empty -- loaded lazily)
-- Remove the is_founder RPC call from the feed data hook (it belongs in the component, already handled there)
-
-**Impact:** 7 sequential hops reduced to 3. On 3G (300ms RTT): ~2.1s down to ~0.9s.
-
----
-
-## Fix 2 — Lazy Load Comments Per Post
-
-**Files:** `src/hooks/useFeedData.ts`, `src/pages/Feed.tsx`
-
-### New hook: `useLazyComments` (add to `useFeedData.ts` or a new file `src/hooks/useLazyComments.ts`)
+**A) Rename `fetchFeedPosts` to accept an optional cursor parameter:**
 
 ```typescript
-export const useLazyComments = () => {
-  const [commentsCache, setCommentsCache] = useState<Record<string, Comment[]>>({});
-  const [loadingComments, setLoadingComments] = useState<Record<string, boolean>>({});
+const PAGE_SIZE = 20;
 
-  const fetchCommentsForPost = async (postId: string) => {
-    // Skip if already cached or count is 0
-    if (commentsCache[postId]) return;
-    
-    setLoadingComments(prev => ({ ...prev, [postId]: true }));
-    
-    // Fetch comments + commenter profiles in parallel
-    const [commentsRes, ...] = await Promise.all([...]);
-    
-    // Build nested structure (top-level + replies)
-    // Cache result
-    setCommentsCache(prev => ({ ...prev, [postId]: result }));
-    setLoadingComments(prev => ({ ...prev, [postId]: false }));
-  };
+const fetchFeedPosts = async (cursor?: string): Promise<Post[]> => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+  _lastFetchedUserId = user.id;
 
-  return { commentsCache, loadingComments, fetchCommentsForPost };
+  // Build query with optional cursor for pagination
+  let query = supabase
+    .from("posts")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(PAGE_SIZE);
+
+  if (cursor) {
+    query = query.lt("created_at", cursor);
+  }
+
+  const { data: postsData, error } = await query;
+  // ... rest of enrichment unchanged (Promise.all for profiles, likes, counts, shares)
 };
 ```
 
-### Feed.tsx changes:
+**B) Add `fetchMorePosts` and `hasMore` to the hook return:**
 
-- Import and use `useLazyComments`
-- When user clicks comment button (line 1238), call `fetchCommentsForPost(post.id)` if `commentCount > 0` and not already cached
-- In the comments section (line 1267-1318):
-  - If `loadingComments[post.id]` is true: show 2-3 comment skeleton rows
-  - If `commentsCache[post.id]` exists: render those comments
-  - If `commentCount === 0`: show "Aucun commentaire" immediately (no fetch)
-- After adding a new comment successfully, append it to the local `commentsCache` for that post and increment the `commentCount` via `updatePostOptimistically`
+- Track `hasMore` by checking if the returned page has `PAGE_SIZE` items (fewer = no more)
+- `fetchMorePosts()` reads the `created_at` of the last post in the current array as cursor, fetches next page, enriches it, and **appends** to the TanStack Query cache
+- `isFetchingMore` loading state to show bottom spinner
+- Keep `initialData` from localStorage for instant first page only
+- Persist only the first page to localStorage (not accumulated pages)
 
-### Update Post type in `src/types/feed.ts`:
+**C) Update `usePrefetchNavigation` to use PAGE_SIZE:**
 
-- `comments` field becomes optional and is no longer populated by the initial fetch
-- No breaking change since existing code already checks `post.comments && post.comments.length > 0`
+Just update the limit constant reference; no functional change.
 
----
+### `src/pages/Feed.tsx`
 
-## Fix 3 — Remove Duplicate Auth Call
-
-**File:** `src/pages/Feed.tsx`
-
-The `checkAuth()` function (line 259-270) calls `supabase.auth.getUser()` redundantly -- `useFeedData` already calls it inside `fetchFeedPosts()`.
-
-Replace `checkAuth()` with a simpler approach:
-- Use the session/user from `SessionAuthProvider` context (already available in the app) or derive `currentUser` from the feed data hook
-- If not available from context, keep the auth call but deduplicate by checking if the user is already set
-
-Simplest safe fix: Add `currentUserId` to the return value of `useFeedData` (captured during the fetch), then in Feed.tsx set `currentUser` from that instead of making a separate auth call.
-
----
-
-## Fix 4 — Targeted Realtime Cache Updates
-
-**File:** `src/pages/Feed.tsx` (lines 283-302)
-
-Replace the current `refreshFeed()` call on any posts change with targeted handlers:
+**A) Add IntersectionObserver for infinite scroll:**
 
 ```typescript
-const subscribeToNewPosts = () => {
-  const channel = supabase
-    .channel("posts-changes")
-    .on("postgres_changes", {
-      event: "INSERT", schema: "public", table: "posts",
-    }, async (payload) => {
-      // Fetch only the new post's author profile
-      const newPost = payload.new;
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("id, user_id, full_name, nickname, avatar_url, verified, academic_grade")
-        .eq("user_id", newPost.user_id)
-        .single();
-      
-      // Prepend to cache with zero counts
-      addPostOptimistically({
-        ...newPost,
-        profile,
-        likes: 0, isLiked: false,
-        comments: [], commentCount: 0,
-        shareCount: 0, isShared: false,
-      });
-    })
-    .on("postgres_changes", {
-      event: "UPDATE", schema: "public", table: "posts",
-    }, (payload) => {
-      updatePostOptimistically(payload.new.id, payload.new);
-    })
-    .on("postgres_changes", {
-      event: "DELETE", schema: "public", table: "posts",
-    }, (payload) => {
-      removePostOptimistically(payload.old.id);
-    })
-    .subscribe();
+const sentinelRef = useRef<HTMLDivElement>(null);
+const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  return () => supabase.removeChannel(channel);
-};
+useEffect(() => {
+  if (!sentinelRef.current || isVisitor) return;
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting && hasMore && !isFetchingMore) {
+        fetchMorePosts();
+      }
+    },
+    { rootMargin: '200px' } // Trigger 200px before reaching bottom
+  );
+  observer.observe(sentinelRef.current);
+  return () => observer.disconnect();
+}, [hasMore, isFetchingMore, isVisitor]);
 ```
 
-Note: The INSERT handler must respect RLS -- only posts visible to the current user will arrive via realtime (RLS filters the channel). For the INSERT, we fetch the author profile (1 query) instead of refetching all 50 posts + enrichment.
+**B) Add sentinel div after post list (line ~1397):**
+
+```tsx
+{displayPosts.map((post) => (
+  // ... existing post cards
+))}
+
+{/* Infinite scroll sentinel */}
+{isFetchingMore && (
+  <div className="flex justify-center py-4">
+    <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
+  </div>
+)}
+
+{!hasMore && displayPosts.length > 0 && (
+  <div className="text-center py-6 text-sm text-muted-foreground">
+    Tu as tout vu! 🎉
+  </div>
+)}
+
+{/* Invisible trigger for IntersectionObserver */}
+<div ref={sentinelRef} className="h-1" />
+```
 
 ---
 
-## Fix 5 — Grade Tags on Post Cards
+## Fix 2 — New Post Badge Instead of Auto-Prepend
 
-**File:** `src/pages/Feed.tsx` (lines 1107-1126), `src/types/feed.ts`
+### `src/pages/Feed.tsx`
 
-### Type update (`src/types/feed.ts`):
+**A) Add new state for queued posts:**
 
-Add `academic_grade` to the Profile interface:
 ```typescript
-export interface Profile {
-  // ... existing fields
-  academic_grade?: string | null;
+const [newPostsQueue, setNewPostsQueue] = useState<Post[]>([]);
+const scrollContainerRef = useRef<HTMLDivElement>(null);
+```
+
+**B) Modify the realtime INSERT handler (line 288-306):**
+
+Instead of calling `addPostOptimistically`, check scroll position:
+
+```typescript
+// Inside INSERT handler:
+const scrollContainer = scrollContainerRef.current;
+const isAtTop = scrollContainer ? scrollContainer.scrollTop < 100 : true;
+
+if (isAtTop) {
+  // User is at top — prepend directly (no scroll jump)
+  addPostOptimistically(enrichedPost);
+} else {
+  // User is scrolling — queue for badge
+  setNewPostsQueue(prev => [enrichedPost, ...prev]);
 }
 ```
 
-### Grade color map (add as constant in Feed.tsx or a shared util):
-
-```typescript
-const GRADE_COLORS: Record<string, string> = {
-  '7AF': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-  '8AF': 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
-  '9AF': 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
-  'NS1': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
-  'NS2': 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
-  'NS3': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-  'NS4': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-  'UNIV': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-};
-```
-
-### Display (in the post header, line ~1118, after the Globe icon):
+**C) Add floating badge UI (inside the section, above the post list):**
 
 ```tsx
-{post.profile?.academic_grade && 
- post.profile.academic_grade !== 'NONE' && 
- GRADE_COLORS[post.profile.academic_grade] && (
-  <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0 ${GRADE_COLORS[post.profile.academic_grade]}`}>
-    {post.profile.academic_grade}
-  </span>
+{/* New posts badge — shown when posts arrive while user is scrolling */}
+{newPostsQueue.length > 0 && (
+  <motion.button
+    initial={{ y: -40, opacity: 0 }}
+    animate={{ y: 0, opacity: 1 }}
+    exit={{ y: -40, opacity: 0 }}
+    onClick={() => {
+      // Prepend all queued posts and scroll to top
+      newPostsQueue.forEach(p => addPostOptimistically(p));
+      setNewPostsQueue([]);
+      scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    }}
+    className="sticky top-2 z-30 mx-auto flex items-center gap-1.5 px-3 py-1.5 
+               bg-primary text-primary-foreground rounded-full shadow-lg text-sm font-medium
+               hover:bg-primary/90 transition-colors"
+  >
+    <ArrowUp className="h-3.5 w-3.5" />
+    {newPostsQueue.length} nouveau{newPostsQueue.length > 1 ? 'x' : ''} post{newPostsQueue.length > 1 ? 's' : ''}
+  </motion.button>
 )}
 ```
 
-Dark mode variants included via `dark:` prefixes to ensure readability in both themes.
+**D) Add `ref={scrollContainerRef}` to the feed section element (line 1102).**
+
+**E) Import `motion` from framer-motion and `ArrowUp` from lucide-react.**
+
+---
+
+## Fix 3 — Scroll Anchoring CSS
+
+### `src/pages/Feed.tsx` (line 1102)
+
+Add `overflow-anchor: auto` to the scrollable feed section and individual post cards:
+
+```tsx
+<section 
+  ref={scrollContainerRef}
+  className="flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-6"
+  style={{ overflowAnchor: 'auto' }}
+>
+```
+
+This is a one-line CSS addition that prevents scroll jumps when comments expand below the viewport.
 
 ---
 
@@ -191,25 +183,22 @@ Dark mode variants included via `dark:` prefixes to ensure readability in both t
 
 | File | Change |
 |---|---|
-| `src/types/feed.ts` | Add `academic_grade` to Profile interface |
-| `src/hooks/useFeedData.ts` | Parallelize queries 3-7, replace full comments with count, expose `currentUserId` |
-| `src/hooks/useLazyComments.ts` | New hook for on-demand comment loading with cache |
-| `src/pages/Feed.tsx` | Wire lazy comments, remove duplicate auth, targeted realtime, grade tags |
+| `src/hooks/useFeedData.ts` | Add cursor param, PAGE_SIZE=20, fetchMorePosts, hasMore, isFetchingMore |
+| `src/pages/Feed.tsx` | IntersectionObserver, sentinel div, new post badge, scroll anchoring, ArrowUp import |
 
 ## Safety Verification
 
-| Check | Result |
+| Check | Expected Result |
 |---|---|
-| Parallel query structure correctly enriches all 50 posts | Yes -- profiles, likes, counts, shares all keyed by post_id |
-| Comment counts display correctly before lazy load | Yes -- COUNT query grouped by post_id populates `commentCount` |
-| Clicking comment on a post with comments shows skeleton then loads | Yes -- `loadingComments[postId]` triggers skeleton, then cache renders |
-| Clicking comment on post with 0 comments shows empty state immediately | Yes -- `commentCount === 0` skips fetch, shows "Aucun commentaire" |
-| Realtime INSERT prepends without full refetch | Yes -- single profile fetch + `addPostOptimistically` |
-| Realtime UPDATE patches in place | Yes -- `updatePostOptimistically` |
-| Realtime DELETE removes from cache | Yes -- `removePostOptimistically` |
-| Grade tags display correct colors per grade | Yes -- explicit color map with dark mode support |
-| Posts without `academic_grade` show no tag | Yes -- null/NONE/missing key all filtered out |
-| Existing post interactions (like, share, delete, edit, report) unaffected | Yes -- no changes to those code paths |
-| Visitor mode unaffected | Yes -- visitor check runs before any data fetch changes |
-| localStorage persistence still works | Yes -- `persistQueryData` call unchanged |
+| Initial load fetches 20 posts instead of 50 | Yes -- PAGE_SIZE = 20, limit(20) in query |
+| Scrolling to bottom loads next 20 posts | Yes -- IntersectionObserver triggers fetchMorePosts with cursor |
+| Enrichment (profiles, likes, counts, shares) works for each page | Yes -- same Promise.all pattern applied per page |
+| New post badge appears when a followed user posts while scrolling | Yes -- scrollTop >= 100 queues post instead of prepending |
+| Clicking badge prepends posts and scrolls to top | Yes -- forEach addPostOptimistically + scrollTo(0) |
+| Auto-prepend when user is already at top | Yes -- scrollTop < 100 bypasses queue |
+| "Tu as tout vu" message when no more posts | Yes -- hasMore=false when returned count < PAGE_SIZE |
+| Existing post interactions (like, share, delete, edit) unaffected | Yes -- no changes to those handlers |
+| Plan A features (parallel queries, lazy comments, grade tags) untouched | Yes -- only cursor/pagination logic added |
+| localStorage persistence still works for first page | Yes -- persistQueryData called with first page only |
+| Visitor mode unaffected | Yes -- visitor posts bypass all pagination logic |
 
