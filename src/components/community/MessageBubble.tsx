@@ -219,15 +219,12 @@ export function MessageBubble({
     </div>
   );
 
-  // Check if image_url is actually a document
-  const isDocument = message.image_url?.startsWith('doc:');
-  const documentInfo = isDocument ? (() => {
-    const parts = message.image_url!.split(':');
-    return {
-      name: parts[1],
-      url: parts.slice(2).join(':') // Rejoin in case URL contains colons
-    };
-  })() : null;
+  // Document detection via dedicated columns (replaces legacy doc: string parsing)
+  const isDocument = !!message.document_url;
+  const documentInfo = isDocument ? {
+    name: message.document_name || 'Document',
+    url: message.document_url!,
+  } : null;
 
   // Regular Message Display
   const renderRegularMessage = () => (

@@ -49,6 +49,10 @@ export interface Message {
   replied_to?: Message;
   image_url?: string | null;
   video_url?: string | null;
+  /** Dedicated column for document file URL (replaces legacy doc: encoding in image_url) */
+  document_url?: string | null;
+  /** Original filename for document attachments */
+  document_name?: string | null;
   edited_at?: string | null;
   shared_post?: {
     id: string;

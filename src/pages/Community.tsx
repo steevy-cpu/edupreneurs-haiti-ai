@@ -1456,6 +1456,8 @@ const Community = () => {
       try {
         let imageUrl = null;
         let videoUrl = null;
+        let documentUrl: string | null = null;
+        let documentName: string | null = null;
 
         // Check participation (fast query)
         const { data: participation } = await supabase
@@ -1512,7 +1514,9 @@ const Community = () => {
           } else if (currentMediaType === 'video') {
             videoUrl = publicUrl;
           } else if (currentMediaType === 'document') {
-            imageUrl = `doc:${currentMediaFile.name}:${publicUrl}`;
+            // Use dedicated columns instead of legacy doc: encoding in image_url
+            documentUrl = publicUrl;
+            documentName = currentMediaFile.name;
           }
         }
 
@@ -1523,6 +1527,8 @@ const Community = () => {
           content: displayContent || '',
           image_url: imageUrl,
           video_url: videoUrl,
+          document_url: documentUrl,
+          document_name: documentName,
           read: false,
           replied_to_id: currentReplyingTo?.id || null,
         }).select('id').single();
@@ -1542,7 +1548,7 @@ const Community = () => {
         // Update optimistic message with real ID and URLs
         setMessages(prev => prev.map(m => 
           m.id === optimisticId 
-            ? { ...m, id: insertedMessage.id, image_url: imageUrl, video_url: videoUrl }
+            ? { ...m, id: insertedMessage.id, image_url: imageUrl, video_url: videoUrl, document_url: documentUrl, document_name: documentName }
             : m
         ));
 
