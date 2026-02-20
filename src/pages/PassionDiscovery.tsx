@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePassionProgress, usePassionPreferences, useSaveQuizResults, useResetQuiz } from "@/hooks/usePassionData";
+import { useBannedVideoIds } from "@/hooks/usePassionRecommendedVideos";
 import { ModuleActivity } from "@/components/passion/ModuleActivity";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -95,6 +97,8 @@ interface PassionScores {
 const PassionDiscoveryContent = () => {
   const navigate = useNavigate();
   const { isVisitor } = useVisitor();
+  const queryClient = useQueryClient(); // For cached fetchQuery in startModule
+  const { data: bannedVideoIds } = useBannedVideoIds(); // Pre-fetch banned IDs
   const { 
     isSlowConnection, 
     shouldShowAnimations, 
@@ -648,19 +652,24 @@ const PassionDiscoveryContent = () => {
     
     if (!category || !module) return;
 
-    // First, try to fetch curated recommended videos from database
-    const { data: curatedVideos } = await supabase
-      .from('passion_recommended_videos')
-      .select('*')
-      .eq('category_id', categoryId)
-      .eq('module_id', moduleId)
-      .order('display_order', { ascending: true });
+    // Use cached query for curated videos (same key as usePassionModuleRecommendedVideos)
+    const curatedVideos = await queryClient.fetchQuery({
+      queryKey: ['passion-recommended-videos', categoryId, moduleId],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('passion_recommended_videos')
+          .select('*')
+          .eq('category_id', categoryId)
+          .eq('module_id', moduleId)
+          .order('display_order', { ascending: true });
+        if (error) throw error;
+        return data;
+      },
+      staleTime: 5 * 60 * 1000, // 5 min cache — avoids re-fetch on every module open
+    });
 
-    // Also get banned video IDs
-    const { data: bannedData } = await supabase
-      .from('banned_youtube_videos')
-      .select('video_id');
-    const bannedIds = new Set(bannedData?.map(v => v.video_id) || []);
+    // Use pre-fetched banned IDs from hook (already cached at component level)
+    const bannedIds = bannedVideoIds ?? new Set<string>();
 
     if (curatedVideos && curatedVideos.length > 0) {
       // Use curated videos, filter out banned ones
