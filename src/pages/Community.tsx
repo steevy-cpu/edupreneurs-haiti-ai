@@ -637,37 +637,14 @@ const Community = () => {
         member_count: memberCountMap.get(g.id) || 0
       })) || [];
     }
-    // Fetch ALL messages to check visibility
-    const { data: allMessagesData } = await supabase
-      .from("messages")
-      .select("conversation_id, content, created_at, sender_id, read, id")
-      .in("conversation_id", conversationIds)
-      .order("created_at", { ascending: true });
-
-    // Filter messages based on visibility for each conversation
-    const visibleMessages = new Map<string, any[]>();
-    
-    conversationIds.forEach(convId => {
-      const convMessages = allMessagesData?.filter(m => m.conversation_id === convId) || [];
-      const visibilityThreshold = visibilityMap.get(convId);
-      
-      if (!visibilityThreshold || convMessages.length === 0) {
-        // No threshold - all messages visible
-        visibleMessages.set(convId, convMessages);
-      } else {
-        // Find the threshold message index
-        const thresholdIndex = convMessages.findIndex(m => m.id === visibilityThreshold);
-        
-        if (thresholdIndex === -1) {
-          // Threshold not found - show all messages
-          visibleMessages.set(convId, convMessages);
-        } else {
-          // Include messages FROM the threshold message onwards (inclusive)
-          const visibleMsgs = convMessages.slice(thresholdIndex);
-          visibleMessages.set(convId, visibleMsgs);
-        }
-      }
+    // Fetch conversation previews via optimized DB function (replaces fetch-all-messages)
+    const { data: previews } = await supabase.rpc('get_conversation_previews', {
+      p_user_id: user.id
     });
+
+    // Build preview lookup map for O(1) access in the conversation loop
+    const previewMap = new Map<string, any>();
+    previews?.forEach((p: any) => previewMap.set(p.conversation_id, p));
 
     // Build conversations list - deduplicate both group and 1-on-1
     const groupedByUser = new Map<string, Conversation>();
@@ -677,20 +654,20 @@ const Community = () => {
       const convInfo = conversationData?.find(c => c.id === convId);
       if (!convInfo) return;
 
-      // Get visible messages for this conversation
-      const convVisibleMessages = visibleMessages.get(convId) || [];
+      // Get preview data from the DB function
+      const preview = previewMap.get(convId);
       
-      // Get total messages (before visibility filter) to distinguish "new empty" from "deleted"
-      const totalMessagesInConv = allMessagesData?.filter(m => m.conversation_id === convId).length || 0;
-      
-      // Skip only if: there ARE messages but none are visible (user deleted/left conversation)
-      // BUT keep it if: there are NO messages at all (brand new conversation)
-      if (convVisibleMessages.length === 0 && totalMessagesInConv > 0) {
+      // Skip if user soft-deleted and all messages are before visibility threshold
+      if (preview?.visible_from_message_id && !preview?.last_message_id) {
         return;
       }
 
-      const lastMsg = convVisibleMessages.length > 0 ? convVisibleMessages[convVisibleMessages.length - 1] : null;
-      const unreadCount = convVisibleMessages.filter(m => !m.read && m.sender_id !== user.id).length;
+      const lastMsg = preview?.last_message_id ? {
+        content: preview.last_message_content,
+        created_at: preview.last_message_at,
+        sender_id: preview.last_message_sender_id,
+      } : null;
+      const unreadCount = Number(preview?.unread_count || 0);
 
       if (convInfo.is_group && convInfo.group_id) {
         // Group conversation - deduplicate by group_id
@@ -1158,6 +1135,7 @@ const Community = () => {
           event: "INSERT",
           schema: "public",
           table: "messages",
+          filter: `sender_id=neq.${user?.id}`, // Server-side filter: skip own messages (handled by optimistic update)
         },
         async (payload) => {
           // Only play sound once here (not in conversation-specific subscription)
@@ -1702,10 +1680,16 @@ const Community = () => {
         async (payload) => {
           if (payload.eventType === 'INSERT') {
             const newReaction = payload.new as Reaction;
-            setReactions(prev => ({
-              ...prev,
-              [newReaction.message_id]: [...(prev[newReaction.message_id] || []), newReaction]
-            }));
+            // Client-side guard: only apply if message belongs to current conversation
+            setMessages(currentMsgs => {
+              if (!currentMsgs.some(m => m.id === newReaction.message_id)) return currentMsgs;
+              // Message exists — update reactions state (side effect inside functional update for atomicity)
+              setReactions(prev => ({
+                ...prev,
+                [newReaction.message_id]: [...(prev[newReaction.message_id] || []), newReaction]
+              }));
+              return currentMsgs; // Don't modify messages, just used for the guard check
+            });
           } else if (payload.eventType === 'DELETE') {
             const deletedReaction = payload.old as Reaction;
             setReactions(prev => ({
