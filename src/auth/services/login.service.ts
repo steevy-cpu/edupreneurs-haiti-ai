@@ -225,6 +225,10 @@ export async function loginWithEmail(credentials: LoginCredentials): Promise<Log
     };
   }
 
+  // Increment login count for push permission prompt timing (Plan C)
+  const currentCount = parseInt(localStorage.getItem('edupreneurs_login_count') || '0', 10);
+  localStorage.setItem('edupreneurs_login_count', String(currentCount + 1));
+
   return { success: true, userId: authData.user.id, profile: profile || undefined };
 }
 
