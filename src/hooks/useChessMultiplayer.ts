@@ -455,6 +455,17 @@ export const useChessMultiplayer = ({
         if (typedMatch.white_player_id !== userId) {
           fetchOpponent(typedMatch.white_player_id);
         }
+
+        // Fire-and-forget push notification to the host that someone joined
+        supabase.functions.invoke('send-push-notification', {
+          body: {
+            recipientUserId: typedMatch.white_player_id,
+            title: 'Quelqu\'un a rejoint ta partie! ♟️',
+            type: 'chess_invite',
+            url: `/chess/multiplayer/${typedMatch.id}`,
+            actorId: userId,
+          },
+        }).catch(err => console.error('[Chess] Push notify host failed:', err));
       }
 
       toast({
@@ -564,6 +575,28 @@ export const useChessMultiplayer = ({
           variant: 'destructive',
         });
         return false;
+      }
+
+      // Fire-and-forget push to opponent — skip if they moved recently (active-player guard)
+      const currentMatch = match;
+      if (currentMatch) {
+        const opponentId = currentMatch.white_player_id === userId
+          ? currentMatch.black_player_id
+          : currentMatch.white_player_id;
+        const lastMoveTime = currentMatch.last_move_at ? new Date(currentMatch.last_move_at).getTime() : 0;
+        const opponentSeemActive = (Date.now() - lastMoveTime) < 30_000;
+
+        if (opponentId && !opponentSeemActive) {
+          supabase.functions.invoke('send-push-notification', {
+            body: {
+              recipientUserId: opponentId,
+              title: 'À ton tour! ♟️',
+              type: 'chess_move',
+              url: `/chess/multiplayer/${currentMatch.id}`,
+              actorId: userId,
+            },
+          }).catch(err => console.error('[Chess] Push notify move failed:', err));
+        }
       }
 
       return true;

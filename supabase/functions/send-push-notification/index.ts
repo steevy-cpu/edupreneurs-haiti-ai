@@ -115,6 +115,10 @@ function getCategoryFromType(type?: string): string {
     'word_of_day': 'word_of_day',
     'subscription_renewed': 'system',
     'gift_payment': 'system',
+    // Game event types — all map to 'system' so Système toggle controls them
+    'chess_invite': 'system',
+    'chess_move': 'system',
+    'quiz_invite': 'system',
   };
   return typeMap[type || ''] || 'message';
 }
@@ -284,6 +288,15 @@ serve(async (req) => {
           break;
         case 'mention':
           notificationBody = `${actorName} vous a mentionné dans une publication`;
+          break;
+        case 'chess_invite':
+          notificationBody = `${actorName} a rejoint ta partie d'échecs. La partie commence!`;
+          break;
+        case 'chess_move':
+          notificationBody = `${actorName} a joué. C'est ton tour!`;
+          break;
+        case 'quiz_invite':
+          notificationBody = `${actorName} t'a défié en Quiz Battle. Accepte le défi!`;
           break;
         default:
           notificationBody = 'Nouvelle notification';
