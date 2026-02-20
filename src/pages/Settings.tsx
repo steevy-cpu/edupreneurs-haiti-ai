@@ -71,18 +71,20 @@ interface UserProfile {
   date_of_birth: string | null;
 }
 
-interface NotificationCategory {
-  category: string;
+/** Each group maps to one or more real categories checked by the push system */
+interface NotificationGroup {
+  key: string;
+  categories: string[];
   label: string;
   description: string;
-  enabled: boolean;
 }
 
-const DEFAULT_NOTIFICATION_CATEGORIES: Omit<NotificationCategory, 'enabled'>[] = [
-  { category: 'email', label: 'Notifications par email', description: 'Recevez des emails sur votre progression' },
-  { category: 'lesson_reminders', label: 'Rappels de leçons', description: 'Recevez des rappels pour continuer vos leçons' },
-  { category: 'achievements', label: 'Alertes de réussite', description: 'Soyez notifié quand vous débloquez des badges' },
-  { category: 'weekly_progress', label: 'Rapport hebdomadaire', description: 'Recevez un résumé de votre progression chaque semaine' },
+const NOTIFICATION_GROUPS: NotificationGroup[] = [
+  { key: 'interactions', categories: ['like', 'comment', 'share', 'mention'], label: 'Interactions', description: 'Likes, commentaires, partages et mentions' },
+  { key: 'social', categories: ['follow'], label: 'Social', description: 'Nouvelles abonnements et demandes de suivi' },
+  { key: 'messages', categories: ['message'], label: 'Messages', description: 'Messages privés et messages de groupe' },
+  { key: 'contenu', categories: ['post', 'lesson', 'word_of_day'], label: 'Contenu', description: 'Nouveaux posts, commentaires de leçons et mot du jour' },
+  { key: 'system', categories: ['system'], label: 'Système', description: "Renouvellements d'abonnement et annonces" },
 ];
 
 const Settings = () => {
@@ -123,7 +125,10 @@ const Settings = () => {
     newPassword: "",
     confirmPassword: "",
   });
-  const [notificationCategories, setNotificationCategories] = useState<NotificationCategory[]>([]);
+  // Group-level toggle state: key → enabled (true = all categories in group enabled)
+  const [groupToggles, setGroupToggles] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(NOTIFICATION_GROUPS.map(g => [g.key, true]))
+  );
   const [savingNotification, setSavingNotification] = useState<string | null>(null);
 
   // Push notification toggle state
@@ -222,16 +227,18 @@ const Settings = () => {
     setFollowerCount(followersResult.count || 0);
     setFollowingCount(followingResult.count || 0);
 
-    // Merge saved preferences with defaults
+    // Derive group toggles from real preference rows
+    // If ANY category in a group has enabled=false, the group toggle is OFF
     const savedPrefs = notificationPrefsResult.data || [];
-    const mergedCategories = DEFAULT_NOTIFICATION_CATEGORIES.map(cat => {
-      const saved = savedPrefs.find(p => p.category === cat.category);
-      return {
-        ...cat,
-        enabled: saved?.enabled ?? true, // Default to true if not set
-      };
-    });
-    setNotificationCategories(mergedCategories);
+    const disabledCategories = new Set(
+      savedPrefs.filter(p => p.enabled === false).map(p => p.category)
+    );
+    const newToggles: Record<string, boolean> = {};
+    for (const group of NOTIFICATION_GROUPS) {
+      // Group is OFF if any of its categories are explicitly disabled
+      newToggles[group.key] = !group.categories.some(cat => disabledCategories.has(cat));
+    }
+    setGroupToggles(newToggles);
 
     setPageLoading(false);
   }, [userId]);
@@ -393,47 +400,50 @@ const Settings = () => {
     }
   };
 
-// Debounced notification database update
-  const debouncedNotificationUpdate = useMemo(
-    () => debounce(async (category: string, enabled: boolean, uid: string) => {
-      const { error } = await supabase
-        .from("notification_preferences")
-        .upsert({
-          user_id: uid,
-          category,
-          enabled,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'user_id,category',
-        });
-
-      if (error) {
-        // Revert on error
-        setNotificationCategories(prev => 
-          prev.map(cat => cat.category === category ? { ...cat, enabled: !enabled } : cat)
-        );
-        toast.error("Erreur lors de la mise à jour");
-      } else {
-        toast.success("Préférence mise à jour");
-      }
-      setSavingNotification(null);
-    }, 500),
-    []
-  );
-
-  const handleNotificationToggle = useCallback((category: string, enabled: boolean) => {
+  /** Toggle an entire notification group ON or OFF.
+   *  OFF → upsert all category rows with enabled=false.
+   *  ON  → delete all category rows (revert to implicit default = enabled). */
+  const handleGroupToggle = useCallback(async (groupKey: string, enabled: boolean) => {
     if (!userId) return;
-    
-    setSavingNotification(category);
-    
+
+    const group = NOTIFICATION_GROUPS.find(g => g.key === groupKey);
+    if (!group) return;
+
+    setSavingNotification(groupKey);
     // Optimistic update
-    setNotificationCategories(prev => 
-      prev.map(cat => cat.category === category ? { ...cat, enabled } : cat)
-    );
-    
-    // Debounced database update
-    debouncedNotificationUpdate(category, enabled, userId);
-  }, [userId, debouncedNotificationUpdate]);
+    setGroupToggles(prev => ({ ...prev, [groupKey]: enabled }));
+
+    try {
+      if (enabled) {
+        // Delete rows → reverts to implicit default (enabled)
+        const { error } = await supabase
+          .from('notification_preferences')
+          .delete()
+          .eq('user_id', userId)
+          .in('category', group.categories);
+        if (error) throw error;
+      } else {
+        // Upsert rows with enabled=false for every category in the group
+        const rows = group.categories.map(cat => ({
+          user_id: userId,
+          category: cat,
+          enabled: false,
+          updated_at: new Date().toISOString(),
+        }));
+        const { error } = await supabase
+          .from('notification_preferences')
+          .upsert(rows, { onConflict: 'user_id,category' });
+        if (error) throw error;
+      }
+      toast.success('Préférence mise à jour');
+    } catch {
+      // Revert on failure
+      setGroupToggles(prev => ({ ...prev, [groupKey]: !enabled }));
+      toast.error('Erreur lors de la mise à jour');
+    } finally {
+      setSavingNotification(null);
+    }
+  }, [userId]);
 
   // Push notification toggle handler — uses existing initializePushNotifications
   const handlePushToggle = useCallback(async (enabled: boolean) => {
@@ -1209,28 +1219,28 @@ const Settings = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0 space-y-4 sm:space-y-6">
-                {notificationCategories.map((cat, index) => (
-                  <div key={cat.category}>
+                {NOTIFICATION_GROUPS.map((group, index) => (
+                  <div key={group.key}>
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor={cat.category}>{cat.label}</Label>
+                        <Label htmlFor={group.key}>{group.label}</Label>
                         <p className="text-sm text-muted-foreground">
-                          {cat.description}
+                          {group.description}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        {savingNotification === cat.category && (
+                        {savingNotification === group.key && (
                           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                         )}
                         <Switch
-                          id={cat.category}
-                          checked={cat.enabled}
-                          onCheckedChange={(checked) => handleNotificationToggle(cat.category, checked)}
-                          disabled={savingNotification === cat.category}
+                          id={group.key}
+                          checked={groupToggles[group.key] ?? true}
+                          onCheckedChange={(checked) => handleGroupToggle(group.key, checked)}
+                          disabled={savingNotification === group.key}
                         />
                       </div>
                     </div>
-                    {index < notificationCategories.length - 1 && <Separator className="mt-4" />}
+                    {index < NOTIFICATION_GROUPS.length - 1 && <Separator className="mt-4" />}
                   </div>
                 ))}
               </CardContent>

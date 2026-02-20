@@ -61,7 +61,34 @@ Deno.serve(async (req) => {
 
     const { notificationId } = validation.data;
 
-    // Update notification
+    // Require authentication — prevent anonymous access
+    if (!userId) {
+      console.warn('[mark-notification-read] Unauthenticated request');
+      return secureErrorResponse('Authentication required', 401);
+    }
+
+    // Ownership check — verify the notification belongs to this user
+    const { data: notification, error: fetchError } = await supabase
+      .from('notifications')
+      .select('user_id')
+      .eq('id', notificationId)
+      .maybeSingle();
+
+    if (fetchError) {
+      console.error('[mark-notification-read] Fetch error:', fetchError);
+      return secureErrorResponse(fetchError.message, 500);
+    }
+
+    if (!notification) {
+      return secureErrorResponse('Notification not found', 404);
+    }
+
+    if (notification.user_id !== userId) {
+      console.warn('[mark-notification-read] Ownership mismatch:', { notificationId, userId });
+      return secureErrorResponse('Forbidden', 403);
+    }
+
+    // Update notification — ownership verified
     const { error } = await supabase
       .from('notifications')
       .update({ read: true })

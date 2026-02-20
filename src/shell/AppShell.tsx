@@ -136,6 +136,9 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
           event: 'INSERT',
           schema: 'public',
           table: 'notifications',
+          // Server-side filter: only receive notifications for the current user.
+          // Prevents processing inserts meant for other users.
+          filter: `user_id=eq.${userId}`,
         },
         async (payload) => {
           const notification = payload.new as any;
