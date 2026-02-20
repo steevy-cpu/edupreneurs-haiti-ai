@@ -2337,6 +2337,7 @@ export type Database = {
           replied_to_id: string | null
           sender_id: string
           shared_post_id: string | null
+          thumbnail_url: string | null
           video_url: string | null
         }
         Insert: {
@@ -2352,6 +2353,7 @@ export type Database = {
           replied_to_id?: string | null
           sender_id: string
           shared_post_id?: string | null
+          thumbnail_url?: string | null
           video_url?: string | null
         }
         Update: {
@@ -2367,6 +2369,7 @@ export type Database = {
           replied_to_id?: string | null
           sender_id?: string
           shared_post_id?: string | null
+          thumbnail_url?: string | null
           video_url?: string | null
         }
         Relationships: [

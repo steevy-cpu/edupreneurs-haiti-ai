@@ -12,7 +12,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogTitle, DialogHeader } from "@/components/ui/dialog";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
+import { optimizeMediaFile, formatFileSize, generateImageThumbnail } from "@/utils/mediaOptimization";
+import { uploadWithProgress } from "@/utils/uploadWithProgress";
 import { CreateGroupDialog } from "@/components/CreateGroupDialog";
 import { GroupInfoDialog } from "@/components/GroupInfoDialog";
 
@@ -96,6 +97,8 @@ const Community = () => {
   const [mediaType, setMediaType] = useState<'image' | 'video' | 'document' | null>(null);
   const [fullSizeImage, setFullSizeImage] = useState<string | null>(null);
   const [reactions, setReactions] = useState<Record<string, Reaction[]>>({});
+  // Video upload progress (0-100) for 3G feedback
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [showReactionPicker, setShowReactionPicker] = useState<string | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState("");
@@ -805,7 +808,7 @@ const Community = () => {
     // Fetch messages with pagination (limit 50 for better performance)
     let query = supabase
       .from("messages")
-      .select("id, content, sender_id, created_at, read, shared_post_id, conversation_id, replied_to_id, image_url, video_url")
+      .select("id, content, sender_id, created_at, read, shared_post_id, conversation_id, replied_to_id, image_url, video_url, document_url, document_name, thumbnail_url, edited_at")
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: false })
       .limit(50); // Optimized: only fetch last 50 messages initially
@@ -1007,6 +1010,7 @@ const Community = () => {
           }
 
           // Add the new message with profile to the messages array
+          // Build message object including new media columns from realtime payload
           const newMessage: Message = {
             id: payload.new.id,
             content: payload.new.content,
@@ -1017,6 +1021,10 @@ const Community = () => {
             replied_to_id: payload.new.replied_to_id,
             image_url: payload.new.image_url,
             video_url: payload.new.video_url,
+            document_url: payload.new.document_url,
+            document_name: payload.new.document_name,
+            thumbnail_url: payload.new.thumbnail_url,
+            edited_at: payload.new.edited_at,
             profile,
             replied_to: repliedToMessage,
             shared_post: sharedPost,
@@ -1093,7 +1101,7 @@ const Community = () => {
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
-          // Update message in real-time (for read status and other updates)
+          // Update message in real-time (read status, edits, media URLs)
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === payload.new.id 
@@ -1101,6 +1109,10 @@ const Community = () => {
                     ...msg, 
                     read: payload.new.read,
                     content: payload.new.content,
+                    edited_at: payload.new.edited_at,
+                    image_url: payload.new.image_url || msg.image_url,
+                    video_url: payload.new.video_url || msg.video_url,
+                    thumbnail_url: payload.new.thumbnail_url || msg.thumbnail_url,
                   }
                 : msg
             )
@@ -1458,6 +1470,7 @@ const Community = () => {
         let videoUrl = null;
         let documentUrl: string | null = null;
         let documentName: string | null = null;
+        let thumbnailUrl: string | null = null;
 
         // Check participation (fast query)
         const { data: participation } = await supabase
@@ -1486,35 +1499,81 @@ const Community = () => {
 
         // Upload media if present
         if (currentMediaFile) {
-          const fileExt = currentMediaFile.name.split('.').pop();
-          const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-          
-          const { error: uploadError } = await supabase.storage
-            .from('message-media')
-            .upload(fileName, currentMediaFile);
-
-          if (uploadError) {
-            logger.error('Media upload error:', uploadError);
-            // Remove optimistic message on error
-            setMessages(prev => prev.filter(m => m.id !== optimisticId));
-            toast({
-              title: "Erreur",
-              description: `Impossible de télécharger le fichier`,
-              variant: "destructive",
-            });
-            return;
-          }
-
-          const { data: { publicUrl } } = supabase.storage
-            .from('message-media')
-            .getPublicUrl(fileName);
+          const timestamp = Date.now();
           
           if (currentMediaType === 'image') {
-            imageUrl = publicUrl;
+            // Generate full image and thumbnail in parallel
+            const [thumbBlob] = await Promise.all([
+              generateImageThumbnail(currentMediaFile).catch(() => null),
+            ]);
+            
+            // Upload full image
+            const fullFileName = `${user.id}/${timestamp}-full.jpg`;
+            const { error: uploadError } = await supabase.storage
+              .from('message-media')
+              .upload(fullFileName, currentMediaFile);
+
+            if (uploadError) {
+              logger.error('Image upload error:', uploadError);
+              setMessages(prev => prev.filter(m => m.id !== optimisticId));
+              toast({ title: "Erreur", description: "Impossible de télécharger l'image", variant: "destructive" });
+              return;
+            }
+
+            const { data: { publicUrl: fullUrl } } = supabase.storage.from('message-media').getPublicUrl(fullFileName);
+            imageUrl = fullUrl;
+            
+            // Upload thumbnail if generated successfully
+            if (thumbBlob) {
+              const thumbFileName = `${user.id}/${timestamp}-thumb.jpg`;
+              const thumbFile = new File([thumbBlob], 'thumb.jpg', { type: 'image/jpeg' });
+              const { error: thumbErr } = await supabase.storage
+                .from('message-media')
+                .upload(thumbFileName, thumbFile);
+              
+              if (!thumbErr) {
+                const { data: { publicUrl: thumbUrl } } = supabase.storage.from('message-media').getPublicUrl(thumbFileName);
+                thumbnailUrl = thumbUrl;
+              }
+            }
           } else if (currentMediaType === 'video') {
+            // Use uploadWithProgress for video — critical for large files on 3G
+            const videoFileName = `${user.id}/${timestamp}.${currentMediaFile.name.split('.').pop()}`;
+            setUploadProgress(0);
+            
+            const { error: uploadError } = await uploadWithProgress(
+              'message-media',
+              videoFileName,
+              currentMediaFile,
+              (progress) => setUploadProgress(progress.progress)
+            );
+            
+            setUploadProgress(null);
+
+            if (uploadError) {
+              logger.error('Video upload error:', uploadError);
+              setMessages(prev => prev.filter(m => m.id !== optimisticId));
+              toast({ title: "Erreur", description: "Impossible de télécharger la vidéo", variant: "destructive" });
+              return;
+            }
+
+            const { data: { publicUrl } } = supabase.storage.from('message-media').getPublicUrl(videoFileName);
             videoUrl = publicUrl;
           } else if (currentMediaType === 'document') {
-            // Use dedicated columns instead of legacy doc: encoding in image_url
+            // Standard upload for documents (small files)
+            const docFileName = `${user.id}/${timestamp}.${currentMediaFile.name.split('.').pop()}`;
+            const { error: uploadError } = await supabase.storage
+              .from('message-media')
+              .upload(docFileName, currentMediaFile);
+
+            if (uploadError) {
+              logger.error('Document upload error:', uploadError);
+              setMessages(prev => prev.filter(m => m.id !== optimisticId));
+              toast({ title: "Erreur", description: "Impossible de télécharger le document", variant: "destructive" });
+              return;
+            }
+
+            const { data: { publicUrl } } = supabase.storage.from('message-media').getPublicUrl(docFileName);
             documentUrl = publicUrl;
             documentName = currentMediaFile.name;
           }
@@ -1529,6 +1588,7 @@ const Community = () => {
           video_url: videoUrl,
           document_url: documentUrl,
           document_name: documentName,
+          thumbnail_url: thumbnailUrl,
           read: false,
           replied_to_id: currentReplyingTo?.id || null,
         }).select('id').single();
@@ -1545,10 +1605,10 @@ const Community = () => {
           return;
         }
 
-        // Update optimistic message with real ID and URLs
+        // Update optimistic message with real ID, URLs, and thumbnail
         setMessages(prev => prev.map(m => 
           m.id === optimisticId 
-            ? { ...m, id: insertedMessage.id, image_url: imageUrl, video_url: videoUrl, document_url: documentUrl, document_name: documentName }
+            ? { ...m, id: insertedMessage.id, image_url: imageUrl, video_url: videoUrl, document_url: documentUrl, document_name: documentName, thumbnail_url: thumbnailUrl }
             : m
         ));
 
@@ -2167,23 +2227,39 @@ const Community = () => {
                 }
                 banner={isGroup ? <JudeBanner isVisible={true} /> : undefined}
                 footer={
-                  <ChatComposer
-                    newMessage={newMessage}
-                    isSending={isSending}
-                    showEmojiPicker={showEmojiPicker}
-                    mediaPreview={mediaPreview}
-                    mediaType={mediaType}
-                    replyingTo={replyingTo}
-                    isJudeConversation={isJudeConversation}
-                    hasMediaFile={!!selectedMediaFile}
-                    onSend={sendMessage}
-                    onEmojiPickerChange={setShowEmojiPicker}
-                    onEmojiSelect={(emoji) => setNewMessage((prev) => prev + emoji)}
-                    onMediaSelect={handleMediaSelect}
-                    onClearMedia={clearMedia}
-                    onCancelReply={() => setReplyingTo(null)}
-                    onTyping={handleTyping}
-                  />
+                  <div className="relative">
+                    {/* Video upload progress indicator for 3G users */}
+                    {uploadProgress !== null && (
+                      <div className="px-4 py-2 bg-muted/50 border-t border-border">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>Envoi vidéo: {uploadProgress}%</span>
+                          <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-primary rounded-full transition-all duration-300"
+                              style={{ width: `${uploadProgress}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <ChatComposer
+                      newMessage={newMessage}
+                      isSending={isSending}
+                      showEmojiPicker={showEmojiPicker}
+                      mediaPreview={mediaPreview}
+                      mediaType={mediaType}
+                      replyingTo={replyingTo}
+                      isJudeConversation={isJudeConversation}
+                      hasMediaFile={!!selectedMediaFile}
+                      onSend={sendMessage}
+                      onEmojiPickerChange={setShowEmojiPicker}
+                      onEmojiSelect={(emoji) => setNewMessage((prev) => prev + emoji)}
+                      onMediaSelect={handleMediaSelect}
+                      onClearMedia={clearMedia}
+                      onCancelReply={() => setReplyingTo(null)}
+                      onTyping={handleTyping}
+                    />
+                  </div>
                 }
               >
                 {/* Messages - natural scroll, no paddingTop hack needed */}
