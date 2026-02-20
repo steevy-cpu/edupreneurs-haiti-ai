@@ -1027,6 +1027,7 @@ export type Database = {
       }
       daily_words: {
         Row: {
+          audio_source: string | null
           audio_url: string | null
           category: string | null
           created_at: string | null
@@ -1042,6 +1043,7 @@ export type Database = {
           word: string
         }
         Insert: {
+          audio_source?: string | null
           audio_url?: string | null
           category?: string | null
           created_at?: string | null
@@ -1057,6 +1059,7 @@ export type Database = {
           word: string
         }
         Update: {
+          audio_source?: string | null
           audio_url?: string | null
           category?: string | null
           created_at?: string | null

@@ -91,7 +91,7 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
         // 4. Fetch the word
         const { data: wordData } = await supabase
           .from('daily_words')
-          .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category, display_order, is_active, created_at')
+          .select('id, word, phonetic, part_of_speech, definition, example, audio_url, audio_source, category, display_order, is_active, created_at')
           .eq('is_active', true)
           .eq('display_order', displayOrder)
           .maybeSingle();
@@ -101,7 +101,7 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
         if (!wordData) {
           const { data: fallbackWord } = await supabase
             .from('daily_words')
-            .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category, display_order, is_active, created_at')
+            .select('id, word, phonetic, part_of_speech, definition, example, audio_url, audio_source, category, display_order, is_active, created_at')
             .eq('is_active', true)
             .order('display_order', { ascending: true })
             .limit(1)
