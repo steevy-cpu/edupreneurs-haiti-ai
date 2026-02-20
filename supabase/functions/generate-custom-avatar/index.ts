@@ -5,23 +5,6 @@ import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../
 import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-// Helper: attempt image generation with a specific model
-async function tryGenerateImage(model: string, prompt: string, apiKey: string) {
-  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      messages: [{ role: 'user', content: prompt }],
-      modalities: ['image', 'text']
-    }),
-  });
-  return response;
-}
-
 // Input validation schema
 const avatarSchema = z.object({
   style: z.enum(['anime', 'manga', 'chibi', 'cartoon', 'realistic']).optional().default('anime'),
@@ -43,7 +26,7 @@ serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    // Get auth token - require authentication for avatar generation
+    // Require authentication for avatar generation
     const authHeader = req.headers.get('Authorization');
     let userId: string | null = null;
 
@@ -60,7 +43,7 @@ serve(async (req) => {
       );
     }
 
-    // Rate limiting - resource intensive
+    // Rate limiting — resource intensive endpoint
     const clientIp = getClientIp(req);
     const rateLimit = await checkRateLimit(
       supabase,
@@ -86,9 +69,10 @@ serve(async (req) => {
 
     const { style, hairColor, eyeColor, expression, accessories, skinTone, gender } = validation.data;
     
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    // Read OpenAI key — replaces Lovable AI Gateway which has persistent 500s on image models
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    if (!OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY not configured');
     }
 
     // Build accessory string
@@ -96,6 +80,7 @@ serve(async (req) => {
       ? accessories.join(', ') 
       : 'none';
 
+    // Same detailed prompt — only the API target changes
     const prompt = `CRITICAL INSTRUCTIONS - You MUST follow these characteristics EXACTLY:
 
 CHARACTER SPECIFICATIONS (DO NOT DEVIATE):
@@ -122,23 +107,28 @@ MANDATORY REQUIREMENTS:
 - The character MUST match ALL specified characteristics EXACTLY as described above
 - Double-check: Hair is ${hairColor}, Eyes are ${eyeColor}, Skin is ${skinTone}, Gender is ${gender}`;
 
-    console.log('Generating avatar with prompt:', prompt);
+    console.log('Generating avatar via DALL-E 3');
 
-    // Try primary model, fall back to alternative on 500
-    const PRIMARY_MODEL = 'google/gemini-2.5-flash-image';
-    const FALLBACK_MODEL = 'google/gemini-3-pro-image-preview';
-
-    let response = await tryGenerateImage(PRIMARY_MODEL, prompt, LOVABLE_API_KEY);
-
-    // Retry with fallback model if primary returns 500 (upstream issue)
-    if (response.status === 500) {
-      console.warn(`Primary model ${PRIMARY_MODEL} returned 500, trying fallback ${FALLBACK_MODEL}`);
-      response = await tryGenerateImage(FALLBACK_MODEL, prompt, LOVABLE_API_KEY);
-    }
+    // Single DALL-E 3 call — no fallback chain needed
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'dall-e-3',
+        prompt,
+        n: 1,
+        size: '1024x1024',
+        quality: 'standard',
+        response_format: 'url',
+      }),
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI Gateway error:', response.status, errorText);
+      console.error('DALL-E 3 error:', response.status, errorText);
       
       if (response.status === 429) {
         return new Response(
@@ -146,31 +136,26 @@ MANDATORY REQUIREMENTS:
           { status: 429, headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Usage limit reached. Please add credits to continue.' }),
-          { status: 402, headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      throw new Error(`AI Gateway error: ${response.status}`);
+      throw new Error(`DALL-E 3 error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('AI response received');
+    console.log('DALL-E 3 response received');
 
-    // Extract the image from the response
-    const imageData = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    // Extract image URL from OpenAI response shape
+    const imageUrl = data?.data?.[0]?.url;
     
-    if (!imageData) {
-      console.error('No image in response:', JSON.stringify(data));
+    if (!imageUrl) {
+      console.error('No image in DALL-E 3 response:', JSON.stringify(data));
       throw new Error('No image generated');
     }
 
+    // Preserve exact response shape for frontend compatibility
     return new Response(
       JSON.stringify({ 
         success: true,
-        imageUrl: imageData,
-        message: data.choices?.[0]?.message?.content || 'Avatar generated successfully'
+        imageUrl,
+        message: 'Avatar generated successfully'
       }),
       { headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
     );
