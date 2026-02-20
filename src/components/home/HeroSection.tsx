@@ -1,4 +1,5 @@
 import { memo } from "react";
+import ericCelebrating from "@/assets/eric-celebrating.png";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { GraduationCap, Heart } from "lucide-react";
@@ -143,20 +144,17 @@ export const HeroSection = memo(function HeroSection({
         <div className="relative flex justify-center items-center order-first md:order-last">
           <div className="relative z-10 w-[220px] h-[220px] xs:w-[280px] xs:h-[280px] sm:w-[340px] sm:h-[340px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px]">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/30 rounded-full blur-2xl opacity-40" />
-            {/* picture element matches index.html preload for /images/eric-celebrating.webp */}
-            <picture>
-              <source srcSet="/images/eric-celebrating.webp" type="image/webp" />
-              <img
-                src="/images/eric-celebrating.png"
-                alt="Eric célébrant - Mascotte EDUPRENEURS"
-                width={500}
-                height={500}
-                className="relative z-10 w-full h-full object-contain drop-shadow-2xl"
-                loading="eager"
-                fetchPriority="high"
-                decoding="sync"
-              />
-            </picture>
+            {/* Static PNG import — WebP lost transparent background */}
+            <img
+              src={ericCelebrating}
+              alt="Eric célébrant - Mascotte EDUPRENEURS"
+              width={500}
+              height={500}
+              className="relative z-10 w-full h-full object-contain drop-shadow-2xl"
+              loading="eager"
+              fetchPriority="high"
+              decoding="sync"
+            />
           </div>
         </div>
       </div>
