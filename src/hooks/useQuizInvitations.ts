@@ -14,8 +14,8 @@ export interface QuizInvitation {
   expires_at: string;
   created_at: string;
   responded_at: string | null;
-  sender?: { nickname: string; avatar_url: string | null };
-  subject?: { name: string };
+  sender?: { nickname: string; avatar_url: string | null } | null;
+  subject?: { name: string } | null;
 }
 
 interface InvitationConfig {
@@ -29,9 +29,6 @@ interface UseQuizInvitationsOptions {
   enabled?: boolean;
 }
 
-// Helper to access the new table (types will auto-update after migration sync)
-const invitationsTable = () => (supabase as any).from('quiz_battle_invitations');
-
 export const useQuizInvitations = ({ userId, enabled = true }: UseQuizInvitationsOptions) => {
   const [pendingInvitations, setPendingInvitations] = useState<QuizInvitation[]>([]);
   const [sentInvitation, setSentInvitation] = useState<QuizInvitation | null>(null);
@@ -42,18 +39,19 @@ export const useQuizInvitations = ({ userId, enabled = true }: UseQuizInvitation
   const cleanupStaleBattles = useCallback(async (): Promise<void> => {
     if (!userId) return;
     try {
-      // Cast needed until types regenerate after migration
-      await (supabase.rpc as any)('cleanup_stale_games');
+      await supabase.rpc('cleanup_stale_games');
       console.log('[QuizInvitations] Server-side stale games cleanup completed');
     } catch (err) {
       console.error('[QuizInvitations] Cleanup RPC failed:', err);
     }
   }, [userId]);
 
+  // Batched fetch: 3 queries total instead of 2N+1 (profiles + subjects fetched via .in())
   const fetchPendingInvitations = useCallback(async () => {
     if (!userId || !enabled) return;
 
-    const { data, error } = await invitationsTable()
+    const { data, error } = await supabase
+      .from('quiz_battle_invitations')
       .select('*')
       .eq('recipient_id', userId)
       .eq('status', 'pending')
@@ -61,29 +59,37 @@ export const useQuizInvitations = ({ userId, enabled = true }: UseQuizInvitation
       .order('created_at', { ascending: false });
 
     if (error) { console.error('Error fetching invitations:', error); return; }
+    if (!data || data.length === 0) { setPendingInvitations([]); return; }
 
-    // Fetch sender profiles and subjects separately
-    const invitationsWithDetails = await Promise.all(
-      (data || []).map(async (inv: any) => {
-        const [senderRes, subjectRes] = await Promise.all([
-          supabase.from('profiles').select('nickname, avatar_url').eq('user_id', inv.sender_id).single(),
-          supabase.from('subjects').select('name').eq('id', inv.subject_id).single()
-        ]);
-        return {
-          ...inv,
-          sender: senderRes.data,
-          subject: subjectRes.data,
-        };
-      })
-    );
-    setPendingInvitations(invitationsWithDetails);
+    // Collect unique IDs for batch lookup
+    const senderIds = [...new Set(data.map(inv => inv.sender_id))];
+    const subjectIds = [...new Set(data.map(inv => inv.subject_id))];
+
+    // Batch fetch all needed profiles and subjects in 2 queries
+    const [profilesRes, subjectsRes] = await Promise.all([
+      supabase.from('profiles').select('user_id, nickname, avatar_url').in('user_id', senderIds),
+      supabase.from('subjects').select('id, name').in('id', subjectIds),
+    ]);
+
+    // Build lookup maps for O(1) access
+    const profileMap = new Map((profilesRes.data || []).map(p => [p.user_id, p]));
+    const subjectMap = new Map((subjectsRes.data || []).map(s => [s.id, s]));
+
+    // Map results back — no extra queries needed
+    const invitationsWithDetails = data.map(inv => ({
+      ...inv,
+      sender: profileMap.get(inv.sender_id) || null,
+      subject: subjectMap.get(inv.subject_id) || null,
+    }));
+    setPendingInvitations(invitationsWithDetails as QuizInvitation[]);
 
   }, [userId, enabled]);
 
   const fetchSentInvitation = useCallback(async () => {
     if (!userId || !enabled) return;
 
-    const { data, error } = await invitationsTable()
+    const { data, error } = await supabase
+      .from('quiz_battle_invitations')
       .select('*')
       .eq('sender_id', userId)
       .eq('status', 'pending')
@@ -93,7 +99,7 @@ export const useQuizInvitations = ({ userId, enabled = true }: UseQuizInvitation
       .maybeSingle();
 
     if (error) { console.error('Error fetching sent invitation:', error); return; }
-    setSentInvitation(data);
+    setSentInvitation(data as QuizInvitation | null);
   }, [userId, enabled]);
 
   useEffect(() => {
@@ -121,7 +127,7 @@ export const useQuizInvitations = ({ userId, enabled = true }: UseQuizInvitation
     setIsSending(true);
 
     try {
-      const { data: existing } = await invitationsTable().select('id').eq('sender_id', userId).eq('recipient_id', recipientId).eq('status', 'pending').maybeSingle();
+      const { data: existing } = await supabase.from('quiz_battle_invitations').select('id').eq('sender_id', userId).eq('recipient_id', recipientId).eq('status', 'pending').maybeSingle();
       if (existing) { toast.error('Invitation déjà en attente'); setIsSending(false); return null; }
 
       // Check for active battle
@@ -140,15 +146,16 @@ export const useQuizInvitations = ({ userId, enabled = true }: UseQuizInvitation
         }
       }
 
-      const { data: invitation, error } = await invitationsTable().insert({ sender_id: userId, recipient_id: recipientId, subject_id: config.subjectId, grade_level: config.gradeLevel, difficulty: config.difficulty }).select().single();
+      const { data: invitation, error } = await supabase.from('quiz_battle_invitations').insert({ sender_id: userId, recipient_id: recipientId, subject_id: config.subjectId, grade_level: config.gradeLevel, difficulty: config.difficulty }).select().single();
       if (error) { toast.error('Erreur d\'envoi'); setIsSending(false); return null; }
 
       await supabase.from('notifications').insert({ user_id: recipientId, actor_id: userId, type: 'quiz_invite', content: invitation.id, read: false });
 
-      setSentInvitation(invitation);
+      // Cast to QuizInvitation — DB returns string for difficulty but our type uses union
+      setSentInvitation(invitation as unknown as QuizInvitation);
       toast.success(`Invitation envoyée à ${recipientNickname}!`);
       setIsSending(false);
-      return invitation;
+      return invitation as unknown as QuizInvitation;
     } catch { toast.error('Erreur'); setIsSending(false); return null; }
   }, [userId]);
 
@@ -166,7 +173,7 @@ export const useQuizInvitations = ({ userId, enabled = true }: UseQuizInvitation
 
   const declineInvitation = useCallback(async (invitationId: string): Promise<boolean> => {
     if (!userId) return false;
-    const { error } = await invitationsTable().update({ status: 'declined', responded_at: new Date().toISOString() }).eq('id', invitationId).eq('recipient_id', userId);
+    const { error } = await supabase.from('quiz_battle_invitations').update({ status: 'declined', responded_at: new Date().toISOString() }).eq('id', invitationId).eq('recipient_id', userId);
     if (error) { toast.error('Erreur'); return false; }
     setPendingInvitations(prev => prev.filter(inv => inv.id !== invitationId));
     toast.info('Invitation refusée');
@@ -175,7 +182,7 @@ export const useQuizInvitations = ({ userId, enabled = true }: UseQuizInvitation
 
   const cancelInvitation = useCallback(async (invitationId: string): Promise<boolean> => {
     if (!userId) return false;
-    const { error } = await invitationsTable().update({ status: 'cancelled' }).eq('id', invitationId).eq('sender_id', userId);
+    const { error } = await supabase.from('quiz_battle_invitations').update({ status: 'cancelled' }).eq('id', invitationId).eq('sender_id', userId);
     if (error) { toast.error('Erreur'); return false; }
     setSentInvitation(null);
     toast.info('Invitation annulée');
