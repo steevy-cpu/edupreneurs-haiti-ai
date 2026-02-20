@@ -1,50 +1,32 @@
 /**
  * Quiz Battle Utility Functions
  * 
- * Level calculation formula: XP required per level = 100 * level^1.5
+ * Level formula matches DB function level_from_xp():
+ *   level = floor(sqrt(xp / 100))
+ *   xp_for_level = 100 * level^2
  * 
  * Level progression:
- * - Level 1: 0 XP
- * - Level 2: 100 XP
- * - Level 3: 383 XP
- * - Level 4: 800 XP
- * - Level 5: 1,318 XP
- * - Level 10: 5,623 XP
+ * - Level 1: 100 XP
+ * - Level 2: 400 XP
+ * - Level 3: 900 XP
+ * - Level 5: 2,500 XP
+ * - Level 10: 10,000 XP
  */
 
 /**
- * Calculate level based on total XP
+ * Calculate level from total XP — matches DB level_from_xp() exactly
  */
 export const calculateLevel = (totalXp: number): number => {
   if (totalXp < 0) return 1;
-  
-  let level = 1;
-  let xpAccumulated = 0;
-  
-  while (true) {
-    const xpRequired = Math.floor(100 * Math.pow(level, 1.5));
-    if (xpAccumulated + xpRequired > totalXp) {
-      return level;
-    }
-    xpAccumulated += xpRequired;
-    level++;
-    
-    // Safety: max level 100
-    if (level > 100) return 100;
-  }
+  return Math.max(1, Math.floor(Math.sqrt(totalXp / 100)));
 };
 
 /**
- * Get total XP required to reach a specific level
+ * Get total XP required to reach a specific level — matches DB xp_for_level()
  */
 export const getXpForLevel = (level: number): number => {
   if (level <= 1) return 0;
-  
-  let xpAccumulated = 0;
-  for (let l = 1; l < level; l++) {
-    xpAccumulated += Math.floor(100 * Math.pow(l, 1.5));
-  }
-  return xpAccumulated;
+  return 100 * level * level;
 };
 
 /**
@@ -53,9 +35,7 @@ export const getXpForLevel = (level: number): number => {
 export const getXpToNextLevel = (totalXp: number): number => {
   const currentLevel = calculateLevel(totalXp);
   if (currentLevel >= 100) return 0;
-  
-  const xpForNextLevel = getXpForLevel(currentLevel + 1);
-  return xpForNextLevel - totalXp;
+  return getXpForLevel(currentLevel + 1) - totalXp;
 };
 
 /**
@@ -65,12 +45,14 @@ export const getLevelProgress = (totalXp: number): number => {
   const currentLevel = calculateLevel(totalXp);
   if (currentLevel >= 100) return 100;
   
-  const xpForCurrentLevel = getXpForLevel(currentLevel);
-  const xpForNextLevel = getXpForLevel(currentLevel + 1);
-  const xpInCurrentLevel = totalXp - xpForCurrentLevel;
-  const xpNeededForLevel = xpForNextLevel - xpForCurrentLevel;
+  const xpForCurrent = getXpForLevel(currentLevel);
+  const xpForNext = getXpForLevel(currentLevel + 1);
+  const xpInLevel = totalXp - xpForCurrent;
+  const xpNeeded = xpForNext - xpForCurrent;
   
-  return Math.round((xpInCurrentLevel / xpNeededForLevel) * 100);
+  // Guard against division by zero (level 0→1 edge case)
+  if (xpNeeded <= 0) return 0;
+  return Math.round((xpInLevel / xpNeeded) * 100);
 };
 
 // Single source of truth — re-exported from founderConstants to eliminate duplication.
