@@ -115,12 +115,100 @@ export const useQuizBattleSounds = () => {
     });
   }, [stopTicking]);
 
-  // No-op functions for backward compatibility with existing components
-  const playCorrect = useCallback(() => {}, []);
-  const playIncorrect = useCallback(() => {}, []);
-  const playGameStart = useCallback(() => {}, []);
+  // Ascending arpeggio: C5→E5→G5 — rewarding chime
+  const playCorrect = useCallback(() => {
+    if (isMuted) return;
+    try {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      const notes = [523, 659, 784];
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+        const start = now + i * 0.07;
+        gain.gain.setValueAtTime(0.3, start);
+        gain.gain.exponentialRampToValueAtTime(0.01, start + 0.08);
+        osc.start(start);
+        osc.stop(start + 0.08);
+      });
+    } catch (e) { console.warn('playCorrect failed:', e); }
+  }, [isMuted, getAudioContext]);
+
+  // Buzzer: G3→E3 — punchy but not harsh
+  const playIncorrect = useCallback(() => {
+    if (isMuted) return;
+    try {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      const notes = [196, 165];
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, now);
+        const start = now + i * 0.12;
+        gain.gain.setValueAtTime(0.25, start);
+        gain.gain.exponentialRampToValueAtTime(0.01, start + 0.2);
+        osc.start(start);
+        osc.stop(start + 0.2);
+      });
+    } catch (e) { console.warn('playIncorrect failed:', e); }
+  }, [isMuted, getAudioContext]);
+
+  // Ready sound: E5→G5 — energetic start cue
+  const playGameStart = useCallback(() => {
+    if (isMuted) return;
+    try {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      const notes = [659, 784];
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+        const start = now + i * 0.05;
+        gain.gain.setValueAtTime(0.25, start);
+        gain.gain.exponentialRampToValueAtTime(0.01, start + 0.06);
+        osc.start(start);
+        osc.stop(start + 0.06);
+      });
+    } catch (e) { console.warn('playGameStart failed:', e); }
+  }, [isMuted, getAudioContext]);
+
+  // No spec provided — kept as no-op for backward compat
   const playQuestionStart = useCallback(() => {}, []);
-  const playGameComplete = useCallback(() => {}, []);
+
+  // Triumphant fanfare: C5→E5→G5→C6
+  const playGameComplete = useCallback(() => {
+    if (isMuted) return;
+    try {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      const notes: [number, number][] = [[523, 0.12], [659, 0.12], [784, 0.12], [1047, 0.2]];
+      notes.forEach(([freq, dur], i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+        const start = now + i * 0.1;
+        gain.gain.setValueAtTime(0.3, start);
+        gain.gain.exponentialRampToValueAtTime(0.01, start + dur);
+        osc.start(start);
+        osc.stop(start + dur);
+      });
+    } catch (e) { console.warn('playGameComplete failed:', e); }
+  }, [isMuted, getAudioContext]);
   const startLobbyMusic = useCallback(() => {}, []);
   const stopLobbyMusic = useCallback(() => {}, []);
   const transitionToGame = useCallback(async (): Promise<void> => {
