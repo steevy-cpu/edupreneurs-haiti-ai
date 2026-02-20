@@ -1,72 +1,90 @@
 
 
-# Replace 'Utilisateur' Fallbacks Across Frontend
+# Settings Plan A — Critical Bug Fixes
 
-## Scope
-19 instances across 13 files. Two patterns applied by context.
+## Step 1: Database Migration (run first)
 
-## Pattern A — Own user context
-`nickname ?? full_name?.split(' ')[0] ?? 'toi'`
+Normalize all legacy grade values in `profiles` and fix inverted formats in language practice tables:
 
-| # | File | Line | Current | New |
-|---|------|------|---------|-----|
-| 1 | `src/pages/Settings.tsx` | 536 | `profile?.nickname \|\| "Utilisateur"` | `profile?.nickname ?? profile?.full_name?.split(' ')[0] ?? 'toi'` |
-| 2 | `src/components/shared/QuickMessageFAB.tsx` | 106 | `profile?.nickname \|\| "Utilisateur"` | `profile?.nickname ?? profile?.full_name?.split(' ')[0] ?? 'toi'` |
-| 3 | `src/pages/Affiliations.tsx` | 130 | `profile?.full_name \|\| "Utilisateur"` | `profile?.full_name ?? 'Étudiant'` |
-| 4 | `src/pages/Affiliations.tsx` | 131 | `profile?.nickname \|\| "utilisateur"` | `profile?.nickname ?? 'etudiant'` |
+```sql
+-- Normalize legacy grade values in profiles
+UPDATE profiles SET academic_grade = '7AF' WHERE academic_grade IN ('7e', '7ème');
+UPDATE profiles SET academic_grade = '8AF' WHERE academic_grade IN ('8e', '8ème');
+UPDATE profiles SET academic_grade = '9AF' WHERE academic_grade IN ('9e', '9ème');
+UPDATE profiles SET academic_grade = 'NS1' WHERE academic_grade = 'S1';
+UPDATE profiles SET academic_grade = 'NS2' WHERE academic_grade = 'S2';
+UPDATE profiles SET academic_grade = 'NS3' WHERE academic_grade IN ('Rheto', 'Rhéto');
+UPDATE profiles SET academic_grade = 'NS4' WHERE academic_grade = 'Philo';
 
-**Note on Affiliations lines 130-131:** These are actually referral data (other users who signed up via the current user's link), so they show *other* users. Correcting to Pattern B instead. See below.
+-- Fix inverted format in language practice tables
+UPDATE english_practice_conversations SET grade_level = '8AF' WHERE grade_level = 'AF8';
+UPDATE english_practice_conversations SET grade_level = '9AF' WHERE grade_level = 'AF9';
+UPDATE spanish_practice_conversations SET grade_level = '8AF' WHERE grade_level = 'AF8';
+UPDATE spanish_practice_conversations SET grade_level = '9AF' WHERE grade_level = 'AF9';
+```
 
-## Pattern B — Other user context
-`nickname ?? full_name ?? 'Étudiant'`
+## Step 2: Frontend Changes (Settings.tsx only)
 
-| # | File | Line | Current | New |
-|---|------|------|---------|-----|
-| 3 | `src/pages/Affiliations.tsx` | 130 | `profile?.full_name \|\| "Utilisateur"` | `profile?.full_name ?? 'Étudiant'` |
-| 4 | `src/pages/Affiliations.tsx` | 131 | `profile?.nickname \|\| "utilisateur"` | `profile?.nickname ?? 'étudiant'` |
-| 5 | `src/pages/Affiliations.tsx` | 342 | `referral.profiles?.full_name \|\| "Utilisateur"` | `referral.profiles?.full_name ?? 'Étudiant'` |
-| 6 | `src/pages/Affiliations.tsx` | 344 | `referral.profiles?.nickname \|\| "utilisateur"` | `referral.profiles?.nickname ?? 'étudiant'` |
-| 7 | `src/pages/Feed.tsx` | 896 | `comment.profile?.nickname \|\| "Utilisateur"` | `comment.profile?.nickname ?? comment.profile?.full_name ?? 'Étudiant'` |
-| 8 | `src/pages/Feed.tsx` | 1083 | `post.profile?.full_name \|\| "Utilisateur"` | `post.profile?.full_name ?? post.profile?.nickname ?? 'Étudiant'` |
-| 9 | `src/pages/Notifications.tsx` | 233 | `nickname: "Utilisateur inconnu"` | `nickname: "Étudiant"` |
-| 10 | `src/pages/Notifications.tsx` | 234 | `full_name: "Utilisateur inconnu"` | `full_name: "Étudiant"` |
-| 11 | `src/components/feed/PostCard.tsx` | 141 | `post.profile?.full_name \|\| "Utilisateur"` | `post.profile?.full_name ?? post.profile?.nickname ?? 'Étudiant'` |
-| 12 | `src/components/community/ConversationSidebar.tsx` | 161 | `conv.otherUser?.nickname \|\| conv.otherUser?.full_name \|\| "Utilisateur"` | `conv.otherUser?.nickname ?? conv.otherUser?.full_name ?? 'Étudiant'` |
-| 13 | `src/components/community/ChatViewHeader.tsx` | 91 | `conversation?.otherUser?.nickname \|\| conversation?.otherUser?.full_name \|\| "Utilisateur"` | `conversation?.otherUser?.nickname ?? conversation?.otherUser?.full_name ?? 'Étudiant'` |
-| 14 | `src/components/community/ConversationListItem.tsx` | 94 | `conv.otherUser?.nickname \|\| conv.otherUser?.full_name \|\| "Utilisateur"` | `conv.otherUser?.nickname ?? conv.otherUser?.full_name ?? 'Étudiant'` |
-| 15 | `src/components/content-editor/RoleManagement.tsx` | 267 | `editor.profiles?.full_name \|\| editor.profiles?.nickname \|\| 'Utilisateur'` | `editor.profiles?.full_name ?? editor.profiles?.nickname ?? 'Étudiant'` |
-| 16 | `src/components/content-editor/LessonComments.tsx` | 71 | `nickname: 'Utilisateur'` | `nickname: 'Étudiant'` |
-| 17 | `src/components/ebook/EbookComments.tsx` | 149 | `comment.profile?.nickname \|\| 'Utilisateur'` | `comment.profile?.nickname ?? 'Étudiant'` |
-| 18 | `src/hooks/useCommunityData.ts` | 106 | `full_name: "Utilisateur"` | `full_name: "Étudiant"` |
+### Fix 1 -- Grade Dropdown (lines 649-663)
 
-## Pattern A (own user) — Final list
+Replace the hardcoded `<option>` elements with the correct standardized values:
 
-| # | File | Line | New |
-|---|------|------|----|
-| 1 | `src/pages/Settings.tsx` | 536 | `profile?.nickname ?? profile?.full_name?.split(' ')[0] ?? 'toi'` |
-| 2 | `src/components/shared/QuickMessageFAB.tsx` | 106 | `profile?.nickname ?? profile?.full_name?.split(' ')[0] ?? 'toi'` |
+```
+7AF  ->  "7eme Annee Fondamentale"
+8AF  ->  "8eme Annee Fondamentale"
+9AF  ->  "9eme Annee Fondamentale"
+NS1  ->  "Premiere (NS1)"
+NS2  ->  "Seconde (NS2)"
+NS3  ->  "Rheto (NS3)"
+NS4  ->  "Philosophie (NS4)"
+UNIV ->  "Universite"
+NONE ->  "Autre / Non scolarise"
+```
 
-## Edge function (special case)
+### Fix 2 -- Add Gender Field
 
-| # | File | Line | New |
-|---|------|------|----|
-| 19 | `supabase/functions/eric-chat/index.ts` | 116 | `profileMap.get(msg.sender_id) \|\| 'Étudiant'` |
+- Add `gender` to the `profileForm` state (line 106-113), initialized from `profile.gender`
+- Add `gender` to `fetchUserData` form initialization (line 173-180)
+- Insert a gender selector between the academic grade row and the phone number row (after line 678)
+- Two toggle-style buttons: "Garcon" and "Fille" -- styled as selectable outline buttons
+- Include `gender` in the `handleProfileUpdate` save payload (line 298-307)
 
-## Total: 19 instances across 13 files
+### Fix 3 -- Add Date of Birth Field
 
-## Technical notes
-- Switching from `\|\|` to `??` where appropriate: `??` only falls through on `null`/`undefined`, not empty string. This is correct here since DB values are `null` when unset, not empty string.
-- QuickMessageFAB line 106 is showing other users in conversation list, but the user asked for Pattern A there. Will follow the user's instruction.
-- No database changes, no new imports, no bundle impact.
+- Add `dateOfBirth` to the `profileForm` state, initialized from `profile.date_of_birth`
+- Add `dateOfBirth` to `fetchUserData` form initialization
+- Insert a date input below the phone number field (after line 678, in the same grid row as gender)
+- Max date = today, min date = 1950-01-01
+- Helper text: "Pour recevoir un email special le jour de ton anniversaire!"
+- Include `date_of_birth` in the save payload
+
+### Fix 4 -- Add Logout Button
+
+- Import `LogOut` from lucide-react (line 14-30)
+- Add a logout button in the Account tab between the email card (ends line 751) and the password change card (starts line 753)
+- Full-width outline button: "Se deconnecter" with LogOut icon
+- Calls the existing `handleLogout` function (line 218) -- no changes to that function
+
+### Fix 5 -- Update UserProfile Interface
+
+- Add `gender`, `date_of_birth` to the `UserProfile` interface (lines 56-66) so TypeScript is happy when reading these fields from the profile query
+
+## Files Changed
+
+Only `src/pages/Settings.tsx` -- no other files touched.
 
 ## Safety Verification
 
 | Check | Status |
 |---|---|
-| Existing functionality preserved | Yes -- only fallback strings change |
-| Auth services (items 19-32) untouched | Yes |
-| Edge functions untouched except eric-chat L116 | Yes |
-| RLS impact | None |
-| Bundle size | No change |
-| 3G performance | No change |
+| Migration normalizes exactly 6 legacy profile rows | Yes -- 7e, Philo, S1, S2 confirmed in audit |
+| Migration fixes 15 inverted language rows | Yes -- AF8/AF9 confirmed |
+| Grade dropdown pre-fills correctly after migration | Yes -- values now match option values |
+| Gender saves to profiles table | Yes -- added to update payload |
+| Date of birth saves to profiles table | Yes -- added to update payload |
+| Logout calls existing handleLogout unchanged | Yes -- function at line 218 untouched |
+| Matieres page unaffected | Yes -- content tables already use standardized codes |
+| No new dependencies | Correct -- all components already in project |
+| Bundle size impact | Negligible -- only adding form fields |
+| 3G performance | No impact -- no new queries or API calls |
 
