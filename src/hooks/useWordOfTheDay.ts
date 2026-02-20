@@ -3,17 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNetworkAwareLoading } from '@/hooks/useNetworkAwareLoading';
 import { toast } from 'sonner';
 
-export interface DailyWord {
-  id: string;
-  word: string;
-  phonetic: string;
-  part_of_speech: string;
-  definition: string;
-  example: string;
-  audio_url: string | null;
-  category: string | null;
-  display_order: number | null;
-}
+// Re-export canonical type so existing imports from this hook still work
+export type { DailyWord } from '@/types/dailyWord';
+import type { DailyWord } from '@/types/dailyWord';
 
 interface UseWordOfTheDayReturn {
   word: DailyWord | null;
@@ -99,7 +91,7 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
         // 4. Fetch the word
         const { data: wordData } = await supabase
           .from('daily_words')
-          .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category, display_order')
+          .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category, display_order, is_active, created_at')
           .eq('is_active', true)
           .eq('display_order', displayOrder)
           .maybeSingle();
@@ -109,7 +101,7 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
         if (!wordData) {
           const { data: fallbackWord } = await supabase
             .from('daily_words')
-            .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category, display_order')
+            .select('id, word, phonetic, part_of_speech, definition, example, audio_url, category, display_order, is_active, created_at')
             .eq('is_active', true)
             .order('display_order', { ascending: true })
             .limit(1)

@@ -13,18 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { Plus, Trash2, Pencil, Volume2, Loader2, BookOpen, CheckCircle, XCircle } from 'lucide-react';
 
-interface DailyWord {
-  id: string;
-  word: string;
-  phonetic: string;
-  part_of_speech: string;
-  definition: string;
-  example: string;
-  audio_url: string | null;
-  category: string | null;
-  is_active: boolean;
-  created_at: string;
-}
+import type { DailyWord } from '@/types/dailyWord';
 
 const PART_OF_SPEECH_OPTIONS = [
   'n.m.', 'n.f.', 'adj.', 'v.', 'adv.', 'n.', 'prép.', 'conj.'
