@@ -94,6 +94,62 @@ export const validateAndPrepareVideo = async (file: File): Promise<{ file: File;
 };
 
 /**
+ * Generate a 300x300 center-cropped JPEG thumbnail for chat bubble display.
+ * Keeps file size ~5-15KB for fast loading on 3G connections.
+ */
+export const generateImageThumbnail = async (file: File): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const img = new Image();
+      
+      img.onload = () => {
+        const THUMB_SIZE = 300;
+        const canvas = document.createElement('canvas');
+        canvas.width = THUMB_SIZE;
+        canvas.height = THUMB_SIZE;
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Could not get canvas context'));
+          return;
+        }
+        
+        // Center-crop: use the largest square that fits in the image
+        const cropSize = Math.min(img.width, img.height);
+        const sx = (img.width - cropSize) / 2;
+        const sy = (img.height - cropSize) / 2;
+        
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        // Draw the center-cropped square scaled to 300x300
+        ctx.drawImage(img, sx, sy, cropSize, cropSize, 0, 0, THUMB_SIZE, THUMB_SIZE);
+        
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Failed to generate thumbnail'));
+              return;
+            }
+            console.log(`Thumbnail generated: ${(blob.size / 1024).toFixed(1)}KB`);
+            resolve(blob);
+          },
+          'image/jpeg',
+          0.6 // Lower quality for tiny preview
+        );
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image for thumbnail'));
+      img.src = e.target?.result as string;
+    };
+    
+    reader.onerror = () => reject(new Error('Failed to read file for thumbnail'));
+    reader.readAsDataURL(file);
+  });
+};
+
+/**
  * Generate video thumbnail
  */
 export const generateVideoThumbnail = (file: File): Promise<Blob> => {

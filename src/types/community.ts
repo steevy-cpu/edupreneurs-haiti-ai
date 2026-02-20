@@ -53,6 +53,8 @@ export interface Message {
   document_url?: string | null;
   /** Original filename for document attachments */
   document_name?: string | null;
+  /** Small 300x300 thumbnail for chat bubble display; full image loads on tap */
+  thumbnail_url?: string | null;
   edited_at?: string | null;
   shared_post?: {
     id: string;

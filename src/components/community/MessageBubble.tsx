@@ -10,6 +10,7 @@ import { Message, Reaction } from "@/types/community";
 import { FloatingReaction } from "./FloatingReaction";
 import { ChatMessageRenderer } from "@/components/ChatMessageRenderer";
 import { MessageTypewriter } from "./MessageTypewriter";
+import { NetworkAwareImage, NetworkAwareVideo } from "@/components/feed/NetworkAwareMedia";
 
 interface MessageBubbleProps {
   message: Message;
@@ -292,25 +293,28 @@ export function MessageBubble({
         )}
         {/* Image display */}
         {message.image_url && !isDocument && (
-          <img
-            src={message.image_url}
-            alt="Image"
-            className="mt-2 rounded-lg w-full max-h-64 object-contain bg-muted/20 cursor-pointer hover:opacity-90 transition-opacity"
-            loading="lazy"
-            decoding="async"
+          <div
+            className="mt-2 cursor-pointer hover:opacity-90 transition-opacity"
             onClick={(e) => {
               e.stopPropagation();
+              // Open full-size image (always use image_url, not thumbnail)
               onSetFullSizeImage(message.image_url || null);
             }}
-          />
+          >
+            {/* Display thumbnail if available, fallback to full image for older messages */}
+            <NetworkAwareImage
+              src={(message.thumbnail_url || message.image_url)!}
+              alt="Image"
+              className="rounded-lg w-full max-h-64 object-contain bg-muted/20"
+            />
+          </div>
         )}
         {message.video_url && (
           <div className="relative group/video mt-2">
-            <video
-              src={message.video_url}
-              controls
-              className="rounded-lg w-full max-h-64 bg-muted/20"
-              preload="metadata"
+            {/* Network-aware: shows tap-to-load placeholder on 3G */}
+            <NetworkAwareVideo
+              src={message.video_url!}
+              className="rounded-lg w-full max-h-64"
             />
             <Button
               size="sm"
