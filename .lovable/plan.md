@@ -1,152 +1,150 @@
 
+# Mot du Jour Plan A — Consolidate Management into Control Center
 
-# Passion Plan B — 6 Polish & Consistency Fixes
+## Overview
 
-## Fix 1 — Make preview cards on intro interactive
+Consolidate all word CRUD operations into `WordsModule.tsx` (Control Center), create a shared type, redirect the Content Editor tab, and add a DB function for auto-assigning `display_order`.
 
-**Problem:** The 4 preview cards (Musique, Arts, Strategie, Litterature) on lines 880-894 look tappable but have no onClick handler.
+---
 
-**File:** `src/pages/PassionDiscovery.tsx`
+## Fix 1 — Add full CRUD to WordsModule.tsx
 
-**Changes (lines 885-893):**
-- Add a `ref` to the CTA card (line 898): `const ctaRef = useRef<HTMLDivElement>(null);` (add to existing refs near line 139)
-- Add `ref={ctaRef}` to the CTA Card on line 898
-- Add `onClick` to each preview card that scrolls to the CTA: `onClick={() => ctaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}`
-- Add `cursor-pointer` to the card className (already has `hover:scale-105` from `shouldShowAnimations`)
+**File:** `src/pages/control-center/modules/WordsModule.tsx`
 
-## Fix 2 — Add fade transitions between screens
+Add the CRUD capabilities currently only in `DailyWordsManager.tsx`:
 
-**Problem:** Every screen swap (intro, quiz, results, categories, module list, learning view) is an instant hard cut with no visual transition.
+- **New imports:** `Dialog, DialogContent, DialogHeader, DialogTitle`, `Input`, `Label`, `Textarea`, `Select/SelectContent/SelectItem/SelectTrigger/SelectValue`, `Switch`, `Table/TableBody/TableCell/TableHead/TableHeader/TableRow`, `Plus, Trash2, Pencil` from lucide
+- **New state variables:**
+  - `isDialogOpen`, `editingWord`, `isSaving`
+  - Form fields: `formWord`, `formPhonetic`, `formPartOfSpeech`, `formDefinition`, `formExample`, `formCategory`
+- **Constants:** `PART_OF_SPEECH_OPTIONS` and `CATEGORY_OPTIONS` (copied from DailyWordsManager)
+- **Update `DailyWord` interface:** Add `example`, `category`, `created_at` fields to match full schema
+- **Update `fetchWords`:** Remove `is_active` filter so inactive words are also visible. Select all columns. Keep `display_order ASC` ordering.
+- **New functions:**
+  - `resetForm()` — clears all form fields
+  - `openEditDialog(word)` — populates form and opens dialog
+  - `handleSave()` — INSERT (with RPC for display_order) or UPDATE
+  - `handleDelete(wordId)` — confirmation via AlertDialog, then DELETE
+  - `toggleActive(wordId, currentState)` — inline switch UPDATE
+- **New UI sections:**
+  - "Ajouter un mot" button at top of the word management section
+  - Add/Edit dialog with all 6 fields (word, phonetic, part_of_speech, definition, example, category)
+  - Replace the current `WordRow` list with a proper Table showing: `#` (display_order), Mot, Phonetique, Type, Categorie, Audio (play/generate), Actif (switch), Actions (edit/delete)
+  - Delete confirmation reuses the existing `AlertDialog` pattern (add a new confirm type)
+- **Keep existing sections unchanged:** Notification card, TTS provider selector, audio stats
 
-**File:** `src/pages/PassionDiscovery.tsx`
+## Fix 2 — Unify ordering
 
-**Changes:**
-- Add import: `import { AnimatePresence, motion } from "framer-motion";` (framer-motion already installed)
-- Define a reusable fade config object near the top of the component:
-  ```typescript
-  const fadeProps = shouldShowAnimations ? {
-    initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    exit: { opacity: 0 },
-    transition: { duration: 0.2 }
-  } : {};
-  ```
-- Wrap the component return in `<AnimatePresence mode="wait">` with a `motion.div` keyed by the current screen state
-- The key logic: use a computed `screenKey` string based on `quizStep + selectedModule + selectedCategory` so transitions fire on every screen change
-- Each early return (intro, quiz, results, category browser, learning view) gets wrapped in `<motion.div key={screenKey} {...fadeProps}>...</motion.div>`
-- When `shouldShowAnimations` is false, `fadeProps` is empty so no animation overhead
+**File:** `src/pages/control-center/modules/WordsModule.tsx`
 
-## Fix 3 — Unify tab card designs across all three tabs
+Already orders by `display_order ASC` (line 105). No change needed here. The `DailyWordsManager.tsx` used `created_at DESC` but will no longer be rendered.
 
-**Problem:** 
-- Passion tab (lines 1209-1290): horizontal icon layout with `flex items-start gap-4`, `rounded-xl` icon, module badges, `fullDescription`, progress bar with "X/Y modules" label, chess game button
-- Civic tab (lines 1299-1338): centered layout with `flex-col items-center text-center`, `rounded-full` icon, no module badges, no fullDescription, progress without "modules" label, plain "Explorer" button
-- Development tab (lines 1349-1411): matches Passion layout but with different CTA text ("Commencer" vs "Commencer l'exploration")
+## Fix 3 — Create shared DailyWord type
 
-**File:** `src/pages/PassionDiscovery.tsx`
+**New file:** `src/types/dailyWord.ts`
 
-**Changes to Civic tab (lines 1299-1338):**
-- Replace centered card layout with Passion tab's horizontal layout:
-  - `flex items-start gap-4` instead of `flex-col items-center text-center`
-  - `rounded-xl` icon container instead of `rounded-full`
-  - Add `fullDescription` display (line-clamp-2)
-  - Add module badges section (same pattern as Passion tab)
-  - Update progress label to show "X/Y modules"
-  - Change grid from `grid-cols-1 md:grid-cols-3` to `grid-cols-1 md:grid-cols-2` (matches Passion)
-  - Replace "Explorer" button with "Commencer" + Play icon (matches Passion)
-
-**Changes to Development tab (lines 1349-1411):**
-- Already mostly matches Passion layout. Only change: update CTA text from "Commencer" to match Passion's "Commencer l'exploration" for consistency (or vice versa — standardize all to "Commencer")
-- Standardize all three to "Commencer" + Play icon
-
-## Fix 4 — Unify search behavior across tabs
-
-**Problem:** 
-- Passion tab filter (lines 781-789): searches `title`, `description`, AND `module titles`
-- Civic tab filter (lines 791-798): searches `title` and `description` only
-- Development tab filter (lines 800-807): searches `title` and `description` only
-
-**File:** `src/pages/PassionDiscovery.tsx`
-
-**Changes:**
-- Lines 794-796: Add `cat.modules.some(m => m.title.toLowerCase().includes(query))` to civic filter
-- Lines 803-805: Add `cat.modules.some(m => m.title.toLowerCase().includes(query))` to development filter
-
-## Fix 5 — Unify empty states across tabs
-
-**Problem:**
-- Passion tab empty state (lines 1203-1207): Shows `<Search>` icon + text with search query
-- Civic tab empty state (lines 1294-1297): Text only, no icon
-- Development tab empty state (lines 1344-1347): Text only, no icon
-
-**File:** `src/pages/PassionDiscovery.tsx`
-
-**Changes to Civic empty state (lines 1295-1297):**
-```tsx
-<div className="text-center py-12 text-muted-foreground">
-  <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-  <p>Aucune categorie trouvee pour "{searchQuery}"</p>
-</div>
+```typescript
+/** Canonical DailyWord type — used by student hook, admin modules, and content editor */
+export interface DailyWord {
+  id: string;
+  word: string;
+  phonetic: string;
+  part_of_speech: string;
+  definition: string;
+  example: string;
+  audio_url: string | null;
+  category: string | null;
+  is_active: boolean;
+  display_order: number | null;
+  created_at: string;
+}
 ```
 
-**Changes to Development empty state (lines 1345-1347):** Same pattern as above.
+**Update imports in 3 files:**
+- `src/hooks/useWordOfTheDay.ts` (line 6-16): Remove local `DailyWord` interface, import from `@/types/dailyWord`
+- `src/pages/control-center/modules/WordsModule.tsx` (line 32-41): Remove local interface, import from `@/types/dailyWord`
+- `src/components/content-editor/DailyWordsManager.tsx` (line 16-27): Remove local interface, import from `@/types/dailyWord`
 
-## Fix 6 — Add confetti on quiz completion
+## Fix 4 — Redirect Content Editor DailyWordsManager tab
 
-**Problem:** No celebration feedback when quiz results appear.
+**File:** `src/pages/ContentEditor.tsx` (lines 476-478)
 
-**File:** `src/pages/PassionDiscovery.tsx`
+Replace the `<DailyWordsManager />` render with a redirect card:
 
-**Changes:**
-- Add import: `import confetti from 'canvas-confetti';` (already in package.json)
-- Add a `useEffect` that fires confetti when `quizStep` transitions to `"results"`:
-  ```typescript
-  // Fire confetti celebration when quiz results are revealed
-  useEffect(() => {
-    if (quizStep === 'results' && shouldShowAnimations) {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { x: 0.5, y: 0.3 },
-        colors: ['#8b5cf6', '#d946ef', '#f59e0b', '#10b981'],
-        disableForReducedMotion: true,
-      });
-    }
-  }, [quizStep, shouldShowAnimations]);
-  ```
-- Placed after the existing `useEffect` blocks (around line 183)
-- `disableForReducedMotion: true` respects accessibility preferences
-- Colors match the app's violet/fuchsia/amber/emerald palette
-- Only fires once per transition to results (quizStep dependency)
+```tsx
+<TabsContent value="daily-words">
+  <Card>
+    <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+      <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
+      <h3 className="text-lg font-semibold mb-2">Gestion deplacee</h3>
+      <p className="text-muted-foreground mb-4">
+        La gestion des mots du jour a ete deplacee vers le Centre de Controle.
+      </p>
+      <Button onClick={() => navigate('/control-center')}>
+        Ouvrir le Centre de Controle
+      </Button>
+    </CardContent>
+  </Card>
+</TabsContent>
+```
+
+- Remove the `DailyWordsManager` import (line 22)
+- Add `BookOpen` to existing lucide imports
+- Ensure `useNavigate` is already imported (check existing code)
+- Keep `DailyWordsManager.tsx` file intact for now
+
+## Fix 5 — DB function for display_order auto-assignment
+
+**Migration SQL:**
+
+```sql
+CREATE OR REPLACE FUNCTION public.get_next_display_order()
+RETURNS integer
+LANGUAGE sql
+STABLE SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+  SELECT COALESCE(MAX(display_order), 0) + 1 FROM daily_words;
+$$;
+```
+
+**Usage in WordsModule.tsx `handleSave` (INSERT path):**
+
+```typescript
+// Get next display_order via RPC before inserting
+const { data: nextOrder } = await supabase.rpc('get_next_display_order');
+
+const { error } = await supabase
+  .from('daily_words')
+  .insert({
+    ...wordData,
+    is_active: true,
+    display_order: nextOrder ?? 1,
+  });
+```
 
 ---
 
 ## Technical Summary
 
-| Fix | Lines Affected | Type |
-|-----|---------------|------|
-| Fix 1: Interactive preview cards | ~885-893, add ref ~139 | onClick + ref |
-| Fix 2: Fade transitions | All return blocks, new import | AnimatePresence wrapper |
-| Fix 3: Unified card design | Civic tab 1299-1338 | Layout alignment |
-| Fix 4: Unified search | Lines 794, 803 | Filter logic |
-| Fix 5: Unified empty states | Lines 1295-1297, 1345-1347 | UI consistency |
-| Fix 6: Confetti | New useEffect ~line 184 | canvas-confetti call |
+| Change | File | Impact |
+|--------|------|--------|
+| Full CRUD in WordsModule | `WordsModule.tsx` | Add ~200 lines (dialog, table, handlers) |
+| Shared type | `src/types/dailyWord.ts` (new) | 12 lines |
+| Type imports | 3 files | Remove local interfaces, add import |
+| Content Editor redirect | `ContentEditor.tsx` | Replace 1 line render with redirect card |
+| DB function | Migration | 1 new function |
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Preview cards scroll to CTA on tap | Yes -- scrollIntoView with smooth behavior |
-| Fade transitions between all screens | Yes -- AnimatePresence with mode="wait" |
-| Transitions disabled on slow connections | Yes -- fadeProps is empty when !shouldShowAnimations |
-| All three tab cards use same layout | Yes -- Civic updated to match Passion horizontal layout |
-| Search works across module titles in all tabs | Yes -- added modules.some() to civic and development filters |
-| Empty states consistent across all tabs | Yes -- Search icon + query text in all three |
-| Confetti fires once on quiz completion | Yes -- useEffect with quizStep dependency |
-| Confetti respects reduced motion | Yes -- disableForReducedMotion: true |
-| No Plan A code touched | Correct -- all changes are additive or in different sections |
-| No new dependencies added | Correct -- framer-motion and canvas-confetti already installed |
-| No architectural changes | Correct -- all fixes are surgical |
-| 3G performance unaffected | Yes -- animations gated by shouldShowAnimations |
-| Existing users unaffected | Yes -- no data or state shape changes |
-
+| CRUD works in Control Center | Add/Edit/Delete/Toggle all implemented |
+| New words get display_order | RPC `get_next_display_order` called before INSERT |
+| Content Editor shows redirect | DailyWordsManager replaced with message + button |
+| Shared DailyWord type in all 3 files | Single source in `src/types/dailyWord.ts` |
+| Student-facing components untouched | useWordOfTheDay.ts and WordOfTheDayCard.tsx only get import change |
+| Existing word data unaffected | No schema changes to daily_words table |
+| Deterministic algorithm unchanged | computeDisplayOrder logic not modified |
+| No new dependencies | Uses existing UI components |
+| RLS policies unchanged | Existing policies cover all CRUD operations |
