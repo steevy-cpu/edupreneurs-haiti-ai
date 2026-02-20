@@ -1,82 +1,166 @@
 
 
-# Community Plan C — Technical Debt Cleanup
+# Media Plan A — Fix, Wire, and Harden Media Handling
 
 ## Overview
 
-Two targeted fixes: replace the `doc:` encoding hack with proper database columns, and delete the dead `useCommunityData` hook. No changes to Plan A or Plan B code.
+Six targeted fixes to harden media handling in the messaging system. No changes to Community Plans A, B, or C code paths.
 
 ---
 
-## Fix 1 — Replace Document Sharing Hack
+## Fix 1 — RLS Gap for document_url (CRITICAL)
 
-### 1a. Database migration
+**Database migration** to replace the existing SELECT policy on `storage.objects` for the `message-media` bucket. The current policy only checks `image_url` and `video_url` — it must also check `document_url`.
 
 ```sql
-ALTER TABLE messages ADD COLUMN IF NOT EXISTS document_url text;
-ALTER TABLE messages ADD COLUMN IF NOT EXISTS document_name text;
+DROP POLICY IF EXISTS "Users can view message media" ON storage.objects;
 
--- Safety net: migrate any existing doc: encoded messages (currently 0 rows)
-UPDATE messages
-SET document_name = split_part(image_url, ':', 2),
-    document_url  = substring(image_url FROM position(':' IN substring(image_url FROM position(':' IN image_url) + 1)) + position(':' IN image_url) + 1),
-    image_url     = NULL
-WHERE image_url LIKE 'doc:%';
+CREATE POLICY "Users can view message media"
+ON storage.objects FOR SELECT
+USING (
+  bucket_id = 'message-media' AND (
+    auth.uid()::text = (storage.foldername(name))[1]
+    OR EXISTS (
+      SELECT 1 FROM messages m
+      JOIN conversation_participants cp 
+        ON cp.conversation_id = m.conversation_id
+      WHERE cp.user_id = auth.uid()
+        AND (
+          m.image_url LIKE '%' || name || '%'
+          OR m.video_url LIKE '%' || name || '%'
+          OR m.document_url LIKE '%' || name || '%'
+        )
+    )
+  )
+);
 ```
 
-### 1b. Type update
-
-**File:** `src/types/community.ts`
-
-Add to the `Message` interface:
-```typescript
-document_url?: string | null;
-document_name?: string | null;
-```
-
-### 1c. Frontend — sending documents
-
-**File:** `src/pages/Community.tsx` (lines 1514-1528)
-
-Replace the `doc:` encoding at line 1515:
-```typescript
-// Before:
-imageUrl = `doc:${currentMediaFile.name}:${publicUrl}`;
-
-// After:
-documentUrl = publicUrl;
-documentName = currentMediaFile.name;
-```
-
-Update the insert payload (lines 1520-1528) to include `document_url` and `document_name` instead of encoding into `image_url`. Add two variables (`documentUrl`, `documentName`) initialized to `null` alongside `imageUrl` and `videoUrl`.
-
-### 1d. Frontend — displaying documents
-
-**File:** `src/components/community/MessageBubble.tsx` (lines 222-230, 242, 253, 268, 297)
-
-Replace the `doc:` parsing block (lines 222-230):
-```typescript
-// Before:
-const isDocument = message.image_url?.startsWith('doc:');
-const documentInfo = isDocument ? (() => { ... })() : null;
-
-// After:
-const isDocument = !!message.document_url;
-const documentInfo = isDocument ? {
-  name: message.document_name || 'Document',
-  url: message.document_url!,
-} : null;
-```
-
-All downstream references to `isDocument` and `documentInfo` (lines 242, 253, 268-294, 297) remain identical since the variable shape is unchanged. The rendering UI stays exactly the same.
+**Note:** Since the bucket is public, this policy is a defense-in-depth layer. But it must be correct in case the bucket ever becomes private.
 
 ---
 
-## Fix 2 — Delete Dead Hook
+## Fix 2 — Wire NetworkAwareImage into MessageBubble
 
-**File:** `src/hooks/useCommunityData.ts`
+**File:** `src/components/community/MessageBubble.tsx` (lines 294-305)
 
-Delete entirely. Confirmed zero imports anywhere in the codebase. Both `useCommunityData` and `usePrefetchCommunity` exports are unused.
+- Import `NetworkAwareImage` from `@/components/feed/NetworkAwareMedia`
+- Replace the raw `<img>` tag with `<NetworkAwareImage>` keeping identical `src`, `alt`, `className`, and wrapping the `onClick` handler
+
+Before:
+```tsx
+<img src={message.image_url} alt="Image" className="..." loading="lazy" ... />
+```
+
+After:
+```tsx
+<NetworkAwareImage src={message.image_url!} alt="Image" className="..." />
+```
+
+The `onClick` for full-size viewer wraps the component in a clickable div. This gives 3G users automatic quality reduction via the existing `useNetworkAwareLoading` hook.
+
+---
+
+## Fix 3 — Wire NetworkAwareVideo into MessageBubble
+
+**File:** `src/components/community/MessageBubble.tsx` (lines 307-327)
+
+- Import `NetworkAwareVideo` from `@/components/feed/NetworkAwareMedia`
+- Replace the raw `<video>` tag with `<NetworkAwareVideo>` keeping the same `src` and `className`
+- Keep the download button overlay as-is
+
+Before:
+```tsx
+<video src={message.video_url} controls className="..." preload="metadata" />
+```
+
+After:
+```tsx
+<NetworkAwareVideo src={message.video_url!} className="rounded-lg w-full max-h-64" />
+```
+
+On slow connections, users see a tap-to-load placeholder instead of auto-downloading the video.
+
+---
+
+## Fix 4 — Wire uploadWithProgress for Video Uploads
+
+**File:** `src/pages/Community.tsx`
+
+- Import `uploadWithProgress` from `@/utils/uploadWithProgress`
+- Add state: `const [uploadProgress, setUploadProgress] = useState<number | null>(null)`
+- For video uploads only (line 1492-1494), replace `supabase.storage.upload()` with `uploadWithProgress('message-media', fileName, currentMediaFile, callback)`
+- The callback updates `uploadProgress` state (0-100)
+- Display a small progress indicator in the message input area while uploading (e.g., "Envoi vidéo: 45%")
+- Reset `uploadProgress` to `null` on complete or error
+- Image and document uploads continue using the standard `supabase.storage.upload()` (they are small enough not to need progress)
+
+---
+
+## Fix 5 — Set Bucket-Level Limits
+
+**Database migration** to update the `message-media` bucket with server-side enforcement:
+
+```sql
+UPDATE storage.buckets
+SET file_size_limit = 52428800,
+    allowed_mime_types = ARRAY[
+      'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+      'video/mp4', 'video/quicktime', 'video/webm',
+      'application/pdf', 'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain'
+    ]
+WHERE id = 'message-media';
+```
+
+Current state: `file_size_limit = NULL`, `allowed_mime_types = NULL` (no enforcement). This adds server-side blocking for oversized files and disallowed types.
+
+---
+
+## Fix 6 — Thumbnail System for Images
+
+### 6a. Database migration
+
+```sql
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS thumbnail_url text;
+```
+
+### 6b. Type update
+
+**File:** `src/types/community.ts` — Add to Message interface:
+```typescript
+thumbnail_url?: string | null;
+```
+
+### 6c. Thumbnail generation
+
+**File:** `src/utils/mediaOptimization.ts` — Add new function:
+
+```typescript
+export const generateImageThumbnail = async (file: File): Promise<Blob> => {
+  // Canvas-based 300x300 center-crop thumbnail, JPEG 0.6 quality
+};
+```
+
+Uses the same Canvas API pattern already in `compressImage()`. Center-crops to square, outputs ~5-15KB thumbnails.
+
+### 6d. Upload flow
+
+**File:** `src/pages/Community.tsx` — When sending an image:
+
+1. Call `compressImage()` (existing) and `generateImageThumbnail()` (new) in parallel
+2. Upload full image to `message-media/{userId}/{timestamp}-full.jpg`
+3. Upload thumbnail to `message-media/{userId}/{timestamp}-thumb.jpg`
+4. Store thumbnail URL in `thumbnail_url` column
+5. Store full image URL in `image_url` column
+
+### 6e. Display
+
+**File:** `src/components/community/MessageBubble.tsx`:
+
+- In the image display section, use `message.thumbnail_url || message.image_url` as the `src` for `NetworkAwareImage`
+- When user clicks to open full-size viewer, pass `message.image_url` (the full image)
+- Existing messages without `thumbnail_url` fall back to `image_url` seamlessly
 
 ---
 
@@ -84,22 +168,23 @@ Delete entirely. Confirmed zero imports anywhere in the codebase. Both `useCommu
 
 | File | Change |
 |---|---|
-| Database migration | Add `document_url` and `document_name` columns, migrate any `doc:` rows |
-| `src/types/community.ts` | Add `document_url` and `document_name` to Message interface |
-| `src/pages/Community.tsx` | Replace `doc:` encoding with direct column assignment in insert payload |
-| `src/components/community/MessageBubble.tsx` | Replace `doc:` string parsing with direct column reads |
-| `src/hooks/useCommunityData.ts` | Delete file |
+| DB migration | RLS policy update, bucket limits, `thumbnail_url` column |
+| `src/types/community.ts` | Add `thumbnail_url` to Message interface |
+| `src/utils/mediaOptimization.ts` | Add `generateImageThumbnail()` function |
+| `src/pages/Community.tsx` | Wire `uploadWithProgress` for video, thumbnail generation + upload for images, progress state |
+| `src/components/community/MessageBubble.tsx` | Wire `NetworkAwareImage`, `NetworkAwareVideo`, thumbnail display |
 
 ## Safety Verification
 
 | Check | Status |
 |---|---|
-| Document upload still works (upload to storage, insert with new columns) | Yes -- same storage flow, new columns in payload |
-| Document display still works (filename, download button, styling) | Yes -- same `documentInfo` shape, different data source |
-| `doc:` parsing code fully removed from MessageBubble.tsx | Yes -- replaced with direct column reads |
-| `doc:` encoding code fully removed from Community.tsx | Yes -- replaced with separate column assignment |
-| Existing 844 messages unaffected (new columns default to null) | Yes -- `IF NOT EXISTS` + null defaults |
-| `useCommunityData.ts` deleted with no broken imports | Yes -- zero references confirmed |
-| No conflicts with Plan A or B changes | Correct -- different code paths |
-| No new dependencies | Correct |
+| Existing images without `thumbnail_url` display correctly via `image_url` fallback | Yes -- `thumbnail_url \|\| image_url` |
+| RLS policy covers `image_url`, `video_url`, and `document_url` | Yes -- all three in OR clause |
+| `NetworkAwareImage` renders correctly with quality adaptation | Yes -- same component used in Feed |
+| `NetworkAwareVideo` shows tap-to-load on 3G | Yes -- same component used in Feed |
+| Video upload shows progress percentage | Yes -- `uploadWithProgress` callback |
+| Bucket rejects files outside allowed MIME types | Yes -- server-side `allowed_mime_types` |
+| Bucket rejects files over 50MB | Yes -- `file_size_limit = 52428800` |
+| No Community Plan A/B/C code touched | Correct |
+| No new dependencies added | Correct |
 
