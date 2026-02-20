@@ -431,13 +431,14 @@ const Feed = () => {
       videoUrl = publicUrl;
     }
 
-    const { error } = await supabase.from("posts").insert({
+    // Use .select().single() to get the new post ID for push notifications
+    const { data: newPost, error } = await supabase.from("posts").insert({
       user_id: currentUser.id,
       content: newPostContent.trim(),
       image_url: imageUrl,
       video_url: videoUrl,
       is_public: isPublicPost,
-    });
+    }).select().single();
 
     if (error) {
       toast({
@@ -460,6 +461,35 @@ const Feed = () => {
       title: "Succès",
       description: isPublicPost ? "Post public créé avec succès" : "Post créé avec succès",
     });
+
+    // Send push notification to followers for the new post
+    // DB trigger handles in-app notifications; this adds browser push
+    try {
+      const { data: followers } = await supabase
+        .from('follows')
+        .select('follower_id')
+        .eq('following_id', currentUser.id)
+        .eq('status', 'accepted');
+
+      if (followers && followers.length > 0 && newPost) {
+        // Fire-and-forget — don't block UI on push delivery
+        Promise.all(
+          followers.map(f =>
+            supabase.functions.invoke('send-push-notification', {
+              body: {
+                recipientUserId: f.follower_id,
+                actorId: currentUser.id,
+                type: 'new_post',
+                entityId: newPost.id,
+                url: '/feed',
+              }
+            })
+          )
+        ).catch(err => console.error('Push notification error for new_post:', err));
+      }
+    } catch (pushErr) {
+      console.error('Error sending new_post push notifications:', pushErr);
+    }
   };
 
   const deletePost = async (postId: string) => {
