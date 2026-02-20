@@ -41,11 +41,26 @@ import { getAvatarUrl } from "@/lib/avatarMap";
 import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
 
 import { useFeedData } from "@/hooks/useFeedData";
+import { useLazyComments } from "@/hooks/useLazyComments";
 import { formatTimeAgo } from "@/utils/dateUtils";
 import { Profile, Post, Comment } from "@/types/feed";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { LockedOverlay } from "@/components/visitor";
 import { visitorFeedPosts } from "@/data/visitorDemoData";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Grade badge color map for academic level display on post cards (Fix 5)
+const GRADE_COLORS: Record<string, string> = {
+  '7AF': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+  '8AF': 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
+  '9AF': 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
+  'NS1': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+  'NS2': 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
+  'NS3': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+  'NS4': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+  'UNIV': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+};
 import { VisitorFeedOverlay } from "@/components/feed/VisitorFeedOverlay";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
@@ -144,9 +159,12 @@ const renderContentWithLinks = (content: string) => {
 const Feed = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { posts, isLoading, isRefreshing, refreshFeed, updatePostOptimistically, removePostOptimistically } = useFeedData();
+  const { posts, isLoading, isRefreshing, refreshFeed, updatePostOptimistically, removePostOptimistically, addPostOptimistically } = useFeedData();
   const { isSlowConnection, imageQuality } = useNetworkAwareLoading();
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  // Fix 3: Use session auth context instead of duplicate supabase.auth.getUser() call
+  const { user: sessionUser } = useSessionAuth();
+  const currentUser = sessionUser;
+  const { commentsCache, loadingComments, fetchCommentsForPost, addCommentToCache, removeCommentFromCache } = useLazyComments();
   const [newPostContent, setNewPostContent] = useState("");
   const [isCreatingPost, setIsCreatingPost] = useState(false);
   const [isPublicPost, setIsPublicPost] = useState(false);
@@ -160,7 +178,10 @@ const Feed = () => {
   const [replyingTo, setReplyingTo] = useState<{ [key: string]: string | null }>({});
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const [expandedPosts, setExpandedPosts] = useState<{ [key: string]: boolean }>({});
-  const [deleteCommentId, setDeleteCommentId] = useState<string | null>(null);
+  const [deleteCommentInfo, setDeleteCommentInfo] = useState<{ commentId: string; postId: string } | null>(null);
+  // Keep setDeleteCommentId for backward compat in renderComment — wraps deleteCommentInfo
+  const deleteCommentId = deleteCommentInfo?.commentId || null;
+  const setDeleteCommentId = (id: string | null) => setDeleteCommentInfo(null);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [selectedPostToShare, setSelectedPostToShare] = useState<Post | null>(null);
   const [followingUsers, setFollowingUsers] = useState<Profile[]>([]);
@@ -211,35 +232,28 @@ const Feed = () => {
     }
   }, [isVisitor]);
 
+  // Fix 3: Auth now comes from useSessionAuth — no separate checkAuth needed
+  // Fix 4: Subscribe to targeted realtime updates (not full refetch)
   useEffect(() => {
-    checkAuth();
-    // Only subscribe to real-time updates for logged-in users
-    if (!isVisitor) {
-      const cleanup = subscribeToNewPosts();
-      return cleanup;
-    }
-  }, [isVisitor]);
+    if (isVisitor || !currentUser) return;
+    const cleanup = subscribeToNewPosts();
+    return cleanup;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisitor, !!currentUser]);
 
   // Mark feed as visited when page loads (resets unread count)
+  // Uses sessionAuth user to avoid extra auth call
   useEffect(() => {
-    const updateLastFeedVisit = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase
-          .from('profiles')
-          .update({ last_feed_visit: new Date().toISOString() })
-          .eq('user_id', user.id);
-        
-        // Dispatch event to notify navigation components to clear badge
-        window.dispatchEvent(new CustomEvent('feed-visited'));
-      }
-    };
-    
-    // Only update for logged-in users
-    if (!isVisitor) {
-      updateLastFeedVisit();
+    if (!isVisitor && currentUser) {
+      supabase
+        .from('profiles')
+        .update({ last_feed_visit: new Date().toISOString() })
+        .eq('user_id', currentUser.id)
+        .then(() => {
+          window.dispatchEvent(new CustomEvent('feed-visited'));
+        });
     }
-  }, [isVisitor]);
+  }, [isVisitor, currentUser]);
 
   // Check if current user is a founder
   useEffect(() => {
@@ -256,19 +270,6 @@ const Feed = () => {
     checkFounderStatus();
   }, [currentUser]);
 
-  const checkAuth = async () => {
-    // Allow visitors to stay on page with demo content
-    if (isVisitor) {
-      return;
-    }
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate("/auth/login");
-      return;
-    }
-    setCurrentUser(user);
-  };
-
   // Use visitor posts when in visitor mode
   const displayPosts = isVisitor ? visitorPosts : posts;
 
@@ -280,20 +281,41 @@ const Feed = () => {
     });
   };
 
+  // Fix 4: Targeted realtime — INSERT/UPDATE/DELETE handlers instead of full refetch
   const subscribeToNewPosts = () => {
     const channel = supabase
       .channel("posts-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "posts",
-        },
-        () => {
-          refreshFeed();
-        }
-      )
+      .on("postgres_changes", {
+        event: "INSERT", schema: "public", table: "posts",
+      }, async (payload) => {
+        // Fetch only the new post's author profile (1 query, not 7)
+        const newPost = payload.new as any;
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id, user_id, full_name, nickname, avatar_url, verified, academic_grade")
+          .eq("user_id", newPost.user_id)
+          .single();
+
+        addPostOptimistically({
+          ...newPost,
+          profile: profile as Profile,
+          likes: 0, isLiked: false,
+          comments: [], commentCount: 0,
+          shareCount: 0, isShared: false,
+        });
+      })
+      .on("postgres_changes", {
+        event: "UPDATE", schema: "public", table: "posts",
+      }, (payload) => {
+        // Patch only the changed post in cache
+        updatePostOptimistically(payload.new.id as string, payload.new as Partial<Post>);
+      })
+      .on("postgres_changes", {
+        event: "DELETE", schema: "public", table: "posts",
+      }, (payload) => {
+        // Remove from cache — no fetch needed
+        removePostOptimistically((payload.old as any).id);
+      })
       .subscribe();
 
     return () => {
@@ -515,7 +537,7 @@ const Feed = () => {
     refreshFeed();
   };
 
-  const deleteComment = async (commentId: string) => {
+  const deleteComment = async (commentId: string, postId?: string) => {
     const { error } = await supabase
       .from("post_comments")
       .delete()
@@ -534,8 +556,15 @@ const Feed = () => {
       title: "Succès",
       description: "Commentaire supprimé",
     });
-    setDeleteCommentId(null);
-    refreshFeed();
+    setDeleteCommentInfo(null);
+    // Fix 2: Remove from local cache instead of full refetch
+    if (postId) {
+      removeCommentFromCache(postId, commentId);
+      const post = posts.find(p => p.id === postId);
+      if (post) {
+        updatePostOptimistically(postId, { commentCount: Math.max(0, (post.commentCount || 0) - 1) });
+      }
+    }
   };
 
   const toggleLike = async (postId: string, isCurrentlyLiked: boolean) => {
@@ -630,14 +659,16 @@ const Feed = () => {
     
     if (!commentContent) return;
 
-    const { error } = await supabase
+    const { data: newCommentData, error } = await supabase
       .from("post_comments")
       .insert({
         post_id: postId,
         user_id: currentUser.id,
         content: commentContent,
         parent_comment_id: parentCommentId,
-      });
+      })
+      .select()
+      .single();
 
     if (error) {
       console.error("Error adding comment:", error);
@@ -691,7 +722,25 @@ const Feed = () => {
       setCommentInputs({ ...commentInputs, [postId]: "" });
     }
     
-    refreshFeed();
+    // Fix 2: Append comment to local cache instead of full refetch
+    if (newCommentData) {
+      // Build profile for the new comment from current user session
+      const { data: myProfile } = await supabase
+        .from("profiles")
+        .select("id, user_id, full_name, nickname, avatar_url, verified, academic_grade")
+        .eq("user_id", currentUser.id)
+        .single();
+
+      const newComment: Comment = {
+        ...newCommentData,
+        profile: myProfile as Profile,
+        replies: [],
+      };
+      addCommentToCache(postId, newComment);
+      // Increment comment count in feed cache
+      updatePostOptimistically(postId, { commentCount: (post?.commentCount || 0) + 1 });
+    }
+
     toast({
       title: "Succès",
       description: "Commentaire ajouté",
@@ -946,7 +995,7 @@ const Feed = () => {
           )}
           {comment.user_id === currentUser?.id && (
             <button
-              onClick={() => setDeleteCommentId(comment.id)}
+              onClick={() => setDeleteCommentInfo({ commentId: comment.id, postId })}
               className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors"
             >
               <Trash2 size={12} />
@@ -1120,6 +1169,14 @@ const Feed = () => {
                           <Globe className="w-3.5 h-3.5 text-muted-foreground" />
                         </span>
                       )}
+                      {/* Fix 5: Grade tag badge — informational, no filtering */}
+                      {post.profile?.academic_grade && 
+                       post.profile.academic_grade !== 'NONE' && 
+                       GRADE_COLORS[post.profile.academic_grade] && (
+                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0 ${GRADE_COLORS[post.profile.academic_grade]}`}>
+                          {post.profile.academic_grade}
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {formatTimeAgo(post.created_at)}
@@ -1235,7 +1292,14 @@ const Feed = () => {
                   </button>
                   
                   <button 
-                    onClick={() => setShowComments({ ...showComments, [post.id]: !showComments[post.id] })}
+                    onClick={() => {
+                      const isOpening = !showComments[post.id];
+                      setShowComments({ ...showComments, [post.id]: isOpening });
+                      // Fix 2: Lazy-load comments only when opening and count > 0
+                      if (isOpening && (post.commentCount ?? 0) > 0) {
+                        fetchCommentsForPost(post.id);
+                      }
+                    }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 ${
                       showComments[post.id]
                         ? "bg-primary/10 text-primary"
@@ -1263,11 +1327,24 @@ const Feed = () => {
                   </button>
                 </div>
 
-                {/* Comments Section */}
+                {/* Comments Section — Fix 2: lazy-loaded from commentsCache */}
                 {showComments[post.id] && (
                   <div className="px-4 pb-4 pt-3 space-y-3 bg-muted/20">
-                    {post.comments && post.comments.length > 0 ? (
-                      post.comments.map((comment) => renderComment(comment, post.id))
+                    {loadingComments[post.id] ? (
+                      /* Skeleton while comments are being fetched */
+                      <div className="space-y-3">
+                        {[1, 2, 3].map(i => (
+                          <div key={i} className="flex gap-2.5">
+                            <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                            <div className="flex-1 space-y-1.5">
+                              <Skeleton className="h-3 w-24" />
+                              <Skeleton className="h-4 w-full" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : commentsCache[post.id] && commentsCache[post.id].length > 0 ? (
+                      commentsCache[post.id].map((comment) => renderComment(comment, post.id))
                     ) : (
                       <p className="text-sm text-muted-foreground text-center py-2">Aucun commentaire</p>
                     )}
@@ -1345,7 +1422,7 @@ const Feed = () => {
       </AlertDialog>
 
       {/* Delete Comment Dialog */}
-      <AlertDialog open={!!deleteCommentId} onOpenChange={() => setDeleteCommentId(null)}>
+      <AlertDialog open={!!deleteCommentInfo} onOpenChange={() => setDeleteCommentInfo(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer le commentaire</AlertDialogTitle>
@@ -1356,7 +1433,7 @@ const Feed = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteCommentId && deleteComment(deleteCommentId)}
+              onClick={() => deleteCommentInfo && deleteComment(deleteCommentInfo.commentId, deleteCommentInfo.postId)}
               className="bg-destructive hover:bg-destructive/90"
             >
               Supprimer

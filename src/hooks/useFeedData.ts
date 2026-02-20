@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Profile, Post, Comment } from "@/types/feed";
+import { Profile, Post } from "@/types/feed";
 import { 
   persistQueryData, 
   getPersistedQueryData, 
@@ -9,10 +9,16 @@ import {
   CACHE_KEYS 
 } from "@/utils/queryPersistence";
 
+// Stored during fetch so Feed.tsx can read without a second auth call
+let _lastFetchedUserId: string | null = null;
+
 const fetchFeedPosts = async (): Promise<Post[]> => {
+  // Hop 1: auth — single round trip
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
+  _lastFetchedUserId = user.id;
 
+  // Hop 2: posts via RLS (limit 50, chronological)
   const { data: postsData, error: postsError } = await supabase
     .from("posts")
     .select("*")
@@ -24,65 +30,65 @@ const fetchFeedPosts = async (): Promise<Post[]> => {
     return [];
   }
 
-  const userIds = [...new Set(postsData?.map(p => p.user_id) || [])];
-  const { data: profilesData } = await supabase
-    .from("profiles")
-    .select("*")
-    .in("user_id", userIds);
+  if (!postsData || postsData.length === 0) return [];
 
-  const postIds = postsData?.map(p => p.id) || [];
-  const { data: likesData } = await supabase
-    .from("post_likes")
-    .select("post_id, user_id")
-    .in("post_id", postIds);
+  const userIds = [...new Set(postsData.map(p => p.user_id))];
+  const postIds = postsData.map(p => p.id);
 
-  const { data: commentsData } = await supabase
-    .from("post_comments")
-    .select("*")
-    .in("post_id", postIds)
-    .order("created_at", { ascending: true });
+  // Hop 3: all enrichment queries in parallel — profiles, likes, comment counts, shares
+  const [profilesRes, likesRes, commentCountsRes, sharesRes] = await Promise.all([
+    // Fetch author profiles with academic_grade for grade tags
+    supabase
+      .from("profiles")
+      .select("id, user_id, full_name, nickname, avatar_url, verified, academic_grade")
+      .in("user_id", userIds),
+    // Fetch likes to compute count + isLiked
+    supabase
+      .from("post_likes")
+      .select("post_id, user_id")
+      .in("post_id", postIds),
+    // Fetch only comment counts per post — full comments loaded lazily on click
+    supabase
+      .from("post_comments")
+      .select("post_id")
+      .in("post_id", postIds),
+    // Fetch shares to compute count + isShared
+    supabase
+      .from("post_shares")
+      .select("post_id, user_id")
+      .in("post_id", postIds),
+  ]);
 
-  const commentUserIds = [...new Set(commentsData?.map(c => c.user_id) || [])];
-  const { data: commentProfilesData } = await supabase
-    .from("profiles")
-    .select("*")
-    .in("user_id", commentUserIds);
+  const profilesData = profilesRes.data;
+  const likesData = likesRes.data;
+  const commentsRaw = commentCountsRes.data;
+  const sharesData = sharesRes.data;
 
-  const { data: sharesData } = await supabase
-    .from("post_shares")
-    .select("post_id, user_id")
-    .in("post_id", postIds);
+  // Build comment count map from raw rows (grouped client-side)
+  const commentCountMap: Record<string, number> = {};
+  commentsRaw?.forEach(c => {
+    commentCountMap[c.post_id] = (commentCountMap[c.post_id] || 0) + 1;
+  });
 
-  const enrichedPosts = postsData?.map(post => {
-    const profile = profilesData?.find(p => p.user_id === post.user_id);
+  // Enrich each post with profile, counts, and user-specific flags
+  const enrichedPosts = postsData.map(post => {
+    const profile = profilesData?.find(p => p.user_id === post.user_id) as Profile | undefined;
     const postLikes = likesData?.filter(l => l.post_id === post.id) || [];
     const isLiked = postLikes.some(l => l.user_id === user.id);
-    
-    const postComments = commentsData?.filter(c => c.post_id === post.id).map(comment => ({
-      ...comment,
-      profile: commentProfilesData?.find(p => p.user_id === comment.user_id) as Profile
-    })) || [];
-
-    const topLevelComments = postComments.filter(c => !c.parent_comment_id);
-    const commentsWithReplies = topLevelComments.map(comment => ({
-      ...comment,
-      replies: postComments.filter(c => c.parent_comment_id === comment.id)
-    }));
-
     const postShares = sharesData?.filter(s => s.post_id === post.id) || [];
     const isShared = postShares.some(s => s.user_id === user.id);
-    
+
     return {
       ...post,
       profile,
       likes: postLikes.length,
       isLiked,
-      comments: commentsWithReplies,
-      commentCount: postComments.length,
+      comments: [], // Empty — loaded lazily per post via useLazyComments
+      commentCount: commentCountMap[post.id] || 0,
       shareCount: postShares.length,
-      isShared
+      isShared,
     };
-  }) || [];
+  });
 
   // Persist to localStorage for instant loading next time
   persistQueryData(CACHE_KEYS.FEED_POSTS, enrichedPosts);
@@ -142,6 +148,8 @@ export const useFeedData = () => {
     removePostOptimistically,
     addPostOptimistically,
     refetch: query.refetch,
+    // Expose user ID captured during fetch — eliminates duplicate auth call in Feed.tsx
+    currentUserId: _lastFetchedUserId,
   };
 };
 
