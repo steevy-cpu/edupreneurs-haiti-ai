@@ -24,6 +24,10 @@ import {
   Send,
   Bell,
   Mic,
+  MicOff,
+  Square,
+  Play,
+  Upload,
   Plus,
   Pencil,
   Trash2
@@ -97,6 +101,20 @@ const WordsModule = () => {
     type: 'regenerate',
   });
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // ─── Recording state (Plan B — browser voice recording) ────────────────
+  const [recordingWord, setRecordingWord] = useState<DailyWord | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
+  const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const maxDurationRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // ─── CRUD state ────────────────────────────────────────────────────────
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -266,6 +284,159 @@ const WordsModule = () => {
     }
   };
 
+  // ─── Recording handlers (Plan B — browser mic) ─────────────────────────
+
+  /** Open the recording dialog for a specific word */
+  const openRecordingDialog = (word: DailyWord) => {
+    setRecordingWord(word);
+  };
+
+  /** Release mic, revoke URLs, clear timers — safe to call multiple times */
+  const cleanupRecording = () => {
+    // Stop MediaRecorder if active
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try { mediaRecorderRef.current.stop(); } catch { /* already stopped */ }
+    }
+    mediaRecorderRef.current = null;
+
+    // Release microphone tracks
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(t => t.stop());
+      mediaStreamRef.current = null;
+    }
+
+    // Stop preview audio
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current = null;
+    }
+
+    // Revoke object URL to prevent memory leaks
+    if (recordedUrl) {
+      URL.revokeObjectURL(recordedUrl);
+    }
+
+    // Clear timers
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    if (maxDurationRef.current) { clearTimeout(maxDurationRef.current); maxDurationRef.current = null; }
+
+    chunksRef.current = [];
+    setIsRecording(false);
+    setRecordingDuration(0);
+    setRecordedBlob(null);
+    setRecordedUrl(null);
+  };
+
+  /** Request mic permission and start recording (max 30s) */
+  const startRecording = async () => {
+    // Clean up any previous session first
+    cleanupRecording();
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
+
+      // Pick best supported mime type — webm preferred, ogg fallback
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
+        : MediaRecorder.isTypeSupported('audio/ogg') ? 'audio/ogg'
+        : '';
+
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      mediaRecorderRef.current = recorder;
+      chunksRef.current = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+
+      recorder.onstop = () => {
+        // Combine chunks into single blob for preview/upload
+        const blob = new Blob(chunksRef.current, { type: mimeType || 'audio/webm' });
+        setRecordedBlob(blob);
+        setRecordedUrl(URL.createObjectURL(blob));
+        setIsRecording(false);
+        if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+        if (maxDurationRef.current) { clearTimeout(maxDurationRef.current); maxDurationRef.current = null; }
+      };
+
+      recorder.start(250); // collect chunks every 250ms
+      setIsRecording(true);
+      setRecordingDuration(0);
+
+      // Duration counter — ticks every second
+      timerRef.current = setInterval(() => {
+        setRecordingDuration(prev => prev + 1);
+      }, 1000);
+
+      // Auto-stop at 30 seconds to keep file sizes reasonable
+      maxDurationRef.current = setTimeout(() => {
+        if (mediaRecorderRef.current?.state === 'recording') {
+          mediaRecorderRef.current.stop();
+        }
+      }, 30000);
+
+    } catch (err) {
+      console.error('Mic access error:', err);
+      toast.error("Accès au microphone refusé. Veuillez autoriser l'accès dans les paramètres de votre navigateur.");
+    }
+  };
+
+  /** Stop an active recording */
+  const stopRecording = () => {
+    if (mediaRecorderRef.current?.state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
+  };
+
+  /** Upload the recorded blob to storage and update the word's audio_url */
+  const uploadRecording = async () => {
+    if (!recordedBlob || !recordingWord) return;
+
+    setIsUploading(true);
+    try {
+      const ext = recordedBlob.type.includes('ogg') ? 'ogg' : 'webm';
+      const filePath = `word-of-day/${recordingWord.id}.${ext}`;
+      const file = new File([recordedBlob], `${recordingWord.id}.${ext}`, { type: recordedBlob.type });
+
+      // Upload to existing lesson-audio bucket (upsert replaces previous file)
+      const { error: uploadError } = await supabase.storage
+        .from('lesson-audio')
+        .upload(filePath, file, { upsert: true, contentType: recordedBlob.type });
+
+      if (uploadError) throw uploadError;
+
+      // Build public URL with cache-busting timestamp (same pattern as edge function)
+      const { data: publicUrlData } = supabase.storage
+        .from('lesson-audio')
+        .getPublicUrl(filePath);
+
+      const audioUrl = `${publicUrlData.publicUrl}?t=${Date.now()}`;
+
+      // Persist URL in daily_words table
+      const { error: updateError } = await supabase
+        .from('daily_words')
+        .update({ audio_url: audioUrl })
+        .eq('id', recordingWord.id);
+
+      if (updateError) throw updateError;
+
+      toast.success('Enregistrement sauvegardé !');
+      closeRecordingDialog();
+      fetchWords();
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast.error(`Erreur: ${err instanceof Error ? err.message : "Échec de l'upload"}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  /** Close dialog and release all recording resources */
+  const closeRecordingDialog = () => {
+    cleanupRecording();
+    setRecordingWord(null);
+  };
+
   // ─── Audio handlers (unchanged from original) ──────────────────────────
 
   const playAudio = async (word: DailyWord) => {
@@ -387,13 +558,15 @@ const WordsModule = () => {
     }
   };
 
-  // Pause audio on component unmount to prevent audio leaks
+  // Pause audio and release recording resources on unmount
   useEffect(() => {
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
       }
+      // Release mic/recording resources if component unmounts mid-recording
+      cleanupRecording();
     };
   }, []);
 
@@ -637,24 +810,46 @@ const WordsModule = () => {
                                 <RefreshCw className="h-3 w-3" />
                               )}
                             </Button>
+                            {/* Mic recording — third audio option alongside TTS */}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => openRecordingDialog(word)}
+                              title="Enregistrer avec le micro"
+                            >
+                              <Mic className="h-3 w-3 text-amber-600" />
+                            </Button>
                           </div>
                         ) : (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 gap-1 text-xs"
-                            onClick={() => generateAudio(word)}
-                            disabled={generatingWordId === word.id}
-                          >
-                            {generatingWordId === word.id ? (
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                            ) : (
-                              <>
-                                <Volume2 className="h-3 w-3" />
-                                Générer
-                              </>
-                            )}
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 gap-1 text-xs"
+                              onClick={() => generateAudio(word)}
+                              disabled={generatingWordId === word.id}
+                            >
+                              {generatingWordId === word.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <>
+                                  <Volume2 className="h-3 w-3" />
+                                  Générer
+                                </>
+                              )}
+                            </Button>
+                            {/* Mic fallback for words without TTS audio */}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => openRecordingDialog(word)}
+                              title="Enregistrer avec le micro"
+                            >
+                              <Mic className="h-3 w-3 text-amber-600" />
+                            </Button>
+                          </div>
                         )}
                       </TableCell>
                       <TableCell>
@@ -778,6 +973,133 @@ const WordsModule = () => {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── Recording Dialog (Plan B — browser voice recording) ──────────── */}
+      <Dialog
+        open={recordingWord !== null}
+        onOpenChange={(open) => { if (!open) closeRecordingDialog(); }}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mic className="h-5 w-5 text-amber-600" />
+              Enregistrer
+            </DialogTitle>
+          </DialogHeader>
+
+          {recordingWord && (
+            <div className="space-y-5">
+              {/* Word reference so the recorder knows what to say */}
+              <div className="p-3 rounded-lg bg-muted/50 border">
+                <p className="font-semibold text-lg text-foreground">« {recordingWord.word} »</p>
+                <p className="text-sm text-muted-foreground font-mono">[{recordingWord.phonetic}]</p>
+                <p className="text-sm text-muted-foreground mt-1">{recordingWord.definition}</p>
+              </div>
+
+              {/* Recording controls */}
+              <div className="flex flex-col items-center gap-3">
+                {!recordedBlob ? (
+                  <>
+                    {/* Large circular record/stop button */}
+                    <button
+                      onClick={isRecording ? stopRecording : startRecording}
+                      className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${
+                        isRecording
+                          ? 'bg-red-500 animate-pulse shadow-lg shadow-red-500/30'
+                          : 'bg-muted hover:bg-muted/80 border-2 border-amber-500'
+                      }`}
+                      title={isRecording ? 'Arrêter' : 'Commencer'}
+                    >
+                      {isRecording ? (
+                        <Square className="h-6 w-6 text-white" />
+                      ) : (
+                        <Mic className="h-6 w-6 text-amber-600" />
+                      )}
+                    </button>
+
+                    {/* Duration counter */}
+                    <p className="text-sm text-muted-foreground font-mono">
+                      {Math.floor(recordingDuration / 60)}:{(recordingDuration % 60).toString().padStart(2, '0')} / 0:30
+                    </p>
+
+                    {isRecording && (
+                      <p className="text-xs text-red-500 flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                        Enregistrement en cours…
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {/* Playback preview after recording */}
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => {
+                          if (previewAudioRef.current) {
+                            previewAudioRef.current.pause();
+                            previewAudioRef.current = null;
+                          }
+                          if (recordedUrl) {
+                            const audio = new Audio(recordedUrl);
+                            previewAudioRef.current = audio;
+                            audio.play();
+                          }
+                        }}
+                      >
+                        <Play className="h-4 w-4" />
+                        Écouter
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => {
+                          // Discard recording and allow re-record
+                          if (recordedUrl) URL.revokeObjectURL(recordedUrl);
+                          setRecordedBlob(null);
+                          setRecordedUrl(null);
+                          setRecordingDuration(0);
+                        }}
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                        Refaire
+                      </Button>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground">
+                      Durée: {Math.floor(recordingDuration / 60)}:{(recordingDuration % 60).toString().padStart(2, '0')}
+                    </p>
+                  </>
+                )}
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={closeRecordingDialog}>
+                  Annuler
+                </Button>
+                {recordedBlob && (
+                  <Button
+                    onClick={uploadRecording}
+                    disabled={isUploading}
+                    className="gap-2"
+                  >
+                    {isUploading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4" />
+                    )}
+                    Utiliser cet enregistrement
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
