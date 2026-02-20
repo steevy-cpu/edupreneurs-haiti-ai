@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Music, Palette, Brain, BookOpen, Play, CheckCircle2, Lock, Loader2, ArrowLeft, Send, ArrowRight, Award, Users, Heart, Lightbulb, RotateCcw, Search, ChevronDown } from "lucide-react";
+import { Music, Palette, Brain, BookOpen, Play, CheckCircle2, Lock, Loader2, ArrowLeft, Send, ArrowRight, Award, Users, Heart, Lightbulb, RotateCcw, Search, ChevronDown, MessageCircle } from "lucide-react";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -116,6 +117,8 @@ const PassionDiscoveryContent = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isChatLoading, setIsChatLoading] = useState(false); // Fix 5: separate chat loading from module loading
+  const [mobileChatOpen, setMobileChatOpen] = useState(false); // Fix 3: mobile chat drawer
   const [chatMessages, setChatMessages] = useState<Array<{ role: string; content: string }>>([]);
   const [userInput, setUserInput] = useState("");
   const [videos, setVideos] = useState<YouTubeVideo[]>([]);
@@ -176,7 +179,7 @@ const PassionDiscoveryContent = () => {
   // Auto-scroll chat to bottom on new messages
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages, isLoading]);
+  }, [chatMessages, isChatLoading]); // Fix 5: scroll on chat loading, not module loading
 
   // For visitors, show intro with overlay
   if (isVisitor) {
@@ -697,6 +700,7 @@ const PassionDiscoveryContent = () => {
     
     setChatMessages([welcomeMessage]);
     setIsLoading(false);
+    setShowActivities(true); // Fix 2: skip intermediate "Commencer les activités" step
   };
 
   const sendMessage = async (messageOverride?: string) => {
@@ -707,7 +711,7 @@ const PassionDiscoveryContent = () => {
     const newMessages = [...chatMessages, userMessage];
     setChatMessages(newMessages);
     setUserInput("");
-    setIsLoading(true);
+    setIsChatLoading(true); // Fix 5: use chat-specific loading state
 
     try {
       const { data, error } = await supabase.functions.invoke('passion-ai-tutor', {
@@ -726,7 +730,7 @@ const PassionDiscoveryContent = () => {
       console.error("Error:", error);
       toast.error("Une erreur s'est produite. Réessaye plus tard.");
     } finally {
-      setIsLoading(false);
+      setIsChatLoading(false); // Fix 5: clear chat-specific loading
     }
   };
 
@@ -846,7 +850,7 @@ const PassionDiscoveryContent = () => {
         <div className="fixed top-4 right-4 z-50">
           <ThemeToggle />
         </div>
-        <div className="max-w-4xl w-full">
+        <div className="max-w-4xl w-full flex flex-col">
           {/* Hero Section */}
           <div className="relative mb-6 sm:mb-8">
             <div className={`absolute inset-0 bg-gradient-to-r from-violet-500/20 via-fuchsia-500/20 to-amber-500/20 ${shouldShowBlur ? 'blur-3xl' : ''} rounded-full`} />
@@ -871,8 +875,8 @@ const PassionDiscoveryContent = () => {
             </div>
           </div>
 
-          {/* Feature Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
+          {/* Feature Cards — pushed below CTA on mobile (Fix 1) */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8 order-3 md:order-2">
             {[
               { icon: Music, label: "Musique", color: "from-violet-500 to-purple-600", bg: "bg-violet-100 dark:bg-violet-900/30" },
               { icon: Palette, label: "Arts", color: "from-cyan-500 to-blue-600", bg: "bg-cyan-100 dark:bg-cyan-900/30" },
@@ -890,8 +894,8 @@ const PassionDiscoveryContent = () => {
             ))}
           </div>
 
-          {/* CTA Card */}
-          <Card className="backdrop-blur-md bg-background/80 border-2 border-primary/20 shadow-2xl">
+          {/* CTA Card — shown before preview cards on mobile (Fix 1) */}
+          <Card className="backdrop-blur-md bg-background/80 border-2 border-primary/20 shadow-2xl order-2 md:order-3">
             <CardContent className="p-6 md:p-8">
               <div className="flex flex-col md:flex-row items-center gap-6">
                 <div className="flex-1 text-center md:text-left">
@@ -1069,8 +1073,10 @@ const PassionDiscoveryContent = () => {
               return (
                 <Card 
                   key={category.id} 
-                  className="backdrop-blur-md bg-background/90 border-2 border-primary/10 hover:border-primary/30 transition-all hover:shadow-lg overflow-hidden"
-                  style={{ animationDelay: `${index * 150}ms` }}
+                  className={`backdrop-blur-md bg-background/90 border-2 border-primary/10 hover:border-primary/30 transition-all hover:shadow-lg overflow-hidden ${
+                    shouldShowAnimations ? 'opacity-0 animate-fade-in' : ''
+                  }`}
+                  style={shouldShowAnimations ? { animationDelay: `${index * 150}ms`, animationFillMode: 'forwards' } : undefined}
                 >
                   <div className={`h-1 bg-gradient-to-r ${category.color}`} />
                   <CardContent className="p-3 sm:p-4 md:p-5">
@@ -1535,30 +1541,7 @@ const PassionDiscoveryContent = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           <div className="lg:col-span-2 space-y-4 md:space-y-6">
-            {currentCategory && currentModule && !showActivities && (
-              <Card className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-2">
-                <CardHeader>
-                  <CardTitle className="text-xl md:text-2xl flex items-center gap-3">
-                    <div className={`p-2 md:p-3 rounded-xl bg-gradient-to-br ${currentCategory.color} text-white flex-shrink-0`}>
-                      <currentCategory.icon className="w-5 h-5 md:w-6 md:h-6" />
-                    </div>
-                    <span className="truncate">{currentModule.title}</span>
-                  </CardTitle>
-                  <CardDescription className="text-sm md:text-base">
-                    {currentModule.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button 
-                    onClick={() => setShowActivities(true)}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90"
-                  >
-                    <Play className="mr-2" />
-                    Commencer les activités
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+            {/* Fix 2: Removed intermediate "Commencer les activités" card — showActivities is now true by default */}
 
             {showActivities && currentCategory && currentModule && (
               <ModuleActivity
@@ -1668,7 +1651,8 @@ const PassionDiscoveryContent = () => {
             )}
           </div>
 
-          <div className="lg:col-span-1">
+          {/* Fix 3: Desktop chat sidebar — hidden on mobile, replaced by floating button + drawer */}
+          <div className="hidden lg:block lg:col-span-1">
             <Card className="lg:sticky lg:top-6 h-[55vh] sm:h-[60vh] lg:h-[calc(100vh-6rem)] flex flex-col">
               <CardHeader className="border-b py-2 px-3 sm:px-4">
                 <div className="flex items-center gap-2">
@@ -1698,7 +1682,7 @@ const PassionDiscoveryContent = () => {
                       </div>
                     </div>
                   ))}
-                  {isLoading && (
+                  {isChatLoading && (
                     <div className="flex justify-start">
                       <div className="bg-muted p-2.5 md:p-3 rounded-2xl flex items-center gap-2">
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -1710,7 +1694,7 @@ const PassionDiscoveryContent = () => {
                 </div>
                 
                 {/* Suggested questions - compact dropdown */}
-                {chatMessages.length <= 1 && !isLoading && (
+                {chatMessages.length <= 1 && !isChatLoading && (
                   <div className="flex items-center gap-2 mb-2 pb-2 border-b">
                     <span className="text-xs text-muted-foreground">Suggestions:</span>
                     <DropdownMenu>
@@ -1744,12 +1728,12 @@ const PassionDiscoveryContent = () => {
                     onKeyDown={handleKeyDown}
                     placeholder="Pose une question à Jude..."
                     className="flex-1 min-w-0 px-3 md:px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs md:text-sm bg-background"
-                    disabled={isLoading}
+                    disabled={isChatLoading}
                     aria-label="Message pour Jude"
                   />
                   <Button 
                     onClick={() => sendMessage()} 
-                    disabled={isLoading || !userInput.trim()}
+                    disabled={isChatLoading || !userInput.trim()}
                     className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 rounded-full aspect-square h-9 w-9 flex-shrink-0 p-0 flex items-center justify-center"
                     aria-label="Envoyer le message"
                   >
@@ -1759,6 +1743,103 @@ const PassionDiscoveryContent = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Fix 3: Floating chat button — mobile only */}
+          <button
+            onClick={() => setMobileChatOpen(true)}
+            className="fixed bottom-20 right-4 z-40 lg:hidden w-14 h-14 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-xl flex items-center justify-center hover:opacity-90 transition-opacity"
+            aria-label="Ouvrir le chat avec Jude"
+          >
+            <MessageCircle className="w-6 h-6" />
+          </button>
+
+          {/* Fix 3: Mobile chat drawer */}
+          <Drawer open={mobileChatOpen} onOpenChange={setMobileChatOpen}>
+            <DrawerContent className="max-h-[75vh]">
+              <DrawerHeader className="border-b py-2 px-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <img src={judePointing} alt="Jude" className="w-8 h-8 object-contain" loading="lazy" decoding="async" />
+                    <DrawerTitle className="text-sm">Discute avec Jude</DrawerTitle>
+                  </div>
+                  <DrawerClose asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">✕</Button>
+                  </DrawerClose>
+                </div>
+              </DrawerHeader>
+              <div className="flex flex-col p-3 overflow-hidden" style={{ height: '60vh' }}>
+                {/* Chat messages */}
+                <div className="flex-1 overflow-y-auto space-y-3 mb-3 pr-1">
+                  {chatMessages.map((msg, idx) => (
+                    <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                      <div className={`max-w-[85%] p-2.5 rounded-2xl ${
+                        msg.role === "user"
+                          ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                          : "bg-muted"
+                      }`}>
+                        <p className="text-xs whitespace-pre-wrap">{msg.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {isChatLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-muted p-2.5 rounded-2xl flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="text-xs">Jude réfléchit...</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {/* Suggested questions */}
+                {chatMessages.length <= 1 && !isChatLoading && (
+                  <div className="flex items-center gap-2 mb-2 pb-2 border-b">
+                    <span className="text-xs text-muted-foreground">Suggestions:</span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
+                          <Lightbulb className="w-3 h-3" />
+                          Que demander?
+                          <ChevronDown className="w-3 h-3" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="bg-popover z-[1200]">
+                        <DropdownMenuItem onClick={() => { sendMessage("Qu'est-ce que je vais apprendre?"); }}>
+                          📚 Qu'est-ce que je vais apprendre?
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => { sendMessage("Donne-moi un exemple"); }}>
+                          💡 Donne-moi un exemple
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => { sendMessage("Comment progresser?"); }}>
+                          🚀 Comment progresser?
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
+                {/* Input */}
+                <div className="flex gap-2 pt-2 border-t">
+                  <input
+                    type="text"
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Pose une question à Jude..."
+                    className="flex-1 min-w-0 px-3 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs bg-background"
+                    disabled={isChatLoading}
+                    aria-label="Message pour Jude"
+                  />
+                  <Button
+                    onClick={() => sendMessage()}
+                    disabled={isChatLoading || !userInput.trim()}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 rounded-full aspect-square h-9 w-9 flex-shrink-0 p-0 flex items-center justify-center"
+                    aria-label="Envoyer le message"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </DrawerContent>
+          </Drawer>
         </div>
       </div>
     </div>
