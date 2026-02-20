@@ -1,40 +1,64 @@
 
-# Feed Fix — Hide Grade Tag for Super Users
 
-## What
-Add one condition to the grade tag rendering (line 1061-1063 in `src/pages/Feed.tsx`) to suppress the badge when the post author is a founder/super user.
+# Fix — Hide Grade Tag and Globe Icon for Founders and Jude
 
-## How Super Users Are Identified
-There is no database column for founder status. Founders are identified client-side by UUID match via `isFounder(userId)` from `src/lib/founderConstants.ts`. This function checks against hardcoded UUIDs for Steevy and Djood.
+## Problem
 
-## Change
+- **Djood** — correct (no globe, no grade tag)
+- **Steeve** — globe icon shows (his posts are `is_public = true`)
+- **Jude** — both globe icon AND NS4 grade tag show (Jude's UUID is not in `FOUNDER_USER_IDS`)
 
-**File:** `src/pages/Feed.tsx`
+## Root Cause
 
-1. Add import at top: `import { isFounder } from "@/lib/founderConstants";`
+1. Jude's UUID (`68f2f959-e14a-47f9-8277-07df3a6fcd79`) is not in the `FOUNDER_USER_IDS` array, so `isFounderUser()` returns false and the grade tag renders.
+2. The globe icon renders for any post with `is_public = true` — no exclusion for special accounts.
 
-2. Update grade tag condition (lines 1061-1063) from:
-```tsx
-{post.profile?.academic_grade && 
- post.profile.academic_grade !== 'NONE' && 
- GRADE_COLORS[post.profile.academic_grade] && (
+## Fix (src/pages/Feed.tsx only)
+
+**A) Import JUDE_USER_ID** (already imported at line 23):
+```typescript
+import { JUDE_USER_ID } from "@/types/community";
 ```
-To:
-```tsx
-{post.profile?.academic_grade && 
- post.profile.academic_grade !== 'NONE' && 
- !isFounder(post.user_id) &&
- GRADE_COLORS[post.profile.academic_grade] && (
+Already present — no change needed.
+
+**B) Create a helper to check if a user is a "special account" (founder or Jude):**
+
+```typescript
+// Founders and Jude (AI assistant) — suppress grade tags and public globe icon
+const isSpecialAccount = (userId: string) => isFounderUser(userId) || userId === JUDE_USER_ID;
 ```
 
-One import, one line added. No other files touched.
+**C) Update grade tag condition (line 1062-1064)** from:
+```tsx
+!isFounderUser(post.user_id) &&
+```
+to:
+```tsx
+!isSpecialAccount(post.user_id) &&
+```
+
+**D) Update globe icon condition (line 1056-1059)** from:
+```tsx
+{post.is_public && (
+```
+to:
+```tsx
+{post.is_public && !isSpecialAccount(post.user_id) && (
+```
+
+## Files Changed
+
+| File | Change |
+|---|---|
+| `src/pages/Feed.tsx` | Add `isSpecialAccount` helper, update 2 conditions (globe + grade tag) |
 
 ## Safety
 
 | Check | Result |
 |---|---|
-| Only grade tag rendering affected | Yes -- single condition added |
+| Djood posts — no globe, no grade tag | Yes (already correct, stays correct) |
+| Steeve posts — globe hidden, no grade tag | Yes |
+| Jude posts — globe hidden, grade tag hidden | Yes |
+| Regular user posts — globe + grade tag unchanged | Yes |
 | Plan A/B/C code untouched | Yes |
-| Non-founder posts still show grade tags | Yes -- isFounder returns false for them |
-| Founder posts (Steevy, Djood) hide grade tag | Yes -- isFounder returns true |
-| No new dependencies | Yes -- founderConstants already in the project |
+
