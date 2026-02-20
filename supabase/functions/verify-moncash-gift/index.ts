@@ -211,6 +211,26 @@ serve(async (req) => {
       console.error("Failed to send notification:", notifErr);
     }
 
+    // Send push notification for MonCash gift payment
+    try {
+      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-push-notification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+        },
+        body: JSON.stringify({
+          recipientUserId: studentUserId,
+          title: 'Abonnement offert!',
+          body: `Un proche a payé votre abonnement via MonCash ! Accès actif jusqu'au ${newEnd.toLocaleDateString("fr-FR")}`,
+          type: 'gift_payment',
+          url: '/settings?tab=compte',
+        }),
+      });
+    } catch (pushErr) {
+      console.error("Failed to send push notification:", pushErr);
+    }
+
     // Send emails
     const endDateStr = newEnd.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
     const dateNow = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });

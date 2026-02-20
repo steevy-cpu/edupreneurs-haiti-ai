@@ -360,6 +360,35 @@ export const GroupInfoDialog = ({
         // Don't throw - continue with deletion even if notifications fail
       }
 
+      // Send push notifications to group members before cascade DELETE removes rows
+      try {
+        const { data: members } = await supabase
+          .from('group_members')
+          .select('user_id')
+          .eq('group_id', groupId)
+          .neq('user_id', currentUserId);
+
+        if (members && members.length > 0) {
+          // Fire-and-forget — don't block deletion on push delivery
+          Promise.all(
+            members.map(m =>
+              supabase.functions.invoke('send-push-notification', {
+                body: {
+                  recipientUserId: m.user_id,
+                  actorId: currentUserId,
+                  type: 'group_deleted',
+                  title: 'Groupe supprimé',
+                  body: `Le groupe "${group?.name}" a été supprimé`,
+                  url: '/community',
+                }
+              })
+            )
+          ).catch(err => console.error('Push error for group_deleted:', err));
+        }
+      } catch (pushErr) {
+        console.error('Error sending group_deleted push notifications:', pushErr);
+      }
+
       // Delete the group (cascade will handle related records)
       const { error: deleteError } = await supabase
         .from('group_chats')

@@ -113,6 +113,8 @@ function getCategoryFromType(type?: string): string {
     'lesson_comment': 'lesson',
     'system': 'system',
     'word_of_day': 'word_of_day',
+    'subscription_renewed': 'system',
+    'gift_payment': 'system',
   };
   return typeMap[type || ''] || 'message';
 }
