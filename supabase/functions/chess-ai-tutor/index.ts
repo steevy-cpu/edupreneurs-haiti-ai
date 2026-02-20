@@ -148,7 +148,7 @@ Position actuelle (FEN): ${fen}
 C'est ton tour de jouer (tu joues les NOIRES).
 Tu dois répondre avec un JSON valide contenant:
 1. "move": ton coup en notation UCI (case départ + case arrivée)
-2. "explanation": une explication pédagogique de ton coup en français
+2. "explanation": une explication pédagogique EN FRANCAIS de ce que tu viens de jouer et POURQUOI ce coup est bon dans cette position. Commence toujours par décrire le coup joué (ex: 'Je joue mon cavalier en f6') puis explique la raison stratégique. Ne dis jamais 'je vais jouer' ou 'je vais faire' — parle au présent de ce que tu viens de décider.
 
 ⚠️ FORMAT DU COUP - TRÈS IMPORTANT:
 - Utilise UNIQUEMENT la notation UCI: case de départ + case d'arrivée
@@ -181,7 +181,7 @@ Donne des conseils stratégiques si approprié.`;
     }
 
     const messages: Message[] = [
-      { role: 'user', content: systemPrompt }
+      { role: 'system', content: systemPrompt }
     ];
 
     // Add chat history
@@ -206,7 +206,7 @@ Donne des conseils stratégiques si approprié.`;
     if (isEricTurn && !userMessage) {
       messages.push({
         role: 'user',
-        content: "C'est ton tour de jouer. Analyse la position et choisis ton meilleur coup selon ton niveau. Réponds UNIQUEMENT avec un JSON valide. N'oublie pas: format UCI uniquement (ex: e7e5, g8f6)."
+        content: "Choisis ton meilleur coup et explique ce que tu joues et pourquoi. Réponds UNIQUEMENT avec un JSON valide."
       });
     }
 
