@@ -4,6 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
@@ -16,7 +23,10 @@ import {
   AlertTriangle,
   Send,
   Bell,
-  Mic
+  Mic,
+  Plus,
+  Pencil,
+  Trash2
 } from "lucide-react";
 import {
   AlertDialog,
@@ -28,19 +38,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
-interface DailyWord {
-  id: string;
-  word: string;
-  phonetic: string;
-  part_of_speech: string;
-  definition: string;
-  audio_url: string | null;
-  is_active: boolean;
-  display_order: number | null;
-}
+import type { DailyWord } from "@/types/dailyWord";
 
 type TTSProvider = 'openai' | 'elevenlabs';
+
+// Part of speech and category options for the add/edit form
+const PART_OF_SPEECH_OPTIONS = [
+  'n.m.', 'n.f.', 'adj.', 'v.', 'adv.', 'n.', 'prép.', 'conj.'
+];
+const CATEGORY_OPTIONS = [
+  'Littérature', 'Sciences', 'Philosophie', 'Histoire', 'Arts', 'Psychologie', 'Droit', 'Médecine'
+];
 
 // Get today's date string in Haiti timezone (YYYY-MM-DD)
 const getHaitiDate = (): string => {
@@ -82,13 +90,25 @@ const WordsModule = () => {
   const [confirmDialog, setConfirmDialog] = useState<{ 
     open: boolean; 
     word: DailyWord | null;
-    type: 'regenerate' | 'notification';
+    type: 'regenerate' | 'notification' | 'delete';
   }>({
     open: false,
     word: null,
     type: 'regenerate',
   });
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // ─── CRUD state ────────────────────────────────────────────────────────
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingWord, setEditingWord] = useState<DailyWord | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  // Form fields
+  const [formWord, setFormWord] = useState('');
+  const [formPhonetic, setFormPhonetic] = useState('');
+  const [formPartOfSpeech, setFormPartOfSpeech] = useState('adj.');
+  const [formDefinition, setFormDefinition] = useState('');
+  const [formExample, setFormExample] = useState('');
+  const [formCategory, setFormCategory] = useState('');
 
   useEffect(() => {
     fetchWords();
@@ -97,26 +117,25 @@ const WordsModule = () => {
   const fetchWords = async () => {
     try {
       setIsLoading(true);
-      // Fetch ordered by display_order — same ordering as useWordOfTheDay.ts
+      // Fetch ALL words (including inactive) so founders can manage everything
       const { data, error } = await supabase
         .from("daily_words")
-        .select("id, word, phonetic, part_of_speech, definition, audio_url, is_active, display_order")
-        .eq("is_active", true)
+        .select("*")
         .order("display_order", { ascending: true, nullsFirst: false });
 
       if (error) throw error;
       
-      const wordsList = data || [];
+      const wordsList = (data || []) as DailyWord[];
       setWords(wordsList);
       
-      // Deterministic selection — no app_settings query, no state mutation needed.
-      // Uses the same algorithm as useWordOfTheDay.ts so preview == what students see.
-      if (wordsList.length > 0) {
+      // Deterministic selection — only considers active words
+      const activeWords = wordsList.filter(w => w.is_active);
+      if (activeWords.length > 0) {
         const haitiDate = getHaitiDate();
-        const displayOrder = computeDisplayOrder(haitiDate, wordsList.length);
-        const todayWord = wordsList.find(w => w.display_order === displayOrder);
-        // Fallback to first word if display_order has a gap in the sequence
-        setTodaysWord(todayWord ?? wordsList[0]);
+        const displayOrder = computeDisplayOrder(haitiDate, activeWords.length);
+        const todayWord = activeWords.find(w => w.display_order === displayOrder);
+        // Fallback to first active word if display_order has a gap
+        setTodaysWord(todayWord ?? activeWords[0]);
       }
     } catch (err) {
       console.error("Error fetching words:", err);
@@ -125,6 +144,129 @@ const WordsModule = () => {
       setIsLoading(false);
     }
   };
+
+  // ─── CRUD handlers ─────────────────────────────────────────────────────
+
+  const resetForm = () => {
+    setFormWord('');
+    setFormPhonetic('');
+    setFormPartOfSpeech('adj.');
+    setFormDefinition('');
+    setFormExample('');
+    setFormCategory('');
+    setEditingWord(null);
+  };
+
+  const openAddDialog = () => {
+    resetForm();
+    setIsDialogOpen(true);
+  };
+
+  const openEditDialog = (word: DailyWord) => {
+    setEditingWord(word);
+    setFormWord(word.word);
+    setFormPhonetic(word.phonetic);
+    setFormPartOfSpeech(word.part_of_speech);
+    setFormDefinition(word.definition);
+    setFormExample(word.example);
+    setFormCategory(word.category || '');
+    setIsDialogOpen(true);
+  };
+
+  const handleSave = async () => {
+    if (!formWord || !formPhonetic || !formDefinition || !formExample) {
+      toast.error('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+
+      const wordData = {
+        word: formWord.trim(),
+        phonetic: formPhonetic.trim(),
+        part_of_speech: formPartOfSpeech,
+        definition: formDefinition.trim(),
+        example: formExample.trim(),
+        category: formCategory || null,
+      };
+
+      if (editingWord) {
+        // UPDATE existing word
+        const { error } = await supabase
+          .from('daily_words')
+          .update(wordData)
+          .eq('id', editingWord.id);
+
+        if (error) throw error;
+        toast.success('Mot modifié avec succès');
+      } else {
+        // Get next display_order via RPC for schedulability
+        const { data: nextOrder } = await supabase.rpc('get_next_display_order');
+
+        const { error } = await supabase
+          .from('daily_words')
+          .insert({
+            ...wordData,
+            is_active: true,
+            display_order: nextOrder ?? 1,
+          });
+
+        if (error) throw error;
+        toast.success('Mot ajouté avec succès');
+      }
+
+      setIsDialogOpen(false);
+      resetForm();
+      fetchWords();
+    } catch (err: any) {
+      console.error('Error saving word:', err);
+      if (err.code === '23505') {
+        toast.error('Ce mot existe déjà');
+      } else {
+        toast.error("Erreur lors de l'enregistrement");
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    const wordToDelete = confirmDialog.word;
+    if (!wordToDelete) return;
+    setConfirmDialog({ open: false, word: null, type: 'delete' });
+
+    try {
+      const { error } = await supabase
+        .from('daily_words')
+        .delete()
+        .eq('id', wordToDelete.id);
+
+      if (error) throw error;
+      toast.success('Mot supprimé');
+      fetchWords();
+    } catch (err) {
+      console.error('Error deleting word:', err);
+      toast.error('Erreur lors de la suppression');
+    }
+  };
+
+  const toggleActive = async (wordId: string, currentState: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('daily_words')
+        .update({ is_active: !currentState })
+        .eq('id', wordId);
+
+      if (error) throw error;
+      fetchWords();
+    } catch (err) {
+      console.error('Error toggling active state:', err);
+      toast.error('Erreur lors de la modification');
+    }
+  };
+
+  // ─── Audio handlers (unchanged from original) ──────────────────────────
 
   const playAudio = async (word: DailyWord) => {
     if (!word.audio_url) return;
@@ -163,10 +305,8 @@ const WordsModule = () => {
 
   const handleRegenerateClick = (word: DailyWord) => {
     if (word.audio_url) {
-      // Confirm before overwriting existing audio
       setConfirmDialog({ open: true, word, type: 'regenerate' });
     } else {
-      // No existing audio — generate directly without confirmation
       generateAudio(word);
     }
   };
@@ -176,8 +316,6 @@ const WordsModule = () => {
     setGeneratingWordId(word.id);
 
     try {
-      // supabase.functions.invoke automatically attaches the auth session header —
-      // no manual getSession() call needed here.
       const response = await supabase.functions.invoke("generate-word-audio", {
         body: { 
           wordId: word.id, 
@@ -186,19 +324,15 @@ const WordsModule = () => {
         },
       });
 
-      if (response.error) {
-        throw response.error;
-      }
+      if (response.error) throw response.error;
 
       if (response.data?.success && response.data?.audioUrl) {
-        // Optimistically update local word list without a full refetch
         setWords(prev =>
           prev.map(w =>
             w.id === word.id ? { ...w, audio_url: response.data.audioUrl } : w
           )
         );
         
-        // Also update the today's word preview if this is the current day word
         if (todaysWord?.id === word.id) {
           setTodaysWord(prev => prev ? { ...prev, audio_url: response.data.audioUrl } : null);
         }
@@ -215,6 +349,8 @@ const WordsModule = () => {
     }
   };
 
+  // ─── Notification handlers (unchanged) ─────────────────────────────────
+
   const handleSendNotificationClick = () => {
     setConfirmDialog({ open: true, word: null, type: 'notification' });
   };
@@ -225,15 +361,11 @@ const WordsModule = () => {
     setNotificationResult(null);
 
     try {
-      // supabase.functions.invoke automatically attaches the auth session header —
-      // no manual getSession() call needed here.
       const response = await supabase.functions.invoke("send-daily-word-notification", {
         body: {}
       });
 
-      if (response.error) {
-        throw response.error;
-      }
+      if (response.error) throw response.error;
 
       if (response.data?.success) {
         setNotificationResult({
@@ -266,7 +398,8 @@ const WordsModule = () => {
   }, []);
 
   const wordsWithAudio = words.filter(w => w.audio_url);
-  const wordsWithoutAudio = words.filter(w => !w.audio_url);
+  const wordsWithoutAudio = words.filter(w => !w.audio_url && w.is_active);
+  const activeCount = words.filter(w => w.is_active).length;
 
   if (isLoading) {
     return (
@@ -391,7 +524,6 @@ const WordsModule = () => {
           
           <p className="text-xs text-muted-foreground">
             {selectedProvider === 'elevenlabs' 
-              // Platform standard voice is Eric (ElevenLabs)
               ? '✨ Volume plus élevé, meilleur français, voix naturelle (Eric)' 
               : '🔉 Volume plus bas, voix Nova, alternative rapide'}
           </p>
@@ -400,79 +532,256 @@ const WordsModule = () => {
 
       <Separator />
 
-      {/* Stats Header */}
+      {/* ─── Word Management Section ──────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold">Gestion Audio des Mots</h2>
+          <h2 className="text-xl font-semibold">Gestion des Mots du Jour</h2>
           <p className="text-sm text-muted-foreground">
-            Régénérez la prononciation des mots du jour
+            Ajoutez, modifiez et gérez tous les mots
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Badge variant="outline" className="gap-1">
+            Total: {words.length}
+          </Badge>
           <Badge variant="outline" className="gap-1">
             <CheckCircle2 className="h-3 w-3 text-green-500" />
-            {wordsWithAudio.length} avec audio
+            Actifs: {activeCount}
           </Badge>
           <Badge variant="outline" className="gap-1">
-            <XCircle className="h-3 w-3 text-red-500" />
-            {wordsWithoutAudio.length} sans audio
+            <Volume2 className="h-3 w-3 text-primary" />
+            Audio: {wordsWithAudio.length}
           </Badge>
+          {wordsWithoutAudio.length > 0 && (
+            <Badge variant="destructive" className="gap-1">
+              <XCircle className="h-3 w-3" />
+              Sans audio: {wordsWithoutAudio.length}
+            </Badge>
+          )}
         </div>
       </div>
 
-      {/* Words without audio — shown first so they're easy to action */}
-      {wordsWithoutAudio.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-4 w-4" />
-              Mots sans audio ({wordsWithoutAudio.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {wordsWithoutAudio.map(word => (
-              <WordRow
-                key={word.id}
-                word={word}
-                isGenerating={generatingWordId === word.id}
-                isPlaying={playingWordId === word.id}
-                onPlay={() => playAudio(word)}
-                onRegenerate={() => handleRegenerateClick(word)}
-              />
-            ))}
-          </CardContent>
-        </Card>
-      )}
+      {/* Add word button */}
+      <Button onClick={openAddDialog} className="gap-2">
+        <Plus className="h-4 w-4" />
+        Ajouter un mot
+      </Button>
 
-      {/* Words with audio */}
+      {/* Words Table */}
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
-            Mots avec audio ({wordsWithAudio.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {wordsWithAudio.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              Aucun mot avec audio
-            </p>
+        <CardContent className="p-0">
+          {words.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
+              <AlertTriangle className="h-12 w-12 mb-2" />
+              <p>Aucun mot ajouté</p>
+            </div>
           ) : (
-            wordsWithAudio.map(word => (
-              <WordRow
-                key={word.id}
-                word={word}
-                isGenerating={generatingWordId === word.id}
-                isPlaying={playingWordId === word.id}
-                onPlay={() => playAudio(word)}
-                onRegenerate={() => handleRegenerateClick(word)}
-              />
-            ))
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">#</TableHead>
+                    <TableHead>Mot</TableHead>
+                    <TableHead>Phonétique</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Catégorie</TableHead>
+                    <TableHead>Audio</TableHead>
+                    <TableHead>Actif</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {words.map((word) => (
+                    <TableRow key={word.id} className={!word.is_active ? 'opacity-50' : ''}>
+                      {/* display_order column so founders see scheduling position */}
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {word.display_order ?? '–'}
+                      </TableCell>
+                      <TableCell className="font-medium">{word.word}</TableCell>
+                      <TableCell className="font-mono text-sm text-muted-foreground">
+                        {word.phonetic}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{word.part_of_speech}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        {word.category && (
+                          <Badge variant="secondary">{word.category}</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {word.audio_url ? (
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => playAudio(word)}
+                            >
+                              {playingWordId === word.id ? (
+                                <VolumeX className="h-4 w-4" />
+                              ) : (
+                                <Volume2 className="h-4 w-4 text-green-600" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => handleRegenerateClick(word)}
+                              disabled={generatingWordId === word.id}
+                            >
+                              {generatingWordId === word.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <RefreshCw className="h-3 w-3" />
+                              )}
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 gap-1 text-xs"
+                            onClick={() => generateAudio(word)}
+                            disabled={generatingWordId === word.id}
+                          >
+                            {generatingWordId === word.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <>
+                                <Volume2 className="h-3 w-3" />
+                                Générer
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Switch
+                          checked={word.is_active ?? false}
+                          onCheckedChange={() => toggleActive(word.id, word.is_active ?? false)}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => openEditDialog(word)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-destructive hover:text-destructive"
+                            onClick={() => setConfirmDialog({ open: true, word, type: 'delete' })}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Confirmation Dialog — shared for both regenerate and notification actions */}
+      {/* ─── Add/Edit Dialog ──────────────────────────────────────────────── */}
+      <Dialog open={isDialogOpen} onOpenChange={(open) => {
+        setIsDialogOpen(open);
+        if (!open) resetForm();
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {editingWord ? 'Modifier le mot' : 'Ajouter un mot du jour'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="word">Mot *</Label>
+              <Input
+                id="word"
+                value={formWord}
+                onChange={(e) => setFormWord(e.target.value)}
+                placeholder="ex: Éphémère"
+              />
+            </div>
+            <div>
+              <Label htmlFor="phonetic">Phonétique *</Label>
+              <Input
+                id="phonetic"
+                value={formPhonetic}
+                onChange={(e) => setFormPhonetic(e.target.value)}
+                placeholder="ex: e.fe.mɛʁ"
+              />
+            </div>
+            <div>
+              <Label htmlFor="partOfSpeech">Type grammatical *</Label>
+              <Select value={formPartOfSpeech} onValueChange={setFormPartOfSpeech}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PART_OF_SPEECH_OPTIONS.map(opt => (
+                    <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="definition">Définition *</Label>
+              <Textarea
+                id="definition"
+                value={formDefinition}
+                onChange={(e) => setFormDefinition(e.target.value)}
+                placeholder="Qui ne dure qu'un temps très court"
+                rows={2}
+              />
+            </div>
+            <div>
+              <Label htmlFor="example">Exemple *</Label>
+              <Textarea
+                id="example"
+                value={formExample}
+                onChange={(e) => setFormExample(e.target.value)}
+                placeholder="La beauté des fleurs est éphémère."
+                rows={2}
+              />
+            </div>
+            <div>
+              <Label htmlFor="category">Catégorie</Label>
+              <Select value={formCategory} onValueChange={setFormCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choisir une catégorie" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORY_OPTIONS.map(opt => (
+                    <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Annuler
+              </Button>
+              <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {editingWord ? 'Modifier' : 'Ajouter'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── Confirmation Dialog — shared for regenerate, notification, and delete */}
       <AlertDialog
         open={confirmDialog.open}
         onOpenChange={open => !open && setConfirmDialog({ open: false, word: null, type: 'regenerate' })}
@@ -482,6 +791,8 @@ const WordsModule = () => {
             <AlertDialogTitle>
               {confirmDialog.type === 'notification' 
                 ? 'Envoyer la notification ?' 
+                : confirmDialog.type === 'delete'
+                ? 'Supprimer ce mot ?'
                 : "Régénérer l'audio ?"}
             </AlertDialogTitle>
             <AlertDialogDescription>
@@ -494,6 +805,11 @@ const WordsModule = () => {
                       Mot: <strong className="text-primary">{todaysWord.word}</strong> [{todaysWord.phonetic}]
                     </span>
                   )}
+                </>
+              ) : confirmDialog.type === 'delete' ? (
+                <>
+                  Le mot <strong>"{confirmDialog.word?.word}"</strong> sera supprimé définitivement.
+                  Cette action est irréversible.
                 </>
               ) : (
                 <>
@@ -510,90 +826,19 @@ const WordsModule = () => {
               onClick={() => {
                 if (confirmDialog.type === 'notification') {
                   sendDailyWordNotification();
+                } else if (confirmDialog.type === 'delete') {
+                  handleDeleteConfirm();
                 } else if (confirmDialog.word) {
                   generateAudio(confirmDialog.word);
                 }
               }}
+              className={confirmDialog.type === 'delete' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : ''}
             >
-              {confirmDialog.type === 'notification' ? 'Envoyer' : 'Régénérer'}
+              {confirmDialog.type === 'notification' ? 'Envoyer' : confirmDialog.type === 'delete' ? 'Supprimer' : 'Régénérer'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  );
-};
-
-interface WordRowProps {
-  word: DailyWord;
-  isGenerating: boolean;
-  isPlaying: boolean;
-  onPlay: () => void;
-  onRegenerate: () => void;
-}
-
-const WordRow = ({ word, isGenerating, isPlaying, onPlay, onRegenerate }: WordRowProps) => {
-  return (
-    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          {word.display_order && (
-            <Badge variant="outline" className="text-xs h-5 min-w-[24px] justify-center">
-              {word.display_order}
-            </Badge>
-          )}
-          <span className="font-medium truncate">{word.word}</span>
-          <span className="text-xs text-muted-foreground font-mono">[{word.phonetic}]</span>
-          <Badge variant="secondary" className="text-xs">
-            {word.part_of_speech}
-          </Badge>
-        </div>
-        <p className="text-sm text-muted-foreground truncate">{word.definition}</p>
-      </div>
-
-      <div className="flex items-center gap-2 ml-4">
-        {/* Play button — only rendered when audio exists */}
-        {word.audio_url && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onPlay}
-            className="h-8 w-8 p-0"
-          >
-            {isPlaying ? (
-              <VolumeX className="h-4 w-4" />
-            ) : (
-              <Volume2 className="h-4 w-4" />
-            )}
-          </Button>
-        )}
-
-        {/* Generate / Regenerate button */}
-        <Button
-          variant={word.audio_url ? "outline" : "default"}
-          size="sm"
-          onClick={onRegenerate}
-          disabled={isGenerating}
-          className="gap-1"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="h-3 w-3 animate-spin" />
-              Génération...
-            </>
-          ) : word.audio_url ? (
-            <>
-              <RefreshCw className="h-3 w-3" />
-              Régénérer
-            </>
-          ) : (
-            <>
-              <Volume2 className="h-3 w-3" />
-              Générer
-            </>
-          )}
-        </Button>
-      </div>
     </div>
   );
 };

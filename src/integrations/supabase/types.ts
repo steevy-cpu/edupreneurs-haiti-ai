@@ -4609,6 +4609,7 @@ export type Database = {
         }[]
       }
       get_new_feed_posts_count: { Args: { p_user_id: string }; Returns: number }
+      get_next_display_order: { Args: never; Returns: number }
       get_notification_preference: {
         Args: { p_category: string; p_user_id: string }
         Returns: boolean

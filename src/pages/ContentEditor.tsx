@@ -19,7 +19,7 @@ import { CurriculumAnalyzer } from "@/components/content-editor/CurriculumAnalyz
 import { LessonImageManager } from "@/components/content-editor/LessonImageManager";
 import { LessonValidationPanel } from "@/components/content-editor/LessonValidationPanel";
 import { BatchGenerationValidation } from "@/components/content-editor/BatchGenerationValidation";
-import { DailyWordsManager } from "@/components/content-editor/DailyWordsManager";
+// DailyWordsManager removed — management consolidated into Control Center
 import { EbookManager } from "@/components/content-editor/EbookManager";
 import { ContentQualityDashboard } from "@/components/content-editor/ContentQualityDashboard";
 import { StudyMusicManager } from "@/components/content-editor/StudyMusicManager";
@@ -474,7 +474,18 @@ const ContentEditor = () => {
             </TabsContent>
 
             <TabsContent value="daily-words">
-              <DailyWordsManager />
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Gestion déplacée</h3>
+                  <p className="text-muted-foreground mb-4">
+                    La gestion des mots du jour a été déplacée vers le Centre de Contrôle.
+                  </p>
+                  <Button onClick={() => navigate('/control-center')}>
+                    Ouvrir le Centre de Contrôle
+                  </Button>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="ebooks">
