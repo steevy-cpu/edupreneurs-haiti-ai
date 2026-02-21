@@ -145,7 +145,7 @@ export default function Matieres() {
       }
       // If non-academic grade (UNIV/NONE), keep default "7AF" but show locked overlay
     }
-  }, []); // Only run once on mount
+  }, [userGrade, isAuthenticated]); // Re-run when profile grade loads asynchronously
 
   const filteredSubjects = dbSubjects.filter(s => {
     if (s.grade_level !== selectedGrade) return false;
