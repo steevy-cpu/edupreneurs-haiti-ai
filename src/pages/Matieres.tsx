@@ -319,7 +319,8 @@ export default function Matieres() {
           >
             {gradeLevels.map((grade) => {
               const isUserGrade = userGrade === grade.id;
-              const isLocked = isAuthenticated && !canAccessGrade(grade.id);
+              // Guard: don't show locks while userGrade is still loading (null)
+              const isLocked = isAuthenticated && !!userGrade && !canAccessGrade(grade.id);
               
               return (
                 <Button
