@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronRight, Check, X, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 import { useFirstTimeUser } from '@/contexts/FirstTimeUserContext';
 import { useNetworkAwareAnimations } from '@/hooks/useNetworkAwareAnimations';
 import { containsProfanity } from '@/lib/textModeration';
@@ -59,6 +60,7 @@ function generateNicknameSuggestion(fullName: string): string {
 const OnboardingQuiz = () => {
   const firstTimeUser = useFirstTimeUser();
   const { shouldAnimate } = useNetworkAwareAnimations();
+  const queryClient = useQueryClient();
 
   // Stability guard — same pattern as FirstTimeUserWelcome
   const [isStable, setIsStable] = useState(false);
@@ -147,23 +149,71 @@ const OnboardingQuiz = () => {
     loadProfile();
   }, [firstTimeUser.showOnboardingQuiz, firstTimeUser.userId]);
 
-  // Save a single field to the profiles table
-  const saveField = useCallback(async (field: string, value: string) => {
+  // Save field to localStorage as backup when DB writes fail on 3G
+  const saveFieldBackup = useCallback((field: string, value: string) => {
     if (!firstTimeUser.userId) return;
-    setIsSaving(true);
+    const key = `onboarding_backup_${firstTimeUser.userId}`;
+    const existing = JSON.parse(localStorage.getItem(key) || '{}');
+    existing[field] = value;
+    localStorage.setItem(key, JSON.stringify(existing));
+  }, [firstTimeUser.userId]);
+
+  // Flush any localStorage backup to DB — called before quiz completion
+  const flushBackupToDb = useCallback(async () => {
+    if (!firstTimeUser.userId) return;
+    const key = `onboarding_backup_${firstTimeUser.userId}`;
+    const backup = localStorage.getItem(key);
+    if (!backup) return;
     try {
+      const fields = JSON.parse(backup);
+      if (Object.keys(fields).length === 0) return;
+      setIsSaving(true);
       const { error } = await supabase
         .from('profiles')
-        .update({ [field]: value } as any)
+        .update(fields as any)
         .eq('user_id', firstTimeUser.userId);
-      if (error) throw error;
-    } catch (err) {
-      console.error(`Failed to save ${field}:`, err);
-      toast.error('Erreur de sauvegarde. Réessayez depuis les paramètres.', { duration: 3000 });
+      if (!error) {
+        localStorage.removeItem(key);
+        // Invalidate profile cache after successful flush
+        queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      }
+    } catch {
+      // Best-effort — data stays in localStorage for next attempt
     } finally {
       setIsSaving(false);
     }
-  }, [firstTimeUser.userId]);
+  }, [firstTimeUser.userId, queryClient]);
+
+  // Save a single field to the profiles table with 3x retry for 3G resilience
+  const saveField = useCallback(async (field: string, value: string) => {
+    if (!firstTimeUser.userId) return;
+    setIsSaving(true);
+    let attempts = 0;
+    const maxAttempts = 3;
+
+    while (attempts < maxAttempts) {
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ [field]: value } as any)
+          .eq('user_id', firstTimeUser.userId);
+        if (error) throw error;
+        setIsSaving(false);
+        return; // Success on this attempt
+      } catch (err) {
+        attempts++;
+        if (attempts < maxAttempts) {
+          // Wait 1s before retrying on slow connections
+          await new Promise(r => setTimeout(r, 1000));
+        }
+      }
+    }
+
+    // All 3 attempts failed — save to localStorage backup so data isn't lost
+    saveFieldBackup(field, value);
+    toast.warning('Connexion lente détectée. Tes données sont sauvegardées localement.', { duration: 3000 });
+    setIsSaving(false);
+  }, [firstTimeUser.userId, saveFieldBackup]);
 
   // Show thumb-up reaction then advance to next step
   const showReactionAndAdvance = useCallback((text: string) => {
@@ -174,9 +224,10 @@ const OnboardingQuiz = () => {
       if (currentStep < TOTAL_STEPS - 1) {
         setCurrentStep(prev => prev + 1);
       } else {
-        // Show outro after last question
+        // Show outro after last question — flush any backup before completing
         setIsOutro(true);
-        setTimeout(() => {
+        setTimeout(async () => {
+          await flushBackupToDb();
           firstTimeUser.completeOnboardingQuiz();
         }, 2500);
       }
@@ -247,7 +298,8 @@ const OnboardingQuiz = () => {
     setTimeout(() => {
       setShowReaction(false);
       setIsOutro(true);
-      setTimeout(() => {
+      setTimeout(async () => {
+        await flushBackupToDb();
         firstTimeUser.completeOnboardingQuiz();
       }, 2500);
     }, 1500);
@@ -259,7 +311,8 @@ const OnboardingQuiz = () => {
       setCurrentStep(prev => prev + 1);
     } else {
       setIsOutro(true);
-      setTimeout(() => {
+      setTimeout(async () => {
+        await flushBackupToDb();
         firstTimeUser.completeOnboardingQuiz();
       }, 2500);
     }
@@ -392,6 +445,9 @@ const OnboardingQuiz = () => {
                 className="h-32 md:h-64 object-contain drop-shadow-2xl"
                 /* Only eager-load the first step image; lazy-load the rest for 3G perf */
                 loading={currentStep === 0 && !showReaction && !isOutro ? 'eager' : 'lazy'}
+                /* Explicit dimensions prevent CLS while images load on slow connections */
+                width={256}
+                height={256}
               />
             </motion.div>
           </AnimatePresence>
