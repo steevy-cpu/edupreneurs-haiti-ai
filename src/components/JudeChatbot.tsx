@@ -428,7 +428,7 @@ export const JudeChatbot = () => {
         <div className="relative w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] flex flex-col mt-2">
           {/* Fix 1: First-time friendly suggested prompts — disappear after first message */}
           {messages.length <= 1 && (
-            <div className="grid grid-cols-2 gap-2 mb-3 mr-16 sm:mr-20 md:mr-24 lg:mr-28">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 mr-14 sm:mr-20 md:mr-24 lg:mr-28">
               {[
                 "Comment je gagne du Gold ? 🥇",
                 "Explique-moi comment utiliser la plateforme 📚",
@@ -464,7 +464,7 @@ export const JudeChatbot = () => {
                       setMessages(prev => [...prev, { content: "Désolé, une erreur s'est produite.", sender: "jude" as const }]);
                     }).finally(() => setIsTyping(false));
                   }}
-                  className="text-[10px] sm:text-xs px-3 py-1.5 bg-accent/90 backdrop-blur-sm border border-primary/30 hover:bg-accent rounded-full text-accent-foreground shadow-md hover:shadow-lg transition-all duration-200"
+                  className="text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2.5 bg-accent/90 backdrop-blur-sm border border-primary/30 hover:bg-accent rounded-full text-accent-foreground shadow-md hover:shadow-lg transition-all duration-200 max-w-[45%] sm:max-w-none leading-tight"
                 >
                   {faq}
                 </button>
