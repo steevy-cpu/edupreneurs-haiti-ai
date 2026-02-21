@@ -1,76 +1,113 @@
 
 
-# Fix 5 Medium-Severity Stability and UX Bugs
+# First-Time UX Plan A -- Dashboard Empty State and Matieres Friction
 
-## Fix 1 -- Cache Auth State in AuthRouteGuard
+## Fix 1 -- First-Time User Guidance Card on Dashboard
 
-**File:** `src/auth/guards/AuthRouteGuard.tsx`
+**File:** `src/components/dashboard/tabs/OverviewTab.tsx`
 
-**Problem:** Lines 53-58 make a DB query to fetch `email_confirmed` on every `location.pathname` and `location.search` change, even for already-confirmed users.
+**Current behavior:** When `recentSubjectsFeature.data` is empty and not loading/errored, nothing renders (line 194: `recentSubjectsFeature.data.length > 0 &&`). New users see a gap.
 
-**Change:**
-- Add a `useRef<boolean | null>(null)` called `emailConfirmedRef` to cache the confirmed status
-- Before the DB call (line 53), check: if `emailConfirmedRef.current === true`, skip the query and use the cached value
-- After a successful DB fetch, update the ref: `emailConfirmedRef.current = profile?.email_confirmed ?? null`
-- Reset the ref to `null` when `user?.id` changes (new user signs in) so fresh users always get a DB check
+**Change:** After the error state block (line 193) and before the existing `recentSubjectsFeature.data.length > 0` block, add an `else` branch for when data is empty (length === 0, not loading, no error):
 
-This eliminates redundant profile queries for confirmed users navigating between pages on 3G.
+- Render a Card with:
+  - A `BookOpen` icon in a gradient circle
+  - Title: "Commence ton apprentissage!"
+  - Text: "Tu n'as pas encore commence. Lance ta premiere lecon maintenant!"
+  - A gradient CTA Button "Commencer a apprendre" that navigates to `/matieres`
+- This card only shows when `recentSubjectsFeature.data.length === 0` and disappears once the student has activity
 
----
-
-## Fix 2 -- Fix null emailConfirmed Bypass in authStateMachine
-
-**File:** `src/auth/store/authStateMachine.ts`
-
-**Problem:** Line 65: `emailConfirmed !== false` treats `null` (query failed / still loading) as authenticated. On flaky 3G where the profile query returns null, unverified users slip through.
-
-**Change:**
-- Line 65: Change `if (session && emailConfirmed !== false)` to `if (session && emailConfirmed === true)`
-- This ensures only an explicit `true` value grants authenticated state
-- When `emailConfirmed` is `null` (unknown), the state falls through to `unauthenticated` instead of `authenticated`, which is safe -- the AuthRouteGuard will re-check on the next navigation
+**Lines affected:** ~194-235 in OverviewTab.tsx
 
 ---
 
-## Fix 3 -- Rate Limit delete-user-account Edge Function
+## Fix 2 -- KPI Zero Helper Text
 
-**File:** `supabase/functions/delete-user-account/index.ts`
+**File:** `src/components/dashboard/tabs/OverviewTab.tsx`
 
-**Problem:** No rate limiting. An authenticated user (or attacker with a stolen token) can spam account deletion attempts.
+**Current behavior:** The KPI grid (lines 107-141) shows 0 for Gold, Lecons, Score, Etude with no explanation.
 
-**Change:**
-- Import `checkRateLimit`, `getClientIp`, `rateLimitResponse`, `RATE_LIMITS` from `../_shared/rateLimiter.ts`
-- After the auth validation block (line 159), add rate limit check using `RATE_LIMITS.AUTH` config
-- Create a service-role client for the rate limit check (same pattern as `create-stripe-renewal`)
-- Return `rateLimitResponse()` if rate limit exceeded
+**Change:** Immediately after the KPI Card closing tag (line 141), add a conditional block:
 
----
+```
+if analytics.gold === 0 && analytics.totalLessonsCompleted === 0 && analytics.averageScore === 0 && analytics.studyTimeThisWeek === 0
+```
 
-## Fix 4 -- Add File Size Validation to Blog Editor Image Upload
+Render a centered `<p>` with `text-xs text-muted-foreground text-center -mt-2 mb-2`:
+"Complete ta premiere lecon pour commencer a accumuler des points!"
 
-**File:** `src/components/blog/BlogPostEditor.tsx`
+This disappears as soon as any KPI becomes non-zero.
 
-**Problem:** The image file input (line 563) has no size validation. The video upload already calls `validateAndPrepareVideo()` which enforces a 50MB limit, but images have no equivalent guard. A user could select a 500MB file and start an upload that will fail or hang on 3G.
-
-**Change:**
-- In `handleImageFileUpload` (line 193), add a size check before compression: if `imageFile.size > 10 * 1024 * 1024` (10MB), show a toast error with the message "Image trop volumineuse. Taille maximale: 10MB" and return early
-- This matches the Community page's 10MB image limit for consistency
-
-Note: Video upload already validates via `validateAndPrepareVideo()` which throws on >50MB and shows an error toast in the catch block. No video change needed.
+**Lines affected:** After line 141 in OverviewTab.tsx
 
 ---
 
-## Fix 5 -- Fix SubscriptionGate Infinite Loading on Query Failure
+## Fix 3 -- Remove Matieres "Explorer" Gate
 
-**File:** `src/components/SubscriptionGate.tsx`
+**File:** `src/pages/Matieres.tsx`
 
-**Problem:** Lines 29-47: if the subscription profile query fails on 3G (network timeout, DB error), `profile` stays `null` forever and the user sees `SubscriptionLoadingSkeleton` with no way to recover.
+**Current behavior:** `showContent` state (line 58) defaults to `false`. Lines 398-456 render a large "Contenu en cours de developpement" card with an "Explorer" button that sets `showContent(true)`. Lines 459-588 only render subjects when `showContent` is true.
 
 **Change:**
-- Destructure `isError` and `refetch` from the `useQuery` call (line 29)
-- Add a `useState` timeout tracker: after 10 seconds of `!profile && !isError`, set a `timedOut` flag
-- When `isError || timedOut`, render a new `SubscriptionErrorState` component instead of the skeleton
-- `SubscriptionErrorState` shows an alert icon, the message "Impossible de vérifier votre abonnement", and a "Reessayer" button that calls `refetch()` and resets the timeout
-- The skeleton continues to show during the initial 10-second window (normal loading)
+- Change the initial state of `showContent` from `false` to `true` (line 58)
+- Remove the entire "Content in Development Overlay" block (lines 398-456)
+- Remove the `showContent` condition from the grade button onClick (line 323: `setShowContent(false)`) -- keep grade switching but don't reset to hidden
+- The main content block (line 459) already checks `showContent` -- with default `true`, subjects show immediately
+
+For NS3/NS4 series flow: The series selection card at line 351 checks `showContent`, so with default `true`, it will show the series picker immediately after selecting NS3/NS4, which is correct behavior.
+
+**Lines affected:** 58, 323, 398-456, 459 in Matieres.tsx
+
+---
+
+## Fix 4 -- Friendly Empty State for Grades With No Content
+
+**File:** `src/pages/Matieres.tsx`
+
+**Current behavior:** Lines 590-618 show a generic "Contenu en preparation" card with a "Explorer 7AF" button when no subjects exist.
+
+**Change:** Replace lines 592-617 with a friendlier empty state:
+- `Construction` icon (already imported) in an amber-tinted circle
+- Title: "Le contenu pour ton niveau arrive bientot!"
+- Description: "En attendant, explore les autres niveaux disponibles."
+- Button: "Explorer d'autres niveaux" that scrolls to the grade selector or resets to 7AF
+- Only show this when NOT caused by search/filter (existing logic already handles that case)
+
+**Lines affected:** 592-617 in Matieres.tsx
+
+---
+
+## Fix 5 -- Matieres Loading Timeout with Retry
+
+**File:** `src/pages/Matieres.tsx`
+
+**Current behavior:** Lines 378-396 show a skeleton grid while `isLoading` is true. If the query hangs on 3G, skeleton shows forever.
+
+**Change:**
+- Add a `useState<boolean>(false)` for `loadingTimedOut`
+- Add a `useEffect` that starts a 10-second timer when `isLoading` is true. If still loading after 10s, set `loadingTimedOut = true`. Clear timer when `isLoading` becomes false.
+- In the loading block (line 378), add a condition: if `loadingTimedOut`, render an `ErrorState` component (already used in OverviewTab) with message "Impossible de charger les matieres" and a "Reessayer" button that calls `refetch()` from `useMatieresData`
+- Import `ErrorState` from `@/components/shared/ErrorState`
+- The `useMatieresData` hook already exposes `refetch`
+
+**Lines affected:** Add state + effect near line 58, modify lines 378-396 in Matieres.tsx
+
+---
+
+## Fix 6 -- Community Loading Timeout with Retry
+
+**File:** `src/pages/Community.tsx`
+
+**Current behavior:** `isLoadingConversations` starts as `true` (line 86). The `checkUser` function (line 531) has no try/catch -- if `supabase.auth.getUser()` throws on 3G, `isLoadingConversations` stays `true` forever.
+
+**Change:**
+- Add `useState<boolean>(false)` for `loadingTimedOut`
+- Add a `useEffect` that starts a 10-second timer when `isLoadingConversations` is true and `!isVisitor`. If still loading after 10s, set `loadingTimedOut = true`. Reset when loading finishes.
+- Wrap `checkUser` body in try/catch -- on error, set `isLoadingConversations(false)` and log the error
+- In the `ConversationSidebar` rendering area or before it, check: if `loadingTimedOut`, render an `ErrorState` with message "Impossible de charger les conversations" and a "Reessayer" button that calls `checkUser()` again (which triggers `fetchConversations` via the `user` dependency)
+- Import `ErrorState` from `@/components/shared/ErrorState`
+
+**Lines affected:** Add state near line 86, add effect, modify lines 531-543, modify rendering near line 2172 in Community.tsx
 
 ---
 
@@ -78,22 +115,22 @@ Note: Video upload already validates via `validateAndPrepareVideo()` which throw
 
 | Check | Status |
 |-------|--------|
-| Auth flow for new signups unaffected | Fix 2 is safe: new signups go through authFlow 'verify' path (Priority 3) before reaching Priority 5 |
-| Confirmed users unaffected by Fix 2 | Yes: `emailConfirmed === true` is what they have |
-| Fix 1 cache invalidated on user change | Yes: ref resets when `user?.id` changes |
-| Blog editor video upload unchanged | Yes: already has validation via `validateAndPrepareVideo()` |
-| SubscriptionGate normal flow unchanged | Yes: timeout only triggers after 10s of null data |
-| No new dependencies | Correct |
+| Existing dashboard layout preserved | Yes -- only adds new conditional blocks, no existing elements removed |
+| KPI rendering unchanged | Yes -- helper text is additive below the grid |
+| Matieres subject grid logic unchanged | Yes -- only the gate is removed, grid rendering is identical |
+| NS3/NS4 series flow preserved | Yes -- series picker still shows for NS3/NS4 grades |
+| Community realtime subscriptions unaffected | Yes -- only adding timeout to initial load |
+| No new dependencies | Correct -- ErrorState already exists and is imported in OverviewTab |
 | No DB schema changes | Correct |
 | No provider stack changes | Correct |
-| 3G impact | Positive across all 5 fixes |
+| 3G impact | Positive -- fewer clicks, timeout-based recovery |
+| Student-facing components improved, not broken | Yes -- all changes are additive UX improvements |
 
 ## Files Changed
 
 | File | Fix |
 |------|-----|
-| `src/auth/guards/AuthRouteGuard.tsx` | Fix 1: Cache emailConfirmed in useRef |
-| `src/auth/store/authStateMachine.ts` | Fix 2: `!== false` to `=== true` |
-| `supabase/functions/delete-user-account/index.ts` | Fix 3: Add rate limiting |
-| `src/components/blog/BlogPostEditor.tsx` | Fix 4: Image size validation |
-| `src/components/SubscriptionGate.tsx` | Fix 5: Timeout + error state with retry |
+| `src/components/dashboard/tabs/OverviewTab.tsx` | Fix 1 + Fix 2: First-time card + KPI helper |
+| `src/pages/Matieres.tsx` | Fix 3 + Fix 4 + Fix 5: Remove gate, friendly empty state, loading timeout |
+| `src/pages/Community.tsx` | Fix 6: Loading timeout + try/catch in checkUser |
+
