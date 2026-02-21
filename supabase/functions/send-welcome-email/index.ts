@@ -12,11 +12,15 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
 import { validateInput, welcomeEmailSchema, validationErrorResponse } from "../_shared/validation.ts";
 import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
+import { getTimeAwareGreeting } from "../_shared/emailGreeting.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-// Template: welcome email — no verification URL needed (custom OTP flow handles it)
-const getEmailTemplate = (fullName: string) => `
+// Template: welcome email — sent AFTER email verification is complete (no verification URL needed)
+const getEmailTemplate = (fullName: string, nickname: string | null) => {
+  // Use nickname if available, otherwise fall back to full name
+  const displayName = nickname || fullName;
+  return `
 <!DOCTYPE html>
 <html lang="fr">
   <head>
@@ -55,23 +59,22 @@ const getEmailTemplate = (fullName: string) => `
                   <tr>
                     <td style="padding: 40px;">
                       <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b;">
-                        Salut <strong style="color: #10b981;">${fullName}</strong> 👋
+                        ${getTimeAwareGreeting(displayName)}
                       </p>
                       <p style="margin: 0 0 32px 0; font-size: 16px; color: #475569; line-height: 1.8;">
                         Félicitations ! Vous faites maintenant partie de la communauté Edupreneurs.
                       </p>
                       
-                      ${verificationUrl ? `
+                      <!-- CTA: direct link to platform (verification already complete at this point) -->
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 32px;">
                         <tr>
                           <td style="text-align: center;">
-                            <a href="${verificationUrl}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 12px; font-weight: 700;">
-                              ✓ Vérifier mon email
+                            <a href="https://edupreneurs.ht" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 12px; font-weight: 700;">
+                              🚀 Accéder à la plateforme
                             </a>
                           </td>
                         </tr>
                       </table>
-                      ` : ''}
                       
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 32px;">
                         <tr>
@@ -130,6 +133,7 @@ const getEmailTemplate = (fullName: string) => `
   </body>
 </html>
 `;
+};
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -177,7 +181,7 @@ const handler = async (req: Request): Promise<Response> => {
       from: "Edupreneurs <noreply@mon-edupreneur.com>",
       to: [email],
       subject: "🎉 Bienvenue sur Edupreneurs !",
-      html: getEmailTemplate(fullName),
+      html: getEmailTemplate(fullName, nickname ?? null),
     });
 
     console.log("Welcome email sent successfully");

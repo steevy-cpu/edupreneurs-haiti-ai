@@ -9,6 +9,7 @@ import { Resend } from "https://esm.sh/resend@4.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
 import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
+import { getTimeAwareGreeting } from "../_shared/emailGreeting.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -71,7 +72,7 @@ const getEmailTemplate = (
                   <tr>
                     <td style="padding: 40px;">
                       <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b; line-height: 1.7;">
-                        Salut <strong style="color: #d97706;">${fullName}</strong> 👋
+                        ${getTimeAwareGreeting(fullName)}
                       </p>
                       <p style="margin: 0 0 24px 0; font-size: 16px; color: #475569; line-height: 1.8;">
                         Nous avons détecté une tentative de connexion depuis un nouvel appareil. Pour protéger votre compte, veuillez entrer le code ci-dessous.

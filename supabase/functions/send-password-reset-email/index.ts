@@ -12,6 +12,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
 import { validateInput, passwordResetEmailSchema, validationErrorResponse } from "../_shared/validation.ts";
 import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
+import { getTimeAwareGreeting } from "../_shared/emailGreeting.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -54,7 +55,7 @@ const getEmailTemplate = (resetUrl: string, fullName?: string) => `
                   <tr>
                     <td style="padding: 40px;">
                       <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b;">
-                        Salut ${fullName ? `<strong style="color: #f97316;">${fullName}</strong>` : ''} 👋
+                        ${fullName ? getTimeAwareGreeting(fullName) : '👋'}
                       </p>
                       <p style="margin: 0 0 32px 0; font-size: 16px; color: #475569; line-height: 1.8;">
                         Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte Edupreneurs.
