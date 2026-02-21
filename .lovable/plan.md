@@ -1,68 +1,71 @@
 
-# Fix: Community Chat Mobile Keyboard Layout Bug
 
-## Root Cause (Precise)
+# Fix 4 High-Severity Security and Stability Bugs
 
-The conversation view `<section>` in `Community.tsx` (line 2196) uses `position: fixed` on mobile with:
-```
-fixed inset-x-0 top-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))]
-```
+## Fix 1 -- Realtime Subscription Channel Churn (AppShell.tsx)
 
-`position: fixed` anchors to the **layout viewport** — the full browser window that does NOT shrink when the virtual keyboard opens. When the keyboard rises:
-- The fixed bottom stays at the original screen bottom, now hidden behind the keyboard
-- The input bar is physically present but covered by the keyboard
-- `ChatLayout` receives the full pre-keyboard height as `h-full`, so `flex-1` (message list) expands into the hidden zone
-- The chat background pattern appears to overflow because the container hasn't shrunk
+**File:** `src/shell/AppShell.tsx`
 
-The Community page root `<div>` already correctly uses `h-dvh` (dynamic viewport height, responds to keyboard), but the `fixed` child ignores its parent entirely.
+**Problem:** `location.pathname` in the dependency array (line 195) tears down and recreates both WebSocket channels on every navigation. On 3G, this causes 2-5 second reconnection windows where events are missed.
 
-## The Fix
+**Change:**
+- Add a `pathnameRef` using `useRef(location.pathname)` and keep it updated via a separate `useEffect`
+- Inside the realtime callbacks (lines 124 and 146), replace `location.pathname` reads with `pathnameRef.current`
+- Remove `location.pathname` from the subscription `useEffect` dependency array (line 195)
 
-Replace `position: fixed` with `position: absolute` on mobile. The root `<div>` is already `relative h-dvh overflow-hidden` — making the section `absolute inset-0` on mobile means it fills the exact visual-viewport-aware parent instead of the layout viewport.
+This follows the existing project pattern documented in the realtime subscription stability memory.
 
-This is a **single-line class change** in `Community.tsx`. No new dependencies, no structural changes, no other files touched.
+---
 
-### Before (line 2199)
-```
-"fixed inset-x-0 top-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] flex md:relative md:inset-auto md:bottom-auto md:pb-16 lg:pb-0 md:flex md:h-full"
-```
+## Fix 2 -- Rate Limit create-stripe-renewal (Edge Function)
 
-### After
-```
-"absolute inset-x-0 top-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] flex md:relative md:inset-auto md:bottom-auto md:pb-16 lg:pb-0 md:flex md:h-full"
-```
+**File:** `supabase/functions/create-stripe-renewal/index.ts`
 
-**Why `absolute` works here:**
-- The parent `<div>` is `relative h-dvh overflow-hidden` — `dvh` is the **dynamic viewport height** that automatically contracts when the keyboard appears on iOS 15.4+ and Android Chrome 108+
-- `absolute` children respect the parent's computed height, so as `h-dvh` shrinks with the keyboard, the conversation section shrinks too
-- `ChatLayout` is `h-full flex flex-col overflow-hidden` — it fills the absolute section exactly, and since the section now shrinks, `flex-1` (message list) contracts correctly above the input bar
-- The input (`ChatComposer`) is in `ChatLayout`'s `<footer>` with `shrink-0` — it stays anchored to the visual bottom, above the keyboard
+**Problem:** No rate limiting -- authenticated users can spam unlimited Stripe Checkout sessions.
 
-## Why Not Other Approaches
+**Change:**
+- Import `checkRateLimit`, `getClientIp`, `rateLimitResponse`, `RATE_LIMITS` from `../_shared/rateLimiter.ts`
+- Create a service-role Supabase client for the rate limit check (same pattern as other edge functions)
+- Add rate limit check using `RATE_LIMITS.PAYMENT` config (30 req/min auth) right after auth validation
+- This provides per-user limiting consistent with other payment endpoints
 
-| Approach | Problem |
-|----------|---------|
-| Keep `fixed`, add `env(keyboard-inset-height)` | Not supported on iOS Safari; non-standard |
-| Change root to `min-h-dvh` | Doesn't cap height — container can grow past keyboard boundary |
-| Add `translateY` CSS var approach (like old `MessageInput`) | Complex, fragile, requires JS measurement |
-| `position: absolute` inside `h-dvh relative` | Clean, correct, zero JS needed — chosen approach |
+---
 
-## Files Changed
+## Fix 3 -- Sanitize dangerouslySetInnerHTML in BatchLessonGenerator
 
-| File | Change |
-|------|--------|
-| `src/pages/Community.tsx` | Line 2199: `fixed` → `absolute` in mobile section class |
+**File:** `src/components/content-editor/BatchLessonGenerator.tsx`
+
+**Problem:** Line 1625 renders AI-generated HTML via `dangerouslySetInnerHTML={{ __html: content }}` with no sanitization -- XSS vector.
+
+**Change:**
+- `createSanitizedMarkup` is already imported at line 18 but not used at the vulnerable line
+- Replace `dangerouslySetInnerHTML={{ __html: content }}` with `dangerouslySetInnerHTML={createSanitizedMarkup(content)}`
+- No new dependency needed -- the project's existing `sanitize.ts` utility handles this
+
+---
+
+## Fix 4 -- Rate Limiter Fail-Closed
+
+**File:** `supabase/functions/_shared/rateLimiter.ts`
+
+**Problem:** Lines 204-211: `catch` block returns `{ allowed: true }` when the DB query fails, bypassing all rate limiting under load.
+
+**Change:**
+- Replace `console.warn` with `console.error` and a distinct message: `"Rate limit service unavailable. Failing closed."`
+- Return `{ allowed: false, remaining: 0, retryAfter: 30 }` instead of `{ allowed: true, remaining: maxRequests }`
+- This ensures requests are rejected (not silently allowed) when the limiter itself is degraded
+
+---
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Desktop layout unaffected | `md:relative md:inset-auto md:bottom-auto` overrides absolute on tablet/desktop — no change |
-| Conversation list unaffected | It's in a separate grid column, not inside the section |
-| ChatLayout internals unaffected | It is already correctly structured as flex-col with flex-1 scroll area |
-| ChatComposer unaffected | Already has `shrink-0` in ChatLayout footer |
-| Background pattern fix | Parent `h-dvh` shrinks → absolute child shrinks → background stays within bounds |
-| Safe area inset preserved | `bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))]` unchanged |
-| Mobile bottom nav still clears | `bottom-[calc(3.5rem+...)]` still reserves space for the 56px nav bar |
-| No new dependencies | One word changed: `fixed` → `absolute` |
-| 3G/slow connection | No JS polling, no resize listeners — pure CSS, zero overhead |
+| Existing realtime behavior preserved | Yes -- only the re-subscription frequency changes, not the logic |
+| Desktop/mobile layout unaffected | No UI changes |
+| Other edge functions unaffected | rateLimiter.ts catch change applies globally -- intended, all endpoints should fail closed |
+| No new dependencies added | Correct -- uses existing `createSanitizedMarkup` utility |
+| No DB schema changes | Correct |
+| No provider stack changes | Correct |
+| 3G impact | Positive -- fewer WebSocket reconnections |
+
