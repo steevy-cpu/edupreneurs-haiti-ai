@@ -202,12 +202,13 @@ export async function checkRateLimit(
       };
     }
   } catch (error) {
-    // On error, allow request but log warning
-    // This prevents rate limiting from blocking legitimate users on DB issues
-    console.warn('Rate limit check failed, allowing request:', error);
+    // Security: fail CLOSED — reject requests when the rate limit service is degraded.
+    // This prevents a DB outage from silently disabling all rate limiting.
+    console.error('[RateLimiter] Service unavailable — failing closed. Key:', key, 'Error:', error);
     return {
-      allowed: true,
-      remaining: maxRequests
+      allowed: false,
+      remaining: 0,
+      retryAfter: 30
     };
   }
 }

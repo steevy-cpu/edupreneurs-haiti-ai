@@ -8,6 +8,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -52,6 +53,17 @@ serve(async (req) => {
 
     const userId = claimsData.claims.sub;
     const userEmail = claimsData.claims.email as string;
+
+    // Rate limit: prevent Stripe session creation spam (uses PAYMENT config — 30 req/min auth)
+    const serviceClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+    const clientIp = getClientIp(req);
+    const rateLimit = await checkRateLimit(serviceClient, RATE_LIMITS.PAYMENT, userId, clientIp);
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.retryAfter ?? 60, rateLimit.remaining, corsHeaders);
+    }
 
     if (!userEmail) {
       return new Response(
