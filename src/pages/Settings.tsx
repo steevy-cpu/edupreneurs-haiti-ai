@@ -33,6 +33,14 @@ import {
 } from "lucide-react";
 import ericArmsCrossed from "@/assets/eric-main01.png";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -130,6 +138,11 @@ const Settings = () => {
     () => Object.fromEntries(NOTIFICATION_GROUPS.map(g => [g.key, true]))
   );
   const [savingNotification, setSavingNotification] = useState<string | null>(null);
+
+  // Password re-entry confirmation state for account deletion
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteVerifying, setDeleteVerifying] = useState(false);
 
   // Push notification toggle state
   const [pushEnabled, setPushEnabled] = useState(false);
@@ -520,6 +533,33 @@ const Settings = () => {
       toast.error("Erreur lors de la suppression: " + error.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  /** Verify password then proceed with account deletion */
+  const handlePasswordVerifyAndDelete = async () => {
+    if (!deletePassword.trim()) {
+      toast.error("Veuillez entrer votre mot de passe");
+      return;
+    }
+    setDeleteVerifying(true);
+    try {
+      // Re-authenticate to confirm identity before irreversible deletion
+      const { error } = await supabase.auth.signInWithPassword({
+        email: userEmail,
+        password: deletePassword,
+      });
+      if (error) {
+        toast.error("Mot de passe incorrect. Suppression annulée.");
+        return;
+      }
+      setShowPasswordConfirm(false);
+      setDeletePassword('');
+      await handleDeleteAccount();
+    } catch {
+      toast.error("Erreur de vérification. Réessayez.");
+    } finally {
+      setDeleteVerifying(false);
     }
   };
 
@@ -1154,22 +1194,74 @@ const Settings = () => {
                       <AlertDialogFooter>
                         <AlertDialogCancel>Annuler</AlertDialogCancel>
                         <AlertDialogAction
-                          onClick={handleDeleteAccount}
+                          onClick={() => setShowPasswordConfirm(true)}
                           className="bg-destructive hover:bg-destructive/90"
-                          disabled={loading}
                         >
-                          {loading ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Suppression...
-                            </>
-                          ) : (
-                            "Oui, supprimer mon compte"
-                          )}
+                          Oui, supprimer mon compte
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
+
+                  {/* Password re-entry confirmation dialog — second step before deletion */}
+                  <Dialog
+                    open={showPasswordConfirm}
+                    onOpenChange={(open) => {
+                      if (!open) {
+                        setShowPasswordConfirm(false);
+                        setDeletePassword('');
+                      }
+                    }}
+                  >
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Confirmation de suppression</DialogTitle>
+                        <DialogDescription>
+                          Pour confirmer la suppression définitive de votre compte, veuillez entrer votre mot de passe.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-2 py-2">
+                        <Label htmlFor="delete-password">Entrez votre mot de passe pour confirmer</Label>
+                        <Input
+                          id="delete-password"
+                          type="password"
+                          value={deletePassword}
+                          onChange={(e) => setDeletePassword(e.target.value)}
+                          placeholder="Votre mot de passe"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handlePasswordVerifyAndDelete();
+                          }}
+                          disabled={deleteVerifying || loading}
+                        />
+                      </div>
+                      <DialogFooter>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setShowPasswordConfirm(false);
+                            setDeletePassword('');
+                          }}
+                          disabled={deleteVerifying || loading}
+                        >
+                          Annuler
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={handlePasswordVerifyAndDelete}
+                          disabled={deleteVerifying || loading || !deletePassword.trim()}
+                        >
+                          {deleteVerifying || loading ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Vérification...
+                            </>
+                          ) : (
+                            "Confirmer la suppression"
+                          )}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </CardContent>
               </Card>
             </div>

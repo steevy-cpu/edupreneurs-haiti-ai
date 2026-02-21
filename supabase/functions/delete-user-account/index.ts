@@ -173,11 +173,18 @@ serve(async (req) => {
       return rateLimitResponse();
     }
 
-    // Protected accounts that cannot be deleted (Jude AI assistant)
-    const PROTECTED_USER_IDS = ['68f2f959-e14a-47f9-8277-07df3a6fcd79'];
+    // Protected accounts: Jude AI + founders — cannot be self-deleted
+    const PROTECTED_USER_IDS = [
+      '68f2f959-e14a-47f9-8277-07df3a6fcd79', // Jude AI
+      '0de08330-4183-48f9-b169-19b92f4d114f', // Steevy (founder)
+      '7580cd10-e18c-4b2f-ac50-def28d046c9d', // Djood (founder)
+    ];
     
     if (PROTECTED_USER_IDS.includes(user.id)) {
-      throw new Error('This system account cannot be deleted');
+      return new Response(
+        JSON.stringify({ error: 'Les comptes fondateurs ne peuvent pas être supprimés via cette interface. Contactez le support technique.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+      );
     }
 
     console.log(`Preparing to delete user account: ${user.id}`);
@@ -219,6 +226,29 @@ serve(async (req) => {
         // Log the error but don't fail the deletion
         console.error('Error sending farewell email:', emailError);
       }
+    }
+
+    // Clean up user storage files before account deletion
+    // Wrapped in try/catch — storage cleanup failure must NOT block deletion
+    try {
+      const { data: avatarFiles } = await supabaseAdmin.storage
+        .from('avatars')
+        .list(user.id);
+      
+      if (avatarFiles && avatarFiles.length > 0) {
+        const filePaths = avatarFiles.map(f => `${user.id}/${f.name}`);
+        const { error: storageError } = await supabaseAdmin.storage
+          .from('avatars')
+          .remove(filePaths);
+        
+        if (storageError) {
+          console.error('Storage cleanup error:', storageError);
+        } else {
+          console.log(`Cleaned up ${filePaths.length} avatar files for user ${user.id}`);
+        }
+      }
+    } catch (storageCleanupError) {
+      console.error('Storage cleanup failed (non-blocking):', storageCleanupError);
     }
 
     // Now delete the user from auth (this will cascade delete profile and related data)
