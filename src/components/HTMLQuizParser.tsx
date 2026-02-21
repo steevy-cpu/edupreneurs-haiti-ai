@@ -7,6 +7,7 @@ import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MathText } from "@/components/MathContent";
+import confetti from "canvas-confetti";
 interface ParsedQuestion {
   number: number;
   question: string;
@@ -245,10 +246,21 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
         // Award completion gold
         await awardGold(goldEarned);
         
-        toast({
-          title: "🏆 Leçon complétée !",
-          description: `Tu as gagné ${goldEarned} points d'or pour avoir terminé cette leçon !`,
-        });
+        // Fix 3: First lesson celebration — confetti + special toast on very first completion
+        if (!localStorage.getItem('first-lesson-celebrated')) {
+          localStorage.setItem('first-lesson-celebrated', 'true');
+          confetti({ particleCount: 120, spread: 80, colors: ['#8b5cf6', '#f59e0b', '#10b981'] });
+          toast({
+            title: "🎉 Félicitations! Tu as complété ta première leçon!",
+            description: `Continue comme ça! Tu as gagné ${goldEarned} points d'or!`,
+            duration: 5000,
+          });
+        } else {
+          toast({
+            title: "🏆 Leçon complétée !",
+            description: `Tu as gagné ${goldEarned} points d'or pour avoir terminé cette leçon !`,
+          });
+        }
       } catch (error) {
         console.error('Error saving quiz completion:', error);
       }

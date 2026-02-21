@@ -12,6 +12,8 @@ import {
 import { cn } from '@/lib/utils';
 import type { BattleResult } from '@/pages/QuizBattleSolo';
 import { useEffect } from 'react';
+import confetti from 'canvas-confetti';
+import { useToast } from '@/hooks/use-toast';
 
 // Jude/Eric images for different result states
 import judeCelebrating from '@/assets/eric-celebrating.png';
@@ -41,6 +43,7 @@ export const MultiplayerResults = ({
   onPlayAgain,
   onBackToMenu,
 }: MultiplayerResultsProps) => {
+  const { toast } = useToast();
   // For real-time multiplayer, use roundsWon if available
   const myRoundsWon = myResult.roundsWon ?? myResult.correctAnswers;
   const opponentRoundsWon = myResult.opponentRoundsWon ?? (opponentResult?.correctAnswers || 0);
@@ -58,12 +61,14 @@ export const MultiplayerResults = ({
   const multiplierBonus = isWinner ? 1.5 : (isDraw ? 1.2 : 1);
   const adjustedXp = Math.round(myResult.xpEarned * multiplierBonus);
 
-  // Celebration animation for winner (simple CSS-based)
+  // Fix 4: First quiz battle win celebration — confetti + toast on first-ever win
   useEffect(() => {
-    if (isWinner) {
-      console.log('Winner celebration!');
+    if (isWinner && !localStorage.getItem('first-quiz-win-celebrated')) {
+      localStorage.setItem('first-quiz-win-celebrated', 'true');
+      confetti({ particleCount: 120, spread: 80, colors: ['#8b5cf6', '#f59e0b', '#10b981'] });
+      toast({ title: "🏆 Tu as gagné ton premier Quiz Battle! Incroyable!", duration: 5000 });
     }
-  }, [isWinner]);
+  }, [isWinner, toast]);
 
   // Check if opponent abandoned
   const wasOpponentAbandoned = myResult.opponentAbandoned === true;

@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Target, Users, Globe, ArrowRight } from 'lucide-react';
+import { Target, Users, Globe, ArrowRight, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 
 interface BattleModeSelectorProps {
   onStartSolo: () => void;
@@ -14,7 +16,11 @@ export const BattleModeSelector = ({
   onInviteFriend,
   onRandomMatch,
 }: BattleModeSelectorProps) => {
+  // Fix 5: Collapsible rules state
+  const [rulesOpen, setRulesOpen] = useState(false);
+
   return (
+    <div className="space-y-4">
     <div className="grid md:grid-cols-2 gap-4">
       {/* Solo Mode Card */}
       <Card className="overflow-hidden border-2 border-transparent hover:border-primary/30 transition-all duration-300 group">
@@ -91,6 +97,35 @@ export const BattleModeSelector = ({
           </div>
         </CardContent>
       </Card>
+    </div>
+
+    {/* Fix 5: Collapsible pre-game explanation */}
+    <Collapsible open={rulesOpen} onOpenChange={setRulesOpen}>
+      <CollapsibleTrigger className="flex items-center gap-2 w-full px-4 py-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm text-muted-foreground">
+        <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", rulesOpen && "rotate-180")} />
+        Comment ça marche ?
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <ul className="mt-2 px-4 py-3 rounded-lg bg-muted/30 space-y-2 text-sm text-muted-foreground">
+          <li className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+            10 questions sur une matière de ton choix
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+            Tu as 15 secondes par question
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+            Bonne réponse = points bonus
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+            Le joueur avec le plus de points gagne!
+          </li>
+        </ul>
+      </CollapsibleContent>
+    </Collapsible>
     </div>
   );
 };

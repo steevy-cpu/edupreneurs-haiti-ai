@@ -9,6 +9,7 @@ import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MathText } from "@/components/MathContent";
+import confetti from "canvas-confetti";
 
 // Security: DOMPurify configuration
 const PURIFY_CONFIG = {
@@ -369,11 +370,22 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
         console.error('Failed to award completion gold:', goldError);
       } else {
         onGoldUpdate?.();
-        toast({
-          title: "🎉 Leçon complétée!",
-          description: `Tu as gagné ${lessonGoldReward} gold!`,
-          duration: 3000,
-        });
+        // Fix 3: First lesson celebration — confetti + special toast on very first completion
+        if (!localStorage.getItem('first-lesson-celebrated')) {
+          localStorage.setItem('first-lesson-celebrated', 'true');
+          confetti({ particleCount: 120, spread: 80, colors: ['#8b5cf6', '#f59e0b', '#10b981'] });
+          toast({
+            title: "🎉 Félicitations! Tu as complété ta première leçon!",
+            description: `Continue comme ça! Tu as gagné ${lessonGoldReward} gold!`,
+            duration: 5000,
+          });
+        } else {
+          toast({
+            title: "🎉 Leçon complétée!",
+            description: `Tu as gagné ${lessonGoldReward} gold!`,
+            duration: 3000,
+          });
+        }
       }
     } catch (error) {
       console.error('Error marking lesson complete:', error);
