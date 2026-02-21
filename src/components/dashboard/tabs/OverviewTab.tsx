@@ -140,6 +140,13 @@ export const OverviewTab = ({
         </CardContent>
       </Card>
 
+      {/* KPI zero helper — disappears once any stat is non-zero */}
+      {analytics.gold === 0 && analytics.totalLessonsCompleted === 0 && analytics.averageScore === 0 && analytics.studyTimeThisWeek === 0 && (
+        <p className="text-xs text-muted-foreground text-center -mt-2 mb-2">
+          Complète ta première leçon pour commencer à accumuler des points ! 🎯
+        </p>
+      )}
+
       {/* Today's Focus — combined Goal + Streak */}
       <Card className="border-none rounded-xl shadow-sm">
         <CardContent className="p-3 sm:p-4">
@@ -191,7 +198,7 @@ export const OverviewTab = ({
             />
           </CardContent>
         </Card>
-      ) : recentSubjectsFeature.data.length > 0 && (
+      ) : recentSubjectsFeature.data.length > 0 ? (
         <Card className="border-none rounded-xl shadow-sm">
           <CardHeader className="pb-2 px-4">
             <CardTitle className="font-semibold text-base flex items-center gap-2">
@@ -229,6 +236,26 @@ export const OverviewTab = ({
               onClick={() => navigate("/matieres")}
             >
               Voir toutes les matières →
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        /* Fix 1: First-time user guidance — shows when no lesson history */
+        <Card className="border-none rounded-xl shadow-sm overflow-hidden">
+          <CardContent className="p-6 flex flex-col items-center text-center">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center mb-4">
+              <BookOpen className="w-7 h-7 text-primary" />
+            </div>
+            <h3 className="text-lg font-bold text-foreground mb-1">Commence ton apprentissage !</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Tu n'as pas encore commencé. Lance ta première leçon maintenant !
+            </p>
+            <Button
+              onClick={() => navigate("/matieres")}
+              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md gap-2"
+            >
+              <BookOpen className="w-4 h-4" />
+              Commencer à apprendre
             </Button>
           </CardContent>
         </Card>

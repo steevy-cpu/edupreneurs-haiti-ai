@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -33,6 +33,7 @@ import {
 } from "@/lib/matieresConstants";
 import { MatieresGridSkeleton } from "@/components/shared/SkeletonLoaders";
 import { NonAcademicLockedOverlay } from "@/components/shared/NonAcademicLockedOverlay";
+import { ErrorState } from "@/components/shared/ErrorState";
 
 // Lazy-load heavy sub-components for 3G optimization
 const ContinueLearningSection = lazy(() => 
@@ -55,7 +56,10 @@ export default function Matieres() {
   const isSlowConnection = animationLevel === 'minimal' || animationLevel === 'reduced';
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel>("7AF");
   const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
-  const [showContent, setShowContent] = useState(false);
+  /* Fix 3: Default to true — show subjects immediately without Explorer gate */
+  const [showContent, setShowContent] = useState(true);
+  /* Fix 5: Loading timeout for 3G resilience */
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
 
   // New state for enhanced features
   const [searchQuery, setSearchQuery] = useState("");
@@ -109,6 +113,16 @@ export default function Matieres() {
     canAccessGrade,
     getProgress
   } = useMatieresData(selectedGrade, selectedSeries);
+
+  /* Fix 5: 10s loading timeout — show retry instead of infinite skeleton */
+  useEffect(() => {
+    if (!isLoading) {
+      setLoadingTimedOut(false);
+      return;
+    }
+    const timer = setTimeout(() => setLoadingTimedOut(true), 10_000);
+    return () => clearTimeout(timer);
+  }, [isLoading]);
 
   const currentGrade = gradeLevels.find(g => g.id === selectedGrade);
   const isNS3OrNS4 = selectedGrade === "NS3" || selectedGrade === "NS4";
@@ -320,7 +334,7 @@ export default function Matieres() {
                     }
                     setSelectedGrade(grade.id);
                     setSelectedSeries(null);
-                    setShowContent(false);
+                    /* Fix 3: No longer reset showContent on grade switch */
                   }}
                   className={`min-w-[70px] flex-shrink-0 transition-all duration-200 gap-1.5 ${
                     selectedGrade === grade.id 
@@ -374,86 +388,40 @@ export default function Matieres() {
           </div>
         )}
 
-        {/* Loading State */}
+        {/* Loading State — with 10s timeout for 3G resilience (Fix 5) */}
         {isLoading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className="border-none rounded-xl overflow-hidden">
-                <div className="p-0">
-                  <div className="h-32 w-full bg-muted animate-pulse" />
-                  <div className="p-4">
-                    <div className="h-5 w-3/4 mb-2 bg-muted animate-pulse rounded" />
-                    <div className="h-4 w-full mb-3 bg-muted animate-pulse rounded" />
-                    <div className="flex justify-between">
-                      <div className="h-4 w-16 bg-muted animate-pulse rounded" />
-                      <div className="h-4 w-20 bg-muted animate-pulse rounded" />
+          loadingTimedOut ? (
+            <Card className="p-6 border-none rounded-xl">
+              <ErrorState
+                message="Impossible de charger les matières"
+                onRetry={() => {
+                  setLoadingTimedOut(false);
+                  window.location.reload();
+                }}
+              />
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="border-none rounded-xl overflow-hidden">
+                  <div className="p-0">
+                    <div className="h-32 w-full bg-muted animate-pulse" />
+                    <div className="p-4">
+                      <div className="h-5 w-3/4 mb-2 bg-muted animate-pulse rounded" />
+                      <div className="h-4 w-full mb-3 bg-muted animate-pulse rounded" />
+                      <div className="flex justify-between">
+                        <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+                        <div className="h-4 w-20 bg-muted animate-pulse rounded" />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+                </Card>
+              ))}
+            </div>
+          )
         )}
 
-        {/* Content in Development Overlay - shows when content is hidden */}
-        {!isLoading && !showContent && selectedGrade && (
-          <div className="animate-fade-in">
-            <Card className="p-8 sm:p-12 md:p-16 mb-8 border-2 border-dashed border-primary/40 bg-gradient-to-br from-primary/5 via-background to-primary/10 relative overflow-hidden">
-              {/* Decorative elements */}
-              <div className="absolute top-0 left-0 w-40 h-40 bg-primary/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
-              <div className="absolute bottom-0 right-0 w-60 h-60 bg-primary/10 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl" />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-primary/5 rounded-full blur-3xl animate-pulse" />
-              
-              <div className="relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto">
-                {/* Icon */}
-                <div className="relative mb-6">
-                  <div className="absolute inset-0 bg-amber-500/20 rounded-full blur-xl animate-pulse" />
-                  <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/30 flex items-center justify-center border-2 border-amber-500/30">
-                    <Construction className="w-12 h-12 sm:w-16 sm:h-16 text-amber-600 dark:text-amber-500" />
-                  </div>
-                </div>
-                
-                {/* Title */}
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-amber-600 to-orange-500 bg-clip-text text-transparent">
-                  🚧 Contenu en cours de développement
-                </h2>
-                
-                {/* Description */}
-                <p className="text-base sm:text-lg text-muted-foreground mb-6 leading-relaxed">
-                  Notre équipe travaille activement sur le contenu pour <span className="font-semibold text-foreground">{currentGrade?.fullName}</span>. 
-                  De nouvelles matières et leçons sont régulièrement ajoutées pour enrichir votre expérience d'apprentissage.
-                </p>
-                
-                {/* Stats preview */}
-                <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-                  <Badge variant="secondary" className="text-sm px-4 py-2">
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    {processedSubjects.length} matières disponibles
-                  </Badge>
-                  <Badge variant="secondary" className="text-sm px-4 py-2">
-                    <GraduationCap className="w-4 h-4 mr-2" />
-                    {totalLessons} leçons
-                  </Badge>
-                </div>
-                
-                {/* CTA Button */}
-                <Button 
-                  size="lg"
-                  onClick={() => setShowContent(true)}
-                  className="gap-3 text-lg px-8 py-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                >
-                  <GraduationCap className="w-5 h-5" />
-                  Explorer {selectedGrade}
-                  {isNS3OrNS4 && selectedSeries && ` - ${selectedSeries}`}
-                </Button>
-                
-                <p className="text-xs text-muted-foreground mt-4">
-                  Cliquez pour découvrir le contenu disponible
-                </p>
-              </div>
-            </Card>
-          </div>
-        )}
+        {/* Fix 3: Explorer gate removed — subjects show immediately */}
 
         {/* Main Content - only visible after clicking Explorer */}
         {((!isNS3OrNS4 && processedSubjects.length > 0) || (isNS3OrNS4 && selectedSeries)) && !isLoading && showContent ? (
@@ -587,31 +555,40 @@ export default function Matieres() {
           </div>
         ) : null}
 
-        {/* No subjects message */}
+        {/* Fix 4: Friendly empty state for grades with no content */}
         {!isLoading && processedSubjects.length === 0 && (!isNS3OrNS4 || selectedSeries) && (
           <Card className="p-8 sm:p-12 text-center mb-8 border-dashed">
             <div className="flex flex-col items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                <BookOpen className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold mb-2">
-                  {searchQuery || filterOption !== "all" ? "Aucun résultat" : "Contenu en préparation"}
-                </h3>
-                <p className="text-muted-foreground text-sm max-w-md mx-auto">
-                  {searchQuery || filterOption !== "all" 
-                    ? "Essayez de modifier vos critères de recherche" 
-                    : "Les matières pour ce niveau sont en cours de développement."}
-                </p>
-              </div>
-              {(searchQuery || filterOption !== "all") ? (
-                <Button variant="outline" onClick={() => { setSearchQuery(""); setFilterOption("all"); }}>
-                  Réinitialiser les filtres
-                </Button>
+              {searchQuery || filterOption !== "all" ? (
+                <>
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                    <BookOpen className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Aucun résultat</h3>
+                    <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                      Essayez de modifier vos critères de recherche
+                    </p>
+                  </div>
+                  <Button variant="outline" onClick={() => { setSearchQuery(""); setFilterOption("all"); }}>
+                    Réinitialiser les filtres
+                  </Button>
+                </>
               ) : (
-                <Button variant="outline" onClick={() => setSelectedGrade("7AF")}>
-                  Explorer 7AF
-                </Button>
+                <>
+                  <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
+                    <Construction className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Le contenu pour ton niveau arrive bientôt !</h3>
+                    <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                      En attendant, explore les autres niveaux disponibles.
+                    </p>
+                  </div>
+                  <Button variant="outline" onClick={() => setSelectedGrade("7AF")}>
+                    Explorer d'autres niveaux
+                  </Button>
+                </>
               )}
             </div>
           </Card>
