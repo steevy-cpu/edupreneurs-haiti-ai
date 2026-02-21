@@ -1,27 +1,32 @@
 
 
-# Fix: Matieres Grade Auto-Selection Bug
+# Fix: Grade Locking Timing Issue in Matieres.tsx
 
 ## Problem
-Line 148 in `src/pages/Matieres.tsx` has an empty dependency array `[]` on the `useEffect` that sets `selectedGrade` from the student's profile. It runs once on mount when `userGrade` is still `null`, so `selectedGrade` stays `'7AF'` for all students.
+On line 322, `isLocked` evaluates to `true` for all grades while `userGrade` is still `null` (loading), because `canAccessGrade()` returns `false` when no grade is set. On 3G connections, this causes all grade buttons to flash as locked before the profile loads.
 
 ## Change
-**File:** `src/pages/Matieres.tsx`  
-**Line:** 148  
-**Change:** `}, []);` to `}, [userGrade, isAuthenticated]);`
+**File:** `src/pages/Matieres.tsx`
+**Line:** 322
+**Change:** Add `!!userGrade` guard to the `isLocked` condition.
 
-This is a single-line edit. No other files or lines are touched.
+```text
+Before: const isLocked = isAuthenticated && !canAccessGrade(grade.id);
+After:  const isLocked = isAuthenticated && !!userGrade && !canAccessGrade(grade.id);
+```
+
+Single condition change. No other lines or files touched.
 
 ## Why This Works
-- `userGrade` loads asynchronously from the profile query
-- With the corrected dependency array, the effect re-runs once `userGrade` resolves to the student's actual grade (e.g. `'9AF'`)
-- The existing guard `if (userGrade && isAuthenticated)` inside the effect prevents unnecessary runs while still loading
+- While `userGrade` is `null`, `!!userGrade` is `false`, so `isLocked` is `false` -- no lock icons shown during loading
+- Once `userGrade` resolves (e.g. `'9AF'`), the full condition activates: student's grade unlocks, others lock correctly
 
 ## Safety
 | Check | Status |
 |-------|--------|
-| Existing subject grid unchanged | Yes |
+| Subject grid unchanged | Yes |
 | NS3/NS4 series flow unchanged | Yes |
 | No new dependencies | Correct |
 | No DB changes | Correct |
-| 3G impact | None -- no extra network calls |
+| 3G impact | Positive -- removes false lock flash |
+
