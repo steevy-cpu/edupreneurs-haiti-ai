@@ -167,10 +167,10 @@ serve(async (req) => {
     );
     const clientIp = getClientIp(req);
     const rateLimitResult = await checkRateLimit(
-      serviceClient, `delete-account:${user.id}`, clientIp, RATE_LIMITS.AUTH
+      serviceClient, RATE_LIMITS.AUTH, user.id, clientIp
     );
     if (!rateLimitResult.allowed) {
-      return rateLimitResponse();
+      return rateLimitResponse(rateLimitResult.retryAfter ?? 30, rateLimitResult.remaining, corsHeaders);
     }
 
     // Protected accounts: Jude AI + founders — cannot be self-deleted
