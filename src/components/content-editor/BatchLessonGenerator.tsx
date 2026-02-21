@@ -1622,7 +1622,7 @@ export const BatchLessonGenerator = () => {
                       ) : (
                         <div 
                           className="prose prose-sm max-w-none p-4 bg-muted rounded-lg"
-                          dangerouslySetInnerHTML={{ __html: content }}
+                          dangerouslySetInnerHTML={createSanitizedMarkup(content)}
                         />
                       )}
                     </div>

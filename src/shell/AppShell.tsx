@@ -11,7 +11,7 @@
  * - Auth gating with skeleton fallback
  */
 
-import { useState, useEffect, ReactNode, memo, useCallback } from 'react';
+import { useState, useEffect, useRef, ReactNode, memo, useCallback } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -73,6 +73,10 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
   const { playReceiveSound } = useMessageSounds();
   const { playNotificationSound } = useNotificationSound();
   
+  // Ref for pathname — used inside realtime callbacks to avoid re-subscribing on navigation
+  const pathnameRef = useRef(location.pathname);
+  useEffect(() => { pathnameRef.current = location.pathname; }, [location.pathname]);
+  
   // Close mobile sidebar on route change
   useEffect(() => {
     setSidebarOpen(false);
@@ -121,7 +125,7 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
             .eq('user_id', userId)
             .maybeSingle();
           
-          if (participation && location.pathname !== '/community') {
+          if (participation && pathnameRef.current !== '/community') {
             playReceiveSound();
           }
         }
@@ -143,7 +147,7 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
         async (payload) => {
           const notification = payload.new as any;
           
-          if (location.pathname !== '/notifications') {
+          if (pathnameRef.current !== '/notifications') {
             playNotificationSound();
           }
           
@@ -192,7 +196,7 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(notificationsChannel);
     };
-  }, [userId, isVisitor, location.pathname, playReceiveSound, playNotificationSound, navigate]);
+  }, [userId, isVisitor, playReceiveSound, playNotificationSound, navigate]);
   
   // For public routes, just render children
   if (isPublic) {
