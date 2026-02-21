@@ -11,7 +11,7 @@ import { useSessionAuth } from '@/contexts/SessionAuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Clock, CreditCard, Gift, Loader2 } from 'lucide-react';
+import { AlertTriangle, Clock, CreditCard, Gift, Loader2, RefreshCw } from 'lucide-react';
 import { StripeRenewalButton } from '@/components/subscription/StripeRenewalButton';
 import { RenewalGiftLink } from '@/components/subscription/RenewalGiftLink';
 import { toast } from 'sonner';
@@ -26,7 +26,7 @@ interface SubscriptionGateProps {
 export function SubscriptionGate({ children }: SubscriptionGateProps) {
   const { user, isAuthenticated } = useSessionAuth();
 
-  const { data: profile } = useQuery({
+  const { data: profile, isError, refetch } = useQuery({
     queryKey: ['subscription-status', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -60,8 +60,22 @@ export function SubscriptionGate({ children }: SubscriptionGateProps) {
     prevStatusRef.current = currentStatus;
   }, [profile?.subscription_status, queryClient]);
 
+  // 10-second timeout to detect stuck loading state on 3G
+  const [timedOut, setTimedOut] = useState(false);
+  useEffect(() => {
+    if (profile || isError || !isAuthenticated) return;
+    setTimedOut(false);
+    const timer = setTimeout(() => setTimedOut(true), 10_000);
+    return () => clearTimeout(timer);
+  }, [profile, isError, isAuthenticated]);
+
   // Not authenticated - let auth guard handle redirect
   if (!isAuthenticated) return <>{children}</>;
+
+  // Query failed or timed out — show retry UI instead of infinite skeleton
+  if (isError || (timedOut && !profile)) {
+    return <SubscriptionErrorState onRetry={() => { setTimedOut(false); refetch(); }} />;
+  }
 
   // Profile still loading - show skeleton instead of null blank screen (critical on 3G)
   if (!profile) return <SubscriptionLoadingSkeleton />;
@@ -122,6 +136,32 @@ function SubscriptionLoadingSkeleton() {
           <div className="rounded-xl bg-muted h-36" />
           <div className="rounded-xl bg-muted h-28" />
         </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Error state shown when subscription query fails or times out on 3G.
+ * Provides a retry button so users aren't stuck forever.
+ */
+function SubscriptionErrorState({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh] p-6">
+      <div className="max-w-sm w-full text-center space-y-5 animate-in fade-in duration-500">
+        <div className="mx-auto w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center">
+          <AlertTriangle className="h-7 w-7 text-destructive" />
+        </div>
+        <div>
+          <h2 className="text-lg font-semibold">Impossible de vérifier votre abonnement</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Vérifiez votre connexion internet et réessayez.
+          </p>
+        </div>
+        <Button onClick={onRetry} variant="outline" size="lg" className="w-full">
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Réessayer
+        </Button>
       </div>
     </div>
   );

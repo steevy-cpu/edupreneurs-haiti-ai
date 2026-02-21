@@ -61,8 +61,8 @@ export function deriveAuthState(input: DeriveInput): AuthState {
     return 'email_verification_pending';
   }
 
-  // Priority 5: Fully authenticated
-  if (session && emailConfirmed !== false) {
+  // Priority 5: Fully authenticated — require explicit true (null = unknown, not verified)
+  if (session && emailConfirmed === true) {
     return 'authenticated';
   }
 

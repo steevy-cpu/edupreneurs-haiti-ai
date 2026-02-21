@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -156,6 +157,19 @@ serve(async (req) => {
 
     if (userError || !user) {
       throw new Error('User not authenticated');
+    }
+
+    // Rate limit: prevent spamming account deletion attempts
+    const serviceClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+    const clientIp = getClientIp(req);
+    const rateLimitResult = await checkRateLimit(
+      serviceClient, `delete-account:${user.id}`, clientIp, RATE_LIMITS.AUTH
+    );
+    if (!rateLimitResult.allowed) {
+      return rateLimitResponse();
     }
 
     // Protected accounts that cannot be deleted (Jude AI assistant)

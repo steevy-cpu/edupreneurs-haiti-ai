@@ -5,7 +5,7 @@
  * All decision logic lives in authStateMachine.ts.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { getAuthFlow, saveAuthFlow } from "../store/authFlow.store";
@@ -22,6 +22,15 @@ export function AuthRouteGuard({ children }: AuthRouteGuardProps) {
   const location = useLocation();
   const { isAuthenticated, isLoading, user } = useSessionAuth();
   const [isChecking, setIsChecking] = useState(true);
+  // Cache emailConfirmed to skip redundant DB queries for confirmed users on 3G
+  const emailConfirmedRef = useRef<boolean | null>(null);
+  const lastUserIdRef = useRef<string | undefined>(undefined);
+
+  // Reset cache when user changes (new login or sign-out)
+  if (user?.id !== lastUserIdRef.current) {
+    lastUserIdRef.current = user?.id;
+    emailConfirmedRef.current = null;
+  }
 
   useEffect(() => {
     const checkAuthState = async () => {
@@ -48,15 +57,17 @@ export function AuthRouteGuard({ children }: AuthRouteGuardProps) {
           return;
         }
 
-        // Fetch email_confirmed for authenticated users
-        let emailConfirmed: boolean | null = null;
-        if (isAuthenticated && user) {
+        // Fetch email_confirmed for authenticated users (skip if already confirmed)
+        let emailConfirmed: boolean | null = emailConfirmedRef.current;
+        if (isAuthenticated && user && emailConfirmedRef.current !== true) {
           const { data: profile } = await supabase
             .from('profiles')
             .select('email_confirmed')
             .eq('user_id', user.id)
             .maybeSingle();
           emailConfirmed = profile?.email_confirmed ?? null;
+          // Cache the result so subsequent navigations skip the DB call
+          emailConfirmedRef.current = emailConfirmed;
 
           // If authenticated but unverified, ensure authFlow is set for verify page
           if (emailConfirmed === false && authFlow?.flow !== 'verify') {
