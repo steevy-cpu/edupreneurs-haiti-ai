@@ -1,143 +1,121 @@
 
 
-# Deletion Plan A: Harden Account Deletion Flow
+# Fix: Dashboard Stale Profile + Onboarding 3G Reliability
 
 ## Overview
-Three surgical fixes to the account deletion flow: protect founder accounts from self-deletion, add password re-entry confirmation on the Settings page, and clean up orphaned storage files before deletion.
+Three surgical fixes: (1) invalidate profile cache after onboarding saves data, (2) add retry logic to `saveField()` with localStorage backup, (3) confirm image loading attributes and add dimensions.
 
 ---
 
-## Fix 1 -- Protect founder accounts in self-delete
+## Fix 1 -- Invalidate profile cache after onboarding completes
 
-**File:** `supabase/functions/delete-user-account/index.ts`
+**Problem:** `useUserProfile` has `staleTime: 10min` and `refetchOnMount: false`. After onboarding saves nickname/grade/avatar, the dashboard shows stale placeholder data.
 
-The `admin-delete-user-account` already protects founders (Steevy + Djood) via its `PROTECTED_USER_IDS` array. The self-delete function only protects the Jude AI account.
+**Root cause:** Neither `completeOnboardingQuiz()` nor `completeAvatarGeneration()` in `FirstTimeUserContext.tsx` invalidates the `['user-profile']` query cache.
 
-**Change:** Add founder UUIDs to the existing `PROTECTED_USER_IDS` array at line 177, matching the admin function:
+**Note on query keys:** The actual cache key is `['user-profile', userId]` (with hyphen). The user's request mentioned `['userProfile']` and `['criticalUserData']` -- neither exists as a TanStack query. The dashboard's `fetchCriticalUserData` is a raw function in a `useEffect`, not a cached query. Invalidating `['user-profile']` is the correct and sufficient fix.
 
-```
-const PROTECTED_USER_IDS = [
-  '68f2f959-e14a-47f9-8277-07df3a6fcd79', // Jude AI
-  '0de08330-4183-48f9-b169-19b92f4d114f', // Steevy (founder)
-  '7580cd10-e18c-4b2f-ac50-def28d046c9d', // Djood (founder)
-];
-```
+### Changes
 
-Update the error response at line 179-181 to return a 403 with the French message:
-```
-return new Response(
-  JSON.stringify({ error: 'Les comptes fondateurs ne peuvent pas être supprimés via cette interface. Contactez le support technique.' }),
-  { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
-);
-```
+**File: `src/contexts/FirstTimeUserContext.tsx`**
+- Import `useQueryClient` from `@tanstack/react-query`
+- Get `queryClient` instance in the provider component
+- In `completeOnboardingQuiz()`: add `queryClient.invalidateQueries({ queryKey: ['user-profile'] })` -- this forces fresh nickname/grade data
+- In `completeAvatarGeneration()`: add the same invalidation -- this forces fresh avatar data
+- In `skipOnboardingQuiz()`: add same invalidation (user may have partial saves)
+
+**File: `src/hooks/useUserProfile.ts`**
+- The user requested adding `refetchOnWindowFocus: true`. However, this contradicts the project's 3G optimization standard (custom knowledge explicitly states "no window-focus refetch"). Instead, the invalidation approach above is sufficient and 3G-safe. No change to `useUserProfile.ts`.
 
 ---
 
-## Fix 2 -- Add password re-entry confirmation to Settings page
+## Fix 2 -- Make saveField() reliable on 3G
 
-**File:** `src/pages/Settings.tsx`
+**Problem:** `saveField()` is fire-and-forget. On 3G, a failed save shows a toast but the UI has already advanced. Data is lost silently.
 
-**New state variables:**
-- `showPasswordConfirm` (boolean) -- controls the second Dialog
-- `deletePassword` (string) -- password input value
-- `deleteVerifying` (boolean) -- loading state for password check
+### Changes
 
-**Flow change:**
-1. Existing AlertDialog "Oui, supprimer mon compte" button no longer calls `handleDeleteAccount` directly
-2. Instead it sets `showPasswordConfirm = true`
-3. A new Dialog appears with:
-   - Title: "Confirmation de suppression"
-   - Password input with label "Entrez votre mot de passe pour confirmer"
-   - "Confirmer la suppression" button (destructive) and "Annuler" button
-4. On confirm: call `supabase.auth.signInWithPassword({ email: user.email, password })` to verify
-5. If password wrong: toast error "Mot de passe incorrect. Suppression annulee." and abort
-6. If password correct: call existing `handleDeleteAccount()`
-7. On cancel/close: clear password input and close dialog
+**File: `src/components/firsttime/OnboardingQuiz.tsx`**
 
-**New imports needed:** `Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter` (already available in the project).
+**2a. Add retry logic to `saveField()`:**
+- Retry up to 2 more times (3 total attempts) with 1-second delay between retries
+- If all 3 attempts fail: save to localStorage as backup under key `onboarding_backup_{userId}` and show toast "Connexion lente detectee. Tes donnees sont sauvegardees localement."
 
----
-
-## Fix 3 -- Clean up orphaned storage files on deletion
-
-**File:** `supabase/functions/delete-user-account/index.ts`
-
-After the farewell email block (line 222) and before the `deleteUser()` call (line 225), add storage cleanup:
-
+**2b. Add localStorage backup utility:**
 ```typescript
-// Clean up user storage files before account deletion
-// Wrapped in try/catch -- storage cleanup failure must NOT block deletion
-try {
-  const { data: avatarFiles } = await supabaseAdmin.storage
-    .from('avatars')
-    .list(user.id);
+// Save field to localStorage as backup for 3G resilience
+const saveFieldBackup = (field: string, value: string) => {
+  const key = `onboarding_backup_${firstTimeUser.userId}`;
+  const existing = JSON.parse(localStorage.getItem(key) || '{}');
+  existing[field] = value;
+  localStorage.setItem(key, JSON.stringify(existing));
+};
+```
+
+**2c. Add final verification before quiz completion:**
+- In `completeOnboardingQuiz` calls (lines 180, 251, 263), before calling `firstTimeUser.completeOnboardingQuiz()`, attempt to flush any localStorage backup to the DB
+- Add a `flushBackupToDb()` function that reads `onboarding_backup_{userId}` from localStorage, attempts a single batch update to profiles, and clears the backup on success
+- Show a brief loading indicator during flush (reuse existing `isSaving` state)
+
+**2d. Updated `saveField` with retry:**
+```typescript
+const saveField = useCallback(async (field: string, value: string) => {
+  if (!firstTimeUser.userId) return;
+  setIsSaving(true);
+  let attempts = 0;
+  const maxAttempts = 3;
   
-  if (avatarFiles && avatarFiles.length > 0) {
-    const filePaths = avatarFiles.map(f => `${user.id}/${f.name}`);
-    const { error: storageError } = await supabaseAdmin.storage
-      .from('avatars')
-      .remove(filePaths);
-    
-    if (storageError) {
-      console.error('Storage cleanup error:', storageError);
-    } else {
-      console.log(`Cleaned up ${filePaths.length} avatar files for user ${user.id}`);
+  while (attempts < maxAttempts) {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ [field]: value } as any)
+        .eq('user_id', firstTimeUser.userId);
+      if (error) throw error;
+      setIsSaving(false);
+      return; // Success
+    } catch (err) {
+      attempts++;
+      if (attempts < maxAttempts) {
+        await new Promise(r => setTimeout(r, 1000));
+      }
     }
   }
-} catch (storageCleanupError) {
-  console.error('Storage cleanup failed (non-blocking):', storageCleanupError);
-}
+  
+  // All attempts failed -- save to localStorage backup
+  saveFieldBackup(field, value);
+  toast.warning("Connexion lente détectée. Tes données sont sauvegardées localement.", { duration: 3000 });
+  setIsSaving(false);
+}, [firstTimeUser.userId]);
 ```
 
-This lists all files in the user's avatar folder, then removes them in one batch call. The entire block is wrapped in try/catch so storage API failures never prevent account deletion.
+---
+
+## Fix 3 -- Confirm onboarding image loading attributes
+
+**File: `src/components/firsttime/OnboardingQuiz.tsx`**
+
+**Current state (line 394):** Images already have conditional `loading` attribute:
+```
+loading={currentStep === 0 && !showReaction && !isOutro ? 'eager' : 'lazy'}
+```
+This is correct. Only the first step image loads eagerly.
+
+**Change:** Add explicit `width` and `height` attributes to the `img` tag at line 389-395 to prevent layout shift:
+```
+width={256}
+height={256}
+```
+These match the rendered size constraint (`h-32 md:h-64` = 128px/256px) and provide the browser with aspect ratio information for CLS prevention.
 
 ---
 
 ## Files touched (2 total)
 
-| File | Change type |
-|------|------------|
-| `supabase/functions/delete-user-account/index.ts` | UPDATE -- add founder protection + storage cleanup |
-| `src/pages/Settings.tsx` | UPDATE -- add password re-entry Dialog before deletion |
-
----
-
-## Technical details
-
-### Settings.tsx state additions
-```typescript
-const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
-const [deletePassword, setDeletePassword] = useState('');
-const [deleteVerifying, setDeleteVerifying] = useState(false);
-```
-
-### Password verification function
-```typescript
-const handlePasswordVerifyAndDelete = async () => {
-  if (!deletePassword.trim()) {
-    toast.error("Veuillez entrer votre mot de passe");
-    return;
-  }
-  setDeleteVerifying(true);
-  try {
-    const { error } = await supabase.auth.signInWithPassword({
-      email: user.email,
-      password: deletePassword,
-    });
-    if (error) {
-      toast.error("Mot de passe incorrect. Suppression annulée.");
-      return;
-    }
-    setShowPasswordConfirm(false);
-    setDeletePassword('');
-    await handleDeleteAccount();
-  } catch {
-    toast.error("Erreur de vérification. Réessayez.");
-  } finally {
-    setDeleteVerifying(false);
-  }
-};
-```
+| File | Change |
+|------|--------|
+| `src/contexts/FirstTimeUserContext.tsx` | Add queryClient invalidation in `completeOnboardingQuiz`, `skipOnboardingQuiz`, `completeAvatarGeneration` |
+| `src/components/firsttime/OnboardingQuiz.tsx` | Retry logic in `saveField`, localStorage backup, flush on completion, image dimensions |
 
 ---
 
@@ -148,10 +126,9 @@ const handlePasswordVerifyAndDelete = async () => {
 | No DB changes | Correct |
 | No new dependencies | Correct |
 | RLS unaffected | Correct |
-| Rate limiting unchanged | Correct |
-| Existing email templates unchanged | Correct |
-| Storage cleanup non-blocking | Correct -- wrapped in try/catch |
-| Password never logged or stored | Correct -- cleared on cancel/close |
-| Founder IDs match founderConstants.ts | Correct -- same two UUIDs |
-| 3G performance impact | None -- Dialog is lightweight, password check is a single auth call |
+| Provider stack order unchanged | Correct -- QueryClientProvider wraps FirstTimeUserProvider, so useQueryClient is safe |
+| 3G performance impact | Positive -- retry logic prevents data loss; no extra network calls on success path |
+| Bundle size impact | Negligible -- ~40 lines of logic |
+| refetchOnWindowFocus kept false | Correct -- respects 3G optimization standard |
+| Backward compatible | Yes -- localStorage backup is additive; existing users unaffected |
 
