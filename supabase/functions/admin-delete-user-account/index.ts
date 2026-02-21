@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { getTimeAwareGreeting } from "../_shared/emailGreeting.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -51,7 +52,7 @@ const getFarewellEmailTemplate = (fullName: string, deletedByAdmin: boolean = fa
                   <tr>
                     <td style="padding: 40px;">
                       <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b;">
-                        Salut <strong style="color: #8b5cf6;">${fullName}</strong> 👋
+                        ${getTimeAwareGreeting(fullName)}
                       </p>
                       <p style="margin: 0 0 24px 0; font-size: 16px; color: #475569; line-height: 1.8;">
                         ${deletedByAdmin 

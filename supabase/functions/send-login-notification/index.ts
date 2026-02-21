@@ -12,6 +12,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
 import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { getTimeAwareGreeting } from "../_shared/emailGreeting.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -71,7 +72,7 @@ const getEmailTemplate = (fullName: string, email: string, timestamp: string, de
                   <tr>
                     <td style="padding: 40px;">
                       <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b; line-height: 1.7;">
-                        Salut <strong style="color: #3b82f6;">${fullName}</strong> 👋
+                        ${getTimeAwareGreeting(fullName)}
                       </p>
                       <p style="margin: 0 0 32px 0; font-size: 16px; color: #475569; line-height: 1.8;">
                         Nous vous informons qu'une connexion a été effectuée sur votre compte Edupreneurs.

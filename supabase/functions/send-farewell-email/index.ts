@@ -1,3 +1,6 @@
+// DEPRECATED: This function is unused. Farewell emails are sent inline by
+// delete-user-account and admin-delete-user-account.
+// Do not delete the file in case it is needed for rollback.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
