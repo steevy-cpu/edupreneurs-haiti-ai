@@ -1,113 +1,107 @@
 
 
-# First-Time UX Plan A -- Dashboard Empty State and Matieres Friction
+# First-Time UX Plan B -- Jude Prompts, Milestone Celebrations, Quiz Explanation
 
-## Fix 1 -- First-Time User Guidance Card on Dashboard
+## Fix 1 -- Update Jude Chat Suggested Prompts
 
-**File:** `src/components/dashboard/tabs/OverviewTab.tsx`
+**File:** `src/components/JudeChatbot.tsx`
 
-**Current behavior:** When `recentSubjectsFeature.data` is empty and not loading/errored, nothing renders (line 194: `recentSubjectsFeature.data.length > 0 &&`). New users see a gap.
-
-**Change:** After the error state block (line 193) and before the existing `recentSubjectsFeature.data.length > 0` block, add an `else` branch for when data is empty (length === 0, not loading, no error):
-
-- Render a Card with:
-  - A `BookOpen` icon in a gradient circle
-  - Title: "Commence ton apprentissage!"
-  - Text: "Tu n'as pas encore commence. Lance ta premiere lecon maintenant!"
-  - A gradient CTA Button "Commencer a apprendre" that navigates to `/matieres`
-- This card only shows when `recentSubjectsFeature.data.length === 0` and disappears once the student has activity
-
-**Lines affected:** ~194-235 in OverviewTab.tsx
-
----
-
-## Fix 2 -- KPI Zero Helper Text
-
-**File:** `src/components/dashboard/tabs/OverviewTab.tsx`
-
-**Current behavior:** The KPI grid (lines 107-141) shows 0 for Gold, Lecons, Score, Etude with no explanation.
-
-**Change:** Immediately after the KPI Card closing tag (line 141), add a conditional block:
-
-```
-if analytics.gold === 0 && analytics.totalLessonsCompleted === 0 && analytics.averageScore === 0 && analytics.studyTimeThisWeek === 0
-```
-
-Render a centered `<p>` with `text-xs text-muted-foreground text-center -mt-2 mb-2`:
-"Complete ta premiere lecon pour commencer a accumuler des points!"
-
-This disappears as soon as any KPI becomes non-zero.
-
-**Lines affected:** After line 141 in OverviewTab.tsx
-
----
-
-## Fix 3 -- Remove Matieres "Explorer" Gate
-
-**File:** `src/pages/Matieres.tsx`
-
-**Current behavior:** `showContent` state (line 58) defaults to `false`. Lines 398-456 render a large "Contenu en cours de developpement" card with an "Explorer" button that sets `showContent(true)`. Lines 459-588 only render subjects when `showContent` is true.
+The chatbot already has FAQ chips (lines 407-425) that show when `messages.length <= 1`. The current prompts are generic ("Comment voir mes cours ?", "Ou est le classement ?", "Aide-moi a etudier").
 
 **Change:**
-- Change the initial state of `showContent` from `false` to `true` (line 58)
-- Remove the entire "Content in Development Overlay" block (lines 398-456)
-- Remove the `showContent` condition from the grade button onClick (line 323: `setShowContent(false)`) -- keep grade switching but don't reset to hidden
-- The main content block (line 459) already checks `showContent` -- with default `true`, subjects show immediately
+- Replace the 3 existing FAQ prompts (line 409-412) with the new first-time-friendly prompts:
+  - "Comment je gagne du Gold ? (gold emoji)"
+  - "Explique-moi comment utiliser la plateforme (book emoji)"
+  - "Aide-moi a choisir une matiere (target emoji)"
+- Change the layout from `flex flex-wrap` to a `grid grid-cols-2` on mobile for better tap targets
+- The existing behavior (chips disappear after first message) is already handled by `messages.length <= 1`
+- Fix the onClick handler: currently it sets `setInput(faq)` then calls `handleSendMessage()` via setTimeout which reads the old state. Instead, call `onSendMessage` directly by adding the message to state and triggering the AI call inline (same pattern as the chess FloatingChessMessages quick replies)
 
-For NS3/NS4 series flow: The series selection card at line 351 checks `showContent`, so with default `true`, it will show the series picker immediately after selecting NS3/NS4, which is correct behavior.
-
-**Lines affected:** 58, 323, 398-456, 459 in Matieres.tsx
-
----
-
-## Fix 4 -- Friendly Empty State for Grades With No Content
-
-**File:** `src/pages/Matieres.tsx`
-
-**Current behavior:** Lines 590-618 show a generic "Contenu en preparation" card with a "Explorer 7AF" button when no subjects exist.
-
-**Change:** Replace lines 592-617 with a friendlier empty state:
-- `Construction` icon (already imported) in an amber-tinted circle
-- Title: "Le contenu pour ton niveau arrive bientot!"
-- Description: "En attendant, explore les autres niveaux disponibles."
-- Button: "Explorer d'autres niveaux" that scrolls to the grade selector or resets to 7AF
-- Only show this when NOT caused by search/filter (existing logic already handles that case)
-
-**Lines affected:** 592-617 in Matieres.tsx
+**Lines affected:** 407-425
 
 ---
 
-## Fix 5 -- Matieres Loading Timeout with Retry
+## Fix 2 -- Add Mobile Tooltip to Jude Avatar
 
-**File:** `src/pages/Matieres.tsx`
+**File:** `src/components/JudeChatbot.tsx`
 
-**Current behavior:** Lines 378-396 show a skeleton grid while `isLoading` is true. If the query hangs on 3G, skeleton shows forever.
+Currently there's a tooltip (line 386-388) that says "Cliquez sur moi" with the class `eric-floating-tooltip`. This shows on all devices.
 
 **Change:**
-- Add a `useState<boolean>(false)` for `loadingTimedOut`
-- Add a `useEffect` that starts a 10-second timer when `isLoading` is true. If still loading after 10s, set `loadingTimedOut = true`. Clear timer when `isLoading` becomes false.
-- In the loading block (line 378), add a condition: if `loadingTimedOut`, render an `ErrorState` component (already used in OverviewTab) with message "Impossible de charger les matieres" and a "Reessayer" button that calls `refetch()` from `useMatieresData`
-- Import `ErrorState` from `@/components/shared/ErrorState`
-- The `useMatieresData` hook already exposes `refetch`
+- Add a `useState<boolean>` for `showMobileTooltip`, initialized from `!localStorage.getItem('jude-tooltip-shown')`
+- Add a `useEffect` that sets a 5-second timer to hide the tooltip and write `localStorage.setItem('jude-tooltip-shown', 'true')`. Only runs when `showMobileTooltip` is true.
+- Replace the existing tooltip text "Cliquez sur moi" (line 387) with conditional rendering:
+  - On desktop (hidden lg:block): keep "Cliquez sur moi"
+  - On mobile (lg:hidden): show "Parle avec Jude! (speech emoji)" only when `showMobileTooltip` is true, with a `animate-fade-in` class and fade-out after 5s
+- No new dependencies -- uses existing CSS animations
 
-**Lines affected:** Add state + effect near line 58, modify lines 378-396 in Matieres.tsx
+**Lines affected:** Near lines 90-95 (new state), 232-237 (new effect), 385-389 (tooltip rendering)
 
 ---
 
-## Fix 6 -- Community Loading Timeout with Retry
+## Fix 3 -- Celebrate First Lesson Completion with Confetti
 
-**File:** `src/pages/Community.tsx`
+**Files:** `src/components/InteractiveQuiz.tsx` and `src/components/HTMLQuizParser.tsx`
 
-**Current behavior:** `isLoadingConversations` starts as `true` (line 86). The `checkUser` function (line 531) has no try/catch -- if `supabase.auth.getUser()` throws on 3G, `isLoadingConversations` stays `true` forever.
+These are the two places where `lesson_completions` upserts happen (lines 349-359 in InteractiveQuiz, lines 227-237 in HTMLQuizParser). Both already show a toast on success.
+
+**Change in both files:**
+- After the successful upsert + `setIsLessonCompleted(true)`, add a first-lesson check:
+  ```
+  if (!localStorage.getItem('first-lesson-celebrated')) {
+    localStorage.setItem('first-lesson-celebrated', 'true');
+    confetti({ particleCount: 120, spread: 80, colors: ['#8b5cf6', '#f59e0b', '#10b981'] });
+    // Replace the normal toast with a special first-lesson toast
+  }
+  ```
+- For the first lesson, the toast message changes to: "Felicitations! Tu as complete ta premiere lecon! Continue comme ca! (party emoji)"
+- For subsequent lessons, the existing toast remains unchanged
+- Import `confetti` from `canvas-confetti` (already installed, used in 4 other files)
+- The `isLessonCompleted` state already prevents duplicate upserts, so this only fires once per lesson. The localStorage key ensures the celebration only fires for the very first lesson ever.
+
+**Lines affected:** InteractiveQuiz.tsx lines 361-377, HTMLQuizParser.tsx lines 241-251
+
+---
+
+## Fix 4 -- Celebrate First Quiz Battle Win with Confetti
+
+**File:** `src/components/quiz-battle/MultiplayerResults.tsx`
+
+Lines 61-66 already have a placeholder `useEffect` for winner celebration that only does `console.log('Winner celebration!')`.
 
 **Change:**
-- Add `useState<boolean>(false)` for `loadingTimedOut`
-- Add a `useEffect` that starts a 10-second timer when `isLoadingConversations` is true and `!isVisitor`. If still loading after 10s, set `loadingTimedOut = true`. Reset when loading finishes.
-- Wrap `checkUser` body in try/catch -- on error, set `isLoadingConversations(false)` and log the error
-- In the `ConversationSidebar` rendering area or before it, check: if `loadingTimedOut`, render an `ErrorState` with message "Impossible de charger les conversations" and a "Reessayer" button that calls `checkUser()` again (which triggers `fetchConversations` via the `user` dependency)
-- Import `ErrorState` from `@/components/shared/ErrorState`
+- Replace the console.log with actual confetti + localStorage check:
+  ```
+  if (!localStorage.getItem('first-quiz-win-celebrated')) {
+    localStorage.setItem('first-quiz-win-celebrated', 'true');
+    confetti({ particleCount: 120, spread: 80, colors: ['#8b5cf6', '#f59e0b', '#10b981'] });
+    toast({ title: "Tu as gagne ton premier Quiz Battle! Incroyable! (trophy emoji)", duration: 5000 });
+  }
+  ```
+- Import `confetti` from `canvas-confetti`
+- Import `useToast` from `@/hooks/use-toast`
+- The existing `isWinner` guard in the useEffect ensures this only fires for wins
 
-**Lines affected:** Add state near line 86, add effect, modify lines 531-543, modify rendering near line 2172 in Community.tsx
+**Lines affected:** 1-19 (imports), 40-66 (add toast hook + replace console.log)
+
+---
+
+## Fix 5 -- Add Pre-Game Explanation to Quiz Battle Mode Selector
+
+**File:** `src/components/quiz-battle/BattleModeSelector.tsx`
+
+**Change:**
+- After the mode cards grid (line 94), add a collapsible "Comment ca marche ?" section using the existing `Collapsible` + `CollapsibleTrigger` + `CollapsibleContent` components (already in the project)
+- Import `ChevronDown` from lucide-react, `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` from `@/components/ui/collapsible`
+- Add state `const [rulesOpen, setRulesOpen] = useState(false)`
+- Content: a simple list with 4 bullet points:
+  - "10 questions sur une matiere de ton choix"
+  - "Tu as 15 secondes par question"
+  - "Bonne reponse = points bonus"
+  - "Le joueur avec le plus de points gagne!"
+- Style: muted background card, small text, collapsed by default with ChevronDown rotation animation
+
+**Lines affected:** 1-4 (imports), 12-16 (add state), after line 94 (add collapsible)
 
 ---
 
@@ -115,22 +109,23 @@ For NS3/NS4 series flow: The series selection card at line 351 checks `showConte
 
 | Check | Status |
 |-------|--------|
-| Existing dashboard layout preserved | Yes -- only adds new conditional blocks, no existing elements removed |
-| KPI rendering unchanged | Yes -- helper text is additive below the grid |
-| Matieres subject grid logic unchanged | Yes -- only the gate is removed, grid rendering is identical |
-| NS3/NS4 series flow preserved | Yes -- series picker still shows for NS3/NS4 grades |
-| Community realtime subscriptions unaffected | Yes -- only adding timeout to initial load |
-| No new dependencies | Correct -- ErrorState already exists and is imported in OverviewTab |
+| Existing Jude chat behavior preserved | Yes -- only prompt text and layout change; disappear-on-message logic unchanged |
+| Existing lesson completion flow unchanged | Yes -- confetti is additive after the existing upsert + toast |
+| Existing quiz battle results unchanged | Yes -- confetti replaces a console.log placeholder |
+| No new dependencies | Correct -- canvas-confetti and Collapsible already installed/available |
 | No DB schema changes | Correct |
 | No provider stack changes | Correct |
-| 3G impact | Positive -- fewer clicks, timeout-based recovery |
-| Student-facing components improved, not broken | Yes -- all changes are additive UX improvements |
+| localStorage keys won't conflict | Verified: 'jude-tooltip-shown', 'first-lesson-celebrated', 'first-quiz-win-celebrated' are all unique |
+| 3G impact | Minimal -- confetti is client-side, no network calls added |
+| Mobile tooltip only shows once | Yes -- localStorage guard |
 
 ## Files Changed
 
 | File | Fix |
 |------|-----|
-| `src/components/dashboard/tabs/OverviewTab.tsx` | Fix 1 + Fix 2: First-time card + KPI helper |
-| `src/pages/Matieres.tsx` | Fix 3 + Fix 4 + Fix 5: Remove gate, friendly empty state, loading timeout |
-| `src/pages/Community.tsx` | Fix 6: Loading timeout + try/catch in checkUser |
+| `src/components/JudeChatbot.tsx` | Fix 1 + Fix 2: Updated prompts, mobile tooltip |
+| `src/components/InteractiveQuiz.tsx` | Fix 3: First lesson confetti celebration |
+| `src/components/HTMLQuizParser.tsx` | Fix 3: First lesson confetti celebration (second upsert location) |
+| `src/components/quiz-battle/MultiplayerResults.tsx` | Fix 4: First quiz win confetti |
+| `src/components/quiz-battle/BattleModeSelector.tsx` | Fix 5: Collapsible rules explanation |
 
