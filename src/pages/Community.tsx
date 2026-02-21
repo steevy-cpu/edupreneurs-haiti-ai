@@ -45,6 +45,7 @@ import {
   JudeTypingIndicator
 } from "@/components/community";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ErrorState } from "@/components/shared/ErrorState";
 import { 
   Profile, 
   GroupChat, 
@@ -84,6 +85,8 @@ const Community = () => {
   const [user, setUser] = useState<any>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
+  /* Fix 6: Loading timeout for 3G resilience */
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(conversationId);
   const [selectedConversationDetails, setSelectedConversationDetails] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -192,6 +195,16 @@ const Community = () => {
   useEffect(() => {
     checkUser();
   }, [isVisitor]);
+
+  /* Fix 6: 10s loading timeout — show retry instead of infinite skeleton */
+  useEffect(() => {
+    if (!isLoadingConversations || isVisitor) {
+      setLoadingTimedOut(false);
+      return;
+    }
+    const timer = setTimeout(() => setLoadingTimedOut(true), 10_000);
+    return () => clearTimeout(timer);
+  }, [isLoadingConversations, isVisitor]);
 
   // Populate demo conversations for visitors
   useEffect(() => {
@@ -535,12 +548,18 @@ const Community = () => {
       return;
     }
     
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate("/auth/login");
-      return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate("/auth/login");
+        return;
+      }
+      setUser(user);
+    } catch (error) {
+      /* Fix 6: Prevent infinite skeleton on auth failure (3G) */
+      logger.error('checkUser failed:', error);
+      setIsLoadingConversations(false);
     }
-    setUser(user);
   };
 
   const fetchConversations = async () => {
@@ -2170,6 +2189,19 @@ const Community = () => {
       
       {/* Conversations List - Fixed sidebar on desktop/tablet */}
       <div data-tour="community-list" className="h-full overflow-hidden">
+      {/* Fix 6: Show error state after 10s loading timeout */}
+      {loadingTimedOut && isLoadingConversations ? (
+        <div className="flex items-center justify-center h-full p-4">
+          <ErrorState
+            message="Impossible de charger les conversations"
+            onRetry={() => {
+              setLoadingTimedOut(false);
+              setIsLoadingConversations(true);
+              checkUser();
+            }}
+          />
+        </div>
+      ) : (
       <ConversationSidebar
         conversations={conversations}
         selectedConversation={selectedConversation}
@@ -2190,6 +2222,7 @@ const Community = () => {
         onBack={() => navigate("/dashboard")}
         formatTime={formatTime}
       />
+      )}
       </div>
 
       {/* Messages View - fixed positioning with proper height for mobile nav */}
