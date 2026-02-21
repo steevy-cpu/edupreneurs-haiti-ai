@@ -69,7 +69,7 @@ const getEmailTemplate = (fullName: string, nickname: string | null) => {
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 32px;">
                         <tr>
                           <td style="text-align: center;">
-                            <a href="https://edupreneurs.ht" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 12px; font-weight: 700;">
+                            <a href="https://mon-edupreneur.com" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 12px; font-weight: 700;">
                               🚀 Accéder à la plateforme
                             </a>
                           </td>
