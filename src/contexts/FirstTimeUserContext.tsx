@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
 
@@ -100,6 +101,8 @@ interface FirstTimeUserProviderProps {
 }
 
 export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) {
+  // Used to invalidate profile cache after onboarding saves nickname/grade/avatar
+  const queryClient = useQueryClient();
   const [showWelcome, setShowWelcome] = useState(false);
   const [welcomeComplete, setWelcomeComplete] = useState(false);
   const [showOnboardingQuiz, setShowOnboardingQuiz] = useState(false);
@@ -223,23 +226,29 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
   const completeOnboardingQuiz = useCallback(() => {
     setOnboardingQuizComplete(true);
     setShowOnboardingQuiz(false);
+    // Invalidate profile cache so dashboard shows fresh nickname/grade
+    queryClient.invalidateQueries({ queryKey: ['user-profile'] });
     // Advance to avatar generation
     setShowAvatarGeneration(true);
-  }, []);
+  }, [queryClient]);
 
   const skipOnboardingQuiz = useCallback(() => {
     // Same as complete — advances to avatar step
     setOnboardingQuizComplete(true);
     setShowOnboardingQuiz(false);
+    // Invalidate in case user had partial saves before skipping
+    queryClient.invalidateQueries({ queryKey: ['user-profile'] });
     setShowAvatarGeneration(true);
-  }, []);
+  }, [queryClient]);
 
   const completeAvatarGeneration = useCallback(() => {
     setAvatarGenerationComplete(true);
     setShowAvatarGeneration(false);
+    // Invalidate profile cache so dashboard shows fresh avatar
+    queryClient.invalidateQueries({ queryKey: ['user-profile'] });
     setTourActive(true);
     setTourStep(0);
-  }, []);
+  }, [queryClient]);
 
   const skipAvatarGeneration = useCallback(() => {
     setAvatarGenerationComplete(true);
