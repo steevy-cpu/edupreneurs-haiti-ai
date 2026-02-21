@@ -102,6 +102,10 @@ export const JudeChatbot = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { isSlowConnection, shouldShowAnimations, shouldShowBlur } = useNetworkAwareLoading();
+  // Fix 2: Mobile tooltip that shows once on first visit
+  const [showMobileTooltip, setShowMobileTooltip] = useState(
+    () => !localStorage.getItem('jude-tooltip-shown')
+  );
 
   const {
     hasMoved,
@@ -235,6 +239,16 @@ export const JudeChatbot = () => {
     });
     return () => cancelAnimationFrame(timer);
   }, []);
+
+  // Fix 2: Auto-hide mobile tooltip after 5 seconds, persist in localStorage
+  useEffect(() => {
+    if (!showMobileTooltip) return;
+    const timer = setTimeout(() => {
+      setShowMobileTooltip(false);
+      localStorage.setItem('jude-tooltip-shown', 'true');
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [showMobileTooltip]);
 
   // Hide JudeChatbot in visitor mode or on specific routes - AFTER all hooks
   if (!isStable || isVisitor || HIDDEN_ROUTES.includes(location.pathname)) {
@@ -383,9 +397,18 @@ export const JudeChatbot = () => {
         }}
       >
         {!isOpen && (
-          <div className={`eric-floating-tooltip text-[10px] sm:text-xs ${shouldShowAnimations ? '' : '[animation:none]'}`}>
-            Cliquez sur moi
-          </div>
+          <>
+            {/* Desktop tooltip — always visible */}
+            <div className={`eric-floating-tooltip text-[10px] sm:text-xs hidden lg:block ${shouldShowAnimations ? '' : '[animation:none]'}`}>
+              Cliquez sur moi
+            </div>
+            {/* Fix 2: Mobile tooltip — shows once on first visit, fades after 5s */}
+            {showMobileTooltip && (
+              <div className="eric-floating-tooltip text-[10px] sm:text-xs lg:hidden animate-fade-in">
+                Parle avec Jude! 💬
+              </div>
+            )}
+          </>
         )}
         
         <div className="w-14 sm:w-16 md:w-20 lg:w-28">
@@ -403,19 +426,43 @@ export const JudeChatbot = () => {
       {/* Chat Interface */}
       {isOpen && (
         <div className="relative w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] flex flex-col mt-2">
-          {/* FAQ Quick Actions - show only when no user messages yet */}
+          {/* Fix 1: First-time friendly suggested prompts — disappear after first message */}
           {messages.length <= 1 && (
-            <div className="flex flex-wrap gap-2 mb-3 mr-16 sm:mr-20 md:mr-24 lg:mr-28">
+            <div className="grid grid-cols-2 gap-2 mb-3 mr-16 sm:mr-20 md:mr-24 lg:mr-28">
               {[
-                "Comment voir mes cours ?",
-                "Où est le classement ?",
-                "Aide-moi à étudier",
+                "Comment je gagne du Gold ? 🥇",
+                "Explique-moi comment utiliser la plateforme 📚",
+                "Aide-moi à choisir une matière 🎯",
               ].map((faq) => (
                 <button
                   key={faq}
                   onClick={() => {
-                    setInput(faq);
-                    setTimeout(() => handleSendMessage(), 100);
+                    // Directly add user message + trigger AI call (avoids stale state from setTimeout)
+                    setMessages(prev => [...prev, { content: faq, sender: "user" }]);
+                    setInput("");
+                    setIsTyping(true);
+                    supabase.functions.invoke('jude-ai-tutor', {
+                      body: {
+                        message: faq,
+                        chatHistory: messages.map(m => ({
+                          role: m.sender === "user" ? "user" : "assistant",
+                          content: m.content
+                        })),
+                        userNickname,
+                        currentPage: location.pathname,
+                        enableVoice: false
+                      }
+                    }).then(({ data, error }) => {
+                      if (error) throw error;
+                      const responseText = data?.response || data?.text || "Désolé, je n'ai pas pu traiter votre message.";
+                      setMessages(prev => {
+                        const newMessages = [...prev, { content: responseText, sender: "jude" as const, navigationPath: data?.navigate }];
+                        setTypingMessageIndex(newMessages.length - 1);
+                        return newMessages;
+                      });
+                    }).catch(() => {
+                      setMessages(prev => [...prev, { content: "Désolé, une erreur s'est produite.", sender: "jude" as const }]);
+                    }).finally(() => setIsTyping(false));
                   }}
                   className="text-[10px] sm:text-xs px-3 py-1.5 bg-accent/90 backdrop-blur-sm border border-primary/30 hover:bg-accent rounded-full text-accent-foreground shadow-md hover:shadow-lg transition-all duration-200"
                 >
