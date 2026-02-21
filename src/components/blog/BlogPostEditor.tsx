@@ -192,6 +192,13 @@ export function BlogPostEditor({
 
   const handleImageFileUpload = useCallback(async () => {
     if (!imageFile || !editor) return;
+
+    // Guard: reject images over 10MB before attempting compression or upload
+    const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+    if (imageFile.size > MAX_IMAGE_SIZE) {
+      toast({ title: "Image trop volumineuse. Taille maximale: 10MB", variant: "destructive" });
+      return;
+    }
     
     setIsUploadingImage(true);
     setUploadProgress(0);
