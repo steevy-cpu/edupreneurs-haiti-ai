@@ -30,6 +30,7 @@ import {
   LogOut,
   CalendarDays,
   Smartphone,
+  Gift,
 } from "lucide-react";
 import ericArmsCrossed from "@/assets/eric-main01.png";
 import {
@@ -153,6 +154,9 @@ const Settings = () => {
   // Stability guard for lazy-loaded AvatarSelector (prevents React error #310)
   const [avatarSectionReady, setAvatarSectionReady] = useState(false);
 
+  // Promo code redemption state
+  const [promoCode, setPromoCode] = useState("");
+  const [promoLoading, setPromoLoading] = useState(false);
   // Redirect if not authenticated (handled after all hooks)
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -507,6 +511,46 @@ const Settings = () => {
       setPushLoading(false);
     }
   }, [userId]);
+
+  // Redeem a promo code via the edge function
+  const handleRedeemPromo = async () => {
+    if (!promoCode.trim() || promoLoading) return;
+    if (!session) {
+      toast.error("Non authentifié");
+      return;
+    }
+
+    setPromoLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("redeem-promo-code", {
+        body: { code: promoCode.trim() },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (error) {
+        // 429 rate limit from edge function
+        if (error.message?.includes("429") || error.message?.includes("rate")) {
+          toast.error("Trop de tentatives. Réessaie dans une heure.");
+        } else {
+          toast.error("Erreur réseau. Réessaie.");
+        }
+        return;
+      }
+
+      if (data?.success) {
+        toast.success(`Félicitations! ${data.goldAwarded} Gold ajouté à ton compte! 🥇`);
+        setPromoCode("");
+        // Refresh gold balance in sidebar/profile
+        queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+      } else if (data?.error) {
+        toast.error(data.error);
+      }
+    } catch {
+      toast.error("Erreur réseau. Réessaie.");
+    } finally {
+      setPromoLoading(false);
+    }
+  };
 
   const handleDeleteAccount = async () => {
     setLoading(true);
@@ -1101,6 +1145,36 @@ const Settings = () => {
                     <LogOut className="mr-2 h-4 w-4" />
                     Se déconnecter
                   </Button>
+                </CardContent>
+              </Card>
+
+              {/* Promo code redemption */}
+              <Card className="border-none rounded-[20px] shadow-md">
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                    <Gift className="text-primary shrink-0" size={20} />
+                    Code Promotionnel
+                  </CardTitle>
+                  <CardDescription className="text-sm">
+                    Entre un code promo pour recevoir des récompenses
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  <div className="flex gap-2">
+                    <Input
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                      placeholder="Entre ton code promotionnel"
+                      maxLength={50}
+                      className="uppercase"
+                    />
+                    <Button
+                      onClick={handleRedeemPromo}
+                      disabled={!promoCode.trim() || promoLoading}
+                    >
+                      {promoLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Appliquer"}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
 

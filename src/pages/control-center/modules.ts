@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { Users, AlertTriangle, BarChart3, CreditCard, Heart, Megaphone, BookOpen, Newspaper, MessageSquare, MessageCircle } from "lucide-react";
+import { Users, AlertTriangle, BarChart3, CreditCard, Heart, Megaphone, BookOpen, Newspaper, MessageSquare, MessageCircle, Gift } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ControlCenterModule } from "./types";
 
@@ -131,5 +131,12 @@ export const CONTROL_CENTER_MODULES: ControlCenterModule[] = [
       if (error) return 0;
       return typeof data === "number" ? data : 0;
     },
+  },
+  {
+    id: "promo",
+    label: "Codes Promo",
+    shortLabel: "Promo",
+    icon: Gift,
+    component: lazy(() => import("./modules/PromoCodesModule")),
   },
 ];
