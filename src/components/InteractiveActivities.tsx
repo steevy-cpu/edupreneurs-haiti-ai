@@ -7,6 +7,7 @@ import { CheckCircle, XCircle, ArrowRight, Loader2, RefreshCw } from "lucide-rea
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { celebrateFirstGold } from "@/hooks/useFirstGoldCelebration";
 import { TrueFalseGame, TrueFalseQuestion } from "@/components/interactive-activities/TrueFalseGame";
 
 // Security: DOMPurify configuration
@@ -346,7 +347,10 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGold
         amount: 1,
       });
       if (error) console.error('Error awarding gold:', error);
-      else onGoldUpdate?.();
+      else {
+        celebrateFirstGold();
+        onGoldUpdate?.();
+      }
     } catch (error) {
       console.error('Error awarding gold:', error);
     }

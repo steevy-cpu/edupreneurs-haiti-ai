@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { CheckCircle, XCircle, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { celebrateFirstGold } from "@/hooks/useFirstGoldCelebration";
 
 interface QuizQuestion {
   question: string;
@@ -66,6 +67,7 @@ export const QuizGame = ({ topic, questions, onComplete, onRegenerate, lessonSlu
         amount: Math.min(amount, 100), // RPC caps at 100
       });
       if (error) console.error('Error awarding gold:', error);
+      else celebrateFirstGold();
     } catch (error) {
       console.error('Error awarding gold:', error);
     }
