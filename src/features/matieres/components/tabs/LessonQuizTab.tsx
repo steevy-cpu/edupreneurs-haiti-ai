@@ -101,7 +101,7 @@ export function LessonQuizTab({
           score: percentage,
           completed_at: new Date().toISOString(),
         },
-        { onConflict: 'user_id,lesson_slug,subject' }
+        { onConflict: 'user_id,lesson_slug' }
       );
 
     if (upsertErr) {
