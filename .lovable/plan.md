@@ -1,82 +1,102 @@
 
 
-# Gold Plan A -- Fix Gold Abuse Vectors
+# Fix ExamPreparation Cross-Session Gold Re-Earning
 
 ## Overview
-Three surgical fixes to close gold farming exploits: add completion guard to QuizGame, consolidate per-answer gold to completion-only in InteractiveQuiz and HTMLQuizParser.
+Two changes: one DB migration to create a permanent completion tracking table, one component update to check it before awarding gold.
 
 ---
 
-## Fix 1 -- QuizGame completion guard
+## Step 1 -- Database Migration
 
-**File: `src/components/math-activities/QuizGame.tsx`**
+Create `exam_exercise_completions` table with RLS:
 
-Currently QuizGame has zero completion tracking -- students can restart and earn unlimited gold.
+```sql
+CREATE TABLE exam_exercise_completions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  exam_id uuid NOT NULL,
+  exercise_number integer NOT NULL,
+  completed_at timestamptz DEFAULT now(),
+  UNIQUE(user_id, exam_id, exercise_number)
+);
 
-**Changes:**
-- Add `useEffect` on mount to query `lesson_completions` for the current user + topic (requires adding a `lessonSlug` prop to `QuizGameProps`)
-- Add `isAlreadyCompleted` state (default `false`)
-- In `awardGold()` (line 31): early return if `isAlreadyCompleted` is true
-- Remove per-answer `awardGold()` call from `handleSubmit` (line 57)
-- At quiz completion (`handleNext` when last question, line 72-74): if not already completed, insert into `lesson_completions`, award all gold in one RPC call (`score` amount, capped at 100), and set `isAlreadyCompleted = true`
-- In `handleRestart` (line 78): if `isAlreadyCompleted`, show training mode message via toast
-- Update completion screen (line 102-105) to show "Mode entrainement" text when already completed instead of gold earned
+ALTER TABLE exam_exercise_completions ENABLE ROW LEVEL SECURITY;
 
-**Props change:** Add optional `lessonSlug?: string` and `subject?: string` to `QuizGameProps`. If not provided, skip the completion check (backward compatible).
+CREATE POLICY "Users can read own completions"
+  ON exam_exercise_completions FOR SELECT
+  USING (auth.uid() = user_id);
 
----
-
-## Fix 2 -- InteractiveQuiz: consolidate gold to completion only
-
-**File: `src/components/InteractiveQuiz.tsx`**
-
-Currently awards 1 gold per correct answer (line 319) plus a completion bonus (line 365-368). Students earn partial gold by closing mid-quiz.
-
-**Changes:**
-- **Remove** the `awardGold()` call at line 319 inside `handleAnswerSelect`
-- **Remove** the per-answer gold toast "+1 Gold!" (lines 320-324)
-- Keep the correct/incorrect toast but without gold mention
-- In `markLessonComplete()` (line 335): change the gold amount from `lessonGoldReward` to `finalScore + Math.min(lessonGoldReward, 100)` -- but since `increment_gold` caps at 100, we compute `Math.min(finalScore + lessonGoldReward, 100)` as the single award
-- Actually, since `increment_gold` caps at 100 per call, and we want `correctAnswers + lessonGoldReward` which could exceed 100: make two calls if total > 100, or simply award `Math.min(finalScore + lessonGoldReward, 100)` to stay within the RPC cap. Given `lessonGoldReward` defaults to 100 and `finalScore` could be up to ~10, the combined total exceeds 100. Solution: award in one call capped at 100 total = `Math.min(finalScore + lessonGoldReward, 100)`. This is the maximum allowed by the RPC.
-- Update completion toast to show the combined total
+CREATE POLICY "Users can insert own completions"
+  ON exam_exercise_completions FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+```
 
 ---
 
-## Fix 3 -- HTMLQuizParser: consolidate gold to completion only
+## Step 2 -- Update ExamPreparation.tsx
 
-**File: `src/components/HTMLQuizParser.tsx`**
+**File: `src/pages/ExamPreparation.tsx`**
 
-Currently awards 1 gold per correct answer (line 167) plus completion bonus (line 247). Same exploit as Fix 2.
+### 2a. Add state (after line 32)
+- Add `globallyCompletedExercises` state: `useState<number[]>([])`
 
-**Changes:**
-- **Remove** the `awardGold(1)` call at line 167 inside `handleSubmit`
-- In `finishQuiz()` (line 199): change the gold calculation to include per-answer gold:
-  - Current: `goldEarned = passed ? Math.max(10, Math.round(percentage / 10) * 5) : 0`
-  - New: `goldEarned = passed ? Math.min(score + Math.max(10, Math.round(percentage / 10) * 5), 100) : 0`
-  - This adds `score` (correct answers) to the completion bonus, capped at 100 per RPC constraint
-- Award all gold in the single existing `awardGold(goldEarned)` call at line 247 (no change to call site, just the amount)
+### 2b. Query on mount (after line 101, inside loadExamData)
+After loading/creating the session, query `exam_exercise_completions`:
+```typescript
+const { data: globalCompletions } = await supabase
+  .from('exam_exercise_completions')
+  .select('exercise_number')
+  .eq('user_id', user.user.id)
+  .eq('exam_id', examData.id);
+
+if (globalCompletions) {
+  setGloballyCompletedExercises(globalCompletions.map(c => c.exercise_number));
+}
+```
+
+### 2c. Update gold guard (line 164)
+Change from:
+```typescript
+if (isCorrect && !completedExercises.includes(currentExercise))
+```
+To:
+```typescript
+if (isCorrect && !completedExercises.includes(currentExercise) && !globallyCompletedExercises.includes(currentExercise))
+```
+
+### 2d. Insert completion record (after line 178, inside the gold award block)
+After updating the session, insert into `exam_exercise_completions` with conflict ignore:
+```typescript
+await supabase
+  .from('exam_exercise_completions')
+  .upsert({
+    user_id: userData.user.id,
+    exam_id: exam.id,
+    exercise_number: currentExercise,
+  }, { onConflict: 'user_id,exam_id,exercise_number', ignoreDuplicates: true });
+```
+
+Move the `getUser()` call before the session update so `userData` is available for both the completion insert and the gold RPC.
 
 ---
 
-## Files touched (3 total)
+## Files touched
 
 | File | Change |
 |------|--------|
-| `src/components/math-activities/QuizGame.tsx` | Add completion guard, move gold to completion-only, training mode message |
-| `src/components/InteractiveQuiz.tsx` | Remove per-answer gold award, consolidate to completion |
-| `src/components/HTMLQuizParser.tsx` | Remove per-answer gold award, consolidate to completion |
-
----
+| DB migration | New `exam_exercise_completions` table + RLS |
+| `src/pages/ExamPreparation.tsx` | Add global completion state, query on mount, update guard, insert on completion |
 
 ## Safety verification
 
 | Check | Status |
 |-------|--------|
-| No DB changes | Correct -- uses existing `lesson_completions` table |
-| No new dependencies | Correct |
-| RLS unaffected | Correct |
-| increment_gold cap respected | Yes -- all awards capped at 100 per call |
-| Backward compatible | Yes -- QuizGame new props are optional |
-| Existing completion guards preserved | Yes -- `isLessonCompleted` checks remain |
-| 80% threshold unchanged | Yes -- HTMLQuizParser and InteractiveQuiz keep their thresholds |
+| RLS on new table | Yes -- SELECT and INSERT for own rows only |
+| No existing tables modified | Correct |
+| Session-level tracking unchanged | Correct -- additive only |
+| Unique constraint prevents duplicates | Yes -- `(user_id, exam_id, exercise_number)` |
+| Backward compatible | Yes -- no prop or API changes |
+| Works on 3G | Yes -- one extra SELECT on mount, tiny payload |
+| increment_gold cap respected | Unchanged |
 
