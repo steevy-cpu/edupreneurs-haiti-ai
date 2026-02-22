@@ -3,4 +3,5 @@ export { EmptyState } from "./EmptyState";
 export { GlobalSearch } from "./GlobalSearch";
 export { QuickMessageFAB } from "./QuickMessageFAB";
 export { LazyAvatar } from "./LazyAvatar";
+export { GoldBadge } from "./GoldBadge";
 export * from "./SkeletonLoaders";

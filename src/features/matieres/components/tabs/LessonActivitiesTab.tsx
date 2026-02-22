@@ -14,6 +14,8 @@ interface LessonActivitiesTabProps {
   lessonContent: string;
   lessonExamples: string;
   legacyActivitiesHtml?: string | null;
+  /** Called when gold is awarded during an activity */
+  onGoldUpdate?: () => void;
 }
 
 /**
@@ -29,6 +31,7 @@ export function LessonActivitiesTab({
   lessonContent,
   lessonExamples,
   legacyActivitiesHtml,
+  onGoldUpdate,
 }: LessonActivitiesTabProps) {
   const { data, isLoading, isGenerating, error, isStale, regenerate } = useAIGeneratedActivities({
     lessonId,
@@ -81,6 +84,7 @@ export function LessonActivitiesTab({
               <InteractiveActivitiesEnhanced
                 content={legacyActivitiesHtml}
                 isLoading={false}
+                onGoldUpdate={onGoldUpdate}
               />
             </div>
           )}
@@ -123,6 +127,7 @@ export function LessonActivitiesTab({
           <InteractiveActivitiesEnhanced
             content={data}
             isLoading={false}
+            onGoldUpdate={onGoldUpdate}
           />
         </CardContent>
       </Card>

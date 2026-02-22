@@ -16,6 +16,7 @@ export interface CachedUserProfile {
   nickname: string;
   avatarUrl: string;
   academicGrade: string | null;
+  goldEarned: number;
   isAuthenticated: boolean;
 }
 
@@ -24,6 +25,7 @@ const FALLBACK_PROFILE: CachedUserProfile = {
   nickname: "Visiteur",
   avatarUrl: dashboardImage,
   academicGrade: null,
+  goldEarned: 0,
   isAuthenticated: false,
 };
 
@@ -33,7 +35,7 @@ const FALLBACK_PROFILE: CachedUserProfile = {
 async function fetchUserProfile(userId: string): Promise<CachedUserProfile> {
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("avatar_url, nickname, academic_grade")
+    .select("avatar_url, nickname, academic_grade, gold_earned")
     .eq("user_id", userId)
     .maybeSingle();
 
@@ -60,6 +62,7 @@ async function fetchUserProfile(userId: string): Promise<CachedUserProfile> {
     nickname: profile?.nickname || "Étudiant",
     avatarUrl,
     academicGrade: profile?.academic_grade || null,
+    goldEarned: profile?.gold_earned ?? 0,
     isAuthenticated: true,
   };
   

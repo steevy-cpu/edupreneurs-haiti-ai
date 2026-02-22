@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -13,6 +13,8 @@ import { ExamProgressBar } from "@/components/exam/ExamProgressBar";
 import { ArrowLeft, FileText, MessageCircle } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { GoldBadge } from "@/components/shared/GoldBadge";
+import { useUserProfile, useInvalidateUserProfile } from "@/hooks/useUserProfile";
 import judeProfile from "@/assets/jude-profile.jpeg";
 
 export default function ExamPreparation() {
@@ -30,6 +32,17 @@ export default function ExamPreparation() {
   const [referenceTexts, setReferenceTexts] = useState<ReferenceText[]>([]);
   // Tracks exercises completed across ALL sessions — prevents cross-session gold farming
   const [globallyCompletedExercises, setGloballyCompletedExercises] = useState<number[]>([]);
+
+  // Gold display — uses cached profile, no extra query
+  const { profile } = useUserProfile();
+  const invalidateUserProfile = useInvalidateUserProfile();
+  const [localGold, setLocalGold] = useState(0);
+  const [isGoldAnimated, setIsGoldAnimated] = useState(false);
+
+  // Sync gold from profile on load
+  useEffect(() => {
+    setLocalGold(profile.goldEarned);
+  }, [profile.goldEarned]);
 
   useEffect(() => {
     loadExamData();
@@ -218,6 +231,13 @@ export default function ExamPreparation() {
             amount: Math.min(points, 100),
           });
           if (goldError) console.error('Failed to award gold:', goldError);
+          else {
+            // Update gold display immediately + refresh profile cache
+            setLocalGold(prev => prev + Math.min(points, 100));
+            setIsGoldAnimated(true);
+            setTimeout(() => setIsGoldAnimated(false), 1500);
+            invalidateUserProfile();
+          }
         }
       } catch (error) {
         console.error('Error in gold award flow:', error);
@@ -276,10 +296,14 @@ export default function ExamPreparation() {
                 <AvatarImage src={judeProfile} alt="Jude" />
                 <AvatarFallback className="bg-primary/10 text-primary font-bold">J</AvatarFallback>
               </Avatar>
-              <div className="min-w-0">
-                <p className="text-sm sm:text-base font-semibold text-foreground">
-                  Salut! Je suis Jude, ton tuteur pour cet examen 👋
-                </p>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm sm:text-base font-semibold text-foreground">
+                    Salut! Je suis Jude, ton tuteur pour cet examen 👋
+                  </p>
+                  {/* Gold balance — updates reactively after correct answers */}
+                  <GoldBadge goldAmount={localGold} animated={isGoldAnimated} />
+                </div>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 line-clamp-2">
                   Voici <strong>quelques questions</strong> de <span className="font-medium">{exam?.title || "cet examen"}</span> — pas toutes! Si tu bloques, demande-moi de l'aide.
                 </p>
