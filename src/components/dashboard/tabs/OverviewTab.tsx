@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Play, ArrowRight, Edit3, Sparkles, X, Flame, Target, Trophy, BookOpen, Award, Clock } from "lucide-react";
 import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { QuickActionsCard } from "@/components/dashboard/QuickActionsCard";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -93,6 +94,8 @@ export const OverviewTab = ({
 }: OverviewTabProps) => {
   const navigate = useNavigate();
   const { shouldAnimate } = useNetworkAwareAnimations();
+  // Use cached profile gold instead of stale analytics.gold from one-time fetch
+  const { profile } = useUserProfile();
 
   const goalPercentage = Math.min((analytics.weeklyGoal.current / analytics.weeklyGoal.target) * 100, 100);
 
@@ -111,7 +114,7 @@ export const OverviewTab = ({
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center mb-1.5">
                 <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500" />
               </div>
-              <span className="text-lg sm:text-xl font-bold text-foreground">{analytics.gold}</span>
+              <span className="text-lg sm:text-xl font-bold text-foreground">{profile.goldEarned}</span>
               <span className="text-[10px] sm:text-xs text-muted-foreground">Gold</span>
             </div>
             <div className="flex flex-col items-center text-center">
@@ -141,7 +144,7 @@ export const OverviewTab = ({
       </Card>
 
       {/* KPI zero helper — disappears once any stat is non-zero */}
-      {analytics.gold === 0 && analytics.totalLessonsCompleted === 0 && analytics.averageScore === 0 && analytics.studyTimeThisWeek === 0 && (
+      {profile.goldEarned === 0 && analytics.totalLessonsCompleted === 0 && analytics.averageScore === 0 && analytics.studyTimeThisWeek === 0 && (
         <p className="text-xs text-muted-foreground text-center -mt-2 mb-2">
           Complète ta première leçon pour commencer à accumuler des points ! 🎯
         </p>
