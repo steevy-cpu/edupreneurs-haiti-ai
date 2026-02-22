@@ -28,6 +28,8 @@ export default function ExamPreparation() {
   const [score, setScore] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [referenceTexts, setReferenceTexts] = useState<ReferenceText[]>([]);
+  // Tracks exercises completed across ALL sessions — prevents cross-session gold farming
+  const [globallyCompletedExercises, setGloballyCompletedExercises] = useState<number[]>([]);
 
   useEffect(() => {
     loadExamData();
@@ -106,6 +108,17 @@ export default function ExamPreparation() {
       setScore(sessionData.score);
       const completed = sessionData.completed_exercises as number[];
       setCompletedExercises(Array.isArray(completed) ? completed : []);
+
+      // Query permanent completion records to prevent cross-session gold re-earning
+      const { data: globalCompletions } = await supabase
+        .from('exam_exercise_completions')
+        .select('exercise_number')
+        .eq('user_id', user.user.id)
+        .eq('exam_id', examData.id);
+
+      if (globalCompletions) {
+        setGloballyCompletedExercises(globalCompletions.map(c => c.exercise_number));
+      }
     } catch (error) {
       console.error('Error loading exam data:', error);
       toast({
@@ -161,7 +174,8 @@ export default function ExamPreparation() {
   const handleAnswerValidated = async (isCorrect: boolean, points: number) => {
     if (!session?.id) return;
     
-    if (isCorrect && !completedExercises.includes(currentExercise)) {
+    // Guard: skip gold if already completed in this session OR any prior session
+    if (isCorrect && !completedExercises.includes(currentExercise) && !globallyCompletedExercises.includes(currentExercise)) {
       const newScore = score + points;
       const newCompleted = [...completedExercises, currentExercise];
 
@@ -169,6 +183,7 @@ export default function ExamPreparation() {
       setCompletedExercises(newCompleted);
 
       // Update session with error handling
+      const { data: userData } = await supabase.auth.getUser();
       const { error: sessionError } = await supabase
         .from('exam_practice_sessions')
         .update({
@@ -181,9 +196,22 @@ export default function ExamPreparation() {
         console.error('Failed to update session score:', sessionError);
       }
 
+      // Record permanent completion to prevent cross-session re-earning
+      if (userData.user) {
+        await supabase
+          .from('exam_exercise_completions')
+          .upsert({
+            user_id: userData.user.id,
+            exam_id: exam.id,
+            exercise_number: currentExercise,
+          }, { onConflict: 'user_id,exam_id,exercise_number', ignoreDuplicates: true });
+
+        // Update local state so re-earning is blocked immediately
+        setGloballyCompletedExercises(prev => [...prev, currentExercise]);
+      }
+
       // Award gold to profile atomically via server-side RPC
       try {
-        const { data: userData } = await supabase.auth.getUser();
         if (userData.user) {
           const { error: goldError } = await supabase.rpc('increment_gold', {
             p_user_id: userData.user.id,
