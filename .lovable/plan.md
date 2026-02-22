@@ -1,77 +1,79 @@
 
 
-# Fix Three Bugs in InteractiveQuiz.tsx
+# Fix Lesson Completion Recording in LessonQuizTab.tsx
 
-## Overview
-Three bugs cause lesson completion to silently fail in `InteractiveQuiz.tsx`. All changes are confined to this single file.
+## Problem
+`QuizRenderer` calls `onComplete(score, total)` when a student finishes the quiz, but the current handler in `LessonQuizTab` only logs to console. No `lesson_completions` record is created, no gold is awarded, and no confetti fires. The dashboard therefore never shows the lesson as completed.
 
----
+## Solution
+Add full completion logic to `LessonQuizTab.tsx` -- the single file being changed. All required data (`lessonSlug`, `subjectName`, `onGoldUpdate`) is already available as props.
 
-## Bug 1: topicId Silent Exit (Line 310)
+## Changes (single file: `LessonQuizTab.tsx`)
 
-**Problem:** `markLessonComplete` exits immediately if `topicId` (from `useParams()`) is undefined, which happens for non-math lessons. The same issue exists in the completion check `useEffect` at line 105.
+### 1. New imports (top of file)
+- `useState`, `useEffect`, `useCallback` from React
+- `supabase` from `@/integrations/supabase/client`
+- `useSessionAuth` from `@/contexts/SessionAuthContext` (follows project standard -- no direct `supabase.auth.getUser()`)
+- `confetti` from `canvas-confetti` (already installed)
+- `toast` from `sonner` or `useToast` from `@/hooks/use-toast` (match existing pattern in the file's neighbors)
 
-**Fix:**
-- Add optional `lessonSlug` and `subject` props to `InteractiveQuizProps`
-- Create a `completionId` fallback chain: `topicId || lessonSlug || 'unknown'`
-- Use `completionId` in both `markLessonComplete` (line 310) and the completion-check `useEffect` (line 105)
-- Update guard: `if (!completionId || isLessonCompleted) return;`
+### 2. Add `isLessonCompleted` state + mount check
+- `const [isLessonCompleted, setIsLessonCompleted] = useState(false)`
+- `useEffect` on mount: query `lesson_completions` where `user_id = user.id`, `lesson_slug = lessonSlug`, `subject = subjectName.toLowerCase()`. If a row exists, set `isLessonCompleted = true`.
+- Dependencies: `[user?.id, lessonSlug, subjectName]`
+- Guard: skip query if no user (unauthenticated visitors)
 
-## Bug 2: Hardcoded Subject (Lines 115, 329)
+### 3. Create `handleQuizComplete(score, total)` callback
+Step-by-step logic:
 
-**Problem:** `subject` is hardcoded to `'mathematiques'` in both the completion check query (line 115) and the upsert (line 329). Non-math lessons are never recorded or detected.
-
-**Fix:**
-- Add optional `subject?: string` prop with fallback `'general'`
-- Replace both hardcoded `'mathematiques'` strings with `subject` prop value
-
-## Bug 3: Stale Score Closure (Line 382)
-
-**Problem:** `handleNext` calls `markLessonComplete(score, ...)` but if the last answer was correct, `score` hasn't been updated yet by React's async `setScore`. The completion function receives a score that's 1 too low.
-
-**Fix:**
-- Add `useRef` import
-- Create `const scoreRef = useRef(score)` and sync it: `useEffect(() => { scoreRef.current = score; }, [score])`
-- Line 382: Change `markLessonComplete(score, questions.length)` to `markLessonComplete(scoreRef.current, questions.length)`
-
----
-
-## Technical Details
-
-### Modified Interface
-```typescript
-interface InteractiveQuizProps {
-  content: string;
-  isLoading: boolean;
-  onRegenerate?: () => void;
-  lessonGoldReward?: number;
-  onGoldUpdate?: () => void;
-  lessonSlug?: string;   // NEW — fallback identifier for non-math lessons
-  subject?: string;      // NEW — actual subject name, defaults to 'general'
-}
+```
+1. Calculate percentage = Math.round((score / total) * 100)
+2. If percentage < 80:
+   - Show toast: "Tu as besoin de 80% pour valider la lecon. Reessaie!"
+   - Return early (no completion recorded)
+3. If isLessonCompleted already true:
+   - Show toast: "Lecon deja completee!"
+   - Return early (prevent duplicate gold)
+4. Upsert into lesson_completions:
+   { user_id, lesson_slug: lessonSlug, subject: subjectName.toLowerCase(),
+     score: percentage, completed_at: new Date().toISOString() }
+   conflict on (user_id, lesson_slug, subject)
+5. If upsert error: log and show error toast, return
+6. Call increment_gold RPC: amount = Math.min(score + 50, 100)
+   - RPC validates 1-100 range server-side
+7. Call onGoldUpdate?.() to refresh GoldBadge
+8. Set isLessonCompleted = true
+9. First-completion confetti:
+   if (!localStorage.getItem('first-lesson-celebrated')):
+     localStorage.setItem('first-lesson-celebrated', 'true')
+     confetti({ particleCount: 120, spread: 80, colors: ['#8b5cf6', '#f59e0b', '#10b981'] })
+10. Show success toast: "Lecon completee! Tu as gagne X Gold!"
 ```
 
-### Lines Changed
-| Line(s) | Change |
-|---------|--------|
-| 1 | Add `useRef` to React import |
-| 32-38 | Add `lessonSlug` and `subject` props |
-| 90 | Destructure new props with defaults |
-| 91-92 | Compute `completionId` from fallback chain |
-| ~96 | Add `scoreRef` + sync effect |
-| 105 | Use `completionId` instead of `topicId` in completion check |
-| 115 | Use `subject` prop instead of hardcoded `'mathematiques'` |
-| 310 | Use `completionId` in guard |
-| 328-329 | Use `completionId` for `lesson_slug`, `subject` prop for `subject` |
-| 382 | Use `scoreRef.current` instead of `score` |
+### 4. Wire `handleQuizComplete` to `QuizRenderer`
+Replace lines 134-138:
+```typescript
+onComplete={(score, total) => {
+  console.log(`Quiz completed: ${score}/${total}`);
+  onGoldUpdate?.();
+}}
+```
+With:
+```typescript
+onComplete={handleQuizComplete}
+```
 
-### Safety
+## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| No new dependencies | OK |
-| No DB schema changes | OK |
-| Backward compatible (new props optional) | OK |
-| No Provider/AppShell changes | OK |
-| Single file change | OK |
+| No new dependencies added | OK -- canvas-confetti and supabase client already installed |
+| No DB schema changes | OK -- lesson_completions table and increment_gold RPC already exist |
+| Uses useSessionAuth (not supabase.auth.getUser) | OK -- follows project standard |
+| RLS respected | OK -- upsert goes through authenticated client, increment_gold checks auth.uid() |
+| Gold capped at 100 | OK -- Math.min(score + 50, 100) stays within RPC's 1-100 validation |
+| Backward compatible | OK -- no prop changes, no interface changes |
+| Single file changed | OK -- only LessonQuizTab.tsx |
+| 3G safe | OK -- single upsert + single RPC, no waterfall |
+| Duplicate completion prevented | OK -- isLessonCompleted guard + upsert conflict resolution |
 
