@@ -1,102 +1,125 @@
 
 
-# Fix ExamPreparation Cross-Session Gold Re-Earning
+# Gold Visibility During Lessons
 
 ## Overview
-Two changes: one DB migration to create a permanent completion tracking table, one component update to check it before awarding gold.
+Five surgical changes to make the student's gold balance visible and reactive during lessons and exam practice. No new database queries needed -- we add `gold_earned` to the existing `useUserProfile` hook and use query invalidation for reactivity.
 
 ---
 
-## Step 1 -- Database Migration
+## Fix 1 -- Create `src/components/shared/GoldBadge.tsx`
 
-Create `exam_exercise_completions` table with RLS:
+A lightweight, reusable pill badge component:
 
-```sql
-CREATE TABLE exam_exercise_completions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  exam_id uuid NOT NULL,
-  exercise_number integer NOT NULL,
-  completed_at timestamptz DEFAULT now(),
-  UNIQUE(user_id, exam_id, exercise_number)
-);
+- **Props:** `goldAmount: number`, `animated?: boolean` (triggers a pulse animation when true)
+- **Display:** Gold coin emoji + formatted number (e.g., "1,250 Gold")
+- **Styling:** Amber/gold pill (`bg-amber-100 text-amber-800`, dark mode: `dark:bg-amber-900/30 dark:text-amber-300`), compact (`text-xs px-2 py-0.5`)
+- **Animation:** When `animated` is true, apply a brief `animate-pulse` for ~1s via a `useEffect` that auto-clears
+- **Export** from `src/components/shared/index.ts`
 
-ALTER TABLE exam_exercise_completions ENABLE ROW LEVEL SECURITY;
+No new dependencies. Pure Tailwind + React state.
 
-CREATE POLICY "Users can read own completions"
-  ON exam_exercise_completions FOR SELECT
-  USING (auth.uid() = user_id);
+---
 
-CREATE POLICY "Users can insert own completions"
-  ON exam_exercise_completions FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+## Fix 2 -- Add `gold_earned` to `useUserProfile`
+
+**File:** `src/hooks/useUserProfile.ts`
+
+- **Line 19:** Add `goldEarned: number` to the `CachedUserProfile` interface
+- **Line 27:** Add `goldEarned: 0` to `FALLBACK_PROFILE`
+- **Line 36:** Change select to `"avatar_url, nickname, academic_grade, gold_earned"`
+- **Line 63:** Add `goldEarned: profile?.gold_earned ?? 0` to the returned profile object
+
+This makes gold available everywhere `useUserProfile` is already called, with zero additional queries. The existing 10-minute stale time and localStorage persistence apply automatically.
+
+---
+
+## Fix 3 -- Wire gold display in `LessonHeader`
+
+**File:** `src/features/matieres/components/LessonHeader.tsx`
+
+- Add new props: `goldEarned: number`, `onGoldUpdate?: (amount: number) => void`
+- Add `useState` for `currentGold` (initialized from `goldEarned`) and `isGoldAnimated`
+- Add a `useEffect` syncing `currentGold` when `goldEarned` prop changes (for initial load)
+- Render `<GoldBadge goldAmount={currentGold} animated={isGoldAnimated} />` inside the badges row (line 61-68), after the "Terminee" badge
+- Expose a method pattern: when `onGoldUpdate` fires from child components, increment `currentGold` locally and trigger animation
+
+**File:** `src/components/LessonPageTemplate.tsx`
+
+- Import `useUserProfile` and `useInvalidateUserProfile`
+- Add `handleGoldUpdate` callback that:
+  1. Calls `invalidateUserProfile()` to refresh the cached gold
+  2. Passes the amount up to `LessonHeader` for immediate local increment + animation
+- Pass `goldEarned={profile.goldEarned}` and `onGoldUpdate={handleGoldUpdate}` to `<LessonHeader>`
+- Pass `onGoldUpdate={handleGoldUpdate}` to `<LessonActivitiesTab>` and `<LessonQuizTab>`
+
+---
+
+## Fix 4 -- Wire `onGoldUpdate` through tab components
+
+### `LessonActivitiesTab.tsx`
+- Add `onGoldUpdate?: () => void` to `LessonActivitiesTabProps`
+- Pass `onGoldUpdate={onGoldUpdate}` to both `<InteractiveActivitiesEnhanced>` instances (lines 82, 123)
+
+### `LessonQuizTab.tsx`
+- Add `onGoldUpdate?: () => void` to `LessonQuizTabProps`
+- The `QuizRenderer` component does not currently support `onGoldUpdate` -- it only has `onComplete`. We will NOT modify `QuizRenderer` internals. Instead, wire `onGoldUpdate` to the `onComplete` callback in `LessonQuizTab`: when `onComplete` fires, also call `onGoldUpdate?.()`.
+- Pass `onGoldUpdate` to the legacy `<HTMLQuizParser>` if it accepts it (it does not currently -- we skip this to avoid scope creep; HTMLQuizParser is legacy fallback only).
+
+### Data flow
+
+```text
+LessonPageTemplate
+  |-- useUserProfile() --> goldEarned
+  |-- handleGoldUpdate() --> invalidateUserProfile + local state
+  |
+  |-- LessonHeader (goldEarned, onGoldUpdate)
+  |     |-- GoldBadge (goldAmount, animated)
+  |
+  |-- LessonActivitiesTab (onGoldUpdate)
+  |     |-- InteractiveActivitiesEnhanced (onGoldUpdate) --> calls on correct answer
+  |
+  |-- LessonQuizTab (onGoldUpdate)
+        |-- QuizRenderer (onComplete) --> triggers onGoldUpdate
 ```
 
 ---
 
-## Step 2 -- Update ExamPreparation.tsx
+## Fix 5 -- Gold display in `ExamPreparation`
 
-**File: `src/pages/ExamPreparation.tsx`**
+**File:** `src/pages/ExamPreparation.tsx`
 
-### 2a. Add state (after line 32)
-- Add `globallyCompletedExercises` state: `useState<number[]>([])`
-
-### 2b. Query on mount (after line 101, inside loadExamData)
-After loading/creating the session, query `exam_exercise_completions`:
-```typescript
-const { data: globalCompletions } = await supabase
-  .from('exam_exercise_completions')
-  .select('exercise_number')
-  .eq('user_id', user.user.id)
-  .eq('exam_id', examData.id);
-
-if (globalCompletions) {
-  setGloballyCompletedExercises(globalCompletions.map(c => c.exercise_number));
-}
-```
-
-### 2c. Update gold guard (line 164)
-Change from:
-```typescript
-if (isCorrect && !completedExercises.includes(currentExercise))
-```
-To:
-```typescript
-if (isCorrect && !completedExercises.includes(currentExercise) && !globallyCompletedExercises.includes(currentExercise))
-```
-
-### 2d. Insert completion record (after line 178, inside the gold award block)
-After updating the session, insert into `exam_exercise_completions` with conflict ignore:
-```typescript
-await supabase
-  .from('exam_exercise_completions')
-  .upsert({
-    user_id: userData.user.id,
-    exam_id: exam.id,
-    exercise_number: currentExercise,
-  }, { onConflict: 'user_id,exam_id,exercise_number', ignoreDuplicates: true });
-```
-
-Move the `getUser()` call before the session update so `userData` is available for both the completion insert and the gold RPC.
+- Import `useUserProfile`, `useInvalidateUserProfile`, and `GoldBadge`
+- Add local `goldDisplay` state initialized from `profile.goldEarned`
+- In `handleAnswerValidated`, after gold is awarded successfully, call `invalidateUserProfile()` and increment local `goldDisplay`
+- Render `<GoldBadge>` in the Jude welcome banner area (line 274-287), aligned right alongside the existing avatar
 
 ---
 
-## Files touched
+## Files Summary
 
-| File | Change |
+| File | Action |
 |------|--------|
-| DB migration | New `exam_exercise_completions` table + RLS |
-| `src/pages/ExamPreparation.tsx` | Add global completion state, query on mount, update guard, insert on completion |
+| `src/components/shared/GoldBadge.tsx` | Create new |
+| `src/components/shared/index.ts` | Add export |
+| `src/hooks/useUserProfile.ts` | Add `gold_earned` to select + interface |
+| `src/features/matieres/components/LessonHeader.tsx` | Add GoldBadge + props |
+| `src/components/LessonPageTemplate.tsx` | Wire useUserProfile + onGoldUpdate |
+| `src/features/matieres/components/tabs/LessonActivitiesTab.tsx` | Pass onGoldUpdate through |
+| `src/features/matieres/components/tabs/LessonQuizTab.tsx` | Pass onGoldUpdate through |
+| `src/pages/ExamPreparation.tsx` | Add GoldBadge |
 
-## Safety verification
+## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| RLS on new table | Yes -- SELECT and INSERT for own rows only |
-| No existing tables modified | Correct |
-| Session-level tracking unchanged | Correct -- additive only |
-| Unique constraint prevents duplicates | Yes -- `(user_id, exam_id, exercise_number)` |
-| Backward compatible | Yes -- no prop or API changes |
-| Works on 3G | Yes -- one extra SELECT on mount, tiny payload |
-| increment_gold cap respected | Unchanged |
+| No new DB queries (piggybacks on existing profile fetch) | OK |
+| No new dependencies | OK |
+| No changes to Provider stack or AppShell | OK |
+| useUserProfile staleTime/gcTime unchanged | OK |
+| Works on 3G (no extra network calls) | OK |
+| Existing gold award logic untouched | OK |
+| No RLS changes needed | OK |
+| Bundle impact minimal (~1KB for GoldBadge) | OK |
+| Backward compatible (all new props optional) | OK |
 
