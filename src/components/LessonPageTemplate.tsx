@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { BookOpen, FileText, Gamepad2, Target, GraduationCap, Sparkles } from "lucide-react";
+import { useUserProfile, useInvalidateUserProfile } from "@/hooks/useUserProfile";
 
 import { LessonHeader } from "@/features/matieres/components/LessonHeader";
 import { TabErrorBoundary } from "@/features/matieres/components/TabErrorBoundary";
@@ -55,6 +56,16 @@ export const LessonPageTemplate = ({
   const [viewedTabs, setViewedTabs] = useState<Set<string>>(new Set(["introduction"]));
   const [isLessonCompleted, setIsLessonCompleted] = useState(false);
   const [hasNotes, setHasNotes] = useState(false);
+
+  // Gold balance from cached profile — no extra query
+  const { profile } = useUserProfile();
+  const invalidateUserProfile = useInvalidateUserProfile();
+
+  // Callback for child components (quiz/activities) when gold is awarded
+  const handleGoldUpdate = useCallback(() => {
+    // Invalidate profile cache to pick up new gold_earned from DB
+    invalidateUserProfile();
+  }, [invalidateUserProfile]);
 
   // Calculate stats
   const activitiesCount = countActivities(lesson.activites_interactives) ||
@@ -108,6 +119,8 @@ export const LessonPageTemplate = ({
         gradeLevel={gradeLevel}
         judeImage={judeImage}
         isLessonCompleted={isLessonCompleted}
+        goldEarned={profile.goldEarned}
+        onGoldUpdate={handleGoldUpdate}
       />
 
       {/* Navigation & Stats */}
@@ -208,6 +221,7 @@ export const LessonPageTemplate = ({
                 lessonContent={lesson.contenu}
                 lessonExamples={lesson.exemples_exercices}
                 legacyActivitiesHtml={lesson.activites_interactives}
+                onGoldUpdate={handleGoldUpdate}
               />
             </TabErrorBoundary>
           </TabsContent>
@@ -223,6 +237,7 @@ export const LessonPageTemplate = ({
                 lessonContent={lesson.contenu}
                 lessonExamples={lesson.exemples_exercices}
                 legacyQuizHtml={lesson.quiz_final}
+                onGoldUpdate={handleGoldUpdate}
               />
             </TabErrorBoundary>
           </TabsContent>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { MathContent, isMathSubject } from "@/components/MathContent";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { stripHtmlToText } from "@/lib/text-utils";
 import { getSubjectGradient, MOTIVATIONAL_MESSAGES } from "@/features/matieres/utils/lesson-stats";
+import { GoldBadge } from "@/components/shared/GoldBadge";
 import type { LessonData } from "@/features/matieres/types/lesson.types";
 
 interface LessonHeaderProps {
@@ -18,6 +19,10 @@ interface LessonHeaderProps {
   gradeLevel: string;
   judeImage: string;
   isLessonCompleted: boolean;
+  /** Initial gold balance from profile */
+  goldEarned?: number;
+  /** Called by parent when gold is awarded in a child component */
+  onGoldUpdate?: (amount: number) => void;
 }
 
 export const LessonHeader = ({
@@ -27,9 +32,20 @@ export const LessonHeader = ({
   gradeLevel,
   judeImage,
   isLessonCompleted,
+  goldEarned = 0,
+  onGoldUpdate,
 }: LessonHeaderProps) => {
   const navigate = useNavigate();
   const [isObjectifExpanded, setIsObjectifExpanded] = useState(false);
+
+  // Local gold state for immediate UI feedback before query refetch
+  const [currentGold, setCurrentGold] = useState(goldEarned);
+  const [isGoldAnimated, setIsGoldAnimated] = useState(false);
+
+  // Sync when profile data loads/changes
+  useEffect(() => {
+    setCurrentGold(goldEarned);
+  }, [goldEarned]);
 
   // Stable per session
   const [motivationalMessage] = useState(() =>
@@ -66,6 +82,8 @@ export const LessonHeader = ({
                     ✓ Terminée
                   </Badge>
                 )}
+                {/* Gold balance indicator — updates reactively on gold award */}
+                <GoldBadge goldAmount={currentGold} animated={isGoldAnimated} />
               </div>
 
               {/* Title */}

@@ -16,6 +16,8 @@ interface LessonQuizTabProps {
   lessonContent: string;
   lessonExamples: string;
   legacyQuizHtml?: string | null;
+  /** Called when gold is awarded after quiz completion */
+  onGoldUpdate?: () => void;
 }
 
 /**
@@ -32,6 +34,7 @@ export function LessonQuizTab({
   lessonContent,
   lessonExamples,
   legacyQuizHtml,
+  onGoldUpdate,
 }: LessonQuizTabProps) {
   const { data, isLoading, isGenerating, error, isStale, regenerate } = useAIGeneratedQuiz({
     lessonId,
@@ -130,6 +133,8 @@ export function LessonQuizTab({
             payload={data}
             onComplete={(score, total) => {
               console.log(`Quiz completed: ${score}/${total}`);
+              // Trigger gold refresh after quiz completion
+              onGoldUpdate?.();
             }}
           />
         </CardContent>
