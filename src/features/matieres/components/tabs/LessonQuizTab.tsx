@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from 'react';
 import { QuizRenderer } from '@/features/matieres/renderers/QuizRenderer';
 import { HTMLQuizParser } from '@/components/HTMLQuizParser';
 import { useAIGeneratedQuiz } from '@/features/matieres/hooks/useAIGeneratedContent';
@@ -6,6 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import judeChairDesk from '@/assets/eric-chair-desk.png';
+import { supabase } from '@/integrations/supabase/client';
+import { useSessionAuth } from '@/contexts/SessionAuthContext';
+import confetti from 'canvas-confetti';
+import { toast } from 'sonner';
 
 interface LessonQuizTabProps {
   lessonId: string;
@@ -36,6 +41,9 @@ export function LessonQuizTab({
   legacyQuizHtml,
   onGoldUpdate,
 }: LessonQuizTabProps) {
+  const { user } = useSessionAuth();
+  const [isLessonCompleted, setIsLessonCompleted] = useState(false);
+
   const { data, isLoading, isGenerating, error, isStale, regenerate } = useAIGeneratedQuiz({
     lessonId,
     contentType: 'quiz',
@@ -47,6 +55,76 @@ export function LessonQuizTab({
     subjectSlug,
     lessonSlug,
   });
+
+  // Check if lesson is already completed on mount — prevents duplicate gold awards
+  useEffect(() => {
+    if (!user?.id || !lessonSlug) return;
+    supabase
+      .from('lesson_completions')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('lesson_slug', lessonSlug)
+      .eq('subject', subjectName.toLowerCase())
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setIsLessonCompleted(true);
+      });
+  }, [user?.id, lessonSlug, subjectName]);
+
+  // Handles quiz completion: validates score, records completion, awards gold
+  const handleQuizComplete = useCallback(async (score: number, total: number) => {
+    const percentage = Math.round((score / total) * 100);
+
+    // Require 80% to pass
+    if (percentage < 80) {
+      toast.info('Tu as besoin de 80% pour valider la leçon. Réessaie!');
+      return;
+    }
+
+    // Guard against duplicate gold — lesson already completed
+    if (isLessonCompleted) {
+      toast.info('Leçon déjà complétée!');
+      return;
+    }
+
+    if (!user?.id) return;
+
+    // Upsert completion record (conflict on user_id + lesson_slug + subject)
+    const { error: upsertErr } = await supabase
+      .from('lesson_completions')
+      .upsert(
+        {
+          user_id: user.id,
+          lesson_slug: lessonSlug,
+          subject: subjectName.toLowerCase(),
+          score: percentage,
+          completed_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id,lesson_slug,subject' }
+      );
+
+    if (upsertErr) {
+      console.error('Completion upsert failed:', upsertErr);
+      toast.error('Erreur lors de l\'enregistrement. Réessaie.');
+      return;
+    }
+
+    // Award gold — capped at 100 by Math.min, validated 1-100 server-side
+    const goldAmount = Math.min(score + 50, 100);
+    await supabase.rpc('increment_gold', { p_user_id: user.id, amount: goldAmount });
+
+    // Refresh GoldBadge in lesson header
+    onGoldUpdate?.();
+    setIsLessonCompleted(true);
+
+    // First-ever completion celebration
+    if (!localStorage.getItem('first-lesson-celebrated')) {
+      localStorage.setItem('first-lesson-celebrated', 'true');
+      confetti({ particleCount: 120, spread: 80, colors: ['#8b5cf6', '#f59e0b', '#10b981'] });
+    }
+
+    toast.success(`🎉 Leçon complétée! Tu as gagné ${goldAmount} Gold!`);
+  }, [user?.id, lessonSlug, subjectName, isLessonCompleted, onGoldUpdate]);
 
   // Loading / Generating state
   if (isLoading || isGenerating) {
@@ -131,11 +209,7 @@ export function LessonQuizTab({
         <CardContent className="p-3 sm:p-6">
           <QuizRenderer
             payload={data}
-            onComplete={(score, total) => {
-              console.log(`Quiz completed: ${score}/${total}`);
-              // Trigger gold refresh after quiz completion
-              onGoldUpdate?.();
-            }}
+            onComplete={handleQuizComplete}
           />
         </CardContent>
       </Card>
