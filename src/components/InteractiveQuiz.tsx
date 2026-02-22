@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import DOMPurify from "dompurify";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +35,10 @@ interface InteractiveQuizProps {
   onRegenerate?: () => void;
   lessonGoldReward?: number;
   onGoldUpdate?: () => void;
+  /** Fallback identifier when topicId route param is unavailable (non-math lessons) */
+  lessonSlug?: string;
+  /** Actual subject name for completion recording — defaults to 'general' */
+  subject?: string;
 }
 
 const parseHTMLQuestions = (htmlContent: string): QuizQuestion[] => {
@@ -87,8 +91,10 @@ const parseHTMLQuestions = (htmlContent: string): QuizQuestion[] => {
   return questions;
 };
 
-export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldReward = 100, onGoldUpdate }: InteractiveQuizProps) => {
+export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldReward = 100, onGoldUpdate, lessonSlug, subject = 'general' }: InteractiveQuizProps) => {
   const { topicId } = useParams();
+  // Fallback chain: route param → prop → avoids silent exit for non-math lessons
+  const completionId = topicId || lessonSlug || 'unknown';
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -99,10 +105,14 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
   const { playSound } = useSoundEffects();
   const { toast } = useToast();
 
-  // Check if lesson is already completed
+  // Ref tracks real-time score to avoid stale closure in handleNext → markLessonComplete
+  const scoreRef = useRef(score);
+  useEffect(() => { scoreRef.current = score; }, [score]);
+
+  // Check if lesson is already completed — uses completionId and actual subject
   useEffect(() => {
     const checkCompletion = async () => {
-      if (!topicId) return;
+      if (!completionId || completionId === 'unknown') return;
       
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -111,8 +121,8 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
         .from('lesson_completions')
         .select('*')
         .eq('user_id', user.id)
-        .eq('lesson_slug', topicId)
-        .eq('subject', 'mathematiques')
+        .eq('lesson_slug', completionId)
+        .eq('subject', subject)
         .maybeSingle();
 
       if (data) {
@@ -121,7 +131,7 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
     };
 
     checkCompletion();
-  }, [topicId]);
+  }, [completionId, subject]);
 
   // Per-answer awardGold() removed — gold is now consolidated into markLessonComplete()
 
@@ -307,7 +317,8 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
   };
 
   const markLessonComplete = async (finalScore: number, totalQuestions: number) => {
-    if (!topicId || isLessonCompleted) return;
+    // Guard: completionId fallback chain ensures non-math lessons aren't silently skipped
+    if (!completionId || completionId === 'unknown' || isLessonCompleted) return;
     
     const percentage = Math.round((finalScore / totalQuestions) * 100);
     
@@ -325,8 +336,8 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
         .from('lesson_completions')
         .upsert({
           user_id: user.id,
-          lesson_slug: topicId,
-          subject: 'mathematiques',
+          lesson_slug: completionId,
+          subject: subject,
           score: percentage,
           completed_at: new Date().toISOString()
         }, {
@@ -379,7 +390,8 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
     } else {
       setCompleted(true);
       // Mark lesson complete when quiz is finished
-      await markLessonComplete(score, questions.length);
+      // Use scoreRef to avoid stale closure — score state may not reflect last correct answer yet
+      await markLessonComplete(scoreRef.current, questions.length);
     }
   };
 
