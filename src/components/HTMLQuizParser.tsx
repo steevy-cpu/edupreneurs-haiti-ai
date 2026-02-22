@@ -161,11 +161,7 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
     if (isCorrect) {
       setScore(score + 1);
       playSound('correct');
-      
-      // Award gold for correct answer if lesson not completed
-      if (!isLessonCompleted) {
-        await awardGold(1);
-      }
+      // Per-answer gold removed — all gold consolidated to finishQuiz() to prevent partial farming
     } else {
       playSound('incorrect');
     }
@@ -201,7 +197,8 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
     
     const percentage = Math.round((score / questions.length) * 100);
     const passed = percentage >= 80;
-    const goldEarned = passed ? Math.max(10, Math.round(percentage / 10) * 5) : 0;
+    // Consolidate per-answer gold + completion bonus into one award, capped at 100 per RPC
+    const goldEarned = passed ? Math.min(score + Math.max(10, Math.round(percentage / 10) * 5), 100) : 0;
     
     if (passed) {
       playSound('correct');

@@ -123,24 +123,7 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
     checkCompletion();
   }, [topicId]);
 
-  const awardGold = async () => {
-    // Don't award gold if lesson is already completed
-    if (isLessonCompleted) return;
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { error } = await supabase.rpc('increment_gold', {
-        p_user_id: user.id,
-        amount: 1,
-      });
-      if (error) console.error('Error awarding gold:', error);
-      else onGoldUpdate?.();
-    } catch (error) {
-      console.error('Error awarding gold:', error);
-    }
-  };
+  // Per-answer awardGold() removed — gold is now consolidated into markLessonComplete()
 
   const parseQuestions = (content: string): QuizQuestion[] => {
     console.log('🔍 Parsing quiz content:', content.substring(0, 200));
@@ -303,6 +286,7 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
     );
   }
 
+  // Per-answer gold removed — all gold consolidated to completion to prevent partial farming
   const handleAnswerSelect = async (index: number) => {
     if (showFeedback) return;
     
@@ -314,21 +298,11 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
     
     if (isCorrect) {
       setScore(prev => prev + 1);
-      
-      if (!isLessonCompleted) {
-        await awardGold();
-        toast({
-          title: "🎉 +1 Gold!",
-          description: "Bonne réponse!",
-          duration: 2000,
-        });
-      } else {
-        toast({
-          title: "✅ Bonne réponse!",
-          description: "Leçon déjà complétée - pas de points supplémentaires",
-          duration: 2000,
-        });
-      }
+      toast({
+        title: "✅ Bonne réponse!",
+        description: isLessonCompleted ? "Leçon déjà complétée" : "Continue!",
+        duration: 2000,
+      });
     }
   };
 
@@ -361,28 +335,29 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
 
       setIsLessonCompleted(true);
 
-      // Award completion gold atomically via server-side RPC
+      // Consolidate all gold into one award: correct answers + completion bonus, capped at 100 per RPC
+      const totalGold = Math.min(finalScore + lessonGoldReward, 100);
       const { error: goldError } = await supabase.rpc('increment_gold', {
         p_user_id: user.id,
-        amount: Math.min(lessonGoldReward, 100),
+        amount: totalGold,
       });
       if (goldError) {
         console.error('Failed to award completion gold:', goldError);
       } else {
         onGoldUpdate?.();
-        // Fix 3: First lesson celebration — confetti + special toast on very first completion
+        // First lesson celebration — confetti + special toast on very first completion
         if (!localStorage.getItem('first-lesson-celebrated')) {
           localStorage.setItem('first-lesson-celebrated', 'true');
           confetti({ particleCount: 120, spread: 80, colors: ['#8b5cf6', '#f59e0b', '#10b981'] });
           toast({
             title: "🎉 Félicitations! Tu as complété ta première leçon!",
-            description: `Continue comme ça! Tu as gagné ${lessonGoldReward} gold!`,
+            description: `Continue comme ça! Tu as gagné ${totalGold} gold!`,
             duration: 5000,
           });
         } else {
           toast({
             title: "🎉 Leçon complétée!",
-            description: `Tu as gagné ${lessonGoldReward} gold!`,
+            description: `Tu as gagné ${totalGold} gold!`,
             duration: 3000,
           });
         }
@@ -527,7 +502,7 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
                   🌟 Félicitations! Tu as réussi l'examen!
                 </p>
                 <p className="mt-3 text-sm">
-                  Leçon marquée comme complétée! +{lessonGoldReward} gold
+                  Leçon marquée comme complétée! +{Math.min(score + lessonGoldReward, 100)} gold
                 </p>
                 {isMarkingComplete && (
                   <Loader2 className="w-5 h-5 animate-spin mx-auto mt-2" />

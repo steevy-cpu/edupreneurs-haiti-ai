@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -18,28 +18,77 @@ interface QuizGameProps {
   questions: QuizQuestion[];
   onComplete: (score: number, goldEarned: number) => void;
   onRegenerate?: () => void;
+  /** Optional: enables completion tracking to prevent gold farming */
+  lessonSlug?: string;
+  /** Optional: subject for lesson_completions record */
+  subject?: string;
 }
 
-export const QuizGame = ({ topic, questions, onComplete, onRegenerate }: QuizGameProps) => {
+export const QuizGame = ({ topic, questions, onComplete, onRegenerate, lessonSlug, subject }: QuizGameProps) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  // Tracks whether this quiz was already completed — prevents gold farming on restart
+  const [isAlreadyCompleted, setIsAlreadyCompleted] = useState(false);
   const { toast } = useToast();
 
-  const awardGold = async () => {
+  // Check lesson_completions on mount to guard against repeated gold awards
+  useEffect(() => {
+    if (!lessonSlug) return;
+    const checkCompletion = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase
+          .from('lesson_completions')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('lesson_slug', lessonSlug)
+          .maybeSingle();
+        if (data) setIsAlreadyCompleted(true);
+      } catch (error) {
+        console.error('Error checking quiz completion:', error);
+      }
+    };
+    checkCompletion();
+  }, [lessonSlug]);
+
+  // Award gold only if not already completed — all gold awarded at completion, not per-answer
+  const awardCompletionGold = async (amount: number) => {
+    if (isAlreadyCompleted) return;
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-
       const { error } = await supabase.rpc('increment_gold', {
         p_user_id: user.id,
-        amount: 1,
+        amount: Math.min(amount, 100), // RPC caps at 100
       });
       if (error) console.error('Error awarding gold:', error);
     } catch (error) {
       console.error('Error awarding gold:', error);
+    }
+  };
+
+  // Save completion record so gold is not re-awarded on future attempts
+  const saveCompletion = async (finalScore: number) => {
+    if (!lessonSlug || isAlreadyCompleted) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase
+        .from('lesson_completions')
+        .upsert({
+          user_id: user.id,
+          lesson_slug: lessonSlug,
+          subject: subject || 'mathematiques',
+          score: Math.round((finalScore / questions.length) * 100),
+          completed_at: new Date().toISOString()
+        }, { onConflict: 'user_id,lesson_slug' });
+      setIsAlreadyCompleted(true);
+    } catch (error) {
+      console.error('Error saving quiz completion:', error);
     }
   };
 
@@ -54,24 +103,30 @@ export const QuizGame = ({ topic, questions, onComplete, onRegenerate }: QuizGam
     const isCorrect = selectedAnswer === questions[currentQuestion].correctAnswer;
     if (isCorrect) {
       setScore(score + 1);
-      await awardGold();
+      // No per-answer gold — all gold consolidated to completion
       toast({
-        title: "🎉 +1 Gold!",
-        description: "Bonne réponse!",
+        title: "✅ Bonne réponse!",
+        description: isAlreadyCompleted ? "Mode entraînement" : "Continue!",
         duration: 2000,
       });
     }
     setShowResult(true);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
       setSelectedAnswer(null);
       setShowResult(false);
     } else {
       setIsComplete(true);
-      onComplete(score, score);
+      const finalScore = score;
+      // Award all gold in one call at completion (not per-answer)
+      if (!isAlreadyCompleted && finalScore > 0) {
+        await awardCompletionGold(finalScore);
+        await saveCompletion(finalScore);
+      }
+      onComplete(finalScore, isAlreadyCompleted ? 0 : finalScore);
     }
   };
 
@@ -81,6 +136,14 @@ export const QuizGame = ({ topic, questions, onComplete, onRegenerate }: QuizGam
     setShowResult(false);
     setScore(0);
     setIsComplete(false);
+    // Inform student they're in practice mode if already completed
+    if (isAlreadyCompleted) {
+      toast({
+        title: "🏋️ Mode entraînement",
+        description: "Tu as déjà gagné les points pour ce quiz",
+        duration: 3000,
+      });
+    }
   };
 
   const progress = ((currentQuestion + 1) / questions.length) * 100;
@@ -100,9 +163,16 @@ export const QuizGame = ({ topic, questions, onComplete, onRegenerate }: QuizGam
           </p>
         </div>
         <div className="p-6 bg-accent/10 rounded-xl">
-          <p className="text-2xl font-bold gold-text">
-            +{score} gold gagnés! 🏆
-          </p>
+          {isAlreadyCompleted ? (
+            // Training mode — no gold earned on re-completion
+            <p className="text-lg font-medium text-muted-foreground">
+              🏋️ Mode entraînement — points déjà gagnés
+            </p>
+          ) : (
+            <p className="text-2xl font-bold gold-text">
+              +{score} gold gagnés! 🏆
+            </p>
+          )}
         </div>
         <div className="flex gap-3 justify-center">
           <Button onClick={handleRestart} variant="outline" size="lg">
