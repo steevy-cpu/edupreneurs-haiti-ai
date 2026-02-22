@@ -240,23 +240,30 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
           setIsLessonCompleted(true);
         }
 
-        // Award completion gold
-        await awardGold(goldEarned);
-        
-        // Fix 3: First lesson celebration — confetti + special toast on very first completion
-        if (!localStorage.getItem('first-lesson-celebrated')) {
-          localStorage.setItem('first-lesson-celebrated', 'true');
-          confetti({ particleCount: 120, spread: 80, colors: ['#8b5cf6', '#f59e0b', '#10b981'] });
-          toast({
-            title: "🎉 Félicitations! Tu as complété ta première leçon!",
-            description: `Continue comme ça! Tu as gagné ${goldEarned} points d'or!`,
-            duration: 5000,
-          });
+        // Award completion gold — only celebrate if RPC succeeds
+        const { error: goldError } = await supabase.rpc('increment_gold', {
+          p_user_id: user.id,
+          amount: goldEarned,
+        });
+
+        if (goldError) {
+          console.error('Error awarding gold:', goldError);
         } else {
-          toast({
-            title: "🏆 Leçon complétée !",
-            description: `Tu as gagné ${goldEarned} points d'or pour avoir terminé cette leçon !`,
-          });
+          // Fix 3: First lesson celebration — confetti + special toast on very first completion
+          if (!localStorage.getItem('first-lesson-celebrated')) {
+            localStorage.setItem('first-lesson-celebrated', 'true');
+            confetti({ particleCount: 120, spread: 80, colors: ['#8b5cf6', '#f59e0b', '#10b981'] });
+            toast({
+              title: "🎉 Félicitations! Tu as complété ta première leçon!",
+              description: `Continue comme ça! Tu as gagné ${goldEarned} points d'or!`,
+              duration: 5000,
+            });
+          } else {
+            toast({
+              title: "🏆 Leçon complétée !",
+              description: `Tu as gagné ${goldEarned} points d'or pour avoir terminé cette leçon !`,
+            });
+          }
         }
       } catch (error) {
         console.error('Error saving quiz completion:', error);
