@@ -1,121 +1,70 @@
 
 
-# Fix: Dashboard Stale Profile + Onboarding 3G Reliability
+# Gold Plan A -- Fix Gold Abuse Vectors
 
 ## Overview
-Three surgical fixes: (1) invalidate profile cache after onboarding saves data, (2) add retry logic to `saveField()` with localStorage backup, (3) confirm image loading attributes and add dimensions.
+Three surgical fixes to close gold farming exploits: add completion guard to QuizGame, consolidate per-answer gold to completion-only in InteractiveQuiz and HTMLQuizParser.
 
 ---
 
-## Fix 1 -- Invalidate profile cache after onboarding completes
+## Fix 1 -- QuizGame completion guard
 
-**Problem:** `useUserProfile` has `staleTime: 10min` and `refetchOnMount: false`. After onboarding saves nickname/grade/avatar, the dashboard shows stale placeholder data.
+**File: `src/components/math-activities/QuizGame.tsx`**
 
-**Root cause:** Neither `completeOnboardingQuiz()` nor `completeAvatarGeneration()` in `FirstTimeUserContext.tsx` invalidates the `['user-profile']` query cache.
+Currently QuizGame has zero completion tracking -- students can restart and earn unlimited gold.
 
-**Note on query keys:** The actual cache key is `['user-profile', userId]` (with hyphen). The user's request mentioned `['userProfile']` and `['criticalUserData']` -- neither exists as a TanStack query. The dashboard's `fetchCriticalUserData` is a raw function in a `useEffect`, not a cached query. Invalidating `['user-profile']` is the correct and sufficient fix.
+**Changes:**
+- Add `useEffect` on mount to query `lesson_completions` for the current user + topic (requires adding a `lessonSlug` prop to `QuizGameProps`)
+- Add `isAlreadyCompleted` state (default `false`)
+- In `awardGold()` (line 31): early return if `isAlreadyCompleted` is true
+- Remove per-answer `awardGold()` call from `handleSubmit` (line 57)
+- At quiz completion (`handleNext` when last question, line 72-74): if not already completed, insert into `lesson_completions`, award all gold in one RPC call (`score` amount, capped at 100), and set `isAlreadyCompleted = true`
+- In `handleRestart` (line 78): if `isAlreadyCompleted`, show training mode message via toast
+- Update completion screen (line 102-105) to show "Mode entrainement" text when already completed instead of gold earned
 
-### Changes
-
-**File: `src/contexts/FirstTimeUserContext.tsx`**
-- Import `useQueryClient` from `@tanstack/react-query`
-- Get `queryClient` instance in the provider component
-- In `completeOnboardingQuiz()`: add `queryClient.invalidateQueries({ queryKey: ['user-profile'] })` -- this forces fresh nickname/grade data
-- In `completeAvatarGeneration()`: add the same invalidation -- this forces fresh avatar data
-- In `skipOnboardingQuiz()`: add same invalidation (user may have partial saves)
-
-**File: `src/hooks/useUserProfile.ts`**
-- The user requested adding `refetchOnWindowFocus: true`. However, this contradicts the project's 3G optimization standard (custom knowledge explicitly states "no window-focus refetch"). Instead, the invalidation approach above is sufficient and 3G-safe. No change to `useUserProfile.ts`.
+**Props change:** Add optional `lessonSlug?: string` and `subject?: string` to `QuizGameProps`. If not provided, skip the completion check (backward compatible).
 
 ---
 
-## Fix 2 -- Make saveField() reliable on 3G
+## Fix 2 -- InteractiveQuiz: consolidate gold to completion only
 
-**Problem:** `saveField()` is fire-and-forget. On 3G, a failed save shows a toast but the UI has already advanced. Data is lost silently.
+**File: `src/components/InteractiveQuiz.tsx`**
 
-### Changes
+Currently awards 1 gold per correct answer (line 319) plus a completion bonus (line 365-368). Students earn partial gold by closing mid-quiz.
 
-**File: `src/components/firsttime/OnboardingQuiz.tsx`**
-
-**2a. Add retry logic to `saveField()`:**
-- Retry up to 2 more times (3 total attempts) with 1-second delay between retries
-- If all 3 attempts fail: save to localStorage as backup under key `onboarding_backup_{userId}` and show toast "Connexion lente detectee. Tes donnees sont sauvegardees localement."
-
-**2b. Add localStorage backup utility:**
-```typescript
-// Save field to localStorage as backup for 3G resilience
-const saveFieldBackup = (field: string, value: string) => {
-  const key = `onboarding_backup_${firstTimeUser.userId}`;
-  const existing = JSON.parse(localStorage.getItem(key) || '{}');
-  existing[field] = value;
-  localStorage.setItem(key, JSON.stringify(existing));
-};
-```
-
-**2c. Add final verification before quiz completion:**
-- In `completeOnboardingQuiz` calls (lines 180, 251, 263), before calling `firstTimeUser.completeOnboardingQuiz()`, attempt to flush any localStorage backup to the DB
-- Add a `flushBackupToDb()` function that reads `onboarding_backup_{userId}` from localStorage, attempts a single batch update to profiles, and clears the backup on success
-- Show a brief loading indicator during flush (reuse existing `isSaving` state)
-
-**2d. Updated `saveField` with retry:**
-```typescript
-const saveField = useCallback(async (field: string, value: string) => {
-  if (!firstTimeUser.userId) return;
-  setIsSaving(true);
-  let attempts = 0;
-  const maxAttempts = 3;
-  
-  while (attempts < maxAttempts) {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ [field]: value } as any)
-        .eq('user_id', firstTimeUser.userId);
-      if (error) throw error;
-      setIsSaving(false);
-      return; // Success
-    } catch (err) {
-      attempts++;
-      if (attempts < maxAttempts) {
-        await new Promise(r => setTimeout(r, 1000));
-      }
-    }
-  }
-  
-  // All attempts failed -- save to localStorage backup
-  saveFieldBackup(field, value);
-  toast.warning("Connexion lente détectée. Tes données sont sauvegardées localement.", { duration: 3000 });
-  setIsSaving(false);
-}, [firstTimeUser.userId]);
-```
+**Changes:**
+- **Remove** the `awardGold()` call at line 319 inside `handleAnswerSelect`
+- **Remove** the per-answer gold toast "+1 Gold!" (lines 320-324)
+- Keep the correct/incorrect toast but without gold mention
+- In `markLessonComplete()` (line 335): change the gold amount from `lessonGoldReward` to `finalScore + Math.min(lessonGoldReward, 100)` -- but since `increment_gold` caps at 100, we compute `Math.min(finalScore + lessonGoldReward, 100)` as the single award
+- Actually, since `increment_gold` caps at 100 per call, and we want `correctAnswers + lessonGoldReward` which could exceed 100: make two calls if total > 100, or simply award `Math.min(finalScore + lessonGoldReward, 100)` to stay within the RPC cap. Given `lessonGoldReward` defaults to 100 and `finalScore` could be up to ~10, the combined total exceeds 100. Solution: award in one call capped at 100 total = `Math.min(finalScore + lessonGoldReward, 100)`. This is the maximum allowed by the RPC.
+- Update completion toast to show the combined total
 
 ---
 
-## Fix 3 -- Confirm onboarding image loading attributes
+## Fix 3 -- HTMLQuizParser: consolidate gold to completion only
 
-**File: `src/components/firsttime/OnboardingQuiz.tsx`**
+**File: `src/components/HTMLQuizParser.tsx`**
 
-**Current state (line 394):** Images already have conditional `loading` attribute:
-```
-loading={currentStep === 0 && !showReaction && !isOutro ? 'eager' : 'lazy'}
-```
-This is correct. Only the first step image loads eagerly.
+Currently awards 1 gold per correct answer (line 167) plus completion bonus (line 247). Same exploit as Fix 2.
 
-**Change:** Add explicit `width` and `height` attributes to the `img` tag at line 389-395 to prevent layout shift:
-```
-width={256}
-height={256}
-```
-These match the rendered size constraint (`h-32 md:h-64` = 128px/256px) and provide the browser with aspect ratio information for CLS prevention.
+**Changes:**
+- **Remove** the `awardGold(1)` call at line 167 inside `handleSubmit`
+- In `finishQuiz()` (line 199): change the gold calculation to include per-answer gold:
+  - Current: `goldEarned = passed ? Math.max(10, Math.round(percentage / 10) * 5) : 0`
+  - New: `goldEarned = passed ? Math.min(score + Math.max(10, Math.round(percentage / 10) * 5), 100) : 0`
+  - This adds `score` (correct answers) to the completion bonus, capped at 100 per RPC constraint
+- Award all gold in the single existing `awardGold(goldEarned)` call at line 247 (no change to call site, just the amount)
 
 ---
 
-## Files touched (2 total)
+## Files touched (3 total)
 
 | File | Change |
 |------|--------|
-| `src/contexts/FirstTimeUserContext.tsx` | Add queryClient invalidation in `completeOnboardingQuiz`, `skipOnboardingQuiz`, `completeAvatarGeneration` |
-| `src/components/firsttime/OnboardingQuiz.tsx` | Retry logic in `saveField`, localStorage backup, flush on completion, image dimensions |
+| `src/components/math-activities/QuizGame.tsx` | Add completion guard, move gold to completion-only, training mode message |
+| `src/components/InteractiveQuiz.tsx` | Remove per-answer gold award, consolidate to completion |
+| `src/components/HTMLQuizParser.tsx` | Remove per-answer gold award, consolidate to completion |
 
 ---
 
@@ -123,12 +72,11 @@ These match the rendered size constraint (`h-32 md:h-64` = 128px/256px) and prov
 
 | Check | Status |
 |-------|--------|
-| No DB changes | Correct |
+| No DB changes | Correct -- uses existing `lesson_completions` table |
 | No new dependencies | Correct |
 | RLS unaffected | Correct |
-| Provider stack order unchanged | Correct -- QueryClientProvider wraps FirstTimeUserProvider, so useQueryClient is safe |
-| 3G performance impact | Positive -- retry logic prevents data loss; no extra network calls on success path |
-| Bundle size impact | Negligible -- ~40 lines of logic |
-| refetchOnWindowFocus kept false | Correct -- respects 3G optimization standard |
-| Backward compatible | Yes -- localStorage backup is additive; existing users unaffected |
+| increment_gold cap respected | Yes -- all awards capped at 100 per call |
+| Backward compatible | Yes -- QuizGame new props are optional |
+| Existing completion guards preserved | Yes -- `isLessonCompleted` checks remain |
+| 80% threshold unchanged | Yes -- HTMLQuizParser and InteractiveQuiz keep their thresholds |
 
