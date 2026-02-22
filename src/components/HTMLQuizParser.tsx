@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MathText } from "@/components/MathContent";
 import confetti from "canvas-confetti";
+import { celebrateFirstGold } from "@/hooks/useFirstGoldCelebration";
 interface ParsedQuestion {
   number: number;
   question: string;
@@ -249,6 +250,7 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
         if (goldError) {
           console.error('Error awarding gold:', goldError);
         } else {
+          celebrateFirstGold();
           // Fix 3: First lesson celebration — confetti + special toast on very first completion
           if (!localStorage.getItem('first-lesson-celebrated')) {
             localStorage.setItem('first-lesson-celebrated', 'true');

@@ -6,6 +6,7 @@ import { CheckCircle, XCircle, ArrowRight, RefreshCw, Shuffle } from "lucide-rea
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { celebrateFirstGold } from "@/hooks/useFirstGoldCelebration";
 import { MathText } from "@/components/MathContent";
 import { JudeFeedback } from "@/components/jude/JudeFeedback";
 import { JudeCompletionScreen } from "@/components/jude/JudeCompletionScreen";
@@ -98,7 +99,10 @@ export const InteractiveActivitiesEnhanced = ({
         amount: 1,
       });
       if (error) console.error('Error awarding gold:', error);
-      else onGoldUpdate?.();
+      else {
+        celebrateFirstGold();
+        onGoldUpdate?.();
+      }
     } catch (error) {
       console.error('Error awarding gold:', error);
     }

@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
+import { celebrateFirstGold } from '@/hooks/useFirstGoldCelebration';
 
 interface LessonQuizTabProps {
   lessonId: string;
@@ -112,6 +113,7 @@ export function LessonQuizTab({
     // Award gold — capped at 100 by Math.min, validated 1-100 server-side
     const goldAmount = Math.min(score + 50, 100);
     await supabase.rpc('increment_gold', { p_user_id: user.id, amount: goldAmount });
+    celebrateFirstGold();
 
     // Refresh GoldBadge in lesson header
     onGoldUpdate?.();

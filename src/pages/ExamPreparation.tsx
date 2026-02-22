@@ -16,6 +16,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { GoldBadge } from "@/components/shared/GoldBadge";
 import { useUserProfile, useInvalidateUserProfile } from "@/hooks/useUserProfile";
 import judeProfile from "@/assets/jude-profile.jpeg";
+import { celebrateFirstGold } from "@/hooks/useFirstGoldCelebration";
 
 export default function ExamPreparation() {
   const { examId } = useParams<{ examId: string }>();
@@ -232,6 +233,7 @@ export default function ExamPreparation() {
           });
           if (goldError) console.error('Failed to award gold:', goldError);
           else {
+            celebrateFirstGold();
             // Update gold display immediately + refresh profile cache
             setLocalGold(prev => prev + Math.min(points, 100));
             setIsGoldAnimated(true);
