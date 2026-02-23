@@ -31,6 +31,7 @@ import {
   CalendarDays,
   Smartphone,
   Gift,
+  Info,
 } from "lucide-react";
 import ericArmsCrossed from "@/assets/eric-main01.png";
 import {
@@ -631,6 +632,14 @@ const Settings = () => {
   const subscriptionInfo = useMemo(() => {
     if (!profile) return null;
     const p = profile as any;
+    // Distinguish timed free access (promo-granted with end date) from permanent (founders)
+    if (p.has_free_access && p.subscription_end_date) {
+      const endDate = new Date(p.subscription_end_date);
+      return {
+        state: 'free_timed' as const,
+        formattedDate: endDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      };
+    }
     if (p.has_free_access) return { state: 'free' as const };
     
     const endDate = p.subscription_end_date ? new Date(p.subscription_end_date) : null;
@@ -975,7 +984,21 @@ const Settings = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-4 sm:p-6 pt-0 space-y-4 sm:space-y-6">
-                  {subscriptionInfo?.state === 'free' ? (
+                  {subscriptionInfo?.state === 'free_timed' ? (
+                    <div className="p-4 sm:p-6 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-700">
+                      <div className="flex items-start gap-3">
+                        <Info className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" size={20} />
+                        <div>
+                          <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                            Vous bénéficiez d'un accès gratuit à la plateforme jusqu'au {subscriptionInfo.formattedDate}.
+                          </p>
+                          <p className="text-xs text-amber-700/70 dark:text-amber-300/60 mt-1">
+                            Après cette date, un abonnement sera requis pour accéder aux fonctionnalités premium.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : subscriptionInfo?.state === 'free' ? (
                     <div className="p-4 sm:p-6 bg-gradient-to-br from-[hsl(var(--success))]/10 to-[hsl(var(--primary))]/10 rounded-xl border-2 border-[hsl(var(--success))]/20">
                       <div className="flex items-center gap-3 mb-3">
                         <span className="px-3 py-1 rounded-full bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] text-xs font-semibold uppercase tracking-wide">

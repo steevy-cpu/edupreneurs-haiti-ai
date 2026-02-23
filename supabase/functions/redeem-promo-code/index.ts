@@ -154,14 +154,33 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Promo redeemed: user=${userId}, code=${promo.code}, gold=${goldAmount}`);
+    // 4. Grant timed free access if promo code qualifies
+    if (promo.grants_free_access) {
+      const { error: accessErr } = await supabase
+        .from("profiles")
+        .update({
+          has_free_access: true,
+          subscription_status: "active",
+          subscription_end_date: "2026-05-02T00:00:00.000Z",
+        })
+        .eq("user_id", userId);
+
+      if (accessErr) {
+        console.error("Failed to grant free access:", accessErr.message);
+        // Non-fatal: redemption + gold already recorded
+      }
+    }
+
+    console.log(`Promo redeemed: user=${userId}, code=${promo.code}, gold=${goldAmount}, freeAccess=${!!promo.grants_free_access}`);
 
     return new Response(
       JSON.stringify({
         success: true,
         goldAwarded: goldAmount,
         grantsFreeAccess: promo.grants_free_access || false,
-        message: `${goldAmount} Gold ajouté à ton compte!`,
+        message: promo.grants_free_access
+          ? `Accès gratuit activé + ${goldAmount} Gold!`
+          : `${goldAmount} Gold ajouté à ton compte!`,
       }),
       { status: 200, headers }
     );
