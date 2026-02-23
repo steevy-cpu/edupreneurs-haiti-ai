@@ -37,6 +37,7 @@ import { FloatingLayer } from './FloatingLayer';
 import { VisitorBanner, JudeWelcomePopup } from '@/components/visitor';
 import { QuizInvitationHandler } from '@/components/quiz-battle/QuizInvitationHandler';
 import { ScrollToTop } from '@/components/ScrollToTop';
+import { ConnectionStatusBanner } from '@/components/shared/ConnectionStatusBanner';
 import { NavigationProgress } from './components/NavigationProgress';
 import { SubscriptionGate } from '@/components/SubscriptionGate';
 
@@ -267,6 +268,9 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
 
         {/* Floating Layer - Jude, Music Player, FABs, etc. */}
         <FloatingLayer />
+
+        {/* Connection status banner — visible on disconnect/reconnect */}
+        <ConnectionStatusBanner />
 
         {/* Quiz Invitation Handler - needs userId */}
         {userId && <QuizInvitationHandler userId={userId} />}
