@@ -1,95 +1,107 @@
 
 
-# Realtime Plan A — Add Server-Side Filters to Unfiltered Channels
+# Realtime Plan B — Global 3G Reconnection UI and Auto-Recovery
 
 ## Overview
-Surgical fixes to reduce unnecessary realtime event processing across 5 areas. Each fix adds server-side filtering or debouncing without changing any other realtime logic.
+Four changes to give Haitian students on unstable 3G connections visible feedback when realtime drops and automatic recovery when it comes back.
 
 ---
 
-## Fix 1 — useSidebarBadges.ts (4 channels)
+## Fix 1 — Create `src/hooks/useRealtimeConnection.ts`
 
-**File:** `src/hooks/useSidebarBadges.ts`, lines 115-149
+New hook that monitors the Supabase realtime WebSocket transport state.
 
-| Channel | Current Filter | New Filter | Rationale |
-|---------|---------------|------------|-----------|
-| `sidebar-badges-messages` | None | `sender_id=neq.${userId}` | Skip own messages — badge only cares about others' messages |
-| `sidebar-badges-follows` | None | `following_id=eq.${userId}` | Only follow requests targeting this user matter |
-| `sidebar-badges-notifications` | None | `user_id=eq.${userId}` | Only this user's notifications matter |
-| `sidebar-badges-posts` | None (INSERT only) | Keep unfiltered + add 2s debounce | Can't filter meaningfully since all public posts are relevant |
+**Approach:** Use `supabase.realtime` to listen for transport-level connection/disconnection events. Supabase's `RealtimeClient` exposes `onOpen`, `onClose`, and `onError` callbacks on the underlying transport, but a simpler approach is to poll `supabase.realtime.connectionState()` (returns `'connecting'`, `'open'`, `'closing'`, `'closed'`) on a short interval (~2s), since the Supabase JS client doesn't expose a clean event emitter for global connection changes.
 
-For the posts debounce: wrap the `refetch()` callback with a `setTimeout`/clear pattern using a ref, so rapid INSERTs only trigger one refetch per 2-second window.
+**State machine:**
+- `connected` — `connectionState() === 'open'`
+- `disconnected` — `connectionState()` is `'closed'` or `'closing'` AND grace period (3s) has elapsed
+- `reconnecting` — `connectionState() === 'connecting'` after having been disconnected
 
----
+**Grace period logic:**
+- On detecting non-`open` state: start a 3-second timer before transitioning to `disconnected`
+- If connection returns to `open` within 3s: cancel timer, stay `connected`
+- On reconnect (back to `open` after `disconnected`): set state to `connected`, auto-hide after 2s
 
-## Fix 2 — Community reactions channel (cannot filter server-side)
+**Exports:** `{ connectionState, isDisconnected, isReconnecting }`
 
-**File:** `src/pages/Community.tsx`, lines 1756-1791
-
-**Limitation discovered:** The `message_reactions` table schema has columns: `id`, `message_id`, `user_id`, `emoji`, `created_at`. There is **no `conversation_id` column**, so we cannot add a server-side filter to scope reactions to the current conversation.
-
-**What we CAN do:** The channel name already includes `conversationId` (`reactions-${conversationId}`), and there's already a client-side guard at line 1770 that checks if the message belongs to the current conversation. The only improvement possible without a schema change is to document that this is intentionally client-filtered. **No code change for this fix.**
+**Polling interval:** 2000ms — lightweight (no network calls, just reading local WebSocket readyState)
 
 ---
 
-## Fix 3 — Community messages UPDATE listener
+## Fix 2 — Create `src/components/shared/ConnectionStatusBanner.tsx`
 
-**File:** `src/pages/Community.tsx`, lines 1286-1306
+New component rendering a fixed-position banner at the bottom of the viewport.
 
-The UPDATE listener has no filter. Add `sender_id=neq.${user?.id}` — the user doesn't need to receive UPDATE events for their own messages being marked as read (the unread count logic at line 1295 only cares about other users' messages being read).
+**Behavior:**
+- Only renders when `connectionState` is `disconnected` or `reconnecting`
+- Shows briefly in `connected` state after recovering (2s green flash)
+- Positioned `fixed bottom-16 lg:bottom-0` to sit above mobile bottom nav
+- z-index below modals but above page content (`z-[999]`)
 
-**Note:** We cannot filter by conversation_id list since Supabase filters only support single-column equality. The `sender_id=neq` filter still provides meaningful reduction.
+**Visual states:**
+| State | Background | Icon | Text |
+|-------|-----------|------|------|
+| `disconnected` | `bg-amber-500` | `WifiOff` | "Connexion perdue. Reconnexion en cours..." + spinner |
+| `reconnecting` | `bg-amber-500` | `WifiOff` | "Connexion perdue. Reconnexion en cours..." + spinner |
+| `connected` (recovering) | `bg-green-500` | `CheckCircle` | "Connexion rétablie!" |
+
+**Animation:** Framer Motion `AnimatePresence` with slide-up/down (`y: 100` to `y: 0`).
+
+**Size:** Compact `py-2 px-4`, white text, does not push content — pure overlay.
 
 ---
 
-## Fix 4 — ChessPublicMatches
+## Fix 3 — Mount in AppShell
 
-**File:** `src/components/chess/ChessPublicMatches.tsx`, lines 81-98
-
-**Limitation:** Supabase realtime filters only support **one filter per listener** — we cannot combine `status=eq.waiting AND is_public=eq.true`. 
-
-**Best option:** Add `is_public=eq.true` as the filter (this eliminates all private match events). The `status=waiting` filtering is already handled by the `fetchMatches()` query that runs on each event. This is the better filter since `is_public` eliminates more irrelevant events than `status` alone.
+In `src/shell/AppShell.tsx`, add `<ConnectionStatusBanner />` after `<FloatingLayer />` (line 269), inside the `<div className="min-h-screen">` block. Single import + single JSX line.
 
 ---
 
-## Fix 5 — PresenceContext verbose logging
+## Fix 4 — PresenceContext retry on CHANNEL_ERROR
 
-**File:** `src/contexts/PresenceContext.tsx`
+In `src/contexts/PresenceContext.tsx`, enhance the `CHANNEL_ERROR` handler at line 196-198.
 
-Replace all `console.log('[Presence]...')` calls with the existing `logger` utility from `src/utils/logger.ts`, which only logs in development mode. Affected lines: ~63, 66, 72, 76, 126, 130, 133, 137, 141, 147, 150, 155, 163.
+**Current behavior:**
+```typescript
+} else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+  setIsConnected(false);
+}
+```
 
-Import `import { logger } from '@/utils/logger';` and change all `console.log(` to `logger.log(`.
+**New behavior:**
+- Add a `retryCountRef = useRef(0)` and `retryTimerRef = useRef<NodeJS.Timeout>(null)`
+- On `CHANNEL_ERROR`: set `isConnected = false`, then schedule a retry
+- Retry logic: remove old channel, create + subscribe a new one
+- Backoff: attempt 1 after 2s, attempt 2 after 4s, attempt 3 after 8s
+- After 3 failed attempts: stop retrying, leave `isConnected = false`
+- On `SUBSCRIBED`: reset `retryCountRef` to 0
+- Cleanup: clear `retryTimerRef` in the useEffect cleanup function
+- `CLOSED` status does NOT retry (that's intentional cleanup)
+
+**Implementation detail:** Extract the channel creation + subscription into a `setupChannel()` function inside the useEffect, so it can be called both on initial mount and on retry. The retry calls `supabase.removeChannel(channelRef.current)` before creating a new channel.
 
 ---
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
-| `src/hooks/useSidebarBadges.ts` | Add filters to 3 channels + debounce on posts channel |
-| `src/pages/Community.tsx` | Add `sender_id=neq` filter to UPDATE listener (line 1288) |
-| `src/components/chess/ChessPublicMatches.tsx` | Add `is_public=eq.true` filter (line 87) |
-| `src/contexts/PresenceContext.tsx` | Replace `console.log` with `logger.log` |
+| File | Type | Change |
+|------|------|--------|
+| `src/hooks/useRealtimeConnection.ts` | New | Connection state hook polling `supabase.realtime` |
+| `src/components/shared/ConnectionStatusBanner.tsx` | New | Fixed-position reconnection banner |
+| `src/shell/AppShell.tsx` | Edit | Import + render `ConnectionStatusBanner` (2 lines) |
+| `src/contexts/PresenceContext.tsx` | Edit | Add retry logic to `CHANNEL_ERROR` handler |
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Existing functionality preserved | Yes — filters only reduce noise, never block needed events |
-| No schema changes needed | Correct |
-| No new dependencies | Correct |
-| Provider stack unaffected | Yes |
-| RLS policies unchanged | Yes |
-| Works on 3G | Yes — reduces traffic, improves 3G performance |
-| Cleanup logic unchanged | Yes — no changes to subscription cleanup |
+| Existing functionality preserved | Yes — only adds new behavior on error path |
+| Provider stack order unchanged | Yes |
+| No schema changes | Correct |
+| No new dependencies | Correct — uses existing Framer Motion + Lucide icons |
+| Works on 3G | Yes — this IS the 3G fix |
+| Bundle impact | Minimal — two small new files |
+| Cleanup logic correct | Yes — timers and channels cleaned up on unmount |
 | Backward compatible | Yes |
-
-## Not Changed (and why)
-
-| Item | Reason |
-|------|--------|
-| Reactions channel (Fix 2) | `message_reactions` table has no `conversation_id` column — server-side filter impossible without schema change |
-| Feed subscription | Out of scope for this plan |
-| Content editor realtime | Out of scope — low volume |
-| Reconnection logic | Out of scope — separate concern |
 
