@@ -12,8 +12,9 @@ import { useState, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LogOut, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSubscription } from '@/hooks/useSubscription';
 import { Skeleton } from '@/components/ui/skeleton';
 import dashboardImage from '@/assets/dashboard00.png';
 
@@ -94,6 +95,9 @@ export const AppSidebar = memo(function AppSidebar({
   
   // Push permission hint — amber dot on notification bell (Plan C)
   const showPushHint = isPushHintVisible();
+  
+  // Subscription status — show renewal banner for expired users
+  const { isExpired: isSubscriptionExpired } = useSubscription();
   
   // Badge mapping
   const getBadgeCount = (badgeKey?: BadgeKey): number | undefined => {
@@ -252,6 +256,22 @@ export const AppSidebar = memo(function AppSidebar({
             'border-border',
             collapsed ? 'my-2 mx-1' : 'my-2 sm:my-3 lg:my-4 mx-2 sm:mx-2.5 lg:mx-3'
           )} />
+
+          {/* Renewal banner for expired subscriptions */}
+          {isSubscriptionExpired && (
+            <button
+              onClick={() => { navigate('/settings?tab=account#subscription'); handleLinkClick(); }}
+              className={cn(
+                'flex items-center gap-2 mx-2 sm:mx-2.5 lg:mx-3 my-1 px-3 py-2.5 rounded-lg',
+                'bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400',
+                'text-xs sm:text-sm font-medium hover:bg-amber-500/20 transition-colors',
+                collapsed && 'justify-center px-2'
+              )}
+            >
+              <RefreshCw size={16} className="shrink-0" />
+              {!collapsed && <span>Abonnement expiré — Renouveler</span>}
+            </button>
+          )}
           
           {/* Collapse Toggle - Desktop only */}
           <button

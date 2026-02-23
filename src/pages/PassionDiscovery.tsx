@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { FeatureGate } from "@/components/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
@@ -1922,7 +1923,11 @@ const PassionDiscoveryContent = () => {
 };
 
 const PassionDiscovery = () => {
-  return <PassionDiscoveryContent />;
+  return (
+    <FeatureGate featureName="Mes Passions">
+      <PassionDiscoveryContent />
+    </FeatureGate>
+  );
 };
 
 export default PassionDiscovery;

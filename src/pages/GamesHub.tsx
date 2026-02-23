@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { FeatureGate } from '@/components/shared';
 import { useMemo, useCallback, useState } from 'react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card, CardContent } from '@/components/ui/card';
@@ -49,6 +50,7 @@ const GamesHub = () => {
         </header>
 
         {/* Scrollable Content */}
+        <FeatureGate featureName="Jeux">
         <section className="flex-1 overflow-y-auto overscroll-contain px-4 pb-24 lg:pb-6">
           <div className="max-w-4xl mx-auto space-y-6">
             {isLoading ? (
@@ -192,6 +194,7 @@ const GamesHub = () => {
             )}
           </div>
         </section>
+        </FeatureGate>
 
         {/* Chess Mode Selection Dialog */}
         <ChessModeSelector
