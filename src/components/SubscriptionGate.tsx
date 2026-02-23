@@ -1,113 +1,74 @@
 /**
- * SubscriptionGate - Blocks access for expired subscriptions
- * 
- * Wraps protected content. Users with has_free_access = true bypass entirely.
- * Expired users see a full-screen renewal prompt.
+ * SubscriptionGate - Blocks access for expired/missing subscriptions.
+ *
+ * Decision tree (order matters):
+ * 1. Not authenticated → pass through (auth guard handles)
+ * 2. Loading / error   → skeleton / retry UI
+ * 3. isFreeAccess      → pass through
+ * 4. isFounder         → pass through
+ * 5. isLegacy          → pass through
+ * 6. isActive          → pass through
+ * 7. isPendingGift     → PendingGiftPrompt
+ * 8. isExpired         → ExpiredPrompt (softer tone for returning users)
+ * 9. isNone            → RenewalPrompt (new users who never subscribed)
+ * 10. fallback         → RenewalPrompt
  */
 
-import React, { ReactNode, useEffect, useRef, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { ReactNode, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSubscription } from '@/hooks/useSubscription';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Clock, CreditCard, Gift, Loader2, RefreshCw } from 'lucide-react';
+import { AlertTriangle, CalendarX2, Clock, CreditCard, Gift, Loader2, RefreshCw } from 'lucide-react';
 import { StripeRenewalButton } from '@/components/subscription/StripeRenewalButton';
 import { RenewalGiftLink } from '@/components/subscription/RenewalGiftLink';
 import { toast } from 'sonner';
-
-// Users created before this date are legacy (before subscription system)
-const SUBSCRIPTION_CUTOFF_DATE = new Date('2026-02-10T00:00:00Z');
 
 interface SubscriptionGateProps {
   children: ReactNode;
 }
 
 export function SubscriptionGate({ children }: SubscriptionGateProps) {
-  const { user, isAuthenticated } = useSessionAuth();
+  const { isAuthenticated } = useSessionAuth();
+  const sub = useSubscription();
 
-  const { data: profile, isError, refetch } = useQuery({
-    queryKey: ['subscription-status', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data } = await supabase
-        .from('profiles')
-        .select('has_free_access, subscription_status, subscription_end_date, created_at')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!user?.id && isAuthenticated,
-    staleTime: 5 * 60 * 1000,
-    // Poll every 10s when waiting for gift payment so UI auto-refreshes
-    refetchInterval: (query) => {
-      const data = query.state.data;
-      return data?.subscription_status === 'pending_gift' ? 10_000 : false;
-    },
-  });
-
-  // Track previous status to detect pending_gift → active transition
-  const queryClient = useQueryClient();
-  const prevStatusRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    const currentStatus = profile?.subscription_status ?? null;
-    if (prevStatusRef.current === 'pending_gift' && currentStatus === 'active') {
-      // Invalidate all subscription-related queries so tour context + banner pick up the change
-      queryClient.invalidateQueries({ queryKey: ['subscription-status'] });
-      queryClient.invalidateQueries({ queryKey: ['subscription-banner'] });
-    }
-    prevStatusRef.current = currentStatus;
-  }, [profile?.subscription_status, queryClient]);
-
-  // 10-second timeout to detect stuck loading state on 3G
+  // 10-second timeout to detect stuck loading on 3G
   const [timedOut, setTimedOut] = useState(false);
   useEffect(() => {
-    if (profile || isError || !isAuthenticated) return;
+    if (!sub.isLoading || sub.isError || !isAuthenticated) return;
     setTimedOut(false);
     const timer = setTimeout(() => setTimedOut(true), 10_000);
     return () => clearTimeout(timer);
-  }, [profile, isError, isAuthenticated]);
+  }, [sub.isLoading, sub.isError, isAuthenticated]);
 
-  // Not authenticated - let auth guard handle redirect
+  // 1. Not authenticated — let auth guard handle redirect
   if (!isAuthenticated) return <>{children}</>;
 
-  // Query failed or timed out — show retry UI instead of infinite skeleton
-  if (isError || (timedOut && !profile)) {
-    return <SubscriptionErrorState onRetry={() => { setTimedOut(false); refetch(); }} />;
+  // 2. Query failed or timed out — show retry UI
+  if (sub.isError || (timedOut && sub.isLoading)) {
+    return <SubscriptionErrorState onRetry={() => { setTimedOut(false); sub.refetch(); }} />;
   }
 
-  // Profile still loading - show skeleton instead of null blank screen (critical on 3G)
-  if (!profile) return <SubscriptionLoadingSkeleton />;
+  // 2b. Still loading — show skeleton (critical on 3G)
+  if (sub.isLoading) return <SubscriptionLoadingSkeleton />;
 
-  // Promo users always pass
-  if (profile.has_free_access) return <>{children}</>;
+  // 3–6. All bypass paths: free access, founder, legacy, or active paid
+  if (sub.isActive) return <>{children}</>;
 
-  // Legacy users (created before subscription system) with no subscription - allow through
-  const isLegacyUser = profile.created_at && new Date(profile.created_at) < SUBSCRIPTION_CUTOFF_DATE;
-  if ((!profile.subscription_status || profile.subscription_status === 'none') && isLegacyUser) {
-    return <>{children}</>;
-  }
+  // 7. Pending gift — waiting for family member to pay
+  if (sub.isPendingGift) return <PendingGiftPrompt />;
 
-  // New users with 'none' status - show payment prompt
-  if (!profile.subscription_status || profile.subscription_status === 'none') {
-    return <RenewalPrompt />;
-  }
+  // 8. Expired — softer tone for returning users
+  if (sub.isExpired) return <ExpiredPrompt />;
 
-  // Pending gift - waiting for family member to pay
-  if (profile.subscription_status === 'pending_gift') {
-    return <PendingGiftPrompt />;
-  }
-
-  // Check if subscription is active and not expired
-  const endDate = profile.subscription_end_date ? new Date(profile.subscription_end_date) : null;
-  const isActive = profile.subscription_status === 'active' && endDate && endDate.getTime() > Date.now();
-
-  if (isActive) return <>{children}</>;
-
-  // Expired - show renewal prompt
+  // 9–10. Never subscribed or fallback — standard prompt for new users
   return <RenewalPrompt />;
 }
+
+// ---------------------------------------------------------------------------
+// Sub-components
+// ---------------------------------------------------------------------------
 
 /**
  * Skeleton shown while subscription profile is loading.
@@ -116,17 +77,12 @@ export function SubscriptionGate({ children }: SubscriptionGateProps) {
 function SubscriptionLoadingSkeleton() {
   return (
     <div className="p-4 lg:p-6 space-y-6 animate-pulse">
-      {/* Page header */}
       <div className="h-8 w-48 rounded-lg bg-muted" />
-
-      {/* KPI cards row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         {[...Array(4)].map((_, i) => (
           <div key={i} className="rounded-xl bg-muted h-24" />
         ))}
       </div>
-
-      {/* Main content blocks */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 space-y-3">
           <div className="rounded-xl bg-muted h-40" />
@@ -143,7 +99,6 @@ function SubscriptionLoadingSkeleton() {
 
 /**
  * Error state shown when subscription query fails or times out on 3G.
- * Provides a retry button so users aren't stuck forever.
  */
 function SubscriptionErrorState({ onRetry }: { onRetry: () => void }) {
   return (
@@ -167,8 +122,10 @@ function SubscriptionErrorState({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-function RenewalPrompt() {
-  const queryClient = useQueryClient();
+/**
+ * MonCash/Stripe payment tabs — shared between RenewalPrompt and ExpiredPrompt.
+ */
+function PaymentActions() {
   const [paymentMethod, setPaymentMethod] = useState<"moncash" | "stripe">("moncash");
   const [renewLoading, setRenewLoading] = useState(false);
 
@@ -191,6 +148,61 @@ function RenewalPrompt() {
   };
 
   return (
+    <div className="space-y-3 text-left">
+      {/* Payment method tabs — MonCash and Carte (Stripe) */}
+      <div className="flex rounded-lg border border-input overflow-hidden">
+        <button
+          type="button"
+          className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
+            paymentMethod === "moncash"
+              ? "bg-primary text-primary-foreground"
+              : "bg-background text-muted-foreground hover:bg-muted"
+          }`}
+          onClick={() => setPaymentMethod("moncash")}
+        >
+          MonCash
+        </button>
+        <button
+          type="button"
+          className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
+            paymentMethod === "stripe"
+              ? "bg-primary text-primary-foreground"
+              : "bg-background text-muted-foreground hover:bg-muted"
+          }`}
+          onClick={() => setPaymentMethod("stripe")}
+        >
+          Carte
+        </button>
+      </div>
+
+      {paymentMethod === "moncash" ? (
+        <Button
+          size="lg"
+          className="w-full"
+          onClick={handleMonCashRenewal}
+          disabled={renewLoading}
+        >
+          {renewLoading ? (
+            <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Préparation...</>
+          ) : (
+            <><CreditCard className="mr-2 h-5 w-5" />Renouveler avec MonCash — 200 HTG</>
+          )}
+        </Button>
+      ) : (
+        <StripeRenewalButton size="lg" />
+      )}
+
+      {/* Shareable renewal link for family/gift payments */}
+      <RenewalGiftLink />
+    </div>
+  );
+}
+
+/**
+ * RenewalPrompt — shown to NEW users who never had a subscription (status === 'none').
+ */
+function RenewalPrompt() {
+  return (
     <div className="flex items-center justify-center min-h-[60vh] p-6">
       <div className="max-w-md w-full text-center space-y-6 animate-in fade-in duration-500">
         <div className="mx-auto w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
@@ -198,9 +210,9 @@ function RenewalPrompt() {
         </div>
 
         <div>
-          <h2 className="text-2xl font-bold">Abonnement expiré</h2>
+          <h2 className="text-2xl font-bold">Abonnement requis</h2>
           <p className="text-muted-foreground mt-2">
-            Votre abonnement de 30 jours a expiré. Renouvelez pour continuer à accéder à la plateforme.
+            Pour accéder à la plateforme, souscrivez à un abonnement de 30 jours.
           </p>
         </div>
 
@@ -209,58 +221,45 @@ function RenewalPrompt() {
           <div className="text-sm text-muted-foreground">/ 30 jours</div>
         </div>
 
-        {/* Payment method tabs — MonCash and Carte (Stripe) only */}
-        <div className="space-y-3 text-left">
-          <div className="flex rounded-lg border border-input overflow-hidden">
-            <button
-              type="button"
-              className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
-                paymentMethod === "moncash"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-background text-muted-foreground hover:bg-muted"
-              }`}
-              onClick={() => setPaymentMethod("moncash")}
-            >
-              MonCash
-            </button>
-            <button
-              type="button"
-              className={`flex-1 py-2 px-3 text-sm font-medium transition-colors ${
-                paymentMethod === "stripe"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-background text-muted-foreground hover:bg-muted"
-              }`}
-              onClick={() => setPaymentMethod("stripe")}
-            >
-              Carte
-            </button>
-          </div>
-
-          {paymentMethod === "moncash" ? (
-            <Button
-              size="lg"
-              className="w-full"
-              onClick={handleMonCashRenewal}
-              disabled={renewLoading}
-            >
-              {renewLoading ? (
-                <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Préparation...</>
-              ) : (
-                <><CreditCard className="mr-2 h-5 w-5" />Renouveler avec MonCash — 200 HTG</>
-              )}
-            </Button>
-          ) : (
-            <StripeRenewalButton size="lg" />
-          )}
-
-          {/* Shareable renewal link */}
-          <RenewalGiftLink />
-        </div>
+        <PaymentActions />
       </div>
     </div>
   );
 }
 
+/**
+ * ExpiredPrompt — shown to RETURNING users whose subscription expired.
+ * Softer tone that acknowledges their past usage.
+ */
+function ExpiredPrompt() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh] p-6">
+      <div className="max-w-md w-full text-center space-y-6 animate-in fade-in duration-500">
+        <div className="mx-auto w-16 h-16 rounded-full bg-accent flex items-center justify-center">
+          <CalendarX2 className="h-8 w-8 text-accent-foreground" />
+        </div>
+
+        <div>
+          <h2 className="text-2xl font-bold">Votre abonnement a pris fin</h2>
+          <p className="text-muted-foreground mt-2">
+            Merci d'avoir utilisé Edupreneurs ! Renouvelez votre abonnement pour retrouver l'accès à tous vos cours et activités.
+          </p>
+        </div>
+
+        <div className="p-4 rounded-lg border-2 border-primary bg-primary/5">
+          <div className="text-3xl font-bold text-primary">200 HTG</div>
+          <div className="text-sm text-muted-foreground">/ 30 jours</div>
+        </div>
+
+        <PaymentActions />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * PendingGiftPrompt — shown when a family member needs to complete payment.
+ */
 function PendingGiftPrompt() {
   const navigate = useNavigate();
 
@@ -274,7 +273,7 @@ function PendingGiftPrompt() {
         <div>
           <h2 className="text-2xl font-bold">En attente du paiement</h2>
           <p className="text-muted-foreground mt-2">
-            Votre compte est créé ! Un membre de votre famille doit compléter le paiement 
+            Votre compte est créé ! Un membre de votre famille doit compléter le paiement
             via le lien cadeau pour activer votre accès.
           </p>
         </div>
