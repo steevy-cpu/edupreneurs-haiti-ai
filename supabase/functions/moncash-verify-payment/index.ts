@@ -198,6 +198,7 @@ serve(async (req) => {
                 subscription_status: 'active',
                 subscription_end_date: newEnd.toISOString(),
                 payment_order_id: dbOrderId,
+                sent_expiry_reminders: [], // Reset for fresh reminder cycle
               })
               .eq('user_id', txn.user_id);
 

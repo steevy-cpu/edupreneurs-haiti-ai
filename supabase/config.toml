@@ -218,3 +218,6 @@ verify_jwt = false
 
 [functions.redeem-promo-code]
 verify_jwt = false
+
+[functions.check-subscription-expiry]
+verify_jwt = false
