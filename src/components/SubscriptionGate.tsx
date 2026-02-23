@@ -56,11 +56,11 @@ export function SubscriptionGate({ children }: SubscriptionGateProps) {
   // 3–6. All bypass paths: free access, founder, legacy, or active paid
   if (sub.isActive) return <>{children}</>;
 
-  // 7. Pending gift — waiting for family member to pay
-  if (sub.isPendingGift) return <PendingGiftPrompt />;
+  // 7. Expired — pass through (individual FeatureGates handle locking per page)
+  if (sub.isExpired) return <>{children}</>;
 
-  // 8. Expired — softer tone for returning users
-  if (sub.isExpired) return <ExpiredPrompt />;
+  // 8. Pending gift — waiting for family member to pay
+  if (sub.isPendingGift) return <PendingGiftPrompt />;
 
   // 9–10. Never subscribed or fallback — standard prompt for new users
   return <RenewalPrompt />;

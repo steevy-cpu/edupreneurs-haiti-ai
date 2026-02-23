@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { BookOpen, FileCheck, GraduationCap, Calendar, ArrowRight, Lock, Star } from "lucide-react";
+import { FeatureGate } from "@/components/shared";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -48,7 +49,8 @@ const Resources = () => {
         </div>
       </div>
 
-      {/* Content */}
+      {/* Content — gated for expired users */}
+      <FeatureGate featureName="Ressources">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 space-y-4 sm:space-y-6">
         
         {/* Examens Officiels 9ème AF */}
@@ -192,6 +194,7 @@ const Resources = () => {
         </Card>
 
       </div>
+      </FeatureGate>
     </div>
   );
 };

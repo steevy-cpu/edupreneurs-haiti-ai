@@ -4,4 +4,5 @@ export { GlobalSearch } from "./GlobalSearch";
 export { QuickMessageFAB } from "./QuickMessageFAB";
 export { LazyAvatar } from "./LazyAvatar";
 export { GoldBadge } from "./GoldBadge";
+export { FeatureGate } from "./FeatureGate";
 export * from "./SkeletonLoaders";

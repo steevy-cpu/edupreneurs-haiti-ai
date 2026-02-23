@@ -3,12 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider } from "@/components/ui/slider";
-import { Music, Play, Pause, SkipForward, SkipBack, Loader2, Volume2, Volume1, VolumeX, Shuffle, Repeat, Repeat1, X } from "lucide-react";
+import { Music, Play, Pause, SkipForward, SkipBack, Loader2, Volume2, Volume1, VolumeX, Shuffle, Repeat, Repeat1, X, Lock } from "lucide-react";
 import { useMusicPlayer } from "@/contexts/MusicPlayerContext";
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
+import { useSubscription } from "@/hooks/useSubscription";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export const GlobalMusicPlayer = () => {
   const [isStable, setIsStable] = useState(false);
@@ -33,6 +35,10 @@ export const GlobalMusicPlayer = () => {
   } = useMusicPlayer();
   
   const { isSlowConnection, shouldShowAnimations, shouldShowBlur } = useNetworkAwareLoading();
+  const { isActive } = useSubscription();
+  const navigate = useNavigate();
+  // Music is locked when user has no active subscription
+  const isMusicLocked = !isActive;
   const [playlistOpen, setPlaylistOpen] = useState(false);
   const [minimized, setMinimized] = useState(true);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -232,13 +238,30 @@ export const GlobalMusicPlayer = () => {
       >
         {minimized ? (
           <Button
-            onPointerDown={handleDragStart}
-            onClick={handlePlayerClick}
-            className="w-14 h-14 rounded-full shadow-2xl cursor-move relative overflow-hidden"
+            onPointerDown={isMusicLocked ? undefined : handleDragStart}
+            onClick={() => {
+              if (isMusicLocked) {
+                toast("Renouvelez votre abonnement pour écouter de la musique", {
+                  action: {
+                    label: "Renouveler",
+                    onClick: () => navigate('/settings?tab=account#subscription'),
+                  },
+                });
+                return;
+              }
+              handlePlayerClick();
+            }}
+            className={cn(
+              "w-14 h-14 rounded-full shadow-2xl relative overflow-hidden",
+              isMusicLocked ? "cursor-pointer opacity-70" : "cursor-move"
+            )}
             style={{ touchAction: 'none' }}
             size="icon"
           >
-            {isPlaying ? (
+            {/* Locked state — show lock icon instead of music controls */}
+            {isMusicLocked ? (
+              <Lock className="w-6 h-6" />
+            ) : isPlaying ? (
               shouldShowAnimations ? (
                 <div className="flex items-end gap-[3px] h-6">
                   <span className="w-1 bg-primary-foreground rounded-full animate-music-bar-1" />
@@ -251,7 +274,10 @@ export const GlobalMusicPlayer = () => {
             ) : (
               <Music className="w-6 h-6" />
             )}
-            {isPlaying && (
+            {/* Amber dot when locked, green dot when playing */}
+            {isMusicLocked ? (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full" />
+            ) : isPlaying && (
               <span className={cn(
                 "absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full",
                 shouldShowAnimations && "animate-pulse"

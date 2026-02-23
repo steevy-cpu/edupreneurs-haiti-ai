@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
+import { FeatureGate } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -304,9 +305,9 @@ export default function Matieres() {
           />
         )}
 
-        {/* Main content - only show if not non-academic */}
+        {/* Main content - gated for expired users, hidden for non-academic */}
         {!isNonAcademic && (
-          <>
+          <FeatureGate featureName="Matières">
         {/* Grade Level Selection */}
         <div className="mb-8">
           <h3 className="text-lg font-semibold mb-4 text-center">Sélectionnez votre niveau</h3>
@@ -624,7 +625,7 @@ export default function Matieres() {
             </div>
           </div>
         </Card>
-          </>
+          </FeatureGate>
         )}
       </div>
     </div>
