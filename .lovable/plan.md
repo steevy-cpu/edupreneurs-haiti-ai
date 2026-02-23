@@ -1,53 +1,64 @@
 
 
-# Fix Cron Secret + Set Test Account to Expired
+# Timed Free Access via Promo Codes — 3 Surgical Fixes
 
-## Problem Summary
+## Overview
 
-Two issues found:
+Enable promo codes with `grants_free_access = true` to give users full platform access until May 2, 2026, then auto-expire them via the existing hourly cron. Show an info banner in Settings for users with timed free access. Founders are fully excluded from expiry logic.
 
-1. **Test account stuck in limbo**: Status is `active` but end date is in the past. The hourly `expire_subscriptions()` cron hasn't run yet to flip it to `expired`, so the SubscriptionGate treats the user as "no subscription" and shows the full-block RenewalPrompt instead of letting them through with FeatureGate locks on premium pages.
+---
 
-2. **Cron job authentication broken**: The `pg_cron` job uses `current_setting('app.settings.internal_call_secret')` to send the `X-Internal-Secret` header, but `INTERNAL_CALL_SECRET` is stored as an edge function environment variable — not a PostgreSQL config setting. This means the cron sends `NULL`, causing a `401 Unauthorized` every time.
+## Fix 1: Update `redeem-promo-code` Edge Function
 
-## What Expired Users CAN Already Access
+**File:** `supabase/functions/redeem-promo-code/index.ts`
 
-The existing code already handles this correctly:
+After the gold award block (after line 155), add a new step 4 that grants timed free access when `promo.grants_free_access` is true:
 
-- **SubscriptionGate** (line 59-60): passes expired users through to the app shell
-- **Feed, Community, Classement, Settings**: No FeatureGate wrapping -- fully accessible to expired users
-- **Matieres, Resources, GamesHub, PassionDiscovery**: Wrapped in FeatureGate -- shows blurred preview with lock overlay
+- Update the user's profile with `has_free_access: true`, `subscription_status: 'active'`, `subscription_end_date: '2026-05-02T00:00:00.000Z'`
+- Update the success message to reflect free access activation: `"Acces gratuit active + X Gold!"`
+- Non-fatal error handling (redemption + gold already recorded)
 
-No changes needed to page access logic.
+---
 
-## Fix Plan
+## Fix 2: Update `expire_subscriptions()` DB Function
 
-### Step 1: Fix the test account (immediate)
+**Via SQL migration** — replace the function to add a second UPDATE that revokes timed free access:
 
-Set `subscription_status = 'expired'` on the test account so the SubscriptionGate lets it through:
+- Existing logic (expire paid subscriptions) stays unchanged
+- New block: set `has_free_access = false` and `subscription_status = 'expired'` where `has_free_access = true AND subscription_end_date < now()`
+- Founder UUIDs explicitly excluded via `NOT IN` clause
+- No new cron job — runs on the existing hourly schedule
 
-```sql
-UPDATE profiles
-SET subscription_status = 'expired'
-WHERE user_id = '6698f395-7f46-48b9-b7d3-d1151d9cec8c';
-```
+---
 
-### Step 2: Fix the cron job secret
+## Fix 3: Free Access Expiry Notice in Settings
 
-Generate a new known secret value and apply it in two places:
+**File:** `src/pages/Settings.tsx`
 
-**A. Set it as a PostgreSQL config** so `current_setting()` works:
-```sql
-ALTER ROLE authenticator SET app.settings.internal_call_secret = '<new-secure-value>';
-```
+### 3a. Update `subscriptionInfo` (lines 631-651)
 
-**B. Update the edge function environment variable** to match the same value, so the `check-subscription-expiry` function's `Deno.env.get("INTERNAL_CALL_SECRET")` returns the same string.
+Distinguish timed vs permanent free access:
+- `has_free_access = true` + `subscription_end_date` exists -> state `'free_timed'` with formatted date
+- `has_free_access = true` + no end date -> state `'free'` (founders, permanent)
 
-This makes the cron's `current_setting()` call and the edge function's `Deno.env.get()` call both use the same value.
+### 3b. Add amber info card (around line 978)
 
-### Step 3: Manually trigger the reminder function
+Add a new condition for `subscriptionInfo?.state === 'free_timed'` before the existing `'free'` case:
+- Amber background (`bg-amber-50 dark:bg-amber-900/20`)
+- `Info` icon from lucide-react
+- Text: "Vous beneficiez d'un acces gratuit a la plateforme jusqu'au [date]."
+- Subtext: "Apres cette date, un abonnement sera requis pour acceder aux fonctionnalites premium."
+- Import `Info` from lucide-react
 
-After both secrets are aligned, invoke the function to confirm it works end-to-end and sends the day-of expiry email to the test account.
+### 3c. Add `Info` to lucide imports (line 14-34)
+
+---
+
+## Files Modified
+
+1. `supabase/functions/redeem-promo-code/index.ts` — add profile update for free access grants + update success message
+2. DB migration — replace `expire_subscriptions()` with founder-safe timed expiry
+3. `src/pages/Settings.tsx` — add `free_timed` state + amber info card + `Info` icon import
 
 ## Safety Verification
 
@@ -56,8 +67,9 @@ After both secrets are aligned, invoke the function to confirm it works end-to-e
 | Existing RLS policies affected? | No |
 | Provider stack or AppShell changed? | No |
 | New dependencies added? | No |
-| Bundle size impact? | None (backend-only changes) |
-| Works on 3G? | N/A (server-side) |
-| Backward compatibility? | Yes -- only adding a PG config setting |
-| Existing data at risk? | No -- only updating one test account |
+| Bundle size impact? | Negligible (one info card) |
+| Works on 3G? | Yes — no extra network calls |
+| Backward compatibility? | Yes — founders untouched, existing free users unaffected |
+| Existing data at risk? | No — only new promo redemptions set end dates |
+| Super users excluded? | Yes — founder UUIDs excluded in DB function |
 
