@@ -47,6 +47,11 @@ export function PresenceProvider({ children }: PresenceProviderProps) {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const graceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const pendingOfflineRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  
+  // Retry state for CHANNEL_ERROR recovery (exponential backoff: 2s, 4s, 8s)
+  const retryCountRef = useRef(0);
+  const retryTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const MAX_RETRIES = 3;
 
   /**
    * Extract online user IDs from presence state.
@@ -151,65 +156,105 @@ export function PresenceProvider({ children }: PresenceProviderProps) {
       setIsConnected(false);
       return;
     }
-    
-    logger.log('[Presence] Creating channel for user:', user.id);
-    
-    // Create the global presence channel with user's ID as the key
-    const channel = supabase.channel('online-users', {
-      config: { presence: { key: user.id } }
-    });
-    
-    channel
-      .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState();
-        logger.log('[Presence] Sync event - raw state:', state);
-        handleSync(state);
-      })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        logger.log('[Presence] Join event - key:', key, 'presences:', newPresences);
-        if (key) handleUserOnline(key);
-      })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        logger.log('[Presence] Leave event - key:', key, 'presences:', leftPresences);
-        if (key) handleUserOffline(key);
-      })
-      .subscribe(async (status) => {
-        logger.log('[Presence] Subscription status:', status);
-        if (status === 'SUBSCRIBED') {
-          setIsConnected(true);
-          // Track current user's presence
-          const trackResult = await channel.track({
-            user_id: user.id,
-            online_at: new Date().toISOString(),
-          });
-          logger.log('[Presence] Track result:', trackResult, 'for user:', user.id);
-          
-          // Persist last_seen to database on initial connection
-          persistLastSeen(user.id);
-          
-          // Manually trigger a sync after tracking to ensure we get the updated state
-          setTimeout(() => {
-            const state = channel.presenceState();
-            logger.log('[Presence] Post-track state:', state);
-            handleSync(state);
-          }, 100);
-        } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-          setIsConnected(false);
-        }
+
+    /**
+     * Creates and subscribes the presence channel.
+     * Extracted so it can be called on initial mount AND on retry after CHANNEL_ERROR.
+     */
+    const setupChannel = () => {
+      logger.log('[Presence] Creating channel for user:', user.id);
+
+      const channel = supabase.channel('online-users', {
+        config: { presence: { key: user.id } }
       });
-    
-    channelRef.current = channel;
-    
+
+      channel
+        .on('presence', { event: 'sync' }, () => {
+          const state = channel.presenceState();
+          logger.log('[Presence] Sync event - raw state:', state);
+          handleSync(state);
+        })
+        .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+          logger.log('[Presence] Join event - key:', key, 'presences:', newPresences);
+          if (key) handleUserOnline(key);
+        })
+        .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+          logger.log('[Presence] Leave event - key:', key, 'presences:', leftPresences);
+          if (key) handleUserOffline(key);
+        })
+        .subscribe(async (status) => {
+          logger.log('[Presence] Subscription status:', status);
+          if (status === 'SUBSCRIBED') {
+            setIsConnected(true);
+            // Reset retry counter on successful connection
+            retryCountRef.current = 0;
+
+            // Track current user's presence
+            const trackResult = await channel.track({
+              user_id: user.id,
+              online_at: new Date().toISOString(),
+            });
+            logger.log('[Presence] Track result:', trackResult, 'for user:', user.id);
+
+            // Persist last_seen to database on initial connection
+            persistLastSeen(user.id);
+
+            // Manually trigger a sync after tracking to ensure we get the updated state
+            setTimeout(() => {
+              const state = channel.presenceState();
+              logger.log('[Presence] Post-track state:', state);
+              handleSync(state);
+            }, 100);
+          } else if (status === 'CHANNEL_ERROR') {
+            setIsConnected(false);
+
+            // Retry with exponential backoff: 2s, 4s, 8s
+            if (retryCountRef.current < MAX_RETRIES) {
+              const delay = 2000 * Math.pow(2, retryCountRef.current);
+              retryCountRef.current += 1;
+              logger.log(`[Presence] CHANNEL_ERROR — retry ${retryCountRef.current}/${MAX_RETRIES} in ${delay}ms`);
+
+              retryTimerRef.current = setTimeout(() => {
+                // Tear down the failed channel before creating a new one
+                if (channelRef.current) {
+                  supabase.removeChannel(channelRef.current);
+                  channelRef.current = null;
+                }
+                setupChannel();
+              }, delay);
+            } else {
+              logger.log('[Presence] CHANNEL_ERROR — max retries reached, giving up');
+            }
+          } else if (status === 'CLOSED') {
+            // Intentional close (cleanup) — do not retry
+            setIsConnected(false);
+          }
+        });
+
+      channelRef.current = channel;
+    };
+
+    setupChannel();
+
     return () => {
       logger.log('[Presence] Cleaning up channel for user:', user.id);
       // Clear all pending offline timers
       pendingOfflineRef.current.forEach(timer => clearTimeout(timer));
       pendingOfflineRef.current.clear();
-      
+
       if (graceTimerRef.current) {
         clearTimeout(graceTimerRef.current);
       }
-      
+
+      // Clear any pending retry timer
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+
+      // Reset retry counter on cleanup
+      retryCountRef.current = 0;
+
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
