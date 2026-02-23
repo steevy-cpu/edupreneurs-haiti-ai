@@ -11,6 +11,9 @@ import {
 import { getStaleTimeFor } from "@/utils/networkAwareCache";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
+// Debounce interval for posts channel — coalesces rapid INSERTs into one refetch
+const POSTS_DEBOUNCE_MS = 2000;
+
 export interface SidebarBadges {
   unreadMessages: number;
   pendingFollowRequests: number;
@@ -112,39 +115,48 @@ export function useSidebarBadges(userId?: string | null) {
 
     // Delay realtime subscriptions to prioritize initial render
     const subscriptionDelay = setTimeout(() => {
+      // Server-side filter: only other users' messages trigger badge refetch
       const messagesChannel = supabase
         .channel("sidebar-badges-messages")
         .on(
           "postgres_changes",
-          { event: "*", schema: "public", table: "messages" },
+          { event: "*", schema: "public", table: "messages", filter: `sender_id=neq.${userId}` },
           () => refetch()
         )
         .subscribe();
 
+      // Server-side filter: only follows targeting this user matter for badge
       const followsChannel = supabase
         .channel("sidebar-badges-follows")
         .on(
           "postgres_changes",
-          { event: "*", schema: "public", table: "follows" },
+          { event: "*", schema: "public", table: "follows", filter: `following_id=eq.${userId}` },
           () => refetch()
         )
         .subscribe();
 
+      // Server-side filter: only this user's notifications trigger badge refetch
       const notificationsChannel = supabase
         .channel("sidebar-badges-notifications")
         .on(
           "postgres_changes",
-          { event: "*", schema: "public", table: "notifications" },
+          { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
           () => refetch()
         )
         .subscribe();
 
+      // Posts channel stays unfiltered (all public posts relevant) but debounced
+      // to prevent rapid INSERTs from hammering refetch on 3G connections
+      let postsDebounceTimer: ReturnType<typeof setTimeout> | null = null;
       const postsChannel = supabase
         .channel("sidebar-badges-posts")
         .on(
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "posts" },
-          () => refetch()
+          () => {
+            if (postsDebounceTimer) clearTimeout(postsDebounceTimer);
+            postsDebounceTimer = setTimeout(() => refetch(), POSTS_DEBOUNCE_MS);
+          }
         )
         .subscribe();
 

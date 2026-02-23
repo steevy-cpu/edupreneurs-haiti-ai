@@ -1289,6 +1289,7 @@ const Community = () => {
           event: "UPDATE",
           schema: "public",
           table: "messages",
+          filter: `sender_id=neq.${user?.id}`, // Skip own message updates (e.g. read receipts)
         },
         (payload) => {
           // If message was marked as read, update the conversation's unread count

@@ -86,6 +86,7 @@ export const ChessPublicMatches = ({ userId, onJoinMatch }: ChessPublicMatchesPr
           event: '*',
           schema: 'public',
           table: 'chess_matches',
+          filter: 'is_public=eq.true', // Skip private match events — status filtering handled by fetchMatches()
         },
         () => {
           fetchMatches();
