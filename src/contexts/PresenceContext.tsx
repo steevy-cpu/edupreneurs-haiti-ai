@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef, useMemo, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
+import { logger } from '@/utils/logger';
 import { persistLastSeen, persistLastSeenBeacon, HEARTBEAT_INTERVAL_MS } from '@/services/lastSeenService';
 
 // Jude (AI assistant) is always shown as online
@@ -54,26 +55,24 @@ export function PresenceProvider({ children }: PresenceProviderProps) {
   const extractOnlineUsers = useCallback((state: Record<string, any[]>): Set<string> => {
     const userIds = new Set<string>([JUDE_USER_ID]); // Jude is always online
     
-    console.log('[Presence] Extracting users from state:', state);
+    logger.log('[Presence] Extracting users from state:', state);
     
     Object.entries(state).forEach(([key, presences]) => {
-      // The key itself is often the user_id (from Layout's presence key config)
       if (key && key !== JUDE_USER_ID) {
-        console.log('[Presence] Adding user from key:', key);
+        logger.log('[Presence] Adding user from key:', key);
         userIds.add(key);
       }
-      // Also check inside presence data for user_id field
       if (Array.isArray(presences)) {
         presences.forEach((p: any) => {
           if (p.user_id && p.user_id !== JUDE_USER_ID) {
-            console.log('[Presence] Adding user from presence data:', p.user_id);
+            logger.log('[Presence] Adding user from presence data:', p.user_id);
             userIds.add(p.user_id);
           }
         });
       }
     });
     
-    console.log('[Presence] Extracted user IDs:', Array.from(userIds));
+    logger.log('[Presence] Extracted user IDs:', Array.from(userIds));
     return userIds;
   }, []);
 
@@ -135,12 +134,12 @@ export function PresenceProvider({ children }: PresenceProviderProps) {
       // Only update if there's an actual change
       const prevArray = Array.from(prev).sort();
       const newArray = Array.from(newOnlineUsers).sort();
-      console.log('[Presence] Sync - Previous:', prevArray, 'New:', newArray);
+      logger.log('[Presence] Sync - Previous:', prevArray, 'New:', newArray);
       if (JSON.stringify(prevArray) === JSON.stringify(newArray)) {
-        console.log('[Presence] No change, skipping update');
+        logger.log('[Presence] No change, skipping update');
         return prev;
       }
-      console.log('[Presence] Updating online users to:', newArray);
+      logger.log('[Presence] Updating online users to:', newArray);
       return newOnlineUsers;
     });
     setLastUpdated(Date.now());
@@ -153,7 +152,7 @@ export function PresenceProvider({ children }: PresenceProviderProps) {
       return;
     }
     
-    console.log('[Presence] Creating channel for user:', user.id);
+    logger.log('[Presence] Creating channel for user:', user.id);
     
     // Create the global presence channel with user's ID as the key
     const channel = supabase.channel('online-users', {
@@ -163,19 +162,19 @@ export function PresenceProvider({ children }: PresenceProviderProps) {
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        console.log('[Presence] Sync event - raw state:', state);
+        logger.log('[Presence] Sync event - raw state:', state);
         handleSync(state);
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        console.log('[Presence] Join event - key:', key, 'presences:', newPresences);
+        logger.log('[Presence] Join event - key:', key, 'presences:', newPresences);
         if (key) handleUserOnline(key);
       })
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        console.log('[Presence] Leave event - key:', key, 'presences:', leftPresences);
+        logger.log('[Presence] Leave event - key:', key, 'presences:', leftPresences);
         if (key) handleUserOffline(key);
       })
       .subscribe(async (status) => {
-        console.log('[Presence] Subscription status:', status);
+        logger.log('[Presence] Subscription status:', status);
         if (status === 'SUBSCRIBED') {
           setIsConnected(true);
           // Track current user's presence
@@ -183,7 +182,7 @@ export function PresenceProvider({ children }: PresenceProviderProps) {
             user_id: user.id,
             online_at: new Date().toISOString(),
           });
-          console.log('[Presence] Track result:', trackResult, 'for user:', user.id);
+          logger.log('[Presence] Track result:', trackResult, 'for user:', user.id);
           
           // Persist last_seen to database on initial connection
           persistLastSeen(user.id);
@@ -191,7 +190,7 @@ export function PresenceProvider({ children }: PresenceProviderProps) {
           // Manually trigger a sync after tracking to ensure we get the updated state
           setTimeout(() => {
             const state = channel.presenceState();
-            console.log('[Presence] Post-track state:', state);
+            logger.log('[Presence] Post-track state:', state);
             handleSync(state);
           }, 100);
         } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
@@ -202,7 +201,7 @@ export function PresenceProvider({ children }: PresenceProviderProps) {
     channelRef.current = channel;
     
     return () => {
-      console.log('[Presence] Cleaning up channel for user:', user.id);
+      logger.log('[Presence] Cleaning up channel for user:', user.id);
       // Clear all pending offline timers
       pendingOfflineRef.current.forEach(timer => clearTimeout(timer));
       pendingOfflineRef.current.clear();
