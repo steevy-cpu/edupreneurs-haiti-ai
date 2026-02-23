@@ -53,13 +53,13 @@ export default function ForgotPasswordPage() {
       
       toast({
         title: "Email envoyé ✅",
-        description: "Vérifiez votre boîte de réception pour réinitialiser votre mot de passe",
+        description: "Vérifiez votre boîte de réception pour réinitialiser votre mot de passe. Si vous ne trouvez pas l'email, vérifiez votre dossier spam ou courrier indésirable.",
       });
       navigate('/auth/login');
     } catch (error: any) {
       toast({
         title: "Vérifiez votre boîte mail",
-        description: "Si un compte existe avec cette adresse, vous recevrez un lien de réinitialisation.",
+        description: "Si un compte existe avec cette adresse, vous recevrez un lien de réinitialisation. Pensez à vérifier votre dossier spam ou courrier indésirable.",
       });
       navigate('/auth/login');
     } finally {
