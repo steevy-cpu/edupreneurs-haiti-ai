@@ -71,6 +71,8 @@ export const ProgressTab = ({
       bgColor: "bg-purple-500/10",
       value: `${Math.round(analytics.studyTimeThisWeek / 60)}h`,
       label: "Étude",
+      sub: "Estimation",
+      subColor: "text-muted-foreground/60 italic",
     },
   ];
 
@@ -92,7 +94,7 @@ export const ProgressTab = ({
                   </span>
                   <span className="text-[10px] sm:text-xs text-muted-foreground">{kpi.label}</span>
                   {kpi.sub && (
-                    <span className="text-[9px] sm:text-[10px] text-green-600 font-medium">{kpi.sub}</span>
+                    <span className={`text-[9px] sm:text-[10px] ${kpi.subColor || 'text-green-600 font-medium'}`}>{kpi.sub}</span>
                   )}
                 </div>
               );
