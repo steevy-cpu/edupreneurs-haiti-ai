@@ -138,6 +138,7 @@ export const OverviewTab = ({
               </div>
               <span className="text-lg sm:text-xl font-bold text-foreground">{studyHours}h</span>
               <span className="text-[10px] sm:text-xs text-muted-foreground">Étude</span>
+              <span className="text-[8px] sm:text-[9px] text-muted-foreground/60 italic">Estimation</span>
             </div>
           </div>
         </CardContent>
