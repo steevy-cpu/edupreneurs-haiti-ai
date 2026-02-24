@@ -10,10 +10,10 @@ import {
   CarouselNext,
   type CarouselApi,
 } from '@/components/ui/carousel';
-import { RefreshCw, AlertCircle, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useStudygramCards, type StudygramCard } from '@/features/matieres/hooks/useStudygramCards';
+import { RefreshCw, AlertCircle, Sparkles, ChevronRight } from 'lucide-react';
+import { usePointsClesCards, type PointsClesCard } from '@/features/matieres/hooks/usePointsClesCards';
 
-interface LessonStudygramTabProps {
+interface LessonPointsClesTabProps {
   lessonId: string;
   lessonTitle: string;
   contenu: string;
@@ -24,7 +24,7 @@ interface LessonStudygramTabProps {
 }
 
 // Gradient map per card type — saturated colors work on both light/dark themes
-const CARD_GRADIENTS: Record<StudygramCard['type'], string> = {
+const CARD_GRADIENTS: Record<PointsClesCard['type'], string> = {
   concept: 'from-blue-500 to-indigo-600',
   example: 'from-emerald-500 to-teal-600',
   formula: 'from-purple-500 to-violet-600',
@@ -33,7 +33,7 @@ const CARD_GRADIENTS: Record<StudygramCard['type'], string> = {
 };
 
 // French labels for card type badges
-const TYPE_LABELS: Record<StudygramCard['type'], string> = {
+const TYPE_LABELS: Record<PointsClesCard['type'], string> = {
   concept: 'Concept',
   example: 'Exemple',
   formula: 'Formule',
@@ -58,7 +58,7 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
 }
 
 // Single flashcard slide
-function StudygramCardSlide({ card, index, total }: { card: StudygramCard; index: number; total: number }) {
+function PointsClesCardSlide({ card, index, total }: { card: PointsClesCard; index: number; total: number }) {
   return (
     <div
       className={`relative bg-gradient-to-br ${CARD_GRADIENTS[card.type]} rounded-2xl p-6 sm:p-8 min-h-[360px] sm:min-h-[420px] flex flex-col items-center justify-center text-white shadow-lg`}
@@ -98,7 +98,7 @@ function StudygramCardSlide({ card, index, total }: { card: StudygramCard; index
 }
 
 // Loading skeleton matching card dimensions
-function StudygramSkeleton() {
+function PointsClesSkeleton() {
   return (
     <div className="rounded-2xl p-6 sm:p-8 min-h-[360px] sm:min-h-[420px] flex flex-col items-center justify-center gap-4 bg-muted">
       <Skeleton className="h-14 w-14 rounded-full" />
@@ -114,7 +114,7 @@ function StudygramSkeleton() {
   );
 }
 
-export function LessonStudygramTab({
+export function LessonPointsClesTab({
   lessonId,
   lessonTitle,
   contenu,
@@ -122,8 +122,8 @@ export function LessonStudygramTab({
   objectif,
   gradeLevel,
   subjectName,
-}: LessonStudygramTabProps) {
-  const { cards, isLoading, isGenerating, error, isStale, regenerate } = useStudygramCards({
+}: LessonPointsClesTabProps) {
+  const { cards, isLoading, isGenerating, error, isStale, regenerate } = usePointsClesCards({
     lessonId,
     lessonTitle,
     contenu,
@@ -151,7 +151,7 @@ export function LessonStudygramTab({
     return (
       <Card>
         <CardContent className="p-4 sm:p-6">
-          <StudygramSkeleton />
+          <PointsClesSkeleton />
         </CardContent>
       </Card>
     );
@@ -215,7 +215,7 @@ export function LessonStudygramTab({
         <CarouselContent>
           {cards.map((card, index) => (
             <CarouselItem key={index}>
-              <StudygramCardSlide card={card} index={index} total={cards.length} />
+              <PointsClesCardSlide card={card} index={index} total={cards.length} />
             </CarouselItem>
           ))}
         </CarouselContent>
