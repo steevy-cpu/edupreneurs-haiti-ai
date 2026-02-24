@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -10,7 +10,7 @@ import {
   CarouselNext,
   type CarouselApi,
 } from '@/components/ui/carousel';
-import { RefreshCw, AlertCircle, Sparkles, ChevronRight } from 'lucide-react';
+import { RefreshCw, AlertCircle, Sparkles, ChevronRight, BookOpen, Lightbulb, Calculator, Star } from 'lucide-react';
 import { usePointsClesCards, type PointsClesCard } from '@/features/matieres/hooks/usePointsClesCards';
 
 interface LessonPointsClesTabProps {
@@ -41,58 +41,109 @@ const TYPE_LABELS: Record<PointsClesCard['type'], string> = {
   remember: 'À retenir',
 };
 
-// Progress dots showing current card position
-function ProgressDots({ total, current }: { total: number; current: number }) {
+// Lucide icons per card type — all already in the bundle
+const TYPE_ICONS: Record<PointsClesCard['type'], React.FC<{ className?: string }>> = {
+  concept: BookOpen,
+  example: Lightbulb,
+  formula: Calculator,
+  tip: Sparkles,
+  remember: Star,
+};
+
+// Tailwind color tokens for external dots — maps to each card type's gradient
+const DOT_COLORS: Record<PointsClesCard['type'], string> = {
+  concept: 'bg-blue-500',
+  example: 'bg-emerald-500',
+  formula: 'bg-purple-500',
+  tip: 'bg-amber-500',
+  remember: 'bg-rose-500',
+};
+
+// Type-specific content renderer — formula gets monospace, example gets label, remember gets larger text
+function CardContent_Typed({ card }: { card: PointsClesCard }) {
+  if (card.type === 'formula') {
+    return (
+      <div className="bg-white/10 rounded-lg p-3 font-mono text-sm text-white/90 leading-relaxed max-w-md text-center">
+        {card.content}
+      </div>
+    );
+  }
+  if (card.type === 'example') {
+    return (
+      <div className="max-w-md text-center">
+        <span className="italic text-white/70 text-xs sm:text-sm">Par exemple :</span>
+        <p className="text-sm sm:text-base text-white/90 leading-relaxed mt-1">{card.content}</p>
+      </div>
+    );
+  }
+  if (card.type === 'remember') {
+    return (
+      <p className="text-base sm:text-lg text-center text-white/90 leading-relaxed max-w-md font-medium">
+        {card.content}
+      </p>
+    );
+  }
+  // concept + tip — default centered paragraph
   return (
-    <div className="flex justify-center gap-1.5 mb-4">
-      {Array.from({ length: total }, (_, i) => (
-        <div
-          key={i}
-          className={`h-1.5 rounded-full transition-all duration-300 ${
-            i === current ? 'w-6 bg-white' : 'w-1.5 bg-white/40'
-          }`}
-        />
-      ))}
-    </div>
+    <p className="text-sm sm:text-base text-center text-white/90 leading-relaxed max-w-md">
+      {card.content}
+    </p>
   );
 }
 
-// Single flashcard slide
-function PointsClesCardSlide({ card, index, total }: { card: PointsClesCard; index: number; total: number }) {
+// Single flashcard slide — type-aware layout with icon + optional decorations
+function PointsClesCardSlide({ card }: { card: PointsClesCard }) {
+  const Icon = TYPE_ICONS[card.type];
+  const isRemember = card.type === 'remember';
+
   return (
     <div
-      className={`relative bg-gradient-to-br ${CARD_GRADIENTS[card.type]} rounded-2xl p-6 sm:p-8 min-h-[360px] sm:min-h-[420px] flex flex-col items-center justify-center text-white shadow-lg`}
+      className={`relative bg-gradient-to-br ${CARD_GRADIENTS[card.type]} rounded-2xl p-6 sm:p-8 min-h-[360px] sm:min-h-[420px] flex flex-col items-center justify-center text-white shadow-lg ${
+        isRemember ? 'ring-2 ring-white/30' : ''
+      }`}
     >
-      {/* Progress dots at top */}
-      <div className="absolute top-4 left-0 right-0">
-        <ProgressDots total={total} current={index} />
-      </div>
+      {/* Pulsing star decoration for "remember" cards — draws attention */}
+      {isRemember && (
+        <Star className="absolute top-4 right-4 h-5 w-5 text-white/40 animate-pulse" />
+      )}
 
-      {/* Emoji */}
-      <div className="text-5xl sm:text-6xl mb-4 select-none">{card.emoji}</div>
+      {/* Emoji + type icon side by side */}
+      <div className="flex items-center gap-3 mb-4">
+        <span className="text-5xl sm:text-6xl select-none">{card.emoji}</span>
+        <Icon className="h-6 w-6 text-white/70" />
+      </div>
 
       {/* Title */}
       <h3 className="text-xl sm:text-2xl font-bold text-center mb-3 leading-tight">
         {card.title}
       </h3>
 
-      {/* Content */}
-      <p className="text-sm sm:text-base text-center text-white/90 leading-relaxed max-w-md">
-        {card.content}
-      </p>
+      {/* Type-specific content layout */}
+      <CardContent_Typed card={card} />
 
       {/* Type badge */}
       <span className="mt-4 inline-block px-3 py-1 rounded-full bg-white/20 text-xs sm:text-sm font-medium backdrop-blur-sm">
         {TYPE_LABELS[card.type]}
       </span>
+    </div>
+  );
+}
 
-      {/* Swipe hint on first card */}
-      {index === 0 && total > 1 && (
-        <div className="absolute bottom-4 right-4 flex items-center gap-1 text-white/50 text-xs animate-pulse">
-          <span>Glisser</span>
-          <ChevronRight className="h-3 w-3" />
-        </div>
-      )}
+// External dot indicators below carousel — colored to match active card type
+function ExternalDots({ total, current, cards }: { total: number; current: number; cards: PointsClesCard[] }) {
+  return (
+    <div className="flex justify-center gap-2 mt-3">
+      {Array.from({ length: total }, (_, i) => (
+        <button
+          key={i}
+          aria-label={`Carte ${i + 1}`}
+          className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${
+            i === current
+              ? `${DOT_COLORS[cards[i]?.type ?? 'concept']} scale-125`
+              : 'bg-muted-foreground/30'
+          }`}
+        />
+      ))}
     </div>
   );
 }
@@ -133,17 +184,28 @@ export function LessonPointsClesTab({
     subjectName,
   });
 
-  // Track current slide for progress dots
+  // Track current slide for external dots
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [api, setApi] = useState<CarouselApi>();
+  const emblaRef = useRef<CarouselApi | null>(null);
 
-  // Sync carousel state with progress dots
+  // Sync carousel state with external dot indicators
   const onApiChange = useCallback((emblaApi: CarouselApi) => {
     if (!emblaApi) return;
-    setApi(emblaApi);
+    emblaRef.current = emblaApi;
     emblaApi.on('select', () => {
       setCurrentSlide(emblaApi.selectedScrollSnap());
     });
+  }, []);
+
+  // Keyboard navigation — arrow keys scroll carousel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!emblaRef.current) return;
+      if (e.key === 'ArrowLeft') emblaRef.current.scrollPrev();
+      if (e.key === 'ArrowRight') emblaRef.current.scrollNext();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   // Loading state
@@ -206,23 +268,26 @@ export function LessonPointsClesTab({
         </div>
       )}
 
-      {/* Carousel of flashcards */}
+      {/* Carousel of flashcards — wider on desktop, arrows visible everywhere */}
       <Carousel
         opts={{ align: 'center', containScroll: 'trimSnaps' }}
         setApi={onApiChange}
-        className="w-full max-w-lg mx-auto"
+        className="w-full max-w-2xl mx-auto"
       >
         <CarouselContent>
           {cards.map((card, index) => (
             <CarouselItem key={index}>
-              <PointsClesCardSlide card={card} index={index} total={cards.length} />
+              <PointsClesCardSlide card={card} />
             </CarouselItem>
           ))}
         </CarouselContent>
-        {/* Nav arrows — hidden on mobile where swipe is primary */}
-        <CarouselPrevious className="hidden sm:flex" />
-        <CarouselNext className="hidden sm:flex" />
+        {/* Nav arrows — visible on all screen sizes with semi-transparent bg */}
+        <CarouselPrevious className="flex h-10 w-10 bg-black/20 hover:bg-black/40 border-0 text-white" />
+        <CarouselNext className="flex h-10 w-10 bg-black/20 hover:bg-black/40 border-0 text-white" />
       </Carousel>
+
+      {/* External dot indicators — colored per active card type */}
+      <ExternalDots total={cards.length} current={currentSlide} cards={cards} />
 
       {/* Card counter + regenerate action */}
       <div className="flex items-center justify-between text-sm text-muted-foreground px-2">

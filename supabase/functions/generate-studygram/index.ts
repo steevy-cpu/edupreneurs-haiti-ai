@@ -46,7 +46,8 @@ const cardSchema = z.object({
   type: z.enum(["concept", "example", "formula", "tip", "remember"]),
 });
 
-const cardsArraySchema = z.array(cardSchema).min(3).max(10);
+// Aligned with prompt: exactly 5-8 cards required
+const cardsArraySchema = z.array(cardSchema).min(5).max(8);
 
 serve(async (req) => {
   // CORS preflight
@@ -97,17 +98,24 @@ serve(async (req) => {
     const objectifText = stripHtml(objectif || "");
 
     // Prompt: instructs AI to extract key points as structured flashcards
-    const systemPrompt = `Tu es un assistant pédagogique haïtien expert. Tu crées des fiches de révision (flashcards) à partir du contenu de cours.
+    // Enhanced prompt — enforces type distribution and depth adaptation per grade level
+    const systemPrompt = `Tu es un expert pédagogique haïtien spécialisé en mémorisation active. Tu crées des fiches de révision optimisées pour la rétention à long terme.
 
 RÈGLES STRICTES:
 - Génère exactement 5 à 8 cartes
-- Chaque carte résume UN point clé du cours
+- Chaque carte couvre UN seul point clé — pas plusieurs idées mélangées
 - Le contenu doit être en français, adapté au niveau ${gradeLevel}
 - Utilise des exemples concrets liés à Haïti quand c'est pertinent
-- Chaque carte fait 40-80 mots maximum
-- Les titres font maximum 10 mots
-- Utilise un emoji pertinent par carte
-- Attribue un type à chaque carte: concept, example, formula, tip, ou remember
+- Chaque carte fait 40-80 mots maximum dans le champ content
+- Les titres font maximum 8 mots, formulés comme une affirmation claire
+- Utilise un emoji pertinent et mémorable par carte
+- DISTRIBUTION DES TYPES OBLIGATOIRE: inclure au moins 1 carte de chaque type parmi: concept, example, formula (ou tip si pas de formule), remember
+- Les cartes "remember" contiennent les points les plus critiques à retenir absolument
+- Les cartes "concept" définissent clairement un terme ou une idée fondamentale
+- Les cartes "example" montrent une application concrète avec un contexte haïtien si possible
+- Les cartes "formula" présentent une règle, formule ou structure à mémoriser
+- Les cartes "tip" donnent une astuce pratique ou un moyen mnémotechnique
+- Adapte la profondeur au niveau: ${gradeLevel} (primaire = simple, secondaire = plus détaillé)
 
 Tu dois répondre UNIQUEMENT avec un tableau JSON valide, sans texte avant ni après.`;
 
