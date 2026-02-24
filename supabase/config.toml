@@ -230,3 +230,6 @@ verify_jwt = false
 
 [functions.generate-studygram]
 verify_jwt = false
+
+[functions.generate-studygram-visual]
+verify_jwt = false
