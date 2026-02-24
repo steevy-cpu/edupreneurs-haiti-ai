@@ -13,6 +13,7 @@ import {
 import { RefreshCw, AlertCircle, Sparkles, ChevronRight, BookOpen, Lightbulb, Calculator, Star } from 'lucide-react';
 import { usePointsClesCards, type PointsClesCard } from '@/features/matieres/hooks/usePointsClesCards';
 import { JudeGeneratingOverlay } from '@/components/jude/JudeGeneratingOverlay';
+import { MathText } from '@/components/MathContent';
 
 interface LessonPointsClesTabProps {
   lessonId: string;
@@ -65,7 +66,7 @@ function CardContent_Typed({ card }: { card: PointsClesCard }) {
   if (card.type === 'formula') {
     return (
       <div className="bg-white/10 rounded-lg p-3 font-mono text-sm text-white/90 leading-relaxed max-w-md text-center">
-        {card.content}
+        <MathText text={card.content} />
       </div>
     );
   }
@@ -73,21 +74,21 @@ function CardContent_Typed({ card }: { card: PointsClesCard }) {
     return (
       <div className="max-w-md text-center">
         <span className="italic text-white/70 text-xs sm:text-sm">Par exemple :</span>
-        <p className="text-sm sm:text-base text-white/90 leading-relaxed mt-1">{card.content}</p>
+        <p className="text-sm sm:text-base text-white/90 leading-relaxed mt-1"><MathText text={card.content} /></p>
       </div>
     );
   }
   if (card.type === 'remember') {
     return (
       <p className="text-base sm:text-lg text-center text-white/90 leading-relaxed max-w-md font-medium">
-        {card.content}
+        <MathText text={card.content} />
       </p>
     );
   }
   // concept + tip — default centered paragraph
   return (
     <p className="text-sm sm:text-base text-center text-white/90 leading-relaxed max-w-md">
-      {card.content}
+      <MathText text={card.content} />
     </p>
   );
 }
@@ -116,7 +117,7 @@ function PointsClesCardSlide({ card }: { card: PointsClesCard }) {
 
       {/* Title */}
       <h3 className="text-xl sm:text-2xl font-bold text-center mb-3 leading-tight">
-        {card.title}
+        <MathText text={card.title} />
       </h3>
 
       {/* Type-specific content layout */}

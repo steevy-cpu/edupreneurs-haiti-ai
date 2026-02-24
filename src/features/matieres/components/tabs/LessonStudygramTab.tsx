@@ -2,6 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RefreshCw, AlertCircle, Sparkles, Star } from 'lucide-react';
+import { MathText } from '@/components/MathContent';
 import { JudeGeneratingOverlay } from '@/components/jude/JudeGeneratingOverlay';
 import {
   useStudygramVisual,
@@ -87,28 +88,28 @@ function MindMapNode({ node, sectionType }: { node: StudygramNode; sectionType: 
       /* Light bg + dark text for readable contrast on any background */
       return (
         <div className={`${colors.highlightBg} ${colors.highlightText} border ${colors.border} rounded-2xl px-4 py-1.5 text-sm font-semibold shadow-sm max-w-full break-words`}>
-          {node.text}
+          <MathText text={node.text} />
         </div>
       );
     case 'mindmap':
       /* Pastel pill — colored text, subtle shadow for mind map nodes */
       return (
         <div className={`${colors.mindmapBg} ${colors.mindmapText} rounded-2xl px-4 py-1.5 text-sm font-medium shadow-sm max-w-full break-words`}>
-          {node.text}
+          <MathText text={node.text} />
         </div>
       );
     case 'outline':
       /* Bordered rectangle — definitions/concepts */
       return (
         <div className={`border ${colors.border} ${colors.nodeBg} rounded-lg px-3 py-2 text-sm ${colors.nodeText} max-w-full break-words`}>
-          {node.text}
+          <MathText text={node.text} />
         </div>
       );
     case 'quote':
       /* Italic blockquote with left bar — citations/formulas */
       return (
         <div className={`border-l-4 ${colors.border} ${colors.nodeBg} pl-3 py-1.5 text-sm italic text-muted-foreground rounded-r-md max-w-full break-words`}>
-          «&nbsp;{node.text}&nbsp;»
+          «&nbsp;<MathText text={node.text} />&nbsp;»
         </div>
       );
     case 'plain':
@@ -116,7 +117,7 @@ function MindMapNode({ node, sectionType }: { node: StudygramNode; sectionType: 
       /* Simple text node with bullet */
       return (
         <div className={`${colors.nodeBg} rounded-lg px-3 py-1.5 text-sm ${colors.nodeText} max-w-full break-words`}>
-          • {node.text}
+          • <MathText text={node.text} />
         </div>
       );
   }
@@ -199,7 +200,7 @@ function RadialMindMapCluster({ section }: { section: StudygramSection }) {
         {/* Central concept node */}
         {centralNode && (
           <div className={`${colors.highlightBg} ${colors.highlightText} border ${colors.border} rounded-2xl px-6 py-2.5 text-sm font-bold text-center shadow-md max-w-full break-words`}>
-            {centralNode.text}
+            <MathText text={centralNode.text} />
           </div>
         )}
 
@@ -219,7 +220,7 @@ function RadialMindMapCluster({ section }: { section: StudygramSection }) {
                   key={i}
                   className={`${colors.mindmapBg} ${colors.mindmapText} rounded-2xl px-3 py-1.5 text-xs sm:text-sm text-center shadow-sm font-medium break-words`}
                 >
-                  {node.text}
+                  <MathText text={node.text} />
                 </div>
               ))}
             </div>
