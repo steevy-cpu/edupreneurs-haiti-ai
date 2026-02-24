@@ -1,109 +1,75 @@
 
 
-# Studygram Text Overflow and Color Contrast — 2 Surgical Fixes
+# Fix Studygram Generation Failures — 2 Reliability Improvements
 
-## Scope
+## Root Cause Analysis
 
-**1 file modified:** `src/features/matieres/components/tabs/LessonStudygramTab.tsx`
-No new dependencies. No database changes.
+The edge function logs show **two failure modes**, both from AI model non-compliance:
+
+1. **Truncated JSON** (3 occurrences) — The AI returns incomplete JSON that fails `JSON.parse()`. This happens because the combined prompt + lesson content is large, causing the model to hit output token limits or produce malformed responses.
+
+2. **Node text too long** (1 occurrence) — The AI generates a node with text exceeding the 300-character Zod limit at `sections[0].nodes[5].text`.
+
+Currently, both failures return a 500 error with no recovery attempt. The user sees "Edge Function returned a non-2xx status code" and must manually retry.
 
 ---
 
-## Fix 1 — Prevent Node Overflow and Clipping
+## Fix 1 — Add `response_format: { type: "json_object" }` and Increase Resilience
 
-**Problem:** Nodes using `rounded-full` grow into circles when text is long, causing them to overflow section containers and clip into adjacent cards.
+**Problem:** The AI model returns truncated or non-JSON output because there's no structured output enforcement.
+
+**Changes in `supabase/functions/generate-studygram-visual/index.ts`:**
+
+1. **Add `response_format`** to the AI gateway request body (line 242-248):
+   - Add `response_format: { type: "json_object" }` to force the model to return valid JSON
+   - This eliminates the markdown code fence wrapping issue and truncated responses
+
+2. **Add `max_tokens: 4096`** to ensure the model has enough output budget for the full 4-section structure
+
+3. **Strengthen the prompt constraint** (line 162):
+   - Change "Chaque node fait 10-50 mots maximum" to "Chaque node fait 10-40 mots maximum (200 caractères max)"
+   - This gives the AI a character-aware limit that stays well under the 300-char Zod constraint
+
+---
+
+## Fix 2 — Auto-Truncate Long Nodes Instead of Failing
+
+**Problem:** When one node text exceeds 300 characters, the entire studygram fails Zod validation and the user gets nothing.
+
+**Changes in `supabase/functions/generate-studygram-visual/index.ts`:**
+
+1. **Add a sanitization step** between `JSON.parse()` and Zod validation (after line 278):
+   - Loop through `parsedData.sections` and truncate any `node.text` longer than 295 characters (with "..." suffix)
+   - This gracefully handles AI overflows without losing the entire generation
+
+2. **Add heading truncation** — cap headings at 78 characters (Zod max is 80) for the same reason
+
+---
+
+## Fix 3 — Add a Single Automatic Retry on Parse/Validation Failure
+
+**Problem:** Transient AI failures (truncated JSON) require the user to manually click "Retry". On 3G connections this is frustrating.
 
 **Changes:**
 
-1. **MindMapNode component (lines 76-117):**
-   - `highlight` node (line 83): change `rounded-full` to `rounded-2xl`, add `max-w-full break-words`
-   - `mindmap` node (line 90): change `rounded-full` to `rounded-2xl`, add `max-w-full break-words`
-   - `outline` node (line 97): add `max-w-full break-words`
-   - `quote` node (line 104): add `max-w-full break-words`
-   - `plain` node (line 112): add `max-w-full break-words`
-
-2. **BranchNode component (line 136):** Add `min-w-0` to the `flex-1` wrapper so flex children can shrink below content size
-
-3. **RadialMindMapCluster (lines 178-223):**
-   - Central node (line 194): change `rounded-full` to `rounded-2xl`, add `max-w-full break-words`
-   - Child pills (line 213): change `rounded-full` to `rounded-2xl`, remove `max-w-[140px]` (was causing text clipping), add `break-words`
-
-4. **Central title pill (line 361):** change `rounded-full` to `rounded-2xl`, add `max-w-full break-words`
+1. **Wrap the AI call + parse + validate block** in a retry loop (max 1 retry):
+   - On first failure (parse error or validation error), retry the AI call once automatically
+   - On second failure, return the error to the user as before
+   - Log which attempt succeeded/failed for observability
 
 ---
 
-## Fix 2 — Fix White Text on Light Backgrounds
-
-**Problem:** `text-white` on `bg-{color}-500` nodes becomes invisible when nodes sit on light card backgrounds or overflow container bounds.
-
-**Changes to SECTION_COLORS (lines 22-68):**
-
-Update all 4 color schemes with new node color values. Section headers (`headerBg`) stay unchanged (saturated bg + white text is fine there).
+## Summary of Changes
 
 ```text
-For each color (blue, purple, emerald, amber):
-
-highlightBg:  CHANGE from 'bg-{color}-500 dark:bg-{color}-600'
-              TO     'bg-{color}-100 dark:bg-{color}-900/40'
-              (was used with text-white, now paired with dark text)
-
-Add new field:
-highlightText: 'text-{color}-900 dark:text-{color}-100'
-
-mindmapBg:    KEEP   'bg-{color}-100 dark:bg-{color}-900/50' (already light)
-mindmapText:  KEEP   'text-{color}-700 dark:text-{color}-200' (already dark)
-
-nodeBg:       KEEP   'bg-{color}-50 dark:bg-{color}-950/40'
-nodeText:     KEEP   'text-{color}-900 dark:text-{color}-100'
+supabase/functions/generate-studygram-visual/index.ts
+  Line 162:      Tighten prompt: "200 caractères max" per node
+  Lines 242-248: Add response_format + max_tokens to AI request
+  Lines 273-286: Add sanitization step (truncate long nodes/headings)
+  Lines 236-286: Wrap in retry loop (1 automatic retry on failure)
 ```
 
-**Changes to MindMapNode (lines 76-117):**
-- `highlight` case (line 83): replace `text-white` with `${colors.highlightText}`, add `font-semibold border ${colors.border}`
-- `quote` case (line 104): change `border-l-3` to `border-l-4`, use `${colors.nodeBg}` (already light), keep `text-muted-foreground`
-- `plain` case (line 112): keep as-is (already uses `nodeText` which is dark)
-
-**Changes to RadialMindMapCluster (lines 178-223):**
-- Central node (line 194): replace `${colors.highlightBg} text-white` with `${colors.highlightBg} ${colors.highlightText}` + border
-- Child pills (line 213): already use `mindmapBg`/`mindmapText` which are light bg + dark text — no change needed
-
-**What stays white text:** Only the section header bars (lines 157, 186) keep `text-white` since they sit on saturated `bg-{color}-500` backgrounds with sufficient contrast.
-
----
-
-## Updated Color Type
-
-Add `highlightText` field to the SECTION_COLORS type definition (line 23):
-
-```text
-Record<string, {
-  headerBg: string;
-  border: string;
-  nodeBg: string;
-  nodeText: string;
-  highlightBg: string;
-  highlightText: string;   // NEW
-  mindmapBg: string;
-  mindmapText: string;
-}>
-```
-
----
-
-## Summary of All Affected Lines
-
-```text
-src/features/matieres/components/tabs/LessonStudygramTab.tsx
-  Lines 22-68:   SECTION_COLORS — update highlightBg values, add highlightText field
-  Line 83:       highlight node — rounded-2xl, dark text, max-w-full, break-words
-  Line 90:       mindmap node — rounded-2xl, max-w-full, break-words
-  Line 97:       outline node — max-w-full, break-words
-  Line 104:      quote node — border-l-4, max-w-full, break-words
-  Line 112:      plain node — max-w-full, break-words
-  Line 136:      BranchNode wrapper — add min-w-0
-  Line 194:      radial central node — rounded-2xl, dark text, max-w-full, break-words
-  Line 213:      radial child pills — rounded-2xl, remove max-w-[140px], break-words
-  Line 361:      central title pill — rounded-2xl, max-w-full, break-words
-```
+No frontend changes. No database changes. No new dependencies.
 
 ---
 
@@ -111,10 +77,11 @@ src/features/matieres/components/tabs/LessonStudygramTab.tsx
 
 | Check | Result |
 |---|---|
-| Existing functionality broken? | No -- same data, same layout structure |
+| Existing functionality broken? | No -- same input/output contract |
 | New dependencies? | None |
-| Bundle size impact? | Zero -- only class name changes |
-| 3G performance? | No impact -- CSS only |
-| Section headers affected? | No -- keep saturated bg + white text |
-| Dark mode contrast? | Maintained via dark: variants on all nodes |
-| Node shapes preserved? | Yes -- rounded-2xl keeps pill aesthetic without circular overflow |
+| Bundle size impact? | Zero -- edge function only |
+| 3G performance? | Improved -- auto-retry saves manual retry round-trip |
+| Rate limiting affected? | No -- retry happens server-side within same request |
+| Cold start impact? | None -- no new imports |
+| Backward compatible? | Yes -- same response shape |
+
