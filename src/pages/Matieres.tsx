@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { FeatureGate } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -55,7 +55,19 @@ export default function Matieres() {
   const { isVisitor } = useVisitor();
   const { shouldAnimate, animationLevel, shouldShowGlow } = useNetworkAwareAnimations();
   const isSlowConnection = animationLevel === 'minimal' || animationLevel === 'reduced';
-  const [selectedGrade, setSelectedGrade] = useState<GradeLevel>("7AF");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Fix 2: Initialize grade from URL param > localStorage > null (no flash of wrong grade)
+  const [selectedGrade, setSelectedGrade] = useState<GradeLevel | null>(() => {
+    const urlGrade = searchParams.get('grade');
+    if (urlGrade && VALID_GRADES.includes(urlGrade as GradeLevel)) return urlGrade as GradeLevel;
+    const storedGrade = localStorage.getItem('matieres_selected_grade');
+    if (storedGrade && VALID_GRADES.includes(storedGrade as GradeLevel)) return storedGrade as GradeLevel;
+    return null;
+  });
+
+  // Fix 1: Ref to prevent auto-detection from overriding manual user selection
+  const hasUserSelectedGrade = useRef(false);
   const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
   /* Fix 3: Default to true — show subjects immediately without Explorer gate */
   const [showContent, setShowContent] = useState(true);
@@ -92,6 +104,9 @@ export default function Matieres() {
     loadImages();
   }, [isSlowConnection]);
 
+  // Effective grade for data fetching — fall back to 7AF while resolving to avoid null queries
+  const effectiveGrade: GradeLevel = selectedGrade ?? "7AF";
+
   // UNIFIED DATA HOOK - single source of all data with parallel fetching
   const {
     userId,
@@ -113,7 +128,7 @@ export default function Matieres() {
     baccExamCount,
     canAccessGrade,
     getProgress
-  } = useMatieresData(selectedGrade, selectedSeries);
+  } = useMatieresData(effectiveGrade, selectedSeries);
 
   /* Fix 5: 10s loading timeout — show retry instead of infinite skeleton */
   useEffect(() => {
@@ -125,31 +140,39 @@ export default function Matieres() {
     return () => clearTimeout(timer);
   }, [isLoading]);
 
-  const currentGrade = gradeLevels.find(g => g.id === selectedGrade);
-  const isNS3OrNS4 = selectedGrade === "NS3" || selectedGrade === "NS4";
+  // Fix 3: Derive loading state for grade resolution (skeleton instead of false unlocks)
+  const isGradeResolving = isAuthenticated && !isSuperUser && isLoading && !userGrade && selectedGrade === null;
+
+  const currentGrade = gradeLevels.find(g => g.id === effectiveGrade);
+  const isNS3OrNS4 = effectiveGrade === "NS3" || effectiveGrade === "NS4";
   
   // Check if user has a non-academic grade (UNIV or NONE)
   const isNonAcademic = isAuthenticated && isNonAcademicGrade(userGrade);
 
-  // Auto-select user's grade on initial load with toast notification
+  // Auto-select user's grade on initial load — guarded against manual override
   useEffect(() => {
+    // Fix 1: Don't override if user already picked a grade manually
+    if (hasUserSelectedGrade.current) return;
     if (userGrade && isAuthenticated) {
-      // Only set if userGrade is a valid academic grade level (not UNIV/NONE)
       if (VALID_GRADES.includes(userGrade as GradeLevel)) {
-        setSelectedGrade(userGrade as GradeLevel);
-        // Show toast notification confirming auto-detection
+        // Fix 2: Only auto-set if no grade was restored from URL/localStorage
+        if (selectedGrade === null) {
+          setSelectedGrade(userGrade as GradeLevel);
+          // Persist to localStorage + URL for future visits
+          localStorage.setItem('matieres_selected_grade', userGrade);
+          setSearchParams(prev => { prev.set('grade', userGrade); return prev; }, { replace: true });
+        }
         const gradeLabel = gradeLevels.find(g => g.id === userGrade)?.fullName || userGrade;
         toast.success(`Niveau détecté: ${gradeLabel}`, {
           description: "Votre niveau a été automatiquement sélectionné",
           duration: 3000,
         });
       }
-      // If non-academic grade (UNIV/NONE), keep default "7AF" but show locked overlay
     }
   }, [userGrade, isAuthenticated]); // Re-run when profile grade loads asynchronously
 
   const filteredSubjects = dbSubjects.filter(s => {
-    if (s.grade_level !== selectedGrade) return false;
+    if (s.grade_level !== effectiveGrade) return false;
     if (isNS3OrNS4 && selectedSeries) return s.series === selectedSeries;
     return true;
   });
@@ -318,41 +341,52 @@ export default function Matieres() {
             onTouchMove={(e) => e.stopPropagation()}
             onTouchEnd={(e) => e.stopPropagation()}
           >
-            {gradeLevels.map((grade) => {
-              const isUserGrade = userGrade === grade.id;
-              // Guard: don't show locks while userGrade is still loading (null)
-              const isLocked = isAuthenticated && !!userGrade && !canAccessGrade(grade.id);
-              
-              return (
-                <Button
-                  key={grade.id}
-                  variant={selectedGrade === grade.id ? "default" : "outline"}
-                  onClick={() => {
-                    if (isLocked) {
-                      toast.error(
-                        `Ce niveau est verrouillé. Votre compte est enregistré pour ${GRADE_LABELS[userGrade!] || userGrade}. Contactez le support pour changer de niveau.`
-                      );
-                      return;
-                    }
-                    setSelectedGrade(grade.id);
-                    setSelectedSeries(null);
-                    /* Fix 3: No longer reset showContent on grade switch */
-                  }}
-                  className={`min-w-[70px] flex-shrink-0 transition-all duration-200 gap-1.5 ${
-                    selectedGrade === grade.id 
-                      ? 'ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg' 
-                      : isLocked 
-                        ? 'opacity-50 cursor-not-allowed hover:bg-muted' 
-                        : 'hover:border-primary/50'
-                  }`}
-                  size="sm"
-                >
-                  {isUserGrade && <Star className="w-3 h-3 fill-current" />}
-                  {isLocked && <Lock className="w-3 h-3" />}
-                  {grade.label}
-                </Button>
-              );
-            })}
+            {/* Fix 3: Show skeleton pulses while grade is resolving */}
+            {isGradeResolving ? (
+              gradeLevels.map((grade) => (
+                <Skeleton key={grade.id} className="min-w-[70px] h-9 rounded-md flex-shrink-0" />
+              ))
+            ) : (
+              gradeLevels.map((grade) => {
+                const isUserGrade = userGrade === grade.id;
+                // Guard: don't show locks while userGrade is still loading (null)
+                const isLocked = isAuthenticated && !!userGrade && !canAccessGrade(grade.id);
+                
+                return (
+                  <Button
+                    key={grade.id}
+                    variant={effectiveGrade === grade.id ? "default" : "outline"}
+                    onClick={() => {
+                      if (isLocked) {
+                        toast.error(
+                          `Ce niveau est verrouillé. Votre compte est enregistré pour ${GRADE_LABELS[userGrade!] || userGrade}. Contactez le support pour changer de niveau.`
+                        );
+                        return;
+                      }
+                      // Fix 1: Mark as user-initiated to prevent auto-detection override
+                      hasUserSelectedGrade.current = true;
+                      setSelectedGrade(grade.id);
+                      setSelectedSeries(null);
+                      // Fix 2: Persist to localStorage + URL for cross-refresh persistence
+                      localStorage.setItem('matieres_selected_grade', grade.id);
+                      setSearchParams(prev => { prev.set('grade', grade.id); return prev; }, { replace: true });
+                    }}
+                    className={`min-w-[70px] flex-shrink-0 transition-all duration-200 gap-1.5 ${
+                      effectiveGrade === grade.id 
+                        ? 'ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg' 
+                        : isLocked 
+                          ? 'opacity-50 cursor-not-allowed hover:bg-muted' 
+                          : 'hover:border-primary/50'
+                    }`}
+                    size="sm"
+                  >
+                    {isUserGrade && <Star className="w-3 h-3 fill-current" />}
+                    {isLocked && <Lock className="w-3 h-3" />}
+                    {grade.label}
+                  </Button>
+                );
+              })
+            )}
           </div>
           {isAuthenticated && userGrade && (
             <p className="text-center text-xs text-muted-foreground mt-2">
@@ -429,7 +463,7 @@ export default function Matieres() {
         {((!isNS3OrNS4 && processedSubjects.length > 0) || (isNS3OrNS4 && selectedSeries)) && !isLoading && showContent ? (
           <div className="animate-fade-in">
             {/* User Stats Widget */}
-            <UserStatsWidget gradeLevel={selectedGrade} stats={userStats} isLoading={isLoading} isAuthenticated={isAuthenticated} />
+            <UserStatsWidget gradeLevel={effectiveGrade} stats={userStats} isLoading={isLoading} isAuthenticated={isAuthenticated} />
 
             {/* Continue Learning Section */}
             <ContinueLearningSection subjects={continueLearningSubjects} isLoading={progressLoading} />
@@ -457,7 +491,7 @@ export default function Matieres() {
             </Card>
 
             {/* 9AF Exam Section */}
-            {selectedGrade === '9AF' && (
+            {effectiveGrade === '9AF' && (
               <Card className="p-6 mb-8 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
                 <div className="flex flex-col md:flex-row items-center gap-6">
                   <div className="w-24 h-24 rounded-lg bg-background flex items-center justify-center p-2 shadow-md">
@@ -481,7 +515,7 @@ export default function Matieres() {
             )}
 
             {/* Bac Exam Section */}
-            {(selectedGrade === 'NS3' || selectedGrade === 'NS4') && selectedSeries && (
+            {(effectiveGrade === 'NS3' || effectiveGrade === 'NS4') && selectedSeries && (
               <Card className="p-6 mb-8 bg-gradient-to-br from-amber-500/5 to-orange-500/10 border-amber-500/20">
                 <div className="flex flex-col md:flex-row items-center gap-6">
                   <div className="w-24 h-24 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
@@ -587,7 +621,7 @@ export default function Matieres() {
                       En attendant, explore les autres niveaux disponibles.
                     </p>
                   </div>
-                  <Button variant="outline" onClick={() => setSelectedGrade("7AF")}>
+                  <Button variant="outline" onClick={() => { hasUserSelectedGrade.current = true; setSelectedGrade("7AF"); localStorage.setItem('matieres_selected_grade', '7AF'); setSearchParams(prev => { prev.set('grade', '7AF'); return prev; }, { replace: true }); }}>
                     Explorer d'autres niveaux
                   </Button>
                 </>
