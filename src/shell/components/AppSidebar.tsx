@@ -150,7 +150,7 @@ export const AppSidebar = memo(function AppSidebar({
           collapsed ? 'p-2 lg:p-3' : 'p-3 sm:p-4 lg:p-5'
         )}>
           {collapsed ? (
-            <div className="hidden lg:flex w-10 h-10 rounded-full bg-white/20 items-center justify-center text-white font-bold text-lg">
+            <div className="hidden lg:flex w-10 h-10 rounded-full bg-foreground/10 items-center justify-center text-white font-bold text-lg">
               E
             </div>
           ) : (

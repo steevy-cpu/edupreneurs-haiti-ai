@@ -254,7 +254,7 @@ export default function Matieres() {
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 backdrop-blur-md border border-white/30 mb-6 animate-fade-in">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 dark:bg-white/5 backdrop-blur-md border border-white/30 mb-6 animate-fade-in">
               <img src={menfpLogo} alt="MENFP" className="w-6 h-6 rounded-full" />
               <span className="text-sm font-semibold text-white drop-shadow-md">Programme officiel MENFP</span>
             </div>
@@ -277,15 +277,15 @@ export default function Matieres() {
             </p>
             
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-              <div className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/20 dark:bg-white/10 backdrop-blur-md border border-white/30 shadow-lg">
                 <BookOpen className="w-4 h-4 text-emerald-300" />
                 <span className="text-sm font-bold text-white">7 niveaux</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/20 dark:bg-white/10 backdrop-blur-md border border-white/30 shadow-lg">
                 <Award className="w-4 h-4 text-amber-300" />
                 <span className="text-sm font-bold text-white">4 séries Bac</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/20 dark:bg-white/10 backdrop-blur-md border border-white/30 shadow-lg">
                 <GraduationCap className="w-4 h-4 text-primary" />
                 <span className="text-sm font-bold text-white">Certifié MENFP</span>
               </div>
@@ -460,7 +460,7 @@ export default function Matieres() {
             {selectedGrade === '9AF' && (
               <Card className="p-6 mb-8 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
                 <div className="flex flex-col md:flex-row items-center gap-6">
-                  <div className="w-24 h-24 rounded-lg bg-white flex items-center justify-center p-2 shadow-md">
+                  <div className="w-24 h-24 rounded-lg bg-background flex items-center justify-center p-2 shadow-md">
                     <img src={menfpLogo} alt="MENFP Logo" className="w-full h-full object-contain" />
                   </div>
                   <div className="flex-1 text-center md:text-left">
