@@ -36,4 +36,6 @@ export interface LessonPageTemplateProps {
   nextLesson?: SiblingLesson | null;
   // Audio enabled for first lessons only
   isFirstLesson?: boolean;
+  // Offline mode — serving cached content from localStorage
+  isOfflineMode?: boolean;
 }

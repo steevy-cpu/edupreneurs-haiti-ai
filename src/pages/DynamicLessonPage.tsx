@@ -13,12 +13,21 @@ import judeComputer from "@/assets/eric-computer.png";
 import judeMath from "@/assets/eric-math.png";
 import type { SiblingLesson } from "@/features/matieres/types/lesson.types";
 
+/** 24-hour TTL for offline lesson cache */
+const LESSON_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
+/** Build localStorage key for a specific lesson */
+const getLessonCacheKey = (subjectSlug: string, lessonSlug: string) =>
+  `lesson_cache_${subjectSlug}_${lessonSlug}`;
+
 export default function DynamicLessonPage() {
   const { slug, lessonSlug } = useParams();
   const navigate = useNavigate();
   const [lesson, setLesson] = useState<any>(null);
   const [subject, setSubject] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  // Flag: serving cached content because network fetch failed
+  const [isOfflineMode, setIsOfflineMode] = useState(false);
   
   // Navigation state
   const [currentLessonIndex, setCurrentLessonIndex] = useState(1);
@@ -138,8 +147,44 @@ export default function DynamicLessonPage() {
       };
 
       setLesson(transformedLesson);
+
+      // Persist to localStorage for offline fallback (best-effort, ignore quota errors)
+      try {
+        const cacheKey = getLessonCacheKey(decodedSubjectSlug, decodedLessonSlug);
+        localStorage.setItem(cacheKey, JSON.stringify({
+          lesson: transformedLesson,
+          subject: { name: subjectData.name, slug: subjectData.slug, grade_level: subjectData.grade_level },
+          savedAt: Date.now(),
+        }));
+      } catch (cacheErr) {
+        // localStorage full or unavailable — non-critical
+        console.warn('Failed to cache lesson for offline use:', cacheErr);
+      }
     } catch (error) {
       console.error('Error loading lesson:', error);
+
+      // Offline fallback: try to serve from localStorage cache within 24h TTL
+      try {
+        const decodedSubjectSlug = slug ? decodeURIComponent(slug) : '';
+        const decodedLessonSlug = lessonSlug ? decodeURIComponent(lessonSlug) : '';
+        const cacheKey = getLessonCacheKey(decodedSubjectSlug, decodedLessonSlug);
+        const cached = localStorage.getItem(cacheKey);
+
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          const age = Date.now() - (parsed.savedAt || 0);
+
+          if (age < LESSON_CACHE_TTL_MS && parsed.lesson && parsed.subject) {
+            setLesson(parsed.lesson);
+            setSubject(parsed.subject);
+            setIsOfflineMode(true);
+            console.info('Serving lesson from offline cache (age:', Math.round(age / 60000), 'min)');
+          }
+        }
+      } catch (cacheReadErr) {
+        // Cache read failed — fall through to "lesson not found" UI
+        console.warn('Offline cache read failed:', cacheReadErr);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -221,6 +266,7 @@ export default function DynamicLessonPage() {
       previousLesson={previousLesson}
       nextLesson={nextLesson}
       isFirstLesson={isFirstLesson}
+      isOfflineMode={isOfflineMode}
     />
   );
 }

@@ -3,7 +3,7 @@ import { InteractiveActivitiesEnhanced } from '@/components/InteractiveActivitie
 import { JudeGeneratingOverlay } from '@/components/jude/JudeGeneratingOverlay';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw, WifiOff } from 'lucide-react';
 import judeChairDesk from '@/assets/eric-chair-desk.png';
 
 interface LessonActivitiesTabProps {
@@ -16,6 +16,8 @@ interface LessonActivitiesTabProps {
   legacyActivitiesHtml?: string | null;
   /** Called when gold is awarded during an activity */
   onGoldUpdate?: () => void;
+  /** When true, network-dependent features are disabled */
+  isOfflineMode?: boolean;
 }
 
 /**
@@ -32,6 +34,7 @@ export function LessonActivitiesTab({
   lessonExamples,
   legacyActivitiesHtml,
   onGoldUpdate,
+  isOfflineMode = false,
 }: LessonActivitiesTabProps) {
   const { data, isLoading, isGenerating, error, isStale, regenerate } = useAIGeneratedActivities({
     lessonId,
@@ -42,6 +45,18 @@ export function LessonActivitiesTab({
     gradeLevel,
     subjectName,
   });
+
+  // Offline guard — must be after all hooks to satisfy React rules
+  if (isOfflineMode) {
+    return (
+      <Card>
+        <CardContent className="p-4 sm:p-6 flex items-center gap-3 text-amber-700 dark:text-amber-300">
+          <WifiOff className="h-5 w-5 shrink-0" />
+          <p className="text-sm">Activités non disponibles hors-ligne. Reconnectez-vous pour accéder à cet onglet.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   // Loading / Generating state
   if (isLoading || isGenerating) {
