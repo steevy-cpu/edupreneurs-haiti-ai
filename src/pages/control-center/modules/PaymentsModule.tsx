@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, Eye, Clock, DollarSign, Loader2, RefreshCw, Search, Filter } from "lucide-react";
+import { CheckCircle, XCircle, Eye, Clock, DollarSign, Loader2, RefreshCw, Search, Filter, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 
 interface PaymentTransaction {
@@ -40,15 +40,28 @@ const PaymentsModule = () => {
   const [providerFilter, setProviderFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch all payments with service role via edge function would be ideal
-  // But for now, founders have access via the admin policy
-  const { data: payments, isLoading, refetch } = useQuery({
-    queryKey: ['admin-payments', statusFilter, providerFilter],
+  // Accumulation pagination — 50 rows per page, append-style
+  const [page, setPage] = useState(0);
+  const [allPayments, setAllPayments] = useState<PaymentTransaction[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const PAGE_SIZE = 50;
+
+  // Reset accumulated data when filters change
+  useEffect(() => {
+    setAllPayments([]);
+    setPage(0);
+    setHasMore(true);
+  }, [statusFilter, providerFilter]);
+
+  const { data: pagePayments, isLoading, refetch } = useQuery({
+    queryKey: ['admin-payments', statusFilter, providerFilter, page],
     queryFn: async () => {
       let query = supabase
         .from('payment_transactions')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        // 50 rows per page — prevents unbounded fetches
+        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
       
       // Apply filters
       if (statusFilter !== "all") {
@@ -64,24 +77,32 @@ const PaymentsModule = () => {
       }
       
       const { data, error } = await query;
-      
       if (error) throw error;
       return data as PaymentTransaction[];
     }
   });
 
+  // Append fetched page to accumulated list
+  useEffect(() => {
+    if (!pagePayments) return;
+    setHasMore(pagePayments.length === PAGE_SIZE);
+    if (page === 0) {
+      setAllPayments(pagePayments);
+    } else {
+      setAllPayments((prev) => [...prev, ...pagePayments]);
+    }
+  }, [pagePayments, page]);
+
   // Manual payment verification mutation (approve/reject pending receipts)
   const verifyMutation = useMutation({
     mutationFn: async ({ orderId, action, notes }: { orderId: string; action: 'approve' | 'reject'; notes?: string }) => {
-      // Update the transaction directly — natcash-admin-verify edge function removed
       const updateData: Record<string, unknown> = {
         admin_verified: action === 'approve',
         verified_at: new Date().toISOString(),
       };
       if (notes) updateData.verification_notes = notes;
       if (action === 'approve') updateData.status = 'completed';
-      // Rejected payments need their status updated too — otherwise they stay
-      // in 'pending_verification' which breaks the filter view
+      // Rejected payments need their status updated too
       if (action === 'reject') updateData.status = 'rejected';
 
       const { error } = await supabase
@@ -137,20 +158,25 @@ const PaymentsModule = () => {
     switch (provider) {
       case 'moncash':
         return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">MonCash</Badge>;
+      case 'stripe':
+        return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-300">Stripe</Badge>;
       default:
         return <Badge variant="outline">{provider}</Badge>;
     }
   };
 
-  // Filter by search query (order_id only — natcash fields removed)
-  const filteredPayments = payments?.filter(p => {
-    if (!searchQuery) return true;
-    return p.order_id.toLowerCase().includes(searchQuery.toLowerCase());
-  });
+  // Filter accumulated payments by search query (order_id only)
+  const filteredPayments = useMemo(() => {
+    if (!allPayments.length) return [];
+    if (!searchQuery) return allPayments;
+    return allPayments.filter(p =>
+      p.order_id.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [allPayments, searchQuery]);
 
-  const pendingVerificationCount = payments?.filter(
+  const pendingVerificationCount = allPayments.filter(
     p => p.status === 'pending_verification' && !p.admin_verified
-  ).length || 0;
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -186,7 +212,7 @@ const PaymentsModule = () => {
                 className="pl-9"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); }}>
               <SelectTrigger className="w-full sm:w-[180px]">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Statut" />
@@ -200,13 +226,14 @@ const PaymentsModule = () => {
                 <SelectItem value="rejected">Rejetés</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={providerFilter} onValueChange={setProviderFilter}>
+            <Select value={providerFilter} onValueChange={(v) => { setProviderFilter(v); }}>
               <SelectTrigger className="w-full sm:w-[150px]">
                 <SelectValue placeholder="Fournisseur" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous</SelectItem>
                 <SelectItem value="moncash">MonCash</SelectItem>
+                <SelectItem value="stripe">Stripe</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -214,11 +241,11 @@ const PaymentsModule = () => {
       </Card>
 
       {/* Payments List */}
-      {isLoading ? (
+      {isLoading && page === 0 ? (
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
-      ) : !filteredPayments?.length ? (
+      ) : !filteredPayments.length ? (
         <Card>
           <CardContent className="py-12 text-center">
             <DollarSign className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -227,6 +254,11 @@ const PaymentsModule = () => {
         </Card>
       ) : (
         <div className="space-y-4">
+          {/* Loaded count indicator */}
+          <p className="text-sm text-muted-foreground">
+            Affichage de {filteredPayments.length} paiements
+          </p>
+
           {filteredPayments.map((payment) => (
             <Card 
               key={payment.id}
@@ -287,6 +319,25 @@ const PaymentsModule = () => {
               </CardContent>
             </Card>
           ))}
+
+          {/* Load more: shown when more rows may exist */}
+          {hasMore && (
+            <div className="flex justify-center pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setPage((p) => p + 1)}
+                className="gap-2"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+                Charger plus
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
