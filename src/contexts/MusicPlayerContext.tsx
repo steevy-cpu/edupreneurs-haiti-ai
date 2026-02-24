@@ -2,6 +2,11 @@ import { createContext, useContext, useState, useRef, useEffect, useCallback, Re
 import { supabase } from "@/integrations/supabase/client";
 import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { useVisitor } from "@/contexts/VisitorContext";
+import { toast } from "sonner";
+
+// Max retries before giving up on YouTube API initialization
+const MAX_INIT_RETRIES = 10;
+const INIT_RETRY_INTERVAL = 500;
 
 interface PlaylistTrack {
   id: string;
@@ -58,6 +63,10 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   const currentTrackIndexRef = useRef(currentTrackIndex);
   const nextTrackRef = useRef<() => void>(() => {});
   const volumeRef = useRef(volume);
+  const initRetryCountRef = useRef(0);
+  // Refs for stale-closure-safe playPause (Fix 3)
+  const isPlayingRef = useRef(isPlaying);
+  const playerReadyRef = useRef(playerReady);
 
   // Keep refs in sync
   useEffect(() => {
@@ -67,6 +76,14 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     volumeRef.current = volume;
   }, [volume]);
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+
+  useEffect(() => {
+    playerReadyRef.current = playerReady;
+  }, [playerReady]);
 
   // Check if on slow connection
   const isSlowConnection = useCallback(() => {
@@ -79,13 +96,12 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated } = useSessionAuth();
   const { isVisitor } = useVisitor();
 
+  // Fix 1: Load YouTube API unconditionally — it handles adaptive streaming
   useEffect(() => {
     if (isAuthenticated || isVisitor) {
       fetchPlaylistTracks();
     }
-    if (!isSlowConnection()) {
-      loadYouTubeAPI();
-    }
+    loadYouTubeAPI();
   }, [isAuthenticated, isVisitor]);
 
   const loadYouTubeAPI = useCallback(() => {
@@ -191,6 +207,8 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
             events: {
               onReady: (event: any) => {
                 setPlayerReady(true);
+                // Fix 2: Reset retry counter on successful init
+                initRetryCountRef.current = 0;
                 event.target.setVolume(volumeRef.current);
                 event.target.playVideo();
                 setIsPlaying(true);
@@ -207,6 +225,8 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
               },
               onError: (event: any) => {
                 console.error('❌ YouTube player error:', event.data);
+                // Fix 6: User-facing error toast on playback failure
+                toast.error("Impossible de lire cette piste. Passage à la suivante...");
                 setPlayerReady(false);
                 playerRef.current = null;
                 setTimeout(() => { nextTrackRef.current(); }, 1000);
@@ -215,11 +235,19 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
           });
         } catch (error) {
           console.error("❌ Failed to initialize YouTube player:", error);
+          // Fix 6: Toast on init failure
+          toast.error("Erreur d'initialisation du lecteur.");
           setPlayerReady(false);
           playerRef.current = null;
         }
       } else {
-        setTimeout(initialize, 100);
+        // Fix 2: Retry with limit instead of infinite loop
+        initRetryCountRef.current += 1;
+        if (initRetryCountRef.current > MAX_INIT_RETRIES) {
+          toast.error("La musique n'est pas disponible pour le moment. Réessayez plus tard.");
+          return;
+        }
+        setTimeout(initialize, INIT_RETRY_INTERVAL);
       }
     };
     initialize();
@@ -235,6 +263,8 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
         playerRef.current.playVideo();
         setIsPlaying(true);
       } catch (error) {
+        // Fix 6: Toast on playTrack failure
+        toast.error("Erreur de lecture. Réessayez.");
         setPlayerReady(false);
         playerRef.current = null;
         initPlayer(index);
@@ -246,14 +276,15 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [tracks, youtubeApiLoaded, loadYouTubeAPI, playerReady, initPlayer]);
 
-  const playPause = () => {
-    if (!playerRef.current || !playerReady || typeof playerRef.current.pauseVideo !== 'function') {
+  // Fix 3: useCallback + refs to avoid stale closure on rapid clicks
+  const playPause = useCallback(() => {
+    if (!playerRef.current || !playerReadyRef.current || typeof playerRef.current.pauseVideo !== 'function') {
       setIsPlaying(true);
       initPlayer();
       return;
     }
     try {
-      if (isPlaying) {
+      if (isPlayingRef.current) {
         playerRef.current.pauseVideo();
         setIsPlaying(false);
       } else {
@@ -261,11 +292,13 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
         setIsPlaying(true);
       }
     } catch (error) {
+      // Fix 6: Toast on playPause failure
+      toast.error("Erreur de lecture. Réessayez.");
       setPlayerReady(false);
       playerRef.current = null;
       initPlayer();
     }
-  };
+  }, [initPlayer]);
 
   const nextTrack = useCallback(() => {
     const currentIndex = currentTrackIndexRef.current;
