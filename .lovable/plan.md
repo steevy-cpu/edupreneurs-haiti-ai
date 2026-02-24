@@ -1,99 +1,86 @@
 
 
-# Polish Points Cles — Visual Design + AI Prompt
+# Grade Auto-Detection and Locking — 3 Surgical Fixes
 
-## Perimetre
+## Scope
 
-**2 fichiers modifies :**
-1. `src/features/matieres/components/tabs/LessonPointsClesTab.tsx` (renderer)
-2. `supabase/functions/generate-studygram/index.ts` (AI prompt + Zod schema)
+**1 file modified:** `src/pages/Matieres.tsx`
+**0 other files touched.** `useMatieresData.ts` is unchanged.
 
-Aucun autre fichier touche. Hook, data structure, et edge function logic inchanges.
+---
 
-## Changements detailles
+## Fix 1 — User-Initiated Selection Guard
 
-### Fichier 1 : LessonPointsClesTab.tsx
+**Problem:** When a user manually picks a grade, the auto-detection `useEffect` (lines 134-149) fires again once `userGrade` resolves asynchronously, overriding the manual choice.
 
-#### 1a. Icones par type de carte
+**Solution:**
+- Add `const hasUserSelectedGrade = useRef(false)` (line ~58 area, alongside other state)
+- In the grade button `onClick` handler (line 337), add `hasUserSelectedGrade.current = true`
+- In the auto-detection `useEffect` (line 135), add early return: `if (hasUserSelectedGrade.current) return`
 
-Ajout d'un mapping `TYPE_ICONS` utilisant des icones Lucide existantes (deja dans le bundle) :
+**Lines affected:** ~58, 135, 337
 
-| Type | Icone | Import |
-|---|---|---|
-| concept | BookOpen | lucide-react |
-| example | Lightbulb | lucide-react |
-| formula | Calculator | lucide-react |
-| tip | Sparkles | deja importe |
-| remember | Star | lucide-react |
+---
 
-L'icone s'affiche a cote de l'emoji dans le header de chaque carte. La carte `remember` recoit une bordure supplementaire `ring-2 ring-white/30`.
+## Fix 2 — Persist Grade via URL Query Param + localStorage
 
-#### 1b. Layouts specifiques par type
+**Problem:** On refresh, the page always defaults to `7AF`, causing a flash before auto-detection kicks in.
 
-- **formula** : le contenu est affiche dans un bloc monospace (`bg-white/10 rounded-lg p-3 font-mono text-sm`)
-- **example** : le contenu est precede d'un label "Par exemple :" en italique
-- **remember** : texte legerement plus grand (`text-base sm:text-lg`), decoration etoile pulsante dans le coin superieur droit
-- **concept** et **tip** : layout centre actuel conserve
+**Solution:**
+- Replace `useState<GradeLevel>("7AF")` (line 58) with an initializer function that reads:
+  1. URL search param `?grade=X` (highest priority)
+  2. `localStorage.getItem('matieres_selected_grade')` (fallback)
+  3. `null` as final fallback (not `7AF`)
+- In the grade button `onClick` (line 337): save to `localStorage` and update URL via `searchParams.set('grade', grade.id)` using `useSearchParams` from react-router-dom
+- In the auto-detection `useEffect`: only set grade if `selectedGrade` is still `null`
+- When `selectedGrade` is `null` and still resolving, the grade buttons section shows a loading state (see Fix 3)
+- Add `useSearchParams` import from `react-router-dom`
 
-#### 1c. Progress dots externalises
+**Lines affected:** ~1 (imports), ~58, ~134-149, ~330-338
 
-- Suppression du composant `ProgressDots` a l'interieur de `PointsClesCardSlide` (lignes 67-69)
-- Ajout d'indicateurs externes sous le carousel, colores selon le type de la carte active
-- Style : cercle rempli pour actif, cercle transparent pour inactif
+---
 
-#### 1d. Carousel ameliore
+## Fix 3 — Loading State While Grade Resolves
 
-- `max-w-lg` (ligne 213) remplace par `max-w-2xl` pour utiliser plus d'espace sur desktop
-- Suppression de l'etat `api` (ligne 138) — jamais lu apres `setApi`, code mort
-- Ajout d'un `useEffect` pour navigation clavier (fleches gauche/droite) via `emblaApi.scrollPrev()`/`scrollNext()`
-- Fleches prev/next : `hidden sm:flex` (lignes 223-224) remplace par `flex` — visibles sur mobile aussi
-- Boutons fleches plus grands avec fond semi-transparent
+**Problem:** During the loading window (before `userGrade` resolves), all grades appear unlocked with `7AF` selected, which is confusing.
 
-### Fichier 2 : generate-studygram/index.ts
+**Solution:**
+- Derive a boolean: `const isGradeResolving = isAuthenticated && !isSuperUser && isLoading && !userGrade && selectedGrade === null`
+- When `isGradeResolving` is true, render the grade buttons area with `Skeleton` pulses over each button (using the existing `Skeleton` component already imported on line 7)
+- Super users skip this entirely — they see all grades immediately since `isSuperUser` is falsy during loading (it depends on `userId` from the same query), but once resolved they get full access. We handle this by checking `isSuperUser` after data loads.
+- Once `userGrade` resolves (or auto-detection sets `selectedGrade`), the real buttons animate in
 
-#### 2a. Prompt systeme ameliore
+**Lines affected:** ~312-356 (grade selector section)
 
-Remplacement du prompt systeme (lignes 100-112) par une version enrichie avec :
+---
 
-- Role plus precis : "expert pedagogique haitien specialise en memorisation active"
-- Distribution des types obligatoire : au moins 1 carte de chaque type parmi concept, example, formula/tip, remember
-- Descriptions du role de chaque type (concept = definir, example = illustrer, formula = memoriser, tip = astuce, remember = critique)
-- Titres limites a 8 mots (au lieu de 10) — formules comme affirmations claires
-- Adaptation explicite par niveau : primaire = simple, secondaire = plus detaille
+## Detailed Changes Summary
 
-#### 2b. Schema Zod aligne
+```text
+src/pages/Matieres.tsx
++-- Line 2: add useSearchParams to import
++-- Line ~58: selectedGrade initializer reads URL param > localStorage > null
++-- Line ~58: add hasUserSelectedGrade ref
++-- Lines 134-149: add guard for hasUserSelectedGrade + null check on selectedGrade
++-- Lines 312-356: wrap grade buttons in loading/resolved conditional
++-- Lines 330-338: onClick saves to localStorage + URL param + sets ref
+```
 
-Ligne 49 : `z.array(cardSchema).min(3).max(10)` devient `z.array(cardSchema).min(5).max(8)` pour correspondre exactement au prompt.
+No new dependencies. No database changes. No other files.
 
-## Recapitulatif des changements par ligne
+---
 
-**LessonPointsClesTab.tsx :**
-- Ligne 13 : ajout imports BookOpen, Lightbulb, Calculator, Star
-- Lignes 27-33 : conserve CARD_GRADIENTS
-- Apres ligne 42 : ajout TYPE_ICONS mapping
-- Lignes 44-58 : suppression ProgressDots (remplace par dots externes)
-- Lignes 60-97 : refonte PointsClesCardSlide avec layouts par type, icone, ring pour remember
-- Ligne 138 : suppression `const [api, setApi]`
-- Ligne 141-147 : refonte onApiChange sans setApi, ajout useEffect keyboard nav
-- Ligne 213 : max-w-lg → max-w-2xl
-- Lignes 223-224 : hidden sm:flex → flex + style agrandi
-- Apres ligne 225 : ajout dots externes colores
+## Verification
 
-**generate-studygram/index.ts :**
-- Ligne 49 : min(3).max(10) → min(5).max(8)
-- Lignes 100-112 : remplacement prompt systeme complet
-
-## Verification securite
-
-| Check | Resultat |
+| Check | Result |
 |---|---|
-| Fonctionnalite cassee? | Non — meme data, nouveau rendu |
-| Hook modifie? | Non |
-| Nouvelles dependances? | Non — icones Lucide deja dans le bundle |
-| Bundle size | Identique |
-| Performance 3G | Identique — meme volume DOM |
-| Cache existant | Compatible — meme structure de donnees |
-| Dark mode | Compatible — gradients inchanges |
-| Edge function logic | Inchangee — seul le prompt et la validation Zod changent |
-| Rate limiting | Inchange |
+| Existing functionality broken? | No — same data flow, same hook |
+| Provider stack affected? | No |
+| New dependencies? | No — useSearchParams already available via react-router-dom |
+| Bundle size impact? | Negligible — ~20 lines added |
+| 3G performance? | Improved — no flash of wrong grade |
+| Super users affected? | No — they bypass all locking |
+| Visitors affected? | No — isAuthenticated is false, grade resolving skipped |
+| URL param XSS risk? | None — value validated against VALID_GRADES array before use |
+| localStorage quota? | Trivial — single string value |
 
