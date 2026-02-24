@@ -1,152 +1,99 @@
 
 
-# Redesign du renderer Studygram — Style Mind Map visuel
+# Polish Points Cles — Visual Design + AI Prompt
 
 ## Perimetre
 
-**Un seul fichier modifie :** `src/features/matieres/components/tabs/LessonStudygramTab.tsx`
+**2 fichiers modifies :**
+1. `src/features/matieres/components/tabs/LessonPointsClesTab.tsx` (renderer)
+2. `supabase/functions/generate-studygram/index.ts` (AI prompt + Zod schema)
 
-Aucune modification de : edge function, hook, types, data structure, LessonPageTemplate, ni aucun autre fichier.
+Aucun autre fichier touche. Hook, data structure, et edge function logic inchanges.
 
-## Ce qui change visuellement
+## Changements detailles
 
-Le rendu actuel (cartes plates en grille) est remplace par un vrai style "fiche de revision visuelle" :
+### Fichier 1 : LessonPointsClesTab.tsx
 
-```text
-+--------------------------------------------------+
-|  .............. graph paper bg .................. |
-|                                                    |
-|        [ Titre de la lecon ]  <-- pill gradient    |
-|          Matiere - Niveau                          |
-|                    |                               |
-|         -----------+-----------                    |
-|         |                     |                    |
-|  +------+------+    +--------+------+              |
-|  | Explicatif  |    | Approfondir   |              |
-|  | (bleu)      |    | (violet)      |              |
-|  |  |-- node   |    |  |-- node     |              |
-|  |  |-- node   |    |  |-- node     |              |
-|  |  '-- node   |    |  '-- node     |              |
-|  +-------------+    +---------------+              |
-|         |                     |                    |
-|  +------+------+    +--------+------+              |
-|  | A Retenir   |    | Resume visuel |              |
-|  | (vert)      |    | (ambre)       |              |
-|  |  |-- node   |    |  [central]    |              |
-|  |  |-- node   |    |  / | \        |              |
-|  |  '-- node   |    | [A][B][C]     |              |
-|  +-------------+    +---------------+              |
-|                                                    |
-|            [Regenerer le studygram]                 |
-+--------------------------------------------------+
-```
+#### 1a. Icones par type de carte
 
-## Details techniques
+Ajout d'un mapping `TYPE_ICONS` utilisant des icones Lucide existantes (deja dans le bundle) :
 
-### 1. Fond graph paper (grille subtile)
-
-Un `repeating-linear-gradient` CSS applique au conteneur principal pour simuler du papier quadrille :
-
-- Lignes fines (`1px`) en `border/10` opacite
-- Espacement de `20px` entre les lignes
-- Compatible dark mode via `dark:` variants
-
-### 2. Titre central — pill avec gradient
-
-- Pill arrondi (`rounded-full`) avec gradient `from-purple-600 to-indigo-600`
-- Texte blanc, gras, taille `lg`/`xl`
-- Sous-titre en `text-muted-foreground` en dessous
-- Ligne verticale CSS (`border-l-2 border-dashed`) descendant du titre vers la grille de sections
-
-### 3. Mapping section type vers couleur (fixe)
-
-| Section type | Couleur | Header bg | Border |
-|---|---|---|---|
-| `explicatif` | Bleu | `bg-blue-500` text blanc | `border-blue-300` |
-| `approfondissement` | Violet/Pink | `bg-purple-500` text blanc | `border-purple-300` |
-| `a_retenir` | Vert | `bg-emerald-500` text blanc | `border-emerald-300` |
-| `resume_visuel` | Ambre | `bg-amber-500` text blanc | `border-amber-300` |
-
-Les headers de section passent de pastels legers a des **couleurs saturees avec texte blanc** pour un contraste de type "bulle de mind map".
-
-### 4. Section cluster — header bulle + noeuds branches
-
-Chaque section est un cluster :
-
-- **Header bulle** : `rounded-full px-5 py-2` avec couleur saturee + emoji + heading en blanc gras
-- **Ligne verticale** : `border-l-2` dashed partant du header vers les noeuds
-- **Noeuds branches** : chaque noeud a une barre horizontale (`border-t-2`) qui part de la ligne verticale, creant un arbre en L
-
-```text
-  [Section Header]
-       |
-       |--- [Node 1 highlight - pill shape]
-       |
-       |--- [Node 2 outline - rectangle]
-       |
-       '--- [Node 3 quote - italic card]
-```
-
-### 5. Formes de noeuds mixtes
-
-| Style | Forme | Rendu |
+| Type | Icone | Import |
 |---|---|---|
-| `highlight` | Pill (`rounded-full`) | Fond colore sature, texte blanc, gras |
-| `outline` | Rectangle arrondi (`rounded-lg`) | Bordure coloree, fond transparent |
-| `quote` | Rectangle avec barre laterale | Italique, guillemets francais |
-| `plain` | Rectangle simple | Texte avec bullet point |
-| `mindmap` | Pill/ovale (`rounded-full`) | Fond pastel, texte colore, ombre legere |
+| concept | BookOpen | lucide-react |
+| example | Lightbulb | lucide-react |
+| formula | Calculator | lucide-react |
+| tip | Sparkles | deja importe |
+| remember | Star | lucide-react |
 
-### 6. Section "Resume visuel" — mind map radial
+L'icone s'affiche a cote de l'emoji dans le header de chaque carte. La carte `remember` recoit une bordure supplementaire `ring-2 ring-white/30`.
 
-Pour le type `resume_visuel`, le rendu reste specifique :
-- Noeud central en pill large
-- Ligne verticale dashed du centre vers une barre horizontale
-- Noeuds enfants en pills connectes via la barre horizontale
+#### 1b. Layouts specifiques par type
 
-### 7. Section "A retenir" — bordure epaisse + etoile
+- **formula** : le contenu est affiche dans un bloc monospace (`bg-white/10 rounded-lg p-3 font-mono text-sm`)
+- **example** : le contenu est precede d'un label "Par exemple :" en italique
+- **remember** : texte legerement plus grand (`text-base sm:text-lg`), decoration etoile pulsante dans le coin superieur droit
+- **concept** et **tip** : layout centre actuel conserve
 
-- `border-2` au lieu de `border`
-- Icone etoile dans le header
-- Fond legerement plus sature pour l'emphase
+#### 1c. Progress dots externalises
 
-### 8. Responsive
+- Suppression du composant `ProgressDots` a l'interieur de `PointsClesCardSlide` (lignes 67-69)
+- Ajout d'indicateurs externes sous le carousel, colores selon le type de la carte active
+- Style : cercle rempli pour actif, cercle transparent pour inactif
 
-- **Desktop** : `grid-cols-2` — 4 sections en 2x2
-- **Mobile** : `grid-cols-1` — empilement vertical
-- Ligne verticale centrale masquee sur mobile
-- Gap entre sections : `gap-6`
+#### 1d. Carousel ameliore
 
-### 9. Dark mode
+- `max-w-lg` (ligne 213) remplace par `max-w-2xl` pour utiliser plus d'espace sur desktop
+- Suppression de l'etat `api` (ligne 138) — jamais lu apres `setApi`, code mort
+- Ajout d'un `useEffect` pour navigation clavier (fleches gauche/droite) via `emblaApi.scrollPrev()`/`scrollNext()`
+- Fleches prev/next : `hidden sm:flex` (lignes 223-224) remplace par `flex` — visibles sur mobile aussi
+- Boutons fleches plus grands avec fond semi-transparent
 
-- Graph paper : lignes en `border/5` en dark
-- Headers : memes couleurs saturees (pas de changement)
-- Noeuds : fonds `dark:bg-{color}-950/40`, bordures `dark:border-{color}-800`
-- Titre pill : meme gradient, pas de changement
+### Fichier 2 : generate-studygram/index.ts
 
-### 10. Composants remplaces
+#### 2a. Prompt systeme ameliore
 
-Les composants suivants sont supprimes et remplaces par un seul `MindMapRenderer` :
+Remplacement du prompt systeme (lignes 100-112) par une version enrichie avec :
 
-- `StudygramNodeItem` → remplace par `MindMapNode`
-- `MindmapSection` → integre dans `MindMapSectionCluster`
-- `ARetenirSection` → integre dans `MindMapSectionCluster` (avec variante etoile)
-- `StandardSectionCard` → integre dans `MindMapSectionCluster`
-- `StudygramSectionCard` → remplace par `MindMapSectionCluster`
+- Role plus precis : "expert pedagogique haitien specialise en memorisation active"
+- Distribution des types obligatoire : au moins 1 carte de chaque type parmi concept, example, formula/tip, remember
+- Descriptions du role de chaque type (concept = definir, example = illustrer, formula = memoriser, tip = astuce, remember = critique)
+- Titres limites a 8 mots (au lieu de 10) — formules comme affirmations claires
+- Adaptation explicite par niveau : primaire = simple, secondaire = plus detaille
 
-Les composants conserves tels quels :
-- `StudygramSkeleton` (loading state)
-- `LessonStudygramTab` (export principal — seul le JSX du rendu principal change)
+#### 2b. Schema Zod aligne
+
+Ligne 49 : `z.array(cardSchema).min(3).max(10)` devient `z.array(cardSchema).min(5).max(8)` pour correspondre exactement au prompt.
+
+## Recapitulatif des changements par ligne
+
+**LessonPointsClesTab.tsx :**
+- Ligne 13 : ajout imports BookOpen, Lightbulb, Calculator, Star
+- Lignes 27-33 : conserve CARD_GRADIENTS
+- Apres ligne 42 : ajout TYPE_ICONS mapping
+- Lignes 44-58 : suppression ProgressDots (remplace par dots externes)
+- Lignes 60-97 : refonte PointsClesCardSlide avec layouts par type, icone, ring pour remember
+- Ligne 138 : suppression `const [api, setApi]`
+- Ligne 141-147 : refonte onApiChange sans setApi, ajout useEffect keyboard nav
+- Ligne 213 : max-w-lg → max-w-2xl
+- Lignes 223-224 : hidden sm:flex → flex + style agrandi
+- Apres ligne 225 : ajout dots externes colores
+
+**generate-studygram/index.ts :**
+- Ligne 49 : min(3).max(10) → min(5).max(8)
+- Lignes 100-112 : remplacement prompt systeme complet
 
 ## Verification securite
 
 | Check | Resultat |
 |---|---|
-| Fonctionnalite cassee? | Non — rendu visuel uniquement |
-| Hook/edge function modifie? | Non |
-| Data structure modifiee? | Non |
-| Nouvelle dependance? | Non — CSS/Tailwind pur |
-| Performance 3G | Identique — meme volume de DOM |
-| Dark mode | Compatible via Tailwind dark: |
-| Mobile responsive | Oui — grid-cols-1 sur mobile |
+| Fonctionnalite cassee? | Non — meme data, nouveau rendu |
+| Hook modifie? | Non |
+| Nouvelles dependances? | Non — icones Lucide deja dans le bundle |
+| Bundle size | Identique |
+| Performance 3G | Identique — meme volume DOM |
+| Cache existant | Compatible — meme structure de donnees |
+| Dark mode | Compatible — gradients inchanges |
+| Edge function logic | Inchangee — seul le prompt et la validation Zod changent |
+| Rate limiting | Inchange |
 
