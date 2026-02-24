@@ -48,8 +48,11 @@ export const GlobalMusicPlayer = () => {
   const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
   const [hasDragStarted, setHasDragStarted] = useState(false);
   const playerRef = useRef<HTMLDivElement>(null);
+  // Fix 4: Debounce ref to prevent rapid play/pause double-fires
+  const lastPlayPauseRef = useRef(0);
   
-  const DRAG_THRESHOLD = 8;
+  // Fix 5: Increased from 8 to reduce false drag detection on mobile
+  const DRAG_THRESHOLD = 12;
 
   // Unified Pointer Events handler for drag
   useEffect(() => {
@@ -370,7 +373,13 @@ export const GlobalMusicPlayer = () => {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={(e) => { e.stopPropagation(); playPause(); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Fix 4: 300ms debounce to prevent rapid double-fires
+                            if (Date.now() - lastPlayPauseRef.current < 300) return;
+                            lastPlayPauseRef.current = Date.now();
+                            playPause();
+                          }}
                           className="h-9 w-9 sm:h-10 sm:w-10"
                         >
                           {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
