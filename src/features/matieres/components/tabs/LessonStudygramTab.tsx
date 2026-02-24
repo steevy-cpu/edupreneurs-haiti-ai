@@ -2,6 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RefreshCw, AlertCircle, Sparkles, Star } from 'lucide-react';
+import { JudeGeneratingOverlay } from '@/components/jude/JudeGeneratingOverlay';
 import {
   useStudygramVisual,
   type StudygramSection,
@@ -290,8 +291,11 @@ export function LessonStudygramTab({
   if (isLoading || isGenerating) {
     return (
       <Card>
-        <CardContent className="p-4 sm:p-6">
-          <StudygramSkeleton />
+        <CardContent className="p-3 sm:p-6">
+          <JudeGeneratingOverlay
+            isVisible={true}
+            message={isGenerating ? 'Jude prépare ton studygram...' : 'Chargement...'}
+          />
         </CardContent>
       </Card>
     );

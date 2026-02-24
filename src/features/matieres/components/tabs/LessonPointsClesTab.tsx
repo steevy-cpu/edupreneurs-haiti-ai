@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/carousel';
 import { RefreshCw, AlertCircle, Sparkles, ChevronRight, BookOpen, Lightbulb, Calculator, Star } from 'lucide-react';
 import { usePointsClesCards, type PointsClesCard } from '@/features/matieres/hooks/usePointsClesCards';
+import { JudeGeneratingOverlay } from '@/components/jude/JudeGeneratingOverlay';
 
 interface LessonPointsClesTabProps {
   lessonId: string;
@@ -212,8 +213,11 @@ export function LessonPointsClesTab({
   if (isLoading || isGenerating) {
     return (
       <Card>
-        <CardContent className="p-4 sm:p-6">
-          <PointsClesSkeleton />
+        <CardContent className="p-3 sm:p-6">
+          <JudeGeneratingOverlay
+            isVisible={true}
+            message={isGenerating ? 'Jude prépare tes points clés...' : 'Chargement...'}
+          />
         </CardContent>
       </Card>
     );
