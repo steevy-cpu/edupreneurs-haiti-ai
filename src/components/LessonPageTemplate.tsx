@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { BookOpen, FileText, Gamepad2, Target, GraduationCap, Sparkles } from "lucide-react";
+import { BookOpen, FileText, Gamepad2, Target, GraduationCap, Sparkles, WifiOff } from "lucide-react";
 import { useUserProfile, useInvalidateUserProfile } from "@/hooks/useUserProfile";
 
 import { LessonHeader } from "@/features/matieres/components/LessonHeader";
@@ -50,6 +50,7 @@ export const LessonPageTemplate = ({
   totalLessons = 1,
   previousLesson = null,
   nextLesson = null,
+  isOfflineMode = false,
 }: LessonPageTemplateProps) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("introduction");
@@ -122,6 +123,16 @@ export const LessonPageTemplate = ({
         goldEarned={profile.goldEarned}
         onGoldUpdate={handleGoldUpdate}
       />
+
+      {/* Offline mode banner — shown when serving cached content */}
+      {isOfflineMode && (
+        <div className="container mx-auto px-2 sm:px-4 pt-3">
+          <div className="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
+            <WifiOff className="h-4 w-4 shrink-0" />
+            <p>Mode hors-ligne — contenu mis en cache. Certaines fonctionnalités sont indisponibles.</p>
+          </div>
+        </div>
+      )}
 
       {/* Navigation & Stats */}
       <div className="container mx-auto px-2 sm:px-4 py-4 space-y-4">
@@ -222,6 +233,7 @@ export const LessonPageTemplate = ({
                 lessonExamples={lesson.exemples_exercices}
                 legacyActivitiesHtml={lesson.activites_interactives}
                 onGoldUpdate={handleGoldUpdate}
+                isOfflineMode={isOfflineMode}
               />
             </TabErrorBoundary>
           </TabsContent>
@@ -237,6 +249,7 @@ export const LessonPageTemplate = ({
                 lessonContent={lesson.contenu}
                 lessonExamples={lesson.exemples_exercices}
                 legacyQuizHtml={lesson.quiz_final}
+                isOfflineMode={isOfflineMode}
                 onGoldUpdate={handleGoldUpdate}
               />
             </TabErrorBoundary>

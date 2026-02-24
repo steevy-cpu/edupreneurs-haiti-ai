@@ -5,7 +5,7 @@ import { useAIGeneratedQuiz } from '@/features/matieres/hooks/useAIGeneratedCont
 import { JudeGeneratingOverlay } from '@/components/jude/JudeGeneratingOverlay';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw, WifiOff } from 'lucide-react';
 import judeChairDesk from '@/assets/eric-chair-desk.png';
 import { supabase } from '@/integrations/supabase/client';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
@@ -24,6 +24,8 @@ interface LessonQuizTabProps {
   legacyQuizHtml?: string | null;
   /** Called when gold is awarded after quiz completion */
   onGoldUpdate?: () => void;
+  /** When true, network-dependent features are disabled */
+  isOfflineMode?: boolean;
 }
 
 /**
@@ -41,6 +43,7 @@ export function LessonQuizTab({
   lessonExamples,
   legacyQuizHtml,
   onGoldUpdate,
+  isOfflineMode = false,
 }: LessonQuizTabProps) {
   const { user } = useSessionAuth();
   const [isLessonCompleted, setIsLessonCompleted] = useState(false);
@@ -127,6 +130,18 @@ export function LessonQuizTab({
 
     toast.success(`🎉 Leçon complétée! Tu as gagné ${goldAmount} Gold!`);
   }, [user?.id, lessonSlug, subjectName, isLessonCompleted, onGoldUpdate]);
+
+  // Offline guard — must be after all hooks to satisfy React rules
+  if (isOfflineMode) {
+    return (
+      <Card>
+        <CardContent className="p-4 sm:p-6 flex items-center gap-3 text-amber-700 dark:text-amber-300">
+          <WifiOff className="h-5 w-5 shrink-0" />
+          <p className="text-sm">Quiz non disponible hors-ligne. Reconnectez-vous pour accéder à cet onglet.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   // Loading / Generating state
   if (isLoading || isGenerating) {
