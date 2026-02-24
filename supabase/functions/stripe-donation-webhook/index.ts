@@ -7,7 +7,7 @@
  * the thank-you email via the send-donation-thank-you edge function.
  *
  * PUBLIC endpoint — Stripe sends webhooks without auth.
- * Requires STRIPE_WEBHOOK_SECRET_GIFT for signature verification (shared with gift webhook).
+ * Requires STRIPE_WEBHOOK_SECRET_DONATION for signature verification.
  */
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
@@ -22,10 +22,10 @@ serve(async (req) => {
 
   try {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    // Reuse the gift webhook secret — same Stripe endpoint handles both
-    const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET_GIFT");
+    // Dedicated signing secret for the donation webhook endpoint
+    const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET_DONATION");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-    if (!webhookSecret) throw new Error("STRIPE_WEBHOOK_SECRET_GIFT is not set");
+    if (!webhookSecret) throw new Error("STRIPE_WEBHOOK_SECRET_DONATION is not set");
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const body = await req.text();
