@@ -2,20 +2,20 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 // Card types returned by the AI edge function
-export interface StudygramCard {
+export interface PointsClesCard {
   title: string;
   content: string;
   emoji: string;
   type: 'concept' | 'example' | 'formula' | 'tip' | 'remember';
 }
 
-interface CachedStudygram {
-  cards: StudygramCard[];
+interface CachedPointsCles {
+  cards: PointsClesCard[];
   generatedAt: string;
   lessonTitle: string;
 }
 
-interface UseStudygramCardsParams {
+interface UsePointsClesCardsParams {
   lessonId: string;
   lessonTitle: string;
   contenu: string;
@@ -25,8 +25,8 @@ interface UseStudygramCardsParams {
   subjectName: string;
 }
 
-interface UseStudygramCardsResult {
-  cards: StudygramCard[] | null;
+interface UsePointsClesCardsResult {
+  cards: PointsClesCard[] | null;
   isLoading: boolean;
   isGenerating: boolean;
   error: string | null;
@@ -37,15 +37,16 @@ interface UseStudygramCardsResult {
 const CACHE_VERSION = 'v1';
 const STALE_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7-day cache window
 
+// Keep same localStorage key for backward compatibility with existing user caches
 function getCacheKey(lessonId: string): string {
   return `ai_studygram_${lessonId}_${CACHE_VERSION}`;
 }
 
-function getFromCache(key: string): CachedStudygram | null {
+function getFromCache(key: string): CachedPointsCles | null {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as CachedStudygram;
+    const parsed = JSON.parse(raw) as CachedPointsCles;
     // Validate cache shape before trusting it
     if (!parsed.cards || !Array.isArray(parsed.cards) || !parsed.generatedAt) return null;
     return parsed;
@@ -55,9 +56,9 @@ function getFromCache(key: string): CachedStudygram | null {
   }
 }
 
-function saveToCache(key: string, cards: StudygramCard[], lessonTitle: string): void {
+function saveToCache(key: string, cards: PointsClesCard[], lessonTitle: string): void {
   try {
-    const entry: CachedStudygram = {
+    const entry: CachedPointsCles = {
       cards,
       generatedAt: new Date().toISOString(),
       lessonTitle,
@@ -65,7 +66,7 @@ function saveToCache(key: string, cards: StudygramCard[], lessonTitle: string): 
     localStorage.setItem(key, JSON.stringify(entry));
   } catch {
     // localStorage full — silently fail, user will regenerate next time
-    console.warn('[Studygram] localStorage save failed for', key);
+    console.warn('[PointsCles] localStorage save failed for', key);
   }
 }
 
@@ -74,15 +75,15 @@ function isStale(generatedAt: string): boolean {
 }
 
 /**
- * Hook for AI-generated Studygram flashcards with localStorage caching.
+ * Hook for AI-generated Points Clés flashcards with localStorage caching.
  * Mirrors the pattern in useAIGeneratedContent.ts — cache-first, lazy generation.
  */
-export function useStudygramCards(
-  params: UseStudygramCardsParams
-): UseStudygramCardsResult {
+export function usePointsClesCards(
+  params: UsePointsClesCardsParams
+): UsePointsClesCardsResult {
   const { lessonId, lessonTitle, contenu, exemplesExercices, objectif, gradeLevel, subjectName } = params;
 
-  const [cards, setCards] = useState<StudygramCard[] | null>(null);
+  const [cards, setCards] = useState<PointsClesCard[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -110,7 +111,7 @@ export function useStudygramCards(
       }
     }
 
-    // Step 2: Generate via edge function
+    // Step 2: Generate via edge function (name unchanged for backend compatibility)
     setIsGenerating(true);
     setIsLoading(true);
 
@@ -136,7 +137,7 @@ export function useStudygramCards(
         throw new Error('Les flashcards générées sont invalides. Réessayez.');
       }
 
-      const generatedCards = responseData.cards as StudygramCard[];
+      const generatedCards = responseData.cards as PointsClesCard[];
 
       // Cache for offline/3G resilience
       saveToCache(cacheKey, generatedCards, lessonTitle);
@@ -148,7 +149,7 @@ export function useStudygramCards(
       if (controller.signal.aborted) return;
       const message = err instanceof Error ? err.message : 'Erreur inconnue';
       setError(message);
-      console.error('[Studygram] Generation error:', err);
+      console.error('[PointsCles] Generation error:', err);
     } finally {
       if (!controller.signal.aborted) {
         setIsGenerating(false);

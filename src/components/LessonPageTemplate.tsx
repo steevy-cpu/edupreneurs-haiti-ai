@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { BookOpen, FileText, Gamepad2, Target, GraduationCap, Sparkles, WifiOff, Layers } from "lucide-react";
+import { BookOpen, FileText, Gamepad2, Target, GraduationCap, Sparkles, WifiOff, Lightbulb } from "lucide-react";
 import { useUserProfile, useInvalidateUserProfile } from "@/hooks/useUserProfile";
 
 import { LessonHeader } from "@/features/matieres/components/LessonHeader";
@@ -25,7 +25,7 @@ import type { LessonPageTemplateProps } from "@/features/matieres/types/lesson.t
 import {
   LessonIntroductionTab,
   LessonContenuTab,
-  LessonStudygramTab,
+  LessonPointsClesTab,
   LessonActivitiesTab,
   LessonQuizTab,
   LessonNotesTab,
@@ -172,11 +172,11 @@ export const LessonPageTemplate = ({
                 <span className="hidden sm:inline">Contenu & Exemples</span>
                 <span className="sm:hidden text-[10px]">Cours</span>
               </TabsTrigger>
-              <TabsTrigger value="studygram" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
-                <TabIndicator status={getTabStatus('studygram')} />
-                <Layers className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Studygram</span>
-                <span className="sm:hidden text-[10px]">Study</span>
+              <TabsTrigger value="points-cles" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+                <TabIndicator status={getTabStatus('points-cles')} />
+                <Lightbulb className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Points Clés</span>
+                <span className="sm:hidden text-[10px]">Clés</span>
               </TabsTrigger>
               <TabsTrigger value="activites" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
                 <TabIndicator status={getTabStatus('activites')} />
@@ -229,9 +229,9 @@ export const LessonPageTemplate = ({
             </TabErrorBoundary>
           </TabsContent>
 
-          <TabsContent value="studygram" className="space-y-4 sm:space-y-6 mt-4">
-            <TabErrorBoundary tabName="Studygram">
-              <LessonStudygramTab
+          <TabsContent value="points-cles" className="space-y-4 sm:space-y-6 mt-4">
+            <TabErrorBoundary tabName="Points Clés">
+              <LessonPointsClesTab
                 lessonId={lesson.id}
                 lessonTitle={lesson.title}
                 contenu={lesson.contenu}
