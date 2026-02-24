@@ -1,91 +1,111 @@
 
 
-# Theme System Plan B — Dark Mode CSS Fixes
+# Studygram — Interactive Lesson Flashcards
 
-Surgical CSS-only changes to fix hardcoded colors that break dark mode. No logic changes.
+Add a "Studygram" tab to each lesson page: swipable, visually rich flashcards that summarize the lesson's key points in a Stories-like format. AI generates the cards from lesson content; cards are cached in localStorage for 3G performance.
 
-## Fix 1: Eric Chatbot Hardcoded Colors (src/index.css)
+## How It Works
 
-Six targeted replacements in the Eric chatbot CSS block. Each hardcoded hex/rgba value is replaced with CSS variables, and `.dark` overrides are added where `!important` prevents variable inheritance.
+1. Student opens a lesson and taps the new "Studygram" tab
+2. An edge function extracts 5-8 key points from the lesson content (objectif, contenu, exemples) and returns structured JSON
+3. The frontend renders each key point as a full-width card in a horizontal Embla carousel (already installed)
+4. Students swipe through cards like Instagram Stories, with progress dots at the top
+5. Cards are cached in localStorage (7-day window) — identical to the existing quiz/activities caching pattern
 
-### 1a. `.eric-close-btn` (lines 882, 890)
-- Replace `rgba(239, 68, 68, 0.9)` with `hsl(var(--destructive) / 0.9)`
-- Replace hover `rgba(239, 68, 68, 1)` with `hsl(var(--destructive))`
-- Remove the `!important` on background since variables now handle theming
+## Card Structure (AI-generated JSON)
 
-### 1b. `.eric-message-user .eric-message-content` (line 917)
-- Replace `linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)` with `linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.85) 100%)`
+Each card contains:
+- **title**: Short headline (max 10 words)
+- **content**: Key point explanation (40-80 words)
+- **emoji**: Visual icon for the card
+- **type**: One of `concept`, `example`, `formula`, `tip`, `remember`
 
-### 1c. `.eric-message-speaker-btn.speaking` (lines 976-977)
-- Replace `#10b981 !important` with `hsl(var(--success)) !important`
-- Replace `rgba(16, 185, 129, 0.1) !important` with `hsl(var(--success) / 0.1) !important`
+## Files to Create
 
-### 1d. `@keyframes dots-animation` (lines 1000-1003)
-- Replace all `#6b7280` with `hsl(var(--muted-foreground))`
+### 1. Edge Function: `supabase/functions/generate-studygram/index.ts`
+- Accepts: `lessonTitle`, `contenu`, `exemplesExercices`, `objectif`, `gradeLevel`, `subject`
+- Calls Lovable AI Gateway (`google/gemini-2.5-flash`) to extract key points
+- Returns: `{ success: true, cards: StudygramCard[] }`
+- Uses existing `_shared/securityHeaders.ts` and `_shared/rateLimiter.ts`
+- Rate limited like other generation endpoints
 
-### 1e. `.eric-voice-btn` (line 1042)
-- Replace `linear-gradient(135deg, #10b981 0%, #059669 100%)` with `linear-gradient(135deg, hsl(var(--success)) 0%, hsl(var(--success) / 0.8) 100%)`
+### 2. Hook: `src/features/matieres/hooks/useStudygramCards.ts`
+- Follows the exact same pattern as `useAIGeneratedContent.ts`
+- localStorage cache key: `ai_studygram_{lessonId}_v1`
+- 7-day stale window
+- AbortController for cleanup
+- Returns: `{ cards, isLoading, isGenerating, error, isStale, regenerate }`
 
-### 1f. `.eric-send-btn` (line 1057)
-- Replace `linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)` with `linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.85) 100%)`
+### 3. Component: `src/features/matieres/components/tabs/LessonStudygramTab.tsx`
+- Uses `Carousel`, `CarouselContent`, `CarouselItem` from `src/components/ui/carousel.tsx` (already exists)
+- Each card is a full-width slide with gradient background based on card type
+- Progress indicator (dots) at top showing current position
+- Swipe left/right to navigate
+- Loading skeleton while AI generates
+- "Regenerate" button when content is stale
+- Respects dark mode using CSS variables
 
----
+### 4. Update tab index: `src/features/matieres/components/tabs/index.ts`
+- Add export for `LessonStudygramTab`
 
-## Fix 2: Matieres Hero Hardcoded Whites (src/pages/Matieres.tsx)
+## Files to Modify
 
-Four targeted class replacements in the hero section:
+### 5. `src/components/LessonPageTemplate.tsx`
+- Add 6th tab "Studygram" with a Sparkles icon between "Contenu" and "Activites"
+- Lazy-load the tab component
+- Grid changes: `grid-cols-3 md:grid-cols-5` becomes `grid-cols-3 md:grid-cols-6`
+- Pass lesson content props to the new tab
 
-| Line | Current | Replacement |
-|------|---------|-------------|
-| 257 | `bg-white/15` | `bg-white/15 dark:bg-white/5` |
-| 280 | `bg-white/20` | `bg-white/20 dark:bg-white/10` |
-| 284 | `bg-white/20` | `bg-white/20 dark:bg-white/10` |
-| 288 | `bg-white/20` | `bg-white/20 dark:bg-white/10` |
-| 463 | `bg-white` | `bg-background` |
+### 6. `src/features/matieres/types/lesson.types.ts`
+- No changes needed — all required data fields already exist in `LessonData`
 
-All `text-white` values remain unchanged — they sit on gradient backgrounds where white text is correct in both themes.
+## Visual Design
 
----
+Each card type has a distinct gradient:
+- `concept`: blue gradient (from-blue-500 to-indigo-500)
+- `example`: green gradient (from-emerald-500 to-teal-500)
+- `formula`: purple gradient (from-purple-500 to-violet-500)
+- `tip`: amber gradient (from-amber-500 to-orange-500)
+- `remember`: rose gradient (from-rose-500 to-pink-500)
 
-## Fix 3: AppSidebar Collapsed Logo (src/shell/components/AppSidebar.tsx)
+Dark mode: Same gradients work on both themes since they use saturated colors with white text overlay.
 
-| Line | Current | Replacement |
-|------|---------|-------------|
-| 153 | `bg-white/20` | `bg-foreground/10` |
-
-Uses `bg-foreground/10` so it adapts: light translucent on dark backgrounds, dark translucent on light backgrounds.
-
----
-
-## Fix 4: VisitorBanner Documentation (src/components/visitor/VisitorBanner.tsx)
-
-No functional changes. Add a comment on the outer `<div>` explaining the intentional always-dark design:
-
-```tsx
-{/* Intentionally dark regardless of theme — visitor banner is a distinct overlay */}
-<div className="sticky top-0 z-[1002] bg-slate-900/95 ...">
+Card layout:
+```text
++----------------------------------+
+|  . . o . . . .    (progress)     |
+|                                  |
+|        [emoji large]             |
+|                                  |
+|     Card Title (bold, white)     |
+|                                  |
+|   Content paragraph centered     |
+|   40-80 words, white text        |
+|                                  |
+|     [type badge: "Concept"]      |
+|                                  |
+|   Swipe to continue -->          |
++----------------------------------+
 ```
-
----
-
-## Files Modified
-
-| File | Fix | Scope |
-|------|-----|-------|
-| `src/index.css` | 1 | 6 hardcoded color replacements in Eric chatbot CSS |
-| `src/pages/Matieres.tsx` | 2 | 5 class replacements in hero section |
-| `src/shell/components/AppSidebar.tsx` | 3 | 1 class replacement |
-| `src/components/visitor/VisitorBanner.tsx` | 4 | 1 comment addition |
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Existing functionality affected? | No — CSS-only, no logic |
-| Provider stack order changed? | No |
-| New dependencies? | None |
-| Bundle size impact | Zero |
-| 3G performance | No change |
-| Backward compatibility | Full — visual improvement only |
-| Dark mode verified? | All replacements use existing CSS variables from the project's theme system |
+| Existing functionality affected? | No — additive tab only |
+| Provider stack / AppShell? | Not touched |
+| New dependencies? | None — uses existing Embla carousel |
+| Bundle size | Minimal — one new lazy-loaded tab component |
+| 3G performance | localStorage cache, lazy-loaded, no page-load edge call |
+| Backward compatibility | Full — tab only appears, existing tabs unchanged |
+| RLS / Auth? | Edge function uses rate limiting, no DB writes |
+| Cold start risk? | No — tab is user-initiated, not loaded on page mount |
+
+## Technical Notes
+
+- The edge function prompt instructs the AI to generate exactly 5-8 cards in JSON format
+- Cards are validated with Zod before caching
+- The carousel uses `{ align: 'center', containScroll: 'trimSnaps' }` for smooth mobile swiping
+- Network-aware: on 2G/slow connections, show a "Generate" button instead of auto-generating
+- Card count shown in tab badge: "Studygram (6)"
 
