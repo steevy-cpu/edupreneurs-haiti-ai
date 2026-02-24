@@ -224,3 +224,6 @@ verify_jwt = false
 
 [functions.check-onboarding-emails]
 verify_jwt = false
+
+[functions.stripe-donation-webhook]
+verify_jwt = false
