@@ -29,6 +29,7 @@ export const VisitorBanner = () => {
   };
 
   return (
+    // Intentionally dark regardless of theme — visitor banner is a distinct overlay
     <div className="sticky top-0 z-[1002] bg-slate-900/95 backdrop-blur-md border-b border-slate-700/50 shadow-xl">
       <div className="container mx-auto px-4 py-2.5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
