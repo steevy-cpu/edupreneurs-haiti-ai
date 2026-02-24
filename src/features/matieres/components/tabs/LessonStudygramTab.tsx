@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
+import { RefreshCw, AlertCircle, Sparkles, Star } from 'lucide-react';
 import {
   useStudygramVisual,
   type StudygramSection,
@@ -95,8 +95,79 @@ function StudygramNodeItem({ node, color }: { node: StudygramNode; color: Studyg
   }
 }
 
-// Render a themed section with heading and nodes
-function StudygramSectionCard({ section }: { section: StudygramSection }) {
+// Mindmap visual layout — central node with radiating sub-nodes
+function MindmapSection({ section }: { section: StudygramSection }) {
+  const colors = COLOR_MAP[section.color] ?? COLOR_MAP.rose;
+  const [centralNode, ...childNodes] = section.nodes;
+
+  return (
+    <div className={`${colors.bg} ${colors.border} border rounded-xl overflow-hidden`}>
+      {/* Section heading */}
+      <div className={`${colors.headingBg} px-4 py-3 flex items-center gap-2`}>
+        <span className="text-xl select-none">{section.emoji}</span>
+        <h3 className={`${colors.headingText} font-bold text-sm sm:text-base`}>
+          {section.heading}
+        </h3>
+      </div>
+      {/* Mindmap layout — central concept with connected branches */}
+      <div className="p-4 flex flex-col items-center gap-3">
+        {/* Central node — the main concept */}
+        {centralNode && (
+          <div className={`${colors.headingBg} ${colors.headingText} rounded-full px-5 py-2.5 text-sm font-bold text-center shadow-sm`}>
+            {centralNode.text}
+          </div>
+        )}
+        {/* Connecting line from center to branches */}
+        {childNodes.length > 0 && (
+          <div className={`w-px h-4 ${colors.border} border-l-2 border-dashed`} />
+        )}
+        {/* Branch nodes — radiate from center in a flex row */}
+        {childNodes.length > 0 && (
+          <div className="relative w-full">
+            {/* Horizontal connecting line behind the nodes */}
+            <div className={`absolute top-1/2 left-[10%] right-[10%] h-px ${colors.border} border-t-2 border-dashed -translate-y-1/2`} />
+            <div className="relative flex flex-wrap justify-center gap-2">
+              {childNodes.map((node, i) => (
+                <div
+                  key={i}
+                  className={`border ${colors.border} ${colors.bg} rounded-lg px-3 py-2 text-xs sm:text-sm text-center max-w-[140px] shadow-sm bg-background dark:bg-background/50`}
+                >
+                  {node.text}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// "À retenir" section — special bordered card with star icon
+function ARetenirSection({ section }: { section: StudygramSection }) {
+  const colors = COLOR_MAP[section.color] ?? COLOR_MAP.green;
+
+  return (
+    <div className={`${colors.bg} border-2 ${colors.border} rounded-xl overflow-hidden`}>
+      {/* Heading with star icon for emphasis */}
+      <div className={`${colors.headingBg} px-4 py-3 flex items-center gap-2`}>
+        <Star className={`h-5 w-5 ${colors.headingText} fill-current`} />
+        <h3 className={`${colors.headingText} font-bold text-sm sm:text-base`}>
+          {section.heading}
+        </h3>
+      </div>
+      {/* Nodes with numbered list styling for essentials */}
+      <div className="p-3 space-y-2">
+        {section.nodes.map((node, i) => (
+          <StudygramNodeItem key={i} node={node} color={section.color} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Standard section card for explicatif and approfondissement blocks
+function StandardSectionCard({ section }: { section: StudygramSection }) {
   const colors = COLOR_MAP[section.color] ?? COLOR_MAP.blue;
 
   return (
@@ -118,18 +189,28 @@ function StudygramSectionCard({ section }: { section: StudygramSection }) {
   );
 }
 
-// Loading skeleton matching the studygram grid layout
+// Route each section to its appropriate visual renderer based on type
+function StudygramSectionCard({ section }: { section: StudygramSection }) {
+  switch (section.type) {
+    case 'resume_visuel':
+      return <MindmapSection section={section} />;
+    case 'a_retenir':
+      return <ARetenirSection section={section} />;
+    default:
+      return <StandardSectionCard section={section} />;
+  }
+}
+
+// Loading skeleton matching the 4-block grid layout
 function StudygramSkeleton() {
   return (
     <div className="space-y-4">
-      {/* Title skeleton */}
       <div className="text-center space-y-2">
         <Skeleton className="h-7 w-64 mx-auto" />
         <Skeleton className="h-4 w-40 mx-auto" />
       </div>
-      {/* Section skeletons — 2-column grid like the real layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[1, 2, 3].map((i) => (
+        {[1, 2, 3, 4].map((i) => (
           <div key={i} className="rounded-xl border border-muted p-4 space-y-3">
             <div className="flex items-center gap-2">
               <Skeleton className="h-8 w-8 rounded-full" />
@@ -234,7 +315,7 @@ export function LessonStudygramTab({
         <p className="text-sm text-muted-foreground">{studygram.subtitle}</p>
       </div>
 
-      {/* Sections grid — 2 columns on desktop, 1 on mobile */}
+      {/* 4-block grid — 2 columns on desktop, 1 on mobile */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {studygram.sections.map((section, i) => (
           <StudygramSectionCard key={i} section={section} />

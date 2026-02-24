@@ -28,7 +28,7 @@ function stripHtml(html: string): string {
     .trim();
 }
 
-// Input validation — same shape as generate-studygram
+// Input validation
 const inputSchema = z.object({
   lessonTitle: z.string().min(1).max(500),
   contenu: z.string().max(100000).optional(),
@@ -38,29 +38,49 @@ const inputSchema = z.object({
   subject: z.string().min(1).max(200),
 });
 
-// Allowed color palette — maps to Tailwind pastels on frontend
+// Fixed section types — enforces the 4-block pedagogical structure
+const sectionTypes = ["explicatif", "approfondissement", "a_retenir", "resume_visuel"] as const;
 const allowedColors = ["blue", "pink", "green", "purple", "amber", "rose"] as const;
 
-// Node style determines visual rendering on frontend
+// Node style includes "mindmap" for visual resume section
 const nodeSchema = z.object({
   text: z.string().min(1).max(300),
-  style: z.enum(["highlight", "outline", "plain", "quote"]),
+  style: z.enum(["highlight", "outline", "plain", "quote", "mindmap"]),
 });
 
-// Each section groups related key points under a thematic heading
+// Each section has a fixed pedagogical type
 const sectionSchema = z.object({
+  type: z.enum(sectionTypes),
   heading: z.string().min(1).max(80),
   color: z.enum(allowedColors),
   emoji: z.string().min(1).max(10),
-  nodes: z.array(nodeSchema).min(2).max(5),
+  nodes: z.array(nodeSchema).min(2).max(8),
 });
 
-// Complete studygram structure returned to client
+// Exactly 4 sections required — one per pedagogical block
 const studygramSchema = z.object({
   title: z.string().min(1).max(200),
   subtitle: z.string().min(1).max(100),
-  sections: z.array(sectionSchema).min(3).max(5),
+  sections: z.array(sectionSchema).length(4),
 });
+
+// Subject-specific prompt instructions for richer content
+function getSubjectHint(subject: string): string {
+  const s = subject.toLowerCase();
+  if (s.includes("math") || s.includes("physique") || s.includes("chimie") || s.includes("svt") || s.includes("science")) {
+    return "Inclus des formules, unités et schémas. Utilise le style 'mindmap' pour représenter les relations entre concepts scientifiques.";
+  }
+  if (s.includes("histoire") || s.includes("géo") || s.includes("geo")) {
+    return "Inclus des dates clés, lieux importants et événements majeurs. Utilise le style 'mindmap' pour les chronologies ou liens géopolitiques.";
+  }
+  if (s.includes("philo") || s.includes("français") || s.includes("francais") || s.includes("littéra")) {
+    return "Inclus des auteurs, citations marquantes et courants de pensée. Utilise le style 'mindmap' pour relier les concepts philosophiques ou littéraires.";
+  }
+  if (s.includes("anglais") || s.includes("espagnol") || s.includes("spanish") || s.includes("english")) {
+    return "Inclus des règles grammaticales, vocabulaire clé et exemples d'usage. Utilise le style 'mindmap' pour organiser les points de grammaire.";
+  }
+  return "Adapte le contenu à la matière. Utilise le style 'mindmap' pour le résumé visuel.";
+}
 
 serve(async (req) => {
   // CORS preflight
@@ -109,25 +129,41 @@ serve(async (req) => {
     const contentText = stripHtml(contenu || "");
     const examplesText = stripHtml(exemplesExercices || "");
     const objectifText = stripHtml(objectif || "");
+    const subjectHint = getSubjectHint(subject);
 
-    // Prompt: structured visual study sheet with thematic sections
-    const systemPrompt = `Tu es un assistant pédagogique haïtien expert. Tu crées des fiches de révision visuelles structurées (studygrams) à partir du contenu de cours.
+    // Prompt: structured 4-block pedagogical revision sheet
+    const systemPrompt = `Tu es un assistant pédagogique haïtien expert. Tu crées des fiches de révision structurées en 4 blocs pédagogiques fixes.
 
-RÈGLES STRICTES:
-- Génère exactement 3 à 5 sections thématiques
-- Chaque section a 2 à 5 points clés (nodes)
+STRUCTURE OBLIGATOIRE — exactement 4 sections dans cet ordre :
+
+1. **Bloc explicatif synthétique** (type: "explicatif", color: "blue", emoji: "📖")
+   - Définition principale (style "highlight")
+   - 3 à 5 idées clés (style "outline")
+   - Un exemple concret (style "quote")
+
+2. **Approfondissement** (type: "approfondissement", color: "purple", emoji: "🔍")
+   - Théories, formules, dates ou auteurs selon la matière (style "highlight" ou "outline")
+   - Comparaisons si pertinent (style "plain")
+   - ${subjectHint}
+
+3. **À retenir** (type: "a_retenir", color: "green", emoji: "⭐")
+   - 5 points essentiels numérotés (style "outline")
+   - Formule ou citation clé (style "quote")
+   - Astuce de mémorisation (style "highlight")
+
+4. **Résumé visuel** (type: "resume_visuel", color: "rose", emoji: "🧠")
+   - Le premier node est le concept central (style "mindmap")
+   - 3 à 5 sous-concepts reliés au concept central (style "mindmap")
+   - Ces nodes formeront une carte mentale visuelle
+
+RÈGLES :
 - Le contenu doit être en français, adapté au niveau ${gradeLevel}
 - Utilise des exemples concrets liés à Haïti quand c'est pertinent
 - Chaque node fait 10-50 mots maximum
 - Les headings font maximum 8 mots
-- Utilise un emoji pertinent par section
-- Attribue une couleur à chaque section parmi: blue, pink, green, purple, amber, rose (varie les couleurs!)
-- Attribue un style à chaque node parmi: highlight (point important), outline (définition/concept), plain (détail), quote (citation/formule)
-- Mélange les styles pour un rendu visuel varié
+- Tu dois répondre UNIQUEMENT avec un objet JSON valide, sans texte avant ni après.`;
 
-Tu dois répondre UNIQUEMENT avec un objet JSON valide, sans texte avant ni après.`;
-
-    const userPrompt = `Crée une fiche de révision visuelle (studygram) pour cette leçon:
+    const userPrompt = `Crée une fiche de révision structurée (studygram) pour cette leçon :
 
 **Matière:** ${subject}
 **Titre:** ${lessonTitle}
@@ -140,18 +176,52 @@ ${contentText.slice(0, 8000)}
 **Exemples et exercices:**
 ${examplesText.slice(0, 4000)}
 
-Réponds avec un objet JSON au format:
+Réponds avec un objet JSON au format :
 {
   "title": "Titre de la leçon",
   "subtitle": "${subject} - ${gradeLevel}",
   "sections": [
     {
-      "heading": "Titre section",
+      "type": "explicatif",
+      "heading": "Bloc Explicatif",
       "color": "blue",
-      "emoji": "📘",
+      "emoji": "📖",
       "nodes": [
-        { "text": "Point clé...", "style": "highlight" },
-        { "text": "Définition...", "style": "outline" }
+        { "text": "Définition: ...", "style": "highlight" },
+        { "text": "Idée clé 1", "style": "outline" },
+        { "text": "Exemple: ...", "style": "quote" }
+      ]
+    },
+    {
+      "type": "approfondissement",
+      "heading": "Approfondissement",
+      "color": "purple",
+      "emoji": "🔍",
+      "nodes": [
+        { "text": "Théorie / Formule...", "style": "highlight" },
+        { "text": "Comparaison...", "style": "plain" }
+      ]
+    },
+    {
+      "type": "a_retenir",
+      "heading": "À Retenir",
+      "color": "green",
+      "emoji": "⭐",
+      "nodes": [
+        { "text": "1. Point essentiel...", "style": "outline" },
+        { "text": "Citation clé...", "style": "quote" },
+        { "text": "Astuce: ...", "style": "highlight" }
+      ]
+    },
+    {
+      "type": "resume_visuel",
+      "heading": "Résumé Visuel",
+      "color": "rose",
+      "emoji": "🧠",
+      "nodes": [
+        { "text": "Concept central", "style": "mindmap" },
+        { "text": "Sous-concept A", "style": "mindmap" },
+        { "text": "Sous-concept B", "style": "mindmap" }
       ]
     }
   ]
