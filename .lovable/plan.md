@@ -1,95 +1,86 @@
 
 
-# Onboarding Drip Email Sequence
+# Offline Mode for Lesson Pages
 
 ## Overview
 
-Build a 3-email automated onboarding sequence for new users, triggered daily via pg_cron. Mirrors the existing `check-subscription-expiry` pattern exactly: internal secret auth, JSONB dedup tracking, service-role Supabase client.
+Two surgical changes: (1) cache lesson content to localStorage on successful load and fall back to it when offline, (2) show offline indicators on the lesson page and disable network-dependent tabs.
+
+No architecture changes. No new dependencies. No changes to query config, Matieres page, or grade selection.
 
 ## Changes
 
-### Fix 1 -- Database Migration: Add tracking column
+### 1. DynamicLessonPage.tsx -- localStorage cache + offline fallback
 
-```sql
-ALTER TABLE profiles
-ADD COLUMN IF NOT EXISTS sent_onboarding_emails jsonb DEFAULT '[]'::jsonb;
-```
+**Cache key:** `lesson_cache_{subjectSlug}_{lessonSlug}`
 
-Same dedup pattern as `sent_expiry_reminders`. Stores `["day1", "day3", "day7"]` as emails are sent.
+**On successful load (after line 140):**
+- Write to localStorage: `{ lesson: transformedLesson, subject: { name, slug, grade_level }, savedAt: Date.now() }`
 
-### Fix 2 -- New Edge Function: `supabase/functions/check-onboarding-emails/index.ts`
+**On fetch failure (in catch block, line 141-143):**
+- Read from localStorage using the cache key
+- Check TTL: only use if `savedAt` is less than 24 hours old
+- If valid cache exists: populate `lesson` and `subject` state from cache, set new state flag `isOfflineMode = true`
+- If no valid cache: fall through to existing "lesson not found" UI
 
-Secured with `X-Internal-Secret` header (identical to `check-subscription-expiry`).
+**New state:** `const [isOfflineMode, setIsOfflineMode] = useState(false);`
 
-**Query target:** Profiles where `onboarding_tour_completed = true` AND `sent_onboarding_emails` does not yet contain all 3 keys. Limited to 100 per run.
+**Pass down:** Add `isOfflineMode` prop to `LessonPageTemplate`
 
-**Day calculation:** Days since `onboarding_tour_completed_at`, normalized to Haiti timezone.
+### 2. LessonPageTemplate.tsx -- offline banner + prop threading
 
-**Email logic per user:**
+**New prop:** `isOfflineMode?: boolean` added to `LessonPageTemplateProps`
 
-| Key | Trigger | Extra condition | Subject | CTA link |
-|-----|---------|-----------------|---------|----------|
-| `day1` | daysAgo >= 1 | None | "Ta premiere lecon t'attend!" | /matieres |
-| `day3` | daysAgo >= 3 | No rows in `lesson_completions` for this user | "Tu n'as pas encore commence -- Jude t'attend" | /matieres |
-| `day7` | daysAgo >= 7 | At least 1 row in `lesson_completions` | "Tu as complete une lecon -- essaie le Quiz Battle!" | /quiz-battle |
+**Offline banner:** Rendered between `LessonHeader` and the stats section when `isOfflineMode` is true:
+- Amber background, subtle styling consistent with existing alert patterns
+- Text: "Mode hors-ligne -- contenu mis en cache. Certaines fonctionnalites sont indisponibles."
+- Uses `WifiOff` icon from lucide-react (already installed)
 
-**Key behaviors:**
-- Day 3 only sends to users who have NOT started any lesson (nudge email)
-- Day 7 only sends to users who HAVE completed at least one lesson (progression email)
-- Uses `getTimeAwareGreeting()` from `_shared/emailGreeting.ts`
-- Uses `sendEmail()` from `_shared/emails.ts`
-- Each send appends the key to `sent_onboarding_emails` JSONB array (dedup)
-- Individual user failures logged and skipped (does not abort the batch)
+**Prop threading:** Pass `isOfflineMode` to `LessonActivitiesTab` and `LessonQuizTab`
 
-**Email template style:**
-- Purple/amber gradient header (platform brand colors)
-- Footer: "Tu recois cet email car tu es inscrit sur Mon Edupreneurs"
-- Same HTML table layout as subscription reminder emails
+### 3. LessonActivitiesTab.tsx -- offline guard
 
-### Fix 3 -- Config entry
+**New optional prop:** `isOfflineMode?: boolean`
 
-Add to `supabase/config.toml`:
-```toml
-[functions.check-onboarding-emails]
-verify_jwt = false
-```
+**Early return:** If `isOfflineMode` is true, render a Card with a friendly message:
+- "Activites non disponibles hors-ligne. Reconnectez-vous pour acceder a cet onglet."
+- Uses `WifiOff` icon
+- Skips all AI generation hooks (the hook still runs but its fetch will fail gracefully; the early return prevents showing error states)
 
-### Fix 4 -- pg_cron job (data insert, not migration)
+### 4. LessonQuizTab.tsx -- offline guard
 
-```sql
-SELECT cron.schedule(
-  'check-onboarding-emails',
-  '15 14 * * *',
-  $$
-  SELECT net.http_post(
-    url:='https://xdyavylcmucjpueybdku.supabase.co/functions/v1/check-onboarding-emails',
-    headers:=jsonb_build_object(
-      'Content-Type', 'application/json',
-      'X-Internal-Secret', current_setting('app.settings.internal_call_secret', true)
-    ),
-    body:='{}'::jsonb
-  ) AS request_id;
-  $$
-);
-```
+Same pattern as Activities: new `isOfflineMode?: boolean` prop, early return with friendly offline message before any data fetching UI.
 
-Runs at 14:15 UTC = 10:15 AM Haiti time (offset from expiry check at 14:00 UTC to avoid overlap).
+### 5. Types update -- lesson.types.ts
+
+Add `isOfflineMode?: boolean` to `LessonPageTemplateProps`.
+
+## Files Modified
+
+| File | Change |
+|------|--------|
+| `src/pages/DynamicLessonPage.tsx` | Add localStorage write on success, read on failure, `isOfflineMode` state, pass prop |
+| `src/components/LessonPageTemplate.tsx` | Accept `isOfflineMode`, render amber banner, pass to tabs |
+| `src/features/matieres/components/tabs/LessonActivitiesTab.tsx` | Accept `isOfflineMode`, early return with offline message |
+| `src/features/matieres/components/tabs/LessonQuizTab.tsx` | Accept `isOfflineMode`, early return with offline message |
+| `src/features/matieres/types/lesson.types.ts` | Add `isOfflineMode` to `LessonPageTemplateProps` |
+
+## What is NOT touched
+
+- TanStack Query configuration
+- Matieres page / grade selection
+- lesson_assets queries
+- Service worker
+- No new dependencies
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Existing functionality affected? | No -- new column with default, new function, no existing code touched |
-| RLS impact? | None -- column read/written via service-role client only |
-| Bundle size? | Zero -- edge function only, no frontend changes |
-| 3G performance? | N/A -- server-side cron, no client impact |
+| Existing functionality affected? | No -- online path unchanged, cache write is additive |
+| Bundle size impact? | Negligible -- ~40 lines of localStorage logic, WifiOff icon already in lucide bundle |
+| 3G performance? | Improved -- cached lessons load instantly on revisit when offline |
+| RLS / DB impact? | None -- purely client-side localStorage |
 | Provider stack / AppShell? | Untouched |
-| Backward compatibility? | Yes -- default `'[]'` means existing users start fresh |
-
-## Files Created/Modified
-
-1. **Migration SQL** -- adds `sent_onboarding_emails` column
-2. **`supabase/functions/check-onboarding-emails/index.ts`** -- new edge function (~250 lines)
-3. **`supabase/config.toml`** -- add verify_jwt entry (auto-managed, noted for completeness)
-4. **Data insert SQL** -- pg_cron schedule
+| Backward compatibility? | Yes -- no cache = normal behavior |
 
