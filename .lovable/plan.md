@@ -1,126 +1,91 @@
 
 
-# Theme System Plan A — Implementation Plan (Refined)
+# Theme System Plan B — Dark Mode CSS Fixes
 
-## Fix 1: Enable system preference detection
+Surgical CSS-only changes to fix hardcoded colors that break dark mode. No logic changes.
 
-**File:** `src/providers/AppProviders.tsx` (line 103-108)
+## Fix 1: Eric Chatbot Hardcoded Colors (src/index.css)
 
-Update ThemeProvider props:
-- `defaultTheme="system"` (was `"light"`)
-- `enableSystem={true}` (was `false`)
-- `storageKey="edupreneur-theme"` (was default `"theme"`)
-- `forcedTheme={undefined}` stays unchanged
+Six targeted replacements in the Eric chatbot CSS block. Each hardcoded hex/rgba value is replaced with CSS variables, and `.dark` overrides are added where `!important` prevents variable inheritance.
 
-One-time localStorage key change means existing users reset to `system` on first load — acceptable since `system` respects their OS preference.
+### 1a. `.eric-close-btn` (lines 882, 890)
+- Replace `rgba(239, 68, 68, 0.9)` with `hsl(var(--destructive) / 0.9)`
+- Replace hover `rgba(239, 68, 68, 1)` with `hsl(var(--destructive))`
+- Remove the `!important` on background since variables now handle theming
+
+### 1b. `.eric-message-user .eric-message-content` (line 917)
+- Replace `linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)` with `linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.85) 100%)`
+
+### 1c. `.eric-message-speaker-btn.speaking` (lines 976-977)
+- Replace `#10b981 !important` with `hsl(var(--success)) !important`
+- Replace `rgba(16, 185, 129, 0.1) !important` with `hsl(var(--success) / 0.1) !important`
+
+### 1d. `@keyframes dots-animation` (lines 1000-1003)
+- Replace all `#6b7280` with `hsl(var(--muted-foreground))`
+
+### 1e. `.eric-voice-btn` (line 1042)
+- Replace `linear-gradient(135deg, #10b981 0%, #059669 100%)` with `linear-gradient(135deg, hsl(var(--success)) 0%, hsl(var(--success) / 0.8) 100%)`
+
+### 1f. `.eric-send-btn` (line 1057)
+- Replace `linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)` with `linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.85) 100%)`
 
 ---
 
-## Fix 2: Database persistence + sync hook
+## Fix 2: Matieres Hero Hardcoded Whites (src/pages/Matieres.tsx)
 
-### Migration
+Four targeted class replacements in the hero section:
 
-```sql
-ALTER TABLE profiles
-ADD COLUMN IF NOT EXISTS theme_preference text DEFAULT 'system'
-CHECK (theme_preference IN ('light', 'dark', 'system'));
+| Line | Current | Replacement |
+|------|---------|-------------|
+| 257 | `bg-white/15` | `bg-white/15 dark:bg-white/5` |
+| 280 | `bg-white/20` | `bg-white/20 dark:bg-white/10` |
+| 284 | `bg-white/20` | `bg-white/20 dark:bg-white/10` |
+| 288 | `bg-white/20` | `bg-white/20 dark:bg-white/10` |
+| 463 | `bg-white` | `bg-background` |
+
+All `text-white` values remain unchanged — they sit on gradient backgrounds where white text is correct in both themes.
+
+---
+
+## Fix 3: AppSidebar Collapsed Logo (src/shell/components/AppSidebar.tsx)
+
+| Line | Current | Replacement |
+|------|---------|-------------|
+| 153 | `bg-white/20` | `bg-foreground/10` |
+
+Uses `bg-foreground/10` so it adapts: light translucent on dark backgrounds, dark translucent on light backgrounds.
+
+---
+
+## Fix 4: VisitorBanner Documentation (src/components/visitor/VisitorBanner.tsx)
+
+No functional changes. Add a comment on the outer `<div>` explaining the intentional always-dark design:
+
+```tsx
+{/* Intentionally dark regardless of theme — visitor banner is a distinct overlay */}
+<div className="sticky top-0 z-[1002] bg-slate-900/95 ...">
 ```
-
-### New file: `src/hooks/useThemeSync.ts`
-
-**Key design decisions (addressing user's concern):**
-
-- On mount: makes a **single lightweight query** `SELECT theme_preference FROM profiles WHERE user_id = ?` with `staleTime: Infinity` — this does NOT duplicate useUserProfile because useUserProfile selects `avatar_url, nickname, academic_grade, gold_earned` (line 37-38 of useUserProfile.ts) and does NOT include `theme_preference`. Adding it to useUserProfile would change the CachedUserProfile interface and affect all consumers. A separate query with `staleTime: Infinity` means it fires once per session — negligible cost.
-- On theme change: debounces 1 second via `setTimeout`/`clearTimeout` ref, then updates profiles table
-- Only runs when `userId` is available (auth-gated by AppShell)
-- Uses `useTheme()` from `next-themes` for read/write
-
-### Mount point: `src/shell/AppShell.tsx` (after line 31)
-
-- Import and call `useThemeSync()` after existing hooks (~line 75, after `useNotificationSound`)
-- No props needed — hook reads auth from `useSessionAuth()` internally
-
----
-
-## Fix 3: ThemeToggle in sidebar and mobile nav
-
-### AppSidebar (`src/shell/components/AppSidebar.tsx`)
-
-- Import `useTheme` from `next-themes` and `Sun`/`Moon` from `lucide-react`
-- Add a theme toggle button **before the collapse toggle** (before line 277)
-- Collapsed: Sun/Moon icon centered, matching existing button styling (`px-3 py-2.5 mx-2 rounded-lg`)
-- Expanded: icon + "Theme" label, same styling as collapse button
-- Uses `useTheme().setTheme()` to cycle light/dark
-
-### ShellMobileBottomNav (`src/shell/components/ShellMobileBottomNav.tsx`)
-
-- **Not a full nav item** (avoids crowding the already 6-item bar)
-- Add an inline compact icon button **after** the nav items map, inside the flex container
-- Styling: same `flex-col items-center justify-center` as nav items but narrower (`w-10` instead of `flex-1`)
-- Shows Sun (dark mode) or Moon (light mode) icon, `size={20}`
-- Label: "Theme" in `text-[10px]`
-
----
-
-## Fix 4: FOUT prevention in index.html
-
-### Inline script placement (user's concern confirmed)
-
-The script goes in `<head>`, **after the critical CSS** block (after line 82, before `</head>` at line 136). This is:
-- Before any `<script src>` tags (the only `<script type="module">` is at line 188, bottom of `<body>`)
-- Before the static HTML shell renders
-- Synchronous execution — blocks paint until `.dark` class is applied
-
-```html
-<script>
-  (function() {
-    try {
-      var theme = localStorage.getItem('edupreneur-theme');
-      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (theme === 'dark' || ((!theme || theme === 'system') && prefersDark)) {
-        document.documentElement.classList.add('dark');
-      }
-    } catch(e) {}
-  })();
-</script>
-```
-
-### Hardcoded color replacements in critical CSS (lines 47-51)
-
-| Line | Before | After |
-|------|--------|-------|
-| 47 | `background: #ffffff` | `background: var(--background, #ffffff)` |
-| 47 | `color: #0a0a0a` | `color: var(--foreground, #0a0a0a)` |
-| 51 | `background: rgba(255,255,255,0.95)` | `background: var(--card, rgba(255,255,255,0.95))` |
-
-### Inline styles in static shell (lines 141, 155)
-
-The header at line 141 has `background:rgba(255,255,255,0.95)` — update to `background:var(--card, rgba(255,255,255,0.95))`.
 
 ---
 
 ## Files Modified
 
-| File | Fix | Change |
-|------|-----|--------|
-| `src/providers/AppProviders.tsx` | 1 | ThemeProvider props |
-| `profiles` table (migration) | 2 | Add `theme_preference` column |
-| `src/hooks/useThemeSync.ts` (new) | 2 | Theme DB sync hook |
-| `src/shell/AppShell.tsx` | 2 | Mount `useThemeSync()` |
-| `src/shell/components/AppSidebar.tsx` | 3 | Theme toggle button |
-| `src/shell/components/ShellMobileBottomNav.tsx` | 3 | Compact theme icon |
-| `index.html` | 4 | FOUT script + CSS var skeleton |
+| File | Fix | Scope |
+|------|-----|-------|
+| `src/index.css` | 1 | 6 hardcoded color replacements in Eric chatbot CSS |
+| `src/pages/Matieres.tsx` | 2 | 5 class replacements in hero section |
+| `src/shell/components/AppSidebar.tsx` | 3 | 1 class replacement |
+| `src/components/visitor/VisitorBanner.tsx` | 4 | 1 comment addition |
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Existing functionality affected? | No — additive only |
+| Existing functionality affected? | No — CSS-only, no logic |
 | Provider stack order changed? | No |
-| RLS policies needed? | No — column inherits existing profiles RLS |
 | New dependencies? | None |
-| Bundle size impact? | ~1KB (useThemeSync hook) |
-| 3G performance | Improved — no FOUT repaints |
-| Backward compatibility | Full — system default is sensible |
-| Database migration risk | Safe — ADD COLUMN IF NOT EXISTS with DEFAULT |
+| Bundle size impact | Zero |
+| 3G performance | No change |
+| Backward compatibility | Full — visual improvement only |
+| Dark mode verified? | All replacements use existing CSS variables from the project's theme system |
 
