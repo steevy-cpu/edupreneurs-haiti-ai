@@ -50,6 +50,7 @@ export function LessonContenuTab({
               content={contenu}
               subjectName={subjectName}
               showProgressBar={true}
+              enableImmersiveMode={true}
               className="overflow-x-auto"
             />
           ) : (
@@ -75,6 +76,7 @@ export function LessonContenuTab({
               content={exemplesExercices}
               subjectName={subjectName}
               showProgressBar={true}
+              enableImmersiveMode={true}
               className="overflow-x-auto"
             />
           ) : (
