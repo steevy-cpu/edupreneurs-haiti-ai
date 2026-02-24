@@ -3039,6 +3039,7 @@ export type Database = {
           referred_by: string | null
           school: string | null
           sent_expiry_reminders: Json | null
+          sent_onboarding_emails: Json | null
           subscription_end_date: string | null
           subscription_status: string
           updated_at: string | null
@@ -3078,6 +3079,7 @@ export type Database = {
           referred_by?: string | null
           school?: string | null
           sent_expiry_reminders?: Json | null
+          sent_onboarding_emails?: Json | null
           subscription_end_date?: string | null
           subscription_status?: string
           updated_at?: string | null
@@ -3117,6 +3119,7 @@ export type Database = {
           referred_by?: string | null
           school?: string | null
           sent_expiry_reminders?: Json | null
+          sent_onboarding_emails?: Json | null
           subscription_end_date?: string | null
           subscription_status?: string
           updated_at?: string | null
