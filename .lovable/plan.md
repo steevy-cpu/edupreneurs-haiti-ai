@@ -1,72 +1,109 @@
 
 
-# Grade Auto-Detection and Locking — 3 Surgical Fixes
+# Studygram Text Overflow and Color Contrast — 2 Surgical Fixes
 
 ## Scope
 
-**1 file modified:** `src/pages/Matieres.tsx`
-**0 other files touched.** `useMatieresData.ts` is unchanged.
+**1 file modified:** `src/features/matieres/components/tabs/LessonStudygramTab.tsx`
+No new dependencies. No database changes.
 
 ---
 
-## Fix 1 — User-Initiated Selection Guard
+## Fix 1 — Prevent Node Overflow and Clipping
 
-**Problem:** When a user manually picks a grade, the auto-detection `useEffect` (lines 134-149) fires again once `userGrade` resolves asynchronously, overriding the manual choice.
+**Problem:** Nodes using `rounded-full` grow into circles when text is long, causing them to overflow section containers and clip into adjacent cards.
 
-**Solution:**
-- Add `const hasUserSelectedGrade = useRef(false)` (line ~58 area, alongside other state)
-- In the grade button `onClick` handler (line 337), add `hasUserSelectedGrade.current = true`
-- In the auto-detection `useEffect` (line 135), add early return: `if (hasUserSelectedGrade.current) return`
+**Changes:**
 
-**Lines affected:** ~58, 135, 337
+1. **MindMapNode component (lines 76-117):**
+   - `highlight` node (line 83): change `rounded-full` to `rounded-2xl`, add `max-w-full break-words`
+   - `mindmap` node (line 90): change `rounded-full` to `rounded-2xl`, add `max-w-full break-words`
+   - `outline` node (line 97): add `max-w-full break-words`
+   - `quote` node (line 104): add `max-w-full break-words`
+   - `plain` node (line 112): add `max-w-full break-words`
 
----
+2. **BranchNode component (line 136):** Add `min-w-0` to the `flex-1` wrapper so flex children can shrink below content size
 
-## Fix 2 — Persist Grade via URL Query Param + localStorage
+3. **RadialMindMapCluster (lines 178-223):**
+   - Central node (line 194): change `rounded-full` to `rounded-2xl`, add `max-w-full break-words`
+   - Child pills (line 213): change `rounded-full` to `rounded-2xl`, remove `max-w-[140px]` (was causing text clipping), add `break-words`
 
-**Problem:** On refresh, the page always defaults to `7AF`, causing a flash before auto-detection kicks in.
-
-**Solution:**
-- Replace `useState<GradeLevel>("7AF")` (line 58) with an initializer function that reads:
-  1. URL search param `?grade=X` (highest priority)
-  2. `localStorage.getItem('matieres_selected_grade')` (fallback)
-  3. `null` as final fallback (not `7AF`)
-- In the grade button `onClick` (line 337): save to `localStorage` and update URL via `searchParams.set('grade', grade.id)` using `useSearchParams` from react-router-dom
-- In the auto-detection `useEffect`: only set grade if `selectedGrade` is still `null`
-- When `selectedGrade` is `null` and still resolving, the grade buttons section shows a loading state (see Fix 3)
-- Add `useSearchParams` import from `react-router-dom`
-
-**Lines affected:** ~1 (imports), ~58, ~134-149, ~330-338
+4. **Central title pill (line 361):** change `rounded-full` to `rounded-2xl`, add `max-w-full break-words`
 
 ---
 
-## Fix 3 — Loading State While Grade Resolves
+## Fix 2 — Fix White Text on Light Backgrounds
 
-**Problem:** During the loading window (before `userGrade` resolves), all grades appear unlocked with `7AF` selected, which is confusing.
+**Problem:** `text-white` on `bg-{color}-500` nodes becomes invisible when nodes sit on light card backgrounds or overflow container bounds.
 
-**Solution:**
-- Derive a boolean: `const isGradeResolving = isAuthenticated && !isSuperUser && isLoading && !userGrade && selectedGrade === null`
-- When `isGradeResolving` is true, render the grade buttons area with `Skeleton` pulses over each button (using the existing `Skeleton` component already imported on line 7)
-- Super users skip this entirely — they see all grades immediately since `isSuperUser` is falsy during loading (it depends on `userId` from the same query), but once resolved they get full access. We handle this by checking `isSuperUser` after data loads.
-- Once `userGrade` resolves (or auto-detection sets `selectedGrade`), the real buttons animate in
+**Changes to SECTION_COLORS (lines 22-68):**
 
-**Lines affected:** ~312-356 (grade selector section)
-
----
-
-## Detailed Changes Summary
+Update all 4 color schemes with new node color values. Section headers (`headerBg`) stay unchanged (saturated bg + white text is fine there).
 
 ```text
-src/pages/Matieres.tsx
-+-- Line 2: add useSearchParams to import
-+-- Line ~58: selectedGrade initializer reads URL param > localStorage > null
-+-- Line ~58: add hasUserSelectedGrade ref
-+-- Lines 134-149: add guard for hasUserSelectedGrade + null check on selectedGrade
-+-- Lines 312-356: wrap grade buttons in loading/resolved conditional
-+-- Lines 330-338: onClick saves to localStorage + URL param + sets ref
+For each color (blue, purple, emerald, amber):
+
+highlightBg:  CHANGE from 'bg-{color}-500 dark:bg-{color}-600'
+              TO     'bg-{color}-100 dark:bg-{color}-900/40'
+              (was used with text-white, now paired with dark text)
+
+Add new field:
+highlightText: 'text-{color}-900 dark:text-{color}-100'
+
+mindmapBg:    KEEP   'bg-{color}-100 dark:bg-{color}-900/50' (already light)
+mindmapText:  KEEP   'text-{color}-700 dark:text-{color}-200' (already dark)
+
+nodeBg:       KEEP   'bg-{color}-50 dark:bg-{color}-950/40'
+nodeText:     KEEP   'text-{color}-900 dark:text-{color}-100'
 ```
 
-No new dependencies. No database changes. No other files.
+**Changes to MindMapNode (lines 76-117):**
+- `highlight` case (line 83): replace `text-white` with `${colors.highlightText}`, add `font-semibold border ${colors.border}`
+- `quote` case (line 104): change `border-l-3` to `border-l-4`, use `${colors.nodeBg}` (already light), keep `text-muted-foreground`
+- `plain` case (line 112): keep as-is (already uses `nodeText` which is dark)
+
+**Changes to RadialMindMapCluster (lines 178-223):**
+- Central node (line 194): replace `${colors.highlightBg} text-white` with `${colors.highlightBg} ${colors.highlightText}` + border
+- Child pills (line 213): already use `mindmapBg`/`mindmapText` which are light bg + dark text — no change needed
+
+**What stays white text:** Only the section header bars (lines 157, 186) keep `text-white` since they sit on saturated `bg-{color}-500` backgrounds with sufficient contrast.
+
+---
+
+## Updated Color Type
+
+Add `highlightText` field to the SECTION_COLORS type definition (line 23):
+
+```text
+Record<string, {
+  headerBg: string;
+  border: string;
+  nodeBg: string;
+  nodeText: string;
+  highlightBg: string;
+  highlightText: string;   // NEW
+  mindmapBg: string;
+  mindmapText: string;
+}>
+```
+
+---
+
+## Summary of All Affected Lines
+
+```text
+src/features/matieres/components/tabs/LessonStudygramTab.tsx
+  Lines 22-68:   SECTION_COLORS — update highlightBg values, add highlightText field
+  Line 83:       highlight node — rounded-2xl, dark text, max-w-full, break-words
+  Line 90:       mindmap node — rounded-2xl, max-w-full, break-words
+  Line 97:       outline node — max-w-full, break-words
+  Line 104:      quote node — border-l-4, max-w-full, break-words
+  Line 112:      plain node — max-w-full, break-words
+  Line 136:      BranchNode wrapper — add min-w-0
+  Line 194:      radial central node — rounded-2xl, dark text, max-w-full, break-words
+  Line 213:      radial child pills — rounded-2xl, remove max-w-[140px], break-words
+  Line 361:      central title pill — rounded-2xl, max-w-full, break-words
+```
 
 ---
 
@@ -74,13 +111,10 @@ No new dependencies. No database changes. No other files.
 
 | Check | Result |
 |---|---|
-| Existing functionality broken? | No — same data flow, same hook |
-| Provider stack affected? | No |
-| New dependencies? | No — useSearchParams already available via react-router-dom |
-| Bundle size impact? | Negligible — ~20 lines added |
-| 3G performance? | Improved — no flash of wrong grade |
-| Super users affected? | No — they bypass all locking |
-| Visitors affected? | No — isAuthenticated is false, grade resolving skipped |
-| URL param XSS risk? | None — value validated against VALID_GRADES array before use |
-| localStorage quota? | Trivial — single string value |
-
+| Existing functionality broken? | No -- same data, same layout structure |
+| New dependencies? | None |
+| Bundle size impact? | Zero -- only class name changes |
+| 3G performance? | No impact -- CSS only |
+| Section headers affected? | No -- keep saturated bg + white text |
+| Dark mode contrast? | Maintained via dark: variants on all nodes |
+| Node shapes preserved? | Yes -- rounded-2xl keeps pill aesthetic without circular overflow |
