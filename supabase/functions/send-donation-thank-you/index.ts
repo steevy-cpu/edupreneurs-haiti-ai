@@ -29,7 +29,7 @@ function buildThankYouEmail(donorName: string, amount: number, currency: string,
 <!-- Body -->
 <tr><td style="padding:32px;">
   <p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">
-    Bonjour <strong>${displayName}</strong>,
+    Salut <strong>${displayName}</strong>,
   </p>
   <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px;">
     Nous avons bien reçu votre don et nous vous en remercions du fond du cœur. Grâce à des personnes comme vous, des élèves haïtiens accèdent à une éducation de qualité.
