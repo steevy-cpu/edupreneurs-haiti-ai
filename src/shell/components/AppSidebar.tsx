@@ -12,7 +12,8 @@ import { useState, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { LogOut, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
+import { LogOut, ChevronLeft, ChevronRight, RefreshCw, Sun, Moon } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -273,6 +274,9 @@ export const AppSidebar = memo(function AppSidebar({
             </button>
           )}
           
+          {/* Theme Toggle — cycles between light and dark */}
+          <ThemeToggleButton collapsed={collapsed} />
+
           {/* Collapse Toggle - Desktop only */}
           <button
             onClick={() => setCollapsed(!collapsed)}
@@ -330,5 +334,30 @@ export const AppSidebar = memo(function AppSidebar({
     </>
   );
 });
+
+/**
+ * Sidebar theme toggle button — matches sidebar item styling.
+ * Cycles light ↔ dark (ignores system once user explicitly picks).
+ */
+function ThemeToggleButton({ collapsed }: { collapsed: boolean }) {
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === 'dark';
+
+  return (
+    <button
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      className={cn(
+        'flex items-center gap-2 px-3 py-2.5 mx-2 rounded-lg text-sm font-medium transition-all duration-300',
+        collapsed
+          ? 'justify-center text-muted-foreground hover:text-foreground hover:bg-muted'
+          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+      )}
+      title={isDark ? 'Mode clair' : 'Mode sombre'}
+    >
+      {isDark ? <Sun size={18} /> : <Moon size={18} />}
+      {!collapsed && <span>{isDark ? 'Mode clair' : 'Mode sombre'}</span>}
+    </button>
+  );
+}
 
 export default AppSidebar;
