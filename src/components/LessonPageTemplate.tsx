@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { BookOpen, FileText, Gamepad2, Target, GraduationCap, Sparkles, WifiOff } from "lucide-react";
+import { BookOpen, FileText, Gamepad2, Target, GraduationCap, Sparkles, WifiOff, Layers } from "lucide-react";
 import { useUserProfile, useInvalidateUserProfile } from "@/hooks/useUserProfile";
 
 import { LessonHeader } from "@/features/matieres/components/LessonHeader";
@@ -25,6 +25,7 @@ import type { LessonPageTemplateProps } from "@/features/matieres/types/lesson.t
 import {
   LessonIntroductionTab,
   LessonContenuTab,
+  LessonStudygramTab,
   LessonActivitiesTab,
   LessonQuizTab,
   LessonNotesTab,
@@ -158,7 +159,7 @@ export const LessonPageTemplate = ({
         {/* Sticky Tabs Navigation */}
         <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b shadow-sm">
           <div className="container mx-auto px-2 sm:px-4 py-2">
-            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-3 md:grid-cols-5 h-auto p-1 gap-1 [&>button[data-state=active]]:bg-emerald-600 [&>button[data-state=active]]:text-white [&>button[data-state=active]]:shadow-md">
+            <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 h-auto p-1 gap-1 [&>button[data-state=active]]:bg-emerald-600 [&>button[data-state=active]]:text-white [&>button[data-state=active]]:shadow-md">
               <TabsTrigger value="introduction" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
                 <TabIndicator status={getTabStatus('introduction')} />
                 <Target className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -170,6 +171,12 @@ export const LessonPageTemplate = ({
                 <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Contenu & Exemples</span>
                 <span className="sm:hidden text-[10px]">Cours</span>
+              </TabsTrigger>
+              <TabsTrigger value="studygram" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+                <TabIndicator status={getTabStatus('studygram')} />
+                <Layers className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Studygram</span>
+                <span className="sm:hidden text-[10px]">Study</span>
               </TabsTrigger>
               <TabsTrigger value="activites" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
                 <TabIndicator status={getTabStatus('activites')} />
@@ -218,6 +225,20 @@ export const LessonPageTemplate = ({
                 subjectName={subjectName}
                 gradeLevel={gradeLevel}
                 objectif={lesson.objectif}
+              />
+            </TabErrorBoundary>
+          </TabsContent>
+
+          <TabsContent value="studygram" className="space-y-4 sm:space-y-6 mt-4">
+            <TabErrorBoundary tabName="Studygram">
+              <LessonStudygramTab
+                lessonId={lesson.id}
+                lessonTitle={lesson.title}
+                contenu={lesson.contenu}
+                exemplesExercices={lesson.exemples_exercices}
+                objectif={lesson.objectif}
+                gradeLevel={gradeLevel}
+                subjectName={subjectName}
               />
             </TabErrorBoundary>
           </TabsContent>

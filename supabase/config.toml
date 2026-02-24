@@ -227,3 +227,6 @@ verify_jwt = false
 
 [functions.stripe-donation-webhook]
 verify_jwt = false
+
+[functions.generate-studygram]
+verify_jwt = false
