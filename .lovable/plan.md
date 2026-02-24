@@ -1,116 +1,152 @@
 
 
-# Transformer le Studygram en fiche de revision structuree
+# Redesign du renderer Studygram — Style Mind Map visuel
 
-## Ce qui change
+## Perimetre
 
-Le Studygram passe d'un format libre (3-5 sections thematiques quelconques) a une **structure pedagogique fixe en 4 blocs** :
+**Un seul fichier modifie :** `src/features/matieres/components/tabs/LessonStudygramTab.tsx`
 
-1. **Bloc explicatif synthetique** (bleu) -- Definition principale + 3-5 idees cles + exemple concret
-2. **Approfondissement** (violet) -- Theories/formules/dates/auteurs + schema/carte mentale + comparaisons
-3. **A retenir** (vert) -- 5 points essentiels + formule/citation cle + astuce de memorisation
-4. **Resume visuel** (rose) -- Carte mentale automatique sous forme de noeuds relies
+Aucune modification de : edge function, hook, types, data structure, LessonPageTemplate, ni aucun autre fichier.
 
-## Fichiers a modifier (3 fichiers, 0 nouveau)
+## Ce qui change visuellement
 
-### 1. Edge function : `supabase/functions/generate-studygram-visual/index.ts`
-
-**Changement du prompt AI :**
-- Le prompt demandera exactement **4 sections fixes** avec des roles precis au lieu de sections libres
-- Chaque section a un `type` obligatoire : `"explicatif"`, `"approfondissement"`, `"a_retenir"`, `"resume_visuel"`
-- Le schema Zod sera mis a jour : sections passe de `min(3).max(5)` a `length(4)` avec le champ `type`
-- Les nodes de la section "resume_visuel" auront un style special `"mindmap"` pour les relier visuellement
-- Le prompt s'adaptera a la matiere (formules pour maths/physique, dates pour histoire, auteurs pour philo/francais)
-
-**Nouveau schema de section :**
-```text
-{
-  "type": "explicatif",
-  "heading": "Bloc Explicatif",
-  "color": "blue",
-  "emoji": "📖",
-  "nodes": [
-    { "text": "Definition: ...", "style": "highlight" },
-    { "text": "Idee cle 1", "style": "outline" },
-    { "text": "Exemple: ...", "style": "quote" }
-  ]
-}
-```
-
-**Nouveau style de node ajoute :** `"mindmap"` -- pour les noeuds de la section resume visuel (connectes visuellement)
-
-### 2. Hook : `src/features/matieres/hooks/useStudygramVisual.ts`
-
-- Ajouter le type `"mindmap"` aux styles possibles de `StudygramNode`
-- Ajouter le champ `type` a l'interface `StudygramSection`
-- Bump du cache key a `v2` car la structure change (l'ancien cache `v1` sera ignore)
-
-### 3. Composant : `src/features/matieres/components/tabs/LessonStudygramTab.tsx`
-
-- Nouveau rendu pour le style `"mindmap"` : noeud central avec fleches/lignes vers les sous-noeuds (en CSS pur, pas de librairie)
-- La section "A retenir" aura un encadre special avec une bordure plus epaisse et une icone etoile
-- La section "Approfondissement" affichera les formules en gras et les comparaisons dans un layout side-by-side si detectees
-- Layout reste en grid 2 colonnes desktop / 1 colonne mobile
-- Les 4 sections auront des couleurs fixes (bleu, violet, vert, rose) au lieu de couleurs aleatoires
-
-## Rendu visuel attendu
+Le rendu actuel (cartes plates en grille) est remplace par un vrai style "fiche de revision visuelle" :
 
 ```text
-+-----------------------------------------------+
-|           Titre de la lecon                    |
-|           Matiere - Niveau                     |
-+------------------------+----------------------+
-| [book] Bloc Explicatif | [search] Approfondir |
-| bg-blue-50             | bg-purple-50         |
-|  Definition principale |  Formule / Theorie   |
-|  * Idee cle 1          |  * Auteur / Date     |
-|  * Idee cle 2          |  * Comparaison A/B   |
-|  * Idee cle 3          |  * Detail technique  |
-|  Exemple concret       |                      |
-+------------------------+----------------------+
-| [star] A Retenir       | [brain] Resume       |
-| bg-emerald-50          | bg-rose-50           |
-| bordure epaisse        |                      |
-|  1. Point essentiel    |    [concept central] |
-|  2. Point essentiel    |    /    |    \        |
-|  3. Point essentiel    |  [A]  [B]  [C]       |
-|  Citation / Formule    |                      |
-|  Astuce memorisation   |                      |
-+------------------------+----------------------+
-|           [Regenerer le studygram]             |
-+-----------------------------------------------+
++--------------------------------------------------+
+|  .............. graph paper bg .................. |
+|                                                    |
+|        [ Titre de la lecon ]  <-- pill gradient    |
+|          Matiere - Niveau                          |
+|                    |                               |
+|         -----------+-----------                    |
+|         |                     |                    |
+|  +------+------+    +--------+------+              |
+|  | Explicatif  |    | Approfondir   |              |
+|  | (bleu)      |    | (violet)      |              |
+|  |  |-- node   |    |  |-- node     |              |
+|  |  |-- node   |    |  |-- node     |              |
+|  |  '-- node   |    |  '-- node     |              |
+|  +-------------+    +---------------+              |
+|         |                     |                    |
+|  +------+------+    +--------+------+              |
+|  | A Retenir   |    | Resume visuel |              |
+|  | (vert)      |    | (ambre)       |              |
+|  |  |-- node   |    |  [central]    |              |
+|  |  |-- node   |    |  / | \        |              |
+|  |  '-- node   |    | [A][B][C]     |              |
+|  +-------------+    +---------------+              |
+|                                                    |
+|            [Regenerer le studygram]                 |
++--------------------------------------------------+
 ```
+
+## Details techniques
+
+### 1. Fond graph paper (grille subtile)
+
+Un `repeating-linear-gradient` CSS applique au conteneur principal pour simuler du papier quadrille :
+
+- Lignes fines (`1px`) en `border/10` opacite
+- Espacement de `20px` entre les lignes
+- Compatible dark mode via `dark:` variants
+
+### 2. Titre central — pill avec gradient
+
+- Pill arrondi (`rounded-full`) avec gradient `from-purple-600 to-indigo-600`
+- Texte blanc, gras, taille `lg`/`xl`
+- Sous-titre en `text-muted-foreground` en dessous
+- Ligne verticale CSS (`border-l-2 border-dashed`) descendant du titre vers la grille de sections
+
+### 3. Mapping section type vers couleur (fixe)
+
+| Section type | Couleur | Header bg | Border |
+|---|---|---|---|
+| `explicatif` | Bleu | `bg-blue-500` text blanc | `border-blue-300` |
+| `approfondissement` | Violet/Pink | `bg-purple-500` text blanc | `border-purple-300` |
+| `a_retenir` | Vert | `bg-emerald-500` text blanc | `border-emerald-300` |
+| `resume_visuel` | Ambre | `bg-amber-500` text blanc | `border-amber-300` |
+
+Les headers de section passent de pastels legers a des **couleurs saturees avec texte blanc** pour un contraste de type "bulle de mind map".
+
+### 4. Section cluster — header bulle + noeuds branches
+
+Chaque section est un cluster :
+
+- **Header bulle** : `rounded-full px-5 py-2` avec couleur saturee + emoji + heading en blanc gras
+- **Ligne verticale** : `border-l-2` dashed partant du header vers les noeuds
+- **Noeuds branches** : chaque noeud a une barre horizontale (`border-t-2`) qui part de la ligne verticale, creant un arbre en L
+
+```text
+  [Section Header]
+       |
+       |--- [Node 1 highlight - pill shape]
+       |
+       |--- [Node 2 outline - rectangle]
+       |
+       '--- [Node 3 quote - italic card]
+```
+
+### 5. Formes de noeuds mixtes
+
+| Style | Forme | Rendu |
+|---|---|---|
+| `highlight` | Pill (`rounded-full`) | Fond colore sature, texte blanc, gras |
+| `outline` | Rectangle arrondi (`rounded-lg`) | Bordure coloree, fond transparent |
+| `quote` | Rectangle avec barre laterale | Italique, guillemets francais |
+| `plain` | Rectangle simple | Texte avec bullet point |
+| `mindmap` | Pill/ovale (`rounded-full`) | Fond pastel, texte colore, ombre legere |
+
+### 6. Section "Resume visuel" — mind map radial
+
+Pour le type `resume_visuel`, le rendu reste specifique :
+- Noeud central en pill large
+- Ligne verticale dashed du centre vers une barre horizontale
+- Noeuds enfants en pills connectes via la barre horizontale
+
+### 7. Section "A retenir" — bordure epaisse + etoile
+
+- `border-2` au lieu de `border`
+- Icone etoile dans le header
+- Fond legerement plus sature pour l'emphase
+
+### 8. Responsive
+
+- **Desktop** : `grid-cols-2` — 4 sections en 2x2
+- **Mobile** : `grid-cols-1` — empilement vertical
+- Ligne verticale centrale masquee sur mobile
+- Gap entre sections : `gap-6`
+
+### 9. Dark mode
+
+- Graph paper : lignes en `border/5` en dark
+- Headers : memes couleurs saturees (pas de changement)
+- Noeuds : fonds `dark:bg-{color}-950/40`, bordures `dark:border-{color}-800`
+- Titre pill : meme gradient, pas de changement
+
+### 10. Composants remplaces
+
+Les composants suivants sont supprimes et remplaces par un seul `MindMapRenderer` :
+
+- `StudygramNodeItem` → remplace par `MindMapNode`
+- `MindmapSection` → integre dans `MindMapSectionCluster`
+- `ARetenirSection` → integre dans `MindMapSectionCluster` (avec variante etoile)
+- `StandardSectionCard` → integre dans `MindMapSectionCluster`
+- `StudygramSectionCard` → remplace par `MindMapSectionCluster`
+
+Les composants conserves tels quels :
+- `StudygramSkeleton` (loading state)
+- `LessonStudygramTab` (export principal — seul le JSX du rendu principal change)
 
 ## Verification securite
 
 | Check | Resultat |
-|-------|----------|
-| Fonctionnalite existante cassee? | Non -- meme composant, nouvelle structure |
-| Provider stack / AppShell? | Pas touche |
-| Nouvelles dependances? | Non -- tout en CSS/Tailwind |
-| Bundle size | Identique |
-| Performance 3G | Identique -- cache localStorage 7j |
-| Cache ancien | Ignore naturellement (cache key v1 vs v2) |
-| Edge function cold start | Gere -- skeleton loading |
-| RLS / securite | Inchange -- meme rate limiting + auth |
+|---|---|
+| Fonctionnalite cassee? | Non — rendu visuel uniquement |
+| Hook/edge function modifie? | Non |
+| Data structure modifiee? | Non |
+| Nouvelle dependance? | Non — CSS/Tailwind pur |
+| Performance 3G | Identique — meme volume de DOM |
+| Dark mode | Compatible via Tailwind dark: |
+| Mobile responsive | Oui — grid-cols-1 sur mobile |
 
-## Details techniques
-
-### Nouveau schema Zod (edge function)
-
-Le champ `type` est ajoute au schema de section :
-- `z.enum(["explicatif", "approfondissement", "a_retenir", "resume_visuel"])`
-- Les sections sont validees a exactement 4 elements
-- Le style `"mindmap"` est ajoute aux styles de nodes possibles
-
-### Rendu CSS du mindmap (composant)
-
-La section "resume visuel" utilise un layout flex avec des lignes CSS (`border` + `::before`/`::after` pseudo-elements) pour connecter visuellement le noeud central aux sous-noeuds. Pas de librairie de graphe -- tout en Tailwind + CSS natif.
-
-### Adaptation par matiere (prompt AI)
-
-Le prompt inclura une instruction conditionnelle selon la matiere :
-- Maths/Physique/Chimie : formules, unites, schemas
-- Histoire/Geographie : dates, lieux, evenements
-- Philosophie/Francais : auteurs, citations, courants
-- Langues : regles grammaticales, vocabulaire, exemples d'usage
