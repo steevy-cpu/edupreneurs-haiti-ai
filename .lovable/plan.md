@@ -1,86 +1,94 @@
 
 
-# Offline Mode for Lesson Pages
+# Dons and Paiements Critical Fixes -- Plan A
 
 ## Overview
 
-Two surgical changes: (1) cache lesson content to localStorage on successful load and fall back to it when offline, (2) show offline indicators on the lesson page and disable network-dependent tabs.
+Three surgical fixes addressing: (1) broken RLS on payment_transactions, (2) reliable Stripe donation completion via webhook, and (3) a new secret for webhook signature verification. No architecture changes.
 
-No architecture changes. No new dependencies. No changes to query config, Matieres page, or grade selection.
+## Pre-requisite: New Secret
 
-## Changes
+A new secret `STRIPE_WEBHOOK_SECRET_DONATION` is needed for the webhook signature verification. You will need to:
+1. Go to your Stripe Dashboard > Developers > Webhooks
+2. Create a new webhook endpoint pointing to your edge function URL
+3. Copy the signing secret and add it when prompted
 
-### 1. DynamicLessonPage.tsx -- localStorage cache + offline fallback
+## Fix 1 -- Add founder RLS policies to payment_transactions
 
-**Cache key:** `lesson_cache_{subjectSlug}_{lessonSlug}`
+**Migration SQL:**
 
-**On successful load (after line 140):**
-- Write to localStorage: `{ lesson: transformedLesson, subject: { name, slug, grade_level }, savedAt: Date.now() }`
+```text
+-- Founders can view ALL payment transactions (fixes empty Paiements tab)
+CREATE POLICY "Founders can view all payment transactions"
+  ON payment_transactions FOR SELECT
+  USING (public.is_founder());
 
-**On fetch failure (in catch block, line 141-143):**
-- Read from localStorage using the cache key
-- Check TTL: only use if `savedAt` is less than 24 hours old
-- If valid cache exists: populate `lesson` and `subject` state from cache, set new state flag `isOfflineMode = true`
-- If no valid cache: fall through to existing "lesson not found" UI
+-- Founders can update ALL payment transactions (verify/approve/reject)
+CREATE POLICY "Founders can update all payment transactions"
+  ON payment_transactions FOR UPDATE
+  USING (public.is_founder())
+  WITH CHECK (public.is_founder());
+```
 
-**New state:** `const [isOfflineMode, setIsOfflineMode] = useState(false);`
+This automatically fixes:
+- The Paiements tab showing empty for founders
+- The badge count query in `modules.ts` (lines 35-39) -- it already uses the authenticated Supabase client, so the new RLS policy will allow it to see all rows
 
-**Pass down:** Add `isOfflineMode` prop to `LessonPageTemplate`
+**No code changes needed for Fix 1** -- the existing queries work correctly once RLS permits access.
 
-### 2. LessonPageTemplate.tsx -- offline banner + prop threading
+## Fix 2 -- Create stripe-donation-webhook edge function
 
-**New prop:** `isOfflineMode?: boolean` added to `LessonPageTemplateProps`
+**New file:** `supabase/functions/stripe-donation-webhook/index.ts`
 
-**Offline banner:** Rendered between `LessonHeader` and the stats section when `isOfflineMode` is true:
-- Amber background, subtle styling consistent with existing alert patterns
-- Text: "Mode hors-ligne -- contenu mis en cache. Certaines fonctionnalites sont indisponibles."
-- Uses `WifiOff` icon from lucide-react (already installed)
+Follows the existing pattern from `supabase/functions/stripe-gift-webhook/index.ts`:
+- Receives raw body + `stripe-signature` header
+- Verifies signature using `STRIPE_WEBHOOK_SECRET_DONATION`
+- Handles `checkout.session.completed` events only
+- Extracts `order_id` from `session.metadata`
+- Updates `donations` table: `SET status = 'completed' WHERE order_id = order_id AND status = 'pending'`
+- Sends thank-you email via `send-donation-thank-you` edge function (same logic as the callback page)
+- Returns 200 on success, 400 on signature failure
 
-**Prop threading:** Pass `isOfflineMode` to `LessonActivitiesTab` and `LessonQuizTab`
+The existing `stripe-create-donation/index.ts` already passes `order_id` in session metadata (line 118), so no changes needed there.
 
-### 3. LessonActivitiesTab.tsx -- offline guard
+**Config entry added to `supabase/config.toml`:**
 
-**New optional prop:** `isOfflineMode?: boolean`
+```text
+[functions.stripe-donation-webhook]
+verify_jwt = false
+```
 
-**Early return:** If `isOfflineMode` is true, render a Card with a friendly message:
-- "Activites non disponibles hors-ligne. Reconnectez-vous pour acceder a cet onglet."
-- Uses `WifiOff` icon
-- Skips all AI generation hooks (the hook still runs but its fetch will fail gracefully; the early return prevents showing error states)
+## Fix 3 -- Update DonationSuccessCallback for idempotency
 
-### 4. LessonQuizTab.tsx -- offline guard
-
-Same pattern as Activities: new `isOfflineMode?: boolean` prop, early return with friendly offline message before any data fetching UI.
-
-### 5. Types update -- lesson.types.ts
-
-Add `isOfflineMode?: boolean` to `LessonPageTemplateProps`.
+Since the webhook may complete before the user hits the callback page, the callback's status update (`pending` -> `completed`) could silently fail. The callback at `src/components/donate/DonationSuccessCallback.tsx` (line 57) already scopes the update to `.eq("status", "pending")`, so if the webhook already set it to `completed`, the update affects 0 rows but does not error. The callback will then read the donation row, see it is `completed`, and show success. No code change needed -- the existing logic is already idempotent.
 
 ## Files Modified
 
 | File | Change |
 |------|--------|
-| `src/pages/DynamicLessonPage.tsx` | Add localStorage write on success, read on failure, `isOfflineMode` state, pass prop |
-| `src/components/LessonPageTemplate.tsx` | Accept `isOfflineMode`, render amber banner, pass to tabs |
-| `src/features/matieres/components/tabs/LessonActivitiesTab.tsx` | Accept `isOfflineMode`, early return with offline message |
-| `src/features/matieres/components/tabs/LessonQuizTab.tsx` | Accept `isOfflineMode`, early return with offline message |
-| `src/features/matieres/types/lesson.types.ts` | Add `isOfflineMode` to `LessonPageTemplateProps` |
+| Database migration | Add 2 RLS policies on `payment_transactions` |
+| `supabase/functions/stripe-donation-webhook/index.ts` | New webhook edge function |
+| `supabase/config.toml` | Add `stripe-donation-webhook` entry (auto-managed) |
 
-## What is NOT touched
+## Files NOT Modified
 
-- TanStack Query configuration
-- Matieres page / grade selection
-- lesson_assets queries
-- Service worker
-- No new dependencies
+- `src/pages/control-center/modules.ts` -- badge query works once RLS is fixed
+- `supabase/functions/stripe-create-donation/index.ts` -- metadata already includes `order_id`
+- `src/components/donate/DonationSuccessCallback.tsx` -- already idempotent
+- No changes to Matieres, grade selection, or lesson pages
+
+## Secret Required
+
+`STRIPE_WEBHOOK_SECRET_DONATION` -- the signing secret from Stripe's webhook endpoint configuration. You will be prompted to add this before the webhook is deployed.
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Existing functionality affected? | No -- online path unchanged, cache write is additive |
-| Bundle size impact? | Negligible -- ~40 lines of localStorage logic, WifiOff icon already in lucide bundle |
-| 3G performance? | Improved -- cached lessons load instantly on revisit when offline |
-| RLS / DB impact? | None -- purely client-side localStorage |
-| Provider stack / AppShell? | Untouched |
-| Backward compatibility? | Yes -- no cache = normal behavior |
+| Existing functionality affected? | No -- additive RLS policies, new function only |
+| Bundle size impact? | None -- server-side only |
+| RLS security | Founder-only access, consistent with all other admin tables |
+| Idempotency | Webhook + callback are both safe to fire for same donation |
+| 3G performance | No client-side impact |
+| Backward compatibility | Yes -- existing donations unaffected |
 
