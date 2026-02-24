@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,20 +15,30 @@ const DonationsModule = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [providerFilter, setProviderFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  // Pagination: 50 rows per page, append-style with "Charger plus"
+  // Accumulation pagination: append rows instead of replacing
   const [page, setPage] = useState(0);
+  const [allDonations, setAllDonations] = useState<DonationAdmin[]>([]);
+  const [hasMore, setHasMore] = useState(true);
   const PAGE_SIZE = 50;
 
   const queryClient = useQueryClient();
 
-  const { data: donations, isLoading, refetch } = useQuery({
+  // Reset accumulated data when filters change
+  useEffect(() => {
+    setAllDonations([]);
+    setPage(0);
+    setHasMore(true);
+  }, [statusFilter, providerFilter]);
+
+  // Paginated list query — fetches one page at a time
+  const { data: pageDonations, isLoading, refetch } = useQuery({
     queryKey: ["admin-donations", statusFilter, providerFilter, page],
     queryFn: async () => {
       let query = supabase
         .from("donations")
         .select("id, order_id, amount, currency, provider, donor_name, donor_email, donor_message, status, created_at")
         .order("created_at", { ascending: false })
-        // 50 rows per page — prevents unbounded fetches as donation count grows
+        // 50 rows per page — prevents unbounded fetches
         .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
 
       if (statusFilter !== "all") {
@@ -44,6 +54,42 @@ const DonationsModule = () => {
     },
   });
 
+  // Append fetched page to accumulated list
+  useEffect(() => {
+    if (!pageDonations) return;
+    // Fewer than PAGE_SIZE means no more rows
+    setHasMore(pageDonations.length === PAGE_SIZE);
+    if (page === 0) {
+      // First page replaces everything (handles filter resets)
+      setAllDonations(pageDonations);
+    } else {
+      // Subsequent pages append
+      setAllDonations((prev) => [...prev, ...pageDonations]);
+    }
+  }, [pageDonations, page]);
+
+  // Database-wide stats — independent of pagination
+  const { data: stats } = useQuery({
+    queryKey: ["admin-donations-stats"],
+    queryFn: async () => {
+      // Fetch only 3 lightweight columns for aggregation
+      const { data, error } = await supabase
+        .from("donations")
+        .select("amount, currency, status");
+      if (error) throw error;
+      let htg = 0, usd = 0, total = 0;
+      for (const d of data) {
+        total++;
+        if (d.status === "completed") {
+          if (d.currency === "HTG") htg += d.amount;
+          // USD amounts are already in dollars — no /100 division
+          if (d.currency === "USD") usd += d.amount;
+        }
+      }
+      return { total, htg, usd };
+    },
+  });
+
   // Mutation: set status to 'rejected' in a single DB write
   const rejectMutation = useMutation({
     mutationFn: async (donationId: string) => {
@@ -54,8 +100,8 @@ const DonationsModule = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      // Invalidate all pages of this query to refresh the list
       queryClient.invalidateQueries({ queryKey: ["admin-donations"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-donations-stats"] });
     },
   });
 
@@ -70,36 +116,24 @@ const DonationsModule = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-donations"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-donations-stats"] });
     },
   });
 
+  // Filter accumulated donations by search query
   const filteredDonations = useMemo(() => {
-    if (!donations) return [];
-    if (!searchQuery) return donations;
+    if (!allDonations.length) return [];
+    if (!searchQuery) return allDonations;
     const q = searchQuery.toLowerCase();
-    return donations.filter(
+    return allDonations.filter(
       (d) =>
         d.order_id.toLowerCase().includes(q) ||
         d.donor_name?.toLowerCase().includes(q) ||
         d.donor_email?.toLowerCase().includes(q)
     );
-  }, [donations, searchQuery]);
+  }, [allDonations, searchQuery]);
 
-  const stats = useMemo(() => {
-    if (!donations) return { total: 0, htg: 0, usd: 0 };
-    let htg = 0;
-    let usd = 0;
-    for (const d of donations) {
-      if (d.status === "completed") {
-        if (d.currency === "HTG") htg += d.amount;
-        // USD amounts are already in dollars — no /100 division needed
-        if (d.currency === "USD") usd += d.amount;
-      }
-    }
-    return { total: donations.length, htg, usd };
-  }, [donations]);
-
-  const pendingCount = donations?.filter((d) => d.status === "pending").length || 0;
+  const pendingCount = allDonations.filter((d) => d.status === "pending").length;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -157,24 +191,24 @@ const DonationsModule = () => {
         </div>
       </div>
 
-      {/* Stats — current page only (resets on page change) */}
+      {/* Stats — database-wide totals, independent of pagination */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-sm text-muted-foreground">Total dons (page)</p>
-            <p className="text-2xl font-bold">{stats.total}</p>
+            <p className="text-sm text-muted-foreground">Total dons</p>
+            <p className="text-2xl font-bold">{stats?.total ?? "—"}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
             <p className="text-sm text-muted-foreground">Total HTG (complétés)</p>
-            <p className="text-2xl font-bold">{stats.htg.toLocaleString()} HTG</p>
+            <p className="text-2xl font-bold">{stats ? `${stats.htg.toLocaleString()} HTG` : "—"}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
             <p className="text-sm text-muted-foreground">Total USD (complétés)</p>
-            <p className="text-2xl font-bold">${stats.usd.toFixed(2)} USD</p>
+            <p className="text-2xl font-bold">{stats ? `$${stats.usd.toFixed(2)} USD` : "—"}</p>
           </CardContent>
         </Card>
       </div>
@@ -192,7 +226,7 @@ const DonationsModule = () => {
                 className="pl-9"
               />
             </div>
-            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0); }}>
+            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); }}>
               <SelectTrigger className="w-full sm:w-[180px]">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Statut" />
@@ -205,7 +239,7 @@ const DonationsModule = () => {
                 <SelectItem value="rejected">Rejetés</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={providerFilter} onValueChange={(v) => { setProviderFilter(v); setPage(0); }}>
+            <Select value={providerFilter} onValueChange={(v) => { setProviderFilter(v); }}>
               <SelectTrigger className="w-full sm:w-[150px]">
                 <SelectValue placeholder="Fournisseur" />
               </SelectTrigger>
@@ -220,7 +254,7 @@ const DonationsModule = () => {
       </Card>
 
       {/* Donations List */}
-      {isLoading ? (
+      {isLoading && page === 0 ? (
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
@@ -233,6 +267,11 @@ const DonationsModule = () => {
         </Card>
       ) : (
         <div className="space-y-4">
+          {/* Loaded count indicator */}
+          <p className="text-sm text-muted-foreground">
+            Affichage de {filteredDonations.length} dons
+          </p>
+
           {filteredDonations.map((donation) => (
             <Card key={donation.id}>
               <CardContent className="pt-6">
@@ -305,8 +344,8 @@ const DonationsModule = () => {
             </Card>
           ))}
 
-          {/* Load more: shown when a full page was returned, indicating more rows exist */}
-          {donations?.length === PAGE_SIZE && (
+          {/* Load more: shown when more rows may exist */}
+          {hasMore && (
             <div className="flex justify-center pt-2">
               <Button
                 variant="outline"
@@ -314,7 +353,11 @@ const DonationsModule = () => {
                 className="gap-2"
                 disabled={isLoading}
               >
-                <ChevronRight className="h-4 w-4" />
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
                 Charger plus
               </Button>
             </div>
