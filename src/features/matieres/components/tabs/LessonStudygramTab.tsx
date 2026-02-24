@@ -26,6 +26,7 @@ const SECTION_COLORS: Record<string, {
   nodeBg: string;
   nodeText: string;
   highlightBg: string;
+  highlightText: string;
   mindmapBg: string;
   mindmapText: string;
 }> = {
@@ -34,7 +35,8 @@ const SECTION_COLORS: Record<string, {
     border: 'border-blue-300 dark:border-blue-700',
     nodeBg: 'bg-blue-50 dark:bg-blue-950/40',
     nodeText: 'text-blue-900 dark:text-blue-100',
-    highlightBg: 'bg-blue-500 dark:bg-blue-600',
+    highlightBg: 'bg-blue-100 dark:bg-blue-900/40',
+    highlightText: 'text-blue-900 dark:text-blue-100',
     mindmapBg: 'bg-blue-100 dark:bg-blue-900/50',
     mindmapText: 'text-blue-700 dark:text-blue-200',
   },
@@ -43,7 +45,8 @@ const SECTION_COLORS: Record<string, {
     border: 'border-purple-300 dark:border-purple-700',
     nodeBg: 'bg-purple-50 dark:bg-purple-950/40',
     nodeText: 'text-purple-900 dark:text-purple-100',
-    highlightBg: 'bg-purple-500 dark:bg-purple-600',
+    highlightBg: 'bg-purple-100 dark:bg-purple-900/40',
+    highlightText: 'text-purple-900 dark:text-purple-100',
     mindmapBg: 'bg-purple-100 dark:bg-purple-900/50',
     mindmapText: 'text-purple-700 dark:text-purple-200',
   },
@@ -52,7 +55,8 @@ const SECTION_COLORS: Record<string, {
     border: 'border-emerald-300 dark:border-emerald-700',
     nodeBg: 'bg-emerald-50 dark:bg-emerald-950/40',
     nodeText: 'text-emerald-900 dark:text-emerald-100',
-    highlightBg: 'bg-emerald-500 dark:bg-emerald-600',
+    highlightBg: 'bg-emerald-100 dark:bg-emerald-900/40',
+    highlightText: 'text-emerald-900 dark:text-emerald-100',
     mindmapBg: 'bg-emerald-100 dark:bg-emerald-900/50',
     mindmapText: 'text-emerald-700 dark:text-emerald-200',
   },
@@ -61,7 +65,8 @@ const SECTION_COLORS: Record<string, {
     border: 'border-amber-300 dark:border-amber-700',
     nodeBg: 'bg-amber-50 dark:bg-amber-950/40',
     nodeText: 'text-amber-900 dark:text-amber-100',
-    highlightBg: 'bg-amber-500 dark:bg-amber-600',
+    highlightBg: 'bg-amber-100 dark:bg-amber-900/40',
+    highlightText: 'text-amber-900 dark:text-amber-100',
     mindmapBg: 'bg-amber-100 dark:bg-amber-900/50',
     mindmapText: 'text-amber-700 dark:text-amber-200',
   },
@@ -79,29 +84,30 @@ function MindMapNode({ node, sectionType }: { node: StudygramNode; sectionType: 
   switch (node.style) {
     case 'highlight':
       /* Saturated pill — bold white text for key definitions */
+      /* Light bg + dark text for readable contrast on any background */
       return (
-        <div className={`${colors.highlightBg} text-white rounded-full px-4 py-1.5 text-sm font-semibold shadow-sm`}>
+        <div className={`${colors.highlightBg} ${colors.highlightText} border ${colors.border} rounded-2xl px-4 py-1.5 text-sm font-semibold shadow-sm max-w-full break-words`}>
           {node.text}
         </div>
       );
     case 'mindmap':
       /* Pastel pill — colored text, subtle shadow for mind map nodes */
       return (
-        <div className={`${colors.mindmapBg} ${colors.mindmapText} rounded-full px-4 py-1.5 text-sm font-medium shadow-sm`}>
+        <div className={`${colors.mindmapBg} ${colors.mindmapText} rounded-2xl px-4 py-1.5 text-sm font-medium shadow-sm max-w-full break-words`}>
           {node.text}
         </div>
       );
     case 'outline':
       /* Bordered rectangle — definitions/concepts */
       return (
-        <div className={`border ${colors.border} ${colors.nodeBg} rounded-lg px-3 py-2 text-sm ${colors.nodeText}`}>
+        <div className={`border ${colors.border} ${colors.nodeBg} rounded-lg px-3 py-2 text-sm ${colors.nodeText} max-w-full break-words`}>
           {node.text}
         </div>
       );
     case 'quote':
       /* Italic blockquote with left bar — citations/formulas */
       return (
-        <div className={`border-l-3 ${colors.border} ${colors.nodeBg} pl-3 py-1.5 text-sm italic text-muted-foreground rounded-r-md`}>
+        <div className={`border-l-4 ${colors.border} ${colors.nodeBg} pl-3 py-1.5 text-sm italic text-muted-foreground rounded-r-md max-w-full break-words`}>
           «&nbsp;{node.text}&nbsp;»
         </div>
       );
@@ -109,7 +115,7 @@ function MindMapNode({ node, sectionType }: { node: StudygramNode; sectionType: 
     default:
       /* Simple text node with bullet */
       return (
-        <div className={`${colors.nodeBg} rounded-lg px-3 py-1.5 text-sm ${colors.nodeText}`}>
+        <div className={`${colors.nodeBg} rounded-lg px-3 py-1.5 text-sm ${colors.nodeText} max-w-full break-words`}>
           • {node.text}
         </div>
       );
@@ -133,7 +139,8 @@ function BranchNode({ node, sectionType, isLast }: { node: StudygramNode; sectio
         <div className={`w-4 h-px ${colors.border} border-t-2 border-dashed`} />
       </div>
       {/* The actual node content */}
-      <div className="flex-1 py-1">
+      {/* min-w-0 lets flex child shrink below content size */}
+      <div className="flex-1 min-w-0 py-1">
         <MindMapNode node={node} sectionType={sectionType} />
       </div>
     </div>
@@ -191,7 +198,7 @@ function RadialMindMapCluster({ section }: { section: StudygramSection }) {
       <div className="p-4 flex flex-col items-center gap-3">
         {/* Central concept node */}
         {centralNode && (
-          <div className={`${colors.highlightBg} text-white rounded-full px-6 py-2.5 text-sm font-bold text-center shadow-md`}>
+          <div className={`${colors.highlightBg} ${colors.highlightText} border ${colors.border} rounded-2xl px-6 py-2.5 text-sm font-bold text-center shadow-md max-w-full break-words`}>
             {centralNode.text}
           </div>
         )}
@@ -210,7 +217,7 @@ function RadialMindMapCluster({ section }: { section: StudygramSection }) {
               {childNodes.map((node, i) => (
                 <div
                   key={i}
-                  className={`${colors.mindmapBg} ${colors.mindmapText} rounded-full px-3 py-1.5 text-xs sm:text-sm text-center max-w-[140px] shadow-sm font-medium`}
+                  className={`${colors.mindmapBg} ${colors.mindmapText} rounded-2xl px-3 py-1.5 text-xs sm:text-sm text-center shadow-sm font-medium break-words`}
                 >
                   {node.text}
                 </div>
@@ -358,7 +365,7 @@ export function LessonStudygramTab({
 
       {/* Central title pill — gradient bubble */}
       <div className="flex flex-col items-center gap-1 py-2">
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full px-6 py-2.5 text-lg sm:text-xl font-bold text-center shadow-lg">
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl px-6 py-2.5 text-lg sm:text-xl font-bold text-center shadow-lg max-w-full break-words">
           {studygram.title}
         </div>
         <p className="text-sm text-muted-foreground">{studygram.subtitle}</p>
