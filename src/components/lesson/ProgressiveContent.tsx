@@ -1,27 +1,37 @@
-import { useMemo, useRef, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useProgressiveReveal, parseContentIntoSections } from '@/hooks/useProgressiveReveal';
 import { MathContent, isMathSubject } from '@/components/MathContent';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { ChevronDown, Eye, Sparkles } from 'lucide-react';
+import { ChevronDown, Eye, Sparkles, BookOpen, Wand2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize';
+import { useNetwork } from '@/contexts/NetworkContext';
+import { ImmersiveSection } from './ImmersiveSection';
 
 interface ProgressiveContentProps {
   content: string;
   subjectName?: string;
   className?: string;
   showProgressBar?: boolean;
+  /** Enable toggle for immersive reading mode */
+  enableImmersiveMode?: boolean;
 }
 
 export const ProgressiveContent = ({
   content,
   subjectName = '',
   className,
-  showProgressBar = true
+  showProgressBar = true,
+  enableImmersiveMode = false
 }: ProgressiveContentProps) => {
   const isMath = isMathSubject(subjectName);
-  
+  const { shouldShowAnimations, loadingStrategy } = useNetwork();
+
+  // Auto-disable immersive mode on slow connections
+  const canUseImmersive = enableImmersiveMode && shouldShowAnimations;
+  const [isImmersive, setIsImmersive] = useState(false);
+
   // Parse content into sections
   const sections = useMemo(() => {
     if (typeof window === 'undefined') return [];
@@ -43,7 +53,7 @@ export const ProgressiveContent = ({
     initialVisibleSections: 1
   });
 
-  // If no sections or just one, render normally
+  // If no sections or just one, render normally (no immersive needed)
   if (sections.length <= 1) {
     return isMath ? (
       <MathContent content={content} className={className} />
@@ -56,10 +66,11 @@ export const ProgressiveContent = ({
   }
 
   const hasMoreToReveal = revealedCount < totalSections;
+  const activeImmersive = canUseImmersive && isImmersive;
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Progress indicator */}
+      {/* Progress indicator + immersive toggle */}
       {showProgressBar && !showAll && (
         <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
           <div className="flex-1">
@@ -73,15 +84,37 @@ export const ProgressiveContent = ({
             </div>
             <Progress value={progress} className="h-2" />
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={revealAll}
-            className="text-xs gap-1 hover:bg-primary/10"
-          >
-            <Eye className="h-3 w-3" />
-            Tout voir
-          </Button>
+          <div className="flex items-center gap-1">
+            {/* Immersive mode toggle — hidden on slow connections */}
+            {canUseImmersive && (
+              <Button
+                variant={isImmersive ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setIsImmersive(prev => !prev)}
+                className={cn(
+                  "text-xs gap-1 h-7 px-2",
+                  isImmersive
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-primary/10"
+                )}
+                title={isImmersive ? "Mode classique" : "Mode immersif"}
+              >
+                <Wand2 className="h-3 w-3" />
+                <span className="hidden sm:inline">
+                  {isImmersive ? 'Immersif' : 'Classique'}
+                </span>
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={revealAll}
+              className="text-xs gap-1 hover:bg-primary/10 h-7 px-2"
+            >
+              <Eye className="h-3 w-3" />
+              <span className="hidden sm:inline">Tout voir</span>
+            </Button>
+          </div>
         </div>
       )}
 
@@ -99,11 +132,20 @@ export const ProgressiveContent = ({
                   ref={(el) => registerSection(section.id, el)}
                   data-section-id={section.id}
                   className={cn(
-                    "animate-fade-in transition-all duration-500",
+                    !activeImmersive && "animate-fade-in transition-all duration-500",
                     section.type === 'heading' && "mt-6 first:mt-0"
                   )}
                 >
-                  {isMath ? (
+                  {activeImmersive ? (
+                    /* Immersive mode: animated section wrapper */
+                    <ImmersiveSection
+                      content={section.content}
+                      type={section.type}
+                      isMath={isMath}
+                      delay={index * 80}
+                      loadingStrategy={loadingStrategy}
+                    />
+                  ) : isMath ? (
                     <MathContent content={section.content} />
                   ) : (
                     <div 
@@ -117,7 +159,6 @@ export const ProgressiveContent = ({
               {/* Blur preview for next unrevealed section */}
               {isNext && !showAll && (
                 <div className="relative overflow-hidden rounded-lg">
-                  {/* Blurred preview */}
                   <div 
                     className="blur-sm opacity-40 select-none pointer-events-none max-h-24 overflow-hidden"
                     aria-hidden="true"
@@ -132,10 +173,8 @@ export const ProgressiveContent = ({
                     )}
                   </div>
                   
-                  {/* Gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/80 to-background" />
                   
-                  {/* Continue reading prompt */}
                   <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center gap-2 pb-4">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Sparkles className="h-4 w-4 text-primary animate-pulse" />
@@ -158,7 +197,7 @@ export const ProgressiveContent = ({
         })}
       </div>
 
-      {/* Show more button at the bottom if there are hidden sections */}
+      {/* Show more button at the bottom */}
       {hasMoreToReveal && !showAll && revealedCount > 0 && (
         <div className="flex justify-center pt-4">
           <Button
