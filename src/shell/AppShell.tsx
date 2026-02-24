@@ -29,6 +29,7 @@ import { useKeyboardOpen } from '@/hooks/useKeyboardOpen';
 import { useMessageSounds } from '@/hooks/useMessageSounds';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useThemeSync } from '@/hooks/useThemeSync';
 
 // Components
 import { AppSidebar } from './components/AppSidebar';
@@ -73,6 +74,9 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
   // Sound hooks
   const { playReceiveSound } = useMessageSounds();
   const { playNotificationSound } = useNotificationSound();
+  
+  // Sync theme preference to/from database for cross-device persistence
+  useThemeSync();
   
   // Ref for pathname — used inside realtime callbacks to avoid re-subscribing on navigation
   const pathnameRef = useRef(location.pathname);

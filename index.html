@@ -44,11 +44,11 @@
     <style>
       /* Critical above-the-fold styles */
       *, *::before, *::after { box-sizing: border-box; }
-      body { font-family: system-ui, -apple-system, sans-serif; margin: 0; background: #ffffff; color: #0a0a0a; }
+      body { font-family: system-ui, -apple-system, sans-serif; margin: 0; background: var(--background, #ffffff); color: var(--foreground, #0a0a0a); }
       #root { min-height: 100vh; }
       
       /* Header critical styles */
-      header { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+      header { position: sticky; top: 0; z-index: 50; background: var(--card, rgba(255,255,255,0.95)); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); }
       header > div { max-width: 1280px; margin: 0 auto; padding: 0.5rem 1rem; display: flex; justify-content: space-between; align-items: center; }
       header a { display: flex; align-items: center; gap: 0.375rem; text-decoration: none; }
       header img { height: 2rem; width: auto; object-fit: contain; }
@@ -118,6 +118,19 @@
     }
     </script>
     
+    <!-- FOUT prevention — apply dark class before first paint -->
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('edupreneur-theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (theme === '"dark"' || theme === 'dark' || ((!theme || theme === '"system"' || theme === 'system') && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch(e) {}
+      })();
+    </script>
+    
     <!-- Structured Data - WebSite -->
     <script type="application/ld+json">
     {
@@ -138,7 +151,7 @@
   <body>
     <div id="root">
       <!-- Static HTML shell - visible immediately (0ms) before React hydrates -->
-      <header style="position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,0,0,0.05);">
+      <header style="position:sticky;top:0;z-index:50;background:var(--card, rgba(255,255,255,0.95));backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,0,0,0.05);">
         <div style="max-width:1280px;margin:0 auto;padding:0.5rem 1rem;display:flex;justify-content:space-between;align-items:center;">
           <a href="/" style="display:flex;align-items:center;gap:0.5rem;text-decoration:none;">
             <img src="/images/edupreneurs-new-logo.webp" alt="Edupreneurs" height="32" width="48" style="height:2rem;width:auto;" fetchpriority="high" />

@@ -7,6 +7,8 @@
 
 import { memo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { Sun, Moon } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { useVisibility } from '../hooks/useVisibility';
 import { useKeyboardOpen } from '@/hooks/useKeyboardOpen';
@@ -37,6 +39,10 @@ export const ShellMobileBottomNav = memo(function ShellMobileBottomNav() {
   
   // Push permission hint — amber dot on notification bell (Plan C)
   const showPushHint = isPushHintVisible();
+  
+  // Theme toggle for compact icon button
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === 'dark';
   
   // Don't render if hidden by visibility rules or keyboard is open
   if (!showBottomNav) {
@@ -119,6 +125,16 @@ export const ShellMobileBottomNav = memo(function ShellMobileBottomNav() {
             </Link>
           );
         })}
+        
+        {/* Compact theme toggle — not a nav item, avoids crowding */}
+        <button
+          onClick={() => setTheme(isDark ? 'light' : 'dark')}
+          className="flex flex-col items-center justify-center w-10 h-full text-muted-foreground hover:text-foreground transition-colors duration-200"
+          aria-label={isDark ? 'Mode clair' : 'Mode sombre'}
+        >
+          {isDark ? <Sun size={20} /> : <Moon size={20} />}
+          <span className="text-[10px] mt-0.5 font-medium">Thème</span>
+        </button>
       </div>
     </nav>
   );

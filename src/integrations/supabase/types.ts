@@ -3042,6 +3042,7 @@ export type Database = {
           sent_onboarding_emails: Json | null
           subscription_end_date: string | null
           subscription_status: string
+          theme_preference: string | null
           updated_at: string | null
           user_id: string
           verified: boolean | null
@@ -3082,6 +3083,7 @@ export type Database = {
           sent_onboarding_emails?: Json | null
           subscription_end_date?: string | null
           subscription_status?: string
+          theme_preference?: string | null
           updated_at?: string | null
           user_id: string
           verified?: boolean | null
@@ -3122,6 +3124,7 @@ export type Database = {
           sent_onboarding_emails?: Json | null
           subscription_end_date?: string | null
           subscription_status?: string
+          theme_preference?: string | null
           updated_at?: string | null
           user_id?: string
           verified?: boolean | null

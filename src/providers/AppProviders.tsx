@@ -115,12 +115,13 @@ export function AppProviders({ children }: AppProvidersProps) {
     <QueryClientProvider client={queryClient}>
       <SessionAuthProvider>
         <NetworkProvider>
-          <ThemeProvider 
-            attribute="class" 
-            defaultTheme="light" 
-            enableSystem={false} 
-            forcedTheme={undefined}
-          >
+            <ThemeProvider 
+              attribute="class" 
+              defaultTheme="system" 
+              enableSystem={true} 
+              storageKey="edupreneur-theme"
+              forcedTheme={undefined}
+            >
             <UIProviders>
               <BrowserRouter>
                 <FeatureProviders>
