@@ -1,14 +1,18 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-// Node styles control visual rendering in the studygram grid
+// Node styles control visual rendering — "mindmap" for connected visual nodes
 export interface StudygramNode {
   text: string;
-  style: 'highlight' | 'outline' | 'plain' | 'quote';
+  style: 'highlight' | 'outline' | 'plain' | 'quote' | 'mindmap';
 }
 
-// Each section groups related key points under a thematic colored heading
+// Fixed section types for the 4-block pedagogical structure
+export type StudygramSectionType = 'explicatif' | 'approfondissement' | 'a_retenir' | 'resume_visuel';
+
+// Each section has a fixed pedagogical role identified by type
 export interface StudygramSection {
+  type: StudygramSectionType;
   heading: string;
   color: 'blue' | 'pink' | 'green' | 'purple' | 'amber' | 'rose';
   emoji: string;
@@ -47,7 +51,8 @@ interface UseStudygramVisualResult {
   regenerate: () => void;
 }
 
-const CACHE_VERSION = 'v1';
+// Bumped to v2 — new 4-block structure invalidates old v1 cache
+const CACHE_VERSION = 'v2';
 const STALE_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7-day cache window
 
 // Separate cache key from Points Clés to avoid collisions
@@ -88,7 +93,7 @@ function isStale(generatedAt: string): boolean {
 }
 
 /**
- * Hook for AI-generated visual studygram (mind-map style revision sheet).
+ * Hook for AI-generated visual studygram (4-block pedagogical revision sheet).
  * Cache-first, lazy generation — same pattern as usePointsClesCards.
  */
 export function useStudygramVisual(
