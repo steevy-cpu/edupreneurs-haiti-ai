@@ -1,116 +1,116 @@
 
 
-# Ajouter un nouvel onglet "Studygram" (fiche visuelle)
+# Transformer le Studygram en fiche de revision structuree
 
-L'onglet "Points Cles" existant reste intact. On ajoute un **7e onglet** "Studygram" qui affiche une fiche de revision visuelle style carte mentale, avec des sections colorees et des boites thematiques (comme sur l'image de reference).
+## Ce qui change
 
-## Ce qui change pour l'utilisateur
+Le Studygram passe d'un format libre (3-5 sections thematiques quelconques) a une **structure pedagogique fixe en 4 blocs** :
 
-- Un nouvel onglet **"Studygram"** (desktop) / **"Study"** (mobile) apparait entre "Points Cles" et "Activites"
-- En cliquant dessus, l'IA genere une fiche visuelle structuree en sections colorees avec des noeuds de texte
-- Le contenu est cache en localStorage pendant 7 jours (meme logique que Points Cles)
-- L'onglet "Points Cles" existant ne change pas du tout
+1. **Bloc explicatif synthetique** (bleu) -- Definition principale + 3-5 idees cles + exemple concret
+2. **Approfondissement** (violet) -- Theories/formules/dates/auteurs + schema/carte mentale + comparaisons
+3. **A retenir** (vert) -- 5 points essentiels + formule/citation cle + astuce de memorisation
+4. **Resume visuel** (rose) -- Carte mentale automatique sous forme de noeuds relies
 
-## Fichiers a creer (3 nouveaux)
+## Fichiers a modifier (3 fichiers, 0 nouveau)
 
-### 1. Edge function: `supabase/functions/generate-studygram-visual/index.ts`
-- Copie la structure de `generate-studygram` (rate limiting, auth, validation, AI gateway)
-- Prompt AI modifie pour generer un format **sections + nodes** au lieu de flashcards simples :
+### 1. Edge function : `supabase/functions/generate-studygram-visual/index.ts`
 
+**Changement du prompt AI :**
+- Le prompt demandera exactement **4 sections fixes** avec des roles precis au lieu de sections libres
+- Chaque section a un `type` obligatoire : `"explicatif"`, `"approfondissement"`, `"a_retenir"`, `"resume_visuel"`
+- Le schema Zod sera mis a jour : sections passe de `min(3).max(5)` a `length(4)` avec le champ `type`
+- Les nodes de la section "resume_visuel" auront un style special `"mindmap"` pour les relier visuellement
+- Le prompt s'adaptera a la matiere (formules pour maths/physique, dates pour histoire, auteurs pour philo/francais)
+
+**Nouveau schema de section :**
 ```text
 {
-  "title": "La conscience",
-  "subtitle": "Philo - Terminale",
-  "sections": [
-    {
-      "heading": "Qu'est-ce que la conscience ?",
-      "color": "blue",
-      "emoji": "?",
-      "nodes": [
-        { "text": "La conscience morale...", "style": "highlight" },
-        { "text": "3 realites distinctes", "style": "outline" }
-      ]
-    }
+  "type": "explicatif",
+  "heading": "Bloc Explicatif",
+  "color": "blue",
+  "emoji": "📖",
+  "nodes": [
+    { "text": "Definition: ...", "style": "highlight" },
+    { "text": "Idee cle 1", "style": "outline" },
+    { "text": "Exemple: ...", "style": "quote" }
   ]
 }
 ```
 
-- Validation Zod stricte : 3-5 sections, 2-5 nodes par section
-- Couleurs limitees a : blue, pink, green, purple, amber, rose
-- Styles de nodes : highlight, outline, plain, quote
+**Nouveau style de node ajoute :** `"mindmap"` -- pour les noeuds de la section resume visuel (connectes visuellement)
 
-### 2. Hook: `src/features/matieres/hooks/useStudygramVisual.ts`
-- Meme pattern que `usePointsClesCards.ts` : cache localStorage, lazy generation, abort controller
-- Cache key: `ai_studygram_visual_${lessonId}_v1`
-- Appelle l'edge function `generate-studygram-visual`
-- Exporte les types `StudygramSection`, `StudygramNode`, `StudygramData`
+### 2. Hook : `src/features/matieres/hooks/useStudygramVisual.ts`
 
-### 3. Composant: `src/features/matieres/components/tabs/LessonStudygramTab.tsx`
-- Affiche la fiche visuelle en grille responsive
-- Layout : titre central + sections colorees en grid 2 colonnes (desktop) / 1 colonne (mobile)
-- Chaque section : heading colore sur fond pastel + liste de nodes avec styles varies
-- Mapping couleurs light/dark adaptes :
+- Ajouter le type `"mindmap"` aux styles possibles de `StudygramNode`
+- Ajouter le champ `type` a l'interface `StudygramSection`
+- Bump du cache key a `v2` car la structure change (l'ancien cache `v1` sera ignore)
 
-| Couleur | Light | Dark |
-|---------|-------|------|
-| blue | bg-blue-50 border-blue-200 | dark:bg-blue-950/40 dark:border-blue-800 |
-| pink | bg-pink-50 border-pink-200 | dark:bg-pink-950/40 dark:border-pink-800 |
-| green | bg-emerald-50 border-emerald-200 | dark:bg-emerald-950/40 dark:border-emerald-800 |
-| purple | bg-purple-50 border-purple-200 | dark:bg-purple-950/40 dark:border-purple-800 |
-| amber | bg-amber-50 border-amber-200 | dark:bg-amber-950/40 dark:border-amber-800 |
-| rose | bg-rose-50 border-rose-200 | dark:bg-rose-950/40 dark:border-rose-800 |
+### 3. Composant : `src/features/matieres/components/tabs/LessonStudygramTab.tsx`
 
-- Etats : loading skeleton, erreur, vide, stale banner, bouton regenerer
-- Pas de carousel / embla — tout en CSS grid + Tailwind
+- Nouveau rendu pour le style `"mindmap"` : noeud central avec fleches/lignes vers les sous-noeuds (en CSS pur, pas de librairie)
+- La section "A retenir" aura un encadre special avec une bordure plus epaisse et une icone etoile
+- La section "Approfondissement" affichera les formules en gras et les comparaisons dans un layout side-by-side si detectees
+- Layout reste en grid 2 colonnes desktop / 1 colonne mobile
+- Les 4 sections auront des couleurs fixes (bleu, violet, vert, rose) au lieu de couleurs aleatoires
 
-## Fichiers a modifier (2 existants)
-
-### 4. `src/features/matieres/components/tabs/index.ts`
-- Ajouter l'export `LessonStudygramTab`
-
-### 5. `src/components/LessonPageTemplate.tsx`
-- Importer `LessonStudygramTab` et l'icone `Layers` de lucide-react
-- Ajouter le 7e TabsTrigger (value="studygram", label "Studygram" / "Study")
-- Ajouter le 7e TabsContent avec les memes props que Points Cles
-- Ajuster la grille des onglets : `grid-cols-4 md:grid-cols-7` pour accommoder 7 onglets
-- Ajouter `getTabStatus('studygram')` (suit la meme logique "viewed")
-
-## Rendu visuel du Studygram
+## Rendu visuel attendu
 
 ```text
 +-----------------------------------------------+
-|     [emoji] Titre de la lecon                  |
-|     Matiere - Niveau                           |
-+-------------------+---------------------------+
-| [emoji] Section 1 | [emoji] Section 2         |
-| bg-blue-50        | bg-pink-50                |
-|  * node highlight |  * node outline           |
-|  * node outline   |  * node highlight         |
-|  * node plain     |  * node quote             |
-+-------------------+---------------------------+
-| [emoji] Section 3                             |
-| bg-green-50                                   |
-|  * node highlight  * node plain               |
-+-----------------------------------------------+
-|              [Regenerer]                       |
+|           Titre de la lecon                    |
+|           Matiere - Niveau                     |
++------------------------+----------------------+
+| [book] Bloc Explicatif | [search] Approfondir |
+| bg-blue-50             | bg-purple-50         |
+|  Definition principale |  Formule / Theorie   |
+|  * Idee cle 1          |  * Auteur / Date     |
+|  * Idee cle 2          |  * Comparaison A/B   |
+|  * Idee cle 3          |  * Detail technique  |
+|  Exemple concret       |                      |
++------------------------+----------------------+
+| [star] A Retenir       | [brain] Resume       |
+| bg-emerald-50          | bg-rose-50           |
+| bordure epaisse        |                      |
+|  1. Point essentiel    |    [concept central] |
+|  2. Point essentiel    |    /    |    \        |
+|  3. Point essentiel    |  [A]  [B]  [C]       |
+|  Citation / Formule    |                      |
+|  Astuce memorisation   |                      |
++------------------------+----------------------+
+|           [Regenerer le studygram]             |
 +-----------------------------------------------+
 ```
-
-## Ce qui ne change PAS
-
-- L'onglet "Points Cles" (flashcards carousel) reste identique
-- L'edge function `generate-studygram` existante n'est pas modifiee
-- Aucune modification de base de donnees
-- Aucune nouvelle dependance npm
 
 ## Verification securite
 
 | Check | Resultat |
 |-------|----------|
-| Fonctionnalite existante cassee? | Non — ajout uniquement |
+| Fonctionnalite existante cassee? | Non -- meme composant, nouvelle structure |
 | Provider stack / AppShell? | Pas touche |
-| Nouvelles dependances npm? | Non |
-| Bundle size | Leger ajout (1 composant + 1 hook) |
-| Performance 3G | OK — lazy generation, cache localStorage 7j |
-| Edge function cold start | Gere — skeleton loading pendant generation |
-| RLS / securite | Rate limiting + auth sur la nouvelle edge function |
+| Nouvelles dependances? | Non -- tout en CSS/Tailwind |
+| Bundle size | Identique |
+| Performance 3G | Identique -- cache localStorage 7j |
+| Cache ancien | Ignore naturellement (cache key v1 vs v2) |
+| Edge function cold start | Gere -- skeleton loading |
+| RLS / securite | Inchange -- meme rate limiting + auth |
+
+## Details techniques
+
+### Nouveau schema Zod (edge function)
+
+Le champ `type` est ajoute au schema de section :
+- `z.enum(["explicatif", "approfondissement", "a_retenir", "resume_visuel"])`
+- Les sections sont validees a exactement 4 elements
+- Le style `"mindmap"` est ajoute aux styles de nodes possibles
+
+### Rendu CSS du mindmap (composant)
+
+La section "resume visuel" utilise un layout flex avec des lignes CSS (`border` + `::before`/`::after` pseudo-elements) pour connecter visuellement le noeud central aux sous-noeuds. Pas de librairie de graphe -- tout en Tailwind + CSS natif.
+
+### Adaptation par matiere (prompt AI)
+
+Le prompt inclura une instruction conditionnelle selon la matiere :
+- Maths/Physique/Chimie : formules, unites, schemas
+- Histoire/Geographie : dates, lieux, evenements
+- Philosophie/Francais : auteurs, citations, courants
+- Langues : regles grammaticales, vocabulaire, exemples d'usage
