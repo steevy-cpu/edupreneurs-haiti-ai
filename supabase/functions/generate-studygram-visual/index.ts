@@ -82,6 +82,34 @@ function getSubjectHint(subject: string): string {
   return "Adapte le contenu à la matière. Utilise le style 'mindmap' pour le résumé visuel.";
 }
 
+// Sanitize AI output before Zod validation — truncate overlong fields gracefully
+function sanitizeParsedData(data: Record<string, unknown>): void {
+  if (!data || !Array.isArray(data.sections)) return;
+
+  // Cap title and subtitle lengths
+  if (typeof data.title === "string" && data.title.length > 198) {
+    data.title = data.title.slice(0, 195) + "...";
+  }
+  if (typeof data.subtitle === "string" && data.subtitle.length > 98) {
+    data.subtitle = data.subtitle.slice(0, 95) + "...";
+  }
+
+  for (const section of data.sections) {
+    // Truncate heading to stay within 80-char Zod max
+    if (typeof section.heading === "string" && section.heading.length > 78) {
+      section.heading = section.heading.slice(0, 75) + "...";
+    }
+    // Truncate node text to stay within 300-char Zod max
+    if (Array.isArray(section.nodes)) {
+      for (const node of section.nodes) {
+        if (typeof node.text === "string" && node.text.length > 295) {
+          node.text = node.text.slice(0, 292) + "...";
+        }
+      }
+    }
+  }
+}
+
 serve(async (req) => {
   // CORS preflight
   if (req.method === "OPTIONS") {
@@ -159,7 +187,7 @@ STRUCTURE OBLIGATOIRE — exactement 4 sections dans cet ordre :
 RÈGLES :
 - Le contenu doit être en français, adapté au niveau ${gradeLevel}
 - Utilise des exemples concrets liés à Haïti quand c'est pertinent
-- Chaque node fait 10-50 mots maximum
+- Chaque node fait 10-40 mots maximum (200 caractères max)
 - Les headings font maximum 8 mots
 - Tu dois répondre UNIQUEMENT avec un objet JSON valide, sans texte avant ni après.`;
 
@@ -233,62 +261,86 @@ Réponds avec un objet JSON au format :
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-      }),
-    });
+    // Retry loop — 1 automatic retry on parse/validation failure
+    const MAX_ATTEMPTS = 2;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          // Force valid JSON output — prevents markdown wrapping and truncation
+          response_format: { type: "json_object" },
+          // Ensure enough output budget for the full 4-section structure
+          max_tokens: 4096,
+        }),
+      });
 
-    if (!aiResponse.ok) {
-      const status = aiResponse.status;
-      if (status === 429) {
-        return secureErrorResponse("Limite IA atteinte. Réessayez plus tard.", 429);
+      if (!aiResponse.ok) {
+        const status = aiResponse.status;
+        if (status === 429) {
+          return secureErrorResponse("Limite IA atteinte. Réessayez plus tard.", 429);
+        }
+        if (status === 402) {
+          return secureErrorResponse("Crédits IA épuisés.", 402);
+        }
+        console.error(`[generate-studygram-visual] AI gateway error (attempt ${attempt}):`, status, await aiResponse.text());
+        // Don't retry on non-transient AI gateway errors
+        throw new Error("AI gateway error");
       }
-      if (status === 402) {
-        return secureErrorResponse("Crédits IA épuisés.", 402);
+
+      const aiData = await aiResponse.json();
+      const rawContent = aiData.choices?.[0]?.message?.content || "";
+
+      // Parse JSON from AI response — handle markdown code fences as fallback
+      let jsonStr = rawContent.trim();
+      const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (fenceMatch) {
+        jsonStr = fenceMatch[1].trim();
       }
-      console.error("[generate-studygram-visual] AI gateway error:", status, await aiResponse.text());
-      throw new Error("AI gateway error");
+
+      let parsedData;
+      try {
+        parsedData = JSON.parse(jsonStr);
+      } catch {
+        console.error(`[generate-studygram-visual] Failed to parse AI JSON (attempt ${attempt}):`, jsonStr.slice(0, 200));
+        // Retry on parse failure
+        if (attempt < MAX_ATTEMPTS) continue;
+        return secureErrorResponse("La réponse IA est invalide. Réessayez.", 500);
+      }
+
+      // Sanitize — truncate overlong nodes/headings before validation
+      sanitizeParsedData(parsedData);
+
+      // Validate structure with Zod
+      const studygramValidation = studygramSchema.safeParse(parsedData);
+      if (!studygramValidation.success) {
+        console.error(`[generate-studygram-visual] Validation failed (attempt ${attempt}):`, studygramValidation.error.issues);
+        // Retry on validation failure
+        if (attempt < MAX_ATTEMPTS) continue;
+        return secureErrorResponse("Le studygram généré est invalide. Réessayez.", 500);
+      }
+
+      // Success — log attempt number for observability
+      if (attempt > 1) {
+        console.log(`[generate-studygram-visual] Succeeded on attempt ${attempt}`);
+      }
+
+      return secureJsonResponse({
+        success: true,
+        studygram: studygramValidation.data,
+      });
     }
 
-    const aiData = await aiResponse.json();
-    const rawContent = aiData.choices?.[0]?.message?.content || "";
-
-    // Parse JSON from AI response — handle markdown code fences
-    let jsonStr = rawContent.trim();
-    const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (fenceMatch) {
-      jsonStr = fenceMatch[1].trim();
-    }
-
-    let parsedData;
-    try {
-      parsedData = JSON.parse(jsonStr);
-    } catch {
-      console.error("[generate-studygram-visual] Failed to parse AI JSON:", jsonStr.slice(0, 200));
-      return secureErrorResponse("La réponse IA est invalide. Réessayez.", 500);
-    }
-
-    // Validate structure with Zod
-    const studygramValidation = studygramSchema.safeParse(parsedData);
-    if (!studygramValidation.success) {
-      console.error("[generate-studygram-visual] Validation failed:", studygramValidation.error.issues);
-      return secureErrorResponse("Le studygram généré est invalide. Réessayez.", 500);
-    }
-
-    return secureJsonResponse({
-      success: true,
-      studygram: studygramValidation.data,
-    });
+    // Fallback — should not reach here due to loop logic
+    return secureErrorResponse("Erreur interne inattendue.", 500);
   } catch (error) {
     console.error("[generate-studygram-visual] Error:", error);
     return secureErrorResponse(
