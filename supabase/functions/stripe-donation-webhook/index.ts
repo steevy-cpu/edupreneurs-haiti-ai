@@ -7,7 +7,7 @@
  * the thank-you email via the send-donation-thank-you edge function.
  *
  * PUBLIC endpoint — Stripe sends webhooks without auth.
- * Requires STRIPE_WEBHOOK_SECRET_DONATION for signature verification.
+ * Requires STRIPE_WEBHOOK_SECRET_GIFT for signature verification (shared with gift webhook).
  */
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
