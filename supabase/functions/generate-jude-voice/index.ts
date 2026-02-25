@@ -82,8 +82,8 @@ serve(async (req) => {
     const body = await req.json();
     const { text, storageKey, context } = body;
 
-    if (!text || typeof text !== 'string' || text.length > 500) {
-      return new Response(JSON.stringify({ error: 'text required, max 500 chars' }), {
+    if (!text || typeof text !== 'string' || text.length > 1000) {
+      return new Response(JSON.stringify({ error: 'text required, max 1000 chars' }), {
         status: 400,
         headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' },
       });
