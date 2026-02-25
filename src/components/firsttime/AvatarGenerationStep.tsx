@@ -9,11 +9,16 @@ import { useFirstTimeUser } from '@/contexts/FirstTimeUserContext';
 import { AIAvatarGenerator } from '@/components/AIAvatarGenerator';
 import { useNetworkAwareAnimations } from '@/hooks/useNetworkAwareAnimations';
 import { preloadImage } from '@/utils/performanceOptimization';
+import { useJudeAudio } from '@/contexts/JudeAudioContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const AvatarGenerationStep = () => {
   // STABILITY GUARD: Use safe context access pattern to prevent null dispatcher errors
   const firstTimeUser = useFirstTimeUser();
   const { shouldAnimate, shouldShowGlow } = useNetworkAwareAnimations();
+  // Voice — fire-and-forget TTS for avatar prompt and celebration
+  const { speak, stop } = useJudeAudio();
+  const isMuted = typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true';
   
   // Track mount stability to prevent errors during navigation transitions
   const [isStable, setIsStable] = useState(false);
@@ -36,6 +41,35 @@ const AvatarGenerationStep = () => {
     preloadImage(ericStudentDesk).catch(() => {});
     preloadImage(ericThumbUp).catch(() => {});
   }, []);
+
+  // Voice the avatar prompt on mount — fire-and-forget, cached permanently in CDN
+  useEffect(() => {
+    if (isMuted) return;
+    supabase.functions.invoke('generate-jude-voice', {
+      body: {
+        text: "Maintenant, créons ton avatar personnalisé avec l'IA!",
+        storageKey: 'onboarding/avatar-prompt',
+        context: 'onboarding'
+      }
+    }).then(({ data }) => {
+      if (data?.url) speak(data.url);
+    }).catch(() => {}); // silent fail — typing sounds as fallback
+    return () => stop();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Voice the celebration when avatar is generated
+  useEffect(() => {
+    if (!celebrating || isMuted) return;
+    supabase.functions.invoke('generate-jude-voice', {
+      body: {
+        text: 'Superbe avatar! Bienvenue dans la famille Edupreneurs!',
+        storageKey: 'onboarding/avatar-celebration',
+        context: 'onboarding'
+      }
+    }).then(({ data }) => {
+      if (data?.url) speak(data.url);
+    }).catch(() => {});
+  }, [celebrating]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAvatarGenerated = (avatarUrl: string) => {
     setShowAvatarDialog(false);
@@ -124,7 +158,7 @@ const AvatarGenerationStep = () => {
                           text="Maintenant, créons ton avatar personnalisé avec l'IA! 🎨✨"
                           speed={60}
                           onComplete={() => setTextComplete(true)}
-                          enableSound
+                          enableSound={isMuted}
                           soundVolume={0.06}
                         />
                       </p>
