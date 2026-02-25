@@ -209,22 +209,10 @@ function MindMapSectionCluster({ section, lessonId }: { section: StudygramSectio
         )}
       </div>
 
-      {/* Branching node tree — À Retenir nodes get per-node speaker buttons */}
+      {/* Branching node tree — all nodes use standard BranchNode layout */}
       <div className="p-3 pl-5">
         {section.nodes.map((node, i) => (
-          isRetenir ? (
-            /* Flex row: branch node + speaker button for À Retenir */
-            <div key={i} className="flex items-center gap-1">
-              <div className="flex-1 min-w-0">
-                <BranchNode node={node} sectionType={section.type} isLast={i === section.nodes.length - 1} />
-              </div>
-              <div className="flex-shrink-0 self-center">
-                <JudeSpeakerButton text={node.text} storageKey={`studygram/${lessonId}-retenir-${i}`} />
-              </div>
-            </div>
-          ) : (
-            <BranchNode key={i} node={node} sectionType={section.type} isLast={i === section.nodes.length - 1} />
-          )
+          <BranchNode key={i} node={node} sectionType={section.type} isLast={i === section.nodes.length - 1} />
         ))}
       </div>
     </div>

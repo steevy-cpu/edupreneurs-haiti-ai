@@ -10,7 +10,7 @@ import {
   CarouselNext,
   type CarouselApi,
 } from '@/components/ui/carousel';
-import { RefreshCw, AlertCircle, Sparkles, ChevronRight, BookOpen, Lightbulb, Calculator, Star, Volume2, VolumeX, Square, Loader2 } from 'lucide-react';
+import { RefreshCw, AlertCircle, Sparkles, ChevronRight, BookOpen, Lightbulb, Calculator, Star, Volume2, Square, Loader2 } from 'lucide-react';
 import { usePointsClesCards, type PointsClesCard } from '@/features/matieres/hooks/usePointsClesCards';
 import { useJudeVoice } from '@/hooks/useJudeVoice';
 import { JudeGeneratingOverlay } from '@/components/jude/JudeGeneratingOverlay';
@@ -103,12 +103,8 @@ function JudeSpeakerButton({ text, storageKey }: { text: string; storageKey: str
     autoPreload: true,
   });
 
-  // Error state — dimmed icon, non-interactive
-  if (isError) return (
-    <button className="opacity-40 cursor-not-allowed p-2" disabled aria-label="Erreur audio">
-      <VolumeX className="h-4 w-4 text-white/60" />
-    </button>
-  );
+  // Error state — hide button entirely when voice service is unavailable
+  if (isError) return null;
 
   return (
     <button
