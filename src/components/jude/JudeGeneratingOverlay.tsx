@@ -6,7 +6,7 @@
  * Includes a subtle synthesized typing sound effect via Web Audio API.
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, forwardRef } from "react";
 import judeChairDesk from "@/assets/eric-chair-desk.png";
 
 interface JudeGeneratingOverlayProps {
@@ -14,7 +14,8 @@ interface JudeGeneratingOverlayProps {
   message: string;
 }
 
-export function JudeGeneratingOverlay({ isVisible, message }: JudeGeneratingOverlayProps) {
+// Wrapped in forwardRef so Radix Presence (TabsContent) can attach its ref
+export const JudeGeneratingOverlay = forwardRef<HTMLDivElement, JudeGeneratingOverlayProps>(function JudeGeneratingOverlay({ isVisible, message }, ref) {
   const audioContextRef = useRef<AudioContext | null>(null);
   const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const keystrokeCountRef = useRef(0);
@@ -105,7 +106,7 @@ export function JudeGeneratingOverlay({ isVisible, message }: JudeGeneratingOver
   if (!isVisible) return null;
   
   return (
-    <div className="min-h-[200px] flex flex-col items-center justify-center p-6">
+    <div ref={ref} className="min-h-[200px] flex flex-col items-center justify-center p-6">
       {/* Jude at desk with pulse animation */}
       <div className="relative mb-4">
         <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl animate-pulse" />
@@ -143,4 +144,4 @@ export function JudeGeneratingOverlay({ isVisible, message }: JudeGeneratingOver
       </div>
     </div>
   );
-}
+});
