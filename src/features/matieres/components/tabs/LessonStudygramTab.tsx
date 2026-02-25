@@ -1,9 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { RefreshCw, AlertCircle, Sparkles, Star } from 'lucide-react';
+import { RefreshCw, AlertCircle, Sparkles, Star, Volume2, VolumeX, Square, Loader2 } from 'lucide-react';
 import { MathText } from '@/components/MathContent';
 import { JudeGeneratingOverlay } from '@/components/jude/JudeGeneratingOverlay';
+import { useJudeVoice } from '@/hooks/useJudeVoice';
 import {
   useStudygramVisual,
   type StudygramSection,
@@ -78,6 +79,39 @@ function getColors(type: string) {
   return SECTION_COLORS[type] ?? SECTION_COLORS.explicatif;
 }
 
+/* ── JudeSpeakerButton — emerald-themed voice button for À Retenir nodes ── */
+function JudeSpeakerButton({ text, storageKey }: { text: string; storageKey: string }) {
+  const { play, stop, isSpeaking, isLoading, isError } = useJudeVoice({
+    text,
+    storageKey,
+    context: 'studygram',
+    autoPreload: true,
+  });
+
+  /* Error state — disabled icon */
+  if (isError) return (
+    <button className="opacity-40 cursor-not-allowed p-1.5" disabled aria-label="Erreur audio">
+      <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />
+    </button>
+  );
+
+  return (
+    <button
+      onClick={isSpeaking ? stop : play}
+      className="p-1.5 rounded-full bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/40 dark:hover:bg-emerald-800/40 transition-colors"
+      aria-label={isSpeaking ? 'Arrêter' : 'Écouter'}
+    >
+      {isLoading ? (
+        <Loader2 className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-300 animate-spin" />
+      ) : isSpeaking ? (
+        <Square className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-300 fill-current" />
+      ) : (
+        <Volume2 className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-300" />
+      )}
+    </button>
+  );
+}
+
 /* ── MindMapNode — renders a single node with shape based on style ── */
 function MindMapNode({ node, sectionType }: { node: StudygramNode; sectionType: string }) {
   const colors = getColors(sectionType);
@@ -149,7 +183,7 @@ function BranchNode({ node, sectionType, isLast }: { node: StudygramNode; sectio
 }
 
 /* ── MindMapSectionCluster — header bubble + branching nodes ── */
-function MindMapSectionCluster({ section }: { section: StudygramSection }) {
+function MindMapSectionCluster({ section, lessonId }: { section: StudygramSection; lessonId: string }) {
   const colors = getColors(section.type);
   const isRetenir = section.type === 'a_retenir';
   const isResumeVisuel = section.type === 'resume_visuel';
@@ -161,22 +195,36 @@ function MindMapSectionCluster({ section }: { section: StudygramSection }) {
 
   return (
     <div className={`relative rounded-xl ${isRetenir ? 'border-2' : 'border'} ${colors.border} bg-background/50 dark:bg-background/30 overflow-hidden`}>
-      {/* Section header bubble */}
+      {/* Section header bubble — with "read all" speaker for À Retenir */}
       <div className={`${colors.headerBg} text-white px-5 py-2.5 flex items-center gap-2`}>
         {isRetenir && <Star className="h-4 w-4 fill-current shrink-0" />}
         <span className="text-lg select-none">{section.emoji}</span>
-        <h3 className="font-bold text-sm sm:text-base truncate">{section.heading}</h3>
+        <h3 className="font-bold text-sm sm:text-base truncate flex-1">{section.heading}</h3>
+        {/* "Read all" button — reads every À Retenir point in one tap */}
+        {isRetenir && (
+          <JudeSpeakerButton
+            text={section.nodes.map(n => n.text).join('. ')}
+            storageKey={`studygram/${lessonId}-retenir-all`}
+          />
+        )}
       </div>
 
-      {/* Branching node tree */}
+      {/* Branching node tree — À Retenir nodes get per-node speaker buttons */}
       <div className="p-3 pl-5">
         {section.nodes.map((node, i) => (
-          <BranchNode
-            key={i}
-            node={node}
-            sectionType={section.type}
-            isLast={i === section.nodes.length - 1}
-          />
+          isRetenir ? (
+            /* Flex row: branch node + speaker button for À Retenir */
+            <div key={i} className="flex items-center gap-1">
+              <div className="flex-1 min-w-0">
+                <BranchNode node={node} sectionType={section.type} isLast={i === section.nodes.length - 1} />
+              </div>
+              <div className="flex-shrink-0 self-center">
+                <JudeSpeakerButton text={node.text} storageKey={`studygram/${lessonId}-retenir-${i}`} />
+              </div>
+            </div>
+          ) : (
+            <BranchNode key={i} node={node} sectionType={section.type} isLast={i === section.nodes.length - 1} />
+          )
         ))}
       </div>
     </div>
@@ -380,7 +428,7 @@ export function LessonStudygramTab({
       {/* 4-block section grid — 2 cols desktop, 1 col mobile */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {studygram.sections.map((section, i) => (
-          <MindMapSectionCluster key={i} section={section} />
+          <MindMapSectionCluster key={i} section={section} lessonId={lessonId} />
         ))}
       </div>
 
