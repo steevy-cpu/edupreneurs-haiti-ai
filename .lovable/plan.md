@@ -1,160 +1,144 @@
 
 
-# Phase 5: Onboarding Voice Synchronized with Typewriter
+# Phase 6: Visitor Tour Voice Narration
 
 ## Overview
-Two files modified: `SimpleTypewriter.tsx` and `JudeWelcomePopup.tsx`. Jude's voice plays in sync with the typewriter — typing speed is dynamically calculated from audio duration so text finishes as audio ends.
+One file modified: `src/components/visitor/VisitorTour.tsx`. Adds infrastructure for pre-generated audio playback on each tour step, with a mute toggle. No edge function calls during the tour -- visitors are unauthenticated, so audio is served directly from Storage CDN URLs populated later via an admin operation.
 
 ---
 
-## File 1: `src/components/visitor/SimpleTypewriter.tsx`
+## Audit Results
 
-### New prop: `onStart`
-Add an optional `onStart` callback that fires once when the first character begins typing. This lets the parent trigger audio playback at the exact moment text starts appearing.
-
-```typescript
-interface SimpleTypewriterProps {
-  text: string;
-  speed?: number;
-  onComplete?: () => void;
-  onStart?: () => void;  // NEW -- fires when typing begins
-  className?: string;
-  enableSound?: boolean;
-  soundVolume?: number;
-  skipToEnd?: boolean;
-}
-```
-
-### Implementation
-Add a `hasStartedRef` (useRef) to track whether `onStart` has fired. In the main typing useEffect, call `onStart?.()` on the first character render (when `displayedText.length === 0` and we're about to type the first char). The ref prevents double-firing.
-
-No other changes to SimpleTypewriter -- `speed` prop already controls typing delay, so the parent just passes a different `speed` value per message.
+- **12 tour steps** (indices 0-11)
+- Step changes detected via `tourStep` state from `useVisitor()` context
+- Descriptions to be narrated (one per step):
+  0. "Suivez votre progression, vos series de jours d'etude et vos objectifs hebdomadaires..."
+  1. "Etudiez avec de la musique ! Cliquez sur ce bouton flottant..."
+  2. "Points Gold, lecons completees, score et heures d'etude en temps reel..."
+  3. "Accedez aux cours de maths, francais, sciences et plus..."
+  4. "Connectez-vous avec d'autres etudiants, partagez vos succes..."
+  5. "Voyez les meilleurs apprenants et leur progression..."
+  6. "Debloquez des badges en completant des lecons et quiz..."
+  7. "Explorez la musique, les arts, les echecs et la litterature..."
+  8. "Choisissez ce qui vous passionne -- musique, art, echecs..."
+  9. "Jouez aux echecs contre Jude, notre coach IA !..."
+  10. "Discutez en prive avec d'autres etudiants..."
+  11. "Rejoignez une communaute d'eleves haitiens passionnes..."
 
 ---
 
-## File 2: `src/components/visitor/JudeWelcomePopup.tsx`
+## Changes to `src/components/visitor/VisitorTour.tsx`
 
-### New imports
-- `import { useRef } from 'react'` (add to existing React import)
-- `import { useSessionAuth } from '@/contexts/SessionAuthContext'`
-- `import { useJudeAudio } from '@/contexts/JudeAudioContext'`
-- `import { supabase } from '@/integrations/supabase/client'`
+### New imports (line 5)
+Add `Volume2`, `VolumeX` to the existing lucide-react import. Add `useRef` to the React import.
 
-### Constants
-Define the four messages and their indices at module level for stable storage keys:
-
+### New constant: `TOUR_STEP_AUDIO_URLS` (after `tourSteps` array, ~line 93)
 ```typescript
-const WELCOME_MESSAGES = [
-  "Salut visiteur! 👋",
-  "Moi c'est Jude, ton assistant virtuel!",
-  "Je vais te faire découvrir la plateforme...",
-  "Mais d'abord, laisse-moi trouver une bonne musique 🎵",
-] as const;
+// Pre-generated audio URLs for each tour step.
+// Populated via admin operation -- null entries mean no audio for that step.
+const TOUR_STEP_AUDIO_URLS: (string | null)[] = [
+  null, // step 0: Tableau de bord
+  null, // step 1: Musique d'etude
+  null, // step 2: Progression
+  null, // step 3: Matieres
+  null, // step 4: Fil d'actualite
+  null, // step 5: Classement
+  null, // step 6: Defis et recompenses
+  null, // step 7: Decouverte des passions
+  null, // step 8: Apprentissage par la passion
+  null, // step 9: Jeux educatifs
+  null, // step 10: Messages et communaute
+  null, // step 11: Rejoignez la famille
+];
 ```
 
-### Voice sync state
-Inside the component, add:
-
+### New state and ref (inside component, after existing useState declarations)
 ```typescript
-const { isAuthenticated } = useSessionAuth();
-const { speak, stop } = useJudeAudio();
-
-// Per-message audio state
-const audioUrlsRef = useRef<(string | null)[]>([null, null, null, null]);
-const audioDurationsRef = useRef<number[]>([0, 0, 0, 0]);
+const [isMuted, setIsMuted] = useState(() =>
+  localStorage.getItem('jude-voice-muted') === 'true'
+);
+const audioRef = useRef<HTMLAudioElement | null>(null);
 ```
 
-### Pre-fetch all four messages on open (authenticated only)
-When `isOpen` becomes true AND user is authenticated, fire four parallel fetches:
-
+### Audio playback on step change (new useEffect, after the tracking useEffect at line 224)
 ```typescript
+// Play pre-generated audio when tour step changes
 useEffect(() => {
-  if (!isOpen || !isAuthenticated) return;
-  const isMuted = localStorage.getItem('jude-voice-muted') === 'true';
+  if (!isStable || !tourActive || tourCompleted) return;
+
+  // Stop previous step audio
+  if (audioRef.current) {
+    audioRef.current.pause();
+    audioRef.current = null;
+  }
+
   if (isMuted) return;
 
-  WELCOME_MESSAGES.forEach((msg, i) => {
-    supabase.functions.invoke('generate-jude-voice', {
-      body: { text: msg, storageKey: `onboarding/welcome-${i}`, context: 'onboarding' }
-    }).then(({ data }) => {
-      if (data?.url) {
-        audioUrlsRef.current[i] = data.url;
-        // Pre-measure duration for typing speed calc
-        const audio = new Audio(data.url);
-        audio.addEventListener('loadedmetadata', () => {
-          audioDurationsRef.current[i] = audio.duration;
-        });
-        audio.load();
-      }
-    }).catch(() => { /* silent fail -- typewriter uses default speed */ });
+  const url = TOUR_STEP_AUDIO_URLS[tourStep];
+  if (!url) return;
+
+  // Small delay to let page navigation settle before playing
+  const timer = setTimeout(() => {
+    const audio = new Audio(url);
+    audio.volume = 0.7;
+    audioRef.current = audio;
+    audio.play().catch(() => {});
+  }, 600);
+
+  return () => clearTimeout(timer);
+}, [tourStep, isStable, tourActive, tourCompleted, isMuted]);
+```
+
+### Cleanup on tour end/unmount (new useEffect)
+```typescript
+// Stop audio when tour closes or component unmounts
+useEffect(() => {
+  return () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+  };
+}, []);
+```
+
+### Mute toggle handler (before early returns)
+```typescript
+const toggleMute = () => {
+  setIsMuted(prev => {
+    const next = !prev;
+    localStorage.setItem('jude-voice-muted', String(next));
+    // Stop audio immediately when muting
+    if (next && audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    return next;
   });
-}, [isOpen, isAuthenticated]);
-```
-
-### Dynamic typing speed calculator
-
-```typescript
-const getTypingSpeed = (messageIndex: number, messageLength: number): number => {
-  const duration = audioDurationsRef.current[messageIndex];
-  if (!duration || duration <= 0) return defaultSpeeds[messageIndex]; // fallback to current speeds
-  const durationMs = duration * 1000;
-  // 90% of duration so text finishes slightly before audio ends
-  return Math.max(30, Math.floor((durationMs * 0.9) / messageLength));
 };
 ```
 
-Where `defaultSpeeds = [100, 90, 80, 70]` matches the current hardcoded values.
-
-### Play audio on typewriter start
-Each SimpleTypewriter gets an `onStart` callback:
-
-```typescript
-const handleMessageStart = (index: number) => {
-  const isMuted = localStorage.getItem('jude-voice-muted') === 'true';
-  if (isMuted || !audioUrlsRef.current[index]) return;
-  speak(audioUrlsRef.current[index]!);
-};
-```
-
-### Updated SimpleTypewriter usage
-Each message's `speed` prop becomes dynamic, and adds `onStart`:
+### Mute toggle button in the UI
+Add a small speaker button in the progress bar header area (line 295-297), next to the step counter:
 
 ```tsx
-<SimpleTypewriter
-  text="Salut visiteur! 👋"
-  speed={getTypingSpeed(0, WELCOME_MESSAGES[0].length)}
-  onComplete={handleGreetingComplete}
-  onStart={() => handleMessageStart(0)}
-  enableSound={false}  // Disable click sounds when voice is playing
-  soundVolume={0.06}
-/>
-```
-
-Note: `enableSound` becomes `false` when voice is available (audio URL exists). If no audio (visitor/muted), keep `enableSound={true}` with original speed. This prevents the typing clicks from competing with Jude's voice.
-
-Computed like:
-```typescript
-const hasVoice = (i: number) => !!audioUrlsRef.current[i] && !isMuted;
-```
-
-### Visitor mode handling
-- `useSessionAuth().isAuthenticated` is `false` for visitors
-- The pre-fetch useEffect skips entirely for visitors
-- All `audioUrlsRef` values remain `null`
-- `getTypingSpeed` returns default speeds (100/90/80/70)
-- `handleMessageStart` is a no-op (no URL)
-- `enableSound` stays `true` (typing clicks continue as today)
-- Result: visitors get the exact same experience as currently -- no regression
-
-### Cleanup on close
-When popup closes (or unmounts), call `stop()` to halt any playing audio:
-
-```typescript
-useEffect(() => {
-  if (!isOpen) {
-    stop();
-  }
-}, [isOpen, stop]);
+<div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+  <span>Etape {tourStep + 1} sur {tourSteps.length}</span>
+  <div className="flex items-center gap-2">
+    <button
+      onClick={toggleMute}
+      className="p-1 rounded hover:bg-muted transition-colors"
+      aria-label={isMuted ? "Activer le son" : "Couper le son"}
+    >
+      {isMuted ? (
+        <VolumeX className="w-3.5 h-3.5" />
+      ) : (
+        <Volume2 className="w-3.5 h-3.5" />
+      )}
+    </button>
+    <span>{Math.round(progress)}%</span>
+  </div>
+</div>
 ```
 
 ---
@@ -162,26 +146,23 @@ useEffect(() => {
 ## Visual Flow
 
 ```text
-[Popup opens]
+[Tour step changes]
     |
-    v  (authenticated? fetch all 4 audio URLs in parallel)
+    v
+[Stop previous audio]
     |
-[Greeting starts typing]
-    |-- onStart fires --> speak(audioUrls[0])
-    |-- speed = audioDuration[0] / charCount
+    v  (check isMuted + URL exists)
     |
-[Greeting complete] --> 600ms delay
+[Play TOUR_STEP_AUDIO_URLS[tourStep]] after 600ms settle delay
     |
-[Intro starts typing]
-    |-- onStart fires --> speak(audioUrls[1])
-    |-- speed = audioDuration[1] / charCount
-    |
-[Intro complete] --> 500ms delay
-    |
-[Walkthrough + Searching follow same pattern]
-    |
-[Done]
+[User taps mute] --> audio.pause() immediately
 ```
+
+---
+
+## Why No Edge Function Calls
+
+Visitors have no JWT. Instead of adding a public edge function (security risk), all 12 audio clips will be pre-generated once as an admin operation and stored permanently in the `lesson-audio` Storage bucket with public CDN URLs. The `TOUR_STEP_AUDIO_URLS` array is populated with those URLs after generation -- a separate admin step outside this implementation.
 
 ---
 
@@ -189,23 +170,22 @@ useEffect(() => {
 
 | Check | Status |
 |---|---|
-| Existing typewriter behavior preserved? | Yes -- default speeds unchanged when no audio |
-| Visitor mode regression? | None -- audio skipped, original UX intact |
-| Mute respected? | Yes -- checked before fetch and before play |
-| 3G safe? | Yes -- parallel pre-fetch, graceful fallback on failure |
+| Existing tour behavior preserved? | Yes -- audio is purely additive |
+| Visitor authentication required? | No -- uses public Storage CDN URLs |
+| Mute toggle shared with auth system? | Yes -- same `jude-voice-muted` localStorage key |
+| Previous audio stopped on step change? | Yes -- `audioRef.current.pause()` before new play |
+| Audio stopped on unmount/tour end? | Yes -- cleanup useEffect |
+| 3G safe? | Yes -- small pre-generated clips, no fetch overhead |
 | Provider stack affected? | No |
-| New dependencies? | None |
-| Bundle impact? | Negligible -- only new imports already in bundle |
-| SimpleTypewriter backward compatible? | Yes -- onStart is optional, speed prop already existed |
-| Cold start risk? | Mitigated -- pre-fetch fires on popup open, not page load |
-| Audio ducking? | Handled by JudeAudioContext (already ducks music player) |
+| New dependencies? | None -- Volume2/VolumeX already in lucide-react |
+| All hooks before early returns? | Yes -- new hooks placed before line 230 |
+| Bundle impact? | Negligible |
 
 ## Files Summary
 
 | File | Action |
 |---|---|
-| `src/components/visitor/SimpleTypewriter.tsx` | Modify -- add `onStart` prop |
-| `src/components/visitor/JudeWelcomePopup.tsx` | Modify -- add voice sync logic |
+| `src/components/visitor/VisitorTour.tsx` | Modify -- add audio playback + mute toggle |
 
 No other files touched. No edge function changes. No DB changes.
 
