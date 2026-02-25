@@ -39,6 +39,7 @@ import { MusicPlayerProvider } from '@/contexts/MusicPlayerContext';
 import { PresenceProvider } from '@/contexts/PresenceContext';
 import { VisitorProvider } from '@/contexts/VisitorContext';
 import { FirstTimeUserProvider } from '@/contexts/FirstTimeUserContext';
+import { JudeAudioProvider } from '@/contexts/JudeAudioContext';
 
 /**
  * Query client with optimized settings for 3G performance.
@@ -85,9 +86,12 @@ function FeatureProviders({ children }: FeatureProvidersProps) {
     <PresenceProvider>
       <VisitorProvider>
         <MusicPlayerProvider>
-          <FirstTimeUserProvider>
-            {children}
-          </FirstTimeUserProvider>
+          {/* JudeAudioProvider after MusicPlayer — needs useMusicPlayer for ducking */}
+          <JudeAudioProvider>
+            <FirstTimeUserProvider>
+              {children}
+            </FirstTimeUserProvider>
+          </JudeAudioProvider>
         </MusicPlayerProvider>
       </VisitorProvider>
     </PresenceProvider>
