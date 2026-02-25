@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ChevronRight, ChevronLeft, X, Sparkles, UserPlus, LogIn } from "lucide-react";
+import { ChevronRight, ChevronLeft, X, Sparkles, UserPlus, LogIn, Volume2, VolumeX } from "lucide-react";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { useVisitorAnalytics } from "@/hooks/useVisitorAnalytics";
 
@@ -91,6 +91,23 @@ const tourSteps: TourStep[] = [
   },
 ];
 
+// Pre-generated audio URLs for each tour step.
+// Populated via admin operation — null entries mean no audio for that step.
+const TOUR_STEP_AUDIO_URLS: (string | null)[] = [
+  null, // step 0: Tableau de bord
+  null, // step 1: Musique d'étude
+  null, // step 2: Progression
+  null, // step 3: Matières
+  null, // step 4: Fil d'actualité
+  null, // step 5: Classement
+  null, // step 6: Défis et récompenses
+  null, // step 7: Découverte des passions
+  null, // step 8: Apprentissage par la passion
+  null, // step 9: Jeux éducatifs
+  null, // step 10: Messages et communauté
+  null, // step 11: Rejoignez la famille
+];
+
 // ─────────────────────────────────────────────
 // Eager preload map — fires immediately before navigate()
 // Bypasses requestIdleCallback (never fires during active animations).
@@ -155,6 +172,11 @@ export const VisitorTour = () => {
   const [ericImage, setEricImage] = useState<string | null>(null);
   const [showCompletionScreen, setShowCompletionScreen] = useState(false);
   const [cardPosition, setCardPosition] = useState<CardPosition>("bottom-right");
+  // Voice narration — mute state synced with authenticated voice system
+  const [isMuted, setIsMuted] = useState(() =>
+    localStorage.getItem('jude-voice-muted') === 'true'
+  );
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const {
     isVisitor,
@@ -227,6 +249,56 @@ export const VisitorTour = () => {
     }
   }, [tourStep, tourActive, currentStep, trackTourStep, isStable]);
 
+  // Play pre-generated audio when tour step changes
+  useEffect(() => {
+    if (!isStable || !tourActive || tourCompleted) return;
+
+    // Stop previous step audio before anything else
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+
+    if (isMuted) return;
+
+    const url = TOUR_STEP_AUDIO_URLS[tourStep];
+    if (!url) return;
+
+    // Small delay to let page navigation settle before playing
+    const timer = setTimeout(() => {
+      const audio = new Audio(url);
+      audio.volume = 0.7;
+      audioRef.current = audio;
+      audio.play().catch(() => {});
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [tourStep, isStable, tourActive, tourCompleted, isMuted]);
+
+  // Stop audio when tour closes or component unmounts
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  // Mute toggle — persists to localStorage, shared with authenticated voice system
+  const toggleMute = () => {
+    setIsMuted(prev => {
+      const next = !prev;
+      localStorage.setItem('jude-voice-muted', String(next));
+      // Stop audio immediately when muting
+      if (next && audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      return next;
+    });
+  };
+
   // ── Early returns — ALL hooks must appear before this block ──
   if (!isStable) return null;
 
@@ -294,7 +366,20 @@ export const VisitorTour = () => {
         <div className="px-4 pt-3">
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
             <span>Étape {tourStep + 1} sur {tourSteps.length}</span>
-            <span>{Math.round(progress)}%</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleMute}
+                className="p-1 rounded hover:bg-muted transition-colors"
+                aria-label={isMuted ? "Activer le son" : "Couper le son"}
+              >
+                {isMuted ? (
+                  <VolumeX className="w-3.5 h-3.5" />
+                ) : (
+                  <Volume2 className="w-3.5 h-3.5" />
+                )}
+              </button>
+              <span>{Math.round(progress)}%</span>
+            </div>
           </div>
           <Progress value={progress} className="h-1.5" />
         </div>
