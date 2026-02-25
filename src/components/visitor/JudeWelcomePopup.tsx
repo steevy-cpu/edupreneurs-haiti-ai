@@ -25,6 +25,14 @@ const WELCOME_MESSAGES = [
 /** Default typing speeds (ms per char) matching original hardcoded values */
 const DEFAULT_SPEEDS = [100, 90, 80, 70];
 
+/** Pre-generated CDN URLs for visitor voice — bypasses JWT requirement */
+const WELCOME_AUDIO_URLS: (string | null)[] = [
+  'https://xdyavylcmucjpueybdku.supabase.co/storage/v1/object/public/lesson-audio/jude-voice/onboarding/welcome-0.mp3',
+  'https://xdyavylcmucjpueybdku.supabase.co/storage/v1/object/public/lesson-audio/jude-voice/onboarding/welcome-1.mp3',
+  'https://xdyavylcmucjpueybdku.supabase.co/storage/v1/object/public/lesson-audio/jude-voice/onboarding/welcome-2.mp3',
+  'https://xdyavylcmucjpueybdku.supabase.co/storage/v1/object/public/lesson-audio/jude-voice/onboarding/welcome-3.mp3',
+];
+
 const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
   const [phase, setPhase] = useState<'greeting' | 'intro' | 'walkthrough' | 'searching' | 'playing' | 'done'>('greeting');
   const [showGreeting, setShowGreeting] = useState(false);
@@ -36,11 +44,16 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
   const { tracks, playTrack } = useMusicPlayer();
   const { shouldShowAnimations } = useNetworkAwareLoading();
 
-  // Voice sync — authenticated users get Jude's voice, visitors get typing clicks
+  // Voice sync — authenticated users get Jude's voice via JudeAudioContext
   const { isAuthenticated } = useSessionAuth();
   const { speak, stop } = useJudeAudio();
   const audioUrlsRef = useRef<(string | null)[]>([null, null, null, null]);
   const audioDurationsRef = useRef<number[]>([0, 0, 0, 0]);
+
+  // Visitor audio — local HTMLAudioElement, no JudeAudioContext needed
+  const visitorAudioRef = useRef<HTMLAudioElement | null>(null);
+  const visitorDurationsRef = useRef<number[]>([0, 0, 0, 0]);
+
   // Track mute state at render time for enableSound decisions
   const isMuted = typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true';
 
@@ -60,7 +73,7 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
     }
   }, [tracks, playTrack]);
 
-  // Pre-fetch all four audio clips in parallel when popup opens (authenticated only)
+  // Pre-fetch audio for authenticated users via edge function
   useEffect(() => {
     if (!isOpen || !isAuthenticated) return;
     if (isMuted) return;
@@ -82,32 +95,75 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
     });
   }, [isOpen, isAuthenticated, isMuted]);
 
+  // Preload visitor audio durations on popup open (unauthenticated path)
+  useEffect(() => {
+    if (!isOpen || isAuthenticated || isMuted) return;
+
+    // Preload all 4 static URLs to measure duration for typing sync
+    WELCOME_AUDIO_URLS.forEach((url, i) => {
+      if (!url) return;
+      const audio = new Audio(url);
+      audio.addEventListener('loadedmetadata', () => {
+        visitorDurationsRef.current[i] = audio.duration;
+      });
+      audio.load();
+    });
+  }, [isOpen, isAuthenticated, isMuted]);
+
   // Stop any playing audio when popup closes
   useEffect(() => {
     if (!isOpen) {
       stop();
+      // Also stop visitor audio
+      if (visitorAudioRef.current) {
+        visitorAudioRef.current.pause();
+        visitorAudioRef.current = null;
+      }
     }
   }, [isOpen, stop]);
 
   /** Calculate ms-per-char so typing finishes ~90% through audio duration */
   const getTypingSpeed = useCallback((messageIndex: number, messageLength: number): number => {
-    const duration = audioDurationsRef.current[messageIndex];
+    // Use visitor durations for unauthenticated, authenticated durations otherwise
+    const duration = isAuthenticated
+      ? audioDurationsRef.current[messageIndex]
+      : visitorDurationsRef.current[messageIndex];
     if (!duration || duration <= 0) return DEFAULT_SPEEDS[messageIndex];
     const durationMs = duration * 1000;
     return Math.max(30, Math.floor((durationMs * 0.9) / messageLength));
-  }, []);
+  }, [isAuthenticated]);
 
   /** Trigger Jude's voice when a message starts typing */
   const handleMessageStart = useCallback((index: number) => {
     const muted = localStorage.getItem('jude-voice-muted') === 'true';
-    if (muted || !audioUrlsRef.current[index]) return;
-    speak(audioUrlsRef.current[index]!);
-  }, [speak]);
+    if (muted) return;
+
+    if (isAuthenticated) {
+      // Authenticated: use JudeAudioContext (handles music ducking)
+      if (!audioUrlsRef.current[index]) return;
+      speak(audioUrlsRef.current[index]!);
+    } else {
+      // Visitor: play via local Audio element (same pattern as VisitorTour)
+      const url = WELCOME_AUDIO_URLS[index];
+      if (!url) return;
+      // Stop previous clip before starting new one
+      if (visitorAudioRef.current) {
+        visitorAudioRef.current.pause();
+        visitorAudioRef.current = null;
+      }
+      const audio = new Audio(url);
+      visitorAudioRef.current = audio;
+      audio.play().catch(() => { /* autoplay blocked — graceful degradation */ });
+    }
+  }, [isAuthenticated, speak]);
 
   /** Whether voice is available for a given message — controls enableSound */
   const hasVoice = useCallback((i: number) => {
-    return !!audioUrlsRef.current[i] && !isMuted;
-  }, [isMuted]);
+    if (isMuted) return false;
+    if (isAuthenticated) return !!audioUrlsRef.current[i];
+    // Visitor: static URLs always available (unless muted)
+    return !!WELCOME_AUDIO_URLS[i];
+  }, [isMuted, isAuthenticated]);
 
   useEffect(() => {
     if (!isOpen) {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ericWaving from '@/assets/eric-waving.png';
 import SimpleTypewriter from '@/components/visitor/SimpleTypewriter';
@@ -7,6 +7,11 @@ import { Button } from '@/components/ui/button';
 import { ChevronRight, X } from 'lucide-react';
 import { useNetworkAwareAnimations } from '@/hooks/useNetworkAwareAnimations';
 import { preloadImage } from '@/utils/performanceOptimization';
+import { useJudeAudio } from '@/contexts/JudeAudioContext';
+import { supabase } from '@/integrations/supabase/client';
+
+/** Default typing speeds (ms per char) for each message */
+const FIRSTTIME_DEFAULT_SPEEDS = [100, 90, 80];
 
 const FirstTimeUserWelcome = () => {
   // STABILITY GUARD: Use safe context access pattern to prevent null dispatcher errors
@@ -19,6 +24,13 @@ const FirstTimeUserWelcome = () => {
   const [showGreeting, setShowGreeting] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [showWalkthrough, setShowWalkthrough] = useState(false);
+
+  // Voice auto-play for authenticated first-time users
+  const { speak, stop } = useJudeAudio();
+  const audioUrlsRef = useRef<(string | null)[]>([null, null, null]);
+  const audioDurationsRef = useRef<number[]>([0, 0, 0]);
+  // Track mute state at render time for enableSound decisions
+  const isMuted = typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true';
   
   // Wait one render cycle for React dispatcher to stabilize after lazy load
   useEffect(() => {
@@ -34,6 +46,64 @@ const FirstTimeUserWelcome = () => {
   useEffect(() => {
     preloadImage(ericWaving).catch(() => {});
   }, []);
+
+  const displayName = firstTimeUser.userNickname || 'ami(e)';
+
+  // Pre-fetch all 3 audio clips when welcome screen shows
+  useEffect(() => {
+    if (!firstTimeUser.showWelcome || firstTimeUser.isLoading || isMuted) return;
+
+    // Message 0 is dynamic (includes nickname) — unique storageKey per user
+    const messages = [
+      { text: `Bienvenue sur Edupreneurs, ${displayName}! 👋`, storageKey: `onboarding/firsttime-0-${displayName}` },
+      { text: "Moi c'est Jude, ton assistant d'apprentissage!", storageKey: 'onboarding/firsttime-1' },
+      { text: "Je vais te faire découvrir la plateforme...", storageKey: 'onboarding/firsttime-2' },
+    ];
+
+    messages.forEach(({ text, storageKey }, i) => {
+      supabase.functions.invoke('generate-jude-voice', {
+        body: { text, storageKey, context: 'onboarding' }
+      }).then(({ data }) => {
+        if (data?.url) {
+          audioUrlsRef.current[i] = data.url;
+          // Pre-measure duration for typing speed sync
+          const audio = new Audio(data.url);
+          audio.addEventListener('loadedmetadata', () => {
+            audioDurationsRef.current[i] = audio.duration;
+          });
+          audio.load();
+        }
+      }).catch(() => { /* silent fail — typewriter uses default speed */ });
+    });
+  }, [firstTimeUser.showWelcome, firstTimeUser.isLoading, isMuted, displayName]);
+
+  // Stop audio on unmount or when welcome closes
+  useEffect(() => {
+    if (!firstTimeUser.showWelcome) {
+      stop();
+    }
+    return () => { stop(); };
+  }, [firstTimeUser.showWelcome, stop]);
+
+  /** Calculate ms-per-char so typing finishes ~90% through audio duration */
+  const getTypingSpeed = useCallback((messageIndex: number, messageLength: number): number => {
+    const duration = audioDurationsRef.current[messageIndex];
+    if (!duration || duration <= 0) return FIRSTTIME_DEFAULT_SPEEDS[messageIndex];
+    const durationMs = duration * 1000;
+    return Math.max(30, Math.floor((durationMs * 0.9) / messageLength));
+  }, []);
+
+  /** Trigger Jude's voice when a message starts typing */
+  const handleMessageStart = useCallback((index: number) => {
+    const muted = localStorage.getItem('jude-voice-muted') === 'true';
+    if (muted || !audioUrlsRef.current[index]) return;
+    speak(audioUrlsRef.current[index]!);
+  }, [speak]);
+
+  /** Whether voice is available for a given message — controls enableSound */
+  const hasVoice = useCallback((i: number) => {
+    return !!audioUrlsRef.current[i] && !isMuted;
+  }, [isMuted]);
 
   useEffect(() => {
     if (!firstTimeUser.showWelcome || firstTimeUser.isLoading) {
@@ -77,7 +147,8 @@ const FirstTimeUserWelcome = () => {
   if (!isStable) return null;
   if (!firstTimeUser.showWelcome || firstTimeUser.isLoading) return null;
 
-  const displayName = firstTimeUser.userNickname || 'ami(e)';
+  // Build message 0 text for typing speed calculation
+  const greetingText = `Bienvenue sur Edupreneurs, ${displayName}! 👋`;
 
   // Network-aware animation config - reduce animations on slow connections
   const overlayAnimation = shouldAnimate 
@@ -153,14 +224,15 @@ const FirstTimeUserWelcome = () => {
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-b-[12px] border-b-card/95" />
             
             <div className="text-center space-y-3">
-              {/* Greeting */}
+              {/* Greeting — dynamic text with nickname */}
               {showGreeting && (
                 <p className="text-xl sm:text-2xl font-bold text-foreground">
                   <SimpleTypewriter
-                    text={`Bienvenue sur Edupreneurs, ${displayName}! 👋`}
-                    speed={100}
+                    text={greetingText}
+                    speed={getTypingSpeed(0, greetingText.length)}
                     onComplete={handleGreetingComplete}
-                    enableSound
+                    onStart={() => handleMessageStart(0)}
+                    enableSound={!hasVoice(0)}
                     soundVolume={0.06}
                   />
                 </p>
@@ -175,9 +247,10 @@ const FirstTimeUserWelcome = () => {
                 >
                   <SimpleTypewriter
                     text="Moi c'est Jude, ton assistant d'apprentissage!"
-                    speed={90}
+                    speed={getTypingSpeed(1, "Moi c'est Jude, ton assistant d'apprentissage!".length)}
                     onComplete={handleIntroComplete}
-                    enableSound
+                    onStart={() => handleMessageStart(1)}
+                    enableSound={!hasVoice(1)}
                     soundVolume={0.06}
                   />
                 </motion.p>
@@ -192,9 +265,10 @@ const FirstTimeUserWelcome = () => {
                 >
                   <SimpleTypewriter
                     text="Je vais te faire découvrir la plateforme..."
-                    speed={80}
+                    speed={getTypingSpeed(2, "Je vais te faire découvrir la plateforme...".length)}
                     onComplete={handleWalkthroughComplete}
-                    enableSound
+                    onStart={() => handleMessageStart(2)}
+                    enableSound={!hasVoice(2)}
                     soundVolume={0.06}
                   />
                 </motion.p>
