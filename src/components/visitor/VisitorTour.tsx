@@ -94,18 +94,18 @@ const tourSteps: TourStep[] = [
 // Pre-generated audio URLs for each tour step.
 // Populated via admin operation — null entries mean no audio for that step.
 const TOUR_STEP_AUDIO_URLS: (string | null)[] = [
-  null, // step 0: Tableau de bord
-  null, // step 1: Musique d'étude
-  null, // step 2: Progression
-  null, // step 3: Matières
-  null, // step 4: Fil d'actualité
-  null, // step 5: Classement
-  null, // step 6: Défis et récompenses
-  null, // step 7: Découverte des passions
-  null, // step 8: Apprentissage par la passion
-  null, // step 9: Jeux éducatifs
-  null, // step 10: Messages et communauté
-  null, // step 11: Rejoignez la famille
+  'https://xdyavylcmucjpueybdku.supabase.co/storage/v1/object/public/lesson-audio/jude-voice/visitor-tour/step-0.mp3',
+  'https://xdyavylcmucjpueybdku.supabase.co/storage/v1/object/public/lesson-audio/jude-voice/visitor-tour/step-1.mp3',
+  'https://xdyavylcmucjpueybdku.supabase.co/storage/v1/object/public/lesson-audio/jude-voice/visitor-tour/step-2.mp3',
+  'https://xdyavylcmucjpueybdku.supabase.co/storage/v1/object/public/lesson-audio/jude-voice/visitor-tour/step-3.mp3',
+  'https://xdyavylcmucjpueybdku.supabase.co/storage/v1/object/public/lesson-audio/jude-voice/visitor-tour/step-4.mp3',
+  'https://xdyavylcmucjpueybdku.supabase.co/storage/v1/object/public/lesson-audio/jude-voice/visitor-tour/step-5.mp3',
+  'https://xdyavylcmucjpueybdku.supabase.co/storage/v1/object/public/lesson-audio/jude-voice/visitor-tour/step-6.mp3',
+  'https://xdyavylcmucjpueybdku.supabase.co/storage/v1/object/public/lesson-audio/jude-voice/visitor-tour/step-7.mp3',
+  'https://xdyavylcmucjpueybdku.supabase.co/storage/v1/object/public/lesson-audio/jude-voice/visitor-tour/step-8.mp3',
+  'https://xdyavylcmucjpueybdku.supabase.co/storage/v1/object/public/lesson-audio/jude-voice/visitor-tour/step-9.mp3',
+  'https://xdyavylcmucjpueybdku.supabase.co/storage/v1/object/public/lesson-audio/jude-voice/visitor-tour/step-10.mp3',
+  'https://xdyavylcmucjpueybdku.supabase.co/storage/v1/object/public/lesson-audio/jude-voice/visitor-tour/step-11.mp3',
 ];
 
 // ─────────────────────────────────────────────
