@@ -4,6 +4,8 @@ interface SimpleTypewriterProps {
   text: string;
   speed?: number;
   onComplete?: () => void;
+  /** Fires once when the first character begins typing — lets parent trigger audio */
+  onStart?: () => void;
   className?: string;
   enableSound?: boolean;
   soundVolume?: number;
@@ -15,6 +17,7 @@ const SimpleTypewriter = ({
   text,
   speed = 100,
   onComplete,
+  onStart,
   className = "",
   enableSound = false,
   soundVolume = 0.08,
@@ -23,7 +26,8 @@ const SimpleTypewriter = ({
   const [displayedText, setDisplayedText] = useState('');
   const [isComplete, setIsComplete] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
-
+  // Tracks whether onStart has already fired — prevents double-firing
+  const hasStartedRef = useRef(false);
   // Create typing sound - subtle soft click
   const playTypingSound = useCallback(() => {
     if (!enableSound) return;
@@ -70,6 +74,12 @@ const SimpleTypewriter = ({
 
     if (displayedText.length < text.length) {
       const timeout = setTimeout(() => {
+        // Fire onStart exactly once when first character is about to appear
+        if (displayedText.length === 0 && !hasStartedRef.current) {
+          hasStartedRef.current = true;
+          onStart?.();
+        }
+
         setDisplayedText(text.slice(0, displayedText.length + 1));
         
         // Play sound for each character (skip spaces for less noise)
@@ -83,7 +93,7 @@ const SimpleTypewriter = ({
       setIsComplete(true);
       onComplete?.();
     }
-  }, [displayedText, text, speed, onComplete, isComplete, playTypingSound, skipToEnd]);
+  }, [displayedText, text, speed, onComplete, onStart, isComplete, playTypingSound, skipToEnd]);
 
   // Cleanup audio context
   useEffect(() => {
