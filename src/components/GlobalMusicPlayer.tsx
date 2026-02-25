@@ -9,6 +9,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useVisitor } from "@/contexts/VisitorContext";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -35,10 +36,11 @@ export const GlobalMusicPlayer = () => {
   } = useMusicPlayer();
   
   const { isSlowConnection, shouldShowAnimations, shouldShowBlur } = useNetworkAwareLoading();
-  const { isActive } = useSubscription();
+  const { isActive, isExpired } = useSubscription();
+  const { isVisitor } = useVisitor();
   const navigate = useNavigate();
-  // Music is locked when user has no active subscription
-  const isMusicLocked = !isActive;
+  // Visitors browse freely; only expired authenticated users are locked out
+  const isMusicLocked = !isVisitor && isExpired;
   const [playlistOpen, setPlaylistOpen] = useState(false);
   const [minimized, setMinimized] = useState(true);
   const [position, setPosition] = useState({ x: 0, y: 0 });
