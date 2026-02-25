@@ -1,160 +1,186 @@
 
 
-# Phase 4: Quiz/Activities Feedback Voice (Explanation Narration)
+# Phase 5: Onboarding Voice Synchronized with Typewriter
 
 ## Overview
-Two files modified. Chains explanation voice playback after the existing reaction clip finishes. Never breaks the pre-generated clip behavior.
+Two files modified: `SimpleTypewriter.tsx` and `JudeWelcomePopup.tsx`. Jude's voice plays in sync with the typewriter — typing speed is dynamically calculated from audio duration so text finishes as audio ends.
 
 ---
 
-## File 1: `src/components/jude/JudeFeedback.tsx`
+## File 1: `src/components/visitor/SimpleTypewriter.tsx`
 
-### New imports (line 10-12)
-- Add `Loader2`, `Square` to the existing lucide-react import
-- Add `import { useJudeVoice } from '@/hooks/useJudeVoice'`
+### New prop: `onStart`
+Add an optional `onStart` callback that fires once when the first character begins typing. This lets the parent trigger audio playback at the exact moment text starts appearing.
 
-### Explanation voice hook (after line 56, inside the component)
 ```typescript
-// Stable key from explanation text hash (first 32 chars of base64)
-const explanationKey = explanation
-  ? `feedback/${isCorrect ? 'correct' : 'incorrect'}-${btoa(encodeURIComponent(explanation)).slice(0, 32)}`
-  : null;
-
-const {
-  play: playExplanation,
-  stop: stopExplanation,
-  isSpeaking: isExplanationSpeaking,
-  isLoading: isExplanationLoading
-} = useJudeVoice({
-  text: explanation || '',
-  storageKey: explanationKey || 'feedback/empty',
-  context: 'feedback',
-  autoPreload: !!explanation,
-});
-```
-
-### Chain reaction clip to explanation (modify useEffect at lines 70-85)
-After creating the Audio object and before playing, attach `onended`:
-```typescript
-audio.onended = () => {
-  // Chain explanation voice after reaction clip finishes
-  if (explanation && !isMuted) {
-    playExplanation();
-  }
-};
-```
-Add `playExplanation` and `explanation` to the dependency array (via ref to avoid re-triggering -- see detail below).
-
-**Important detail**: Since `playExplanation` changes on every render, we store it in a ref (`playExplanationRef`) to avoid re-triggering the useEffect. The `onended` callback reads from the ref.
-
-### Update mute toggle (line 87-99)
-When muting, also stop explanation audio:
-```typescript
-if (next && audioRef.current) {
-  audioRef.current.pause();
-}
-// Also stop explanation voice if playing
-if (next) {
-  stopExplanation();
+interface SimpleTypewriterProps {
+  text: string;
+  speed?: number;
+  onComplete?: () => void;
+  onStart?: () => void;  // NEW -- fires when typing begins
+  className?: string;
+  enableSound?: boolean;
+  soundVolume?: number;
+  skipToEnd?: boolean;
 }
 ```
 
-### Update speaker icon (lines 122-133)
-Replace the simple Volume2/VolumeX toggle with state-aware icons:
-- `isExplanationLoading` -- show `Loader2` with `animate-spin`
-- `isExplanationSpeaking` -- show `Square` (stop button); onClick calls `stopExplanation()` instead of `toggleMute`
-- `isMuted` -- show `VolumeX`
-- Default -- show `Volume2`
+### Implementation
+Add a `hasStartedRef` (useRef) to track whether `onStart` has fired. In the main typing useEffect, call `onStart?.()` on the first character render (when `displayedText.length === 0` and we're about to type the first char). The ref prevents double-firing.
 
-The button onClick becomes conditional:
-- If explanation is speaking, stop it
-- Otherwise, toggle mute
+No other changes to SimpleTypewriter -- `speed` prop already controls typing delay, so the parent just passes a different `speed` value per message.
 
 ---
 
-## File 2: `src/features/exams/practice/components/FeedbackCard.tsx`
+## File 2: `src/components/visitor/JudeWelcomePopup.tsx`
 
-### New imports (line 14)
-- Add `Loader2`, `Square` to existing lucide-react import
-- Add `import { useJudeVoice } from '@/hooks/useJudeVoice'`
+### New imports
+- `import { useRef } from 'react'` (add to existing React import)
+- `import { useSessionAuth } from '@/contexts/SessionAuthContext'`
+- `import { useJudeAudio } from '@/contexts/JudeAudioContext'`
+- `import { supabase } from '@/integrations/supabase/client'`
 
-### Explanation text extraction (after line 29)
+### Constants
+Define the four messages and their indices at module level for stable storage keys:
+
 ```typescript
-// Extract plain text explanation for voice narration
-const explanationText = feedback.response || '';
+const WELCOME_MESSAGES = [
+  "Salut visiteur! 👋",
+  "Moi c'est Jude, ton assistant virtuel!",
+  "Je vais te faire découvrir la plateforme...",
+  "Mais d'abord, laisse-moi trouver une bonne musique 🎵",
+] as const;
 ```
 
-### Explanation voice hook (after audioRef, around line 35)
-```typescript
-const explanationKey = explanationText
-  ? `feedback/exam-${btoa(encodeURIComponent(explanationText)).slice(0, 32)}`
-  : null;
+### Voice sync state
+Inside the component, add:
 
-const {
-  play: playExplanation,
-  stop: stopExplanation,
-  isSpeaking: isExplanationSpeaking,
-  isLoading: isExplanationLoading
-} = useJudeVoice({
-  text: explanationText,
-  storageKey: explanationKey || 'feedback/empty',
-  context: 'feedback',
-  autoPreload: !!explanationText && (isCorrect || isIncorrect),
-});
+```typescript
+const { isAuthenticated } = useSessionAuth();
+const { speak, stop } = useJudeAudio();
+
+// Per-message audio state
+const audioUrlsRef = useRef<(string | null)[]>([null, null, null, null]);
+const audioDurationsRef = useRef<number[]>([0, 0, 0, 0]);
 ```
 
-Note: `autoPreload` only activates for correct/incorrect states (same states that play reaction clips).
+### Pre-fetch all four messages on open (authenticated only)
+When `isOpen` becomes true AND user is authenticated, fire four parallel fetches:
 
-### Chain reaction clip to explanation (modify useEffect at lines 49-56)
-Same pattern as JudeFeedback -- attach `onended` via a ref-based callback:
 ```typescript
-audio.onended = () => {
-  if (explanationText && !isMuted) {
-    playExplanationRef.current();
-  }
+useEffect(() => {
+  if (!isOpen || !isAuthenticated) return;
+  const isMuted = localStorage.getItem('jude-voice-muted') === 'true';
+  if (isMuted) return;
+
+  WELCOME_MESSAGES.forEach((msg, i) => {
+    supabase.functions.invoke('generate-jude-voice', {
+      body: { text: msg, storageKey: `onboarding/welcome-${i}`, context: 'onboarding' }
+    }).then(({ data }) => {
+      if (data?.url) {
+        audioUrlsRef.current[i] = data.url;
+        // Pre-measure duration for typing speed calc
+        const audio = new Audio(data.url);
+        audio.addEventListener('loadedmetadata', () => {
+          audioDurationsRef.current[i] = audio.duration;
+        });
+        audio.load();
+      }
+    }).catch(() => { /* silent fail -- typewriter uses default speed */ });
+  });
+}, [isOpen, isAuthenticated]);
+```
+
+### Dynamic typing speed calculator
+
+```typescript
+const getTypingSpeed = (messageIndex: number, messageLength: number): number => {
+  const duration = audioDurationsRef.current[messageIndex];
+  if (!duration || duration <= 0) return defaultSpeeds[messageIndex]; // fallback to current speeds
+  const durationMs = duration * 1000;
+  // 90% of duration so text finishes slightly before audio ends
+  return Math.max(30, Math.floor((durationMs * 0.9) / messageLength));
 };
 ```
 
-### Update mute toggle (lines 58-65)
-Add `stopExplanation()` when muting.
+Where `defaultSpeeds = [100, 90, 80, 70]` matches the current hardcoded values.
 
-### Update speaker icon (lines 133-145)
-Same state-aware icon pattern as JudeFeedback:
-- Loading: `Loader2` spinner
-- Speaking: `Square` stop button
-- Muted: `VolumeX`
-- Default: `Volume2`
-
----
-
-## Ref Pattern for Stable Callbacks
-
-Both files use a `playExplanationRef` to avoid re-triggering the audio useEffect when `playExplanation` changes identity:
+### Play audio on typewriter start
+Each SimpleTypewriter gets an `onStart` callback:
 
 ```typescript
-const playExplanationRef = useRef(playExplanation);
-useEffect(() => { playExplanationRef.current = playExplanation; }, [playExplanation]);
+const handleMessageStart = (index: number) => {
+  const isMuted = localStorage.getItem('jude-voice-muted') === 'true';
+  if (isMuted || !audioUrlsRef.current[index]) return;
+  speak(audioUrlsRef.current[index]!);
+};
 ```
 
-The `onended` handler reads `playExplanationRef.current()` instead of `playExplanation` directly. This keeps the useEffect dependency array clean (no `playExplanation` in it) and prevents the reaction clip from restarting.
+### Updated SimpleTypewriter usage
+Each message's `speed` prop becomes dynamic, and adds `onStart`:
+
+```tsx
+<SimpleTypewriter
+  text="Salut visiteur! 👋"
+  speed={getTypingSpeed(0, WELCOME_MESSAGES[0].length)}
+  onComplete={handleGreetingComplete}
+  onStart={() => handleMessageStart(0)}
+  enableSound={false}  // Disable click sounds when voice is playing
+  soundVolume={0.06}
+/>
+```
+
+Note: `enableSound` becomes `false` when voice is available (audio URL exists). If no audio (visitor/muted), keep `enableSound={true}` with original speed. This prevents the typing clicks from competing with Jude's voice.
+
+Computed like:
+```typescript
+const hasVoice = (i: number) => !!audioUrlsRef.current[i] && !isMuted;
+```
+
+### Visitor mode handling
+- `useSessionAuth().isAuthenticated` is `false` for visitors
+- The pre-fetch useEffect skips entirely for visitors
+- All `audioUrlsRef` values remain `null`
+- `getTypingSpeed` returns default speeds (100/90/80/70)
+- `handleMessageStart` is a no-op (no URL)
+- `enableSound` stays `true` (typing clicks continue as today)
+- Result: visitors get the exact same experience as currently -- no regression
+
+### Cleanup on close
+When popup closes (or unmounts), call `stop()` to halt any playing audio:
+
+```typescript
+useEffect(() => {
+  if (!isOpen) {
+    stop();
+  }
+}, [isOpen, stop]);
+```
 
 ---
 
-## Playback Flow
+## Visual Flow
 
 ```text
-[Feedback appears]
+[Popup opens]
     |
-    v
-[Reaction clip plays] -- "Bravo!" / "Pas exactement..."
+    v  (authenticated? fetch all 4 audio URLs in parallel)
     |
-    v  (onended fires)
-[Explanation voice plays] -- reads the explanation text via useJudeVoice
+[Greeting starts typing]
+    |-- onStart fires --> speak(audioUrls[0])
+    |-- speed = audioDuration[0] / charCount
     |
-    v
+[Greeting complete] --> 600ms delay
+    |
+[Intro starts typing]
+    |-- onStart fires --> speak(audioUrls[1])
+    |-- speed = audioDuration[1] / charCount
+    |
+[Intro complete] --> 500ms delay
+    |
+[Walkthrough + Searching follow same pattern]
+    |
 [Done]
-
-At any point: user taps mute --> both stop immediately
 ```
 
 ---
@@ -163,22 +189,23 @@ At any point: user taps mute --> both stop immediately
 
 | Check | Status |
 |---|---|
-| Existing reaction clips preserved? | Yes -- onended is additive, play logic unchanged |
-| Empty explanation handled? | Yes -- skipped in onended guard and autoPreload |
-| Mute during reaction stops explanation? | Yes -- onended checks isMuted before chaining |
-| Mute during explanation stops it? | Yes -- stopExplanation called in toggleMute |
+| Existing typewriter behavior preserved? | Yes -- default speeds unchanged when no audio |
+| Visitor mode regression? | None -- audio skipped, original UX intact |
+| Mute respected? | Yes -- checked before fetch and before play |
+| 3G safe? | Yes -- parallel pre-fetch, graceful fallback on failure |
 | Provider stack affected? | No |
-| New dependencies? | None -- Loader2/Square already in lucide-react bundle |
-| Cold start risk? | No -- autoPreload fires in background |
-| 3G compatible? | Yes -- edge function generates and caches audio |
-| useEffect re-trigger risk? | Mitigated via playExplanationRef pattern |
+| New dependencies? | None |
+| Bundle impact? | Negligible -- only new imports already in bundle |
+| SimpleTypewriter backward compatible? | Yes -- onStart is optional, speed prop already existed |
+| Cold start risk? | Mitigated -- pre-fetch fires on popup open, not page load |
+| Audio ducking? | Handled by JudeAudioContext (already ducks music player) |
 
 ## Files Summary
 
 | File | Action |
 |---|---|
-| `src/components/jude/JudeFeedback.tsx` | Modify |
-| `src/features/exams/practice/components/FeedbackCard.tsx` | Modify |
+| `src/components/visitor/SimpleTypewriter.tsx` | Modify -- add `onStart` prop |
+| `src/components/visitor/JudeWelcomePopup.tsx` | Modify -- add voice sync logic |
 
 No other files touched. No edge function changes. No DB changes.
 
