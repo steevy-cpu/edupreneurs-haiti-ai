@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -219,53 +220,55 @@ function MindMapSectionCluster({ section, lessonId }: { section: StudygramSectio
   );
 }
 
-/* ── RadialMindMapCluster — central node with radiating children ── */
-function RadialMindMapCluster({ section }: { section: StudygramSection }) {
-  const colors = getColors(section.type);
-  const [centralNode, ...childNodes] = section.nodes;
+/* ── RadialMindMapCluster — wrapped in forwardRef so Radix Presence can attach ref ── */
+const RadialMindMapCluster = forwardRef<HTMLDivElement, { section: StudygramSection }>(
+  function RadialMindMapCluster({ section }, ref) {
+    const colors = getColors(section.type);
+    const [centralNode, ...childNodes] = section.nodes;
 
-  return (
-    <div className={`relative rounded-xl border ${colors.border} bg-background/50 dark:bg-background/30 overflow-hidden`}>
-      {/* Section header */}
-      <div className={`${colors.headerBg} text-white px-5 py-2.5 flex items-center gap-2`}>
-        <span className="text-lg select-none">{section.emoji}</span>
-        <h3 className="font-bold text-sm sm:text-base truncate">{section.heading}</h3>
-      </div>
+    return (
+      <div ref={ref} className={`relative rounded-xl border ${colors.border} bg-background/50 dark:bg-background/30 overflow-hidden`}>
+        {/* Section header */}
+        <div className={`${colors.headerBg} text-white px-5 py-2.5 flex items-center gap-2`}>
+          <span className="text-lg select-none">{section.emoji}</span>
+          <h3 className="font-bold text-sm sm:text-base truncate">{section.heading}</h3>
+        </div>
 
-      <div className="p-4 flex flex-col items-center gap-3">
-        {/* Central concept node */}
-        {centralNode && (
-          <div className={`${colors.highlightBg} ${colors.highlightText} border ${colors.border} rounded-2xl px-6 py-2.5 text-sm font-bold text-center shadow-md max-w-full break-words`}>
-            <MathText text={centralNode.text} />
-          </div>
-        )}
-
-        {/* Vertical connector from center to horizontal bar */}
-        {childNodes.length > 0 && (
-          <div className={`w-px h-5 ${colors.border} border-l-2 border-dashed`} />
-        )}
-
-        {/* Horizontal bar with child pills */}
-        {childNodes.length > 0 && (
-          <div className="relative w-full">
-            {/* Horizontal connecting line behind nodes */}
-            <div className={`absolute top-1/2 left-[8%] right-[8%] h-px ${colors.border} border-t-2 border-dashed -translate-y-1/2`} />
-            <div className="relative flex flex-wrap justify-center gap-2">
-              {childNodes.map((node, i) => (
-                <div
-                  key={i}
-                  className={`${colors.mindmapBg} ${colors.mindmapText} rounded-2xl px-3 py-1.5 text-xs sm:text-sm text-center shadow-sm font-medium break-words`}
-                >
-                  <MathText text={node.text} />
-                </div>
-              ))}
+        <div className="p-4 flex flex-col items-center gap-3">
+          {/* Central concept node */}
+          {centralNode && (
+            <div className={`${colors.highlightBg} ${colors.highlightText} border ${colors.border} rounded-2xl px-6 py-2.5 text-sm font-bold text-center shadow-md max-w-full break-words`}>
+              <MathText text={centralNode.text} />
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Vertical connector from center to horizontal bar */}
+          {childNodes.length > 0 && (
+            <div className={`w-px h-5 ${colors.border} border-l-2 border-dashed`} />
+          )}
+
+          {/* Horizontal bar with child pills */}
+          {childNodes.length > 0 && (
+            <div className="relative w-full">
+              {/* Horizontal connecting line behind nodes */}
+              <div className={`absolute top-1/2 left-[8%] right-[8%] h-px ${colors.border} border-t-2 border-dashed -translate-y-1/2`} />
+              <div className="relative flex flex-wrap justify-center gap-2">
+                {childNodes.map((node, i) => (
+                  <div
+                    key={i}
+                    className={`${colors.mindmapBg} ${colors.mindmapText} rounded-2xl px-3 py-1.5 text-xs sm:text-sm text-center shadow-sm font-medium break-words`}
+                  >
+                    <MathText text={node.text} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+);
 
 /* ── Loading skeleton — matches the 4-block grid layout ── */
 function StudygramSkeleton() {
