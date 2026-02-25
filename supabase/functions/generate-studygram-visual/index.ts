@@ -54,7 +54,7 @@ const sectionSchema = z.object({
   heading: z.string().min(1).max(80),
   color: z.enum(allowedColors),
   emoji: z.string().min(1).max(10),
-  nodes: z.array(nodeSchema).min(2).max(8),
+  nodes: z.array(nodeSchema).min(2).max(12), // Relaxed from 8 — AI occasionally generates 9-10 nodes
 });
 
 // Exactly 4 sections required — one per pedagogical block
@@ -188,6 +188,7 @@ RÈGLES :
 - Le contenu doit être en français, adapté au niveau ${gradeLevel}
 - Utilise des exemples concrets liés à Haïti quand c'est pertinent
 - Chaque node fait 10-40 mots maximum (200 caractères max)
+- Maximum 8 nodes par section, jamais plus
 - Les headings font maximum 8 mots
 - Tu dois répondre UNIQUEMENT avec un objet JSON valide, sans texte avant ni après.`;
 
