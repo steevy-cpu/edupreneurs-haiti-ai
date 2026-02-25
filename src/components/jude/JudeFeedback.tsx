@@ -5,9 +5,11 @@
  * Provides a personalized "Jude says..." experience with randomized messages.
  * Plays pre-generated voice audio matching the feedback message,
  * then chains explanation narration via useJudeVoice.
+ * 
+ * Wrapped in forwardRef so Radix Presence (TabsContent) can attach its ref.
  */
 
-import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback, forwardRef } from 'react';
 import { Volume2, VolumeX, Loader2, Square } from 'lucide-react';
 import judeChairDesk from "@/assets/eric-chair-desk.png";
 import { getJudeFeedbackAudioUrl } from '@/utils/judeFeedbackAudio';
@@ -47,7 +49,8 @@ interface JudeFeedbackProps {
   children?: React.ReactNode;
 }
 
-export function JudeFeedback({ isCorrect, explanation, children }: JudeFeedbackProps) {
+export const JudeFeedback = forwardRef<HTMLDivElement, JudeFeedbackProps>(
+  function JudeFeedback({ isCorrect, explanation, children }, ref) {
   const [isMuted, setIsMuted] = useState(() => {
     try {
       return localStorage.getItem(MUTE_KEY) === 'true';
@@ -187,13 +190,16 @@ export function JudeFeedback({ isCorrect, explanation, children }: JudeFeedbackP
   };
 
   return (
-    <div className={`
-      p-4 sm:p-5 rounded-lg border-2 animate-fade-in
-      ${isCorrect
-        ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-700' 
-        : 'bg-orange-50 dark:bg-orange-950/20 border-orange-300 dark:border-orange-700'
-      }
-    `}>
+    <div
+      ref={ref}
+      className={`
+        p-4 sm:p-5 rounded-lg border-2 animate-fade-in
+        ${isCorrect
+          ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-700' 
+          : 'bg-orange-50 dark:bg-orange-950/20 border-orange-300 dark:border-orange-700'
+        }
+      `}
+    >
       <div className="flex items-start gap-3">
         <img
           src={judeChairDesk}
@@ -218,4 +224,4 @@ export function JudeFeedback({ isCorrect, explanation, children }: JudeFeedbackP
       </div>
     </div>
   );
-}
+});
