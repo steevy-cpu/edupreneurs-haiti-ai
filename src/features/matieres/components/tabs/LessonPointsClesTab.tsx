@@ -10,8 +10,9 @@ import {
   CarouselNext,
   type CarouselApi,
 } from '@/components/ui/carousel';
-import { RefreshCw, AlertCircle, Sparkles, ChevronRight, BookOpen, Lightbulb, Calculator, Star } from 'lucide-react';
+import { RefreshCw, AlertCircle, Sparkles, ChevronRight, BookOpen, Lightbulb, Calculator, Star, Volume2, VolumeX, Square, Loader2 } from 'lucide-react';
 import { usePointsClesCards, type PointsClesCard } from '@/features/matieres/hooks/usePointsClesCards';
+import { useJudeVoice } from '@/hooks/useJudeVoice';
 import { JudeGeneratingOverlay } from '@/components/jude/JudeGeneratingOverlay';
 import { MathText } from '@/components/MathContent';
 
@@ -93,10 +94,48 @@ function CardContent_Typed({ card }: { card: PointsClesCard }) {
   );
 }
 
+// Speaker button — uses Jude voice hook for narration with background preloading
+function JudeSpeakerButton({ text, storageKey }: { text: string; storageKey: string }) {
+  const { play, stop, isSpeaking, isLoading, isError } = useJudeVoice({
+    text,
+    storageKey,
+    context: 'points-cles',
+    autoPreload: true,
+  });
+
+  // Error state — dimmed icon, non-interactive
+  if (isError) return (
+    <button className="opacity-40 cursor-not-allowed p-2" disabled aria-label="Erreur audio">
+      <VolumeX className="h-4 w-4 text-white/60" />
+    </button>
+  );
+
+  return (
+    <button
+      onClick={isSpeaking ? stop : play}
+      className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+      aria-label={isSpeaking ? 'Arrêter' : 'Écouter'}
+    >
+      {isLoading ? (
+        <Loader2 className="h-4 w-4 text-white animate-spin" />
+      ) : isSpeaking ? (
+        <Square className="h-4 w-4 text-white fill-white" />
+      ) : (
+        <Volume2 className="h-4 w-4 text-white" />
+      )}
+    </button>
+  );
+}
+
 // Single flashcard slide — type-aware layout with icon + optional decorations
-function PointsClesCardSlide({ card }: { card: PointsClesCard }) {
+function PointsClesCardSlide({ card, lessonId, cardIndex }: { card: PointsClesCard; lessonId: string; cardIndex: number }) {
   const Icon = TYPE_ICONS[card.type];
   const isRemember = card.type === 'remember';
+
+  // Combine title + content for narration text
+  const narrationText = `${card.title}. ${card.content}`;
+  // Stable storage key for CDN caching
+  const storageKey = `points-cles/${lessonId}-card-${cardIndex}`;
 
   return (
     <div
@@ -104,9 +143,16 @@ function PointsClesCardSlide({ card }: { card: PointsClesCard }) {
         isRemember ? 'ring-2 ring-white/30' : ''
       }`}
     >
-      {/* Pulsing star decoration for "remember" cards — draws attention */}
+      {/* Speaker button — top-right corner */}
+      {narrationText.trim() && (
+        <div className="absolute top-3 right-3 z-10">
+          <JudeSpeakerButton text={narrationText} storageKey={storageKey} />
+        </div>
+      )}
+
+      {/* Pulsing star decoration for "remember" cards — shifted left to avoid speaker overlap */}
       {isRemember && (
-        <Star className="absolute top-4 right-4 h-5 w-5 text-white/40 animate-pulse" />
+        <Star className="absolute top-4 right-12 h-5 w-5 text-white/40 animate-pulse" />
       )}
 
       {/* Emoji + type icon side by side */}
@@ -282,7 +328,7 @@ export function LessonPointsClesTab({
         <CarouselContent>
           {cards.map((card, index) => (
             <CarouselItem key={index}>
-              <PointsClesCardSlide card={card} />
+              <PointsClesCardSlide card={card} lessonId={lessonId} cardIndex={index} />
             </CarouselItem>
           ))}
         </CarouselContent>
