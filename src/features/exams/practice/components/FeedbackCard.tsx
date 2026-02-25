@@ -1,5 +1,6 @@
 /**
- * FeedbackCard - Compact Jude response card
+ * FeedbackCard - Compact Jude response card for exam practice.
+ * Plays pre-generated reaction clip, then chains explanation narration via useJudeVoice.
  */
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
@@ -11,8 +12,9 @@ import { MathText } from '@/components/MathContent';
 import judeProfile from '@/assets/jude-profile.jpeg';
 import type { TutorResponse } from '../../types/exam.types';
 import type { RunnerState } from '../types';
-import { CheckCircle2, XCircle, Lightbulb, Eye, Volume2, VolumeX } from 'lucide-react';
+import { CheckCircle2, XCircle, Lightbulb, Eye, Volume2, VolumeX, Loader2, Square } from 'lucide-react';
 import { getJudeFeedbackAudioUrl } from '@/utils/judeFeedbackAudio';
+import { useJudeVoice } from '@/hooks/useJudeVoice';
 
 const MUTE_KEY = 'jude-voice-muted';
 
@@ -27,6 +29,9 @@ export function FeedbackCard({ feedback, state }: FeedbackCardProps) {
   const isPartial = state === 'partial';
   const isRevealed = state === 'revealed';
   const isHint = state === 'idle' && feedback.blocks?.length > 0;
+
+  // Extract plain text explanation for voice narration
+  const explanationText = feedback.response || '';
 
   // Voice feedback (only for correct/incorrect)
   const [isMuted, setIsMuted] = useState(() => {
@@ -46,23 +51,56 @@ export function FeedbackCard({ feedback, state }: FeedbackCardProps) {
     [isCorrect, audioIndex]
   );
 
+  // Explanation voice hook — chains after reaction clip
+  const explanationKey = explanationText
+    ? `feedback/exam-${btoa(encodeURIComponent(explanationText)).slice(0, 32)}`
+    : null;
+
+  const {
+    play: playExplanation,
+    stop: stopExplanation,
+    isSpeaking: isExplanationSpeaking,
+    isLoading: isExplanationLoading,
+  } = useJudeVoice({
+    text: explanationText,
+    storageKey: explanationKey || 'feedback/empty',
+    context: 'feedback',
+    autoPreload: !!explanationText && (isCorrect || isIncorrect),
+  });
+
+  // Ref to avoid re-triggering audio useEffect when playExplanation identity changes
+  const playExplanationRef = useRef(playExplanation);
+  useEffect(() => { playExplanationRef.current = playExplanation; }, [playExplanation]);
+
+  // Play reaction clip, then chain explanation voice via onended
   useEffect(() => {
     if (isMuted || !audioUrl) return;
     const audio = new Audio(audioUrl);
     audio.volume = 0.7;
     audioRef.current = audio;
+
+    // Chain explanation narration after reaction clip finishes
+    audio.onended = () => {
+      if (explanationText && !isMuted) {
+        playExplanationRef.current();
+      }
+    };
+
     audio.play().catch(() => {});
     return () => { audio.pause(); audio.src = ''; audioRef.current = null; };
-  }, [audioUrl, isMuted]);
+  }, [audioUrl, isMuted, explanationText]);
 
   const toggleMute = useCallback(() => {
     setIsMuted(prev => {
       const next = !prev;
       try { localStorage.setItem(MUTE_KEY, String(next)); } catch {}
+      // Stop reaction clip if muting
       if (next && audioRef.current) audioRef.current.pause();
+      // Also stop explanation voice if playing
+      if (next) stopExplanation();
       return next;
     });
-  }, []);
+  }, [stopExplanation]);
 
   // Determine icon and border color
   const getStateStyles = () => {
@@ -104,6 +142,47 @@ export function FeedbackCard({ feedback, state }: FeedbackCardProps) {
 
   const styles = getStateStyles();
 
+  // State-aware speaker icon for correct/incorrect states
+  const renderSpeakerIcon = () => {
+    if (isExplanationLoading) {
+      return (
+        <button
+          className="p-1 rounded-md hover:bg-muted transition-colors flex-shrink-0"
+          aria-label="Chargement de la voix..."
+          disabled
+        >
+          <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+        </button>
+      );
+    }
+    if (isExplanationSpeaking) {
+      return (
+        <button
+          onClick={stopExplanation}
+          className="p-1 rounded-md hover:bg-muted transition-colors flex-shrink-0"
+          aria-label="Arrêter la voix de Jude"
+          title="Arrêter"
+        >
+          <Square className="w-4 h-4 text-muted-foreground" />
+        </button>
+      );
+    }
+    return (
+      <button
+        onClick={toggleMute}
+        className="p-1 rounded-md hover:bg-muted transition-colors flex-shrink-0"
+        aria-label={isMuted ? 'Activer la voix de Jude' : 'Couper la voix de Jude'}
+        title={isMuted ? 'Activer la voix' : 'Couper la voix'}
+      >
+        {isMuted ? (
+          <VolumeX className="w-4 h-4 text-muted-foreground" />
+        ) : (
+          <Volume2 className="w-4 h-4 text-muted-foreground" />
+        )}
+      </button>
+    );
+  };
+
   return (
     <Card className={cn('p-4 mt-4 border-2', styles.border, styles.bg)}>
       <div className="flex items-start gap-3">
@@ -130,20 +209,8 @@ export function FeedbackCard({ feedback, state }: FeedbackCardProps) {
                 +{feedback.grading.pointsAwarded} pts
               </span>
             )}
-            {(isCorrect || isIncorrect) && (
-              <button
-                onClick={toggleMute}
-                className="p-1 rounded-md hover:bg-muted transition-colors flex-shrink-0"
-                aria-label={isMuted ? 'Activer la voix de Jude' : 'Couper la voix de Jude'}
-                title={isMuted ? 'Activer la voix' : 'Couper la voix'}
-              >
-                {isMuted ? (
-                  <VolumeX className="w-4 h-4 text-muted-foreground" />
-                ) : (
-                  <Volume2 className="w-4 h-4 text-muted-foreground" />
-                )}
-              </button>
-            )}
+            {/* State-aware speaker icon — only for correct/incorrect */}
+            {(isCorrect || isIncorrect) && renderSpeakerIcon()}
           </div>
 
           {/* Jude's response */}
