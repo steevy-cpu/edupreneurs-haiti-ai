@@ -1,15 +1,29 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ericStudentDesk from '@/assets/eric-student-desk.png';
 import SimpleTypewriter from './SimpleTypewriter';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { useNetworkAwareLoading } from '@/hooks/useNetworkAwareLoading';
+import { useSessionAuth } from '@/contexts/SessionAuthContext';
+import { useJudeAudio } from '@/contexts/JudeAudioContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Volume2 } from 'lucide-react';
 
 interface JudeWelcomePopupProps {
   isOpen: boolean;
   onComplete: () => void;
 }
+
+/** The four onboarding messages — indices used as stable storage keys */
+const WELCOME_MESSAGES = [
+  "Salut visiteur! 👋",
+  "Moi c'est Jude, ton assistant virtuel!",
+  "Je vais te faire découvrir la plateforme...",
+  "Mais d'abord, laisse-moi trouver une bonne musique 🎵",
+] as const;
+
+/** Default typing speeds (ms per char) matching original hardcoded values */
+const DEFAULT_SPEEDS = [100, 90, 80, 70];
 
 const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
   const [phase, setPhase] = useState<'greeting' | 'intro' | 'walkthrough' | 'searching' | 'playing' | 'done'>('greeting');
@@ -21,6 +35,14 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
   const [searchProgress, setSearchProgress] = useState(0);
   const { tracks, playTrack } = useMusicPlayer();
   const { shouldShowAnimations } = useNetworkAwareLoading();
+
+  // Voice sync — authenticated users get Jude's voice, visitors get typing clicks
+  const { isAuthenticated } = useSessionAuth();
+  const { speak, stop } = useJudeAudio();
+  const audioUrlsRef = useRef<(string | null)[]>([null, null, null, null]);
+  const audioDurationsRef = useRef<number[]>([0, 0, 0, 0]);
+  // Track mute state at render time for enableSound decisions
+  const isMuted = typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true';
 
   const startMusic = useCallback(() => {
     // Find "Meilleure Musique Classique Étude" track
@@ -37,6 +59,55 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
       playTrack(0);
     }
   }, [tracks, playTrack]);
+
+  // Pre-fetch all four audio clips in parallel when popup opens (authenticated only)
+  useEffect(() => {
+    if (!isOpen || !isAuthenticated) return;
+    if (isMuted) return;
+
+    WELCOME_MESSAGES.forEach((msg, i) => {
+      supabase.functions.invoke('generate-jude-voice', {
+        body: { text: msg, storageKey: `onboarding/welcome-${i}`, context: 'onboarding' }
+      }).then(({ data }) => {
+        if (data?.url) {
+          audioUrlsRef.current[i] = data.url;
+          // Pre-measure duration so we can calculate typing speed
+          const audio = new Audio(data.url);
+          audio.addEventListener('loadedmetadata', () => {
+            audioDurationsRef.current[i] = audio.duration;
+          });
+          audio.load();
+        }
+      }).catch(() => { /* silent fail — typewriter uses default speed */ });
+    });
+  }, [isOpen, isAuthenticated, isMuted]);
+
+  // Stop any playing audio when popup closes
+  useEffect(() => {
+    if (!isOpen) {
+      stop();
+    }
+  }, [isOpen, stop]);
+
+  /** Calculate ms-per-char so typing finishes ~90% through audio duration */
+  const getTypingSpeed = useCallback((messageIndex: number, messageLength: number): number => {
+    const duration = audioDurationsRef.current[messageIndex];
+    if (!duration || duration <= 0) return DEFAULT_SPEEDS[messageIndex];
+    const durationMs = duration * 1000;
+    return Math.max(30, Math.floor((durationMs * 0.9) / messageLength));
+  }, []);
+
+  /** Trigger Jude's voice when a message starts typing */
+  const handleMessageStart = useCallback((index: number) => {
+    const muted = localStorage.getItem('jude-voice-muted') === 'true';
+    if (muted || !audioUrlsRef.current[index]) return;
+    speak(audioUrlsRef.current[index]!);
+  }, [speak]);
+
+  /** Whether voice is available for a given message — controls enableSound */
+  const hasVoice = useCallback((i: number) => {
+    return !!audioUrlsRef.current[i] && !isMuted;
+  }, [isMuted]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -59,7 +130,7 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
     return () => clearTimeout(greetingTimer);
   }, [isOpen]);
 
-  // Progress bar animation - only starts AFTER searching text is complete
+  // Progress bar animation — only starts AFTER searching text is complete
   useEffect(() => {
     if (!searchingTextComplete) return;
     
@@ -69,7 +140,7 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
           clearInterval(interval);
           return 100;
         }
-        return prev + 2; // Increment by 2 every 40ms = ~2 seconds total
+        return prev + 2;
       });
     }, 40);
     
@@ -83,7 +154,6 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
         setPhase('playing');
         startMusic();
         
-        // After music starts, wait and then complete
         setTimeout(() => {
           setPhase('done');
           setTimeout(onComplete, 500);
@@ -114,7 +184,6 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
   };
 
   const handleSearchingComplete = () => {
-    // Now trigger the progress bar
     setSearchingTextComplete(true);
   };
 
@@ -136,7 +205,7 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
           />
           
-          {/* Floating container - transparent, no border, no shadow */}
+          {/* Floating container */}
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -198,10 +267,11 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
                 {showGreeting && (
                   <p className="text-xl sm:text-2xl font-bold text-foreground">
                     <SimpleTypewriter
-                      text="Salut visiteur! 👋"
-                      speed={100}
+                      text={WELCOME_MESSAGES[0]}
+                      speed={getTypingSpeed(0, WELCOME_MESSAGES[0].length)}
                       onComplete={handleGreetingComplete}
-                      enableSound
+                      onStart={() => handleMessageStart(0)}
+                      enableSound={!hasVoice(0)}
                       soundVolume={0.06}
                     />
                   </p>
@@ -215,10 +285,11 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
                     className="text-base sm:text-lg text-foreground font-medium"
                   >
                     <SimpleTypewriter
-                      text="Moi c'est Jude, ton assistant virtuel!"
-                      speed={90}
+                      text={WELCOME_MESSAGES[1]}
+                      speed={getTypingSpeed(1, WELCOME_MESSAGES[1].length)}
                       onComplete={handleIntroComplete}
-                      enableSound
+                      onStart={() => handleMessageStart(1)}
+                      enableSound={!hasVoice(1)}
                       soundVolume={0.06}
                     />
                   </motion.p>
@@ -232,10 +303,11 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
                     className="text-sm sm:text-base text-muted-foreground"
                   >
                     <SimpleTypewriter
-                      text="Je vais te faire découvrir la plateforme..."
-                      speed={80}
+                      text={WELCOME_MESSAGES[2]}
+                      speed={getTypingSpeed(2, WELCOME_MESSAGES[2].length)}
                       onComplete={handleWalkthroughComplete}
-                      enableSound
+                      onStart={() => handleMessageStart(2)}
+                      enableSound={!hasVoice(2)}
                       soundVolume={0.06}
                     />
                   </motion.p>
@@ -249,15 +321,16 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
                   >
                     <p className="text-sm sm:text-base text-muted-foreground">
                       <SimpleTypewriter
-                        text="Mais d'abord, laisse-moi trouver une bonne musique 🎵"
-                        speed={70}
+                        text={WELCOME_MESSAGES[3]}
+                        speed={getTypingSpeed(3, WELCOME_MESSAGES[3].length)}
                         onComplete={handleSearchingComplete}
-                        enableSound
+                        onStart={() => handleMessageStart(3)}
+                        enableSound={!hasVoice(3)}
                         soundVolume={0.06}
                       />
                     </p>
                     
-                    {/* Progress bar - shows after the searching text is typed */}
+                    {/* Progress bar — shows after the searching text is typed */}
                     {searchProgress > 0 && (
                       <motion.div 
                         initial={{ opacity: 0, y: 10 }}
@@ -268,7 +341,6 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
                           Recherche en cours...
                         </p>
                         
-                        {/* Progress bar container */}
                         <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                           <motion.div
                             className="h-full bg-primary rounded-full"
@@ -278,7 +350,6 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
                           />
                         </div>
                         
-                        {/* Percentage */}
                         <p className="text-xs text-muted-foreground mt-1 text-right">
                           {searchProgress}%
                         </p>
