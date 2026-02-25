@@ -160,48 +160,49 @@ export const LessonPageTemplate = ({
         {/* Sticky Tabs Navigation */}
         <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b shadow-sm">
           <div className="container mx-auto px-2 sm:px-4 py-2">
-            <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 h-auto p-1 gap-1 [&>button[data-state=active]]:bg-emerald-600 [&>button[data-state=active]]:text-white [&>button[data-state=active]]:shadow-md">
-              <TabsTrigger value="introduction" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+            {/* Horizontally scrollable on tablet to prevent overlap; grid on large screens */}
+            <TabsList className="flex lg:grid lg:grid-cols-7 w-full h-auto p-1 gap-1 overflow-x-auto scrollbar-hide [&>button[data-state=active]]:bg-emerald-600 [&>button[data-state=active]]:text-white [&>button[data-state=active]]:shadow-md">
+              <TabsTrigger value="introduction" className="relative flex-col lg:flex-row py-2 lg:py-3 text-xs lg:text-sm gap-1 min-w-[4.5rem] sm:min-w-[5.5rem] flex-shrink-0">
                 <TabIndicator status={getTabStatus('introduction')} />
-                <Target className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Introduction</span>
-                <span className="sm:hidden text-[10px]">Intro</span>
+                <Target className="h-3 w-3 lg:h-4 lg:w-4" />
+                <span className="hidden lg:inline">Introduction</span>
+                <span className="lg:hidden text-[10px]">Intro</span>
               </TabsTrigger>
-              <TabsTrigger value="contenu" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+              <TabsTrigger value="contenu" className="relative flex-col lg:flex-row py-2 lg:py-3 text-xs lg:text-sm gap-1 min-w-[4.5rem] sm:min-w-[5.5rem] flex-shrink-0">
                 <TabIndicator status={getTabStatus('contenu')} />
-                <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Contenu & Exemples</span>
-                <span className="sm:hidden text-[10px]">Cours</span>
+                <BookOpen className="h-3 w-3 lg:h-4 lg:w-4" />
+                <span className="hidden lg:inline">Contenu & Exemples</span>
+                <span className="lg:hidden text-[10px]">Cours</span>
               </TabsTrigger>
-              <TabsTrigger value="points-cles" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+              <TabsTrigger value="points-cles" className="relative flex-col lg:flex-row py-2 lg:py-3 text-xs lg:text-sm gap-1 min-w-[4.5rem] sm:min-w-[5.5rem] flex-shrink-0">
                 <TabIndicator status={getTabStatus('points-cles')} />
-                <Lightbulb className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Points Clés</span>
-                <span className="sm:hidden text-[10px]">Clés</span>
+                <Lightbulb className="h-3 w-3 lg:h-4 lg:w-4" />
+                <span className="hidden lg:inline">Points Clés</span>
+                <span className="lg:hidden text-[10px]">Clés</span>
               </TabsTrigger>
-              <TabsTrigger value="studygram" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+              <TabsTrigger value="studygram" className="relative flex-col lg:flex-row py-2 lg:py-3 text-xs lg:text-sm gap-1 min-w-[4.5rem] sm:min-w-[5.5rem] flex-shrink-0">
                 <TabIndicator status={getTabStatus('studygram')} />
-                <Layers className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Studygram</span>
-                <span className="sm:hidden text-[10px]">Study</span>
+                <Layers className="h-3 w-3 lg:h-4 lg:w-4" />
+                <span className="hidden lg:inline">Studygram</span>
+                <span className="lg:hidden text-[10px]">Study</span>
               </TabsTrigger>
-              <TabsTrigger value="activites" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+              <TabsTrigger value="activites" className="relative flex-col lg:flex-row py-2 lg:py-3 text-xs lg:text-sm gap-1 min-w-[4.5rem] sm:min-w-[5.5rem] flex-shrink-0">
                 <TabIndicator status={getTabStatus('activites')} />
-                <Gamepad2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Activités</span>
-                <span className="sm:hidden text-[10px]">Act</span>
+                <Gamepad2 className="h-3 w-3 lg:h-4 lg:w-4" />
+                <span className="hidden lg:inline">Activités</span>
+                <span className="lg:hidden text-[10px]">Act</span>
               </TabsTrigger>
-              <TabsTrigger value="quiz" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+              <TabsTrigger value="quiz" className="relative flex-col lg:flex-row py-2 lg:py-3 text-xs lg:text-sm gap-1 min-w-[4.5rem] sm:min-w-[5.5rem] flex-shrink-0">
                 <TabIndicator status={getTabStatus('quiz')} />
-                <GraduationCap className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Quiz</span>
-                <span className="sm:hidden text-[10px]">Quiz</span>
+                <GraduationCap className="h-3 w-3 lg:h-4 lg:w-4" />
+                <span className="hidden lg:inline">Quiz</span>
+                <span className="lg:hidden text-[10px]">Quiz</span>
               </TabsTrigger>
-              <TabsTrigger value="notes" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+              <TabsTrigger value="notes" className="relative flex-col lg:flex-row py-2 lg:py-3 text-xs lg:text-sm gap-1 min-w-[4.5rem] sm:min-w-[5.5rem] flex-shrink-0">
                 <TabIndicator status={getTabStatus('notes')} />
-                <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Mes notes</span>
-                <span className="sm:hidden text-[10px]">Notes</span>
+                <FileText className="h-3 w-3 lg:h-4 lg:w-4" />
+                <span className="hidden lg:inline">Mes notes</span>
+                <span className="lg:hidden text-[10px]">Notes</span>
               </TabsTrigger>
             </TabsList>
           </div>
