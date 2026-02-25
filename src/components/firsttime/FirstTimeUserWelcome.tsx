@@ -27,7 +27,8 @@ const FirstTimeUserWelcome = () => {
 
   // Voice auto-play for authenticated first-time users
   const { speak, stop } = useJudeAudio();
-  const audioUrlsRef = useRef<(string | null)[]>([null, null, null]);
+  // State-based URL tracking so React re-renders when URLs resolve (fixes race condition)
+  const [audioUrls, setAudioUrls] = useState<(string | null)[]>([null, null, null]);
   const audioDurationsRef = useRef<number[]>([0, 0, 0]);
   // Track mute state at render time for enableSound decisions
   const isMuted = typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true';
@@ -65,8 +66,13 @@ const FirstTimeUserWelcome = () => {
         body: { text, storageKey, context: 'onboarding' }
       }).then(({ data }) => {
         if (data?.url) {
-          audioUrlsRef.current[i] = data.url;
-          // Pre-measure duration for typing speed sync
+          // Update state so React re-renders and enableSound recalculates
+          setAudioUrls(prev => {
+            const next = [...prev];
+            next[i] = data.url;
+            return next;
+          });
+          // Pre-measure duration for typing speed sync (ref is fine — no re-render needed)
           const audio = new Audio(data.url);
           audio.addEventListener('loadedmetadata', () => {
             audioDurationsRef.current[i] = audio.duration;
@@ -93,17 +99,17 @@ const FirstTimeUserWelcome = () => {
     return Math.max(30, Math.floor((durationMs * 0.9) / messageLength));
   }, []);
 
-  /** Trigger Jude's voice when a message starts typing */
+  /** Trigger Jude's voice when a message starts typing — reads from state */
   const handleMessageStart = useCallback((index: number) => {
     const muted = localStorage.getItem('jude-voice-muted') === 'true';
-    if (muted || !audioUrlsRef.current[index]) return;
-    speak(audioUrlsRef.current[index]!);
-  }, [speak]);
+    if (muted || !audioUrls[index]) return;
+    speak(audioUrls[index]!);
+  }, [speak, audioUrls]);
 
-  /** Whether voice is available for a given message — controls enableSound */
+  /** Whether voice is available for a given message — reads from state so re-render updates enableSound */
   const hasVoice = useCallback((i: number) => {
-    return !!audioUrlsRef.current[i] && !isMuted;
-  }, [isMuted]);
+    return !!audioUrls[i] && !isMuted;
+  }, [audioUrls, isMuted]);
 
   useEffect(() => {
     if (!firstTimeUser.showWelcome || firstTimeUser.isLoading) {
@@ -115,13 +121,17 @@ const FirstTimeUserWelcome = () => {
       return;
     }
 
-    // Start animation sequence
-    const greetingTimer = setTimeout(() => {
-      setShowGreeting(true);
-    }, 500);
+    // Smart delay: wait for audio URL 0 to resolve, cap at 3s for slow connections
+    if (audioUrls[0]) {
+      // Audio already ready (cached or fast fetch) — short delay for visual polish
+      const timer = setTimeout(() => setShowGreeting(true), 300);
+      return () => clearTimeout(timer);
+    }
 
-    return () => clearTimeout(greetingTimer);
-  }, [firstTimeUser.showWelcome, firstTimeUser.isLoading]);
+    // Audio not ready yet — wait up to 3s then start with typing sounds as fallback
+    const maxWait = setTimeout(() => setShowGreeting(true), 3000);
+    return () => clearTimeout(maxWait);
+  }, [firstTimeUser.showWelcome, firstTimeUser.isLoading, audioUrls[0]]);
 
   const handleGreetingComplete = () => {
     setTimeout(() => {
