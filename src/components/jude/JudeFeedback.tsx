@@ -3,13 +3,15 @@
  * 
  * Shows Jude's avatar next to feedback text after answering a question.
  * Provides a personalized "Jude says..." experience with randomized messages.
- * Plays pre-generated voice audio matching the feedback message.
+ * Plays pre-generated voice audio matching the feedback message,
+ * then chains explanation narration via useJudeVoice.
  */
 
 import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX, Loader2, Square } from 'lucide-react';
 import judeChairDesk from "@/assets/eric-chair-desk.png";
 import { getJudeFeedbackAudioUrl } from '@/utils/judeFeedbackAudio';
+import { useJudeVoice } from '@/hooks/useJudeVoice';
 
 const CORRECT_MESSAGES = [
   { emoji: '🎉', text: 'Bravo !' },
@@ -66,13 +68,42 @@ export function JudeFeedback({ isCorrect, explanation, children }: JudeFeedbackP
     [isCorrect, index]
   );
 
-  // Play audio when feedback appears
+  // Stable storageKey from explanation text hash (first 32 chars of base64)
+  const explanationKey = explanation
+    ? `feedback/${isCorrect ? 'correct' : 'incorrect'}-${btoa(encodeURIComponent(explanation)).slice(0, 32)}`
+    : null;
+
+  const {
+    play: playExplanation,
+    stop: stopExplanation,
+    isSpeaking: isExplanationSpeaking,
+    isLoading: isExplanationLoading,
+  } = useJudeVoice({
+    text: explanation || '',
+    storageKey: explanationKey || 'feedback/empty',
+    context: 'feedback',
+    autoPreload: !!explanation,
+  });
+
+  // Ref to avoid re-triggering audio useEffect when playExplanation identity changes
+  const playExplanationRef = useRef(playExplanation);
+  useEffect(() => { playExplanationRef.current = playExplanation; }, [playExplanation]);
+
+  // Play reaction clip, then chain explanation voice via onended
   useEffect(() => {
     if (isMuted || !audioUrl) return;
 
     const audio = new Audio(audioUrl);
     audio.volume = 0.7;
     audioRef.current = audio;
+
+    // Chain explanation narration after reaction clip finishes
+    audio.onended = () => {
+      if (explanation && !isMuted) {
+        playExplanationRef.current();
+      }
+    };
+
     audio.play().catch(() => {
       // Silently fail if autoplay is blocked by browser
     });
@@ -82,7 +113,7 @@ export function JudeFeedback({ isCorrect, explanation, children }: JudeFeedbackP
       audio.src = '';
       audioRef.current = null;
     };
-  }, [audioUrl, isMuted]);
+  }, [audioUrl, isMuted, explanation]);
 
   const toggleMute = useCallback(() => {
     setIsMuted(prev => {
@@ -90,13 +121,70 @@ export function JudeFeedback({ isCorrect, explanation, children }: JudeFeedbackP
       try {
         localStorage.setItem(MUTE_KEY, String(next));
       } catch {}
-      // Stop current audio if muting
+      // Stop reaction clip if muting
       if (next && audioRef.current) {
         audioRef.current.pause();
       }
+      // Also stop explanation voice if playing
+      if (next) {
+        stopExplanation();
+      }
       return next;
     });
-  }, []);
+  }, [stopExplanation]);
+
+  // Determine which icon/action to show on the speaker button
+  const renderSpeakerButton = () => {
+    // Explanation loading — show spinner
+    if (isExplanationLoading) {
+      return (
+        <button
+          className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors flex-shrink-0"
+          aria-label="Chargement de la voix..."
+          disabled
+        >
+          <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+        </button>
+      );
+    }
+    // Explanation speaking — show stop button
+    if (isExplanationSpeaking) {
+      return (
+        <button
+          onClick={stopExplanation}
+          className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors flex-shrink-0"
+          aria-label="Arrêter la voix de Jude"
+          title="Arrêter"
+        >
+          <Square className="w-4 h-4 text-muted-foreground" />
+        </button>
+      );
+    }
+    // Muted — show VolumeX
+    if (isMuted) {
+      return (
+        <button
+          onClick={toggleMute}
+          className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors flex-shrink-0"
+          aria-label="Activer la voix de Jude"
+          title="Activer la voix"
+        >
+          <VolumeX className="w-4 h-4 text-muted-foreground" />
+        </button>
+      );
+    }
+    // Default — show Volume2
+    return (
+      <button
+        onClick={toggleMute}
+        className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors flex-shrink-0"
+        aria-label="Couper la voix de Jude"
+        title="Couper la voix"
+      >
+        <Volume2 className="w-4 h-4 text-muted-foreground" />
+      </button>
+    );
+  };
 
   return (
     <div className={`
@@ -119,18 +207,7 @@ export function JudeFeedback({ isCorrect, explanation, children }: JudeFeedbackP
             <p className="font-semibold mb-1 text-sm sm:text-base">
               {feedback.emoji} {feedback.text}
             </p>
-            <button
-              onClick={toggleMute}
-              className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors flex-shrink-0"
-              aria-label={isMuted ? 'Activer la voix de Jude' : 'Couper la voix de Jude'}
-              title={isMuted ? 'Activer la voix' : 'Couper la voix'}
-            >
-              {isMuted ? (
-                <VolumeX className="w-4 h-4 text-muted-foreground" />
-              ) : (
-                <Volume2 className="w-4 h-4 text-muted-foreground" />
-              )}
-            </button>
+            {renderSpeakerButton()}
           </div>
           {children || (
             <p className="text-xs sm:text-sm leading-relaxed break-words text-muted-foreground">
