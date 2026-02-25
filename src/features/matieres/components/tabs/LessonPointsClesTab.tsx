@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, forwardRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -173,24 +173,26 @@ function PointsClesCardSlide({ card, lessonId, cardIndex }: { card: PointsClesCa
   );
 }
 
-// External dot indicators below carousel — colored to match active card type
-function ExternalDots({ total, current, cards }: { total: number; current: number; cards: PointsClesCard[] }) {
-  return (
-    <div className="flex justify-center gap-2 mt-3">
-      {Array.from({ length: total }, (_, i) => (
-        <button
-          key={i}
-          aria-label={`Carte ${i + 1}`}
-          className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${
-            i === current
-              ? `${DOT_COLORS[cards[i]?.type ?? 'concept']} scale-125`
-              : 'bg-muted-foreground/30'
-          }`}
-        />
-      ))}
-    </div>
-  );
-}
+// External dot indicators below carousel — wrapped in forwardRef for Radix Presence compatibility
+const ExternalDots = forwardRef<HTMLDivElement, { total: number; current: number; cards: PointsClesCard[] }>(
+  function ExternalDots({ total, current, cards }, ref) {
+    return (
+      <div ref={ref} className="flex justify-center gap-2 mt-3">
+        {Array.from({ length: total }, (_, i) => (
+          <button
+            key={i}
+            aria-label={`Carte ${i + 1}`}
+            className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${
+              i === current
+                ? `${DOT_COLORS[cards[i]?.type ?? 'concept']} scale-125`
+                : 'bg-muted-foreground/30'
+            }`}
+          />
+        ))}
+      </div>
+    );
+  }
+);
 
 // Loading skeleton matching card dimensions
 function PointsClesSkeleton() {
