@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ChevronRight, ChevronLeft, X, Sparkles } from "lucide-react";
+import { ChevronRight, ChevronLeft, X, Sparkles, Volume2, VolumeX } from "lucide-react";
 import { useFirstTimeUser } from "@/contexts/FirstTimeUserContext";
 import ericStudentDesk from "@/assets/eric-student-desk.png";
 import ericCelebrating from "@/assets/eric-celebrating.png";
@@ -12,6 +12,8 @@ import { useRoutePreloader } from "@/shell/hooks/useRoutePreloader";
 import { preloadImage } from "@/utils/performanceOptimization";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
+import { useJudeAudio } from '@/contexts/JudeAudioContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TourStep {
   path: string;
@@ -71,6 +73,18 @@ const tourSteps: TourStep[] = [
   },
 ];
 
+/** Clean text versions of each tour step for TTS — no emojis, natural speech */
+const TOUR_VOICE_TEXTS: string[] = [
+  "Votre tableau de bord. Suivez votre progression, vos pièces d'or gagnées et vos statistiques d'apprentissage.",
+  "Musique d'étude. Tu peux écouter de la musique pendant que tu étudies.",
+  "Vos matières. Accédez aux cours de votre niveau. Chaque leçon a des résumés clairs, des exercices et des quiz interactifs!",
+  "Fil d'actualité. Partagez vos succès, posez des questions et connectez-vous avec d'autres étudiants.",
+  "Classement. Voyez les meilleurs apprenants et leur progression. Gagnez des pièces d'or en étudiant!",
+  "Découverte des passions. Explorez la musique, les arts, les échecs et le développement personnel.",
+  "Messages. Discutez en privé avec d'autres étudiants et formez des groupes d'étude.",
+  "Votre profil. Personnalisez votre compte, changez votre avatar et gérez vos préférences.",
+];
+
 /** Spotlight rect state */
 interface SpotlightRect {
   top: number;
@@ -98,6 +112,12 @@ const FirstTimeUserTour = () => {
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
   // 3D: celebration overlay
   const [showCelebration, setShowCelebration] = useState(false);
+
+  // Voice — fire-and-forget TTS per tour step
+  const { speak, stop } = useJudeAudio();
+  const [isMuted, setIsMuted] = useState(() =>
+    typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true'
+  );
   
   // Wait one render cycle for React dispatcher to stabilize after lazy load
   useEffect(() => {
@@ -201,6 +221,49 @@ const FirstTimeUserTour = () => {
       window.removeEventListener('scroll', computeSpotlight);
     };
   }, [computeSpotlight, firstTimeUser.tourStep, firstTimeUser.tourActive, firstTimeUser.tourCompleted]);
+
+  // Voice: fetch and play TTS for each tour step with 600ms navigation settle delay
+  useEffect(() => {
+    stop(); // stop any currently playing voice when step changes
+    if (isMuted) return;
+    const text = TOUR_VOICE_TEXTS[firstTimeUser.tourStep];
+    if (!text) return;
+    const timer = setTimeout(() => {
+      supabase.functions.invoke('generate-jude-voice', {
+        body: { text, storageKey: `onboarding/tour-step-${firstTimeUser.tourStep}`, context: 'onboarding' }
+      }).then(({ data }) => {
+        if (data?.url) speak(data.url);
+      }).catch(() => {}); // silent fail — typing sounds as fallback
+    }, 600); // wait for navigation animation to settle
+    return () => clearTimeout(timer);
+  }, [firstTimeUser.tourStep]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Voice the celebration overlay
+  useEffect(() => {
+    if (!showCelebration || isMuted) return;
+    supabase.functions.invoke('generate-jude-voice', {
+      body: {
+        text: "Tu es prêt! Bienvenue dans la famille Edupreneurs!",
+        storageKey: 'onboarding/tour-celebration',
+        context: 'onboarding'
+      }
+    }).then(({ data }) => {
+      if (data?.url) speak(data.url);
+    }).catch(() => {});
+  }, [showCelebration]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Stop voice on unmount
+  useEffect(() => () => stop(), [stop]);
+
+  // Mute toggle handler — persists to localStorage
+  const toggleMute = useCallback(() => {
+    setIsMuted(prev => {
+      const next = !prev;
+      localStorage.setItem('jude-voice-muted', String(next));
+      if (next) stop(); // stop current audio when muting
+      return next;
+    });
+  }, [stop]);
 
   // Early return AFTER all hooks are called (prevents hook count mismatch)
   if (!isStable) return null;
@@ -367,7 +430,7 @@ const FirstTimeUserTour = () => {
                       key={typewriterKey}
                       text={getDescription()}
                       speed={50}
-                      enableSound
+                      enableSound={isMuted}
                       soundVolume={0.04}
                       skipToEnd={skipTyping}
                       onComplete={() => setIsTypingComplete(true)}
@@ -389,6 +452,16 @@ const FirstTimeUserTour = () => {
               </Button>
 
               <div className="flex items-center gap-2">
+                {/* Mute toggle — consistent with visitor tour */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleMute}
+                  className="text-muted-foreground h-8 w-8 p-0"
+                  title={isMuted ? 'Activer la voix' : 'Couper la voix'}
+                >
+                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                </Button>
                 {firstTimeUser.tourStep > 0 && (
                   <Button variant="outline" size="sm" onClick={firstTimeUser.previousTourStep}>
                     <ChevronLeft className="w-4 h-4" />
