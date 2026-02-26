@@ -54,9 +54,9 @@ const FirstTimeUserWelcome = () => {
   useEffect(() => {
     if (!firstTimeUser.showWelcome || firstTimeUser.isLoading || isMuted) return;
 
-    // Message 0 is dynamic (includes nickname) — unique storageKey per user
+    // All messages use static keys — audio is pre-generated and CDN-cached
     const messages = [
-      { text: `Bienvenue sur Edupreneurs, ${displayName}! 👋`, storageKey: `onboarding/firsttime-0-${displayName}` },
+      { text: 'Bienvenue sur Edupreneurs!', storageKey: 'onboarding/firsttime-0' },
       { text: "Moi c'est Jude, ton assistant d'apprentissage!", storageKey: 'onboarding/firsttime-1' },
       { text: "Je vais te faire découvrir la plateforme...", storageKey: 'onboarding/firsttime-2' },
     ];
@@ -81,7 +81,7 @@ const FirstTimeUserWelcome = () => {
         }
       }).catch(() => { /* silent fail — typewriter uses default speed */ });
     });
-  }, [firstTimeUser.showWelcome, firstTimeUser.isLoading, isMuted, displayName]);
+  }, [firstTimeUser.showWelcome, firstTimeUser.isLoading, isMuted]);
 
   // Stop audio on unmount or when welcome closes
   useEffect(() => {

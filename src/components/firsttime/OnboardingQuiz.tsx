@@ -380,7 +380,7 @@ const OnboardingQuiz = () => {
     // Build clean text for TTS (strip emojis — ElevenLabs ignores them anyway)
     const speechTexts: Record<number, string> = {
       0: "Bonjour! Comment tu t'appelles?",
-      1: `Et maintenant, ${firstName}, tu es en quelle classe?`,
+      1: "Et maintenant, tu es en quelle classe?",
       2: "Tu préfères qu'on te parle comment?",
       3: "Quel est ton pseudo? C'est comme ça que les autres étudiants vont te voir!",
       4: "Dans quelle école tu étudies?",
@@ -389,21 +389,19 @@ const OnboardingQuiz = () => {
     };
     const text = speechTexts[currentStep];
     if (!text) return;
-    // Q1 is personalized with firstName — use name-specific key
-    const key = currentStep === 1
-      ? `onboarding/quiz-q${currentStep}-${firstName?.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10)}`
-      : `onboarding/quiz-q${currentStep}`;
+    // All question keys are static — pre-generated CDN cache hits
+    const key = `onboarding/quiz-q${currentStep}`;
     fetchAndSpeak(text, key);
-  }, [currentStep, firstName, firstTimeUser.showOnboardingQuiz]);
+  }, [currentStep, firstTimeUser.showOnboardingQuiz]);
 
   // Voice reactions when they appear — guarded by phase
   useEffect(() => {
     if (!firstTimeUser.showOnboardingQuiz) return;
     if (!showReaction || !reactionText) return;
-    const nameSlug = firstName?.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
-    const key = `onboarding/quiz-reaction-${currentStep}-${nameSlug}`;
+    // Static reaction keys — pre-generated CDN cache hits
+    const key = `onboarding/quiz-reaction-${currentStep}`;
     fetchAndSpeak(reactionText, key);
-  }, [showReaction, reactionText, currentStep, firstName, firstTimeUser.showOnboardingQuiz]);
+  }, [showReaction, reactionText, currentStep, firstTimeUser.showOnboardingQuiz]);
 
   // Voice the outro — guarded by phase
   useEffect(() => {
