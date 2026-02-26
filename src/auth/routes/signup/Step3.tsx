@@ -231,10 +231,10 @@ export default function SignupStep3() {
             Utilisez le code{" "}
             <button
               type="button"
-              onClick={() => handlePromoCodeChange('CSCP2026')}
+              onClick={() => handlePromoCodeChange('JUDE2026')}
               className="font-mono bg-muted px-1.5 py-0.5 rounded cursor-pointer hover:bg-muted/80 transition-colors font-semibold"
             >
-              cscp2026
+              jude2026
             </button>
             {" "}pour un accès gratuit (période de test)
           </p>
