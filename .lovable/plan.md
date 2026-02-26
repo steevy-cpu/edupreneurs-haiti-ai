@@ -1,50 +1,77 @@
 
 
-# Fix Onboarding Voice Ordering Bug
+# Plan: Static Onboarding Voice Keys
 
-## Problem
-All 4 onboarding components mount simultaneously via FloatingLayer. Voice useEffects in AvatarGenerationStep and OnboardingQuiz fire immediately on mount with no phase guards, causing "Maintenant creons ton avatar" and "Bonjour! Comment tu t'appelles?" to race against the welcome greeting.
+## Goal
+Eliminate all dynamic/personalized ElevenLabs calls during onboarding so every audio clip is a pre-generated CDN cache hit. Zero on-demand TTS generation for any user.
 
-## Diagnosis
-- **FirstTimeUserWelcome.tsx** -- Already guarded. The pre-fetch useEffect (L54) checks `firstTimeUser.showWelcome` and the speak calls use `onStart` callbacks tied to typewriter phases. No changes needed.
-- **AvatarGenerationStep.tsx** -- Avatar prompt useEffect (L50, deps `[]`) has NO guard. Celebration useEffect (L66) has no `showAvatarGeneration` guard.
-- **OnboardingQuiz.tsx** -- All 3 voice useEffects (L377, L399, L407) lack `showOnboardingQuiz` guards.
+## Code Changes
 
-## Changes
+### File 1: FirstTimeUserWelcome.tsx (L57-59)
 
-### File 1: AvatarGenerationStep.tsx (2 edits)
+**What changes:** The pre-fetch messages array (L58-59). Only message 0 is affected.
 
-**Edit A -- Avatar prompt useEffect (L50-63):**
-Add `if (!firstTimeUser.showAvatarGeneration) return;` as first line inside the effect. Change deps from `[]` to `[firstTimeUser.showAvatarGeneration]`.
+- Change `text` from `` `Bienvenue sur Edupreneurs, ${displayName}! 👋` `` to `"Bienvenue sur Edupreneurs!"` (generic TTS text)
+- Change `storageKey` from `` `onboarding/firsttime-0-${displayName}` `` to `'onboarding/firsttime-0'` (static key)
+- Remove `displayName` from the useEffect dependency array (L84) since it's no longer used in the effect
+- Update the comment on L57 from "dynamic" to "static"
 
-**Edit B -- Celebration useEffect (L66-79):**
-Add `if (!firstTimeUser.showAvatarGeneration) return;` before `if (!celebrating) return;`. Add `firstTimeUser.showAvatarGeneration` to deps.
+The typewriter display text on L161 and L241 remains unchanged -- still shows the personalized greeting with the user's name. Only the audio is generic.
 
 ### File 2: OnboardingQuiz.tsx (3 edits)
 
-**Edit C -- currentStep useEffect (L377-396):**
-Add `if (!firstTimeUser.showOnboardingQuiz) return;` as first line. Add `firstTimeUser.showOnboardingQuiz` to deps array.
+**Edit A -- Q1 voice key (L381-395):**
+- Change `text` for step 1 from `` `Et maintenant, ${firstName}, tu es en quelle classe?` `` to `"Et maintenant, tu es en quelle classe?"`
+- Change the key logic (L393-395) to always use `onboarding/quiz-q${currentStep}` -- remove the special case for step 1
+- Remove `firstName` from the useEffect dependency array (L397)
 
-**Edit D -- showReaction useEffect (L399-404):**
-Add `if (!firstTimeUser.showOnboardingQuiz) return;` as first line. Add `firstTimeUser.showOnboardingQuiz` to deps array.
+**Edit B -- Reaction voice key (L403-405):**
+- Remove the `nameSlug` variable and its computation
+- Change key from `` `onboarding/quiz-reaction-${currentStep}-${nameSlug}` `` to `` `onboarding/quiz-reaction-${currentStep}` ``
+- The `reactionText` passed to `fetchAndSpeak` still contains the display text (with emoji and name for step 0), but the `storageKey` is now static, so the edge function will return the pre-generated audio regardless of the text param
+- Remove `firstName` from the useEffect dependency array (L406)
 
-**Edit E -- isOutro useEffect (L407-413):**
-Add `if (!firstTimeUser.showOnboardingQuiz) return;` as first line. Add `firstTimeUser.showOnboardingQuiz` to deps array.
+**Edit C -- Reaction-0 display text (L253):**
+The `reactionText` for step 0 is `` `Enchanté(e), ${fullName.split(/\s+/)[0]}! 🎉` `` which is personalized. Since the audio will now be the pre-generated "Enchanté! Ravi de te rencontrer!" clip (keyed to `quiz-reaction-0`), the display text can stay personalized -- the typewriter shows one thing, Jude says the generic version. No change needed here.
 
-### File 3: FirstTimeUserWelcome.tsx -- No changes needed
-Already has `showWelcome` guard on the pre-fetch effect (L55) and speak calls are triggered via `onStart` callbacks only when the typewriter phase activates.
+**Note on "Pas de souci!" (L289):** When a user picks "not in school", the reaction text is "Pas de souci!" but the key will be `quiz-reaction-4` (same as "Top!"). The audio will say "Top!" while the screen shows "Pas de souci!". This is an acceptable trade-off for static caching -- both are brief positive acknowledgments.
+
+## Post-Code: Pre-Generate All Static Audio Keys
+
+After code changes, invoke the `generate-jude-voice` edge function 9 times to pre-generate and cache all new static keys in the Storage bucket. These calls only need to happen once -- after that, every user gets instant CDN hits.
+
+Keys to pre-generate:
+1. `onboarding/firsttime-0` -- "Bienvenue sur Edupreneurs!"
+2. `onboarding/quiz-q1` -- "Et maintenant, tu es en quelle classe?"
+3. `onboarding/quiz-reaction-0` -- "Enchanté! Ravi de te rencontrer!"
+4. `onboarding/quiz-reaction-1` -- "Super choix!"
+5. `onboarding/quiz-reaction-2` -- "Parfait!"
+6. `onboarding/quiz-reaction-3` -- "Excellent pseudo!"
+7. `onboarding/quiz-reaction-4` -- "Top!"
+8. `onboarding/quiz-reaction-5` -- "Noté!"
+9. `onboarding/quiz-reaction-6` -- "Merci!"
+
+Existing keys that should already be in Storage (no action needed):
+- `onboarding/firsttime-1`, `onboarding/firsttime-2`
+- `onboarding/quiz-q0`, `onboarding/quiz-q2` through `onboarding/quiz-q6`
+- `onboarding/quiz-outro`
+- `onboarding/avatar-prompt`, `onboarding/avatar-celebration`
+- `onboarding/tour-step-0` through `onboarding/tour-step-7`
+- `onboarding/tour-celebration`
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- only adds early-return guards |
+| Breaks existing functionality? | No -- only audio text/keys change |
+| Typewriter display text changed? | No -- screen text stays personalized |
 | Provider stack affected? | No |
 | New dependencies? | No |
 | Bundle size impact? | None |
-| 3G compatible? | Yes |
-| Backward compatible? | Yes |
-| Files modified | AvatarGenerationStep.tsx, OnboardingQuiz.tsx only |
+| 3G performance? | Improved -- CDN hits instead of ElevenLabs generation |
+| Backward compatible? | Yes -- old dynamic cached audio becomes unused but harmless |
+| Files modified | FirstTimeUserWelcome.tsx, OnboardingQuiz.tsx only |
 
 ## Result
-Voice effects only fire when their respective phase becomes active, eliminating the race condition. Welcome greeting plays first, then quiz voices, then avatar prompt -- in correct sequence.
+Zero on-demand ElevenLabs calls during onboarding. Every audio clip is a pre-generated CDN cache hit. Full onboarding works on 3G without any TTS latency.
+
