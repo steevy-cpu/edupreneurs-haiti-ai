@@ -115,6 +115,11 @@ const FirstTimeUserTour = () => {
 
   // Voice — fire-and-forget TTS per tour step
   const { speak, stop } = useJudeAudio();
+  // Ref-stable speak/stop to avoid stale closures in the voice useEffect
+  const speakRef = useRef(speak);
+  const stopRef = useRef(stop);
+  useEffect(() => { speakRef.current = speak; }, [speak]);
+  useEffect(() => { stopRef.current = stop; }, [stop]);
   const [isMuted, setIsMuted] = useState(() =>
     typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true'
   );
@@ -222,21 +227,35 @@ const FirstTimeUserTour = () => {
     };
   }, [computeSpotlight, firstTimeUser.tourStep, firstTimeUser.tourActive, firstTimeUser.tourCompleted]);
 
-  // Voice: fetch and play TTS for each tour step with 600ms navigation settle delay
+  // Voice: fetch and play TTS for each tour step with 600ms navigation settle delay.
+  // Uses refs for speak/stop to avoid stale closures, reads mute from localStorage
+  // for always-fresh value, and guards on tourActive/tourCompleted.
   useEffect(() => {
-    stop(); // stop any currently playing voice when step changes
-    if (isMuted) return;
+    if (!firstTimeUser.tourActive || firstTimeUser.tourCompleted) return;
+
+    stopRef.current();
+
+    // Read mute state directly from localStorage — avoids stale closure on isMuted
+    const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
+    if (isMutedNow) return;
+
     const text = TOUR_VOICE_TEXTS[firstTimeUser.tourStep];
     if (!text) return;
+
     const timer = setTimeout(() => {
       supabase.functions.invoke('generate-jude-voice', {
-        body: { text, storageKey: `onboarding/tour-step-${firstTimeUser.tourStep}`, context: 'onboarding' }
+        body: {
+          text,
+          storageKey: `onboarding/tour-step-${firstTimeUser.tourStep}`,
+          context: 'onboarding'
+        }
       }).then(({ data }) => {
-        if (data?.url) speak(data.url);
+        if (data?.url) speakRef.current(data.url);
       }).catch(() => {}); // silent fail — typing sounds as fallback
     }, 600); // wait for navigation animation to settle
+
     return () => clearTimeout(timer);
-  }, [firstTimeUser.tourStep]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [firstTimeUser.tourStep, firstTimeUser.tourActive, firstTimeUser.tourCompleted]);
 
   // Voice the celebration overlay
   useEffect(() => {
