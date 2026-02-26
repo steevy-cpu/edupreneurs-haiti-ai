@@ -1,77 +1,57 @@
 
 
-# Plan: Static Onboarding Voice Keys
+# Add "Select All Incomplete Lessons" Button to BatchLessonGenerator
 
-## Goal
-Eliminate all dynamic/personalized ElevenLabs calls during onboarding so every audio clip is a pre-generated CDN cache hit. Zero on-demand TTS generation for any user.
+## Overview
+Add a single button that fetches ALL lessons across ALL grades with missing content fields, and populates `selectedLessonIds` with their IDs -- bypassing the grade/subject filter entirely.
 
-## Code Changes
+## What Changes (Single File)
+**File:** `src/components/content-editor/BatchLessonGenerator.tsx`
 
-### File 1: FirstTimeUserWelcome.tsx (L57-59)
+### 1. Add state for the cross-grade fetch
+- Add `isLoadingAllIncomplete` state (boolean) near the existing state declarations (~L57)
 
-**What changes:** The pre-fetch messages array (L58-59). Only message 0 is affected.
+### 2. Add `fetchAllIncompleteLessons` function
+- New async function after `loadLessonsForSelection` (~L232)
+- Queries `supabase.from('lessons').select('id, title')` with `.or('contenu.is.null,contenu.eq.,introduction.is.null,introduction.eq.,exemples_exercices.is.null,exemples_exercices.eq.')` and `.eq('is_published', true)`
+- Note: Supabase default limit is 1000, but we have ~134 incomplete lessons so this is safe. If needed, we can add `.limit(1000)`.
+- Sets `selectedLessonIds` to the returned IDs
+- Sets `gradeLevel` to "all" and `subject` to "all" so the generation uses selectedLessonIds mode
+- Shows toast with count
+- Also enables `onlyEmpty` checkbox automatically (so existing content is preserved)
 
-- Change `text` from `` `Bienvenue sur Edupreneurs, ${displayName}! 👋` `` to `"Bienvenue sur Edupreneurs!"` (generic TTS text)
-- Change `storageKey` from `` `onboarding/firsttime-0-${displayName}` `` to `'onboarding/firsttime-0'` (static key)
-- Remove `displayName` from the useEffect dependency array (L84) since it's no longer used in the effect
-- Update the comment on L57 from "dynamic" to "static"
+### 3. Add the button in the UI
+- Place it between the grade/subject filter grid (ends L1238) and the section selection (starts L1241)
+- Styled as a highlighted info box with the button:
 
-The typewriter display text on L161 and L241 remains unchanged -- still shows the personalized greeting with the user's name. Only the audio is generic.
+```text
+[info box]
+  134 leçons publiées sont incomplètes (contenu, introduction ou exercices manquants).
+  [Button: Sélectionner toutes les leçons incomplètes] [Badge: 134 sélectionnées]
+[/info box]
+```
 
-### File 2: OnboardingQuiz.tsx (3 edits)
+- Button shows `Loader2` spinner while loading
+- After selection, a Badge shows the count
+- Disabled during generation (`isGenerating`)
 
-**Edit A -- Q1 voice key (L381-395):**
-- Change `text` for step 1 from `` `Et maintenant, ${firstName}, tu es en quelle classe?` `` to `"Et maintenant, tu es en quelle classe?"`
-- Change the key logic (L393-395) to always use `onboarding/quiz-q${currentStep}` -- remove the special case for step 1
-- Remove `firstName` from the useEffect dependency array (L397)
-
-**Edit B -- Reaction voice key (L403-405):**
-- Remove the `nameSlug` variable and its computation
-- Change key from `` `onboarding/quiz-reaction-${currentStep}-${nameSlug}` `` to `` `onboarding/quiz-reaction-${currentStep}` ``
-- The `reactionText` passed to `fetchAndSpeak` still contains the display text (with emoji and name for step 0), but the `storageKey` is now static, so the edge function will return the pre-generated audio regardless of the text param
-- Remove `firstName` from the useEffect dependency array (L406)
-
-**Edit C -- Reaction-0 display text (L253):**
-The `reactionText` for step 0 is `` `Enchanté(e), ${fullName.split(/\s+/)[0]}! 🎉` `` which is personalized. Since the audio will now be the pre-generated "Enchanté! Ravi de te rencontrer!" clip (keyed to `quiz-reaction-0`), the display text can stay personalized -- the typewriter shows one thing, Jude says the generic version. No change needed here.
-
-**Note on "Pas de souci!" (L289):** When a user picks "not in school", the reaction text is "Pas de souci!" but the key will be `quiz-reaction-4` (same as "Top!"). The audio will say "Top!" while the screen shows "Pas de souci!". This is an acceptable trade-off for static caching -- both are brief positive acknowledgments.
-
-## Post-Code: Pre-Generate All Static Audio Keys
-
-After code changes, invoke the `generate-jude-voice` edge function 9 times to pre-generate and cache all new static keys in the Storage bucket. These calls only need to happen once -- after that, every user gets instant CDN hits.
-
-Keys to pre-generate:
-1. `onboarding/firsttime-0` -- "Bienvenue sur Edupreneurs!"
-2. `onboarding/quiz-q1` -- "Et maintenant, tu es en quelle classe?"
-3. `onboarding/quiz-reaction-0` -- "Enchanté! Ravi de te rencontrer!"
-4. `onboarding/quiz-reaction-1` -- "Super choix!"
-5. `onboarding/quiz-reaction-2` -- "Parfait!"
-6. `onboarding/quiz-reaction-3` -- "Excellent pseudo!"
-7. `onboarding/quiz-reaction-4` -- "Top!"
-8. `onboarding/quiz-reaction-5` -- "Noté!"
-9. `onboarding/quiz-reaction-6` -- "Merci!"
-
-Existing keys that should already be in Storage (no action needed):
-- `onboarding/firsttime-1`, `onboarding/firsttime-2`
-- `onboarding/quiz-q0`, `onboarding/quiz-q2` through `onboarding/quiz-q6`
-- `onboarding/quiz-outro`
-- `onboarding/avatar-prompt`, `onboarding/avatar-celebration`
-- `onboarding/tour-step-0` through `onboarding/tour-step-7`
-- `onboarding/tour-celebration`
+### 4. Auto-enable `onlyEmpty` when using this button
+- The function will set `onlyEmpty` to `true` so that existing `objectif` and `quiz_final` fields are preserved during generation
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- only audio text/keys change |
-| Typewriter display text changed? | No -- screen text stays personalized |
-| Provider stack affected? | No |
-| New dependencies? | No |
-| Bundle size impact? | None |
-| 3G performance? | Improved -- CDN hits instead of ElevenLabs generation |
-| Backward compatible? | Yes -- old dynamic cached audio becomes unused but harmless |
-| Files modified | FirstTimeUserWelcome.tsx, OnboardingQuiz.tsx only |
+| Breaks existing functionality? | No -- adds new button only, no existing logic changed |
+| Provider/AppShell impact? | None |
+| New dependencies? | None |
+| Bundle size? | Negligible (one function + one button) |
+| 3G performance? | Single lightweight query, no page-load impact |
+| RLS compatibility? | Uses existing lessons table read policy |
+| Backward compatible? | Yes -- purely additive |
 
-## Result
-Zero on-demand ElevenLabs calls during onboarding. Every audio clip is a pre-generated CDN cache hit. Full onboarding works on 3G without any TTS latency.
+## Technical Notes
+- The Supabase `.or()` filter syntax handles the WHERE clause: `contenu IS NULL OR contenu = '' OR introduction IS NULL OR ...`
+- Setting `gradeLevel="all"` and `subject="all"` ensures `fetchLessons()` at generation time uses the `selectedLessonIds` path (L243-256) rather than grade filters
+- The `onlyEmpty` flag (L281-287) combined with section selection ensures only missing sections are regenerated per lesson
 
