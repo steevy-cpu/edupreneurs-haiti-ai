@@ -50,6 +50,10 @@ export const BatchLessonGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const isPausedRef = useRef(false);
+  // Guard to prevent useEffect from clearing cross-grade selection
+  const crossGradeSelectionRef = useRef(false);
+  // Track generation start time for elapsed/remaining estimates
+  const generationStartTimeRef = useRef<number>(0);
   const [lessonStatuses, setLessonStatuses] = useState<LessonGenerationStatus[]>([]);
   const [totalLessons, setTotalLessons] = useState(0);
   const [hasGeneratedOptionalContent, setHasGeneratedOptionalContent] = useState(false);
@@ -136,6 +140,38 @@ export const BatchLessonGenerator = () => {
     );
   };
 
+  // Section preset helpers for common combinations
+  const PRESET_CORPS: SectionName[] = ['contenu', 'introduction', 'exemples_exercices'];
+  const PRESET_ALL: SectionName[] = ['objectif', 'introduction', 'contenu', 'exemples_exercices', 'activites_interactives'];
+
+  const applySectionPreset = (preset: SectionName[]) => {
+    setSelectedSections(preset);
+  };
+
+  // Elapsed time formatter for progress display
+  const formatElapsedTime = (ms: number) => {
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const remainingSec = seconds % 60;
+    return minutes > 0 ? `${minutes}m ${remainingSec}s` : `${remainingSec}s`;
+  };
+
+  // Estimate remaining time based on average per lesson
+  const getEstimatedRemaining = () => {
+    if (completedCount === 0 || !generationStartTimeRef.current) return null;
+    const elapsed = Date.now() - generationStartTimeRef.current;
+    const avgPerLesson = elapsed / completedCount;
+    const remaining = avgPerLesson * (totalLessons - completedCount);
+    return formatElapsedTime(remaining);
+  };
+
+  // Count total sections that will be generated for pre-gen summary
+  const getTotalSectionsToGenerate = () => {
+    const lessonCount = selectedLessonIds.length || 0;
+    const sectionCount = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) + (imageGenerationModel !== 'none' ? 1 : 0);
+    return { lessonCount, sectionCount, total: lessonCount * sectionCount };
+  };
+
   // Helper function to extract image URLs from HTML content
   const extractImageUrls = (htmlContent: string): string[] => {
     const regex = /<img[^>]+src="([^">]+)"/g;
@@ -195,6 +231,11 @@ export const BatchLessonGenerator = () => {
 
   // Load lessons when grade level or subject changes
   useEffect(() => {
+    // Skip clearing when cross-grade fetch just set the selection
+    if (crossGradeSelectionRef.current) {
+      crossGradeSelectionRef.current = false;
+      return;
+    }
     if (gradeLevel !== "all" || subject !== "all") {
       loadLessonsForSelection();
     } else {
@@ -244,6 +285,8 @@ export const BatchLessonGenerator = () => {
       if (error) throw error;
 
       const ids = (data || []).map(l => l.id);
+      // Guard: prevent the grade/subject useEffect from clearing the selection
+      crossGradeSelectionRef.current = true;
       setSelectedLessonIds(ids);
       // Set filters to "all" so fetchLessons() uses the selectedLessonIds path
       setGradeLevel("all");
@@ -348,6 +391,8 @@ export const BatchLessonGenerator = () => {
 
     // Store all lessons and calculate batches
     setAllLessons(lessons);
+    // Record start time for elapsed/remaining time estimates
+    generationStartTimeRef.current = Date.now();
     const batchSize = 50;
     const numBatches = Math.ceil(lessons.length / batchSize);
     setTotalBatches(numBatches);
@@ -1295,7 +1340,34 @@ export const BatchLessonGenerator = () => {
           <div className="space-y-3">
             <div>
               <Label className="text-base">Sections de contenu</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
+              {/* Section preset buttons for quick selection */}
+              <div className="flex flex-wrap gap-2 mt-2 mb-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => applySectionPreset(PRESET_CORPS)}
+                  className={selectedSections.length === PRESET_CORPS.length && PRESET_CORPS.every(s => selectedSections.includes(s)) ? 'border-primary bg-primary/10' : ''}
+                >
+                  📄 Corps de leçon
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => applySectionPreset(PRESET_ALL)}
+                  className={selectedSections.length === PRESET_ALL.length ? 'border-primary bg-primary/10' : ''}
+                >
+                  ✅ Tout sélectionner
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedSections([])}
+                  className={selectedSections.length === 0 ? 'border-primary bg-primary/10' : ''}
+                >
+                  ❌ Tout désélectionner
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
                 {sections.map(section => (
                   <div key={section.value} className="flex items-center space-x-2">
                     <Checkbox
@@ -1353,25 +1425,42 @@ export const BatchLessonGenerator = () => {
             </div>
           </div>
 
-          {/* Only Empty Sections Option */}
-          <div className="flex items-center space-x-2">
+          {/* Protect existing content toggle — clearer label for onlyEmpty */}
+          <div className="flex items-start space-x-2 p-3 rounded-lg border border-border bg-muted/30">
             <Checkbox
               id="onlyEmpty"
               checked={onlyEmpty}
               onCheckedChange={(checked) => setOnlyEmpty(checked as boolean)}
+              className="mt-0.5"
             />
-            <label htmlFor="onlyEmpty" className="text-sm cursor-pointer">
-              Générer uniquement les sections vides
-            </label>
+            <div>
+              <label htmlFor="onlyEmpty" className="text-sm font-medium cursor-pointer">
+                🛡️ Protéger le contenu existant
+              </label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Ne remplit que les sections vides — ne touche pas au contenu déjà rédigé
+              </p>
+            </div>
           </div>
 
-          {/* Info message for selected lessons mode */}
+          {/* Pre-generation summary — shows what will happen before clicking Generate */}
           {selectedLessonIds.length > 0 && (
-            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-              <p className="text-sm">
-                <strong>Mode leçons sélectionnées:</strong> Vous allez générer le contenu pour {selectedLessonIds.length} leçon(s) sélectionnée(s). 
-                Toutes les sections sélectionnées seront générées avec vos paramètres personnalisés.
-              </p>
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 space-y-2">
+              <p className="text-sm font-medium">📋 Résumé avant génération</p>
+              <div className="text-sm text-muted-foreground space-y-1">
+                <p>
+                  <strong>{getTotalSectionsToGenerate().lessonCount}</strong> leçon(s) × <strong>{getTotalSectionsToGenerate().sectionCount}</strong> section(s)
+                  {selectedSections.length > 0 && (
+                    <span className="ml-1">({selectedSections.map(s => sections.find(sec => sec.value === s)?.label).filter(Boolean).join(', ')})</span>
+                  )}
+                </p>
+                <p>
+                  Mode : {onlyEmpty ? '🛡️ Protéger le contenu existant' : '⚠️ Regénérer toutes les sections (écrasement)'}
+                </p>
+                <p className="text-xs">
+                  ⏱️ Estimation : ~{Math.max(1, Math.round(getTotalSectionsToGenerate().lessonCount * 0.35))} minutes
+                </p>
+              </div>
             </div>
           )}
 
@@ -1466,7 +1555,7 @@ export const BatchLessonGenerator = () => {
         </CardContent>
       </Card>
 
-      {/* Progress */}
+      {/* Progress — enhanced with lesson counter and time estimates */}
       {totalLessons > 0 && (
         <Card>
           <CardHeader>
@@ -1480,6 +1569,29 @@ export const BatchLessonGenerator = () => {
               </div>
               <Progress value={progress} />
             </div>
+
+            {/* Current lesson indicator + time estimates */}
+            {isGenerating && (
+              <div className="text-sm text-muted-foreground space-y-1">
+                {(() => {
+                  const currentLesson = lessonStatuses.find(l => l.status === 'in_progress');
+                  if (currentLesson) {
+                    return (
+                      <p>
+                        📖 Leçon {completedCount + 1}/{totalLessons} — <span className="font-medium text-foreground">{currentLesson.title}</span>
+                      </p>
+                    );
+                  }
+                  return null;
+                })()}
+                {generationStartTimeRef.current > 0 && (
+                  <p className="text-xs">
+                    ⏱️ Écoulé : {formatElapsedTime(Date.now() - generationStartTimeRef.current)}
+                    {getEstimatedRemaining() && ` · Restant estimé : ~${getEstimatedRemaining()}`}
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="flex gap-4 text-sm">
               <Badge variant="secondary">
