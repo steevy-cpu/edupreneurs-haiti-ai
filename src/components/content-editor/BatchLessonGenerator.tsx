@@ -62,6 +62,7 @@ export const BatchLessonGenerator = () => {
   const [currentBatch, setCurrentBatch] = useState(0);
   const [totalBatches, setTotalBatches] = useState(0);
   const [allLessons, setAllLessons] = useState<any[]>([]);
+  const [isLoadingAllIncomplete, setIsLoadingAllIncomplete] = useState(false);
 
   const isNS3OrNS4 = gradeLevel === "NS3" || gradeLevel === "NS4";
 
@@ -227,6 +228,35 @@ export const BatchLessonGenerator = () => {
       toast.error("Erreur lors du chargement des leçons");
     } finally {
       setIsLoadingLessons(false);
+    }
+  };
+
+  // Fetch all incomplete lessons across all grades — bypasses grade/subject filters
+  const fetchAllIncompleteLessons = async () => {
+    setIsLoadingAllIncomplete(true);
+    try {
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('id, title')
+        .eq('is_published', true)
+        .or('contenu.is.null,contenu.eq.,introduction.is.null,introduction.eq.,exemples_exercices.is.null,exemples_exercices.eq.');
+
+      if (error) throw error;
+
+      const ids = (data || []).map(l => l.id);
+      setSelectedLessonIds(ids);
+      // Set filters to "all" so fetchLessons() uses the selectedLessonIds path
+      setGradeLevel("all");
+      setSubject("all");
+      // Auto-enable onlyEmpty to preserve existing objectif/quiz_final
+      setOnlyEmpty(true);
+
+      toast.success(`${ids.length} leçons incomplètes sélectionnées`);
+    } catch (error) {
+      console.error('Error fetching incomplete lessons:', error);
+      toast.error("Erreur lors de la récupération des leçons incomplètes");
+    } finally {
+      setIsLoadingAllIncomplete(false);
     }
   };
 
@@ -1234,6 +1264,29 @@ export const BatchLessonGenerator = () => {
                     </p>
                   )}
                 </div>
+              )}
+            </div>
+          </div>
+
+          {/* Cross-grade incomplete lesson selector */}
+          <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="flex-1 text-sm text-muted-foreground">
+              Sélectionner toutes les leçons publiées avec du contenu manquant (contenu, introduction ou exercices).
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchAllIncompleteLessons}
+                disabled={isLoadingAllIncomplete || isGenerating}
+              >
+                {isLoadingAllIncomplete ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                ) : null}
+                Sélectionner les leçons incomplètes
+              </Button>
+              {selectedLessonIds.length > 0 && gradeLevel === "all" && subject === "all" && (
+                <Badge variant="secondary">{selectedLessonIds.length} sélectionnées</Badge>
               )}
             </div>
           </div>
