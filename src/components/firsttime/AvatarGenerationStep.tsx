@@ -46,8 +46,9 @@ const AvatarGenerationStep = () => {
     preloadImage(ericThumbUp).catch(() => {});
   }, []);
 
-  // Voice the avatar prompt on mount — fire-and-forget, cached permanently in CDN
+  // Voice the avatar prompt — only when avatar phase is active (prevents race with welcome/quiz)
   useEffect(() => {
+    if (!firstTimeUser.showAvatarGeneration) return;
     const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
     if (isMutedNow) return;
     supabase.functions.invoke('generate-jude-voice', {
@@ -60,10 +61,11 @@ const AvatarGenerationStep = () => {
       if (data?.url) speakRef.current(data.url);
     }).catch(() => {}); // silent fail — typing sounds as fallback
     return () => stopRef.current();
-  }, []);
+  }, [firstTimeUser.showAvatarGeneration]);
 
-  // Voice the celebration when avatar is generated
+  // Voice the celebration when avatar is generated — guarded by phase
   useEffect(() => {
+    if (!firstTimeUser.showAvatarGeneration) return;
     if (!celebrating) return;
     const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
     if (isMutedNow) return;
@@ -76,7 +78,7 @@ const AvatarGenerationStep = () => {
     }).then(({ data }) => {
       if (data?.url) speakRef.current(data.url);
     }).catch(() => {});
-  }, [celebrating]);
+  }, [celebrating, firstTimeUser.showAvatarGeneration]);
 
   const handleAvatarGenerated = (avatarUrl: string) => {
     setShowAvatarDialog(false);

@@ -373,8 +373,9 @@ const OnboardingQuiz = () => {
     }
   };
 
-  // Voice question text when currentStep changes
+  // Voice question text when currentStep changes — guarded by phase to prevent race
   useEffect(() => {
+    if (!firstTimeUser.showOnboardingQuiz) return;
     if (showReaction || isOutro) return;
     // Build clean text for TTS (strip emojis — ElevenLabs ignores them anyway)
     const speechTexts: Record<number, string> = {
@@ -393,24 +394,26 @@ const OnboardingQuiz = () => {
       ? `onboarding/quiz-q${currentStep}-${firstName?.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10)}`
       : `onboarding/quiz-q${currentStep}`;
     fetchAndSpeak(text, key);
-  }, [currentStep, firstName]);
+  }, [currentStep, firstName, firstTimeUser.showOnboardingQuiz]);
 
-  // Voice reactions when they appear
+  // Voice reactions when they appear — guarded by phase
   useEffect(() => {
+    if (!firstTimeUser.showOnboardingQuiz) return;
     if (!showReaction || !reactionText) return;
     const nameSlug = firstName?.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
     const key = `onboarding/quiz-reaction-${currentStep}-${nameSlug}`;
     fetchAndSpeak(reactionText, key);
-  }, [showReaction, reactionText, currentStep, firstName]);
+  }, [showReaction, reactionText, currentStep, firstName, firstTimeUser.showOnboardingQuiz]);
 
-  // Voice the outro
+  // Voice the outro — guarded by phase
   useEffect(() => {
+    if (!firstTimeUser.showOnboardingQuiz) return;
     if (!isOutro) return;
     fetchAndSpeak(
       "Parfait! On se connaît mieux maintenant. Créons ton avatar!",
       'onboarding/quiz-outro'
     );
-  }, [isOutro]);
+  }, [isOutro, firstTimeUser.showOnboardingQuiz]);
 
   // Stop voice on unmount — use ref to avoid stale closure
   useEffect(() => () => stopRef.current(), []);
