@@ -1,103 +1,99 @@
 
 
-# Add Voice to Remaining 3 Onboarding Phases
+# Fix Stale Closure Bug in OnboardingQuiz.tsx and AvatarGenerationStep.tsx
 
-## Overview
-Add Jude's ElevenLabs voice narration to the Quiz, Avatar, and Tour phases of onboarding. Currently only Phase 1 (Welcome) has voice. After this change, all 4 phases will have consistent voice support.
+Same pattern as the FirstTimeUserTour fix — stabilize `speak`/`stop` via refs, read mute from localStorage inside effects, remove all `eslint-disable` comments.
+
+## Files Modified
+- `src/components/firsttime/OnboardingQuiz.tsx`
+- `src/components/firsttime/AvatarGenerationStep.tsx`
+
+---
+
+## OnboardingQuiz.tsx — 7 surgical edits
+
+### 1. Import — add `useMemo` (unused `useCallback` stays for other callbacks)
+Line 11: add `useRef` is already imported. No import change needed (useRef already present).
+
+### 2. Replace speak/stop + isMuted (lines 65-67)
+Remove the stale `isMuted` const. Add `speakRef`/`stopRef` with sync effects:
+```typescript
+const { speak, stop } = useJudeAudio();
+// Ref-stable speak/stop to avoid stale closures in voice useEffects
+const speakRef = useRef(speak);
+const stopRef = useRef(stop);
+useEffect(() => { speakRef.current = speak; }, [speak]);
+useEffect(() => { stopRef.current = stop; }, [stop]);
+```
+
+### 3. Replace fetchAndSpeak (lines 354-369)
+Remove `useCallback` wrapper. Read mute from localStorage. Use refs:
+```typescript
+const fetchAndSpeak = async (text: string, storageKey: string) => {
+  const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
+  if (isMutedNow) return;
+  try {
+    const { data } = await supabase.functions.invoke('generate-jude-voice', {
+      body: { text, storageKey, context: 'onboarding' }
+    });
+    if (data?.url) {
+      stopRef.current();
+      speakRef.current(data.url);
+    }
+  } catch {}
+};
+```
+
+### 4. currentStep effect (lines 371-391)
+Remove `isMuted` guard (fetchAndSpeak handles it). Remove `eslint-disable`. Deps: `[currentStep, firstName]`.
+
+### 5. showReaction effect (lines 394-399)
+Remove `isMuted` guard. Remove `eslint-disable`. Deps: `[showReaction, reactionText, currentStep, firstName]`.
+
+### 6. isOutro effect (lines 402-408)
+Remove `isMuted` guard. Remove `eslint-disable`. Deps: `[isOutro]`.
+
+### 7. Unmount cleanup (line 411)
+Change `stop` to `stopRef.current` with empty deps:
+```typescript
+useEffect(() => () => stopRef.current(), []);
+```
+
+---
+
+## AvatarGenerationStep.tsx — 4 surgical edits
+
+### 1. Import (line 1)
+Add `useRef` to the import.
+
+### 2. Replace speak/stop + isMuted (lines 19-21)
+Same pattern — add `speakRef`/`stopRef` with sync effects, remove stale `isMuted` const.
+
+### 3. Avatar prompt effect (lines 46-58)
+Read mute from localStorage inside effect. Use `speakRef.current` and `stopRef.current`. Remove `eslint-disable`.
+
+### 4. Celebration effect (lines 61-72)
+Read mute from localStorage inside effect. Use `speakRef.current`. Remove `eslint-disable`. Deps: `[celebrating]`.
+
+---
+
+## Also update SimpleTypewriter `enableSound` prop in AvatarGenerationStep
+Line 161 currently passes `enableSound={isMuted}`. Since `isMuted` const is removed, read it inline:
+```typescript
+enableSound={typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true'}
+```
+
+---
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Conflicts with RLS/DB functions? | No — no DB changes |
-| Affects Provider Stack / AppShell? | No — uses existing JudeAudioContext |
-| Adds bundle size / dependencies? | No — reuses existing imports |
-| Cold start risk on page load? | No — voice calls are fire-and-forget, never block UI |
-| Works on 3G? | Yes — silent fail on network error, typing sounds as fallback |
-| Backward compatible? | Yes — voice is additive, all existing behavior preserved |
-| Respects mute state? | Yes — checks `jude-voice-muted` localStorage key |
-
-## Files Modified
-Only 3 files: `OnboardingQuiz.tsx`, `AvatarGenerationStep.tsx`, `FirstTimeUserTour.tsx`
-
----
-
-## Phase 2 — OnboardingQuiz.tsx
-
-**Strategy:** On-demand voice generation via `generate-jude-voice` edge function. Questions are semi-static text; reactions include the user's first name.
-
-**Changes:**
-1. Add imports: `useJudeAudio` from JudeAudioContext (supabase client already imported)
-2. Add voice state: `const { speak, stop } = useJudeAudio()`
-3. Add `fetchAndSpeak(text, storageKey)` helper — calls `generate-jude-voice` with context `'onboarding'`, then `speak(url)`. Silent catch on failure.
-4. Add `useEffect` on `currentStep` — calls `fetchAndSpeak` with the question text and a stable storage key:
-   - Q0: `onboarding/quiz-q0` (static text)
-   - Q1: `onboarding/quiz-q1-{firstName}` (personalized with name)
-   - Q2-Q6: `onboarding/quiz-q{N}` (static text)
-5. Add `useEffect` on `showReaction` + `reactionText` — voices the reaction. Key: `onboarding/quiz-reaction-{step}-{nameSlug}`
-6. Add `useEffect` on `isOutro` — voices the outro. Key: `onboarding/quiz-outro`
-7. Update `enableSound` on all 3 `SimpleTypewriter` instances: change from `enableSound` / `enableSound={true}` to `enableSound={isMuted}` so typing sounds only play when voice is muted
-8. Add cleanup `useEffect`: `() => stop()` on unmount
-
-**Storage key examples:**
-- `jude-voice/onboarding/quiz-q0.mp3` — cached permanently after first generation
-- `jude-voice/onboarding/quiz-reaction-0-marie.mp3` — personalized, cached per user name
-
----
-
-## Phase 3 — AvatarGenerationStep.tsx
-
-**Strategy:** Two static messages with fixed storage keys. Voice generated on-demand, cached permanently in CDN.
-
-**Changes:**
-1. Add imports: `useJudeAudio` from JudeAudioContext, `supabase` client
-2. Add `const { speak, stop } = useJudeAudio()`
-3. Add mount `useEffect` — when component renders (not muted), fetch voice for the prompt message:
-   - Text: `"Maintenant, créons ton avatar personnalisé avec l'IA!"`
-   - Key: `onboarding/avatar-prompt`
-   - On success: `speak(url)`
-4. Add `useEffect` on `celebrating` state — when true and not muted, fetch voice for celebration:
-   - Text: `"Superbe avatar! Bienvenue dans la famille Edupreneurs!"`
-   - Key: `onboarding/avatar-celebration`
-5. Update `SimpleTypewriter` `enableSound` prop: `enableSound={isMuted}` — typing sounds only when voice is muted
-6. Add cleanup: `() => stop()` on unmount
-
-**Note:** Emojis are stripped from TTS text (the edge function's `stripHtml` handles tags, but emojis pass through harmlessly to ElevenLabs which ignores them).
-
----
-
-## Phase 4 — FirstTimeUserTour.tsx
-
-**Strategy:** 8 fixed tour steps with static text. Use on-demand generation with stable keys (same as quiz pattern). Audio cached permanently after first play.
-
-**Changes:**
-1. Add imports: `useJudeAudio` from JudeAudioContext, `supabase` client
-2. Add `const { speak, stop } = useJudeAudio()`
-3. Add `isMuted` state: `useState(() => localStorage.getItem('jude-voice-muted') === 'true')`
-4. Add `TOUR_VOICE_TEXTS` constant — clean text versions of each step's title + description (no emojis, combined into natural speech):
-   ```text
-   Step 0: "Votre tableau de bord. Suivez votre progression, vos pièces d'or gagnées et vos statistiques d'apprentissage."
-   Step 1: "Musique d'étude. Tu peux écouter de la musique pendant que tu étudies."
-   ... (all 8 steps)
-   ```
-5. Add `useEffect` on `firstTimeUser.tourStep` — when step changes:
-   - Stop current audio
-   - If muted, return
-   - After 600ms delay (navigation settle), call `generate-jude-voice` with text and key `onboarding/tour-step-{N}`
-   - On success: `speak(url)`
-6. Update `SimpleTypewriter` `enableSound` prop: `enableSound={isMuted}` — typing sounds only when voice is muted
-7. Add mute toggle button in the tour card actions area (same style as visitor tour)
-8. Add cleanup: `() => stop()` on unmount
-9. Add voice for celebration overlay: `useEffect` on `showCelebration` — voices "Tu es prêt! Bienvenue dans la famille Edupreneurs!" with key `onboarding/tour-celebration`
-
----
-
-## Technical Notes
-
-- **No new edge functions** — all 3 phases reuse the existing `generate-jude-voice` function with context `'onboarding'` (already in the allowed contexts list)
-- **No new dependencies** — all imports already exist in the project
-- **CDN caching** — after first generation, audio files are permanently stored in `lesson-audio/jude-voice/onboarding/` bucket. Subsequent users hit the cache (HEAD check returns 200)
-- **Race condition safe** — voice is fire-and-forget; if it fails or arrives late, typing sounds play as fallback. No blocking waits.
-- **Rate limit** — 20 requests/hour per user. Worst case for full onboarding: 7 questions + 7 reactions + 1 outro + 2 avatar + 8 tour + 1 celebration = 26 calls. But most will be cache hits after the first user generates them. Only personalized keys (with firstName) are unique per user.
-- **Mute persistence** — all phases read from `jude-voice-muted` localStorage, consistent with the Welcome phase
+| Breaks existing functionality? | No — same pattern proven in FirstTimeUserTour |
+| Provider stack affected? | No |
+| New dependencies? | No |
+| Bundle size impact? | None |
+| 3G compatible? | Yes — no new network calls |
+| Hook count changes? | +4 hooks in OnboardingQuiz (2 refs + 2 sync effects), +4 in AvatarGenerationStep — all unconditional, before early returns |
+| eslint-disable comments removed? | All 4 removed (3 in Quiz, 1 in Avatar) |
 
