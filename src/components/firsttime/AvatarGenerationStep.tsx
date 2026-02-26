@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Sparkles, SkipForward } from 'lucide-react';
@@ -18,7 +18,11 @@ const AvatarGenerationStep = () => {
   const { shouldAnimate, shouldShowGlow } = useNetworkAwareAnimations();
   // Voice — fire-and-forget TTS for avatar prompt and celebration
   const { speak, stop } = useJudeAudio();
-  const isMuted = typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true';
+  // Ref-stable speak/stop to avoid stale closures in voice useEffects
+  const speakRef = useRef(speak);
+  const stopRef = useRef(stop);
+  useEffect(() => { speakRef.current = speak; }, [speak]);
+  useEffect(() => { stopRef.current = stop; }, [stop]);
   
   // Track mount stability to prevent errors during navigation transitions
   const [isStable, setIsStable] = useState(false);
@@ -44,7 +48,8 @@ const AvatarGenerationStep = () => {
 
   // Voice the avatar prompt on mount — fire-and-forget, cached permanently in CDN
   useEffect(() => {
-    if (isMuted) return;
+    const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
+    if (isMutedNow) return;
     supabase.functions.invoke('generate-jude-voice', {
       body: {
         text: "Maintenant, créons ton avatar personnalisé avec l'IA!",
@@ -52,14 +57,16 @@ const AvatarGenerationStep = () => {
         context: 'onboarding'
       }
     }).then(({ data }) => {
-      if (data?.url) speak(data.url);
+      if (data?.url) speakRef.current(data.url);
     }).catch(() => {}); // silent fail — typing sounds as fallback
-    return () => stop();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => stopRef.current();
+  }, []);
 
   // Voice the celebration when avatar is generated
   useEffect(() => {
-    if (!celebrating || isMuted) return;
+    if (!celebrating) return;
+    const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
+    if (isMutedNow) return;
     supabase.functions.invoke('generate-jude-voice', {
       body: {
         text: 'Superbe avatar! Bienvenue dans la famille Edupreneurs!',
@@ -67,9 +74,9 @@ const AvatarGenerationStep = () => {
         context: 'onboarding'
       }
     }).then(({ data }) => {
-      if (data?.url) speak(data.url);
+      if (data?.url) speakRef.current(data.url);
     }).catch(() => {});
-  }, [celebrating]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [celebrating]);
 
   const handleAvatarGenerated = (avatarUrl: string) => {
     setShowAvatarDialog(false);
@@ -158,7 +165,7 @@ const AvatarGenerationStep = () => {
                           text="Maintenant, créons ton avatar personnalisé avec l'IA! 🎨✨"
                           speed={60}
                           onComplete={() => setTextComplete(true)}
-                          enableSound={isMuted}
+                          enableSound={typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true'}
                           soundVolume={0.06}
                         />
                       </p>
