@@ -52,7 +52,7 @@ interface UseStudygramVisualResult {
 }
 
 // Bumped to v2 — new 4-block structure invalidates old v1 cache
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const STALE_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7-day cache window
 
 // Separate cache key from Points Clés to avoid collisions
