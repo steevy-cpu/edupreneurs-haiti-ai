@@ -64,7 +64,11 @@ const OnboardingQuiz = () => {
   const queryClient = useQueryClient();
   // Voice — fire-and-forget TTS via existing generate-jude-voice edge function
   const { speak, stop } = useJudeAudio();
-  const isMuted = typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true';
+  // Ref-stable speak/stop to avoid stale closures in voice useEffects
+  const speakRef = useRef(speak);
+  const stopRef = useRef(stop);
+  useEffect(() => { speakRef.current = speak; }, [speak]);
+  useEffect(() => { stopRef.current = stop; }, [stop]);
 
   // Stability guard — same pattern as FirstTimeUserWelcome
   const [isStable, setIsStable] = useState(false);
@@ -352,25 +356,26 @@ const OnboardingQuiz = () => {
   }, [currentStep, fullName]);
 
   // --- Voice: fetch audio from generate-jude-voice and play via JudeAudioContext ---
-  /** Fire-and-forget voice fetch — silent fail keeps quiz working on 3G */
-  const fetchAndSpeak = useCallback(async (text: string, storageKey: string) => {
-    if (isMuted) return;
+  /** Fire-and-forget voice fetch — reads mute from localStorage for fresh value, uses refs */
+  const fetchAndSpeak = async (text: string, storageKey: string) => {
+    const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
+    if (isMutedNow) return;
     try {
       const { data } = await supabase.functions.invoke('generate-jude-voice', {
         body: { text, storageKey, context: 'onboarding' }
       });
       if (data?.url) {
-        stop();
-        speak(data.url);
+        stopRef.current();
+        speakRef.current(data.url);
       }
     } catch {
       // Silent fail — typing sounds serve as fallback
     }
-  }, [isMuted, speak, stop]);
+  };
 
   // Voice question text when currentStep changes
   useEffect(() => {
-    if (isMuted || showReaction || isOutro) return;
+    if (showReaction || isOutro) return;
     // Build clean text for TTS (strip emojis — ElevenLabs ignores them anyway)
     const speechTexts: Record<number, string> = {
       0: "Bonjour! Comment tu t'appelles?",
@@ -388,27 +393,27 @@ const OnboardingQuiz = () => {
       ? `onboarding/quiz-q${currentStep}-${firstName?.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10)}`
       : `onboarding/quiz-q${currentStep}`;
     fetchAndSpeak(text, key);
-  }, [currentStep]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentStep, firstName]);
 
   // Voice reactions when they appear
   useEffect(() => {
-    if (!showReaction || !reactionText || isMuted) return;
+    if (!showReaction || !reactionText) return;
     const nameSlug = firstName?.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
     const key = `onboarding/quiz-reaction-${currentStep}-${nameSlug}`;
     fetchAndSpeak(reactionText, key);
-  }, [showReaction, reactionText]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [showReaction, reactionText, currentStep, firstName]);
 
   // Voice the outro
   useEffect(() => {
-    if (!isOutro || isMuted) return;
+    if (!isOutro) return;
     fetchAndSpeak(
       "Parfait! On se connaît mieux maintenant. Créons ton avatar!",
       'onboarding/quiz-outro'
     );
-  }, [isOutro]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOutro]);
 
-  // Stop voice on unmount
-  useEffect(() => () => stop(), [stop]);
+  // Stop voice on unmount — use ref to avoid stale closure
+  useEffect(() => () => stopRef.current(), []);
 
   // Early returns AFTER all hooks
   if (!isStable) return null;
@@ -532,9 +537,9 @@ const OnboardingQuiz = () => {
               />
               <p className="text-base sm:text-lg text-foreground font-medium">
                 {showReaction || isOutro ? (
-                  <SimpleTypewriter text={speech} speed={50} enableSound={isMuted} soundVolume={0.04} />
+                  <SimpleTypewriter text={speech} speed={50} enableSound={typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true'} soundVolume={0.04} />
                 ) : (
-                  <SimpleTypewriter key={`speech-${currentStep}`} text={speech} speed={50} enableSound={isMuted} soundVolume={0.04} />
+                  <SimpleTypewriter key={`speech-${currentStep}`} text={speech} speed={50} enableSound={typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true'} soundVolume={0.04} />
                 )}
               </p>
             </div>
