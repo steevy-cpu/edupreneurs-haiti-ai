@@ -1,66 +1,50 @@
 
 
-# Fix Promo Code subscription_end_date Bug
+# Fix Onboarding Voice Ordering Bug
 
 ## Problem
-Users who sign up with a `grants_free_access` promo code (CSCP2026, JUDE2026) get `has_free_access: true` but `subscription_end_date: null`. This causes Settings to show the permanent green "ACCES GRATUIT" badge instead of the amber timed-access card with expiry date.
+All 4 onboarding components mount simultaneously via FloatingLayer. Voice useEffects in AvatarGenerationStep and OnboardingQuiz fire immediately on mount with no phase guards, causing "Maintenant creons ton avatar" and "Bonjour! Comment tu t'appelles?" to race against the welcome greeting.
 
-## Root Cause
-In `signup.service.ts` (L145), `subscription_end_date` is only set for MonCash payments. The `redeem-promo-code` edge function (for post-signup redemption) correctly hardcodes `2026-05-02T00:00:00.000Z`, but the signup flow does not.
+## Diagnosis
+- **FirstTimeUserWelcome.tsx** -- Already guarded. The pre-fetch useEffect (L54) checks `firstTimeUser.showWelcome` and the speak calls use `onStart` callbacks tied to typewriter phases. No changes needed.
+- **AvatarGenerationStep.tsx** -- Avatar prompt useEffect (L50, deps `[]`) has NO guard. Celebration useEffect (L66) has no `showAvatarGeneration` guard.
+- **OnboardingQuiz.tsx** -- All 3 voice useEffects (L377, L399, L407) lack `showOnboardingQuiz` guards.
 
-## Key Finding: No `promoEndDate` Field Exists
-The `SignupFormData` interface has no field carrying the promo expiry date. The `validate-promo-code` edge function does not return an end date. The `promo_codes` table `expires_at` is `null` for CSCP2026/JUDE2026. The May 2 date is **hardcoded** in `redeem-promo-code/index.ts`.
+## Changes
 
-The cleanest fix: mirror the same hardcoded date in `signup.service.ts`, matching what `redeem-promo-code` already does.
+### File 1: AvatarGenerationStep.tsx (2 edits)
 
----
+**Edit A -- Avatar prompt useEffect (L50-63):**
+Add `if (!firstTimeUser.showAvatarGeneration) return;` as first line inside the effect. Change deps from `[]` to `[firstTimeUser.showAvatarGeneration]`.
 
-## Fix 1 -- signup.service.ts (L145)
+**Edit B -- Celebration useEffect (L66-79):**
+Add `if (!firstTimeUser.showAvatarGeneration) return;` before `if (!celebrating) return;`. Add `firstTimeUser.showAvatarGeneration` to deps.
 
-**File:** `src/auth/services/signup.service.ts`
+### File 2: OnboardingQuiz.tsx (3 edits)
 
-Replace line 145:
-```typescript
-subscription_end_date: isMonCash ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() : null,
-```
+**Edit C -- currentStep useEffect (L377-396):**
+Add `if (!firstTimeUser.showOnboardingQuiz) return;` as first line. Add `firstTimeUser.showOnboardingQuiz` to deps array.
 
-With:
-```typescript
-subscription_end_date: isMonCash
-  ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-  : (data.promoGrantsFreeAccess ? '2026-05-02T00:00:00.000Z' : null),
-```
+**Edit D -- showReaction useEffect (L399-404):**
+Add `if (!firstTimeUser.showOnboardingQuiz) return;` as first line. Add `firstTimeUser.showOnboardingQuiz` to deps array.
 
-This matches the exact same date used in `redeem-promo-code/index.ts` L129.
+**Edit E -- isOutro useEffect (L407-413):**
+Add `if (!firstTimeUser.showOnboardingQuiz) return;` as first line. Add `firstTimeUser.showOnboardingQuiz` to deps array.
 
-## Fix 2 -- DB Patch for Existing Users
-
-1 affected user found (`has_free_access=true`, `subscription_end_date IS NULL`, `promo_code_used IS NOT NULL`).
-
-```sql
-UPDATE profiles
-SET subscription_end_date = '2026-05-02T00:00:00.000Z'
-WHERE has_free_access = true
-  AND subscription_end_date IS NULL
-  AND promo_code_used IS NOT NULL;
-```
-
----
+### File 3: FirstTimeUserWelcome.tsx -- No changes needed
+Already has `showWelcome` guard on the pre-fetch effect (L55) and speak calls are triggered via `onStart` callbacks only when the typewriter phase activates.
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- only adds a date where null existed |
+| Breaks existing functionality? | No -- only adds early-return guards |
 | Provider stack affected? | No |
 | New dependencies? | No |
 | Bundle size impact? | None |
 | 3G compatible? | Yes |
-| Backward compatible? | Yes -- existing MonCash and non-promo paths unchanged |
-| Files modified | Only `src/auth/services/signup.service.ts` |
+| Backward compatible? | Yes |
+| Files modified | AvatarGenerationStep.tsx, OnboardingQuiz.tsx only |
 
-## Post-Implementation Confirmation
-- `signup.service.ts` sets `subscription_end_date` for `promoGrantsFreeAccess` users
-- DB patch applied, 1 affected user updated
-- Settings page will now show amber timed-access card with May 2, 2026 expiry for these users
-
+## Result
+Voice effects only fire when their respective phase becomes active, eliminating the race condition. Welcome greeting plays first, then quiz voices, then avatar prompt -- in correct sequence.
