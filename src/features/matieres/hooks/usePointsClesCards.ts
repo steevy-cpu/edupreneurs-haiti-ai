@@ -34,7 +34,7 @@ interface UsePointsClesCardsResult {
   regenerate: () => void;
 }
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const STALE_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7-day cache window
 
 // Keep same localStorage key for backward compatibility with existing user caches
