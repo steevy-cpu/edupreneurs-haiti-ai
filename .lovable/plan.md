@@ -1,57 +1,58 @@
 
 
-# Add "Select All Incomplete Lessons" Button to BatchLessonGenerator
+# Fix Music Ducking for Visitor Audio in VisitorTour and JudeWelcomePopup
 
-## Overview
-Add a single button that fetches ALL lessons across ALL grades with missing content fields, and populates `selectedLessonIds` with their IDs -- bypassing the grade/subject filter entirely.
+## Problem
+When Jude's voice plays via direct `new Audio()` calls in visitor mode, background music stays at full volume. The `JudeAudioContext` (which handles ducking) is only used for authenticated users.
 
-## What Changes (Single File)
-**File:** `src/components/content-editor/BatchLessonGenerator.tsx`
+## Scope
+- **VisitorTour.tsx** -- audio play block at L268-273, mute toggle at L289-299, cleanup at L279-286
+- **JudeWelcomePopup.tsx** -- visitor audio path at L146-157, cleanup at L114-122
+- No other files modified
 
-### 1. Add state for the cross-grade fetch
-- Add `isLoadingAllIncomplete` state (boolean) near the existing state declarations (~L57)
+---
 
-### 2. Add `fetchAllIncompleteLessons` function
-- New async function after `loadLessonsForSelection` (~L232)
-- Queries `supabase.from('lessons').select('id, title')` with `.or('contenu.is.null,contenu.eq.,introduction.is.null,introduction.eq.,exemples_exercices.is.null,exemples_exercices.eq.')` and `.eq('is_published', true)`
-- Note: Supabase default limit is 1000, but we have ~134 incomplete lessons so this is safe. If needed, we can add `.limit(1000)`.
-- Sets `selectedLessonIds` to the returned IDs
-- Sets `gradeLevel` to "all" and `subject` to "all" so the generation uses selectedLessonIds mode
-- Shows toast with count
-- Also enables `onlyEmpty` checkbox automatically (so existing content is preserved)
+## Fix 1: VisitorTour.tsx
 
-### 3. Add the button in the UI
-- Place it between the grade/subject filter grid (ends L1238) and the section selection (starts L1241)
-- Styled as a highlighted info box with the button:
+### Changes
+1. **Add import**: `useMusicPlayer` from `@/contexts/MusicPlayerContext`
+2. **Add hook call**: `const { setVolume, volume } = useMusicPlayer()` (after existing hooks, before early returns at L302)
+3. **Add ref**: `const preDuckVolumeRef = useRef(100)` for saving pre-duck volume
+4. **Update audio play block (L268-273)**:
+   - Set `audio.volume = 0.90`
+   - Save `volume` to `preDuckVolumeRef.current`
+   - Call `setVolume(10)` to duck
+   - Add `audio.onended` handler that restores via `setVolume(preDuckVolumeRef.current)`
+   - Restore on `.play().catch()` error path
+5. **Update toggleMute (L294-296)**: When muting and pausing audio, also restore volume via `setVolume(preDuckVolumeRef.current)`
+6. **Update cleanup useEffect (L279-286)**: On unmount, also call `setVolume(preDuckVolumeRef.current)` to ensure restore
 
-```text
-[info box]
-  134 leçons publiées sont incomplètes (contenu, introduction ou exercices manquants).
-  [Button: Sélectionner toutes les leçons incomplètes] [Badge: 134 sélectionnées]
-[/info box]
-```
+---
 
-- Button shows `Loader2` spinner while loading
-- After selection, a Badge shows the count
-- Disabled during generation (`isGenerating`)
+## Fix 2: JudeWelcomePopup.tsx (visitor path only)
 
-### 4. Auto-enable `onlyEmpty` when using this button
-- The function will set `onlyEmpty` to `true` so that existing `objectif` and `quiz_final` fields are preserved during generation
+### Changes
+1. **Expand existing destructure** (L44): Change `{ tracks, playTrack }` to `{ tracks, playTrack, setVolume, volume }`
+2. **Add ref**: `const preDuckVolumeRef = useRef(100)` near visitorAudioRef (L54)
+3. **Update visitor audio play block (L146-157)**:
+   - Set `audio.volume = 0.90`
+   - Save `volume` to `preDuckVolumeRef.current`, call `setVolume(10)` before play
+   - Add `audio.onended` to restore via `setVolume(preDuckVolumeRef.current)`
+   - Restore on `.play().catch()` error path
+4. **Update visitor cleanup (L114-122)**: When stopping visitor audio on popup close, also restore volume via `setVolume(preDuckVolumeRef.current)`
+
+The authenticated `speak()` path (L141-144) is NOT touched -- it already uses `JudeAudioContext` which ducks correctly.
+
+---
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- adds new button only, no existing logic changed |
-| Provider/AppShell impact? | None |
-| New dependencies? | None |
-| Bundle size? | Negligible (one function + one button) |
-| 3G performance? | Single lightweight query, no page-load impact |
-| RLS compatibility? | Uses existing lessons table read policy |
-| Backward compatible? | Yes -- purely additive |
-
-## Technical Notes
-- The Supabase `.or()` filter syntax handles the WHERE clause: `contenu IS NULL OR contenu = '' OR introduction IS NULL OR ...`
-- Setting `gradeLevel="all"` and `subject="all"` ensures `fetchLessons()` at generation time uses the `selectedLessonIds` path (L243-256) rather than grade filters
-- The `onlyEmpty` flag (L281-287) combined with section selection ensures only missing sections are regenerated per lesson
+| Existing RLS / DB functions affected? | No -- frontend-only change |
+| Provider stack order impacted? | No -- useMusicPlayer already available |
+| New dependencies added? | None |
+| 3G performance impact? | None -- no new network calls |
+| Backward compatibility? | Yes -- additive behavior only |
+| Edge cases (mute, unmount, error)? | All restore volume |
 
