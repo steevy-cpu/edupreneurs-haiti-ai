@@ -54,13 +54,14 @@ export function JudeAudioProvider({ children }: { children: ReactNode }) {
   const isDuckedRef = useRef(false);
 
   /** Duck music volume — only if music is actually playing */
+  /** Duck unconditionally — don't gate on isMusicPlaying to avoid stale closure skips */
   const duckMusic = useCallback(() => {
-    if (isMusicPlaying && !isDuckedRef.current) {
+    if (!isDuckedRef.current) {
       preDuckVolumeRef.current = volume;
       setVolume(DUCK_VOLUME);
       isDuckedRef.current = true;
     }
-  }, [isMusicPlaying, volume, setVolume]);
+  }, [volume, setVolume]);
 
   /** Restore music volume after ducking */
   const restoreMusic = useCallback(() => {
