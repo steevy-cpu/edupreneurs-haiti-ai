@@ -285,12 +285,12 @@ export const BatchLessonGenerator = () => {
       if (error) throw error;
 
       const ids = (data || []).map(l => l.id);
-      // Guard: prevent the grade/subject useEffect from clearing the selection
+      // Guard FIRST: prevent the grade/subject useEffect from clearing the selection
       crossGradeSelectionRef.current = true;
-      setSelectedLessonIds(ids);
-      // Set filters to "all" so fetchLessons() uses the selectedLessonIds path
+      // Set filters to "all" before setting IDs — semantically clearer order
       setGradeLevel("all");
       setSubject("all");
+      setSelectedLessonIds(ids);
       // Auto-enable onlyEmpty to preserve existing objectif/quiz_final
       setOnlyEmpty(true);
 
