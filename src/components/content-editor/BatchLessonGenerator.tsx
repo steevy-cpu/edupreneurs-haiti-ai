@@ -11,8 +11,9 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { PlayCircle, PauseCircle, Download, RefreshCw, Loader2, CheckCircle2, XCircle, Clock, Eye, Check } from "lucide-react";
+import { PlayCircle, PauseCircle, Download, RefreshCw, Loader2, CheckCircle2, XCircle, Clock, Eye, Check, ChevronDown, AlertTriangle, BookOpen, HelpCircle, Gamepad2 } from "lucide-react";
 import { DEFAULT_WORD_COUNTS, type SectionName } from "@/lib/lessonPrompts";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { createSanitizedMarkup } from "@/lib/sanitize";
@@ -67,6 +68,11 @@ export const BatchLessonGenerator = () => {
   const [totalBatches, setTotalBatches] = useState(0);
   const [allLessons, setAllLessons] = useState<any[]>([]);
   const [isLoadingAllIncomplete, setIsLoadingAllIncomplete] = useState(false);
+  // Content health dashboard counts
+  const [healthCounts, setHealthCounts] = useState<{ missingContent: number; missingQuiz: number; missingActivities: number } | null>(null);
+  const [isLoadingHealth, setIsLoadingHealth] = useState(true);
+  // Advanced settings collapsed state
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const isNS3OrNS4 = gradeLevel === "NS3" || gradeLevel === "NS4";
 
@@ -89,10 +95,43 @@ export const BatchLessonGenerator = () => {
     { value: "SVT", label: "SVT - Sciences de la Vie et de la Terre" },
   ];
 
+  // Fetch content health counts on mount for the dashboard
+  useEffect(() => {
+    fetchHealthCounts();
+  }, []);
+
   // Load subjects when grade level or series changes
   useEffect(() => {
     loadSubjects();
   }, [gradeLevel, series]);
+
+  // Fetch live counts of missing content, quiz, and activities across all published lessons
+  const fetchHealthCounts = async () => {
+    setIsLoadingHealth(true);
+    try {
+      // Three parallel count queries for content health dashboard
+      const [contentRes, quizRes, activitiesRes] = await Promise.all([
+        supabase.from('lessons').select('id', { count: 'exact', head: true })
+          .eq('is_published', true)
+          .or('contenu.is.null,contenu.eq.,introduction.is.null,introduction.eq.,exemples_exercices.is.null,exemples_exercices.eq.'),
+        supabase.from('lessons').select('id', { count: 'exact', head: true })
+          .eq('is_published', true)
+          .or('quiz_final.is.null,quiz_final.eq.'),
+        supabase.from('lessons').select('id', { count: 'exact', head: true })
+          .eq('is_published', true)
+          .or('activites_interactives.is.null,activites_interactives.eq.'),
+      ]);
+      setHealthCounts({
+        missingContent: contentRes.count ?? 0,
+        missingQuiz: quizRes.count ?? 0,
+        missingActivities: activitiesRes.count ?? 0,
+      });
+    } catch (err) {
+      console.error('Error fetching health counts:', err);
+    } finally {
+      setIsLoadingHealth(false);
+    }
+  };
 
   const loadSubjects = async () => {
     setIsLoadingSubjects(true);
@@ -1166,6 +1205,63 @@ export const BatchLessonGenerator = () => {
 
   return (
     <div className="space-y-6">
+      {/* A. Content Health Dashboard — at-a-glance counts */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            📊 État du contenu
+            {isLoadingHealth && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            <Button variant="ghost" size="sm" className="ml-auto h-7" onClick={fetchHealthCounts} disabled={isLoadingHealth}>
+              <RefreshCw className="h-3 w-3" />
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        {healthCounts && (
+          <CardContent className="pt-0 pb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Missing content count — clickable to auto-select */}
+              <button
+                onClick={fetchAllIncompleteLessons}
+                disabled={isLoadingAllIncomplete || isGenerating}
+                className="flex items-center gap-3 p-3 rounded-lg border border-destructive/20 bg-destructive/5 hover:bg-destructive/10 transition-colors text-left"
+              >
+                <BookOpen className="h-5 w-5 text-destructive shrink-0" />
+                <div>
+                  <p className="text-2xl font-bold text-destructive">{healthCounts.missingContent}</p>
+                  <p className="text-xs text-muted-foreground">sans contenu complet</p>
+                </div>
+                {isLoadingAllIncomplete && <Loader2 className="h-4 w-4 animate-spin ml-auto" />}
+              </button>
+              {/* Missing quiz count */}
+              <div className="flex items-center gap-3 p-3 rounded-lg border border-amber-500/20 bg-amber-500/5">
+                <HelpCircle className="h-5 w-5 text-amber-600 shrink-0" />
+                <div>
+                  <p className="text-2xl font-bold text-amber-600">{healthCounts.missingQuiz}</p>
+                  <p className="text-xs text-muted-foreground">sans quiz</p>
+                </div>
+              </div>
+              {/* Missing activities count */}
+              <div className="flex items-center gap-3 p-3 rounded-lg border border-orange-500/20 bg-orange-500/5">
+                <Gamepad2 className="h-5 w-5 text-orange-600 shrink-0" />
+                <div>
+                  <p className="text-2xl font-bold text-orange-600">{healthCounts.missingActivities}</p>
+                  <p className="text-xs text-muted-foreground">sans activités</p>
+                </div>
+              </div>
+            </div>
+            {/* Selection badge when cross-grade selection is active */}
+            {selectedLessonIds.length > 0 && gradeLevel === "all" && subject === "all" && (
+              <div className="mt-3 flex items-center gap-2">
+                <Badge variant="secondary">{selectedLessonIds.length} leçons sélectionnées</Badge>
+                <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => setSelectedLessonIds([])}>
+                  Effacer la sélection
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        )}
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Configuration de la génération par lot</CardTitle>
@@ -1313,30 +1409,7 @@ export const BatchLessonGenerator = () => {
             </div>
           </div>
 
-          {/* Cross-grade incomplete lesson selector */}
-          <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <div className="flex-1 text-sm text-muted-foreground">
-              Sélectionner toutes les leçons publiées avec du contenu manquant (contenu, introduction ou exercices).
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={fetchAllIncompleteLessons}
-                disabled={isLoadingAllIncomplete || isGenerating}
-              >
-                {isLoadingAllIncomplete ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                ) : null}
-                Sélectionner les leçons incomplètes
-              </Button>
-              {selectedLessonIds.length > 0 && gradeLevel === "all" && subject === "all" && (
-                <Badge variant="secondary">{selectedLessonIds.length} sélectionnées</Badge>
-              )}
-            </div>
-          </div>
-
-          {/* Section Selection */}
+          {/* Section Selection + onlyEmpty toggle (D: moved here as linked concept) */}
           <div className="space-y-3">
             <div>
               <Label className="text-base">Sections de contenu</Label>
@@ -1383,6 +1456,24 @@ export const BatchLessonGenerator = () => {
               </div>
             </div>
 
+            {/* D: onlyEmpty toggle moved here — directly linked to section selection */}
+            <div className="flex items-start space-x-2 p-3 rounded-lg border border-border bg-muted/30">
+              <Checkbox
+                id="onlyEmpty"
+                checked={onlyEmpty}
+                onCheckedChange={(checked) => setOnlyEmpty(checked as boolean)}
+                className="mt-0.5"
+              />
+              <div>
+                <label htmlFor="onlyEmpty" className="text-sm font-medium cursor-pointer">
+                  🛡️ Protéger le contenu existant (sections vides uniquement)
+                </label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Ne remplit que les sections vides — ne touche pas au contenu déjà rédigé
+                </p>
+              </div>
+            </div>
+
             <div className="border-t pt-3">
               <Label className="text-base">Fonctionnalités additionnelles</Label>
               <div className="flex flex-wrap gap-2 mt-2">
@@ -1425,37 +1516,70 @@ export const BatchLessonGenerator = () => {
             </div>
           </div>
 
-          {/* Protect existing content toggle — clearer label for onlyEmpty */}
-          <div className="flex items-start space-x-2 p-3 rounded-lg border border-border bg-muted/30">
-            <Checkbox
-              id="onlyEmpty"
-              checked={onlyEmpty}
-              onCheckedChange={(checked) => setOnlyEmpty(checked as boolean)}
-              className="mt-0.5"
-            />
-            <div>
-              <label htmlFor="onlyEmpty" className="text-sm font-medium cursor-pointer">
-                🛡️ Protéger le contenu existant
-              </label>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Ne remplit que les sections vides — ne touche pas au contenu déjà rédigé
-              </p>
-            </div>
-          </div>
+          {/* B: Advanced settings — word counts + global context in collapsible */}
+          <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between px-3 h-9 text-sm text-muted-foreground hover:text-foreground">
+                <span>⚙️ Paramètres avancés (mots par section, contexte)</span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${advancedOpen ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-4 pt-2">
+              {/* Word Count Sliders */}
+              <div className="space-y-4 p-4 rounded-lg border border-border bg-muted/20">
+                <Label>Nombre de mots par section</Label>
+                {sections.map(section => (
+                  <div key={section.value} className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm">{section.label}</span>
+                      <span className="text-sm font-medium">{wordCounts[section.value]} mots</span>
+                    </div>
+                    <Slider
+                      value={[wordCounts[section.value]]}
+                      onValueChange={([value]) => setWordCounts(prev => ({ ...prev, [section.value]: value }))}
+                      min={100}
+                      max={2000}
+                      step={50}
+                    />
+                  </div>
+                ))}
+              </div>
 
-          {/* Pre-generation summary — shows what will happen before clicking Generate */}
+              {/* Global Context */}
+              <div className="space-y-2">
+                <Label>Contexte global (optionnel)</Label>
+                <Textarea
+                  placeholder="Ajoutez un contexte qui s'appliquera à toutes les générations..."
+                  value={globalContext}
+                  onChange={(e) => setGlobalContext(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+
+          {/* C: Pre-generation summary — repositioned directly above action buttons */}
           {selectedLessonIds.length > 0 && (
-            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 space-y-2">
+            <div className={`rounded-lg p-4 space-y-2 ${onlyEmpty ? 'bg-primary/10 border border-primary/20' : 'bg-amber-500/10 border border-amber-500/20'}`}>
               <p className="text-sm font-medium">📋 Résumé avant génération</p>
               <div className="text-sm text-muted-foreground space-y-1">
                 <p>
                   <strong>{getTotalSectionsToGenerate().lessonCount}</strong> leçon(s) × <strong>{getTotalSectionsToGenerate().sectionCount}</strong> section(s)
                   {selectedSections.length > 0 && (
-                    <span className="ml-1">({selectedSections.map(s => sections.find(sec => sec.value === s)?.label).filter(Boolean).join(', ')})</span>
+                    <span className="ml-1">
+                      ({selectedSections.map(s => sections.find(sec => sec.value === s)?.label).filter(Boolean).join(', ')})
+                    </span>
                   )}
                 </p>
-                <p>
-                  Mode : {onlyEmpty ? '🛡️ Protéger le contenu existant' : '⚠️ Regénérer toutes les sections (écrasement)'}
+                <p className="flex items-center gap-1">
+                  {onlyEmpty ? (
+                    <>🛡️ Protéger le contenu existant</>
+                  ) : (
+                    <>
+                      <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
+                      <span className="text-amber-600 font-medium">Regénérer toutes les sections (écrasement)</span>
+                    </>
+                  )}
                 </p>
                 <p className="text-xs">
                   ⏱️ Estimation : ~{Math.max(1, Math.round(getTotalSectionsToGenerate().lessonCount * 0.35))} minutes
@@ -1463,37 +1587,6 @@ export const BatchLessonGenerator = () => {
               </div>
             </div>
           )}
-
-          {/* Word Count Sliders */}
-          <div className="space-y-4">
-            <Label>Nombre de mots par section</Label>
-            {sections.map(section => (
-              <div key={section.value} className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm">{section.label}</span>
-                  <span className="text-sm font-medium">{wordCounts[section.value]} mots</span>
-                </div>
-                <Slider
-                  value={[wordCounts[section.value]]}
-                  onValueChange={([value]) => setWordCounts(prev => ({ ...prev, [section.value]: value }))}
-                  min={100}
-                  max={2000}
-                  step={50}
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Global Context */}
-          <div className="space-y-2">
-            <Label>Contexte global (optionnel)</Label>
-            <Textarea
-              placeholder="Ajoutez un contexte qui s'appliquera à toutes les générations..."
-              value={globalContext}
-              onChange={(e) => setGlobalContext(e.target.value)}
-              rows={3}
-            />
-          </div>
 
           {/* Action Buttons */}
           <div className="flex gap-2">
