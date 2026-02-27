@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { ChevronRight, ChevronLeft, X, Sparkles, UserPlus, LogIn, Volume2, VolumeX } from "lucide-react";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { useVisitorAnalytics } from "@/hooks/useVisitorAnalytics";
+import { useMusicPlayer } from "@/contexts/MusicPlayerContext";
 
 // ─────────────────────────────────────────────
 // Types
@@ -190,6 +191,8 @@ export const VisitorTour = () => {
     exitVisitorMode,
   } = useVisitor();
   const { trackTourStep, trackTourSkip, trackTourComplete } = useVisitorAnalytics();
+  const { setVolume, volume } = useMusicPlayer();
+  const preDuckVolumeRef = useRef(100); // Stores music volume before ducking
 
   // Wait for React dispatcher to stabilize after lazy load
   useEffect(() => {
@@ -267,33 +270,43 @@ export const VisitorTour = () => {
     // Small delay to let page navigation settle before playing
     const timer = setTimeout(() => {
       const audio = new Audio(url);
-      audio.volume = 0.7;
+      audio.volume = 0.90; // Match JudeAudioContext voice level
       audioRef.current = audio;
-      audio.play().catch(() => {});
+      // Duck background music while Jude speaks
+      preDuckVolumeRef.current = volume;
+      setVolume(10);
+      audio.onended = () => {
+        setVolume(preDuckVolumeRef.current); // Restore after clip ends
+      };
+      audio.play().catch(() => {
+        setVolume(preDuckVolumeRef.current); // Restore on autoplay block
+      });
     }, 600);
 
     return () => clearTimeout(timer);
   }, [tourStep, isStable, tourActive, tourCompleted, isMuted]);
 
-  // Stop audio when tour closes or component unmounts
+  // Stop audio and restore music volume on unmount
   useEffect(() => {
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
+        setVolume(preDuckVolumeRef.current); // Ensure music restored on unmount
       }
     };
-  }, []);
+  }, [setVolume]);
 
   // Mute toggle — persists to localStorage, shared with authenticated voice system
   const toggleMute = () => {
     setIsMuted(prev => {
       const next = !prev;
       localStorage.setItem('jude-voice-muted', String(next));
-      // Stop audio immediately when muting
+      // Stop audio immediately when muting and restore music volume
       if (next && audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
+        setVolume(preDuckVolumeRef.current);
       }
       return next;
     });
