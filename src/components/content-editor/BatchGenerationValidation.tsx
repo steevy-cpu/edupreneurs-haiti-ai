@@ -348,7 +348,16 @@ export const BatchGenerationValidation = () => {
         query = query.eq('subject_id', subject);
       }
 
-      const { data, error } = await query;
+      // Server-side filter: only fetch lessons with empty sections when onlyEmpty is active
+      if (onlyEmpty && selectedLessonIds.length === 0 && selectedSections.length > 0) {
+        const orClauses = selectedSections
+          .map(s => `${s}.is.null,${s}.eq.`)
+          .join(',');
+        query = query.or(orClauses);
+      }
+
+      // Explicit limit to avoid silent truncation at default 1000
+      const { data, error } = await query.limit(2000);
 
       if (error) {
         toast.error("Erreur lors de la récupération des leçons: " + error.message);
@@ -356,17 +365,16 @@ export const BatchGenerationValidation = () => {
       }
 
       let filteredData = data || [];
+
+      // Warn if we hit the 2000-row cap — user should narrow filters
+      if (filteredData.length >= 2000) {
+        toast.warning("Plus de 2000 leçons correspondent. Affinez vos filtres pour un résultat précis.");
+      }
       
       // Fix #4: Apply series filter
       if (isNS3OrNS4 && series.length > 0 && subject === "all") {
         filteredData = filteredData.filter(lesson => 
           lesson.subjects && series.includes((lesson.subjects as any).series)
-        );
-      }
-
-      if (onlyEmpty && selectedLessonIds.length === 0) {
-        return filteredData.filter(lesson =>
-          selectedSections.some(section => !lesson[section] || lesson[section].trim() === '')
         );
       }
 
