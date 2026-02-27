@@ -20,7 +20,7 @@ import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { toast } from 'sonner';
 
 /** Volume level applied to music while Jude speaks (0-100 scale) */
-const DUCK_VOLUME = 14;
+const DUCK_VOLUME = 75;
 
 interface JudeAudioContextType {
   /** Play an audio URL — stops any currently playing Jude audio first */
