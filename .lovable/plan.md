@@ -1,58 +1,44 @@
 
-
-# Fix Music Ducking for Visitor Audio in VisitorTour and JudeWelcomePopup
+# Fix: BatchGenerationValidation showing 1000 instead of actual count
 
 ## Problem
-When Jude's voice plays via direct `new Audio()` calls in visitor mode, background music stays at full volume. The `JudeAudioContext` (which handles ducking) is only used for authenticated users.
+When clicking "Lancer generation" with "Sections vides uniquement" enabled:
+1. `fetchLessons()` queries ALL lessons (capped at 1000 by default Supabase limit)
+2. The confirmation dialog shows `lessons.length` = 1000 (the pre-filter count)
+3. The `onlyEmpty` filter is applied client-side AFTER the dialog, so users see a misleading "1000 lecons" warning
+4. Even if there were fewer than 1000, the query still fetches unnecessary data on 3G connections
 
-## Scope
-- **VisitorTour.tsx** -- audio play block at L268-273, mute toggle at L289-299, cleanup at L279-286
-- **JudeWelcomePopup.tsx** -- visitor audio path at L146-157, cleanup at L114-122
-- No other files modified
+## Solution
+Two changes in `fetchLessons()` inside `BatchGenerationValidation.tsx`:
 
----
+### Change 1: Move `onlyEmpty` filter to SQL (server-side)
+When `onlyEmpty` is true and no specific lessons are selected, add `.or()` filters to the query so only lessons with missing content are returned. This replaces the client-side filter at lines 367-371.
 
-## Fix 1: VisitorTour.tsx
+```typescript
+// Before building the query, if onlyEmpty is true, add SQL filters
+if (onlyEmpty && selectedLessonIds.length === 0 && selectedSections.length > 0) {
+  // Build OR clause: section IS NULL or section = ''
+  const orClauses = selectedSections.map(s => `${s}.is.null,${s}.eq.`).join(',');
+  query = query.or(orClauses);
+}
+```
 
-### Changes
-1. **Add import**: `useMusicPlayer` from `@/contexts/MusicPlayerContext`
-2. **Add hook call**: `const { setVolume, volume } = useMusicPlayer()` (after existing hooks, before early returns at L302)
-3. **Add ref**: `const preDuckVolumeRef = useRef(100)` for saving pre-duck volume
-4. **Update audio play block (L268-273)**:
-   - Set `audio.volume = 0.90`
-   - Save `volume` to `preDuckVolumeRef.current`
-   - Call `setVolume(10)` to duck
-   - Add `audio.onended` handler that restores via `setVolume(preDuckVolumeRef.current)`
-   - Restore on `.play().catch()` error path
-5. **Update toggleMute (L294-296)**: When muting and pausing audio, also restore volume via `setVolume(preDuckVolumeRef.current)`
-6. **Update cleanup useEffect (L279-286)**: On unmount, also call `setVolume(preDuckVolumeRef.current)` to ensure restore
+### Change 2: Remove the client-side fallback filter
+Delete lines 367-371 (the `if (onlyEmpty && ...)` block) since it's now handled server-side.
 
----
+### Change 3: Add explicit row limit with pagination awareness
+Add `.limit(2000)` to avoid silent truncation, and if more than 2000 lessons match, show a warning asking the user to narrow their filters.
 
-## Fix 2: JudeWelcomePopup.tsx (visitor path only)
-
-### Changes
-1. **Expand existing destructure** (L44): Change `{ tracks, playTrack }` to `{ tracks, playTrack, setVolume, volume }`
-2. **Add ref**: `const preDuckVolumeRef = useRef(100)` near visitorAudioRef (L54)
-3. **Update visitor audio play block (L146-157)**:
-   - Set `audio.volume = 0.90`
-   - Save `volume` to `preDuckVolumeRef.current`, call `setVolume(10)` before play
-   - Add `audio.onended` to restore via `setVolume(preDuckVolumeRef.current)`
-   - Restore on `.play().catch()` error path
-4. **Update visitor cleanup (L114-122)**: When stopping visitor audio on popup close, also restore volume via `setVolume(preDuckVolumeRef.current)`
-
-The authenticated `speak()` path (L141-144) is NOT touched -- it already uses `JudeAudioContext` which ducks correctly.
-
----
+## Files Modified
+- `src/components/content-editor/BatchGenerationValidation.tsx` — `fetchLessons()` function only
 
 ## Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Existing RLS / DB functions affected? | No -- frontend-only change |
-| Provider stack order impacted? | No -- useMusicPlayer already available |
-| New dependencies added? | None |
-| 3G performance impact? | None -- no new network calls |
-| Backward compatibility? | Yes -- additive behavior only |
-| Edge cases (mute, unmount, error)? | All restore volume |
-
+| Breaks existing functionality? | No -- same data, filtered earlier |
+| Affects Provider Stack / AppShell? | No |
+| New dependencies? | No |
+| Works on 3G? | Better -- less data transferred |
+| RLS impact? | None |
+| Backward compatible? | Yes |
