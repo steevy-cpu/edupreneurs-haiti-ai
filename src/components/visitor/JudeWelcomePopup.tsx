@@ -41,7 +41,7 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
   const [showSearching, setShowSearching] = useState(false);
   const [searchingTextComplete, setSearchingTextComplete] = useState(false);
   const [searchProgress, setSearchProgress] = useState(0);
-  const { tracks, playTrack } = useMusicPlayer();
+  const { tracks, playTrack, setVolume, volume } = useMusicPlayer();
   const { shouldShowAnimations } = useNetworkAwareLoading();
 
   // Voice sync — authenticated users get Jude's voice via JudeAudioContext
@@ -53,6 +53,8 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
   // Visitor audio — local HTMLAudioElement, no JudeAudioContext needed
   const visitorAudioRef = useRef<HTMLAudioElement | null>(null);
   const visitorDurationsRef = useRef<number[]>([0, 0, 0, 0]);
+  // Stores music volume before ducking so we can restore it
+  const preDuckVolumeRef = useRef(100);
 
   // Track mute state at render time for enableSound decisions
   const isMuted = typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true';
@@ -110,17 +112,18 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
     });
   }, [isOpen, isAuthenticated, isMuted]);
 
-  // Stop any playing audio when popup closes
+  // Stop any playing audio and restore music volume when popup closes
   useEffect(() => {
     if (!isOpen) {
       stop();
-      // Also stop visitor audio
+      // Also stop visitor audio and restore ducked music
       if (visitorAudioRef.current) {
         visitorAudioRef.current.pause();
         visitorAudioRef.current = null;
+        setVolume(preDuckVolumeRef.current);
       }
     }
-  }, [isOpen, stop]);
+  }, [isOpen, stop, setVolume]);
 
   /** Calculate ms-per-char so typing finishes ~90% through audio duration */
   const getTypingSpeed = useCallback((messageIndex: number, messageLength: number): number => {
@@ -143,7 +146,7 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
       if (!audioUrlsRef.current[index]) return;
       speak(audioUrlsRef.current[index]!);
     } else {
-      // Visitor: play via local Audio element (same pattern as VisitorTour)
+      // Visitor: play via local Audio element with music ducking
       const url = WELCOME_AUDIO_URLS[index];
       if (!url) return;
       // Stop previous clip before starting new one
@@ -152,8 +155,17 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
         visitorAudioRef.current = null;
       }
       const audio = new Audio(url);
+      audio.volume = 0.90; // Match JudeAudioContext voice level
       visitorAudioRef.current = audio;
-      audio.play().catch(() => { /* autoplay blocked — graceful degradation */ });
+      // Duck background music while Jude speaks
+      preDuckVolumeRef.current = volume;
+      setVolume(10);
+      audio.onended = () => {
+        setVolume(preDuckVolumeRef.current); // Restore after clip ends
+      };
+      audio.play().catch(() => {
+        setVolume(preDuckVolumeRef.current); // Restore on autoplay block
+      });
     }
   }, [isAuthenticated, speak]);
 
