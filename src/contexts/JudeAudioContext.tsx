@@ -20,7 +20,7 @@ import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { toast } from 'sonner';
 
 /** Volume level applied to music while Jude speaks (0-100 scale) */
-const DUCK_VOLUME = 75;
+const DUCK_VOLUME = 25;
 
 interface JudeAudioContextType {
   /** Play an audio URL — stops any currently playing Jude audio first */
@@ -88,6 +88,8 @@ export function JudeAudioProvider({ children }: { children: ReactNode }) {
     duckMusic();
 
     const audio = new Audio(audioUrl);
+    /** Jude playback volume — 0.75 = 75% to avoid overpowering */
+    audio.volume = 0.75;
     audioRef.current = audio;
 
     audio.onended = () => {
