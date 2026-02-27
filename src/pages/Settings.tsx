@@ -63,6 +63,8 @@ import { StripeRenewalButton } from "@/components/subscription/StripeRenewalButt
 import { isFounder } from "@/lib/founderConstants";
 import { RenewalGiftLink } from "@/components/subscription/RenewalGiftLink";
 import { initializePushNotifications } from "@/utils/pushNotifications";
+import { useStreak } from "@/contexts/StreakContext";
+import { STREAK_FLAME_URL } from "@/lib/streakConstants";
 
 // Lazy load heavy components
 const AvatarSelector = lazy(() => import('@/components/AvatarSelector').then(m => ({ default: m.AvatarSelector })));
@@ -1143,6 +1145,11 @@ const Settings = () => {
                 </CardContent>
               </Card>
 
+              {/* Streak Stats Section */}
+              {!isFounderUser && (
+                <StreakInfoCard userId={userId} />
+              )}
+
               <Card className="border-none rounded-[20px] shadow-md">
                 <CardHeader className="p-4 sm:p-6">
                   <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
@@ -1462,5 +1469,43 @@ const Settings = () => {
       </div>
     );
 };
+
+/** Streak stats card for the Account tab */
+function StreakInfoCard({ userId }: { userId: string | null }) {
+  const { currentStreak, longestStreak, freezeCount } = useStreak();
+
+  return (
+    <Card className="border-none rounded-[20px] shadow-md">
+      <CardHeader className="p-4 sm:p-6">
+        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+          <img src={STREAK_FLAME_URL} alt="Streak" className="w-5 h-5" />
+          Série d'apprentissage
+        </CardTitle>
+        <CardDescription className="text-sm">
+          Ta progression quotidienne
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="p-4 sm:p-6 pt-0">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="text-center p-3 bg-muted/50 rounded-xl">
+            <p className="text-2xl font-bold text-foreground">{currentStreak}</p>
+            <p className="text-xs text-muted-foreground">Série actuelle</p>
+          </div>
+          <div className="text-center p-3 bg-muted/50 rounded-xl">
+            <p className="text-2xl font-bold text-foreground">{longestStreak}</p>
+            <p className="text-xs text-muted-foreground">Record</p>
+          </div>
+          <div className="text-center p-3 bg-muted/50 rounded-xl">
+            <p className="text-2xl font-bold text-foreground">❄️ {freezeCount}</p>
+            <p className="text-xs text-muted-foreground">Freezes</p>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground mt-3">
+          Les freezes protègent ta série pendant 1 jour manqué. Tu en gagnes en atteignant des étapes !
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default Settings;

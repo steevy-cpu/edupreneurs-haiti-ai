@@ -186,6 +186,21 @@ export default {
           "90%": { opacity: "1" },
           "100%": { transform: "translateY(-100vh)", opacity: "0" },
         },
+        // Streak flame animations
+        flameIdle: {
+          "0%, 100%": { transform: "scale(1)", filter: "brightness(1)" },
+          "50%": { transform: "scale(1.08)", filter: "brightness(1.15)" },
+        },
+        flameBurst: {
+          "0%": { transform: "scale(1)", filter: "brightness(1)" },
+          "30%": { transform: "scale(1.4)", filter: "brightness(1.4)" },
+          "60%": { transform: "scale(1.2)", filter: "brightness(1.2)" },
+          "100%": { transform: "scale(1)", filter: "brightness(1)" },
+        },
+        streakGlow: {
+          "0%, 100%": { boxShadow: "0 0 8px rgba(249, 115, 22, 0.4)" },
+          "50%": { boxShadow: "0 0 20px rgba(249, 115, 22, 0.8)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -202,6 +217,9 @@ export default {
         "music-bar-3": "music-bar 0.6s ease-in-out infinite 0.2s",
         "bounce-subtle": "bounce-subtle 2s ease-in-out infinite",
         "float-up": "float-up 20s linear infinite",
+        "flame-idle": "flameIdle 2s ease-in-out infinite",
+        "flame-burst": "flameBurst 0.6s ease-out forwards",
+        "streak-glow": "streakGlow 2s ease-in-out infinite",
       },
     },
   },

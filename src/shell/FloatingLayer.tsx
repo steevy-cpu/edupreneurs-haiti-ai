@@ -30,6 +30,9 @@ const AvatarGenerationStep = lazy(() => import('@/components/firsttime/AvatarGen
 const FirstTimeUserTour = lazy(() => import('@/components/firsttime/FirstTimeUserTour'));
 const PushPermissionPrompt = lazy(() => import('@/components/firsttime/PushPermissionPrompt'));
 
+// Streak milestone celebration modal
+const StreakMilestoneModal = lazy(() => import('@/components/dashboard/StreakMilestoneModal'));
+
 // Wrapper components that handle their own props/logic
 import { NotificationBannerWrapper } from './wrappers/NotificationBannerWrapper';
 import { PWAPromptWrapper } from './wrappers/PWAPromptWrapper';
@@ -100,6 +103,11 @@ export function FloatingLayer() {
           />
         </Suspense>
       )}
+
+      {/* Streak milestone celebration modal */}
+      <Suspense fallback={null}>
+        <StreakMilestoneModal />
+      </Suspense>
     </>
   );
 }

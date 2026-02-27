@@ -3013,6 +3013,7 @@ export type Database = {
           bio: string | null
           confirmation_code: string | null
           created_at: string | null
+          current_streak: number
           date_of_birth: string | null
           email_confirmed: boolean | null
           full_name: string | null
@@ -3021,9 +3022,11 @@ export type Database = {
           has_free_access: boolean | null
           id: string
           is_system_account: boolean | null
+          last_activity_date: string | null
           last_avatar_generated_at: string | null
           last_feed_visit: string | null
           last_seen: string | null
+          longest_streak: number
           nickname: string | null
           onboarding_tour_completed: boolean | null
           onboarding_tour_completed_at: string | null
@@ -3040,6 +3043,7 @@ export type Database = {
           school: string | null
           sent_expiry_reminders: Json | null
           sent_onboarding_emails: Json | null
+          streak_freeze_count: number
           subscription_end_date: string | null
           subscription_status: string
           theme_preference: string | null
@@ -3054,6 +3058,7 @@ export type Database = {
           bio?: string | null
           confirmation_code?: string | null
           created_at?: string | null
+          current_streak?: number
           date_of_birth?: string | null
           email_confirmed?: boolean | null
           full_name?: string | null
@@ -3062,9 +3067,11 @@ export type Database = {
           has_free_access?: boolean | null
           id?: string
           is_system_account?: boolean | null
+          last_activity_date?: string | null
           last_avatar_generated_at?: string | null
           last_feed_visit?: string | null
           last_seen?: string | null
+          longest_streak?: number
           nickname?: string | null
           onboarding_tour_completed?: boolean | null
           onboarding_tour_completed_at?: string | null
@@ -3081,6 +3088,7 @@ export type Database = {
           school?: string | null
           sent_expiry_reminders?: Json | null
           sent_onboarding_emails?: Json | null
+          streak_freeze_count?: number
           subscription_end_date?: string | null
           subscription_status?: string
           theme_preference?: string | null
@@ -3095,6 +3103,7 @@ export type Database = {
           bio?: string | null
           confirmation_code?: string | null
           created_at?: string | null
+          current_streak?: number
           date_of_birth?: string | null
           email_confirmed?: boolean | null
           full_name?: string | null
@@ -3103,9 +3112,11 @@ export type Database = {
           has_free_access?: boolean | null
           id?: string
           is_system_account?: boolean | null
+          last_activity_date?: string | null
           last_avatar_generated_at?: string | null
           last_feed_visit?: string | null
           last_seen?: string | null
+          longest_streak?: number
           nickname?: string | null
           onboarding_tour_completed?: boolean | null
           onboarding_tour_completed_at?: string | null
@@ -3122,6 +3133,7 @@ export type Database = {
           school?: string | null
           sent_expiry_reminders?: Json | null
           sent_onboarding_emails?: Json | null
+          streak_freeze_count?: number
           subscription_end_date?: string | null
           subscription_status?: string
           theme_preference?: string | null
@@ -3850,6 +3862,55 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      streak_milestones: {
+        Row: {
+          badge_icon_url: string
+          badge_title: string
+          earned_at: string
+          id: string
+          milestone_days: number
+          user_id: string
+        }
+        Insert: {
+          badge_icon_url: string
+          badge_title: string
+          earned_at?: string
+          id?: string
+          milestone_days: number
+          user_id: string
+        }
+        Update: {
+          badge_icon_url?: string
+          badge_title?: string
+          earned_at?: string
+          id?: string
+          milestone_days?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "streak_milestones_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "leaderboard_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "streak_milestones_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "streak_milestones_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       study_music_tracks: {
         Row: {
