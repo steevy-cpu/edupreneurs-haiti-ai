@@ -4,10 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Play, ArrowRight, Edit3, Sparkles, X, Flame, Target, Trophy, BookOpen, Award, Clock } from "lucide-react";
+import { Play, ArrowRight, Edit3, Sparkles, X, Target, Trophy, BookOpen, Award, Clock } from "lucide-react";
 import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { QuickActionsCard } from "@/components/dashboard/QuickActionsCard";
+import { StreakIndicator } from "@/components/dashboard/StreakIndicator";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { AnalyticsWidgetSkeleton } from "@/components/shared/SkeletonLoaders";
@@ -109,7 +110,8 @@ export const OverviewTab = ({
       {/* KPI Stats Strip */}
       <Card className="border-none rounded-xl shadow-sm">
         <CardContent className="p-4">
-          <div className="grid grid-cols-4 gap-3">
+          {/* 5-column grid: Gold, Leçons, Score, Étude, Streak */}
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
             <div className="flex flex-col items-center text-center">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center mb-1.5">
                 <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500" />
@@ -140,6 +142,8 @@ export const OverviewTab = ({
               <span className="text-[10px] sm:text-xs text-muted-foreground">Étude</span>
               <span className="text-[8px] sm:text-[9px] text-muted-foreground/60 italic">Estimation</span>
             </div>
+            {/* Streak — 5th KPI card */}
+            <StreakIndicator />
           </div>
         </CardContent>
       </Card>
@@ -151,26 +155,16 @@ export const OverviewTab = ({
         </p>
       )}
 
-      {/* Today's Focus — combined Goal + Streak */}
+      {/* Today's Focus — Weekly Goal (streak now in KPI grid above) */}
       <Card className="border-none rounded-xl shadow-sm">
         <CardContent className="p-3 sm:p-4">
           <div className="flex items-center gap-4 sm:gap-6">
-            {/* Streak */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <Flame className="w-5 h-5 text-orange-500" />
-              <div>
-                <span className="text-lg font-bold text-foreground">{analytics.streak}</span>
-                <span className="text-xs text-muted-foreground ml-1">{analytics.streak === 1 ? "jour" : "jours"}</span>
-              </div>
-            </div>
-            {/* Divider */}
-            <div className="w-px h-8 bg-border" />
-            {/* Weekly Goal */}
+            {/* Weekly Goal — full width now */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-1.5">
                   <Target className="w-4 h-4 text-blue-500" />
-                  <span className="text-xs font-medium text-muted-foreground">Objectif</span>
+                  <span className="text-xs font-medium text-muted-foreground">Objectif hebdo</span>
                 </div>
                 <span className="text-xs font-semibold text-foreground">{analytics.weeklyGoal.current}/{analytics.weeklyGoal.target}</span>
               </div>
