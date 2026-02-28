@@ -1,5 +1,13 @@
+/**
+ * generate-word-audio
+ * Generates TTS audio for daily words using ElevenLabs or OpenAI.
+ * Founder-only endpoint with RESOURCE_INTENSIVE rate limiting.
+ *
+ * Security: JWT via getUser() + founder check + RESOURCE_INTENSIVE rate limit
+ */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders, corsPreflightResponse, secureJsonResponse, secureErrorResponse } from '../_shared/securityHeaders.ts';
+import { checkRateLimit, RATE_LIMITS, getClientIp, rateLimitResponse } from '../_shared/rateLimiter.ts';
 
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
@@ -87,7 +95,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verify authentication - only founders can generate audio
+    // ── JWT Authentication (existing getUser pattern) ───────────────────────
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return secureErrorResponse('Unauthorized - No token provided', 401);
@@ -110,6 +118,15 @@ Deno.serve(async (req) => {
 
     console.log(`Founder ${user.id} authorized to generate audio`);
 
+    // ── Rate Limiting (added) ───────────────────────────────────────────────
+    const serviceClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const clientIp = getClientIp(req);
+    const rlResult = await checkRateLimit(serviceClient, RATE_LIMITS.RESOURCE_INTENSIVE, user.id, clientIp);
+    if (!rlResult.allowed) {
+      return rateLimitResponse(rlResult.retryAfter ?? 60, rlResult.remaining, corsHeaders);
+    }
+
+    // ── Business Logic ──────────────────────────────────────────────────────
     const { wordId, word, provider = 'elevenlabs' } = await req.json();
     const ttsProvider: TTSProvider = provider === 'openai' ? 'openai' : 'elevenlabs';
 
@@ -128,7 +145,7 @@ Deno.serve(async (req) => {
     console.log(`Generating audio for word: "${word}" (ID: ${wordId}) using ${ttsProvider}`);
 
     // Initialize Supabase client with service role for storage access
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const supabase = serviceClient;
 
     // Generate audio based on provider
     const audioBytes = ttsProvider === 'openai'
