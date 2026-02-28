@@ -119,88 +119,51 @@ export async function checkRateLimit(
   userId: string | null,
   clientIp: string
 ): Promise<RateLimitResult> {
-  const now = new Date();
-  const windowStart = new Date(now.getTime() - config.windowMs);
-  const expiresAt = new Date(now.getTime() + config.windowMs);
-  
   // Determine key and max requests based on auth status
   const isAuthenticated = !!userId;
   const maxRequests = isAuthenticated ? config.maxRequests : config.maxAnonRequests;
   const keyType = isAuthenticated ? 'user' : 'ip';
   const keyId = isAuthenticated ? userId : clientIp;
   const key = `${keyType}:${keyId}:${config.keyPrefix}`;
+  // Convert window from ms to seconds for the DB function
+  const windowSeconds = Math.ceil(config.windowMs / 1000);
 
   try {
-    // Try to get existing rate limit record
-    const { data: existing } = await supabase
-      .from('rate_limits')
-      .select('id, request_count, window_start, expires_at')
-      .eq('key', key)
-      .maybeSingle(); // CRITICAL FIX: .single() was throwing PGRST116 on first requests, caught silently → rate limit bypassed. maybeSingle() → null → INSERT branch below
+    // Single atomic RPC call — eliminates the TOCTOU race condition
+    // The DB function handles UPSERT + window expiry reset in one statement
+    const { data, error } = await supabase.rpc('check_and_increment_rate_limit', {
+      p_key: key,
+      p_window_seconds: windowSeconds,
+      p_max_requests: maxRequests,
+    });
 
-    if (existing) {
-      const windowStartTime = new Date(existing.window_start);
-      
-      // Check if we're still in the same window
-      if (windowStartTime > windowStart) {
-        // Same window - check count
-        if (existing.request_count >= maxRequests) {
-          // Rate limited
-          const retryAfter = Math.ceil(
-            (new Date(existing.expires_at).getTime() - now.getTime()) / 1000
-          );
-          return {
-            allowed: false,
-            remaining: 0,
-            retryAfter: Math.max(1, retryAfter)
-          };
-        }
-        
-        // Increment count
-        await supabase
-          .from('rate_limits')
-          .update({ 
-            request_count: existing.request_count + 1,
-            expires_at: expiresAt.toISOString()
-          })
-          .eq('id', existing.id);
-        
-        return {
-          allowed: true,
-          remaining: maxRequests - existing.request_count - 1
-        };
-      } else {
-        // Window expired - reset
-        await supabase
-          .from('rate_limits')
-          .update({
-            request_count: 1,
-            window_start: now.toISOString(),
-            expires_at: expiresAt.toISOString()
-          })
-          .eq('id', existing.id);
-        
-        return {
-          allowed: true,
-          remaining: maxRequests - 1
-        };
-      }
-    } else {
-      // New rate limit record
-      await supabase
-        .from('rate_limits')
-        .insert({
-          key,
-          request_count: 1,
-          window_start: now.toISOString(),
-          expires_at: expiresAt.toISOString()
-        });
-      
+    if (error) {
+      throw error;
+    }
+
+    // RPC returns a single-row table; Supabase client returns it as an array
+    const row = Array.isArray(data) ? data[0] : data;
+
+    if (!row) {
+      throw new Error('Empty response from rate limit RPC');
+    }
+
+    if (row.allowed) {
       return {
         allowed: true,
-        remaining: maxRequests - 1
+        remaining: maxRequests - row.request_count,
       };
     }
+
+    // Rate limited — compute retry-after from the window expiry
+    const retryAfter = Math.ceil(
+      (new Date(row.expires_at).getTime() - Date.now()) / 1000
+    );
+    return {
+      allowed: false,
+      remaining: 0,
+      retryAfter: Math.max(1, retryAfter),
+    };
   } catch (error) {
     // Security: fail CLOSED — reject requests when the rate limit service is degraded.
     // This prevents a DB outage from silently disabling all rate limiting.
@@ -208,7 +171,7 @@ export async function checkRateLimit(
     return {
       allowed: false,
       remaining: 0,
-      retryAfter: 30
+      retryAfter: 30,
     };
   }
 }
