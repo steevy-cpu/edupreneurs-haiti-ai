@@ -77,25 +77,12 @@ export const ChessPublicMatches = ({ userId, onJoinMatch }: ChessPublicMatchesPr
   useEffect(() => {
     fetchMatches();
 
-    // Subscribe to new matches
-    const channel = supabase
-      .channel('public-chess-matches')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'chess_matches',
-          filter: 'is_public=eq.true', // Skip private match events — status filtering handled by fetchMatches()
-        },
-        () => {
-          fetchMatches();
-        }
-      )
-      .subscribe();
+    // Poll every 10s instead of realtime — chess lobby is not latency-critical
+    // and this eliminates one WebSocket channel per user in the lobby
+    const pollInterval = setInterval(fetchMatches, 10_000);
 
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(pollInterval);
     };
   }, []);
 

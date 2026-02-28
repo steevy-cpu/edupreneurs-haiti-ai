@@ -101,13 +101,15 @@ export default function Notifications() {
     checkAuth();
     fetchNotifications(true);
     
-    let cleanup: (() => void) | undefined;
-    subscribeToNotifications().then((cleanupFn) => {
-      cleanup = cleanupFn;
-    });
+    // Piggyback on shell notification channel — avoids a duplicate realtime subscription.
+    // The shell already listens to the notifications table and dispatches this event.
+    const handleShellNotification = () => {
+      resetAndFetch();
+    };
+    window.addEventListener('shell-new-notification', handleShellNotification);
 
     return () => {
-      if (cleanup) cleanup();
+      window.removeEventListener('shell-new-notification', handleShellNotification);
     };
   }, []);
 
@@ -268,32 +270,7 @@ export default function Notifications() {
     }
   };
 
-  const subscribeToNotifications = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const channel = supabase
-      .channel("notifications-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "notifications",
-          filter: `user_id=eq.${user.id}`,
-        },
-        async () => {
-          console.log('New notification received for current user');
-          playNotificationSound();
-          resetAndFetch();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  };
+  // NOTE: subscribeToNotifications removed — now piggybacking on shell-new-notification event
 
   const markAsRead = async (notificationId: string) => {
     await supabase
