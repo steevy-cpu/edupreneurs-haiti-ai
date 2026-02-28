@@ -1,4 +1,12 @@
+/**
+ * parse-exam-vision
+ * Uses Gemini 2.5 Pro vision to OCR and structure official Haitian exam pages.
+ *
+ * Security: JWT required + RESOURCE_INTENSIVE rate limit (15 auth / 3 anon per min)
+ */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, RATE_LIMITS, getClientIp, rateLimitResponse } from "../_shared/rateLimiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,6 +19,43 @@ serve(async (req) => {
   }
 
   try {
+    // ── JWT Authentication ──────────────────────────────────────────────────
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Non autorisé" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const supabaseAuth = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ error: "Non autorisé" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const userId = claimsData.claims.sub;
+
+    // ── Rate Limiting ───────────────────────────────────────────────────────
+    const serviceClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+    const clientIp = getClientIp(req);
+    const rlResult = await checkRateLimit(serviceClient, RATE_LIMITS.RESOURCE_INTENSIVE, userId, clientIp);
+    if (!rlResult.allowed) {
+      return rateLimitResponse(rlResult.retryAfter ?? 60, rlResult.remaining, corsHeaders);
+    }
+
+    // ── Business Logic ──────────────────────────────────────────────────────
     // gradeLevel and series provide exam-type context for the AI — default to '9AF' for safety
     const { subject, year, pageImages, gradeLevel = '9AF', series } = await req.json();
 

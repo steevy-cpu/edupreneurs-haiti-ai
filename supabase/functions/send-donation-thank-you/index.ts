@@ -1,6 +1,19 @@
+/**
+ * send-donation-thank-you
+ * Sends a thank-you email to donors via Resend.
+ *
+ * Security: JWT required + EMAIL rate limit (10 auth / 3 anon per min)
+ */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsPreflightResponse, secureJsonResponse, secureErrorResponse } from "../_shared/securityHeaders.ts";
 import { validateInput, donationThankYouSchema } from "../_shared/validation.ts";
+import { checkRateLimit, RATE_LIMITS, getClientIp, rateLimitResponse } from "../_shared/rateLimiter.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SITE_URL = Deno.env.get("SITE_URL") || "https://edupreneurs-haiti-ai.lovable.app";
@@ -95,6 +108,37 @@ serve(async (req) => {
       return secureErrorResponse("Email service not configured", 500);
     }
 
+    // ── JWT Authentication ──────────────────────────────────────────────────
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return secureErrorResponse("Non autorisé", 401);
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const supabaseAuth = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return secureErrorResponse("Non autorisé", 401);
+    }
+    const userId = claimsData.claims.sub;
+
+    // ── Rate Limiting ───────────────────────────────────────────────────────
+    const serviceClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+    const clientIp = getClientIp(req);
+    const rlResult = await checkRateLimit(serviceClient, RATE_LIMITS.EMAIL, userId, clientIp);
+    if (!rlResult.allowed) {
+      return rateLimitResponse(rlResult.retryAfter ?? 60, rlResult.remaining, corsHeaders);
+    }
+
+    // ── Business Logic ──────────────────────────────────────────────────────
     const body = await req.json();
     const validation = validateInput(donationThankYouSchema, body);
     if (!validation.success) {

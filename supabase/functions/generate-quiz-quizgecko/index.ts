@@ -1,6 +1,19 @@
+/**
+ * generate-quiz-quizgecko
+ * Generates quiz questions via the Quizgecko external API.
+ *
+ * Security: JWT required + RESOURCE_INTENSIVE rate limit (15 auth / 3 anon per min)
+ */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getSecureHeaders, secureJsonResponse, secureErrorResponse, corsPreflightResponse } from "../_shared/securityHeaders.ts";
+import { checkRateLimit, RATE_LIMITS, getClientIp, rateLimitResponse } from "../_shared/rateLimiter.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 const inputSchema = z.object({
   lessonTitle: z.string().min(1).max(500),
@@ -21,6 +34,43 @@ serve(async (req) => {
   }
 
   try {
+    // ── JWT Authentication ──────────────────────────────────────────────────
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Non autorisé" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const supabaseAuth = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ error: "Non autorisé" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const userId = claimsData.claims.sub;
+
+    // ── Rate Limiting ───────────────────────────────────────────────────────
+    const serviceClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+    const clientIp = getClientIp(req);
+    const rlResult = await checkRateLimit(serviceClient, RATE_LIMITS.RESOURCE_INTENSIVE, userId, clientIp);
+    if (!rlResult.allowed) {
+      return rateLimitResponse(rlResult.retryAfter ?? 60, rlResult.remaining, corsHeaders);
+    }
+
+    // ── Business Logic ──────────────────────────────────────────────────────
     const QUIZGECKO_API_KEY = Deno.env.get("QUIZGECKO_API_KEY");
     if (!QUIZGECKO_API_KEY) {
       return secureErrorResponse(
@@ -55,7 +105,7 @@ serve(async (req) => {
       method: "POST",
       headers,
       body: JSON.stringify({
-        text: combinedContent.substring(0, 30000), // Quizgecko may have text limits
+        text: combinedContent.substring(0, 30000),
         title: lessonTitle,
         options: {
           language: "fr",
@@ -98,7 +148,7 @@ serve(async (req) => {
       if (!statusRes.ok) {
         const errText = await statusRes.text();
         console.error("Quizgecko status poll error:", statusRes.status, errText);
-        continue; // retry
+        continue;
       }
 
       const statusData = await statusRes.json();
@@ -121,7 +171,6 @@ serve(async (req) => {
     let questions: any[] = [];
 
     if (quizIds.length > 0) {
-      // Fetch first quiz
       const quizId = typeof quizIds[0] === "object" ? quizIds[0].id : quizIds[0];
       const quizRes = await fetch(`${QUIZGECKO_BASE_URL}/quizzes/${quizId}`, { headers });
 
@@ -177,7 +226,6 @@ function transformToHtml(questions: any[], lessonTitle: string): string {
       const questionText = q.question_text || q.question || q.prompt || "";
       const explanation = q.explanation || q.answer_explanation || "";
 
-      // Extract answer options
       let options: { text: string; isCorrect: boolean }[] = [];
 
       if (Array.isArray(q.answer_options)) {
@@ -197,13 +245,11 @@ function transformToHtml(questions: any[], lessonTitle: string): string {
         }));
       }
 
-      // Ensure exactly 4 options
       while (options.length < 4) {
         options.push({ text: `Option ${letters[options.length]}`, isCorrect: false });
       }
       options = options.slice(0, 4);
 
-      // Find correct answer letter
       const correctIdx = options.findIndex((o) => o.isCorrect);
       const correctLetter = correctIdx >= 0 ? letters[correctIdx] : "A";
 

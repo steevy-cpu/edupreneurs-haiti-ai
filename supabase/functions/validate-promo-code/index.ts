@@ -2,16 +2,15 @@
  * Validate Promo Code
  * 
  * Server-side promo code validation for signup flow.
- * 
- * Features:
- * - Input validation
- * - Database lookup (without incrementing usage - that happens at signup)
- * - No rate limiting (single call per validation)
+ * Public endpoint (no JWT) with AUTH rate limiting (5 anon/min).
+ *
+ * Security: IP-based AUTH rate limit to prevent brute-force code guessing
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { validateInput, promoCodeSchema, validationErrorResponse } from "../_shared/validation.ts";
 import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
+import { checkRateLimit, RATE_LIMITS, getClientIp, rateLimitResponse } from "../_shared/rateLimiter.ts";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -25,6 +24,13 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
+
+    // ── Rate Limiting (IP-based, no JWT — public signup endpoint) ─────────
+    const clientIp = getClientIp(req);
+    const rlResult = await checkRateLimit(supabase, RATE_LIMITS.AUTH, null, clientIp);
+    if (!rlResult.allowed) {
+      return rateLimitResponse(rlResult.retryAfter ?? 60, rlResult.remaining, corsHeaders);
+    }
 
     // Parse and validate input
     const rawBody = await req.json();
