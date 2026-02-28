@@ -168,26 +168,27 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
 
     setIsGenerating(true);
     try {
-      if (shouldDeferAudio) {
-        const { data: wordWithAudio } = await supabase
-          .from('daily_words')
-          .select('audio_url')
-          .eq('id', word.id)
-          .single();
+      // Always re-check DB for audio_url — it may have been generated after caching
+      const { data: wordWithAudio } = await supabase
+        .from('daily_words')
+        .select('audio_url')
+        .eq('id', word.id)
+        .single();
 
-        if (wordWithAudio?.audio_url) {
-          setWord(prev => prev ? { ...prev, audio_url: wordWithAudio.audio_url } : null);
-          const audio = new Audio(wordWithAudio.audio_url);
-          audioRef.current = audio;
-          audio.onplay = () => setIsPlaying(true);
-          audio.onended = () => setIsPlaying(false);
-          audio.onerror = () => { setIsPlaying(false); };
-          await audio.play();
-          setIsGenerating(false);
-          return;
-        }
+      if (wordWithAudio?.audio_url) {
+        // Audio exists in DB — play it directly (no generation needed)
+        setWord(prev => prev ? { ...prev, audio_url: wordWithAudio.audio_url } : null);
+        const audio = new Audio(wordWithAudio.audio_url);
+        audioRef.current = audio;
+        audio.onplay = () => setIsPlaying(true);
+        audio.onended = () => setIsPlaying(false);
+        audio.onerror = () => { setIsPlaying(false); };
+        await audio.play();
+        setIsGenerating(false);
+        return;
       }
 
+      // No audio in DB — attempt generation (founder-only endpoint)
       const response = await supabase.functions.invoke('generate-word-audio', {
         body: { wordId: word.id, word: word.word },
       });
@@ -202,9 +203,12 @@ export const useWordOfTheDay = (): UseWordOfTheDayReturn => {
         audio.onended = () => setIsPlaying(false);
         audio.onerror = () => { setIsPlaying(false); };
         await audio.play();
+      } else {
+        // Generation returned no URL — likely non-founder user
+        toast.error('Audio pas encore disponible pour ce mot');
       }
     } catch (err) {
-      console.error('Error generating audio:', err);
+      console.error('Error with word audio:', err);
       toast.error('Audio non disponible pour ce mot');
     } finally {
       setIsGenerating(false);
