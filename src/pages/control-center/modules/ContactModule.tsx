@@ -122,27 +122,11 @@ export default function ContactModule() {
     fetchSubmissions();
   }, [fetchSubmissions]);
 
-  // Realtime subscription — subscribes ONCE on mount, never re-registers on filter/page changes.
-  // fetchSubmissions is captured by closure and always invokes the latest version.
+  // Poll every 30s instead of realtime — contact_submissions was never in the
+  // supabase_realtime publication so the channel was dead. Polling is correct here.
   useEffect(() => {
-    const channel = supabase
-      .channel('contact_submissions_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'contact_submissions',
-        },
-        () => {
-          fetchSubmissions();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const pollInterval = setInterval(() => fetchSubmissions(), 30_000);
+    return () => clearInterval(pollInterval);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateStatus = async (id: string, newStatus: string) => {

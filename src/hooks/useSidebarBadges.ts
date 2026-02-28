@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { 
@@ -9,10 +9,9 @@ import {
   CACHE_KEYS 
 } from "@/utils/queryPersistence";
 import { getStaleTimeFor } from "@/utils/networkAwareCache";
-import type { RealtimeChannel } from "@supabase/supabase-js";
 
-// Debounce interval for posts channel — coalesces rapid INSERTs into one refetch
-const POSTS_DEBOUNCE_MS = 2000;
+// Polling interval for new feed posts — non-critical, 60s is fine
+const FEED_POLL_INTERVAL_MS = 60_000;
 
 export interface SidebarBadges {
   unreadMessages: number;
@@ -65,14 +64,6 @@ async function fetchSidebarBadges(userId: string): Promise<SidebarBadges> {
 export function useSidebarBadges(userId?: string | null) {
   const { isVisitor } = useVisitor();
   const queryClient = useQueryClient();
-  
-  // Use useRef instead of global window object for channel storage
-  const channelsRef = useRef<{
-    messagesChannel?: RealtimeChannel;
-    followsChannel?: RealtimeChannel;
-    notificationsChannel?: RealtimeChannel;
-    postsChannel?: RealtimeChannel;
-  } | null>(null);
 
   const { data: badges, isLoading, refetch } = useQuery({
     queryKey: ['sidebar-badges', userId],
@@ -97,12 +88,12 @@ export function useSidebarBadges(userId?: string | null) {
     });
   }, [queryClient, userId]);
 
-  // Set up realtime subscriptions for badge updates - DEFERRED by 3 seconds
-  // to reduce initial load contention on 3G connections
+  // Piggyback on shell-level realtime events + polling for feed posts.
+  // This eliminates 4 dedicated realtime channels that were redundant with AppShell.
   useEffect(() => {
     if (!userId || isVisitor) return;
 
-    // Listen for feed visited event to clear badge immediately (no delay needed)
+    // Listen for feed visited event to clear badge immediately
     const handleFeedVisited = () => {
       queryClient.setQueryData(['sidebar-badges', userId], (old: SidebarBadges | undefined) => {
         if (!old) return EMPTY_BADGES;
@@ -111,76 +102,25 @@ export function useSidebarBadges(userId?: string | null) {
         return updated;
       });
     };
+
+    // Piggyback on shell message/notification channels — no new WebSocket connections
+    const handleNewMessage = () => refetch();
+    const handleNewNotification = () => refetch();
+
     window.addEventListener('feed-visited', handleFeedVisited);
+    window.addEventListener('shell-new-message', handleNewMessage);
+    window.addEventListener('shell-new-notification', handleNewNotification);
 
-    // Delay realtime subscriptions to prioritize initial render
-    const subscriptionDelay = setTimeout(() => {
-      // Server-side filter: only other users' messages trigger badge refetch
-      const messagesChannel = supabase
-        .channel("sidebar-badges-messages")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "messages", filter: `sender_id=neq.${userId}` },
-          () => refetch()
-        )
-        .subscribe();
-
-      // Server-side filter: only follows targeting this user matter for badge
-      const followsChannel = supabase
-        .channel("sidebar-badges-follows")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "follows", filter: `following_id=eq.${userId}` },
-          () => refetch()
-        )
-        .subscribe();
-
-      // Server-side filter: only this user's notifications trigger badge refetch
-      const notificationsChannel = supabase
-        .channel("sidebar-badges-notifications")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
-          () => refetch()
-        )
-        .subscribe();
-
-      // Posts channel stays unfiltered (all public posts relevant) but debounced
-      // to prevent rapid INSERTs from hammering refetch on 3G connections
-      let postsDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-      const postsChannel = supabase
-        .channel("sidebar-badges-posts")
-        .on(
-          "postgres_changes",
-          { event: "INSERT", schema: "public", table: "posts" },
-          () => {
-            if (postsDebounceTimer) clearTimeout(postsDebounceTimer);
-            postsDebounceTimer = setTimeout(() => refetch(), POSTS_DEBOUNCE_MS);
-          }
-        )
-        .subscribe();
-
-      // Store channels in ref for cleanup
-      channelsRef.current = {
-        messagesChannel,
-        followsChannel,
-        notificationsChannel,
-        postsChannel
-      };
-    }, 3000); // 3 second delay - user won't notice badge updates during initial load
+    // Poll for new feed posts every 60s — posts are not latency-critical
+    const feedPollInterval = setInterval(() => {
+      refetch();
+    }, FEED_POLL_INTERVAL_MS);
 
     return () => {
       window.removeEventListener('feed-visited', handleFeedVisited);
-      clearTimeout(subscriptionDelay);
-      
-      // Clean up channels if they were created
-      if (channelsRef.current) {
-        supabase.removeChannel(channelsRef.current.messagesChannel!);
-        supabase.removeChannel(channelsRef.current.followsChannel!);
-        supabase.removeChannel(channelsRef.current.notificationsChannel!);
-        supabase.removeChannel(channelsRef.current.postsChannel!);
-        channelsRef.current = null;
-      }
+      window.removeEventListener('shell-new-message', handleNewMessage);
+      window.removeEventListener('shell-new-notification', handleNewNotification);
+      clearInterval(feedPollInterval);
     };
   }, [userId, isVisitor, refetch, queryClient]);
 

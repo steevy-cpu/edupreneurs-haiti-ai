@@ -133,6 +133,8 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
           if (participation && pathnameRef.current !== '/community') {
             playReceiveSound();
           }
+          // Notify sidebar badges to refetch counts — avoids a dedicated realtime channel
+          window.dispatchEvent(new Event('shell-new-message'));
         }
       )
       .subscribe();
@@ -155,6 +157,8 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
           if (pathnameRef.current !== '/notifications') {
             playNotificationSound();
           }
+          // Notify sidebar badges + notifications page to refetch — avoids duplicate channels
+          window.dispatchEvent(new Event('shell-new-notification'));
           
           const { data: actorProfile } = await supabase
             .from('profiles')

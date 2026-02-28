@@ -136,21 +136,11 @@ export default function ReportsModule() {
     fetchReports();
   }, [fetchReports]);
 
-  // Realtime subscription — subscribes ONCE on mount, never re-registers on filter/page changes.
-  // fetchReports is stable per useCallback; the closure always invokes the latest version.
+  // Poll every 30s instead of realtime — only 1-2 admins use this module,
+  // so a dedicated WebSocket channel is unnecessary overhead
   useEffect(() => {
-    const channel = supabase
-      .channel("reports-updates")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "user_reports" },
-        () => fetchReports()
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const pollInterval = setInterval(() => fetchReports(), 30_000);
+    return () => clearInterval(pollInterval);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync selectedStatus when a report is selected
