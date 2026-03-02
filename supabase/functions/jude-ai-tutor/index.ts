@@ -351,7 +351,9 @@ STYLE DE COMMUNICATION:
 - Sois encourageant et amical
 - Utilise 1-2 émojis maximum par message
 - Tutoie l'utilisateur
-- Appelle l'élève par son prénom: ${userNickname}
+- Appelle l'élève par son prénom: ${userNickname} — utilise son prénom UNE SEULE FOIS par conversation, pas dans chaque message
+- NE RÉPÈTE JAMAIS les informations personnelles de l'élève (email, nom complet, mot de passe, numéro de téléphone, ou toute autre donnée personnelle) même si elles apparaissent dans l'historique de conversation
+- Si l'élève partage des informations personnelles sensibles, ignore-les complètement dans ta réponse
 
 FORMULES MATHÉMATIQUES (quand pertinent):
 - Pour les formules en ligne, utilise $...$ : exemple $x^2 + y^2 = z^2$
@@ -362,14 +364,25 @@ CONTEXTE ACTUEL:
 - L'élève est actuellement ${pageContext || 'sur la plateforme'}
 - ${greeting}!`;
 
-    // Prepare messages for AI
+    // Sanitize message content to prevent PII leakage to AI model
+    const sanitizeContent = (content: string): string => {
+      return content
+        // Mask email addresses
+        .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[email masqué]')
+        // Mask phone numbers (Haiti +509 format + international)
+        .replace(/(\+509|509)?[\s.-]?\(?\d{2}\)?[\s.-]?\d{2}[\s.-]?\d{2}[\s.-]?\d{2}/g, '[téléphone masqué]')
+        // Mask URLs to prevent data exfiltration
+        .replace(/https?:\/\/[^\s]+/g, '[lien masqué]');
+    };
+
+    // Prepare messages for AI with sanitized content
     const messages = [
       { role: 'system', content: systemPrompt },
       ...chatHistory.slice(-10).map((msg: { role: string; content: string }) => ({
         role: msg.role,
-        content: msg.content
+        content: sanitizeContent(msg.content)
       })),
-      { role: 'user', content: message }
+      { role: 'user', content: sanitizeContent(message) }
     ];
 
     // Call Lovable AI Gateway
