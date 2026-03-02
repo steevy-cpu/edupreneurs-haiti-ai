@@ -41,7 +41,8 @@ export function useDeferredStats(options?: UseDeferredStatsOptions): UseDeferred
       const [lessonsRes, examsRes, usersRes] = await Promise.all([
         supabase.from('lessons').select('id', { count: 'exact', head: true }).eq('is_published', true),
         supabase.from('official_exams').select('id', { count: 'exact', head: true }),
-        supabase.from('profiles').select('id', { count: 'exact', head: true })
+        // Exclude system accounts (e.g. Jude) from public student count
+        supabase.from('profiles').select('id', { count: 'exact', head: true }).or('is_system_account.is.null,is_system_account.eq.false')
       ]);
 
       // Check for errors
