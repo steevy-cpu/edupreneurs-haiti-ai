@@ -103,11 +103,33 @@ export function useSidebarBadges(userId?: string | null) {
       });
     };
 
+    // Clear message badge when user reads messages in Community page
+    const handleMessagesRead = () => {
+      queryClient.setQueryData(['sidebar-badges', userId], (old: SidebarBadges | undefined) => {
+        if (!old) return EMPTY_BADGES;
+        const updated = { ...old, unreadMessages: 0 };
+        persistQueryData(CACHE_KEYS.SIDEBAR_BADGES, updated);
+        return updated;
+      });
+    };
+
+    // Clear notification badge when user reads notifications
+    const handleNotificationsRead = () => {
+      queryClient.setQueryData(['sidebar-badges', userId], (old: SidebarBadges | undefined) => {
+        if (!old) return EMPTY_BADGES;
+        const updated = { ...old, unreadNotifications: 0 };
+        persistQueryData(CACHE_KEYS.SIDEBAR_BADGES, updated);
+        return updated;
+      });
+    };
+
     // Piggyback on shell message/notification channels — no new WebSocket connections
     const handleNewMessage = () => refetch();
     const handleNewNotification = () => refetch();
 
     window.addEventListener('feed-visited', handleFeedVisited);
+    window.addEventListener('messages-read', handleMessagesRead);
+    window.addEventListener('notifications-read', handleNotificationsRead);
     window.addEventListener('shell-new-message', handleNewMessage);
     window.addEventListener('shell-new-notification', handleNewNotification);
 
@@ -118,6 +140,8 @@ export function useSidebarBadges(userId?: string | null) {
 
     return () => {
       window.removeEventListener('feed-visited', handleFeedVisited);
+      window.removeEventListener('messages-read', handleMessagesRead);
+      window.removeEventListener('notifications-read', handleNotificationsRead);
       window.removeEventListener('shell-new-message', handleNewMessage);
       window.removeEventListener('shell-new-notification', handleNewNotification);
       clearInterval(feedPollInterval);
