@@ -1,44 +1,53 @@
 
-# Fix: BatchGenerationValidation showing 1000 instead of actual count
 
-## Problem
-When clicking "Lancer generation" with "Sections vides uniquement" enabled:
-1. `fetchLessons()` queries ALL lessons (capped at 1000 by default Supabase limit)
-2. The confirmation dialog shows `lessons.length` = 1000 (the pre-filter count)
-3. The `onlyEmpty` filter is applied client-side AFTER the dialog, so users see a misleading "1000 lecons" warning
-4. Even if there were fewer than 1000, the query still fetches unnecessary data on 3G connections
+## Implementation Plan: 3 UX Fixes in OnboardingQuiz.tsx + Audio Cleanup
 
-## Solution
-Two changes in `fetchLessons()` inside `BatchGenerationValidation.tsx`:
+### Fix 1 -- "Bonjour" to "Salut" (2 lines)
 
-### Change 1: Move `onlyEmpty` filter to SQL (server-side)
-When `onlyEmpty` is true and no specific lessons are selected, add `.or()` filters to the query so only lessons with missing content are returned. This replaces the client-side filter at lines 367-371.
+- **Line 382:** Change `"Bonjour! Comment tu t'appelles?"` to `"Salut! Comment tu t'appelles?"`
+- **Line 441:** Change `'Bonjour! Comment tu t\'appelles? ...'` to `'Salut! Comment tu t\'appelles? ...'`
 
-```typescript
-// Before building the query, if onlyEmpty is true, add SQL filters
-if (onlyEmpty && selectedLessonIds.length === 0 && selectedSections.length > 0) {
-  // Build OR clause: section IS NULL or section = ''
-  const orClauses = selectedSections.map(s => `${s}.is.null,${s}.eq.`).join(',');
-  query = query.or(orClauses);
-}
-```
+### Fix 2 -- "Je ne suis plus a l'ecole" button visibility (lines 694-700)
 
-### Change 2: Remove the client-side fallback filter
-Delete lines 367-371 (the `if (onlyEmpty && ...)` block) since it's now handled server-side.
+Replace the `variant="ghost"` button with a styled `variant="outline"` button:
+- Add `GraduationCap` to the lucide-react import on line 15
+- Replace button with `variant="outline"`, border/hover styling (`border-2 border-white/30 text-white/80 hover:bg-white/10 hover:text-white hover:border-white/50`), and a `GraduationCap` icon
 
-### Change 3: Add explicit row limit with pagination awareness
-Add `.limit(2000)` to avoid silent truncation, and if more than 2000 lessons match, show a warning asking the user to narrow their filters.
+### Fix 3 -- Quiz UX improvements (4 sub-fixes)
 
-## Files Modified
-- `src/components/content-editor/BatchGenerationValidation.tsx` — `fetchLessons()` function only
+**3a. Skip button (lines 477-480):** Reorder to show "Passer" text before the X icon, change `gap-1` to `gap-1.5`, reduce icon to `w-3.5 h-3.5`
 
-## Safety Verification
+**3b. "Optionnel" badge:** Insert an `<span>` with "Optionnel" text (`text-xs text-white/50 font-medium tracking-wide uppercase`) inside the `space-y-3` div (after line 554), shown when `currentStep >= 3`
+
+**3c. Progress dots + step counter (lines 487-497):**
+- Change dot size from `w-2.5 h-2.5` to `w-3 h-3`
+- Add `{currentStep + 1} / 7` counter text below the dots
+
+**3d. Helper text on text inputs:**
+- Q0 (after Input, before Button, ~line 568): Add `"On gardera ca entre nous"` helper
+- Q3 (after nickname availability feedback, before Button, ~line 661): Add `"Choisis un pseudo unique -- c'est comme ca que les autres te verront"` helper
+- Q4 (after Input, before Button, ~line 685): Add `"Commence a taper et on trouvera ton ecole"` helper
+
+### Storage Deletion
+
+After the code changes, delete the pre-generated audio file at `jude-voice/onboarding/quiz-q0.mp3` from the `lesson-audio` bucket so it regenerates with the new "Salut" text. This will be done via the Supabase storage API or a data operation.
+
+### Files Modified
+
+| File | Action |
+|------|--------|
+| `src/components/firsttime/OnboardingQuiz.tsx` | MODIFY (all 3 fixes) |
+| Storage: `lesson-audio/jude-voice/onboarding/quiz-q0.mp3` | DELETE via storage API |
+
+### Safety Verification
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No -- same data, filtered earlier |
-| Affects Provider Stack / AppShell? | No |
-| New dependencies? | No |
-| Works on 3G? | Better -- less data transferred |
-| RLS impact? | None |
-| Backward compatible? | Yes |
+| No new dependencies | OK -- GraduationCap already in lucide-react |
+| Bundle size | Zero impact |
+| 3G performance | No change -- cosmetic updates only |
+| Existing functionality | Preserved -- no logic changes |
+| Audio regeneration | quiz-q0 deleted; auto-regenerates on next playback |
+| RLS / DB | No tables modified |
+| Provider stack | Untouched |
+
