@@ -7,6 +7,8 @@ import { signupSchema } from "@/lib/authValidation";
 import { generateConfirmationCode } from "@/utils/emailService";
 import { saveAuthFlow, clearSignupProgress, type SignupFormData } from "../store/authFlow.store";
 import { validateUserText } from "@/lib/textModeration";
+import { trackSignup as trackTikTokSignup } from "@/lib/analytics/tiktokPixel";
+import { trackGAEvent } from "@/lib/analytics/googleAnalytics";
 
 export interface SignupResult {
   success: boolean;
@@ -208,6 +210,10 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
 
     // Clear signup form data after successful creation
     clearSignupProgress();
+
+    // Fire analytics conversion events (consent-gated, no-op if placeholder IDs)
+    trackTikTokSignup();
+    trackGAEvent('sign_up', { method: accessMethod });
 
     return { success: true, userId: authData.user.id };
   } catch (error: any) {
