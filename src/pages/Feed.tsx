@@ -206,6 +206,8 @@ const Feed = () => {
   // Refs for infinite scroll and scroll-position tracking
   const sentinelRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  // Per-post debounce lock — prevents spam clicks while a like is in-flight
+  const isLikingRef = useRef<Set<string>>(new Set());
 
   // Mobile keyboard optimization - scroll input into view
   const handleInputFocus = useCallback((e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -462,70 +464,70 @@ const Feed = () => {
     }
     if (!currentUser) return;
 
+    // Per-post spam guard — skip if a like is already in-flight for this post
+    if (isLikingRef.current.has(postId)) return;
+    isLikingRef.current.add(postId);
+
     const post = posts.find(p => p.id === postId);
+    const currentCount = post?.likes || 0;
 
-    if (isCurrentlyLiked) {
-      const { error } = await supabase
-        .from("post_likes")
-        .delete()
-        .eq("post_id", postId)
-        .eq("user_id", currentUser.id);
+    // 1. Optimistic update FIRST — instant UI feedback
+    updatePostOptimistically(postId, {
+      likes: isCurrentlyLiked ? currentCount - 1 : currentCount + 1,
+      isLiked: !isCurrentlyLiked,
+    });
 
-      if (error) {
-        console.error("Error unliking post:", error);
-        return;
-      }
-    } else {
-      const { error } = await supabase
-        .from("post_likes")
-        .insert({
-          post_id: postId,
-          user_id: currentUser.id,
-        });
+    try {
+      // 2. DB operation
+      if (isCurrentlyLiked) {
+        const { error } = await supabase
+          .from("post_likes")
+          .delete()
+          .eq("post_id", postId)
+          .eq("user_id", currentUser.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("post_likes")
+          .insert({ post_id: postId, user_id: currentUser.id });
+        if (error) throw error;
 
-      if (error) {
-        console.error("Error liking post:", error);
-        return;
-      }
-
-      // Create notification for post owner
-      if (post && post.user_id !== currentUser.id) {
-        const { error: notifError } = await supabase.from("notifications").insert({
-          user_id: post.user_id,
-          actor_id: currentUser.id,
-          post_id: postId,
-          type: "like",
-        });
-
-        if (notifError) {
-          console.error("❌ Error creating like notification:", notifError);
-        } else {
-          console.log("✅ Like notification created");
-          
-          // Send push notification
-          try {
-            await supabase.functions.invoke('send-push-notification', {
-              body: {
-                recipientUserId: post.user_id,
-                actorId: currentUser.id,
-                type: 'like',
-                entityId: postId,
-                url: '/feed',
-              }
-            });
-            console.log("✅ Like push notification sent");
-          } catch (pushError) {
-            console.error("❌ Error sending like push notification:", pushError);
-          }
+        // 3. Fire-and-forget notification + push (non-blocking)
+        if (post && post.user_id !== currentUser.id) {
+          supabase.from("notifications").insert({
+            user_id: post.user_id,
+            actor_id: currentUser.id,
+            post_id: postId,
+            type: "like",
+          }).then(({ error: notifError }) => {
+            if (notifError) {
+              console.error("❌ Error creating like notification:", notifError);
+            } else {
+              // Push notification — also fire-and-forget
+              supabase.functions.invoke('send-push-notification', {
+                body: {
+                  recipientUserId: post.user_id,
+                  actorId: currentUser.id,
+                  type: 'like',
+                  entityId: postId,
+                  url: '/feed',
+                }
+              }).catch(pushErr => console.error("❌ Like push error:", pushErr));
+            }
+          });
         }
       }
+    } catch (error) {
+      // 4. Rollback on DB failure — restore previous state
+      console.error("Error toggling like:", error);
+      updatePostOptimistically(postId, {
+        likes: currentCount,
+        isLiked: isCurrentlyLiked,
+      });
+      toast({ title: "Erreur", description: "Impossible de réagir à cette publication." });
+    } finally {
+      isLikingRef.current.delete(postId);
     }
-
-    // Optimistic update for likes
-    updatePostOptimistically(postId, {
-      likes: isCurrentlyLiked ? ((posts.find(p => p.id === postId)?.likes || 0) - 1) : ((posts.find(p => p.id === postId)?.likes || 0) + 1),
-      isLiked: !isCurrentlyLiked
-    });
   };
 
   const addComment = async (postId: string, parentCommentId: string | null = null) => {

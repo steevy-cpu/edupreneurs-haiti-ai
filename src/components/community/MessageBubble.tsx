@@ -492,7 +492,7 @@ export function MessageBubble({
           className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 cursor-pointer no-reply-trigger avatar-interactive"
           onClick={handleAvatarClick}
         >
-          <AvatarImage src={getAvatarUrl(message.profile?.avatar_url)} />
+          <AvatarImage src={getAvatarUrl(message.profile?.avatar_url)} loading="lazy" decoding="async" />
           <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-[10px] sm:text-xs">
             {(message.profile?.nickname || message.profile?.full_name)?.[0] || "?"}
           </AvatarFallback>
