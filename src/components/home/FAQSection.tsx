@@ -1,6 +1,7 @@
 import { memo, useState, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle, ArrowRight } from "lucide-react";
 import { faqItems } from "@/data/homePageData";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 
@@ -90,6 +91,14 @@ export const FAQSection = memo(function FAQSection() {
               </div>
             </Card>
           ))}
+        </div>
+        {/* Signup CTA after FAQ accordion */}
+        <div className="text-center mt-10">
+          <p className="text-muted-foreground mb-4">Tu as encore des questions ? On est là pour toi.</p>
+          <Link to="/auth/signup/step-1" className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-all duration-200 hover:scale-105">
+            Commencer gratuitement
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </section>

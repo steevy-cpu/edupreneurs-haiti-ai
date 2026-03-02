@@ -1,5 +1,7 @@
 import { memo } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowRight } from "lucide-react";
 import { features, getIcon } from "@/data/homePageData";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 
@@ -46,6 +48,13 @@ export const FeaturesSection = memo(function FeaturesSection() {
               </CardContent>
             </Card>
           ))}
+        </div>
+        {/* Signup CTA after features grid */}
+        <div className="text-center mt-10">
+          <Link to="/auth/signup/step-1" className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-all duration-200 hover:scale-105">
+            Créer un compte gratuit
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </section>

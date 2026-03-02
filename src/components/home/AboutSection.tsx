@@ -32,12 +32,12 @@ export const AboutSection = memo(function AboutSection() {
               « L'éducation est l'arme la plus puissante pour transformer une nation » - Nelson Mandela
             </blockquote>
             <p className="text-muted-foreground leading-relaxed font-medium">
-              En 2025, le système éducatif haïtien peine encore à répondre aux besoins du pays en matière d'efficacité. 
+              En 2026, le système éducatif haïtien peine encore à répondre aux besoins du pays en matière d'efficacité. 
               Le pays se fait de plus en plus devancé au point de vue d'instruction par le biais technologique, 
               se trouvant totalement désuet dans ce monde dirigé par la technologie.
             </p>
             
-            <h3 className="text-2xl font-black text-primary pt-4">Projet Phare 2025</h3>
+            <h3 className="text-2xl font-black text-primary pt-4">Projet Phare 2026</h3>
             <p className="text-muted-foreground leading-relaxed font-medium">
               EDUPRENEURS est né d'une vision claire : <span className="font-black text-foreground bg-gradient-to-r from-primary/20 to-accent/20 px-2 py-1 rounded">révolutionner l'éducation haïtienne</span> en 
               mettant en place un système d'instruction entièrement basé sur le programme du Ministère de l'Éducation Nationale 
