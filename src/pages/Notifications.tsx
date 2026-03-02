@@ -283,6 +283,8 @@ export default function Notifications() {
         n.id === notificationId ? { ...n, read: true } : n
       )
     );
+    // Notify sidebar badge system to clear notification count immediately
+    window.dispatchEvent(new Event('notifications-read'));
   };
 
   const markAllAsRead = async () => {
@@ -298,6 +300,8 @@ export default function Notifications() {
       .eq("read", false);
 
     setNotifications(notifications.map(n => ({ ...n, read: true })));
+    // Notify sidebar badge system to clear notification count immediately
+    window.dispatchEvent(new Event('notifications-read'));
   };
 
   const getNotificationIcon = (type: string) => {

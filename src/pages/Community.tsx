@@ -510,6 +510,8 @@ const Community = () => {
             : conv
         )
       );
+      // Notify sidebar badge system to clear message count immediately
+      window.dispatchEvent(new Event('messages-read'));
     }
   };
 
