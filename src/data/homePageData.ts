@@ -26,7 +26,8 @@ import { createElement } from "react";
 // STATIC DATA - Never recreated on renders
 // ============================================
 
-export const DEFAULT_STATS = { lessons: 2800, exams: 90, users: 25 };
+// Default fallback stats — keep users value close to real DB count
+export const DEFAULT_STATS = { lessons: 2800, exams: 90, users: 41 };
 
 // Features Section
 export const features = [
