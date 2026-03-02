@@ -12,7 +12,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronRight, Check, X, Loader2 } from 'lucide-react';
+import { ChevronRight, Check, X, Loader2, GraduationCap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFirstTimeUser } from '@/contexts/FirstTimeUserContext';
@@ -379,7 +379,7 @@ const OnboardingQuiz = () => {
     if (showReaction || isOutro) return;
     // Build clean text for TTS (strip emojis — ElevenLabs ignores them anyway)
     const speechTexts: Record<number, string> = {
-      0: "Bonjour! Comment tu t'appelles?",
+      0: "Salut! Comment tu t'appelles?",
       1: "Et maintenant, tu es en quelle classe?",
       2: "Tu préfères qu'on te parle comment?",
       3: "Quel est ton pseudo? C'est comme ça que les autres étudiants vont te voir!",
@@ -438,7 +438,7 @@ const OnboardingQuiz = () => {
       return { image: ericThumbUp, speech: reactionText };
     }
     switch (currentStep) {
-      case 0: return { image: ericWaving, speech: 'Bonjour! Comment tu t\'appelles? 😊' };
+      case 0: return { image: ericWaving, speech: 'Salut! Comment tu t\'appelles? 😊' };
       case 1: return { image: ericStudentDesk, speech: `Et maintenant, ${firstName}, tu es en quelle classe?` };
       case 2: return { image: ericThinkingPose, speech: 'Tu préfères qu\'on te parle comment? 😊' };
       case 3: return { image: ericStudentDesk, speech: 'Quel est ton pseudo? C\'est comme ça que les autres étudiants vont te voir! 😎' };
@@ -474,25 +474,32 @@ const OnboardingQuiz = () => {
               variant="ghost"
               size="sm"
               onClick={handleSkip}
-              className="text-white/70 hover:text-white hover:bg-white/10 gap-1"
+              className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5"
             >
-              <X className="h-4 w-4" />
               Passer
+              <X className="w-3.5 h-3.5" />
             </Button>
           </motion.div>
         )}
 
         {/* Progress dots — top center */}
         {!isOutro && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-            {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-              <div
-                key={i}
-                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                  i < currentStep ? 'bg-primary' : i === currentStep ? 'bg-primary ring-2 ring-primary/50 ring-offset-1 ring-offset-transparent' : 'bg-white/30'
-                }`}
-              />
-            ))}
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center">
+            {/* Progress dots */}
+            <div className="flex gap-2">
+              {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    i < currentStep ? 'bg-primary' : i === currentStep ? 'bg-primary ring-2 ring-primary/50 ring-offset-1 ring-offset-transparent' : 'bg-white/30'
+                  }`}
+                />
+              ))}
+            </div>
+            {/* Step counter */}
+            <span className="text-xs text-white/50 mt-2">
+              {currentStep + 1} / 7
+            </span>
           </div>
         )}
 
@@ -553,6 +560,13 @@ const OnboardingQuiz = () => {
                 transition={{ delay: 0.3 }}
                 className="space-y-3"
               >
+                {/* "Optionnel" badge for skippable steps (Q4–Q7) */}
+                {currentStep >= 3 && (
+                  <span className="text-xs text-white/50 font-medium tracking-wide uppercase">
+                    Optionnel
+                  </span>
+                )}
+
                 {/* Q1: Full Name */}
                 {currentStep === 0 && (
                   <div className="space-y-3">
@@ -566,6 +580,8 @@ const OnboardingQuiz = () => {
                       className="bg-card/80 border-border/50 text-foreground text-base h-12"
                       onKeyDown={(e) => e.key === 'Enter' && handleNameConfirm()}
                     />
+                    {/* Helper — reassures user about privacy */}
+                    <p className="text-xs text-white/50">On gardera ça entre nous 🔒</p>
                     <Button
                       onClick={handleNameConfirm}
                       disabled={!fullName.trim() || isSaving}
@@ -659,6 +675,8 @@ const OnboardingQuiz = () => {
                     {nickname && nickname.length < 3 && (
                       <p className="text-xs text-muted-foreground">Minimum 3 caractères</p>
                     )}
+                    {/* Helper — explains what nicknames are for */}
+                    <p className="text-xs text-white/50">Choisis un pseudo unique — c'est comme ça que les autres te verront</p>
                     <Button
                       onClick={handleNicknameConfirm}
                       disabled={!nickname || nickname.length < 3 || nicknameAvailable !== true || isSaving}
@@ -683,6 +701,8 @@ const OnboardingQuiz = () => {
                       className="bg-card/80 border-border/50 text-foreground text-base h-12"
                       onKeyDown={(e) => e.key === 'Enter' && handleSchoolConfirm()}
                     />
+                    {/* Helper — guides user to start typing */}
+                    <p className="text-xs text-white/50">Commence à taper et on trouvera ton école</p>
                     <Button
                       onClick={handleSchoolConfirm}
                       disabled={(!school.trim() || school === 'N/A') && !!schoolRequired || isSaving}
@@ -691,11 +711,13 @@ const OnboardingQuiz = () => {
                       {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronRight className="h-4 w-4" />}
                       Continuer
                     </Button>
+                    {/* More visible "not in school" option with icon */}
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       onClick={handleNoSchool}
-                      className="w-full text-muted-foreground"
+                      className="w-full border-2 border-white/30 text-white/80 hover:bg-white/10 hover:text-white hover:border-white/50 transition-all duration-200 mt-1"
                     >
+                      <GraduationCap className="w-4 h-4 mr-2 opacity-70" />
                       Je ne suis plus à l'école
                     </Button>
                   </div>
