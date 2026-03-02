@@ -2,7 +2,7 @@ import { memo } from "react";
 import ericCelebrating from "@/assets/eric-celebrating.png";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Heart } from "lucide-react";
+import { GraduationCap, Heart, Eye } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 
@@ -134,8 +134,9 @@ export const HeroSection = memo(function HeroSection({
           {/* Explorer Link */}
           <button 
             onClick={onVisitorClick}
-            className="text-sm text-muted-foreground hover:text-primary underline underline-offset-4 transition-colors font-medium"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-full border-2 border-primary/60 text-primary font-semibold text-sm hover:bg-primary/10 hover:border-primary transition-all duration-200"
           >
+            <Eye className="w-4 h-4" />
             Explorer sans inscription
           </button>
         </div>
