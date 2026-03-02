@@ -5,6 +5,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell } from 'lucide-react';
 import { toast } from 'sonner';
@@ -27,12 +28,14 @@ export default function PushPermissionPrompt({ userId, onDismiss }: PushPermissi
   const [visible, setVisible] = useState(true);
   const [activating, setActivating] = useState(false);
   const dismissedRef = useRef(false);
+  const navigate = useNavigate();
 
-  /** Persist dismissal flag and notify parent */
+  /** Persist dismissal timestamp (re-prompts after 7 days) and notify parent */
   const handleDismiss = useCallback(() => {
     if (dismissedRef.current) return;
     dismissedRef.current = true;
-    localStorage.setItem('push_prompt_dismissed', 'true');
+    // Store timestamp so we can re-show after 7 days
+    localStorage.setItem('push_prompt_dismissed', Date.now().toString());
     setVisible(false);
     // Let exit animation play before unmounting
     setTimeout(onDismiss, 400);
@@ -52,18 +55,26 @@ export default function PushPermissionPrompt({ userId, onDismiss }: PushPermissi
       if ('Notification' in window && Notification.permission === 'granted') {
         toast.success('Notifications activées! 🎉');
       } else {
-        toast.info('Permission refusée — changez dans les paramètres du navigateur');
+        // Denied — actionable toast pointing to Settings
+        toast.info('Notifications désactivées', {
+          description: 'Tu peux les activer à tout moment dans Paramètres → Notifications.',
+          action: {
+            label: 'Paramètres',
+            onClick: () => navigate('/settings'),
+          },
+        });
       }
     } catch (err) {
       console.error('Push activation error:', err);
       toast.error("Erreur lors de l'activation des notifications");
     } finally {
       setActivating(false);
-      localStorage.setItem('push_prompt_dismissed', 'true');
+      // Permanent dismissal after browser prompt interaction
+      localStorage.setItem('push_prompt_dismissed', 'permanent');
       setVisible(false);
       setTimeout(onDismiss, 400);
     }
-  }, [userId, onDismiss]);
+  }, [userId, onDismiss, navigate]);
 
   // Skip rendering on non-PWA iOS (no SW support)
   if (!hasSWSupport) return null;

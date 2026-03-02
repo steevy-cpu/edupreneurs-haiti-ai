@@ -24,8 +24,17 @@ export function usePushPromptEligible(): boolean {
 
     const count = parseInt(localStorage.getItem('edupreneurs_login_count') || '0', 10);
     const permissionDefault = 'Notification' in window && Notification.permission === 'default';
-    const notDismissed = localStorage.getItem('push_prompt_dismissed') !== 'true';
     const hasServiceWorker = 'serviceWorker' in navigator;
+
+    // 7-day re-prompt logic: timestamp = soft dismiss, 'permanent' = never show again
+    const dismissed = localStorage.getItem('push_prompt_dismissed');
+    let notDismissed = !dismissed;
+    if (dismissed && dismissed !== 'permanent') {
+      const dismissedAt = parseInt(dismissed, 10);
+      const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+      // NaN from legacy 'true' values → treated as permanent (safe default)
+      notDismissed = !isNaN(dismissedAt) && Date.now() - dismissedAt > sevenDaysMs;
+    }
 
     const shouldShow = count >= 2 && permissionDefault && notDismissed && tourCompleted && hasServiceWorker;
 

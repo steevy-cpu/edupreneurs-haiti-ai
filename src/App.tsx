@@ -1,5 +1,5 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { lazy, Suspense, ComponentType } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { lazy, Suspense, ComponentType, useEffect } from "react";
 import { AppProviders } from "@/providers/AppProviders";
 import { LegacyRedirect } from "@/components/LegacyRedirect";
 import { HeroSkeleton } from "@/components/shared/HeroSkeleton";
@@ -17,6 +17,9 @@ import {
 import { AppShell } from "@/shell";
 import { AuthMusicSync } from "@/components/auth/AuthMusicSync";
 import { VisitorMusicSync } from "@/components/visitor/VisitorMusicSync";
+import { useCookieConsent } from "@/hooks/useCookieConsent";
+import { initTikTokPixel, trackPageView as trackTikTokPageView } from "@/lib/analytics/tiktokPixel";
+import { initGoogleAnalytics, trackGAPageView } from "@/lib/analytics/googleAnalytics";
 
 /**
  * Wrap lazy import with automatic retry on chunk load failure.
@@ -130,6 +133,33 @@ const TemplateEditorPage = lazy(() => import("./pages/templates/TemplateEditorPa
 const Translate = lazy(() => import("./pages/Translate"));
 
 /**
+ * AnalyticsInitializer — consent-gated initialization of GA4 and TikTok Pixel.
+ * Must be rendered inside BrowserRouter (needs useLocation) and AppProviders.
+ * Returns null — pure side-effect component.
+ */
+function AnalyticsInitializer() {
+  const { isAllowed } = useCookieConsent();
+  const location = useLocation();
+
+  // Initialize analytics scripts once consent is granted
+  useEffect(() => {
+    if (isAllowed('analytics')) initGoogleAnalytics();
+  }, [isAllowed]);
+
+  useEffect(() => {
+    if (isAllowed('marketing')) initTikTokPixel();
+  }, [isAllowed]);
+
+  // Track page views on route changes
+  useEffect(() => {
+    if (isAllowed('analytics')) trackGAPageView(location.pathname);
+    if (isAllowed('marketing')) trackTikTokPageView();
+  }, [location.pathname, isAllowed]);
+
+  return null;
+}
+
+/**
  * Main App Component
  * 
  * Uses the rationalized AppProviders for optimal provider stacking.
@@ -137,6 +167,8 @@ const Translate = lazy(() => import("./pages/Translate"));
  */
 const App = () => (
   <AppProviders>
+    {/* Consent-gated analytics — no scripts load until cookie consent given */}
+    <AnalyticsInitializer />
     {/* Global music sync - must be outside AppShell to survive logout navigation */}
     <AuthMusicSync />
     <VisitorMusicSync />
