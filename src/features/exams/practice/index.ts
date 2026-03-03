@@ -25,6 +25,7 @@ export { AnswerInput } from './components/AnswerInput';
 export { FeedbackCard } from './components/FeedbackCard';
 export { ActionRow } from './components/ActionRow';
 export { AskJudeDrawer } from './components/AskJudeDrawer';
+export { ExamResultsModal } from './components/ExamResultsModal';
 
 // Input Components (for direct usage if needed)
 export { MCQInput, ShortInput, MatchingInput, EssayInput } from './components/inputs';
