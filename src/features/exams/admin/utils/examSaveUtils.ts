@@ -159,7 +159,7 @@ export async function saveExamWithExercises(
     explanation: ex.explanation || null,
     points: typeof ex.points === "number" && Number.isFinite(ex.points) 
       ? ex.points 
-      : (ex.exerciseType === "multiple_choice" ? 5 : 8),
+      : (ex.exerciseType === "multiple_choice" ? 5 : 15),
     concept: ex.concept || "Général",
     // New structured fields
     prompt_blocks: ex.promptBlocks || null,
@@ -237,7 +237,7 @@ export async function updateExamFromReanalysis(
     explanation: ex.explanation || null,
     points: typeof ex.points === "number" && Number.isFinite(ex.points) 
       ? ex.points 
-      : (ex.exerciseType === "multiple_choice" ? 5 : 8),
+      : (ex.exerciseType === "multiple_choice" ? 5 : 15),
     concept: ex.concept || "Général",
     prompt_blocks: ex.promptBlocks || null,
     options_json: ex.optionsJson || null,

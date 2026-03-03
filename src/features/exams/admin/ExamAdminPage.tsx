@@ -22,23 +22,8 @@ import { convertPdfToImages, uploadPdfToStorage, validatePdfFile, type PDFConver
 import { saveExamWithExercises, updateExamFromReanalysis, type ParsedPreview } from "./utils/examSaveUtils";
 import type { ExamTrack } from "../types/exam.types";
 
-// Subject lists
-const SUBJECTS_9AF = [
-  "Mathématiques",
-  "Français",
-  "Sciences Expérimentales",
-  "Sciences Sociales",
-  "Anglais",
-  "Espagnol",
-  "Créole",
-];
-
-const SUBJECTS_BY_SERIES: Record<string, string[]> = {
-  SVT: ["SVT", "Chimie", "Physique", "Mathématiques", "Philosophie", "Histoire-Géographie", "Anglais", "Espagnol", "Créole"],
-  SMP: ["Mathématiques", "Physique", "Chimie", "SVT", "Philosophie", "Histoire-Géographie", "Anglais", "Espagnol", "Créole"],
-  SES: ["Économie", "Histoire-Géographie", "Mathématiques", "Philosophie", "SVT", "Physique", "Chimie", "Anglais", "Espagnol", "Créole"],
-  LLA: ["Arts et Musique", "Philosophie", "Histoire-Géographie", "SVT", "Anglais", "Espagnol", "Mathématiques", "Chimie", "Créole"],
-};
+// Subject lists — single source of truth from shared constants
+import { SUBJECTS_9AF, NS4_SUBJECTS_BY_SERIES as SUBJECTS_BY_SERIES } from "../constants/ns4Subjects";
 
 const YEARS = Array.from({ length: 15 }, (_, i) => 2025 - i);
 
