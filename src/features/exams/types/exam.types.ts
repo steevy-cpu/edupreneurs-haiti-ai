@@ -59,6 +59,8 @@ export interface Exam {
   version_number?: number | null;
   exam_type: string | null;
   reference_texts: unknown;
+  /** MENFP official exam duration in minutes (e.g. 120 or 180) */
+  duration_minutes?: number | null;
   created_at: string;
 }
 
