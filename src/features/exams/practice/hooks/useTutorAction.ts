@@ -28,6 +28,8 @@ interface UseTutorActionReturn {
   revealAnswer: () => Promise<void>;
   askJude: (question: string) => Promise<TutorResponse | null>;
   reset: () => void;
+  /** Resets error state so student can re-submit */
+  retryLastAction: () => void;
   setSelectedAnswer: (answer: string | null) => void;
 }
 
@@ -187,6 +189,12 @@ export function useTutorAction({
     setSelectedAnswer(null);
   }, []);
 
+  /** Resets error state so student can re-submit — used by error recovery UI */
+  const retryLastAction = useCallback(() => {
+    setState('idle');
+    setFeedback(null);
+  }, []);
+
   return {
     state,
     feedback,
@@ -197,6 +205,7 @@ export function useTutorAction({
     revealAnswer,
     askJude,
     reset,
+    retryLastAction,
     setSelectedAnswer,
   };
 }

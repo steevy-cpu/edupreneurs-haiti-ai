@@ -5,8 +5,9 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, Info } from 'lucide-react';
+import { X, Info, AlertCircle } from 'lucide-react';
 import { ExerciseHeader } from './ExerciseHeader';
 import { ExercisePrompt } from './ExercisePrompt';
 import { AnswerInput } from './AnswerInput';
@@ -73,6 +74,7 @@ export function ExamTutorPanel({
     revealAnswer,
     askJude,
     reset,
+    retryLastAction,
   } = useTutorAction({
     sessionId: session.id,
     exerciseId: exercise.id,
@@ -110,7 +112,8 @@ export function ExamTutorPanel({
     setExplanationExercise(null);
   }, [exercise.id, reset]);
 
-  const canAdvance = state === 'correct' || state === 'incorrect' || state === 'partial' || state === 'revealed';
+  /* Allow advancing on error so student is never fully stuck */
+  const canAdvance = ['correct', 'partial', 'incorrect', 'revealed', 'error'].includes(state);
   const canGoPrevious = session.current_exercise > 1;
   const isLoading = state === 'checking';
 
@@ -137,18 +140,20 @@ export function ExamTutorPanel({
       {/* Scrollable content area */}
       <ScrollArea className="flex-1 p-4 min-h-0">
         <div className="space-y-4">
-          {/* Contextual info banner */}
-          {showInfoBanner && (
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-accent/50 border border-accent text-sm">
-              <Info className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary" />
-              <p className="flex-1 text-muted-foreground">
-                Ces questions sont extraites de l'examen. Réponds à chacune et je te guiderai ! Utilise le bouton <strong>"Demander à Jude"</strong> si tu bloques.
-              </p>
-              <button onClick={dismissBanner} className="p-0.5 rounded hover:bg-muted flex-shrink-0">
-                <X className="h-3.5 w-3.5 text-muted-foreground" />
-              </button>
-            </div>
-          )}
+          {/* Contextual info banner — hidden on mobile to save space */}
+          <div className="hidden md:block">
+            {showInfoBanner && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-accent/50 border border-accent text-sm">
+                <Info className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary" />
+                <p className="flex-1 text-muted-foreground">
+                  Ces questions sont extraites de l'examen. Réponds à chacune et je te guiderai ! Utilise le bouton <strong>"Demander à Jude"</strong> si tu bloques.
+                </p>
+                <button onClick={dismissBanner} className="p-0.5 rounded hover:bg-muted flex-shrink-0">
+                  <X className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Question prompt */}
           <ExercisePrompt exercise={exercise} />
@@ -170,6 +175,22 @@ export function ExamTutorPanel({
               detailedExplanation={detailedExplanation}
               explanationLoading={explanationLoading}
             />
+          )}
+
+          {/* Error recovery card — lets student retry or skip on grading failure */}
+          {state === 'error' && (
+            <Card className="p-4 border-destructive/50 bg-destructive/10">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-destructive">Oups, une erreur s'est produite</p>
+                  <p className="text-xs text-muted-foreground mt-1">Tu peux passer à la question suivante ou réessayer.</p>
+                </div>
+                <Button variant="outline" size="sm" onClick={retryLastAction}>
+                  Réessayer
+                </Button>
+              </div>
+            </Card>
           )}
 
           {/* Ask Jude drawer trigger */}

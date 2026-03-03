@@ -5,7 +5,7 @@
 
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Check, X } from 'lucide-react';
+import { Check, X, Loader2 } from 'lucide-react';
 import { ContentBlocksRenderer } from '../../../rendering/ContentBlocksRenderer';
 import { MathText } from '@/components/MathContent';
 import type { ExerciseForRunner, RunnerState } from '../../types';
@@ -116,6 +116,14 @@ export function MCQInput({
           </Card>
         );
       })}
+
+      {/* Grading indicator — visible only during AI check, not after result */}
+      {state === 'checking' && (
+        <div className="flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground">
+          <Loader2 className="w-3 h-3 animate-spin" />
+          Jude est en train de corriger...
+        </div>
+      )}
     </div>
   );
 }
