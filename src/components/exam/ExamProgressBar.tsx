@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, Circle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ChevronRight } from "lucide-react";
 
 interface ExamProgressBarProps {
   currentExercise: number;
@@ -14,42 +16,57 @@ export const ExamProgressBar = ({
   completedExercises,
   onExerciseClick,
 }: ExamProgressBarProps) => {
+  const [jumpValue, setJumpValue] = useState("");
   const progressPercentage = (completedExercises.length / totalExercises) * 100;
 
+  /** Validate input and jump to the requested question number */
+  const handleJump = () => {
+    const num = parseInt(jumpValue);
+    if (num >= 1 && num <= totalExercises) {
+      onExerciseClick?.(num);
+      setJumpValue("");
+    }
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Progression de l'examen</h3>
-        <span className="text-sm text-muted-foreground">
-          {completedExercises.length} / {totalExercises} complétés
-        </span>
-      </div>
-      
+    <div className="space-y-2">
+      {/* Slim progress bar */}
       <Progress value={progressPercentage} className="h-2" />
-      
-      {/* Responsive grid — scrollable on mobile for exams with many exercises */}
-      <div className="overflow-x-auto -mx-2 px-2">
-        <div className="grid grid-cols-5 sm:grid-cols-7 lg:grid-cols-9 gap-1.5 sm:gap-2 min-w-0">
-          {Array.from({ length: totalExercises }, (_, i) => i + 1).map((num) => (
-            <button
-              key={num}
-              onClick={() => onExerciseClick?.(num)}
-              className={`aspect-square rounded-lg flex items-center justify-center text-xs font-medium transition-all cursor-pointer ${
-                num === currentExercise
-                  ? 'bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2'
-                  : completedExercises.includes(num)
-                  ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
-                  : 'bg-muted text-muted-foreground hover:bg-accent'
-              }`}
-            >
-              {completedExercises.includes(num) ? (
-                <CheckCircle2 className="h-3 w-3" />
-              ) : (
-                <span>{num}</span>
-              )}
-            </button>
-          ))}
+
+      {/* Compact navigation row — position, jump input, completed count */}
+      <div className="flex items-center justify-between gap-2">
+        {/* Current position indicator */}
+        <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
+          Q{currentExercise} / {totalExercises}
+        </span>
+
+        {/* Jump-to-question input with arrow trigger */}
+        <div className="flex items-center gap-1">
+          <Input
+            type="number"
+            min={1}
+            max={totalExercises}
+            placeholder="N°"
+            value={jumpValue}
+            onChange={(e) => setJumpValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleJump();
+            }}
+            className="w-14 h-7 text-xs text-center px-1 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          />
+          <button
+            onClick={handleJump}
+            aria-label="Aller à la question"
+            className="h-7 w-7 flex items-center justify-center rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
         </div>
+
+        {/* Completed count */}
+        <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
+          {completedExercises.length} / {totalExercises} complétées
+        </span>
       </div>
     </div>
   );
