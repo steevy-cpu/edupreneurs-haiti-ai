@@ -14,6 +14,8 @@ interface UseTutorActionProps {
   exercise: ExerciseForRunner;
   referenceTexts?: ReferenceText[];
   onAnswerValidated?: (isCorrect: boolean, points: number) => void;
+  /** Fired when a wrong answer is confirmed — triggers explanation fetch */
+  onWrongAnswer?: (exercise: ExerciseForRunner) => void;
 }
 
 interface UseTutorActionReturn {
@@ -35,6 +37,7 @@ export function useTutorAction({
   exercise,
   referenceTexts = [],
   onAnswerValidated,
+  onWrongAnswer,
 }: UseTutorActionProps): UseTutorActionReturn {
   const [state, setState] = useState<RunnerState>('idle');
   const [feedback, setFeedback] = useState<TutorResponse | null>(null);
@@ -83,6 +86,11 @@ export function useTutorAction({
 
       setState(newState);
 
+      // Fire explanation fetch for incorrect answers (fire-and-forget)
+      if (newState === 'incorrect' && onWrongAnswer) {
+        onWrongAnswer(exercise);
+      }
+
       // Trigger callback for score updates
       if (grading?.pointsAwarded && grading.pointsAwarded > 0 && onAnswerValidated) {
         onAnswerValidated(newState === 'correct', grading.pointsAwarded);
@@ -91,7 +99,7 @@ export function useTutorAction({
       console.error('Tutor check exception:', err);
       setState('error');
     }
-  }, [exercise, referenceTexts, onAnswerValidated]);
+  }, [exercise, referenceTexts, onAnswerValidated, onWrongAnswer]);
 
   const requestHint = useCallback(async () => {
     const newLevel = Math.min(hintLevel + 1, 3);

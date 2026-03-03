@@ -21,9 +21,13 @@ const MUTE_KEY = 'jude-voice-muted';
 interface FeedbackCardProps {
   feedback: TutorResponse;
   state: RunnerState;
+  /** AI-generated detailed explanation for wrong answers */
+  detailedExplanation?: string | null;
+  /** Whether the explanation is currently loading */
+  explanationLoading?: boolean;
 }
 
-export function FeedbackCard({ feedback, state }: FeedbackCardProps) {
+export function FeedbackCard({ feedback, state, detailedExplanation, explanationLoading }: FeedbackCardProps) {
   const isCorrect = state === 'correct';
   const isIncorrect = state === 'incorrect';
   const isPartial = state === 'partial';
@@ -221,6 +225,32 @@ export function FeedbackCard({ feedback, state }: FeedbackCardProps) {
               <MathText text={feedback.response} />
             ) : null}
           </div>
+
+          {/* Detailed AI explanation — only for incorrect answers */}
+          {isIncorrect && (explanationLoading || detailedExplanation) && (
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <div className="flex items-center gap-2 mb-2">
+                <Lightbulb className="w-4 h-4 text-yellow-400" />
+                <span className="text-sm font-semibold text-yellow-400">
+                  Explication détaillée
+                </span>
+              </div>
+
+              {explanationLoading && !detailedExplanation && (
+                <div className="space-y-2">
+                  <div className="h-3 bg-muted/50 rounded animate-pulse w-full" />
+                  <div className="h-3 bg-muted/50 rounded animate-pulse w-4/5" />
+                  <div className="h-3 bg-muted/50 rounded animate-pulse w-3/5" />
+                </div>
+              )}
+
+              {detailedExplanation && (
+                <div className="text-sm leading-relaxed">
+                  <MathText text={detailedExplanation} />
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </Card>

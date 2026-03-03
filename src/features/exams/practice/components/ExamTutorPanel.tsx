@@ -3,7 +3,7 @@
  * Replaces chat-first with quiz-first experience
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { X, Info } from 'lucide-react';
@@ -14,6 +14,7 @@ import { FeedbackCard } from './FeedbackCard';
 import { ActionRow } from './ActionRow';
 import { AskJudeDrawer } from './AskJudeDrawer';
 import { useTutorAction } from '../hooks/useTutorAction';
+import { useExerciseExplanation } from '../hooks/useExerciseExplanation';
 import type { ExerciseForRunner, SessionForRunner, ReferenceText } from '../types';
 
 interface ExamTutorPanelProps {
@@ -30,6 +31,10 @@ interface ExamTutorPanelProps {
   formattedTime?: string;
   isTimeWarning?: boolean;
   isTimeCritical?: boolean;
+  /** Exam metadata — needed for AI explanation on wrong answers */
+  examSubject?: string;
+  examGradeLevel?: string;
+  examSeries?: string;
 }
 
 export function ExamTutorPanel({
@@ -44,7 +49,20 @@ export function ExamTutorPanel({
   formattedTime,
   isTimeWarning,
   isTimeCritical,
+  examSubject = '',
+  examGradeLevel = '',
+  examSeries,
 }: ExamTutorPanelProps) {
+  // Explanation state — enabled after wrong answer confirmed
+  const [explanationEnabled, setExplanationEnabled] = useState(false);
+  const [explanationExercise, setExplanationExercise] = useState<ExerciseForRunner | null>(null);
+
+  // Handler passed to useTutorAction — triggers explanation fetch on wrong answer
+  const handleWrongAnswer = useCallback((ex: ExerciseForRunner) => {
+    setExplanationExercise(ex);
+    setExplanationEnabled(true);
+  }, []);
+
   const {
     state,
     feedback,
@@ -61,6 +79,16 @@ export function ExamTutorPanel({
     exercise,
     referenceTexts,
     onAnswerValidated,
+    onWrongAnswer: handleWrongAnswer,
+  });
+
+  // AI-generated explanation for wrong answers
+  const { explanation: detailedExplanation, isLoading: explanationLoading } = useExerciseExplanation({
+    exercise: explanationExercise,
+    subject: examSubject,
+    gradeLevel: examGradeLevel,
+    series: examSeries,
+    enabled: explanationEnabled,
   });
 
   // Dismissible info banner
@@ -77,6 +105,9 @@ export function ExamTutorPanel({
   // Reset state when exercise changes
   useEffect(() => {
     reset();
+    // Reset explanation state for new exercise
+    setExplanationEnabled(false);
+    setExplanationExercise(null);
   }, [exercise.id, reset]);
 
   const canAdvance = state === 'correct' || state === 'incorrect' || state === 'partial' || state === 'revealed';
@@ -131,9 +162,14 @@ export function ExamTutorPanel({
             correctAnswer={feedback?.grading?.correctAnswer || exercise.correct_answer}
           />
 
-          {/* Feedback card (when available) */}
+          {/* Feedback card (when available) — passes explanation for wrong answers */}
           {feedback && (
-            <FeedbackCard feedback={feedback} state={state} />
+            <FeedbackCard
+              feedback={feedback}
+              state={state}
+              detailedExplanation={detailedExplanation}
+              explanationLoading={explanationLoading}
+            />
           )}
 
           {/* Ask Jude drawer trigger */}
