@@ -524,6 +524,9 @@ export default function ExamPreparation() {
                         onPrevious={handlePreviousExercise}
                         onAnswerValidated={handleAnswerValidated}
                         isLastExercise={isLastExercise}
+                        examSubject={exam?.subject || ''}
+                        examGradeLevel={exam?.grade_level || ''}
+                        examSeries={exam?.series}
                         {...timerProps}
                       />
                     ) : (
@@ -557,6 +560,9 @@ export default function ExamPreparation() {
                     onPrevious={handlePreviousExercise}
                     onAnswerValidated={handleAnswerValidated}
                     isLastExercise={isLastExercise}
+                    examSubject={exam?.subject || ''}
+                    examGradeLevel={exam?.grade_level || ''}
+                    examSeries={exam?.series}
                     {...timerProps}
                   />
                 ) : (

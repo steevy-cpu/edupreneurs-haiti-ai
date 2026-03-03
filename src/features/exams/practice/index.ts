@@ -15,6 +15,7 @@ export {
 
 // Hooks
 export { useTutorAction } from './hooks/useTutorAction';
+export { useExerciseExplanation } from './hooks/useExerciseExplanation';
 export { useExamTutorChat, type ChatMessage } from './hooks/useExamTutorChat';
 export { useExamTimer } from './hooks/useExamTimer';
 
