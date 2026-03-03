@@ -154,12 +154,12 @@ function ExamCard({ exam, color, onPractice, isNS4 }: ExamCardProps) {
         <div className="flex justify-between text-sm text-muted-foreground">
           <span>{exam.total_exercises} exercices</span>
           {/* Show MENFP official duration when available */}
-          {(exam as any).duration_minutes && (
+          {exam.duration_minutes && (
             <span className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
-              {(exam as any).duration_minutes >= 60
-                ? `${Math.floor((exam as any).duration_minutes / 60)}h`
-                : `${(exam as any).duration_minutes}min`}
+              {exam.duration_minutes >= 60
+                ? `${Math.floor(exam.duration_minutes / 60)}h`
+                : `${exam.duration_minutes}min`}
             </span>
           )}
           <span>{exam.total_points} points</span>
