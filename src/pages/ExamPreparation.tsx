@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExamPDFViewer } from "@/components/exam/ExamPDFViewer";
-import { ExamTutorPanel } from "@/features/exams/practice";
+import { ExamTutorPanel, ExamResultsModal } from "@/features/exams/practice";
 import type { ExerciseForRunner, SessionForRunner, ReferenceText } from "@/features/exams/practice";
 import { ExamProgressBar } from "@/components/exam/ExamProgressBar";
 import { ArrowLeft, FileText, MessageCircle } from "lucide-react";
@@ -15,8 +15,24 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { GoldBadge } from "@/components/shared/GoldBadge";
 import { useUserProfile, useInvalidateUserProfile } from "@/hooks/useUserProfile";
+import { useJudeAudio } from "@/contexts/JudeAudioContext";
 import judeProfile from "@/assets/jude-profile.jpeg";
 import { celebrateFirstGold } from "@/hooks/useFirstGoldCelebration";
+
+/** Voice keys for tiered completion celebration */
+const VOICE_KEYS: Record<string, { key: string; text: string }> = {
+  low: { key: 'exam/completion-low', text: "Tu as terminé l'examen! C'est courageux de persévérer jusqu'au bout. Continue à pratiquer et tu vas t'améliorer!" },
+  medium: { key: 'exam/completion-medium', text: "Bien joué! Tu as terminé l'examen avec un score correct. Continue comme ça et tu vas exceller!" },
+  good: { key: 'exam/completion-good', text: "Excellent travail! Tu as très bien réussi cet examen. Tu maîtrises bien le sujet!" },
+  perfect: { key: 'exam/completion-perfect', text: "Félicitations! Tu as brillamment réussi cet examen. Tu es vraiment prêt pour le baccalauréat!" },
+};
+
+function getVoiceTier(pct: number): string {
+  if (pct >= 90) return 'perfect';
+  if (pct >= 75) return 'good';
+  if (pct >= 50) return 'medium';
+  return 'low';
+}
 
 export default function ExamPreparation() {
   const { examId } = useParams<{ examId: string }>();
@@ -34,11 +50,22 @@ export default function ExamPreparation() {
   // Tracks exercises completed across ALL sessions — prevents cross-session gold farming
   const [globallyCompletedExercises, setGloballyCompletedExercises] = useState<number[]>([]);
 
+  // Completion flow state
+  const [showResults, setShowResults] = useState(false);
+  const [completionData, setCompletionData] = useState<{
+    scorePercent: number;
+    bonusGold: number;
+    finalScore: number;
+  } | null>(null);
+
   // Gold display — uses cached profile, no extra query
   const { profile } = useUserProfile();
   const invalidateUserProfile = useInvalidateUserProfile();
   const [localGold, setLocalGold] = useState(0);
   const [isGoldAnimated, setIsGoldAnimated] = useState(false);
+
+  // Jude voice for completion celebration
+  const { speak } = useJudeAudio();
 
   // Sync gold from profile on load
   useEffect(() => {
@@ -48,6 +75,9 @@ export default function ExamPreparation() {
   useEffect(() => {
     loadExamData();
   }, [examId]);
+
+  // Derived: is the student on the final exercise (1-indexed)
+  const isLastExercise = exercises.length > 0 && currentExercise === exercises.length;
 
   const loadExamData = async () => {
     try {
@@ -76,7 +106,6 @@ export default function ExamPreparation() {
       // Set reference texts from exam data
       const refTexts = examData.reference_texts;
       if (refTexts && Array.isArray(refTexts)) {
-        // Cast through unknown for JSON data from Supabase
         setReferenceTexts(refTexts as unknown as ReferenceText[]);
       }
 
@@ -145,7 +174,70 @@ export default function ExamPreparation() {
     }
   };
 
+  /** Complete exam — atomic RPC + voice + results modal */
+  const handleExamComplete = useCallback(async () => {
+    if (!session?.id || !exam) return;
+
+    const totalPoints = exam.total_points || 0;
+    const scorePercent = totalPoints > 0
+      ? Math.round((score / totalPoints) * 100)
+      : 0;
+
+    // Tiered bonus gold on top of per-exercise gold
+    let bonusGold = 50; // base completion bonus
+    if (scorePercent >= 90) bonusGold += 100;
+    else if (scorePercent >= 75) bonusGold += 50;
+    else if (scorePercent >= 50) bonusGold += 25;
+
+    try {
+      // Atomic: mark completed + update profile stats + award bonus gold
+      const { error } = await supabase.rpc('complete_exam_session', {
+        p_session_id: session.id,
+        p_final_score: score,
+        p_total_points: totalPoints,
+        p_bonus_gold: bonusGold,
+      });
+
+      if (error) {
+        console.error('Failed to complete exam session:', error);
+        toast({ title: 'Erreur', description: "Impossible de finaliser l'examen", variant: 'destructive' });
+        return;
+      }
+
+      // Update gold display immediately
+      setLocalGold(prev => prev + bonusGold);
+      setIsGoldAnimated(true);
+      setTimeout(() => setIsGoldAnimated(false), 1500);
+      invalidateUserProfile();
+
+      // Play Jude celebration voice (fire-and-forget, respects mute)
+      const isMuted = localStorage.getItem('jude-voice-muted') === 'true';
+      if (!isMuted) {
+        const tier = getVoiceTier(scorePercent);
+        const voiceInfo = VOICE_KEYS[tier];
+        // Generate voice via edge function, then play
+        supabase.functions.invoke('generate-jude-voice', {
+          body: { text: voiceInfo.text, storageKey: voiceInfo.key, context: 'feedback' },
+        }).then(({ data }) => {
+          if (data?.url) speak(data.url);
+        }).catch(() => { /* voice is best-effort */ });
+      }
+
+      // Show results modal
+      setCompletionData({ scorePercent, bonusGold, finalScore: score });
+      setShowResults(true);
+    } catch (err) {
+      console.error('Exam completion error:', err);
+    }
+  }, [session, exam, score, toast, invalidateUserProfile, speak]);
+
   const handleNextExercise = async () => {
+    // On last exercise, trigger completion instead of advancing
+    if (isLastExercise) {
+      await handleExamComplete();
+      return;
+    }
+
     if (currentExercise < exercises.length && session?.id) {
       const nextExercise = currentExercise + 1;
       setCurrentExercise(nextExercise);
@@ -274,6 +366,16 @@ export default function ExamPreparation() {
 
   const currentExerciseData = exercises[currentExercise - 1];
 
+  /** Shared session prop for ExamTutorPanel */
+  const sessionForRunner: SessionForRunner = {
+    id: session.id,
+    exam_id: exam.id,
+    current_exercise: currentExercise,
+    score,
+    totalExercises: exercises.length,
+    completedExercises,
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
         <div className="container mx-auto px-4 py-4">
@@ -355,18 +457,12 @@ export default function ExamPreparation() {
                     {session && currentExerciseData ? (
                       <ExamTutorPanel
                         exercise={currentExerciseData as ExerciseForRunner}
-                        session={{
-                          id: session.id,
-                          exam_id: exam.id,
-                          current_exercise: currentExercise,
-                          score,
-                          totalExercises: exercises.length,
-                          completedExercises,
-                        } as SessionForRunner}
+                        session={sessionForRunner}
                         referenceTexts={referenceTexts}
                         onNext={handleNextExercise}
                         onPrevious={handlePreviousExercise}
                         onAnswerValidated={handleAnswerValidated}
+                        isLastExercise={isLastExercise}
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full">
@@ -393,18 +489,12 @@ export default function ExamPreparation() {
                 {session && currentExerciseData ? (
                   <ExamTutorPanel
                     exercise={currentExerciseData as ExerciseForRunner}
-                    session={{
-                      id: session.id,
-                      exam_id: exam.id,
-                      current_exercise: currentExercise,
-                      score,
-                      totalExercises: exercises.length,
-                      completedExercises,
-                    } as SessionForRunner}
+                    session={sessionForRunner}
                     referenceTexts={referenceTexts}
                     onNext={handleNextExercise}
                     onPrevious={handlePreviousExercise}
                     onAnswerValidated={handleAnswerValidated}
+                    isLastExercise={isLastExercise}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full">
@@ -415,6 +505,19 @@ export default function ExamPreparation() {
             </div>
           </div>
         </div>
+
+        {/* Exam Results Modal — shown after completing last exercise */}
+        {showResults && completionData && exam && (
+          <ExamResultsModal
+            scorePercent={completionData.scorePercent}
+            bonusGold={completionData.bonusGold}
+            finalScore={completionData.finalScore}
+            totalPoints={exam.total_points || 0}
+            examTitle={exam.title}
+            onReview={() => setShowResults(false)}
+            onExit={() => navigate('/baccalaureat')}
+          />
+        )}
       </div>
   );
 }

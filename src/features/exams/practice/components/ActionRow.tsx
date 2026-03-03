@@ -16,6 +16,8 @@ interface ActionRowProps {
   canGoPrevious?: boolean;
   isLoading: boolean;
   state: RunnerState;
+  /** When true, shows "Terminer l'examen" instead of "Question suivante" */
+  isLastExercise?: boolean;
 }
 
 export function ActionRow({
@@ -28,6 +30,7 @@ export function ActionRow({
   canGoPrevious = false,
   isLoading,
   state,
+  isLastExercise = false,
 }: ActionRowProps) {
   const isAnswered = state === 'correct' || state === 'incorrect' || state === 'partial' || state === 'revealed';
   const hintDisabled = hintLevel >= 3 || isLoading || isAnswered;
@@ -83,9 +86,17 @@ export function ActionRow({
           size="sm"
           onClick={onNext}
           disabled={!canAdvance && !isAnswered}
+          className={isLastExercise && isAnswered ? 'bg-green-600 hover:bg-green-700 text-white' : ''}
         >
-          Question suivante
-          <ChevronRight className="h-4 w-4 ml-1" />
+          {/* Show "Terminer" on last exercise after answering */}
+          {isLastExercise && isAnswered ? (
+            <>Terminer l'examen 🎓</>
+          ) : (
+            <>
+              Question suivante
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </>
+          )}
         </Button>
       </div>
     </div>

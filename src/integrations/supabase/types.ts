@@ -3010,12 +3010,14 @@ export type Database = {
           academic_grade: string | null
           affiliation_points: number | null
           avatar_url: string | null
+          best_exam_score_percent: number | null
           bio: string | null
           confirmation_code: string | null
           created_at: string | null
           current_streak: number
           date_of_birth: string | null
           email_confirmed: boolean | null
+          exams_completed: number | null
           full_name: string | null
           gender: string | null
           gold_earned: number
@@ -3055,12 +3057,14 @@ export type Database = {
           academic_grade?: string | null
           affiliation_points?: number | null
           avatar_url?: string | null
+          best_exam_score_percent?: number | null
           bio?: string | null
           confirmation_code?: string | null
           created_at?: string | null
           current_streak?: number
           date_of_birth?: string | null
           email_confirmed?: boolean | null
+          exams_completed?: number | null
           full_name?: string | null
           gender?: string | null
           gold_earned?: number
@@ -3100,12 +3104,14 @@ export type Database = {
           academic_grade?: string | null
           affiliation_points?: number | null
           avatar_url?: string | null
+          best_exam_score_percent?: number | null
           bio?: string | null
           confirmation_code?: string | null
           created_at?: string | null
           current_streak?: number
           date_of_birth?: string | null
           email_confirmed?: boolean | null
+          exams_completed?: number | null
           full_name?: string | null
           gender?: string | null
           gold_earned?: number
@@ -4654,6 +4660,15 @@ export type Database = {
       cleanup_old_login_attempts: { Args: never; Returns: number }
       cleanup_stale_games: { Args: never; Returns: undefined }
       clear_login_attempts: { Args: { p_email: string }; Returns: undefined }
+      complete_exam_session: {
+        Args: {
+          p_bonus_gold: number
+          p_final_score: number
+          p_session_id: string
+          p_total_points: number
+        }
+        Returns: undefined
+      }
       count_activities_in_html: {
         Args: { html_content: string }
         Returns: number

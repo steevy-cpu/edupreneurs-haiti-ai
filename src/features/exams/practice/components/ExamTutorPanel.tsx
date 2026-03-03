@@ -23,6 +23,8 @@ interface ExamTutorPanelProps {
   onNext: () => void;
   onPrevious?: () => void;
   onAnswerValidated?: (isCorrect: boolean, points: number) => void;
+  /** Signals last exercise — changes ActionRow button to "Terminer" */
+  isLastExercise?: boolean;
 }
 
 export function ExamTutorPanel({
@@ -32,6 +34,7 @@ export function ExamTutorPanel({
   onNext,
   onPrevious,
   onAnswerValidated,
+  isLastExercise = false,
 }: ExamTutorPanelProps) {
   const {
     state,
@@ -135,6 +138,7 @@ export function ExamTutorPanel({
         canGoPrevious={canGoPrevious}
         isLoading={isLoading}
         state={state}
+        isLastExercise={isLastExercise}
       />
     </Card>
   );
