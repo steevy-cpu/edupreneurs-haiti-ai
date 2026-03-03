@@ -2590,6 +2590,7 @@ export type Database = {
       official_exams: {
         Row: {
           created_at: string
+          duration_minutes: number | null
           exam_type: string | null
           grade_level: string
           id: string
@@ -2611,6 +2612,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          duration_minutes?: number | null
           exam_type?: string | null
           grade_level: string
           id?: string
@@ -2632,6 +2634,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          duration_minutes?: number | null
           exam_type?: string | null
           grade_level?: string
           id?: string

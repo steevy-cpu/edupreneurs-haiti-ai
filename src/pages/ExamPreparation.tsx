@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExamPDFViewer } from "@/components/exam/ExamPDFViewer";
-import { ExamTutorPanel, ExamResultsModal } from "@/features/exams/practice";
+import { ExamTutorPanel, ExamResultsModal, ExamModeSelector, useExamTimer } from "@/features/exams/practice";
 import type { ExerciseForRunner, SessionForRunner, ReferenceText } from "@/features/exams/practice";
 import { ExamProgressBar } from "@/components/exam/ExamProgressBar";
 import { ArrowLeft, FileText, MessageCircle } from "lucide-react";
@@ -18,6 +18,7 @@ import { useUserProfile, useInvalidateUserProfile } from "@/hooks/useUserProfile
 import { useJudeAudio } from "@/contexts/JudeAudioContext";
 import judeProfile from "@/assets/jude-profile.jpeg";
 import { celebrateFirstGold } from "@/hooks/useFirstGoldCelebration";
+import type { PracticeMode } from "@/features/exams/types/exam.types";
 
 /** Voice keys for tiered completion celebration */
 const VOICE_KEYS: Record<string, { key: string; text: string }> = {
@@ -50,6 +51,9 @@ export default function ExamPreparation() {
   // Tracks exercises completed across ALL sessions — prevents cross-session gold farming
   const [globallyCompletedExercises, setGloballyCompletedExercises] = useState<number[]>([]);
 
+  // ── Mode selection state — null means "show selector" ──
+  const [selectedMode, setSelectedMode] = useState<PracticeMode | null>(null);
+
   // Completion flow state
   const [showResults, setShowResults] = useState(false);
   const [completionData, setCompletionData] = useState<{
@@ -79,100 +83,8 @@ export default function ExamPreparation() {
   // Derived: is the student on the final exercise (1-indexed)
   const isLastExercise = exercises.length > 0 && currentExercise === exercises.length;
 
-  const loadExamData = async () => {
-    try {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) {
-        navigate('/auth/login');
-        return;
-      }
-
-      if (!examId) {
-        console.error('No exam ID provided');
-        navigate('/exams/9AF');
-        return;
-      }
-
-      // Load exam by ID
-      const { data: examData, error: examError } = await supabase
-        .from('official_exams')
-        .select('*')
-        .eq('id', examId)
-        .single();
-
-      if (examError) throw examError;
-      setExam(examData);
-      
-      // Set reference texts from exam data
-      const refTexts = examData.reference_texts;
-      if (refTexts && Array.isArray(refTexts)) {
-        setReferenceTexts(refTexts as unknown as ReferenceText[]);
-      }
-
-      // Load exercises
-      const { data: exercisesData, error: exercisesError } = await supabase
-        .from('exam_exercises')
-        .select('*')
-        .eq('exam_id', examData.id)
-        .order('exercise_number');
-
-      if (exercisesError) throw exercisesError;
-      setExercises(exercisesData);
-
-      // Load or create session
-      let { data: sessionData, error: sessionError } = await supabase
-        .from('exam_practice_sessions')
-        .select('*')
-        .eq('user_id', user.user.id)
-        .eq('exam_id', examData.id)
-        .is('completed_at', null)
-        .single();
-
-      if (sessionError && sessionError.code !== 'PGRST116') {
-        throw sessionError;
-      }
-
-      if (!sessionData) {
-        const { data: newSession, error: createError } = await supabase
-          .from('exam_practice_sessions')
-          .insert({
-            user_id: user.user.id,
-            exam_id: examData.id,
-          })
-          .select()
-          .single();
-
-        if (createError) throw createError;
-        sessionData = newSession;
-      }
-
-      setSession(sessionData);
-      setCurrentExercise(sessionData.current_exercise);
-      setScore(sessionData.score);
-      const completed = sessionData.completed_exercises as number[];
-      setCompletedExercises(Array.isArray(completed) ? completed : []);
-
-      // Query permanent completion records to prevent cross-session gold re-earning
-      const { data: globalCompletions } = await supabase
-        .from('exam_exercise_completions')
-        .select('exercise_number')
-        .eq('user_id', user.user.id)
-        .eq('exam_id', examData.id);
-
-      if (globalCompletions) {
-        setGloballyCompletedExercises(globalCompletions.map(c => c.exercise_number));
-      }
-    } catch (error) {
-      console.error('Error loading exam data:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger l'examen",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // ── Timer hook — only active in timed mode ──
+  const timerInitialSeconds = session?.time_remaining ?? ((exam?.duration_minutes ?? 120) * 60);
 
   /** Complete exam — atomic RPC + voice + results modal */
   const handleExamComplete = useCallback(async () => {
@@ -215,7 +127,6 @@ export default function ExamPreparation() {
       if (!isMuted) {
         const tier = getVoiceTier(scorePercent);
         const voiceInfo = VOICE_KEYS[tier];
-        // Generate voice via edge function, then play
         supabase.functions.invoke('generate-jude-voice', {
           body: { text: voiceInfo.text, storageKey: voiceInfo.key, context: 'feedback' },
         }).then(({ data }) => {
@@ -230,6 +141,136 @@ export default function ExamPreparation() {
       console.error('Exam completion error:', err);
     }
   }, [session, exam, score, toast, invalidateUserProfile, speak]);
+
+  // Timer hook — initialized after session exists, only ticks in timed mode
+  const { formattedTime, isWarning, isCritical } = useExamTimer({
+    sessionId: session?.id ?? '',
+    initialSeconds: timerInitialSeconds,
+    isActive: selectedMode === 'timed' && !showResults && !!session,
+    onTimeUp: handleExamComplete,
+  });
+
+  const isTimedMode = selectedMode === 'timed';
+
+  const loadExamData = async () => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        navigate('/auth/login');
+        return;
+      }
+
+      if (!examId) {
+        console.error('No exam ID provided');
+        navigate('/exams/9AF');
+        return;
+      }
+
+      // Load exam by ID
+      const { data: examData, error: examError } = await supabase
+        .from('official_exams')
+        .select('*')
+        .eq('id', examId)
+        .single();
+
+      if (examError) throw examError;
+      setExam(examData);
+      
+      // Set reference texts from exam data
+      const refTexts = examData.reference_texts;
+      if (refTexts && Array.isArray(refTexts)) {
+        setReferenceTexts(refTexts as unknown as ReferenceText[]);
+      }
+
+      // Load exercises
+      const { data: exercisesData, error: exercisesError } = await supabase
+        .from('exam_exercises')
+        .select('*')
+        .eq('exam_id', examData.id)
+        .order('exercise_number');
+
+      if (exercisesError) throw exercisesError;
+      setExercises(exercisesData);
+
+      // Load or create session — if existing session found, skip mode selector
+      let { data: sessionData, error: sessionError } = await supabase
+        .from('exam_practice_sessions')
+        .select('*')
+        .eq('user_id', user.user.id)
+        .eq('exam_id', examData.id)
+        .is('completed_at', null)
+        .single();
+
+      if (sessionError && sessionError.code !== 'PGRST116') {
+        throw sessionError;
+      }
+
+      if (sessionData) {
+        // Resuming existing session — auto-set mode from DB, skip selector
+        setSession(sessionData);
+        setSelectedMode((sessionData.mode as PracticeMode) || 'practice');
+        setCurrentExercise(sessionData.current_exercise);
+        setScore(sessionData.score);
+        const completed = sessionData.completed_exercises as number[];
+        setCompletedExercises(Array.isArray(completed) ? completed : []);
+      }
+      // If no session, selectedMode stays null → show mode selector
+
+      // Query permanent completion records to prevent cross-session gold re-earning
+      const { data: globalCompletions } = await supabase
+        .from('exam_exercise_completions')
+        .select('exercise_number')
+        .eq('user_id', user.user.id)
+        .eq('exam_id', examData.id);
+
+      if (globalCompletions) {
+        setGloballyCompletedExercises(globalCompletions.map(c => c.exercise_number));
+      }
+    } catch (error) {
+      console.error('Error loading exam data:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger l'examen",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /** Called when user picks a mode from ExamModeSelector — creates session */
+  const handleModeSelected = async (mode: PracticeMode) => {
+    setSelectedMode(mode);
+
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user || !exam) return;
+
+      const timeRemaining = mode === 'timed' ? (exam.duration_minutes ?? 120) * 60 : null;
+
+      const { data: newSession, error: createError } = await supabase
+        .from('exam_practice_sessions')
+        .insert({
+          user_id: user.user.id,
+          exam_id: exam.id,
+          mode,
+          time_remaining: timeRemaining,
+        })
+        .select()
+        .single();
+
+      if (createError) throw createError;
+      setSession(newSession);
+      setCurrentExercise(1);
+      setScore(0);
+      setCompletedExercises([]);
+    } catch (error) {
+      console.error('Error creating session:', error);
+      toast({ title: 'Erreur', description: 'Impossible de créer la session', variant: 'destructive' });
+      // Reset mode so selector shows again
+      setSelectedMode(null);
+    }
+  };
 
   const handleNextExercise = async () => {
     // On last exercise, trigger completion instead of advancing
@@ -339,6 +380,7 @@ export default function ExamPreparation() {
     }
   };
 
+  // ── Loading state ──
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8 space-y-8">
@@ -364,17 +406,36 @@ export default function ExamPreparation() {
     );
   }
 
+  // ── Mode selector — shown when no existing session and mode not yet chosen ──
+  if (selectedMode === null) {
+    return (
+      <ExamModeSelector
+        examTitle={exam.title}
+        durationMinutes={exam.duration_minutes ?? 120}
+        onSelectMode={handleModeSelected}
+      />
+    );
+  }
+
   const currentExerciseData = exercises[currentExercise - 1];
 
   /** Shared session prop for ExamTutorPanel */
   const sessionForRunner: SessionForRunner = {
-    id: session.id,
+    id: session?.id ?? '',
     exam_id: exam.id,
     current_exercise: currentExercise,
     score,
     totalExercises: exercises.length,
     completedExercises,
   };
+
+  /** Timer props passed to ExamTutorPanel → ExerciseHeader */
+  const timerProps = isTimedMode ? {
+    timedMode: true as const,
+    formattedTime,
+    isTimeWarning: isWarning,
+    isTimeCritical: isCritical,
+  } : {};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -463,6 +524,7 @@ export default function ExamPreparation() {
                         onPrevious={handlePreviousExercise}
                         onAnswerValidated={handleAnswerValidated}
                         isLastExercise={isLastExercise}
+                        {...timerProps}
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full">
@@ -495,6 +557,7 @@ export default function ExamPreparation() {
                     onPrevious={handlePreviousExercise}
                     onAnswerValidated={handleAnswerValidated}
                     isLastExercise={isLastExercise}
+                    {...timerProps}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full">

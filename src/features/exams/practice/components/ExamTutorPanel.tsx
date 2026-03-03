@@ -25,6 +25,11 @@ interface ExamTutorPanelProps {
   onAnswerValidated?: (isCorrect: boolean, points: number) => void;
   /** Signals last exercise — changes ActionRow button to "Terminer" */
   isLastExercise?: boolean;
+  /** Timed mode props — forwarded to ExerciseHeader */
+  timedMode?: boolean;
+  formattedTime?: string;
+  isTimeWarning?: boolean;
+  isTimeCritical?: boolean;
 }
 
 export function ExamTutorPanel({
@@ -35,6 +40,10 @@ export function ExamTutorPanel({
   onPrevious,
   onAnswerValidated,
   isLastExercise = false,
+  timedMode,
+  formattedTime,
+  isTimeWarning,
+  isTimeCritical,
 }: ExamTutorPanelProps) {
   const {
     state,
@@ -82,11 +91,16 @@ export function ExamTutorPanel({
   return (
     <Card className="flex flex-col h-full overflow-hidden border-2 border-primary/20">
       {/* Header */}
+      {/* Header — shows countdown badge in timed mode */}
       <ExerciseHeader
         number={exercise.exercise_number}
         total={session.totalExercises}
         concept={exercise.concept}
         points={exercise.points}
+        timedMode={timedMode}
+        formattedTime={formattedTime}
+        isTimeWarning={isTimeWarning}
+        isTimeCritical={isTimeCritical}
       />
 
       {/* Scrollable content area */}

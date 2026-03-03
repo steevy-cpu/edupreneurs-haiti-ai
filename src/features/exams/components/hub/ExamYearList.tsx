@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BookOpen, Calendar } from 'lucide-react';
+import { BookOpen, Calendar, Clock } from 'lucide-react';
 import { useExamsBySubject, SUBJECT_COLORS } from '../../data/exams.queries';
 import type { ExamTrack, ExamSeries, Exam } from '../../types/exam.types';
 import { supabase } from '@/integrations/supabase/client';
@@ -153,6 +153,15 @@ function ExamCard({ exam, color, onPractice, isNS4 }: ExamCardProps) {
       <CardContent className="space-y-4">
         <div className="flex justify-between text-sm text-muted-foreground">
           <span>{exam.total_exercises} exercices</span>
+          {/* Show MENFP official duration when available */}
+          {(exam as any).duration_minutes && (
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {(exam as any).duration_minutes >= 60
+                ? `${Math.floor((exam as any).duration_minutes / 60)}h`
+                : `${(exam as any).duration_minutes}min`}
+            </span>
+          )}
           <span>{exam.total_points} points</span>
         </div>
 

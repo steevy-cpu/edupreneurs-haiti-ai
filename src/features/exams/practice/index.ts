@@ -16,6 +16,7 @@ export {
 // Hooks
 export { useTutorAction } from './hooks/useTutorAction';
 export { useExamTutorChat, type ChatMessage } from './hooks/useExamTutorChat';
+export { useExamTimer } from './hooks/useExamTimer';
 
 // Components
 export { ExamTutorPanel } from './components/ExamTutorPanel';
@@ -26,6 +27,7 @@ export { FeedbackCard } from './components/FeedbackCard';
 export { ActionRow } from './components/ActionRow';
 export { AskJudeDrawer } from './components/AskJudeDrawer';
 export { ExamResultsModal } from './components/ExamResultsModal';
+export { ExamModeSelector } from './components/ExamModeSelector';
 
 // Input Components (for direct usage if needed)
 export { MCQInput, ShortInput, MatchingInput, EssayInput } from './components/inputs';
