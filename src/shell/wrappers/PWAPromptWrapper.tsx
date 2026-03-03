@@ -1,32 +1,37 @@
 /**
- * Wrapper for PWAInstallPrompt that provides all required props via usePWAInstall hook.
- * Used in FloatingLayer for centralized placement.
+ * Wrapper for PWAInstallPrompt — provides props via usePWAInstall hook.
+ * Wraps in AnimatePresence for enter/exit animations.
  */
 
 import { lazy, Suspense } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 
-const PWAInstallPrompt = lazy(() => 
+const PWAInstallPrompt = lazy(() =>
   import('@/components/PWAInstallPrompt').then(m => ({ default: m.PWAInstallPrompt }))
 );
 
 export function PWAPromptWrapper() {
-  const { showPrompt, isIOS, isPromptAvailable, installApp, dismissPrompt } = usePWAInstall();
-  
-  // Only render if the prompt should be shown
-  if (!showPrompt) {
-    return null;
-  }
-  
+  const { showPrompt, showCelebration, isIOS, isPromptAvailable, installApp, dismissPrompt, closeCelebration } = usePWAInstall();
+
+  // Show when prompt is active OR celebration is playing
+  const isVisible = showPrompt || showCelebration;
+
   return (
-    <Suspense fallback={null}>
-      <PWAInstallPrompt
-        isIOS={isIOS}
-        isPromptAvailable={isPromptAvailable}
-        onInstall={installApp}
-        onDismiss={dismissPrompt}
-      />
-    </Suspense>
+    <AnimatePresence>
+      {isVisible && (
+        <Suspense fallback={null}>
+          <PWAInstallPrompt
+            isIOS={isIOS}
+            isPromptAvailable={isPromptAvailable}
+            showCelebration={showCelebration}
+            onInstall={installApp}
+            onDismiss={dismissPrompt}
+            onCloseCelebration={closeCelebration}
+          />
+        </Suspense>
+      )}
+    </AnimatePresence>
   );
 }
 
