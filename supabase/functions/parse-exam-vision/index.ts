@@ -81,18 +81,38 @@ serve(async (req) => {
       },
     }));
 
+    // Series-specific AI hints for more accurate NS4 parsing
+    const seriesHints: Record<string, string> = {
+      SMP: `Série SMP (Sciences Mathématiques et Physiques):
+    - Mathématiques: algèbre, géométrie analytique, calcul différentiel, démonstrations formelles
+    - Physique: mécanique, électricité, optique, thermodynamique — calculs numériques avec unités
+    - Chimie: équations chimiques, stœchiométrie, thermochimie`,
+      SVT: `Série SVT (Sciences de la Vie et de la Terre):
+    - SVT: anatomie, génétique, écologie, géologie — questions descriptives et schémas
+    - Physique/Chimie: moins de calcul, plus de compréhension conceptuelle`,
+      SES: `Série SES (Sciences Économiques et Sociales):
+    - Économie: définitions, graphiques offre/demande, analyses de textes économiques
+    - Histoire-Géographie: questions de compréhension, analyses de documents, dissertations
+    - Questions ouvertes longues avec textes de référence fournis`,
+      LLA: `Série LLA (Lettres, Langues et Arts):
+    - Philosophie: dissertations, questions de réflexion, analyse de citations
+    - Anglais/Espagnol: compréhension de texte, questions ouvertes, traductions
+    - Arts et Musique: questions descriptives et analytiques
+    - Peu ou pas de formules mathématiques`,
+    };
+
     // Build exam-type-specific context so the AI knows which structure to expect
     const examContext = gradeLevel === 'NS4'
-      ? `Tu analyses un examen du BACCALAURÉAT haïtien (NS4)${series ? ` — Série ${series}` : ''}.
+      ? `Tu analyses un examen du BACCALAURÉAT haïtien (NS4) — Série ${series || 'NS4'}.
 
 SPÉCIFICITÉS NS4 À RESPECTER ABSOLUMENT:
 - Les examens NS4 sont composés principalement de questions ouvertes (open_ended) et de problèmes multi-parties
-- Les QCM (multiple_choice) sont rares dans les examens NS4, sauf en Anglais/Espagnol/Créole
-- Chaque exercice peut contenir plusieurs sous-questions numérotées (a, b, c, d) — traite chaque sous-question comme un exercice distinct
-- Les formules mathématiques et physiques doivent être extraites en notation LaTeX
-- Les points par question sont souvent indiqués en marge (ex: "4 pts", "/4") — extrait-les précisément
-- La structure typique NS4: Texte du problème → sous-questions → données/formules en annexe
-- Pour la série ${series || 'NS4'}: les matières scientifiques (Physique, Chimie, Maths, SVT) sont à dominante calcul et démonstration`
+- Les QCM sont rares sauf en Anglais/Espagnol/Créole
+- Chaque exercice peut contenir plusieurs sous-questions (a, b, c, d) — traite chaque comme exercice distinct
+- Formules en LaTeX
+- Points par question extraits précisément depuis le texte de l'examen
+- Structure typique: Texte de référence → parties numérotées → sous-questions lettrées
+${seriesHints[series] || ''}`
       : `Tu analyses un examen de la 9ÈME ANNÉE FONDAMENTALE haïtienne (9AF).
 
 SPÉCIFICITÉS 9AF À RESPECTER ABSOLUMENT:
@@ -118,7 +138,7 @@ INSTRUCTIONS GÉNÉRALES:
 IMPORTANT:
 - EXTRAIT TOUS les textes de référence COMPLETS dans referenceTexts
 - Ne rate AUCUNE question
-- Si les points ne sont pas visibles: 5 pts pour QCM, 8 pts pour questions ouvertes
+- Si les points ne sont pas visibles: 5 pts pour QCM, 15 pts pour questions ouvertes
 - Utilise la fonction extract_exam_data pour retourner les résultats`;
 
     const userPrompt = `Analyse cet examen officiel de ${subject} ${year}${gradeLevel === 'NS4' && series ? ` (${series})` : ''}. Extrait TOUTES les questions, options, textes de référence. Utilise la fonction extract_exam_data.`;
@@ -273,7 +293,7 @@ IMPORTANT:
       options: ex.options || null,
       correctAnswer: ex.correctAnswer || null,
       explanation: ex.explanation || null,
-      points: typeof ex.points === "number" ? ex.points : (ex.exerciseType === "multiple_choice" ? 5 : 8),
+      points: typeof ex.points === "number" ? ex.points : (ex.exerciseType === "multiple_choice" ? 5 : 15),
       concept: ex.concept || "Général",
       promptBlocks: ex.promptBlocks || null,
       optionsJson: ex.optionsJson || null,
