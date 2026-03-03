@@ -60,7 +60,36 @@
     }
   ],
   "categories": ["education", "social"],
-  "screenshots": [],
+  "screenshots": [
+    {
+      "src": "/screenshots/screenshot-home.jpg",
+      "sizes": "780x1688",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Tableau de bord avec Jude et statistiques"
+    },
+    {
+      "src": "/screenshots/screenshot-lesson.jpg",
+      "sizes": "780x1688",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Leçon interactive avec Points Clés"
+    },
+    {
+      "src": "/screenshots/screenshot-exam.jpg",
+      "sizes": "780x1688",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Préparation au baccalauréat avec examens officiels"
+    },
+    {
+      "src": "/screenshots/screenshot-leaderboard.jpg",
+      "sizes": "780x1688",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Classement des meilleurs apprenants"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Messages",
