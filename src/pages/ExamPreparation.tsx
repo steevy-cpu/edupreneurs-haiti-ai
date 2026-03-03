@@ -166,44 +166,36 @@ export default function ExamPreparation() {
         return;
       }
 
-      // Load exam by ID
-      const { data: examData, error: examError } = await supabase
-        .from('official_exams')
-        .select('*')
-        .eq('id', examId)
-        .single();
+      // Parallel fetch — exam, exercises, session, completions all use examId directly
+      const [examResult, exercisesResult, sessionResult, completionsResult] = await Promise.all([
+        supabase.from('official_exams').select('*').eq('id', examId).single(),
+        supabase.from('exam_exercises').select('*').eq('exam_id', examId).order('exercise_number'),
+        supabase.from('exam_practice_sessions').select('*')
+          .eq('user_id', user.user.id).eq('exam_id', examId)
+          .is('completed_at', null).order('started_at', { ascending: false }).limit(1)
+          .maybeSingle(),
+        supabase.from('exam_exercise_completions').select('exercise_number')
+          .eq('user_id', user.user.id).eq('exam_id', examId),
+      ]);
 
-      if (examError) throw examError;
+      // Exam must exist — fail hard if missing
+      if (examResult.error) throw examResult.error;
+      const examData = examResult.data;
       setExam(examData);
-      
+
       // Set reference texts from exam data
       const refTexts = examData.reference_texts;
       if (refTexts && Array.isArray(refTexts)) {
         setReferenceTexts(refTexts as unknown as ReferenceText[]);
       }
 
-      // Load exercises
-      const { data: exercisesData, error: exercisesError } = await supabase
-        .from('exam_exercises')
-        .select('*')
-        .eq('exam_id', examData.id)
-        .order('exercise_number');
+      // Exercises — required for exam to function
+      if (exercisesResult.error) throw exercisesResult.error;
+      setExercises(exercisesResult.data ?? []);
 
-      if (exercisesError) throw exercisesError;
-      setExercises(exercisesData);
-
-      // Load or create session — if existing session found, skip mode selector
-      let { data: sessionData, error: sessionError } = await supabase
-        .from('exam_practice_sessions')
-        .select('*')
-        .eq('user_id', user.user.id)
-        .eq('exam_id', examData.id)
-        .is('completed_at', null)
-        .single();
-
-      if (sessionError && sessionError.code !== 'PGRST116') {
-        throw sessionError;
-      }
+      // Session — null is expected for new students (maybeSingle handles gracefully)
+      if (sessionResult.error) throw sessionResult.error;
+      const sessionData = sessionResult.data;
 
       if (sessionData) {
         // Resuming existing session — auto-set mode from DB, skip selector
@@ -216,16 +208,9 @@ export default function ExamPreparation() {
       }
       // If no session, selectedMode stays null → show mode selector
 
-      // Query permanent completion records to prevent cross-session gold re-earning
-      const { data: globalCompletions } = await supabase
-        .from('exam_exercise_completions')
-        .select('exercise_number')
-        .eq('user_id', user.user.id)
-        .eq('exam_id', examData.id);
-
-      if (globalCompletions) {
-        setGloballyCompletedExercises(globalCompletions.map(c => c.exercise_number));
-      }
+      // Global completions — prevents cross-session gold re-earning
+      const globalCompletions = completionsResult.data ?? [];
+      setGloballyCompletedExercises(globalCompletions.map(c => c.exercise_number));
     } catch (error) {
       console.error('Error loading exam data:', error);
       toast({
@@ -455,8 +440,8 @@ export default function ExamPreparation() {
               <ThemeToggle />
             </div>
 
-            {/* Jude Welcome Banner */}
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border border-primary/20">
+            {/* Jude Welcome Banner — hidden on mobile to reduce above-fold bloat */}
+            <div className="hidden md:flex items-start gap-3 p-3 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border border-primary/20">
               <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 border-2 border-primary/30 ring-2 ring-primary/10">
                 <AvatarImage src={judeProfile} alt="Jude" />
                 <AvatarFallback className="bg-primary/10 text-primary font-bold">J</AvatarFallback>
@@ -476,8 +461,8 @@ export default function ExamPreparation() {
             </div>
           </div>
 
-          {/* Progress Bar - desktop only */}
-          <div className="hidden lg:block">
+          {/* Progress Bar — visible on all screen sizes */}
+          <div className="block w-full px-2 lg:px-0">
             {exam && exercises.length > 0 && (
               <ExamProgressBar
                 currentExercise={currentExercise}
