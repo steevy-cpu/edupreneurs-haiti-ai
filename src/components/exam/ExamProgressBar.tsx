@@ -44,6 +44,9 @@ export const ExamProgressBar = ({
         <div className="flex items-center gap-1">
           <Input
             type="number"
+            id="jump-to-question"
+            name="jump-to-question"
+            autoComplete="off"
             min={1}
             max={totalExercises}
             placeholder="N°"
