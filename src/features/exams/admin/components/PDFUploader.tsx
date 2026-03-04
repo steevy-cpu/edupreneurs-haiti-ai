@@ -1,5 +1,5 @@
 /**
- * PDFUploader - PDF file upload component with progress and step indicator
+ * PDFUploader - PDF file upload with click, drag-and-drop, and paste support
  */
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { FileText, Loader2, AlertTriangle } from "lucide-react";
 import { validatePdfFile } from "../utils/pdfUtils";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 export type ProcessingStep =
   | "idle"
@@ -43,18 +44,55 @@ export function PDFUploader({
   uploadProgress = 0,
 }: PDFUploaderProps) {
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
+  /** Shared validation + callback — single path for click, drop, and paste */
+  const handleFile = (file: File) => {
+    setValidationError(null);
+    if (file.type !== "application/pdf") {
+      setValidationError("Seuls les fichiers PDF sont acceptés.");
+      return;
+    }
+    const error = validatePdfFile(file);
+    if (error) {
+      setValidationError(error.message);
+      return;
+    }
+    onChange(file);
+  };
+
+  /** Native file input change — delegates to handleFile */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    setValidationError(null);
+    if (selectedFile) handleFile(selectedFile);
+  };
 
-    if (selectedFile && selectedFile.type === "application/pdf") {
-      const error = validatePdfFile(selectedFile);
-      if (error) {
-        setValidationError(error.message);
-        return;
+  /** Drag-and-drop: extract first file from dataTransfer */
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const droppedFile = e.dataTransfer.files?.[0];
+    if (droppedFile) handleFile(droppedFile);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => setIsDragging(false);
+
+  /** Clipboard paste — only accepts application/pdf items */
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of Array.from(items)) {
+      if (item.type === "application/pdf") {
+        const pastedFile = item.getAsFile();
+        if (pastedFile) handleFile(pastedFile);
+        break;
       }
-      onChange(selectedFile);
     }
   };
 
@@ -64,11 +102,11 @@ export function PDFUploader({
   // Calculate overall progress across steps
   const overallProgress =
     processingStep === "uploading"
-      ? uploadProgress * 0.15 // 0-15%
+      ? uploadProgress * 0.15
       : processingStep === "converting"
-        ? 15 + conversionProgress * 0.35 // 15-50%
+        ? 15 + conversionProgress * 0.35
         : processingStep === "analyzing"
-          ? 50 + 40 // 50-90% (indeterminate, show 90%)
+          ? 50 + 40
           : processingStep === "saving"
             ? 95
             : 0;
@@ -76,7 +114,20 @@ export function PDFUploader({
   return (
     <div className="space-y-2">
       <Label>Document PDF de l'examen</Label>
-      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+      {/* Drop zone with drag, paste, and click support */}
+      <div
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onPaste={handlePaste}
+        tabIndex={0}
+        className={cn(
+          "border-2 border-dashed rounded-lg p-6 text-center transition-colors outline-none",
+          isDragging
+            ? "border-primary bg-primary/10"
+            : "border-muted-foreground/25 hover:border-primary/50"
+        )}
+      >
         <Input
           type="file"
           accept=".pdf"
@@ -118,7 +169,11 @@ export function PDFUploader({
             <>
               <FileText className="h-8 w-8 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">
-                Cliquer pour sélectionner un PDF (max 25 MB, 20 pages)
+                Glisse le PDF ici, colle-le (Ctrl+V), ou{" "}
+                <span className="text-primary underline cursor-pointer">
+                  clique pour choisir
+                </span>{" "}
+                (max 25 MB, 20 pages)
               </span>
             </>
           )}
