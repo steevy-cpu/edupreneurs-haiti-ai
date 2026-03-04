@@ -147,7 +147,7 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
         // MonCash: 30-day rolling; promo free access: hardcoded May 2 2026 (mirrors redeem-promo-code edge fn)
         subscription_end_date: isMonCash
           ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-          : (data.promoGrantsFreeAccess ? '2026-05-02T00:00:00.000Z' : null),
+          : (data.promoGrantsFreeAccess ? '2026-05-08T00:00:00.000Z' : null),
         payment_order_id: isMonCash ? data.paymentOrderId : null,
       } as any);
 
