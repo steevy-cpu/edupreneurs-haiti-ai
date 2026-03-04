@@ -639,7 +639,8 @@ const Settings = () => {
       const endDate = new Date(p.subscription_end_date);
       return {
         state: 'free_timed' as const,
-        formattedDate: endDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        // Force UTC to prevent midnight-UTC showing as previous day in local timezone
+        formattedDate: endDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }),
       };
     }
     if (p.has_free_access) return { state: 'free' as const };
