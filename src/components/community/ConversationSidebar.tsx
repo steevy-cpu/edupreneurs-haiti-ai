@@ -108,7 +108,7 @@ export const ConversationSidebar = ({
               return (
                 <div
                   key={conv.id}
-                  className={`flex items-center gap-2.5 sm:gap-3 p-3 sm:p-4 cursor-pointer transition-all duration-200 overflow-hidden ${
+                  className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 cursor-pointer transition-all duration-200 ${
                     selectedConversation === conv.id 
                       ? "bg-primary/10 border-l-4 border-l-primary" 
                       : hasUnread 
@@ -116,132 +116,134 @@ export const ConversationSidebar = ({
                         : "hover:bg-muted/40"
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
-                    <div 
-                      className="relative"
-                      onClick={() => onSelectConversation(conv.id)}
-                    >
-                      <Avatar className={`h-11 w-11 sm:h-12 sm:w-12 shrink-0 ring-2 ring-background shadow-sm avatar-interactive ${hasUnread ? 'ring-primary/30' : ''}`}>
-                        {conv.is_group ? (
-                          <>
-                            <AvatarImage src={conv.group?.avatar_url || undefined} loading="lazy" decoding="async" />
-                            <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base font-medium">
-                              <Users className="h-5 w-5" />
-                            </AvatarFallback>
-                          </>
-                        ) : (
-                          <>
-                            <AvatarImage src={getAvatarUrl(conv.otherUser?.avatar_url)} loading="lazy" decoding="async" />
-                            <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base font-medium">
-                              {(conv.otherUser?.nickname || conv.otherUser?.full_name)?.[0] || "?"}
-                            </AvatarFallback>
-                          </>
-                        )}
-                      </Avatar>
-                      {isOnline && (
-                        <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-success rounded-full border-2 border-background shadow-sm" />
+                  {/* Avatar */}
+                  <div 
+                    className="relative shrink-0"
+                    onClick={() => onSelectConversation(conv.id)}
+                  >
+                    <Avatar className={`h-11 w-11 sm:h-12 sm:w-12 ring-2 ring-background shadow-sm avatar-interactive ${hasUnread ? 'ring-primary/30' : ''}`}>
+                      {conv.is_group ? (
+                        <>
+                          <AvatarImage src={conv.group?.avatar_url || undefined} loading="lazy" decoding="async" />
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base font-medium">
+                            <Users className="h-5 w-5" />
+                          </AvatarFallback>
+                        </>
+                      ) : (
+                        <>
+                          <AvatarImage src={getAvatarUrl(conv.otherUser?.avatar_url)} loading="lazy" decoding="async" />
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base font-medium">
+                            {(conv.otherUser?.nickname || conv.otherUser?.full_name)?.[0] || "?"}
+                          </AvatarFallback>
+                        </>
+                      )}
+                    </Avatar>
+                    {isOnline && (
+                      <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-success rounded-full border-2 border-background shadow-sm" />
+                    )}
+                  </div>
+
+                  {/* Name + last message — takes remaining space */}
+                  <div 
+                    className="flex-1 min-w-0"
+                    onClick={() => onSelectConversation(conv.id)}
+                  >
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <p 
+                        className={`truncate text-sm sm:text-base cursor-pointer hover:underline ${hasUnread ? 'font-bold' : 'font-semibold'}`}
+                        onClick={(e) => {
+                          if (conv.is_group && conv.group) {
+                            e.stopPropagation();
+                            onGroupInfoClick(conv.group.id);
+                          }
+                        }}
+                      >
+                        {conv.is_group 
+                          ? conv.group?.name 
+                          : conv.otherUser
+                            ? (conv.otherUser.nickname ?? conv.otherUser.full_name ?? 'Étudiant')
+                            : 'Utilisateur supprimé'
+                        }
+                      </p>
+                      {conv.is_group && (
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          ({conv.group?.member_count})
+                        </span>
+                      )}
+                      {!conv.is_group && conv.otherUser?.verified && (
+                        <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
                       )}
                     </div>
-                    <div 
-                      className="flex-1 min-w-0 pr-1"
-                      onClick={() => onSelectConversation(conv.id)}
-                    >
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <p 
-                          className={`truncate text-sm sm:text-base cursor-pointer hover:underline flex-shrink ${hasUnread ? 'font-bold' : 'font-semibold'}`}
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {isOnline && (
+                        <span className="text-[10px] sm:text-xs text-success font-medium shrink-0 whitespace-nowrap">En ligne</span>
+                      )}
+                      {(() => {
+                        if (!conv.is_group) {
+                          // Check if the other user is typing in this conversation
+                          const conversationTypingUsers = typingUsers[conv.id] || {};
+                          const otherUserTyping = Object.entries(conversationTypingUsers).some(([key, value]) => {
+                            const presence = Array.isArray(value) ? value[0] : value;
+                            return presence?.typing && presence?.user_id === conv.otherUser?.user_id;
+                          });
+                          
+                          if (otherUserTyping) {
+                            return (
+                              <div className="flex items-center gap-1 text-primary text-xs italic font-medium">
+                                <span>en train d'écrire</span>
+                                <span className="flex gap-0.5">
+                                  <span className="animate-typing-wave" style={{ animationDelay: '0ms' }}>•</span>
+                                  <span className="animate-typing-wave" style={{ animationDelay: '100ms' }}>•</span>
+                                  <span className="animate-typing-wave" style={{ animationDelay: '200ms' }}>•</span>
+                                </span>
+                              </div>
+                            );
+                          }
+                        }
+                        
+                        return (
+                          <p className={`text-xs sm:text-sm line-clamp-1 break-words overflow-hidden ${hasUnread ? 'text-foreground/80 font-medium' : 'text-muted-foreground'}`}>
+                            {conv.lastMessage || "Aucun message"}
+                          </p>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Right side: date, unread badge, and ⋮ menu — outside flex-1 so never clipped */}
+                  <div className="flex items-center gap-0.5 shrink-0">
+                    <div className="flex flex-col items-end gap-1">
+                      {conv.lastMessageTime && (
+                        <span className={`text-[10px] sm:text-xs whitespace-nowrap ${hasUnread ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                          {formatTime(conv.lastMessageTime)}
+                        </span>
+                      )}
+                      {hasUnread && (
+                        <span className="flex items-center justify-center min-w-[20px] h-5 sm:min-w-[24px] sm:h-6 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold shadow-md">
+                          {conv.unreadCount! > 99 ? '99+' : conv.unreadCount}
+                        </span>
+                      )}
+                    </div>
+                    {/* ⋮ menu — always visible, never inside flex-1 */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
                           onClick={(e) => {
-                            if (conv.is_group && conv.group) {
-                              e.stopPropagation();
-                              onGroupInfoClick(conv.group.id);
-                            }
+                            e.stopPropagation();
+                            onDeleteConversation(conv.id);
                           }}
                         >
-                          {conv.is_group 
-                            ? conv.group?.name 
-                            : conv.otherUser
-                              ? (conv.otherUser.nickname ?? conv.otherUser.full_name ?? 'Étudiant')
-                              : 'Utilisateur supprimé'
-                          }
-                        </p>
-                        {conv.is_group && (
-                          <span className="text-xs text-muted-foreground shrink-0">
-                            ({conv.group?.member_count})
-                          </span>
-                        )}
-                        {!conv.is_group && conv.otherUser?.verified && (
-                          <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        {isOnline && (
-                          <span className="text-[10px] sm:text-xs text-success font-medium shrink-0 whitespace-nowrap">En ligne</span>
-                        )}
-                        {(() => {
-                          if (!conv.is_group) {
-                            // Check if the other user is typing in this conversation
-                            const conversationTypingUsers = typingUsers[conv.id] || {};
-                            const otherUserTyping = Object.entries(conversationTypingUsers).some(([key, value]) => {
-                              const presence = Array.isArray(value) ? value[0] : value;
-                              return presence?.typing && presence?.user_id === conv.otherUser?.user_id;
-                            });
-                            
-                            if (otherUserTyping) {
-                              return (
-                                <div className="flex items-center gap-1 text-primary text-xs italic font-medium">
-                                  <span>en train d'écrire</span>
-                                  <span className="flex gap-0.5">
-                                    <span className="animate-typing-wave" style={{ animationDelay: '0ms' }}>•</span>
-                                    <span className="animate-typing-wave" style={{ animationDelay: '100ms' }}>•</span>
-                                    <span className="animate-typing-wave" style={{ animationDelay: '200ms' }}>•</span>
-                                  </span>
-                                </div>
-                              );
-                            }
-                          }
-                          
-                          return (
-                            <p className={`text-xs sm:text-sm line-clamp-1 break-words overflow-hidden ${hasUnread ? 'text-foreground/80 font-medium' : 'text-muted-foreground'}`}>
-                              {conv.lastMessage || "Aucun message"}
-                            </p>
-                          );
-                        })()}
-                      </div>
-                    </div>
-                    {/* Right side: date, unread badge, and ⋮ menu in one compact column */}
-                    <div className="flex items-center gap-1 shrink-0 ml-auto">
-                      <div className="flex flex-col items-end gap-1">
-                        {conv.lastMessageTime && (
-                          <span className={`text-[10px] sm:text-xs whitespace-nowrap ${hasUnread ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
-                            {formatTime(conv.lastMessageTime)}
-                          </span>
-                        )}
-                        {hasUnread && (
-                          <span className="flex items-center justify-center min-w-[20px] h-5 sm:min-w-[24px] sm:h-6 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold shadow-md">
-                            {conv.unreadCount! > 99 ? '99+' : conv.unreadCount}
-                          </span>
-                        )}
-                      </div>
-                      {/* ⋮ menu — always visible on all screen sizes */}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onDeleteConversation(conv.id);
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Supprimer la conversation
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Supprimer la conversation
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               );
