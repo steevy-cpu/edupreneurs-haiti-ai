@@ -108,7 +108,7 @@ export const ConversationSidebar = ({
               return (
                 <div
                   key={conv.id}
-                  className={`flex items-center gap-2.5 sm:gap-3 p-3 sm:p-4 cursor-pointer transition-all duration-200 ${
+                  className={`flex items-center gap-2.5 sm:gap-3 p-3 sm:p-4 cursor-pointer transition-all duration-200 overflow-hidden ${
                     selectedConversation === conv.id 
                       ? "bg-primary/10 border-l-4 border-l-primary" 
                       : hasUnread 
