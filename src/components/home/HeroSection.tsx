@@ -45,28 +45,38 @@ const imageVariants = {
   }
 };
 
-// ─── Effect 2: Letter-by-letter reveal variants ───
-const letterContainerVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.025 } }
+// ─── Effect 2: Word-by-word reveal variants ───
+/** Each word fades up with a staggered delay based on index */
+const wordVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      delay: i * 0.08,
+      ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
+    }
+  })
 };
 
-const letterVariants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } }
-};
-
-/** Splits text into motion.span per character for staggered reveal */
-function AnimatedLetters({ text, className }: { text: string; className?: string }) {
+/** Splits text into motion.span per word — preserves natural line wrapping */
+function AnimatedWords({ text, className }: { text: string; className?: string }) {
   return (
-    <motion.span className={className} variants={letterContainerVariants} initial="hidden" animate="visible">
-      {text.split("").map((char, i) => (
-        <motion.span key={i} variants={letterVariants} style={{ display: "inline-block" }}>
-          {/* Preserve spaces as non-breaking to maintain word spacing */}
-          {char === " " ? "\u00A0" : char}
+    <span className={className}>
+      {text.split(" ").map((word, i) => (
+        <motion.span
+          key={i}
+          custom={i}
+          variants={wordVariants}
+          initial="hidden"
+          animate="visible"
+          style={{ display: "inline-block", marginRight: "0.25em" }}
+        >
+          {word}
         </motion.span>
       ))}
-    </motion.span>
+    </span>
   );
 }
 
@@ -287,18 +297,18 @@ export const HeroSection = memo(function HeroSection({
             </Link>
           </MotionDiv>
 
-          {/* Effect 2: Title — letter-by-letter on desktop, plain on mobile */}
+          {/* Effect 2: Title — word-by-word on desktop, plain on mobile */}
           <MotionDiv {...(shouldAnimate ? { variants: itemVariants } : {})}>
             <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight">
               {shouldAnimate ? (
                 <>
-                  <AnimatedLetters text="L'Éducation Haïtienne" className="text-foreground" />
+                  <AnimatedWords text="L'Éducation Haïtienne" className="text-foreground" />
                   <br />
-                  <AnimatedLetters text="révolutionnée" className="bg-gradient-to-r from-accent via-primary to-accent bg-clip-text text-transparent" />
+                  <AnimatedWords text="révolutionnée" className="bg-gradient-to-r from-accent via-primary to-accent bg-clip-text text-transparent" />
                   <span className="text-foreground"> </span>
-                  <AnimatedLetters text="par" className="text-foreground" />
+                  <AnimatedWords text="par" className="text-foreground" />
                   <br />
-                  <AnimatedLetters text="l'Intelligence Artificielle" className="text-foreground" />
+                  <AnimatedWords text="l'Intelligence Artificielle" className="text-foreground" />
                 </>
               ) : (
                 <>
