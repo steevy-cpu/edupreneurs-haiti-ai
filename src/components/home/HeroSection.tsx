@@ -132,37 +132,40 @@ function ParticleCanvas() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Read CSS custom properties for themed particle colors
-    const style = getComputedStyle(document.documentElement);
-    const primaryHsl = style.getPropertyValue("--primary").trim();
-    const accentHsl = style.getPropertyValue("--accent").trim();
-    // Higher opacity in dark mode where particles need more visibility
-    const isDark = document.documentElement.classList.contains("dark");
-    const particleAlpha = isDark ? 0.7 : 0.5;
-    const lineAlpha = isDark ? 0.25 : 0.15;
+    /** Reads theme and builds particle array with theme-appropriate colors */
+    const initParticles = () => {
+      const isDark = document.documentElement.classList.contains("dark");
+      // Hardcoded palettes — bright for dark bg, rich for light bg
+      const colors = isDark
+        ? ["#60a5fa", "#93c5fd", "#fb923c", "#fbbf24"]
+        : ["#0d9488", "#f59e0b", "#7c3aed", "#0ea5e9"];
 
-    const toHsla = (hsl: string, alpha: number) => `hsla(${hsl}, ${alpha})`;
-
-    const resize = () => {
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
-      // Reinit particles on resize to fill new dimensions
+
       particlesRef.current = Array.from({ length: 40 }, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         vx: (Math.random() - 0.5) * 0.4,
         vy: (Math.random() - 0.5) * 0.4,
         radius: 2 + Math.random() * 2,
-        color: Math.random() > 0.5
-          ? toHsla(primaryHsl, particleAlpha)
-          : toHsla(accentHsl, particleAlpha)
+        color: colors[Math.floor(Math.random() * colors.length)]
       }));
     };
 
-    resize();
-    window.addEventListener("resize", resize);
+    initParticles();
+    window.addEventListener("resize", initParticles);
+
+    // Re-init particles when theme toggles so colors match new mode
+    const observer = new MutationObserver(() => initParticles());
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
     const draw = () => {
+      const isDark = document.documentElement.classList.contains("dark");
+      // Per-draw opacity lookup — lightweight boolean check each frame
+      const particleAlpha = isDark ? 0.8 : 0.5;
+      const lineAlpha = isDark ? 0.4 : 0.15;
+
       const { width: w, height: h } = canvas;
       ctx.clearRect(0, 0, w, h);
       const particles = particlesRef.current;
@@ -185,8 +188,9 @@ function ParticleCanvas() {
           const dy = particles[i].y - particles[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < maxDist) {
-            const opacity = 1 - dist / maxDist;
-            ctx.strokeStyle = toHsla(primaryHsl, opacity * lineAlpha);
+            const opacity = (1 - dist / maxDist) * lineAlpha;
+            ctx.globalAlpha = opacity;
+            ctx.strokeStyle = particles[i].color;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
@@ -198,12 +202,14 @@ function ParticleCanvas() {
 
       // Draw particles as filled circles
       for (const p of particles) {
+        ctx.globalAlpha = particleAlpha;
         ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fill();
       }
 
+      ctx.globalAlpha = 1; // Reset for next frame
       rafRef.current = requestAnimationFrame(draw);
     };
 
@@ -211,14 +217,15 @@ function ParticleCanvas() {
 
     return () => {
       cancelAnimationFrame(rafRef.current);
-      window.removeEventListener("resize", resize);
+      window.removeEventListener("resize", initParticles);
+      observer.disconnect();
     };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full z-0 pointer-events-none opacity-25 dark:opacity-40"
+      className="absolute inset-0 w-full h-full z-0 pointer-events-none"
       aria-hidden="true"
     />
   );
