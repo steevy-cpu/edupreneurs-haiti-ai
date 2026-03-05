@@ -2187,7 +2187,7 @@ const Community = () => {
 
   return (
     <div 
-      className="relative h-dvh bg-background overflow-hidden grid grid-cols-1 md:grid-cols-[320px_1fr] lg:grid-cols-[384px_1fr]"
+      className="relative h-dvh bg-background overflow-hidden grid grid-cols-1 md:grid-cols-[380px_1fr] lg:grid-cols-[420px_1fr]"
       style={{ '--time-accent': accentColor } as React.CSSProperties}
     >
       {/* Visitor Overlay */}
