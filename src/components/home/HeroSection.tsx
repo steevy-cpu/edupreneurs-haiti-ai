@@ -136,9 +136,12 @@ function ParticleCanvas() {
     const style = getComputedStyle(document.documentElement);
     const primaryHsl = style.getPropertyValue("--primary").trim();
     const accentHsl = style.getPropertyValue("--accent").trim();
+    // Higher opacity in dark mode where particles need more visibility
+    const isDark = document.documentElement.classList.contains("dark");
+    const particleAlpha = isDark ? 0.7 : 0.5;
+    const lineAlpha = isDark ? 0.25 : 0.15;
 
-    // Parse HSL values for rgba usage in canvas
-    const toRgba = (hsl: string, alpha: number) => `hsla(${hsl}, ${alpha})`;
+    const toHsla = (hsl: string, alpha: number) => `hsla(${hsl}, ${alpha})`;
 
     const resize = () => {
       canvas.width = canvas.offsetWidth;
@@ -151,8 +154,8 @@ function ParticleCanvas() {
         vy: (Math.random() - 0.5) * 0.4,
         radius: 2 + Math.random() * 2,
         color: Math.random() > 0.5
-          ? toRgba(primaryHsl, 0.5)
-          : toRgba(accentHsl, 0.4)
+          ? toHsla(primaryHsl, particleAlpha)
+          : toHsla(accentHsl, particleAlpha)
       }));
     };
 
@@ -183,7 +186,7 @@ function ParticleCanvas() {
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < maxDist) {
             const opacity = 1 - dist / maxDist;
-            ctx.strokeStyle = toRgba(primaryHsl, opacity * 0.15);
+            ctx.strokeStyle = toHsla(primaryHsl, opacity * lineAlpha);
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
@@ -215,7 +218,7 @@ function ParticleCanvas() {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full z-0 pointer-events-none opacity-25"
+      className="absolute inset-0 w-full h-full z-0 pointer-events-none opacity-25 dark:opacity-40"
       aria-hidden="true"
     />
   );
