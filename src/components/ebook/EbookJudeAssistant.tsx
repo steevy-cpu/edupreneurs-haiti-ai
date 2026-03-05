@@ -123,8 +123,12 @@ export function EbookJudeAssistant({
   }
 
   return (
-    <div className="fixed bottom-0 right-0 z-50 w-full sm:bottom-6 sm:right-4 sm:w-96">
-      <div className="flex h-[70vh] max-h-[500px] flex-col rounded-t-xl border bg-background shadow-2xl sm:rounded-xl">
+    // Offset by mobile nav height + safe area so input isn't hidden behind bottom nav
+    <div
+      className="fixed right-0 z-50 w-full sm:bottom-6 sm:right-4 sm:w-96"
+      style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))' }}
+    >
+      <div className="flex h-[60vh] max-h-[500px] sm:h-[70vh] flex-col rounded-t-xl border bg-background shadow-2xl sm:rounded-xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b bg-primary/5 p-3">
           <div className="flex items-center gap-2">
