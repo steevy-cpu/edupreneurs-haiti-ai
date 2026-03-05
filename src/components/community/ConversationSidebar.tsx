@@ -207,39 +207,42 @@ export const ConversationSidebar = ({
                         })()}
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1.5 shrink-0 ml-1">
-                      {conv.lastMessageTime && (
-                        <span className={`text-[10px] sm:text-xs ${hasUnread ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
-                          {formatTime(conv.lastMessageTime)}
-                        </span>
-                      )}
-                      {hasUnread && (
-                        <span className="flex items-center justify-center min-w-[20px] h-5 sm:min-w-[24px] sm:h-6 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold shadow-md">
-                          {conv.unreadCount! > 99 ? '99+' : conv.unreadCount}
-                        </span>
-                      )}
+                    {/* Right side: date, unread badge, and ⋮ menu in one compact column */}
+                    <div className="flex items-center gap-1 shrink-0 ml-auto">
+                      <div className="flex flex-col items-end gap-1">
+                        {conv.lastMessageTime && (
+                          <span className={`text-[10px] sm:text-xs whitespace-nowrap ${hasUnread ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                            {formatTime(conv.lastMessageTime)}
+                          </span>
+                        )}
+                        {hasUnread && (
+                          <span className="flex items-center justify-center min-w-[20px] h-5 sm:min-w-[24px] sm:h-6 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold shadow-md">
+                            {conv.unreadCount! > 99 ? '99+' : conv.unreadCount}
+                          </span>
+                        )}
+                      </div>
+                      {/* ⋮ menu — always visible on all screen sizes */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteConversation(conv.id);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Supprimer la conversation
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
-                  
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 ml-1">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDeleteConversation(conv.id);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Supprimer la conversation
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 </div>
               );
             })}
