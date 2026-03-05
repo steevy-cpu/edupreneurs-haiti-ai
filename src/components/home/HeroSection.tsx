@@ -1,4 +1,4 @@
-import { memo, useRef, useEffect } from "react";
+import { memo, useRef, useEffect, useCallback, useState } from "react";
 import ericCelebrating from "@/assets/eric-celebrating.png";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -45,8 +45,33 @@ const imageVariants = {
   }
 };
 
+// ─── Effect 2: Letter-by-letter reveal variants ───
+const letterContainerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.025 } }
+};
+
+const letterVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } }
+};
+
+/** Splits text into motion.span per character for staggered reveal */
+function AnimatedLetters({ text, className }: { text: string; className?: string }) {
+  return (
+    <motion.span className={className} variants={letterContainerVariants} initial="hidden" animate="visible">
+      {text.split("").map((char, i) => (
+        <motion.span key={i} variants={letterVariants} style={{ display: "inline-block" }}>
+          {/* Preserve spaces as non-breaking to maintain word spacing */}
+          {char === " " ? "\u00A0" : char}
+        </motion.span>
+      ))}
+    </motion.span>
+  );
+}
+
 /**
- * Animated counter for numeric stat values.
+ * Effect 3: Animated counter with refined exponential easing.
  * Uses framer-motion's useMotionValue for smooth count-up on scroll.
  */
 function AnimatedStatNumber({ value, suffix = "" }: { value: number; suffix?: string }) {
@@ -57,17 +82,148 @@ function AnimatedStatNumber({ value, suffix = "" }: { value: number; suffix?: st
 
   useEffect(() => {
     if (isInView) {
-      // Animate from 0 to target value over 1.5s
-      animate(motionVal, value, { duration: 1.5, ease: "easeOut" });
+      // Exponential ease for snappier acceleration, smooth deceleration
+      animate(motionVal, value, { duration: 2, ease: [0.16, 1, 0.3, 1] });
     }
   }, [isInView, value, motionVal]);
 
   return <motion.span ref={ref}>{rounded}</motion.span>;
 }
 
+// ─── Effect 1: Particle constellation canvas ───
+
+interface Particle {
+  x: number; y: number;
+  vx: number; vy: number;
+  radius: number;
+  color: string;
+}
+
+/** Creates particle array with random positions and velocities */
+function createParticles(w: number, h: number, count: number): Particle[] {
+  const colors = [
+    "rgba(var(--particle-primary), 0.5)",
+    "rgba(var(--particle-accent), 0.4)"
+  ];
+  return Array.from({ length: count }, () => ({
+    x: Math.random() * w,
+    y: Math.random() * h,
+    vx: (Math.random() - 0.5) * 0.4,
+    vy: (Math.random() - 0.5) * 0.4,
+    radius: 2 + Math.random() * 2,
+    color: colors[Math.floor(Math.random() * colors.length)]
+  }));
+}
+
+/**
+ * Effect 1: Particle constellation background.
+ * Renders 40 floating dots with lines between nearby particles.
+ * Uses requestAnimationFrame for smooth 60fps loop.
+ * Only mounts on desktop when shouldAnimate is true.
+ */
+function ParticleCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rafRef = useRef<number>(0);
+  const particlesRef = useRef<Particle[]>([]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Read CSS custom properties for themed particle colors
+    const style = getComputedStyle(document.documentElement);
+    const primaryHsl = style.getPropertyValue("--primary").trim();
+    const accentHsl = style.getPropertyValue("--accent").trim();
+
+    // Parse HSL values for rgba usage in canvas
+    const toRgba = (hsl: string, alpha: number) => `hsla(${hsl}, ${alpha})`;
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+      // Reinit particles on resize to fill new dimensions
+      particlesRef.current = Array.from({ length: 40 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        radius: 2 + Math.random() * 2,
+        color: Math.random() > 0.5
+          ? toRgba(primaryHsl, 0.5)
+          : toRgba(accentHsl, 0.4)
+      }));
+    };
+
+    resize();
+    window.addEventListener("resize", resize);
+
+    const draw = () => {
+      const { width: w, height: h } = canvas;
+      ctx.clearRect(0, 0, w, h);
+      const particles = particlesRef.current;
+
+      // Update positions with edge wrapping
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = w;
+        if (p.x > w) p.x = 0;
+        if (p.y < 0) p.y = h;
+        if (p.y > h) p.y = 0;
+      }
+
+      // Draw constellation lines between nearby particles
+      const maxDist = 100;
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < maxDist) {
+            const opacity = 1 - dist / maxDist;
+            ctx.strokeStyle = toRgba(primaryHsl, opacity * 0.15);
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Draw particles as filled circles
+      for (const p of particles) {
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      rafRef.current = requestAnimationFrame(draw);
+    };
+
+    rafRef.current = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full z-0 pointer-events-none opacity-25"
+      aria-hidden="true"
+    />
+  );
+}
+
 /**
  * Critical above-the-fold hero section.
- * Desktop (lg+): staggered entrance + image float + count-up stats.
+ * Desktop (lg+): particles + letter reveal + staggered entrance + image float + count-up stats.
  * Mobile/tablet: static render, no motion wrappers.
  */
 export const HeroSection = memo(function HeroSection({
@@ -93,11 +249,14 @@ export const HeroSection = memo(function HeroSection({
       id="accueil"
       className="relative pt-2 pb-6 xs:pt-2 xs:pb-8 sm:pt-3 sm:pb-12 md:pt-4 md:pb-16 lg:pt-4 lg:pb-20 px-2 xs:px-3 sm:px-4 bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden"
     >
+      {/* Effect 1: Particle constellation — desktop only */}
+      {shouldAnimate && <ParticleCanvas />}
+
       {/* Decorative background elements - CSS only, no JS */}
       <div className="absolute top-0 right-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl -z-10" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl -z-10" />
 
-      <div className="container mx-auto grid md:grid-cols-2 gap-4 xs:gap-6 sm:gap-8 lg:gap-10 items-center">
+      <div className="container mx-auto grid md:grid-cols-2 gap-4 xs:gap-6 sm:gap-8 lg:gap-10 items-center relative z-10">
         {/* Left Content — staggered entrance on desktop */}
         <MotionDiv
           className="space-y-2 xs:space-y-3 sm:space-y-4 lg:space-y-6 z-10 px-2 xs:px-0"
@@ -118,17 +277,31 @@ export const HeroSection = memo(function HeroSection({
             </Link>
           </MotionDiv>
 
-          {/* Title */}
+          {/* Effect 2: Title — letter-by-letter on desktop, plain on mobile */}
           <MotionDiv {...(shouldAnimate ? { variants: itemVariants } : {})}>
             <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight">
-              <span className="text-foreground">L'Éducation Haïtienne</span>
-              <br />
-              <span className="bg-gradient-to-r from-accent via-primary to-accent bg-clip-text text-transparent">
-                révolutionnée
-              </span>
-              <span className="text-foreground"> par</span>
-              <br />
-              <span className="text-foreground">l'Intelligence Artificielle</span>
+              {shouldAnimate ? (
+                <>
+                  <AnimatedLetters text="L'Éducation Haïtienne" className="text-foreground" />
+                  <br />
+                  <AnimatedLetters text="révolutionnée" className="bg-gradient-to-r from-accent via-primary to-accent bg-clip-text text-transparent" />
+                  <span className="text-foreground"> </span>
+                  <AnimatedLetters text="par" className="text-foreground" />
+                  <br />
+                  <AnimatedLetters text="l'Intelligence Artificielle" className="text-foreground" />
+                </>
+              ) : (
+                <>
+                  <span className="text-foreground">L'Éducation Haïtienne</span>
+                  <br />
+                  <span className="bg-gradient-to-r from-accent via-primary to-accent bg-clip-text text-transparent">
+                    révolutionnée
+                  </span>
+                  <span className="text-foreground"> par</span>
+                  <br />
+                  <span className="text-foreground">l'Intelligence Artificielle</span>
+                </>
+              )}
             </h1>
           </MotionDiv>
 
@@ -224,8 +397,8 @@ export const HeroSection = memo(function HeroSection({
         </MotionDiv>
       </div>
 
-      {/* Stats Row — count-up on desktop, static on mobile */}
-      <div className="container mx-auto mt-6 sm:mt-8 lg:mt-12">
+      {/* Stats Row — Effect 3: refined count-up easing on desktop, static on mobile */}
+      <div className="container mx-auto mt-6 sm:mt-8 lg:mt-12 relative z-10">
         <div className="grid grid-cols-5 gap-2 sm:gap-4 max-w-3xl mx-auto">
           {heroStats.map((stat, idx) => (
             <div
@@ -235,7 +408,7 @@ export const HeroSection = memo(function HeroSection({
               {statsLoaded ? (
                 <>
                   <div className="text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl font-black text-primary">
-                    {/* Numeric stats get animated count-up on desktop */}
+                    {/* Numeric stats get animated count-up with exponential ease on desktop */}
                     {shouldAnimate && stat.isNumeric ? (
                       <><AnimatedStatNumber value={stat.raw} suffix="+" /></>
                     ) : (

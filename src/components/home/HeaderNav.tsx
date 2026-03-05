@@ -1,27 +1,69 @@
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X, Rss, Heart } from "lucide-react";
 import { navLinks } from "@/data/homePageData";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
+import { motion, useMotionValue, animate as fmAnimate } from "framer-motion";
+import { useAnimationConfig } from "@/hooks/useAnimationConfig";
+
+/**
+ * Effect 5: Magnetic button wrapper.
+ * On mousemove, translates button slightly toward cursor.
+ * On mouseleave, springs back to center.
+ * Desktop only — children rendered as-is on mobile.
+ */
+function MagneticButton({ children }: { children: React.ReactNode }) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    // Offset toward cursor at 30% strength
+    const dx = (e.clientX - (rect.left + rect.width / 2)) * 0.3;
+    const dy = (e.clientY - (rect.top + rect.height / 2)) * 0.3;
+    fmAnimate(x, dx, { duration: 0.2, ease: "easeOut" });
+    fmAnimate(y, dy, { duration: 0.2, ease: "easeOut" });
+  }, [x, y]);
+
+  const handleMouseLeave = useCallback(() => {
+    // Spring back to origin
+    fmAnimate(x, 0, { type: "spring", stiffness: 300, damping: 20 });
+    fmAnimate(y, 0, { type: "spring", stiffness: 300, damping: 20 });
+  }, [x, y]);
+
+  return (
+    <motion.div
+      ref={ref}
+      style={{ x, y }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="inline-block"
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 /**
  * Sticky header with navigation.
  * Memoized to prevent re-renders on scroll.
- * 
- * Rules applied:
- * - No data fetching
- * - No scroll event listeners
- * - Only local state for menu toggle
- * - Mobile menu uses transform for GPU acceleration
+ * Effect 5: Magnetic CTA buttons on desktop.
  */
 export const HeaderNav = memo(function HeaderNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { shouldAnimate } = useAnimationConfig();
 
   const closeMobileMenu = useCallback(() => {
     setMobileMenuOpen(false);
   }, []);
+
+  /** Wraps element in MagneticButton on desktop, renders plain on mobile */
+  const MagneticWrap = shouldAnimate ? MagneticButton : ({ children }: { children: React.ReactNode }) => <>{children}</>;
 
   return (
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-lg border-b border-border/50 shadow-sm transition-all duration-300 relative">
@@ -69,26 +111,30 @@ export const HeaderNav = memo(function HeaderNav() {
           </Link>
         </nav>
 
-        {/* Actions */}
+        {/* Actions — Effect 5: magnetic CTA buttons on desktop */}
         <div className="flex items-center gap-1 sm:gap-2 lg:gap-3">
           <ThemeToggle />
-          <Link to="/auth/login" className="hidden lg:inline-block">
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="border-primary text-primary hover:bg-primary hover:text-primary-foreground text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
-            >
-              Se connecter
-            </Button>
-          </Link>
-          <Link to="/auth/signup/step-1" className="hidden lg:inline-block">
-            <Button 
-              size="sm" 
-              className="bg-gradient-to-r from-accent to-yellow-500 hover:from-accent/90 hover:to-yellow-400 text-xs sm:text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-            >
-              Créer un compte
-            </Button>
-          </Link>
+          <MagneticWrap>
+            <Link to="/auth/login" className="hidden lg:inline-block">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="border-primary text-primary hover:bg-primary hover:text-primary-foreground text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
+              >
+                Se connecter
+              </Button>
+            </Link>
+          </MagneticWrap>
+          <MagneticWrap>
+            <Link to="/auth/signup/step-1" className="hidden lg:inline-block">
+              <Button 
+                size="sm" 
+                className="bg-gradient-to-r from-accent to-yellow-500 hover:from-accent/90 hover:to-yellow-400 text-xs sm:text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              >
+                Créer un compte
+              </Button>
+            </Link>
+          </MagneticWrap>
           <button 
             className="lg:hidden p-1.5 sm:p-2"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

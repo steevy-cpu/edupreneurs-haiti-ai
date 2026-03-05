@@ -11,7 +11,19 @@ const contentVariants = {
 };
 
 /**
+ * Effect 8: CSS keyframe for infinite grid pattern scroll.
+ * Injected once via <style> tag — only active when shouldAnimate is true.
+ */
+const gridScrollStyle = `
+@keyframes grid-scroll {
+  from { background-position: 0px 0px; }
+  to { background-position: 40px 40px; }
+}
+`;
+
+/**
  * Final CTA section with animated gradient background on desktop.
+ * Effect 8: Grid pattern slowly scrolls on desktop.
  * Mobile/tablet: static gradient, no motion wrappers.
  */
 export const CTASection = memo(function CTASection() {
@@ -24,40 +36,51 @@ export const CTASection = memo(function CTASection() {
 
   const sectionClasses = "relative py-20 px-4 bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground text-center overflow-hidden";
 
-  /* Desktop: animated gradient background cycling backgroundPosition */
+  /* Desktop: animated gradient background + scrolling grid */
   if (shouldAnimate) {
     return (
-      <motion.section
-        ref={ref}
-        className={sectionClasses}
-        animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-        style={{ backgroundSize: '200% 200%' }}
-      >
-        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: gridPattern }} />
-        <motion.div
-          className="container mx-auto relative z-10"
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
-          variants={contentVariants}
+      <>
+        {/* Inject grid-scroll keyframe once */}
+        <style>{gridScrollStyle}</style>
+        <motion.section
+          ref={ref}
+          className={sectionClasses}
+          animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          style={{ backgroundSize: '200% 200%' }}
         >
-          <h2 className="text-3xl md:text-4xl font-black mb-6">
-            Rejoignez la révolution de l'éducation haïtienne
-          </h2>
-          <p className="text-lg mb-8 opacity-90 max-w-2xl mx-auto font-medium leading-relaxed">
-            Transformez votre façon d'apprendre avec la technologie. Apprentissage personnalisé, assistant IA, et récompenses réelles vous attendent.
-          </p>
-          <Link to="/auth/signup/step-1">
-            <Button
-              size="lg"
-              className="bg-white text-primary hover:bg-white/90 shadow-xl font-bold text-xs sm:text-sm md:text-base px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 hover:scale-[1.02] transition-all duration-300 ease-out"
-            >
-              <span className="hidden sm:inline">Créer un compte gratuitement</span>
-              <span className="sm:hidden">Créer un compte</span>
-            </Button>
-          </Link>
-        </motion.div>
-      </motion.section>
+          {/* Effect 8: Grid pattern with infinite CSS scroll animation */}
+          <div
+            className="absolute inset-0 opacity-20"
+            style={{
+              backgroundImage: gridPattern,
+              animation: "grid-scroll 4s linear infinite"
+            }}
+          />
+          <motion.div
+            className="container mx-auto relative z-10"
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+            variants={contentVariants}
+          >
+            <h2 className="text-3xl md:text-4xl font-black mb-6">
+              Rejoignez la révolution de l'éducation haïtienne
+            </h2>
+            <p className="text-lg mb-8 opacity-90 max-w-2xl mx-auto font-medium leading-relaxed">
+              Transformez votre façon d'apprendre avec la technologie. Apprentissage personnalisé, assistant IA, et récompenses réelles vous attendent.
+            </p>
+            <Link to="/auth/signup/step-1">
+              <Button
+                size="lg"
+                className="bg-white text-primary hover:bg-white/90 shadow-xl font-bold text-xs sm:text-sm md:text-base px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 hover:scale-[1.02] transition-all duration-300 ease-out"
+              >
+                <span className="hidden sm:inline">Créer un compte gratuitement</span>
+                <span className="sm:hidden">Créer un compte</span>
+              </Button>
+            </Link>
+          </motion.div>
+        </motion.section>
+      </>
     );
   }
 

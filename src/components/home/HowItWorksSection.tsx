@@ -24,6 +24,7 @@ const stepVariants = {
 
 /**
  * How It Works step-by-step section.
+ * Effect 7: Connector lines animate scaleX from left when in view.
  * Desktop: sequential card reveals sliding from left.
  * Mobile/tablet: static layout unchanged.
  */
@@ -57,9 +58,19 @@ export const HowItWorksSection = memo(function HowItWorksSection() {
               className="relative group"
               {...(shouldAnimate ? { custom: idx, initial: "hidden", animate: isInView ? "visible" : "hidden", variants: stepVariants } : {})}
             >
-              {/* Connector line */}
+              {/* Effect 7: Connector line — animated scaleX draw on desktop */}
               {idx < 3 && (
-                <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gradient-to-r from-primary/30 to-transparent z-0" />
+                shouldAnimate ? (
+                  <motion.div
+                    className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gradient-to-r from-primary/30 to-transparent z-0"
+                    initial={{ scaleX: 0 }}
+                    animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
+                    transition={{ duration: 0.8, delay: idx * 0.2 + 0.3, ease: "easeInOut" }}
+                    style={{ transformOrigin: "left" }}
+                  />
+                ) : (
+                  <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gradient-to-r from-primary/30 to-transparent z-0" />
+                )
               )}
               <Card className="relative z-10 h-full hover:scale-[1.02] transition-all duration-300 ease-out hover:shadow-xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 overflow-hidden">
                 <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${item.color}`} />

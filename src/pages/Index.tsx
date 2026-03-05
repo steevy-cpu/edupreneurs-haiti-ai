@@ -33,6 +33,7 @@ const HomeChatbot = lazy(() => import("@/components/HomeChatbot").then(module =>
 
 // Hooks
 import { useDeferredStats } from "@/hooks/useDeferredStats";
+import { GradientOrbs } from "@/components/home/GradientOrbs";
 
 /**
  * Homepage orchestrator.
@@ -94,7 +95,10 @@ const Index = () => {
 
       <VisitorBanner />
       
-      <div className="min-h-screen bg-background font-poppins">
+      <div className="min-h-screen bg-background font-poppins relative">
+        {/* Effect 6: Morphing gradient orbs — desktop only, fixed behind all content */}
+        <GradientOrbs />
+
         {/* Critical Shell - renders immediately */}
         <HeaderNav />
         <HeroSection 
