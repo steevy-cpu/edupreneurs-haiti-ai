@@ -682,7 +682,8 @@ const Community = () => {
       const preview = previewMap.get(convId);
       
       // Skip if user soft-deleted and all messages are before visibility threshold
-      if (preview?.visible_from_message_id && !preview?.last_message_id) {
+      // Hide conversation if soft-deleted: no messages left OR last message matches the visibility cutoff
+      if (preview?.visible_from_message_id && (!preview?.last_message_id || preview.last_message_id === preview.visible_from_message_id)) {
         return;
       }
 
