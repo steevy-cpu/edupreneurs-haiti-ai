@@ -23,7 +23,47 @@ const cardVariants = {
 };
 
 /**
+ * Effect 4: SVG wave divider with pathLength draw animation.
+ * Draws in from left to right when section enters viewport.
+ */
+function WaveDivider({ isInView, shouldAnimate }: { isInView: boolean; shouldAnimate: boolean }) {
+  return (
+    <div className="absolute -top-8 left-0 right-0 pointer-events-none overflow-hidden" aria-hidden="true">
+      <svg
+        viewBox="0 0 1200 60"
+        className="w-full h-12 sm:h-16"
+        preserveAspectRatio="none"
+        fill="none"
+      >
+        {shouldAnimate ? (
+          <motion.path
+            d="M0,30 C200,10 400,50 600,30 C800,10 1000,50 1200,30"
+            stroke="hsl(var(--primary))"
+            strokeWidth="2"
+            strokeOpacity="0.3"
+            fill="none"
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={isInView ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+          />
+        ) : (
+          /* Static path on mobile — always visible */
+          <path
+            d="M0,30 C200,10 400,50 600,30 C800,10 1000,50 1200,30"
+            stroke="hsl(var(--primary))"
+            strokeWidth="2"
+            strokeOpacity="0.15"
+            fill="none"
+          />
+        )}
+      </svg>
+    </div>
+  );
+}
+
+/**
  * Features grid section with scroll-triggered staggered cards on desktop.
+ * Effect 4: SVG wave divider draws in at section top.
  * Mobile/tablet: static render with CSS-only hover effects.
  */
 export const FeaturesSection = memo(function FeaturesSection() {
@@ -35,7 +75,10 @@ export const FeaturesSection = memo(function FeaturesSection() {
   const MotionDiv = shouldAnimate ? motion.div : "div" as any;
 
   return (
-    <section className="py-12 sm:py-16 md:py-20 px-4 bg-gradient-to-b from-background to-muted/30">
+    <section className="py-12 sm:py-16 md:py-20 px-4 bg-gradient-to-b from-background to-muted/30 relative">
+      {/* Effect 4: SVG wave divider between hero and features */}
+      <WaveDivider isInView={isInView} shouldAnimate={shouldAnimate} />
+
       <div className="container mx-auto" ref={ref}>
         {/* Section heading — fade up on scroll */}
         <MotionDiv
