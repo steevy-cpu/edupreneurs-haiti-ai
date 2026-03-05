@@ -734,9 +734,11 @@ const Community = () => {
           p => p.conversation_id === convId && p.user_id !== user.id
         )?.user_id;
         
-        if (!otherUserId) return;
-        
-        const otherUserProfile = profiles?.find(p => p.user_id === otherUserId);
+        // Conversations with deleted users (otherUserId undefined) are intentionally
+        // kept visible so the user can still delete them from their sidebar list
+        const otherUserProfile = otherUserId
+          ? profiles?.find(p => p.user_id === otherUserId)
+          : undefined;
         
         const conv: Conversation = {
           id: convId,
@@ -748,21 +750,22 @@ const Community = () => {
           unreadCount,
         };
         
-        // Group by user to merge duplicate conversations
-        const existing = groupedByUser.get(otherUserId);
+        // Group by user to merge duplicate conversations; use convId as key for deleted users
+        const groupKey = otherUserId || convId;
+        const existing = groupedByUser.get(groupKey);
         if (!existing) {
-          groupedByUser.set(otherUserId, conv);
+          groupedByUser.set(groupKey, conv);
         } else {
           const existingTime = new Date(existing.lastMessageTime || existing.created_at).getTime();
           const currentTime = new Date(conv.lastMessageTime || conv.created_at).getTime();
           
           if (currentTime > existingTime) {
-            groupedByUser.set(otherUserId, {
+            groupedByUser.set(groupKey, {
               ...conv,
               unreadCount: (conv.unreadCount || 0) + (existing.unreadCount || 0)
             });
           } else {
-            groupedByUser.set(otherUserId, {
+            groupedByUser.set(groupKey, {
               ...existing,
               unreadCount: (conv.unreadCount || 0) + (existing.unreadCount || 0)
             });
