@@ -63,6 +63,11 @@ export default function EbookPDFViewer({
 
   // Load PDF.js library and document with progress tracking
   useEffect(() => {
+    let aborted = false;
+    const controller = new AbortController();
+    // 30s timeout prevents infinite spinner on stalled connections or broken streams
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
     const loadPdf = async () => {
       setLoadingPhase('downloading');
       setDownloadProgress(0);
@@ -74,55 +79,74 @@ export default function EbookPDFViewer({
         pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
         pdfjsRef.current = pdfjs;
 
-        // Fetch PDF with progress tracking
-        const response = await fetch(fileUrl);
+        // Fetch PDF with abort signal for timeout protection
+        const response = await fetch(fileUrl, { signal: controller.signal });
         if (!response.ok) throw new Error('Failed to fetch PDF');
         
         const contentLength = response.headers.get('content-length');
         const total = contentLength ? parseInt(contentLength, 10) : 0;
         
+        let pdf;
+        
         if (total && response.body) {
-          // Stream with progress
-          const reader = response.body.getReader();
-          const chunks: Uint8Array[] = [];
-          let received = 0;
-          
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+          // Try streaming with progress — wrapped in try/catch because
+          // Samsung Internet < v15 has broken ReadableStream support
+          try {
+            const reader = response.body.getReader();
+            const chunks: Uint8Array[] = [];
+            let received = 0;
             
-            chunks.push(value);
-            received += value.length;
-            setDownloadProgress(Math.round((received / total) * 100));
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              
+              chunks.push(value);
+              received += value.length;
+              setDownloadProgress(Math.round((received / total) * 100));
+            }
+            
+            // Combine chunks into single array
+            const pdfData = new Uint8Array(received);
+            let position = 0;
+            for (const chunk of chunks) {
+              pdfData.set(chunk, position);
+              position += chunk.length;
+            }
+            
+            setLoadingPhase('initializing');
+            const loadingTask = pdfjs.getDocument({ data: pdfData });
+            pdf = await loadingTask.promise;
+          } catch (streamErr) {
+            // ReadableStream failed (Samsung Internet / older browsers) — fall back to direct URL load
+            console.warn('ReadableStream fetch failed, falling back to direct load:', streamErr);
+            setDownloadProgress(50);
+            setLoadingPhase('initializing');
+            const loadingTask = pdfjs.getDocument(fileUrl);
+            pdf = await loadingTask.promise;
           }
-          
-          // Combine chunks into single array
-          const pdfData = new Uint8Array(received);
-          let position = 0;
-          for (const chunk of chunks) {
-            pdfData.set(chunk, position);
-            position += chunk.length;
-          }
-          
-          setLoadingPhase('initializing');
-          const loadingTask = pdfjs.getDocument({ data: pdfData });
-          const pdf = await loadingTask.promise;
-          setPdfDoc(pdf);
-          setTotalPages(pdf.numPages);
         } else {
-          // Fallback: load directly without progress
+          // No content-length or no body — load directly without progress
           setDownloadProgress(50);
           setLoadingPhase('initializing');
           const loadingTask = pdfjs.getDocument(fileUrl);
-          const pdf = await loadingTask.promise;
-          setPdfDoc(pdf);
-          setTotalPages(pdf.numPages);
+          pdf = await loadingTask.promise;
         }
         
-        setLoadingPhase('rendering');
+        if (!aborted) {
+          setPdfDoc(pdf);
+          setTotalPages(pdf.numPages);
+          setLoadingPhase('rendering');
+        }
       } catch (err) {
+        if (aborted) return;
         console.error('Error loading PDF:', err);
-        setError('Impossible de charger le document. Veuillez réessayer.');
+        // Distinguish timeout from other errors for clearer user feedback
+        const isTimeout = err instanceof DOMException && err.name === 'AbortError';
+        setError(
+          isTimeout
+            ? 'Le chargement a pris trop de temps. Vérifiez votre connexion et réessayez.'
+            : 'Impossible de charger le document. Veuillez réessayer.'
+        );
       }
     };
 
@@ -130,8 +154,11 @@ export default function EbookPDFViewer({
       loadPdf();
     }
     
-    // Cleanup cache on unmount
+    // Cleanup: abort pending fetch, clear cache on unmount
     return () => {
+      aborted = true;
+      clearTimeout(timeoutId);
+      controller.abort();
       pageCacheRef.current.clear();
     };
   }, [fileUrl]);
@@ -157,7 +184,11 @@ export default function EbookPDFViewer({
       offscreenCanvas.height = viewport.height * pixelRatio;
       
       const ctx = offscreenCanvas.getContext('2d');
-      if (!ctx) return null;
+      // Surface error if canvas context unavailable (low memory / unsupported browser)
+      if (!ctx) {
+        console.warn('Failed to get 2D context for offscreen canvas');
+        return null;
+      }
       
       ctx.scale(pixelRatio, pixelRatio);
       
@@ -198,7 +229,11 @@ export default function EbookPDFViewer({
     if (cached) {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+      // Show error instead of silent blank screen when canvas context fails
+      if (!ctx) {
+        setError("Votre navigateur ne peut pas afficher ce document. Essayez de le télécharger.");
+        return;
+      }
       
       canvas.width = cached.width;
       canvas.height = cached.height;
@@ -221,7 +256,11 @@ export default function EbookPDFViewer({
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d');
       
-      if (!ctx) return;
+      // Show error instead of silent blank screen when canvas context fails
+      if (!ctx) {
+        setError("Votre navigateur ne peut pas afficher ce document. Essayez de le télécharger.");
+        return;
+      }
 
       const viewport = page.getViewport({ scale });
       const pixelRatio = isSlowConnection ? 1 : Math.min(window.devicePixelRatio || 1, 2);
@@ -336,11 +375,19 @@ export default function EbookPDFViewer({
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-destructive/30 bg-destructive/5 py-12 text-center">
+      <div className="flex flex-col items-center justify-center rounded-xl border border-destructive/30 bg-destructive/5 py-12 text-center px-4">
         <p className="text-destructive">{error}</p>
-        <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
-          Réessayer
-        </Button>
+        <div className="mt-4 flex gap-2">
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            Réessayer
+          </Button>
+          {/* Download fallback — lets users access the PDF even when rendering fails */}
+          <a href={fileUrl} download>
+            <Button variant="secondary">
+              Télécharger le PDF
+            </Button>
+          </a>
+        </div>
       </div>
     );
   }
