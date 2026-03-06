@@ -150,7 +150,7 @@ export interface SignupFormData {
   promoCodeValid?: boolean;
   promoGrantsFreeAccess?: boolean;
   // Payment fields for MonCash signup or gift flow
-  accessMethod?: 'promo' | 'moncash' | 'gift';
+  accessMethod?: 'trial' | 'promo' | 'moncash' | 'gift';
   paymentCompleted?: boolean;
   paymentOrderId?: string;
 }

@@ -128,14 +128,16 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
     const accessMethod = data.accessMethod || 'promo';
     const isMonCash = accessMethod === 'moncash' && data.paymentCompleted;
     const isGift = accessMethod === 'gift';
-    // Free trial: 7-day full access for users with no payment/promo
-    const isFreeTrial = !isMonCash && !isGift && !data.promoGrantsFreeAccess;
+    // Explicit trial tab selection — user chose "Essai gratuit"
+    const isTrial = accessMethod === 'trial';
+    // Fallback free trial: 7-day access for users who somehow bypass all tabs
+    const isFreeTrial = !isMonCash && !isGift && !isTrial && !data.promoGrantsFreeAccess;
     
     const subscriptionStatus = isMonCash
       ? 'active'
       : isGift
         ? 'pending_gift'
-        : isFreeTrial
+        : (isTrial || isFreeTrial)
           ? 'timed_free'
           : 'none';
     
@@ -150,13 +152,13 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
         confirmation_code: confirmationCode.trim(),
         promo_code_used: data.promoCode?.toUpperCase().trim() || null,
         promo_code_used_at: data.promoCode ? new Date().toISOString() : null,
-        // Free trial users get has_free_access=true so SubscriptionGate passes them through
-        has_free_access: data.promoGrantsFreeAccess || isFreeTrial,
+        // Trial + fallback users get has_free_access=true so SubscriptionGate passes
+        has_free_access: data.promoGrantsFreeAccess || isTrial || isFreeTrial,
         subscription_status: subscriptionStatus,
-        // MonCash: 30-day; promo: hardcoded May 8 2026; trial: 7-day
+        // MonCash: 30-day; promo: hardcoded May 8 2026; trial/fallback: 7-day
         subscription_end_date: isMonCash
           ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-          : isFreeTrial
+          : (isTrial || isFreeTrial)
             ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
             : (data.promoGrantsFreeAccess ? '2026-05-08T00:00:00.000Z' : null),
         payment_order_id: isMonCash ? data.paymentOrderId : null,
