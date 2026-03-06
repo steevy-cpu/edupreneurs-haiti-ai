@@ -106,18 +106,22 @@ export default function SignupStep3() {
   const handleBack = () => {
     saveSignupProgress({ 
       promoCode, promoCodeValid, promoGrantsFreeAccess, privacy,
-      accessMethod: activeTab === 'gift' ? 'promo' : activeTab, paymentCompleted, paymentOrderId
+      // Map trial/gift back to promo for persistence — trial needs no saved state
+      accessMethod: (activeTab === 'gift' || activeTab === 'trial') ? 'promo' : activeTab,
+      paymentCompleted, paymentOrderId
     });
     navigate('/auth/signup/step-1');
   };
 
-  // Gift tab: student can create account and wait for gift payment (pending_gift status)
+  // Trial and gift only need privacy; promo needs valid code; moncash needs payment
   const canSubmit = activeTab === 'promo' ? promoCodeValid : activeTab === 'moncash' ? paymentCompleted : true;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const validationData = activeTab === 'promo'
+    const validationData = activeTab === 'trial'
+      ? { privacy, accessMethod: 'trial' as const }
+      : activeTab === 'promo'
       ? { promoCodeValid, privacy, accessMethod: 'promo' as const }
       : activeTab === 'moncash'
       ? { paymentCompleted, privacy, accessMethod: 'moncash' as const }
@@ -134,7 +138,9 @@ export default function SignupStep3() {
     const signupData = getSignupProgress();
     const authFlow = getAuthFlow();
     
-    const accountData = activeTab === 'promo'
+    const accountData = activeTab === 'trial'
+      ? { ...signupData, privacy, accessMethod: 'trial' as const }
+      : activeTab === 'promo'
       ? { ...signupData, promoCode, promoCodeValid, promoGrantsFreeAccess, privacy, accessMethod: 'promo' as const }
       : activeTab === 'moncash'
       ? { ...signupData, privacy, accessMethod: 'moncash' as const, paymentCompleted: true, paymentOrderId }
