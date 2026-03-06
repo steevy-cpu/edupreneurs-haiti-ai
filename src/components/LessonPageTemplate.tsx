@@ -53,6 +53,7 @@ export const LessonPageTemplate = ({
   previousLesson = null,
   nextLesson = null,
   isOfflineMode = false,
+  isDemoMode = false,
 }: LessonPageTemplateProps) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("introduction");
@@ -316,15 +317,18 @@ export const LessonPageTemplate = ({
 
       {/* Footer sections */}
       <div className="container mx-auto px-2 sm:px-4">
-        <div className="mt-6 sm:mt-8">
-          <LessonAIPracticeSection
-            subjectName={subjectName}
-            lessonTitle={lesson.title}
-            lessonObjective={lesson.objectif}
-            lessonSlug={lessonSlug}
-            gradeLevel={gradeLevel}
-          />
-        </div>
+        {/* AI practice chat — hidden in demo mode (requires auth) */}
+        {!isDemoMode && (
+          <div className="mt-6 sm:mt-8">
+            <LessonAIPracticeSection
+              subjectName={subjectName}
+              lessonTitle={lesson.title}
+              lessonObjective={lesson.objectif}
+              lessonSlug={lessonSlug}
+              gradeLevel={gradeLevel}
+            />
+          </div>
+        )}
 
         <div className="mt-6 sm:mt-8">
           <LessonFeedback lessonId={lesson.id} />
