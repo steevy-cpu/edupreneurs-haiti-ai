@@ -165,16 +165,28 @@ export default function SignupStep3() {
         <p className="text-sm text-muted-foreground">Choisissez votre méthode d'accès</p>
       </div>
 
-      {/* Tab Toggle */}
-      <div className="flex rounded-lg border border-input overflow-hidden">
+      {/* Tab Toggle — trial first as default */}
+      <div className="flex gap-1 p-1 rounded-lg border border-input bg-muted/30">
+        <button
+          type="button"
+          onClick={() => setActiveTab('trial')}
+          className={cn(
+            "flex-1 py-2.5 text-xs font-medium transition-colors rounded-md",
+            activeTab === 'trial'
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:bg-muted/50"
+          )}
+        >
+          🎉 Essai gratuit
+        </button>
         <button
           type="button"
           onClick={() => setActiveTab('promo')}
           className={cn(
-            "flex-1 py-2.5 text-xs font-medium transition-colors",
+            "flex-1 py-2.5 text-xs font-medium transition-colors rounded-md",
             activeTab === 'promo'
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:bg-muted/50"
           )}
         >
           🎁 Code Promo
@@ -183,10 +195,10 @@ export default function SignupStep3() {
           type="button"
           onClick={() => setActiveTab('moncash')}
           className={cn(
-            "flex-1 py-2.5 text-xs font-medium transition-colors",
+            "flex-1 py-2.5 text-xs font-medium transition-colors rounded-md",
             activeTab === 'moncash'
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:bg-muted/50"
           )}
         >
           💳 MonCash
@@ -195,15 +207,40 @@ export default function SignupStep3() {
           type="button"
           onClick={() => setActiveTab('gift')}
           className={cn(
-            "flex-1 py-2.5 text-xs font-medium transition-colors",
+            "flex-1 py-2.5 text-xs font-medium transition-colors rounded-md",
             activeTab === 'gift'
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:bg-muted/50"
           )}
         >
           👨‍👩‍👧 Famille
         </button>
       </div>
+
+      {/* Trial Tab — 7-day free access, no card required */}
+      {activeTab === 'trial' && (
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-5 text-center space-y-3 animate-in fade-in duration-200">
+          <div className="text-4xl">🎉</div>
+          <h3 className="font-bold text-lg text-foreground">7 jours d'accès complet gratuit</h3>
+          <ul className="text-sm text-muted-foreground space-y-1.5 text-left max-w-xs mx-auto">
+            <li className="flex items-center gap-2">
+              <span className="text-primary font-bold">✓</span> Tous les cours et leçons
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-primary font-bold">✓</span> Tous les examens officiels
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-primary font-bold">✓</span> Jude, ton tuteur IA personnel
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-primary font-bold">✓</span> Aucune carte bancaire requise
+            </li>
+          </ul>
+          <p className="text-xs text-muted-foreground pt-1">
+            Après 7 jours, choisissez de continuer à 200 HTG/mois
+          </p>
+        </div>
+      )}
 
       {/* Promo Code Tab */}
       {activeTab === 'promo' && (
