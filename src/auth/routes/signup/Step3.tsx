@@ -16,14 +16,14 @@ import { saveSignupProgress, getSignupProgress, getAuthFlow } from "../../store/
 import { cn } from "@/lib/utils";
 import GiftLinkTab from "./GiftLinkTab";
 
-type AccessTab = 'promo' | 'moncash' | 'gift';
+type AccessTab = 'trial' | 'promo' | 'moncash' | 'gift';
 
 export default function SignupStep3() {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Tab state
-  const [activeTab, setActiveTab] = useState<AccessTab>('promo');
+  // Tab state — trial is the default so users see free option first
+  const [activeTab, setActiveTab] = useState<AccessTab>('trial');
   
   // Promo code state
   const [promoCode, setPromoCode] = useState("");
