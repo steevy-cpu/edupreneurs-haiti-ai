@@ -16,7 +16,7 @@ import { isFounder } from '@/lib/founderConstants';
 const SUBSCRIPTION_CUTOFF_DATE = new Date('2026-02-10T00:00:00Z');
 
 export interface SubscriptionResult {
-  /** User has active access (free, founder, legacy, or paid active) */
+  /** User has active access (free, founder, legacy, paid active, or trial) */
   isActive: boolean;
   /** subscription_status === 'expired' */
   isExpired: boolean;
@@ -30,7 +30,11 @@ export interface SubscriptionResult {
   isPendingGift: boolean;
   /** Never had a subscription (new user, status === 'none') */
   isNone: boolean;
-  /** Days remaining on active subscription, null if not applicable */
+  /** User is on the 7-day free trial (status === 'timed_free') */
+  isTrial: boolean;
+  /** Trial period has expired (timed_free but end date passed) */
+  isTrialExpired: boolean;
+  /** Days remaining on active subscription/trial, null if not applicable */
   daysRemaining: number | null;
   /** Raw end date string */
   subscriptionEndDate: string | null;
@@ -90,15 +94,20 @@ export function useSubscription(): SubscriptionResult {
   const isPendingGift = status === 'pending_gift';
   const isNone = !status || status === 'none';
 
+  // Trial: 7-day free access via timed_free status
+  const isTrial = status === 'timed_free';
+  const isTrialActive = isTrial && hasFreeAccess && endDate !== null && endDate.getTime() > Date.now();
+  const isTrialExpired = isTrial && (!endDate || endDate.getTime() <= Date.now());
+
   // Legacy: user created before subscription system with no subscription
   const isLegacy = isNone && !!createdAt && new Date(createdAt) < SUBSCRIPTION_CUTOFF_DATE;
 
-  // Active = any bypass OR paid active subscription
-  const isActive = hasFreeAccess || userIsFounder || isLegacy || isPaidActive;
+  // Active = any bypass OR paid active OR active trial
+  const isActive = hasFreeAccess || userIsFounder || isLegacy || isPaidActive || isTrialActive;
 
-  // Calculate days remaining for active paid subscriptions
+  // Calculate days remaining for active paid subscriptions AND active trials
   let daysRemaining: number | null = null;
-  if (isPaidActive && endDate) {
+  if ((isPaidActive || isTrialActive) && endDate) {
     daysRemaining = Math.max(0, Math.floor((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
   }
 
@@ -110,6 +119,8 @@ export function useSubscription(): SubscriptionResult {
     isLegacy,
     isPendingGift,
     isNone,
+    isTrial,
+    isTrialExpired,
     daysRemaining,
     subscriptionEndDate: endDateStr,
     subscriptionStatus: status,

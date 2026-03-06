@@ -2,7 +2,8 @@
  * Check Subscription Expiry — Scheduled Reminder Emails
  *
  * Runs daily via pg_cron (9AM Haiti time / 14:00 UTC).
- * Sends renewal reminder emails at 7 days, 3 days, and day-of expiry.
+ * Sends renewal reminder emails at 7 days, 3 days, and day-of expiry
+ * for both paid subscribers and free trial users.
  *
  * Auth: INTERNAL_CALL_SECRET header (not JWT). The service-role Supabase
  * client is created internally — the secret never leaves edge function scope.
@@ -56,7 +57,7 @@ function reminderWrapper(headerIcon: string, headerTitle: string, headerSubtitle
 </html>`;
 }
 
-/** CTA button shared across all three templates */
+/** CTA button shared across all templates */
 function ctaButton(label: string): string {
   return `<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding-top:24px;">
   <a href="${RENEWAL_URL}" style="display:inline-block;background:#d97706;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:15px;font-weight:600;">
@@ -106,7 +107,7 @@ function featureList(): string {
 </table>`;
 }
 
-// ─── Three email template builders ─────────────────────────────────────────────
+// ─── Email template builders (paid subscribers) ────────────────────────────────
 
 function build7DayReminder(greeting: string, name: string, expiryDate: string): string {
   return reminderWrapper("📅", "Rappel d'abonnement", "Expire dans 7 jours",
@@ -169,6 +170,50 @@ ${ctaButton("Renouveler maintenant")}`
   );
 }
 
+// ─── Trial-specific email template builders ────────────────────────────────────
+
+function buildTrial2DayReminder(greeting: string, name: string, expiryDate: string): string {
+  return reminderWrapper("⏳", "Plus que 2 jours d'essai", "Votre essai gratuit se termine bientôt",
+    `<p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 16px;">${greeting}</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">
+  Votre essai gratuit de 7 jours se termine le <strong>${expiryDate}</strong> — il ne vous reste que <strong>2 jours</strong>.
+</p>
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;margin-bottom:20px;">
+<tr><td style="padding:16px;text-align:center;">
+  <p style="color:#92400e;font-size:14px;font-weight:600;margin:0;">
+    ✨ Vous avez apprécié Edupreneurs? Continuez l'aventure!
+  </p>
+  <p style="color:#78350f;font-size:13px;margin:8px 0 0;">
+    Abonnez-vous pour garder l'accès à tous vos cours et activités.
+  </p>
+</td></tr>
+</table>
+${featureList()}
+${ctaButton("S'abonner maintenant — 200 HTG/mois")}`
+  );
+}
+
+function buildTrial0DayReminder(greeting: string, name: string): string {
+  return reminderWrapper("🔔", "Essai gratuit terminé", "Votre essai expire aujourd'hui",
+    `<p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 16px;">${greeting}</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">
+  Votre essai gratuit de 7 jours sur Edupreneurs <strong>expire aujourd'hui</strong>.
+</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">
+  Nous espérons que vous avez apprécié la plateforme ! Pour continuer à apprendre, abonnez-vous dès maintenant.
+  <strong>Votre compte et vos données sont conservés</strong> — vous pouvez vous abonner à tout moment.
+</p>
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;margin-bottom:20px;">
+<tr><td style="padding:16px;text-align:center;">
+  <p style="color:#991b1b;font-size:14px;font-weight:600;margin:0;">
+    🔒 L'accès gratuit se termine aujourd'hui
+  </p>
+</td></tr>
+</table>
+${ctaButton("S'abonner — 200 HTG/mois")}`
+  );
+}
+
 // ─── Main handler ──────────────────────────────────────────────────────────────
 
 serve(async (req) => {
@@ -193,8 +238,8 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Query active subscribers who aren't free-access users (max 100 per run)
-    const { data: profiles, error: queryError } = await supabase
+    // ── Query 1: Active paid subscribers approaching expiry ──────────────────
+    const { data: paidProfiles, error: paidError } = await supabase
       .from("profiles")
       .select("user_id, full_name, nickname, subscription_end_date, sent_expiry_reminders")
       .eq("subscription_status", "active")
@@ -202,16 +247,31 @@ serve(async (req) => {
       .not("subscription_end_date", "is", null)
       .limit(100);
 
-    if (queryError) {
-      console.error("[check-subscription-expiry] Query error:", queryError);
+    // ── Query 2: Trial users approaching expiry ─────────────────────────────
+    const { data: trialProfiles, error: trialError } = await supabase
+      .from("profiles")
+      .select("user_id, full_name, nickname, subscription_end_date, sent_expiry_reminders")
+      .eq("subscription_status", "timed_free")
+      .eq("has_free_access", true)
+      .not("subscription_end_date", "is", null)
+      .limit(100);
+
+    if (paidError || trialError) {
+      console.error("[check-subscription-expiry] Query error:", paidError || trialError);
       return new Response(JSON.stringify({ error: "Database query failed" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    if (!profiles || profiles.length === 0) {
-      console.log("[check-subscription-expiry] No active subscribers to check");
+    // Merge both lists with a type tag for email template selection
+    const allProfiles = [
+      ...(paidProfiles || []).map((p: any) => ({ ...p, _type: "paid" as const })),
+      ...(trialProfiles || []).map((p: any) => ({ ...p, _type: "trial" as const })),
+    ];
+
+    if (allProfiles.length === 0) {
+      console.log("[check-subscription-expiry] No subscribers or trial users to check");
       return new Response(JSON.stringify({ sent: 0 }), {
         headers: { "Content-Type": "application/json" },
       });
@@ -222,9 +282,9 @@ serve(async (req) => {
     const todayStr = now.toLocaleDateString("en-CA", { timeZone: "America/Port-au-Prince" });
     const todayDate = new Date(todayStr + "T00:00:00Z");
 
-    let sent7 = 0, sent3 = 0, sent0 = 0, skipped = 0, errors = 0;
+    let sent7 = 0, sent3 = 0, sent0 = 0, sentTrial2 = 0, sentTrial0 = 0, skipped = 0, errors = 0;
 
-    for (const profile of profiles) {
+    for (const profile of allProfiles) {
       try {
         const endDate = new Date(profile.subscription_end_date);
         // Normalize expiry to start of day for accurate day diff
@@ -234,14 +294,25 @@ serve(async (req) => {
         const diffMs = endDateNorm.getTime() - todayDate.getTime();
         const daysRemaining = Math.round(diffMs / (1000 * 60 * 60 * 24));
 
-        // Determine which reminder to send (if any)
+        // Determine which reminder to send based on user type and days remaining
         let reminderKey: string | null = null;
-        if (daysRemaining <= 0) {
-          reminderKey = "0days";
-        } else if (daysRemaining <= 3) {
-          reminderKey = "3days";
-        } else if (daysRemaining <= 7) {
-          reminderKey = "7days";
+
+        if (profile._type === "trial") {
+          // Trial reminders: day 5 (2 days left) and day 7 (0 days left)
+          if (daysRemaining <= 0) {
+            reminderKey = "trial_0days";
+          } else if (daysRemaining <= 2) {
+            reminderKey = "trial_2days";
+          }
+        } else {
+          // Paid subscriber reminders: 7, 3, and 0 days
+          if (daysRemaining <= 0) {
+            reminderKey = "0days";
+          } else if (daysRemaining <= 3) {
+            reminderKey = "3days";
+          } else if (daysRemaining <= 7) {
+            reminderKey = "7days";
+          }
         }
 
         if (!reminderKey) continue; // Not within reminder window
@@ -289,6 +360,14 @@ serve(async (req) => {
             subject = "Votre abonnement expire aujourd'hui 🔔";
             html = build0DayReminder(greeting, displayName);
             break;
+          case "trial_2days":
+            subject = "Plus que 2 jours d'essai gratuit ⏳";
+            html = buildTrial2DayReminder(greeting, displayName, expiryDateStr);
+            break;
+          case "trial_0days":
+            subject = "Votre essai gratuit expire aujourd'hui 🔔";
+            html = buildTrial0DayReminder(greeting, displayName);
+            break;
           default:
             continue;
         }
@@ -306,7 +385,9 @@ serve(async (req) => {
         // Track counts
         if (reminderKey === "7days") sent7++;
         else if (reminderKey === "3days") sent3++;
-        else sent0++;
+        else if (reminderKey === "0days") sent0++;
+        else if (reminderKey === "trial_2days") sentTrial2++;
+        else if (reminderKey === "trial_0days") sentTrial0++;
 
         console.log(`[check-subscription-expiry] Sent ${reminderKey} to ${userEmail}`);
       } catch (userErr) {
@@ -316,11 +397,11 @@ serve(async (req) => {
       }
     }
 
-    const totalSent = sent7 + sent3 + sent0;
-    console.log(`[check-subscription-expiry] Done: ${totalSent} sent (7d:${sent7}, 3d:${sent3}, 0d:${sent0}), ${skipped} skipped, ${errors} errors`);
+    const totalSent = sent7 + sent3 + sent0 + sentTrial2 + sentTrial0;
+    console.log(`[check-subscription-expiry] Done: ${totalSent} sent (7d:${sent7}, 3d:${sent3}, 0d:${sent0}, trial2d:${sentTrial2}, trial0d:${sentTrial0}), ${skipped} skipped, ${errors} errors`);
 
     return new Response(
-      JSON.stringify({ sent: totalSent, sent7, sent3, sent0, skipped, errors }),
+      JSON.stringify({ sent: totalSent, sent7, sent3, sent0, sentTrial2, sentTrial0, skipped, errors }),
       { headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
