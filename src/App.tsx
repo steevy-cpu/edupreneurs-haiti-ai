@@ -93,6 +93,9 @@ const DynamicLessonPage = lazy(() => import("./pages/DynamicLessonPage"));
 const UploadEmailAssets = lazy(() => import("./pages/UploadEmailAssets"));
 const CustomizeAI = lazy(() => import("./pages/CustomizeAI"));
 
+// Demo page — public, no auth
+const DemoLessonPage = lazy(() => import("./pages/DemoLessonPage"));
+
 // Use lazyWithRetry for routes that have been experiencing chunk load failures
 const PassionDiscovery = lazyWithRetry(() => import("./pages/PassionDiscovery"));
 const ChessGame = lazy(() => import("./pages/ChessGame"));
@@ -257,6 +260,13 @@ const App = () => (
                           </Suspense>
                         } />
                         
+                        {/* Demo lesson — public visitor preview, no auth */}
+                        <Route path="/demo/lesson" element={
+                          <Suspense fallback={<GenericPageSkeleton />}>
+                            <DemoLessonPage />
+                          </Suspense>
+                        } />
+
                         {/* Translate - Public, no auth */}
                         <Route path="/translate" element={
                           <Suspense fallback={<GenericPageSkeleton />}>

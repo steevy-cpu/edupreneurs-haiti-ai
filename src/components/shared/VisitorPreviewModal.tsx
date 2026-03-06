@@ -7,7 +7,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Brain, Trophy, Clock, ArrowRight, Sparkles } from 'lucide-react';
+import { BookOpen, Brain, Trophy, Clock, ArrowRight, Sparkles, Eye } from 'lucide-react';
 
 interface VisitorPreviewModalProps {
   open: boolean;
