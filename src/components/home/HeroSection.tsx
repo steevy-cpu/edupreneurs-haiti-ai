@@ -494,7 +494,7 @@ export const HeroSection = memo(function HeroSection({
                 size="lg"
                 className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-xl font-bold transition-all duration-300 ease-out hover:scale-[1.02] text-xs sm:text-sm px-4 sm:px-6 md:px-8"
               >
-                Créer un compte
+                Créer un compte — 7 jours gratuits
               </Button>
             </Link>
             <Link to="/auth/login">
@@ -506,6 +506,17 @@ export const HeroSection = memo(function HeroSection({
                 Se connecter
               </Button>
             </Link>
+          </MotionDiv>
+
+          {/* Trust line — reinforces no-risk trial */}
+          <MotionDiv {...(shouldAnimate ? { variants: itemVariants } : {})}>
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
+              <span className="text-green-500">✓</span> Aucune carte bancaire requise
+              <span className="mx-1 text-muted-foreground/40">•</span>
+              <span className="text-green-500">✓</span> Accès complet immédiat
+              <span className="mx-1 text-muted-foreground/40">•</span>
+              <span className="text-green-500">✓</span> Annulable à tout moment
+            </p>
           </MotionDiv>
 
           {/* Explorer Link */}

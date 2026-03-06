@@ -86,6 +86,8 @@ export default function AuthSidebar() {
         <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground min-h-[2.5rem] md:min-h-[3rem]">
           <TypewriterText 
             phrases={[
+              "7 jours gratuits, sans carte bancaire",
+              "Accès complet dès l'inscription",
               "Prêt à apprendre?",
               "Apprends à ton rythme",
               "Prépare tes examens officiels",
@@ -100,14 +102,15 @@ export default function AuthSidebar() {
         
         <p className="text-sm md:text-base text-muted-foreground animate-fade-in font-medium" 
            style={{ animationDelay: '0.2s' }}>
-          Connectez-vous ou créez un compte pour commencer votre aventure éducative.
+          Créez votre compte gratuitement et accédez à tout le contenu pendant 7 jours — aucune carte bancaire requise.
         </p>
         
         {/* Effect 5 — Badges with staggered spring pop-in */}
         <div className="flex flex-wrap justify-center gap-2 animate-fade-in" 
              style={{ animationDelay: '0.4s' }}>
+          {/* Badge 1 — trial offer */}
           <BadgeSpan
-            className="px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs md:text-sm font-medium"
+            className="px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs md:text-sm font-semibold"
             {...(shouldAnimate ? {
               variants: badgeVariants,
               initial: "hidden",
@@ -115,15 +118,28 @@ export default function AuthSidebar() {
               custom: 0,
             } : {})}
           >
-            7 jours gratuits
+            🎉 7 jours gratuits
           </BadgeSpan>
+          {/* Badge 2 — no credit card required */}
+          <BadgeSpan
+            className="px-3 py-1.5 bg-green-500/10 text-green-600 dark:text-green-400 rounded-full text-xs md:text-sm font-medium"
+            {...(shouldAnimate ? {
+              variants: badgeVariants,
+              initial: "hidden",
+              animate: "visible",
+              custom: 1,
+            } : {})}
+          >
+            ✓ Sans carte bancaire
+          </BadgeSpan>
+          {/* Badge 3 — AI personalization */}
           <BadgeSpan
             className="px-3 py-1.5 bg-accent/20 text-foreground rounded-full text-xs md:text-sm font-medium"
             {...(shouldAnimate ? {
               variants: badgeVariants,
               initial: "hidden",
               animate: "visible",
-              custom: 1,
+              custom: 2,
             } : {})}
           >
             IA personnalisée

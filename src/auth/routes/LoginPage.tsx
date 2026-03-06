@@ -233,6 +233,16 @@ export default function LoginPage() {
         </p>
       </div>
 
+      {/* Free trial banner — communicates 7-day offer before tabs */}
+      <div className="mx-5 mb-2 p-3 rounded-xl bg-primary/5 border border-primary/20 text-center">
+        <p className="text-sm font-semibold text-primary">
+          🎉 Essai gratuit de 7 jours
+        </p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Accès complet à tous les cours, examens et à Jude — sans carte bancaire
+        </p>
+      </div>
+
       {/* Tabs */}
       <div className="auth-tabs p-3 flex justify-center">
         <div className="relative flex bg-muted/50 rounded-xl p-1 w-fit">
@@ -246,6 +256,9 @@ export default function LoginPage() {
             onClick={() => navigate('/auth/signup/step-1')}
           >
             Créer un compte
+            <span className="ml-1.5 text-xs bg-primary/15 text-primary px-1.5 py-0.5 rounded-full font-medium">
+              7j gratuits
+            </span>
           </button>
         </div>
       </div>
