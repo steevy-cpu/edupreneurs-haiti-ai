@@ -38,4 +38,6 @@ export interface LessonPageTemplateProps {
   isFirstLesson?: boolean;
   // Offline mode — serving cached content from localStorage
   isOfflineMode?: boolean;
+  // Demo mode — hides auth-dependent sections (AI practice) for visitor preview
+  isDemoMode?: boolean;
 }
