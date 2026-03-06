@@ -7,7 +7,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Brain, Trophy, Clock, ArrowRight, Sparkles } from 'lucide-react';
+import { BookOpen, Brain, Trophy, Clock, ArrowRight, Sparkles, Eye } from 'lucide-react';
 
 interface VisitorPreviewModalProps {
   open: boolean;
@@ -80,6 +80,18 @@ export function VisitorPreviewModal({ open, onOpenChange, featureName }: Visitor
           >
             Créer mon compte gratuitement
             <ArrowRight className="h-4 w-4" />
+          </Button>
+          {/* Demo lesson CTA — lets visitors preview a real lesson before signing up */}
+          <Button
+            variant="outline"
+            className="w-full border-primary/30 text-primary"
+            onClick={() => {
+              onOpenChange(false);
+              navigate('/demo/lesson');
+            }}
+          >
+            <Eye className="w-4 h-4 mr-2" />
+            Voir une leçon exemple d'abord
           </Button>
           <Button
             variant="ghost"
