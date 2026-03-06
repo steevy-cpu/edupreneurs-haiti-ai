@@ -1,9 +1,13 @@
 /**
  * LoginPage - Route-based login form with persistent lockout
+ * 
+ * Effect 6: Sequential form field fade-in (desktop only)
+ * Gated by shouldAnimate from useAnimationConfig
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,11 +18,28 @@ import { loginWithEmail, handleDeviceTracking, validateLoginCredentials } from "
 import { checkLoginAllowed } from "../services/loginAttempts.service";
 import { hasPendingPasswordReset } from "../store/authFlow.store";
 import { VisitorTypeSelector } from "@/components/visitor";
+import { useAnimationConfig } from "@/hooks/useAnimationConfig";
+
+// Effect 6 — Staggered container orchestrates child delays
+const formVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.4 } }
+};
+
+// Each field slides in from the left with a fade
+const fieldVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: {
+    opacity: 1, x: 0,
+    transition: { duration: 0.4, ease: "easeOut" as const }
+  }
+};
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { shouldAnimate } = useAnimationConfig();
   
   // Form state
   const [email, setEmail] = useState("");
@@ -188,6 +209,10 @@ export default function LoginPage() {
     }
   };
 
+  // Conditional wrapper tags — motion on desktop, plain on mobile/tablet
+  const FormContainer = shouldAnimate ? motion.div : "div";
+  const FieldGroup = shouldAnimate ? motion.div : "div";
+
   return (
     <>
       {/* Visitor Mode Button */}
@@ -225,8 +250,15 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Login Form */}
-      <div className="auth-content p-5">
+      {/* Login Form — Effect 6: staggered field entrance */}
+      <FormContainer
+        className="auth-content p-5"
+        {...(shouldAnimate ? {
+          variants: formVariants,
+          initial: "hidden",
+          animate: "visible",
+        } : {})}
+      >
         {/* Locked Account Warning - Enhanced with direct action */}
         {isLocked && (
           <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-4">
@@ -256,7 +288,11 @@ export default function LoginPage() {
           </div>
         )}
         <form onSubmit={handleLogin} className="space-y-4" name="login-form" autoComplete="on">
-          <div className="space-y-2">
+          {/* Email field */}
+          <FieldGroup
+            className="space-y-2"
+            {...(shouldAnimate ? { variants: fieldVariants } : {})}
+          >
             <Label htmlFor="login-email" className="text-sm text-muted-foreground">
               Adresse e-mail
             </Label>
@@ -275,8 +311,13 @@ export default function LoginPage() {
               className="auth-input"
               disabled={isLocked}
             />
-          </div>
-          <div className="space-y-2">
+          </FieldGroup>
+
+          {/* Password field */}
+          <FieldGroup
+            className="space-y-2"
+            {...(shouldAnimate ? { variants: fieldVariants } : {})}
+          >
             <Label htmlFor="login-password" className="text-sm text-muted-foreground">
               Mot de passe
             </Label>
@@ -302,10 +343,13 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-          </div>
+          </FieldGroup>
           
           {/* Remember Device Checkbox */}
-          <div className="flex items-start gap-3 pt-2">
+          <FieldGroup
+            className="flex items-start gap-3 pt-2"
+            {...(shouldAnimate ? { variants: fieldVariants } : {})}
+          >
             <Checkbox
               id="remember-device"
               checked={rememberDevice}
@@ -325,35 +369,45 @@ export default function LoginPage() {
                 Les connexions futures depuis cet appareil seront plus rapides
               </p>
             </div>
-          </div>
+          </FieldGroup>
           
-          <Button 
-            type="submit" 
-            disabled={isLoading || isLocked} 
-            className="auth-btn-submit w-full mt-4 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
+          {/* Submit button */}
+          <FieldGroup
+            {...(shouldAnimate ? { variants: fieldVariants } : {})}
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Connexion en cours...
-              </>
-            ) : isLocked ? (
-              "Compte bloqué"
-            ) : (
-              "Se connecter"
-            )}
-          </Button>
+            <Button 
+              type="submit" 
+              disabled={isLoading || isLocked} 
+              className="auth-btn-submit w-full mt-4 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Connexion en cours...
+                </>
+              ) : isLocked ? (
+                "Compte bloqué"
+              ) : (
+                "Se connecter"
+              )}
+            </Button>
+          </FieldGroup>
           
-          <button
-            type="button"
-            onClick={() => navigate('/auth/forgot-password', { state: { email } })}
-            className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mt-4 w-full"
+          {/* Forgot password link */}
+          <FieldGroup
+            {...(shouldAnimate ? { variants: fieldVariants } : {})}
           >
-            <KeyRound className="h-3.5 w-3.5" />
-            Mot de passe oublié ?
-          </button>
+            <button
+              type="button"
+              onClick={() => navigate('/auth/forgot-password', { state: { email } })}
+              className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mt-4 w-full"
+            >
+              <KeyRound className="h-3.5 w-3.5" />
+              Mot de passe oublié ?
+            </button>
+          </FieldGroup>
         </form>
-      </div>
+      </FormContainer>
 
       {/* Visitor Type Selector Modal */}
       <VisitorTypeSelector 
