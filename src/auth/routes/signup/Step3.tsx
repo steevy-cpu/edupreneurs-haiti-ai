@@ -165,20 +165,8 @@ export default function SignupStep3() {
         <p className="text-sm text-muted-foreground">Choisissez votre méthode d'accès</p>
       </div>
 
-      {/* Tab Toggle — trial first as default */}
+      {/* Tab Toggle — promo first, then trial, moncash, famille */}
       <div className="flex gap-1 p-1 rounded-lg border border-input bg-muted/30">
-        <button
-          type="button"
-          onClick={() => setActiveTab('trial')}
-          className={cn(
-            "flex-1 py-2.5 text-xs font-medium transition-colors rounded-md",
-            activeTab === 'trial'
-              ? "bg-primary text-primary-foreground shadow-sm"
-              : "text-muted-foreground hover:bg-muted/50"
-          )}
-        >
-          🎉 Essai gratuit
-        </button>
         <button
           type="button"
           onClick={() => setActiveTab('promo')}
@@ -190,6 +178,18 @@ export default function SignupStep3() {
           )}
         >
           🎁 Code Promo
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('trial')}
+          className={cn(
+            "flex-1 py-2.5 text-xs font-medium transition-colors rounded-md",
+            activeTab === 'trial'
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:bg-muted/50"
+          )}
+        >
+          🎉 Essai gratuit
         </button>
         <button
           type="button"
