@@ -5,12 +5,13 @@
  * know what they're missing — gentle nudge toward renewal.
  */
 
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, UserPlus } from 'lucide-react';
+import { Lock, UserPlus, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useVisitor } from '@/contexts/VisitorContext';
+import { VisitorPreviewModal } from '@/components/shared/VisitorPreviewModal';
 
 interface FeatureGateProps {
   /** Human-readable feature name shown in the lock card */
