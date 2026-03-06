@@ -128,8 +128,16 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
     const accessMethod = data.accessMethod || 'promo';
     const isMonCash = accessMethod === 'moncash' && data.paymentCompleted;
     const isGift = accessMethod === 'gift';
+    // Free trial: 7-day full access for users with no payment/promo
+    const isFreeTrial = !isMonCash && !isGift && !data.promoGrantsFreeAccess;
     
-    const subscriptionStatus = isMonCash ? 'active' : isGift ? 'pending_gift' : 'none';
+    const subscriptionStatus = isMonCash
+      ? 'active'
+      : isGift
+        ? 'pending_gift'
+        : isFreeTrial
+          ? 'timed_free'
+          : 'none';
     
     // Minimal profile insert — profile fields (name, grade, etc.) are
     // collected during the post-login OnboardingQuiz, not at signup
@@ -142,12 +150,15 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
         confirmation_code: confirmationCode.trim(),
         promo_code_used: data.promoCode?.toUpperCase().trim() || null,
         promo_code_used_at: data.promoCode ? new Date().toISOString() : null,
-        has_free_access: data.promoGrantsFreeAccess || false,
+        // Free trial users get has_free_access=true so SubscriptionGate passes them through
+        has_free_access: data.promoGrantsFreeAccess || isFreeTrial,
         subscription_status: subscriptionStatus,
-        // MonCash: 30-day rolling; promo free access: hardcoded May 8 2026 (mirrors redeem-promo-code edge fn)
+        // MonCash: 30-day; promo: hardcoded May 8 2026; trial: 7-day
         subscription_end_date: isMonCash
           ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-          : (data.promoGrantsFreeAccess ? '2026-05-08T00:00:00.000Z' : null),
+          : isFreeTrial
+            ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+            : (data.promoGrantsFreeAccess ? '2026-05-08T00:00:00.000Z' : null),
         payment_order_id: isMonCash ? data.paymentOrderId : null,
       } as any);
 

@@ -4,14 +4,11 @@
  * Decision tree (order matters):
  * 1. Not authenticated → pass through (auth guard handles)
  * 2. Loading / error   → skeleton / retry UI
- * 3. isFreeAccess      → pass through
- * 4. isFounder         → pass through
- * 5. isLegacy          → pass through
- * 6. isActive          → pass through
- * 7. isPendingGift     → PendingGiftPrompt
- * 8. isExpired         → ExpiredPrompt (softer tone for returning users)
- * 9. isNone            → RenewalPrompt (new users who never subscribed)
- * 10. fallback         → RenewalPrompt
+ * 3. isActive          → pass through (covers free, founder, legacy, paid, trial)
+ * 4. isTrialExpired    → TrialExpiredPrompt (trial-specific messaging)
+ * 5. isExpired         → pass through (FeatureGates handle per-page locking)
+ * 6. isPendingGift     → PendingGiftPrompt
+ * 7. isNone / fallback → RenewalPrompt
  */
 
 import React, { ReactNode, useState, useEffect } from 'react';
@@ -20,7 +17,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, CalendarX2, Clock, CreditCard, Gift, Loader2, RefreshCw } from 'lucide-react';
+import { AlertTriangle, CalendarX2, Clock, CreditCard, Gift, Loader2, RefreshCw, Sparkles } from 'lucide-react';
 import { StripeRenewalButton } from '@/components/subscription/StripeRenewalButton';
 import { RenewalGiftLink } from '@/components/subscription/RenewalGiftLink';
 import { toast } from 'sonner';
@@ -53,16 +50,19 @@ export function SubscriptionGate({ children }: SubscriptionGateProps) {
   // 2b. Still loading — show skeleton (critical on 3G)
   if (sub.isLoading) return <SubscriptionLoadingSkeleton />;
 
-  // 3–6. All bypass paths: free access, founder, legacy, or active paid
+  // 3. All bypass paths: free access, founder, legacy, active paid, or active trial
   if (sub.isActive) return <>{children}</>;
 
-  // 7. Expired — pass through (individual FeatureGates handle locking per page)
+  // 4. Trial expired — show trial-specific paywall
+  if (sub.isTrialExpired) return <TrialExpiredPrompt />;
+
+  // 5. Expired — pass through (individual FeatureGates handle locking per page)
   if (sub.isExpired) return <>{children}</>;
 
-  // 8. Pending gift — waiting for family member to pay
+  // 6. Pending gift — waiting for family member to pay
   if (sub.isPendingGift) return <PendingGiftPrompt />;
 
-  // 9–10. Never subscribed or fallback — standard prompt for new users
+  // 7. Never subscribed or fallback — standard prompt for new users
   return <RenewalPrompt />;
 }
 
@@ -123,7 +123,7 @@ function SubscriptionErrorState({ onRetry }: { onRetry: () => void }) {
 }
 
 /**
- * MonCash/Stripe payment tabs — shared between RenewalPrompt and ExpiredPrompt.
+ * MonCash/Stripe payment tabs — shared between RenewalPrompt, ExpiredPrompt, and TrialExpiredPrompt.
  */
 function PaymentActions() {
   const [paymentMethod, setPaymentMethod] = useState<"moncash" | "stripe">("moncash");
@@ -194,6 +194,36 @@ function PaymentActions() {
 
       {/* Shareable renewal link for family/gift payments */}
       <RenewalGiftLink />
+    </div>
+  );
+}
+
+/**
+ * TrialExpiredPrompt — shown when the 7-day free trial has ended.
+ * Acknowledges the trial experience and encourages subscription.
+ */
+function TrialExpiredPrompt() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh] p-6">
+      <div className="max-w-md w-full text-center space-y-6 animate-in fade-in duration-500">
+        <div className="mx-auto w-16 h-16 rounded-full bg-accent flex items-center justify-center">
+          <Sparkles className="h-8 w-8 text-accent-foreground" />
+        </div>
+
+        <div>
+          <h2 className="text-2xl font-bold">Votre essai gratuit de 7 jours est terminé</h2>
+          <p className="text-muted-foreground mt-2">
+            Nous espérons que vous avez apprécié Edupreneurs ! Abonnez-vous pour continuer à apprendre avec tous vos cours, quiz et activités.
+          </p>
+        </div>
+
+        <div className="p-4 rounded-lg border-2 border-primary bg-primary/5">
+          <div className="text-3xl font-bold text-primary">200 HTG</div>
+          <div className="text-sm text-muted-foreground">/ 30 jours</div>
+        </div>
+
+        <PaymentActions />
+      </div>
     </div>
   );
 }
