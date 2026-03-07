@@ -3047,6 +3047,7 @@ export type Database = {
           referred_by: string | null
           school: string | null
           sent_expiry_reminders: Json | null
+          sent_jude_motivations: Json | null
           sent_onboarding_emails: Json | null
           streak_freeze_count: number
           subscription_end_date: string | null
@@ -3094,6 +3095,7 @@ export type Database = {
           referred_by?: string | null
           school?: string | null
           sent_expiry_reminders?: Json | null
+          sent_jude_motivations?: Json | null
           sent_onboarding_emails?: Json | null
           streak_freeze_count?: number
           subscription_end_date?: string | null
@@ -3141,6 +3143,7 @@ export type Database = {
           referred_by?: string | null
           school?: string | null
           sent_expiry_reminders?: Json | null
+          sent_jude_motivations?: Json | null
           sent_onboarding_emails?: Json | null
           streak_freeze_count?: number
           subscription_end_date?: string | null

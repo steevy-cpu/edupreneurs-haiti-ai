@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS sent_jude_motivations JSONB DEFAULT '{}';

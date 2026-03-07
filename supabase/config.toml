@@ -233,3 +233,6 @@ verify_jwt = false
 
 [functions.generate-studygram-visual]
 verify_jwt = false
+
+[functions.check-jude-motivations]
+verify_jwt = false
