@@ -357,18 +357,18 @@ const PartnerFormDialog = ({ partner, allCodes, onClose }: PartnerFormDialogProp
 
       /* If inline new code requested, create it first */
       if (isCreatingNewCode) {
-        const codePayload: Record<string, unknown> = {
+        const codeInsert = {
           code: form.new_code.toUpperCase().trim(),
           gold_reward: form.new_gold_reward,
           is_active: true,
           grants_free_access: false,
           current_uses: 0,
+          max_uses: form.new_max_uses ? parseInt(form.new_max_uses) : null,
         };
-        if (form.new_max_uses) codePayload.max_uses = parseInt(form.new_max_uses);
 
-        const { data: newCode, error: codeErr } = await (supabase
+        const { data: newCode, error: codeErr } = await supabase
           .from("promo_codes")
-          .insert(codePayload)
+          .insert(codeInsert)
           .select("id")
           .single();
         if (codeErr) throw codeErr;
