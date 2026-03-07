@@ -20,6 +20,7 @@ import {
   Search, 
   Palette, 
   Lock,
+  BarChart3,
   type LucideIcon
 } from "lucide-react";
 
@@ -107,6 +108,13 @@ export const SIDEBAR_NAVIGATION: NavSection[] = [
         to: '/control-center', 
         icon: Shield, 
         label: 'Centre de Contrôle', 
+        founderOnly: true, 
+        variant: 'founder' 
+      },
+      { 
+        to: '/analytics', 
+        icon: BarChart3, 
+        label: 'Analytiques', 
         founderOnly: true, 
         variant: 'founder' 
       },
