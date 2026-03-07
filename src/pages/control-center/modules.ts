@@ -134,9 +134,16 @@ export const CONTROL_CENTER_MODULES: ControlCenterModule[] = [
   },
   {
     id: "promo",
-    label: "Codes Promo",
+    label: "Partenaires & Codes",
     shortLabel: "Promo",
     icon: Gift,
     component: lazy(() => import("./modules/PromoCodesModule")),
+    badge: async () => {
+      // Show count of partners as module badge
+      const { count } = await supabase
+        .from("promo_partners")
+        .select("id", { count: "exact", head: true });
+      return count || 0;
+    },
   },
 ];

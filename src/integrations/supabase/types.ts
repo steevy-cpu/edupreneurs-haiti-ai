@@ -3213,6 +3213,47 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_partners: {
+        Row: {
+          contact_email: string | null
+          created_at: string | null
+          id: string
+          name: string
+          notes: string | null
+          organization_type: string
+          promo_code_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          contact_email?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          organization_type?: string
+          promo_code_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          contact_email?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          organization_type?: string
+          promo_code_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_partners_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_subscriptions: {
         Row: {
           browser: string | null
