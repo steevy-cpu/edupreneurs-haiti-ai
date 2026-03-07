@@ -108,6 +108,7 @@ const QuizBattleLobby = lazy(() => import("./pages/QuizBattleLobby"));
 const QuizBattleMultiplayer = lazy(() => import("./pages/QuizBattleMultiplayer"));
 const QuizBattleLeaderboard = lazy(() => import("./pages/QuizBattleLeaderboard"));
 const ControlCenter = lazy(() => import("./pages/ControlCenter"));
+const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 const ContentEditor = lazy(() => import("./pages/ContentEditor"));
 const DataMigration = lazy(() => import("./pages/DataMigration"));
 const AIGenerationAnalytics = lazy(() => import("./pages/AIGenerationAnalytics"));
@@ -487,6 +488,11 @@ const App = () => (
                           <Route path="/control-center" element={
                             <Suspense fallback={<GenericPageSkeleton />}>
                               <ControlCenter />
+                            </Suspense>
+                          } />
+                          <Route path="/analytics" element={
+                            <Suspense fallback={<GenericPageSkeleton />}>
+                              <AnalyticsPage />
                             </Suspense>
                           } />
                           <Route path="/content-editor" element={
