@@ -353,7 +353,8 @@ const PartnerFormDialog = ({ partner, allCodes, onClose }: PartnerFormDialogProp
 
   const mutation = useMutation({
     mutationFn: async () => {
-      let codeId: string | null = form.promo_code_id || null;
+      // "none" or empty → null; "new" handled below; otherwise UUID
+      let codeId: string | null = (form.promo_code_id && form.promo_code_id !== "none") ? form.promo_code_id : null;
 
       /* If inline new code requested, create it first */
       if (isCreatingNewCode) {
