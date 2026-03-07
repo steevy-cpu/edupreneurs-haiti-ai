@@ -366,7 +366,7 @@ const PartnerFormDialog = ({ partner, allCodes, onClose }: PartnerFormDialogProp
         };
         if (form.new_max_uses) codePayload.max_uses = parseInt(form.new_max_uses);
 
-        const { data: newCode, error: codeErr } = await supabase
+        const { data: newCode, error: codeErr } = await (supabase
           .from("promo_codes")
           .insert(codePayload)
           .select("id")
