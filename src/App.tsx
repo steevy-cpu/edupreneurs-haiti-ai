@@ -90,7 +90,6 @@ const DynamicCoursePage = lazy(() => import("./pages/DynamicCoursePage"));
 const DynamicLessonPage = lazy(() => import("./pages/DynamicLessonPage"));
 // NotificationSettings removed — consolidated into Settings notifications tab
 
-const UploadEmailAssets = lazy(() => import("./pages/UploadEmailAssets"));
 const CustomizeAI = lazy(() => import("./pages/CustomizeAI"));
 
 // Demo page — public, no auth
