@@ -145,7 +145,6 @@ export function usePresenceSubscription(
     channelRef.current = channel;
 
     return () => {
-      console.log(`🧹 Cleaning up presence: ${channelName}`);
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;

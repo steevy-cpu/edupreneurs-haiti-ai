@@ -182,18 +182,6 @@ const ContentEditor = () => {
 
       if (error) throw error;
       
-      console.log('✅ Lesson refreshed successfully:', {
-        id: data.id,
-        title: data.title,
-        hasQuiz: !!data.quiz_final,
-        hasYouTube: !!data.youtube_url,
-        hasActivities: !!data.activites_interactives,
-        hasObjectif: !!data.objectif,
-        hasIntroduction: !!data.introduction,
-        hasContenu: !!data.contenu,
-        hasExemples: !!data.exemples_exercices
-      });
-      
       setSelectedLesson(data);
       setRefreshKey(prev => prev + 1); // Force re-render
     } catch (error) {

@@ -10,9 +10,6 @@ interface LessonPreviewProps {
 }
 
 export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
-  // Debug: Log lesson data to check what fields are available
-  console.log('Lesson data in preview:', lesson);
-  
   if (!lesson) {
     return (
       <Card className="h-full">

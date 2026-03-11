@@ -42,9 +42,7 @@ export const useContentEditorRealtime = (userId: string | undefined, lessonId?: 
     table: 'content_change_log',
     event: 'INSERT',
     enabled: true,
-    callback: (payload) => {
-      console.log('📋 New change logged:', payload);
-    },
+    callback: () => {},
   });
 
   // Track editor presence with reactive state updates (no polling!)
