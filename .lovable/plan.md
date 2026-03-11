@@ -1,26 +1,46 @@
 
 
-## Plan: Grant Admin Access to bekerbeauchard@gmail.com
+## Fix: Jude Reading Assistant Input Blocked on Mobile
 
-**User ID** (from auth logs): `12c484aa-e752-4253-8e01-48a3a12185e4`
+**Problem:** On mobile/tablet, the chat panel sits at `bottom-0` (line 126) but the bottom navigation bar (`ShellMobileBottomNav`) is also fixed at `bottom-0` with `h-14` (56px) + safe-area padding. The input area is hidden behind the nav bar, making it impossible to type.
 
-### 1. Content Editor Admin
-Insert a row into `content_editor_roles` with role `admin` for this user. Straightforward data operation.
+**File to modify:** `src/components/ebook/EbookJudeAssistant.tsx` only
 
-### 2. Control Center Admin
-The Control Center currently only allows access to founders (hardcoded UUIDs in `founderConstants.ts`). This user is not a founder. Two options:
+### Changes
 
-**Option A — Quick fix**: Add this user's UUID to `FOUNDER_USER_IDS` in `founderConstants.ts`. Downside: they'll be treated as a founder everywhere (hidden from leaderboards, special profile display, bypass grade restrictions, etc.).
+1. **Add bottom padding on mobile** to the outer container so the panel clears the bottom nav:
 
-**Option B — Proper admin system** (recommended): Modify `useFounderCheck` and `ControlCenter.tsx` to also grant access to users who have `admin` role in `content_editor_roles`. This way, any content editor admin automatically gets Control Center access without being flagged as a founder.
+   Line 126 — change:
+   ```tsx
+   <div className="fixed bottom-0 right-0 z-50 w-full sm:bottom-6 sm:right-4 sm:w-96">
+   ```
+   to:
+   ```tsx
+   <div className="fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] right-0 z-50 w-full sm:bottom-6 sm:right-4 sm:w-96">
+   ```
+   `3.5rem` = 56px = the nav bar height. `env(safe-area-inset-bottom)` accounts for notch devices. On `sm+` breakpoint, the existing `bottom-6` takes over (desktop/tablet landscape — no bottom nav).
 
-The change would be small:
-- **`useFounderCheck.ts`**: After checking `isFounder()`, also query `content_editor_roles` for an `admin` role. Return `true` if either condition matches.
-- No database changes needed — reuses the existing `content_editor_roles` table.
-- Founder-specific behaviors (leaderboard exclusion, etc.) remain separate and unaffected.
+2. **Reduce max height on mobile** to prevent the panel from overflowing above the viewport now that it sits higher:
 
-### Technical steps
-1. Insert `content_editor_roles` row: user_id = `12c484aa-...`, role = `admin`
-2. Update `useFounderCheck.ts` to also check `content_editor_roles` for admin role
-3. Rename the hook's return value from `isFounder` to something like `isFounder || isAdmin` internally, keeping the same API shape
+   Line 127 — change:
+   ```tsx
+   <div className="flex h-[70vh] max-h-[500px] flex-col ...">
+   ```
+   to:
+   ```tsx
+   <div className="flex h-[60vh] max-h-[500px] sm:h-[70vh] flex-col ...">
+   ```
+   Uses 60vh on mobile (where the bottom nav eats space) and 70vh on larger screens.
+
+3. **Also fix the closed-state FAB** (line 110) which currently uses `bottom-24` on mobile — verify this still clears the raised panel position. Current value `bottom-24` (96px) is fine since the nav is ~56px.
+
+### Safety
+
+| Check | Result |
+|---|---|
+| Other files touched | No |
+| Desktop layout | Unchanged — `sm:bottom-6` overrides |
+| Keyboard handling | Bottom nav already hides via `useKeyboardOpen`, so no conflict |
+| Safe area | Respected via `env(safe-area-inset-bottom)` |
+| 3G impact | None — CSS only |
 
