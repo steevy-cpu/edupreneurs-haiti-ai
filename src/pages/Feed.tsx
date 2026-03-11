@@ -802,8 +802,8 @@ const Feed = () => {
       {/* Report Dialog */}
       {postToReport && (
         <ReportDialog
-          open={reportDialogOpen}
-          onOpenChange={setReportDialogOpen}
+          isOpen={reportDialogOpen}
+          onClose={() => setReportDialogOpen(false)}
           postId={postToReport.id}
           postOwnerId={postToReport.user_id}
         />
