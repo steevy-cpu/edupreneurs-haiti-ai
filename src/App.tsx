@@ -109,10 +109,7 @@ const QuizBattleLeaderboard = lazy(() => import("./pages/QuizBattleLeaderboard")
 const ControlCenter = lazy(() => import("./pages/ControlCenter"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 const ContentEditor = lazy(() => import("./pages/ContentEditor"));
-const DataMigration = lazy(() => import("./pages/DataMigration"));
 const AIGenerationAnalytics = lazy(() => import("./pages/AIGenerationAnalytics"));
-const MigratePDFs = lazy(() => import("./pages/MigratePDFs"));
-const PaymentDemo = lazy(() => import("./pages/PaymentDemo"));
 const PaymentCallback = lazy(() => import("./pages/PaymentCallback"));
 const BaccExamsHub = lazy(() => import("./pages/BaccExamsHub"));
 const Library = lazy(() => import("./pages/Library"));
