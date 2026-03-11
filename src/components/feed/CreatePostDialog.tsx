@@ -410,7 +410,6 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
 
     // Process mentions via backend function
     try {
-      console.log('[Mentions] Calling notify-mentions backend function...');
       const { data: mentionResult, error: mentionError } = await supabase.functions.invoke('notify-mentions', {
         body: {
           postId: newPost.id,
