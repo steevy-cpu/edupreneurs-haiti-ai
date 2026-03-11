@@ -203,7 +203,7 @@ export default function PaymentCallback() {
               </p>
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => navigate('/payment-demo')}>
+              <Button variant="outline" onClick={() => navigate('/dashboard')}>
                 Réessayer
               </Button>
               <Button onClick={() => navigate('/dashboard')}>

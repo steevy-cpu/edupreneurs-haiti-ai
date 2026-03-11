@@ -85,12 +85,11 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const CookieSettings = lazy(() => import("./pages/CookieSettings"));
 const Terms = lazy(() => import("./pages/Terms"));
-const DevPush = lazy(() => import("./pages/DevPush"));
+
 const DynamicCoursePage = lazy(() => import("./pages/DynamicCoursePage"));
 const DynamicLessonPage = lazy(() => import("./pages/DynamicLessonPage"));
 // NotificationSettings removed — consolidated into Settings notifications tab
 
-const UploadEmailAssets = lazy(() => import("./pages/UploadEmailAssets"));
 const CustomizeAI = lazy(() => import("./pages/CustomizeAI"));
 
 // Demo page — public, no auth
@@ -110,10 +109,7 @@ const QuizBattleLeaderboard = lazy(() => import("./pages/QuizBattleLeaderboard")
 const ControlCenter = lazy(() => import("./pages/ControlCenter"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 const ContentEditor = lazy(() => import("./pages/ContentEditor"));
-const DataMigration = lazy(() => import("./pages/DataMigration"));
 const AIGenerationAnalytics = lazy(() => import("./pages/AIGenerationAnalytics"));
-const MigratePDFs = lazy(() => import("./pages/MigratePDFs"));
-const PaymentDemo = lazy(() => import("./pages/PaymentDemo"));
 const PaymentCallback = lazy(() => import("./pages/PaymentCallback"));
 const BaccExamsHub = lazy(() => import("./pages/BaccExamsHub"));
 const Library = lazy(() => import("./pages/Library"));
@@ -505,35 +501,10 @@ const App = () => (
                               <AIGenerationAnalytics />
                             </Suspense>
                           } />
-                          <Route path="/data-migration" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <DataMigration />
-                            </Suspense>
-                          } />
-                          <Route path="/migrate-pdfs" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <MigratePDFs />
-                            </Suspense>
-                          } />
                           {/* Dev & Demo */}
                           <Route path="/onboarding" element={
                             <Suspense fallback={<GenericPageSkeleton />}>
                               <Onboarding />
-                            </Suspense>
-                          } />
-                          <Route path="/dev/push" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <DevPush />
-                            </Suspense>
-                          } />
-                          <Route path="/upload-email-assets" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <UploadEmailAssets />
-                            </Suspense>
-                          } />
-                          <Route path="/payment-demo" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <PaymentDemo />
                             </Suspense>
                           } />
                           <Route path="/payment/callback" element={

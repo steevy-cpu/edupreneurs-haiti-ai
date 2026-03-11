@@ -135,7 +135,6 @@ export const UI_VISIBILITY: Record<string, VisibilityConfig> = {
   subscriptionBanner: {
     hideOn: [
       '/onboarding',
-      '/payment-demo',
     ],
     hideOnPatterns: [
       /^\/auth/,
