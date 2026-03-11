@@ -119,7 +119,6 @@ export function usePresenceSubscription(
 
     channel
       .on('presence', { event: 'sync' }, () => {
-        console.log(`🔄 Presence synced: ${channelName}`);
         // Update reactive state - triggers re-render only when state changes
         setPresenceState({ ...channel.presenceState() });
       })
