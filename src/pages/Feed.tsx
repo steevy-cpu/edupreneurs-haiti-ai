@@ -805,7 +805,7 @@ const Feed = () => {
           isOpen={reportDialogOpen}
           onClose={() => setReportDialogOpen(false)}
           postId={postToReport.id}
-          postOwnerId={postToReport.user_id}
+          reportedUserId={postToReport.user_id}
         />
       )}
 
