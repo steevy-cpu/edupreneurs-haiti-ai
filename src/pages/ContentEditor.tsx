@@ -174,7 +174,6 @@ const ContentEditor = () => {
     }
     
     try {
-      console.log('🔄 Refreshing lesson data for:', selectedLesson.id);
       const { data, error } = await supabase
         .from('lessons')
         .select('*, subjects(id, name)')
