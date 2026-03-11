@@ -109,8 +109,6 @@ export function usePresenceSubscription(
       return;
     }
 
-    console.log(`👥 Setting up presence for: ${channelName}`);
-
     const channel = supabase.channel(channelName, {
       config: {
         presence: {
