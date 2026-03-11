@@ -631,6 +631,7 @@ export const useFeed = () => {
     isRefreshing,
     refreshFeed,
     displayPosts,
+    pullDistance,
     // Network awareness
     isSlowConnection,
     imageQuality,

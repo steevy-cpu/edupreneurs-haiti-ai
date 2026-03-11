@@ -814,7 +814,7 @@ const Feed = () => {
         <EditPostDialog
           post={editingPost}
           isOpen={!!editingPost}
-          onClose={() => setEditingPost(null)}
+          onOpenChange={(open) => !open && setEditingPost(null)}
           onPostUpdated={refreshFeed}
         />
       )}
