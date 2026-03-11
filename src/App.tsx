@@ -501,16 +501,6 @@ const App = () => (
                               <AIGenerationAnalytics />
                             </Suspense>
                           } />
-                          <Route path="/data-migration" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <DataMigration />
-                            </Suspense>
-                          } />
-                          <Route path="/migrate-pdfs" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <MigratePDFs />
-                            </Suspense>
-                          } />
                           {/* Dev & Demo */}
                           <Route path="/onboarding" element={
                             <Suspense fallback={<GenericPageSkeleton />}>
