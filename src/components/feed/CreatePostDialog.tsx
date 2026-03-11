@@ -100,7 +100,6 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
       }
       
       if (profilesData) {
-        console.log('[Mentions] Loaded', profilesData.length, 'followers');
         setFollowers(profilesData as FollowerProfile[]);
       }
     };
