@@ -22,8 +22,6 @@ export const useContentEditorRealtime = (userId: string | undefined, lessonId?: 
     filter: lessonId ? `id=eq.${lessonId}` : undefined,
     enabled: !!lessonId,
     callback: (payload) => {
-      console.log('📝 Lesson updated by another editor:', payload);
-      
       // Check if the update was made by someone else
       const updatedBy = payload.new?.created_by;
       if (updatedBy && updatedBy !== userId) {
@@ -44,9 +42,7 @@ export const useContentEditorRealtime = (userId: string | undefined, lessonId?: 
     table: 'content_change_log',
     event: 'INSERT',
     enabled: true,
-    callback: (payload) => {
-      console.log('📋 New change logged:', payload);
-    },
+    callback: () => {},
   });
 
   // Track editor presence with reactive state updates (no polling!)

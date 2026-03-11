@@ -48,8 +48,6 @@ export function useRealtimeSubscription({
       ? `${table}-${event}-${filter}`
       : `${table}-${event}`;
 
-    console.log(`📡 Setting up realtime subscription: ${channelName}`);
-
     const channel = supabase
       .channel(channelName)
       .on(
@@ -61,19 +59,15 @@ export function useRealtimeSubscription({
           filter,
         } as any,
         (payload: any) => {
-          console.log(`📨 Realtime event on ${table}:`, payload.eventType);
           callbackRef.current(payload);
         }
       )
-      .subscribe((status) => {
-        console.log(`📡 Subscription status for ${channelName}:`, status);
-      });
+      .subscribe();
 
     channelRef.current = channel;
 
     // Cleanup function
     return () => {
-      console.log(`🧹 Cleaning up subscription: ${channelName}`);
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
@@ -115,8 +109,6 @@ export function usePresenceSubscription(
       return;
     }
 
-    console.log(`👥 Setting up presence for: ${channelName}`);
-
     const channel = supabase.channel(channelName, {
       config: {
         presence: {
@@ -127,17 +119,14 @@ export function usePresenceSubscription(
 
     channel
       .on('presence', { event: 'sync' }, () => {
-        console.log(`🔄 Presence synced: ${channelName}`);
         // Update reactive state - triggers re-render only when state changes
         setPresenceState({ ...channel.presenceState() });
       })
       .on('presence', { event: 'join' }, ({ key }: any) => {
-        console.log(`👋 User joined: ${key}`);
         // Update state on join
         setPresenceState({ ...channel.presenceState() });
       })
       .on('presence', { event: 'leave' }, ({ key }: any) => {
-        console.log(`👋 User left: ${key}`);
         // Update state on leave
         setPresenceState({ ...channel.presenceState() });
       })
@@ -156,7 +145,6 @@ export function usePresenceSubscription(
     channelRef.current = channel;
 
     return () => {
-      console.log(`🧹 Cleaning up presence: ${channelName}`);
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;

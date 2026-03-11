@@ -100,7 +100,6 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
       }
       
       if (profilesData) {
-        console.log('[Mentions] Loaded', profilesData.length, 'followers');
         setFollowers(profilesData as FollowerProfile[]);
       }
     };
@@ -411,7 +410,6 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
 
     // Process mentions via backend function
     try {
-      console.log('[Mentions] Calling notify-mentions backend function...');
       const { data: mentionResult, error: mentionError } = await supabase.functions.invoke('notify-mentions', {
         body: {
           postId: newPost.id,
@@ -422,8 +420,6 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
 
       if (mentionError) {
         console.error('[Mentions] Backend function error:', mentionError);
-      } else {
-        console.log('[Mentions] Backend function result:', mentionResult);
       }
     } catch (mentionError) {
       console.error('[Mentions] Error calling backend function:', mentionError);
