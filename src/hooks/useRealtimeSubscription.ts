@@ -123,7 +123,6 @@ export function usePresenceSubscription(
         setPresenceState({ ...channel.presenceState() });
       })
       .on('presence', { event: 'join' }, ({ key }: any) => {
-        console.log(`👋 User joined: ${key}`);
         // Update state on join
         setPresenceState({ ...channel.presenceState() });
       })
