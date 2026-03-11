@@ -48,8 +48,6 @@ export function useRealtimeSubscription({
       ? `${table}-${event}-${filter}`
       : `${table}-${event}`;
 
-    console.log(`📡 Setting up realtime subscription: ${channelName}`);
-
     const channel = supabase
       .channel(channelName)
       .on(
