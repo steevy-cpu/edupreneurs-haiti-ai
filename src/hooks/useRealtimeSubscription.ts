@@ -59,7 +59,6 @@ export function useRealtimeSubscription({
           filter,
         } as any,
         (payload: any) => {
-          console.log(`📨 Realtime event on ${table}:`, payload.eventType);
           callbackRef.current(payload);
         }
       )
