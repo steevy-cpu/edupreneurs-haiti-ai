@@ -127,7 +127,6 @@ export function usePresenceSubscription(
         setPresenceState({ ...channel.presenceState() });
       })
       .on('presence', { event: 'leave' }, ({ key }: any) => {
-        console.log(`👋 User left: ${key}`);
         // Update state on leave
         setPresenceState({ ...channel.presenceState() });
       })
