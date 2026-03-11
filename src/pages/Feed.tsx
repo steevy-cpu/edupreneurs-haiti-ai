@@ -1,13 +1,10 @@
-import { useState, useEffect, useRef, useCallback, type FocusEvent } from "react";
+import { type FocusEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useToast } from "@/hooks/use-toast";
-import { Heart, MessageCircle, Send, Plus, Image, Share2, Trash2, Smile, Reply, BadgeCheck, ArrowLeft, RefreshCw, Globe, MoreHorizontal, Flag, Pencil, ArrowUp } from "lucide-react";
+import { Heart, MessageCircle, Send, Share2, Trash2, Smile, Reply, BadgeCheck, ArrowLeft, RefreshCw, Globe, MoreHorizontal, Flag, Pencil, ArrowUp } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ReportDialog } from "@/components/feed/ReportDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CreatePostDialog } from "@/components/feed/CreatePostDialog";
 import { EditPostDialog } from "@/components/feed/EditPostDialog";
 import { JUDE_USER_ID } from "@/types/community";
@@ -42,16 +39,14 @@ import {
 import { LazyEmojiPicker } from "@/components/LazyEmojiPicker";
 import { getAvatarUrl } from "@/lib/avatarMap";
 
-import { useFeedData } from "@/hooks/useFeedData";
-import { useLazyComments } from "@/hooks/useLazyComments";
 import { formatTimeAgo } from "@/utils/dateUtils";
-import { Profile, Post, Comment } from "@/types/feed";
-import { useSessionAuth } from "@/contexts/SessionAuthContext";
-import { useVisitor } from "@/contexts/VisitorContext";
+import { Comment } from "@/types/feed";
 import { LockedOverlay } from "@/components/visitor";
-import { visitorFeedPosts } from "@/data/visitorDemoData";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
+import { VisitorFeedOverlay } from "@/components/feed/VisitorFeedOverlay";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { NetworkAwareImage, NetworkAwareVideo } from "@/components/feed/NetworkAwareMedia";
+import { useFeed } from "@/hooks/useFeed";
 
 // Plan C Fix 5: Increased truncation for educational content (was 150)
 const MAX_CONTENT_PREVIEW = 280;
@@ -67,10 +62,6 @@ const GRADE_COLORS: Record<string, string> = {
   'NS4': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
   'UNIV': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
 };
-import { VisitorFeedOverlay } from "@/components/feed/VisitorFeedOverlay";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
-import { NetworkAwareImage, NetworkAwareVideo } from "@/components/feed/NetworkAwareMedia";
 
 // Function to render content with clickable links, @mentions, and plain domains
 const renderContentWithLinks = (content: string) => {
@@ -163,643 +154,73 @@ const renderContentWithLinks = (content: string) => {
 };
 
 const Feed = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { posts, isLoading, isRefreshing, refreshFeed, updatePostOptimistically, removePostOptimistically, addPostOptimistically, hasMore, isFetchingMore, fetchMorePosts } = useFeedData();
-  const { isSlowConnection, imageQuality } = useNetworkAwareLoading();
-  // Fix 3: Use session auth context instead of duplicate supabase.auth.getUser() call
-  const { user: sessionUser } = useSessionAuth();
-  const currentUser = sessionUser;
-  const { commentsCache, loadingComments, fetchCommentsForPost, addCommentToCache, removeCommentFromCache } = useLazyComments();
-  // Plan C Fix 1: Network-aware post entry animations
-  const { shouldAnimate } = useNetworkAwareAnimations();
-  // Track initial load vs paginated — stagger only on first render
-  const initialLoadCompleteRef = useRef(false);
-
-  // Plan C Fix 2: Pull-to-refresh state for mobile
-  const [pullDistance, setPullDistance] = useState(0);
-  const [isPulling, setIsPulling] = useState(false);
-  const touchStartY = useRef(0);
-
-  const [commentInputs, setCommentInputs] = useState<{ [key: string]: string }>({});
-  const [replyInputs, setReplyInputs] = useState<{ [key: string]: string }>({});
-  const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
-  const [replyingTo, setReplyingTo] = useState<{ [key: string]: string | null }>({});
-  const [deletePostId, setDeletePostId] = useState<string | null>(null);
-  const [expandedPosts, setExpandedPosts] = useState<{ [key: string]: boolean }>({});
-  const [deleteCommentInfo, setDeleteCommentInfo] = useState<{ commentId: string; postId: string } | null>(null);
-  // Keep setDeleteCommentId for backward compat in renderComment — wraps deleteCommentInfo
-  const deleteCommentId = deleteCommentInfo?.commentId || null;
-  const setDeleteCommentId = (id: string | null) => setDeleteCommentInfo(null);
-  const [shareDialogOpen, setShareDialogOpen] = useState(false);
-  const [selectedPostToShare, setSelectedPostToShare] = useState<Post | null>(null);
-  const [followingUsers, setFollowingUsers] = useState<Profile[]>([]);
-  const [sendingMessage, setSendingMessage] = useState(false);
-  const { isVisitor } = useVisitor();
-  const [visitorPosts, setVisitorPosts] = useState<Post[]>([]);
-  const [reportDialogOpen, setReportDialogOpen] = useState(false);
-  const [postToReport, setPostToReport] = useState<Post | null>(null);
-  const [isFounder, setIsFounder] = useState(false);
-  const [editingPost, setEditingPost] = useState<Post | null>(null);
-  // Plan B: Queue for realtime posts arriving while user is scrolling
-  const [newPostsQueue, setNewPostsQueue] = useState<Post[]>([]);
-  // Refs for infinite scroll and scroll-position tracking
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  // Per-post debounce lock — prevents spam clicks while a like is in-flight
-  const isLikingRef = useRef<Set<string>>(new Set());
-
-  // Mobile keyboard optimization - scroll input into view
-  const handleInputFocus = useCallback((e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setTimeout(() => {
-      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 300);
-  }, []);
-
-
-  // Transform demo data for visitors
-  useEffect(() => {
-    if (isVisitor) {
-      const demoPosts: Post[] = visitorFeedPosts.map((post, index) => ({
-        id: post.id,
-        user_id: `demo-user-${index}`,
-        content: post.content,
-        image_url: null,
-        video_url: null,
-        created_at: post.created_at,
-        is_public: true,
-        profile: {
-          id: `demo-profile-${index}`,
-          user_id: `demo-user-${index}`,
-          full_name: post.author.nickname,
-          nickname: post.author.nickname,
-          avatar_url: post.author.avatar_url,
-          verified: index === 0,
-        },
-        likes: post.likes_count,
-        isLiked: false,
-        comments: [],
-        commentCount: post.comments_count,
-        shareCount: Math.floor(Math.random() * 5),
-        isShared: false,
-      }));
-      setVisitorPosts(demoPosts);
-    }
-  }, [isVisitor]);
-
-  // Fix 3: Auth now comes from useSessionAuth — no separate checkAuth needed
-  // Fix 4: Subscribe to targeted realtime updates (not full refetch)
-  useEffect(() => {
-    if (isVisitor || !currentUser) return;
-    const cleanup = subscribeToNewPosts();
-    return cleanup;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVisitor, !!currentUser]);
-
-  // Mark feed as visited when page loads (resets unread count)
-  // Uses sessionAuth user to avoid extra auth call
-  useEffect(() => {
-    if (!isVisitor && currentUser) {
-      supabase
-        .from('profiles')
-        .update({ last_feed_visit: new Date().toISOString() })
-        .eq('user_id', currentUser.id)
-        .then(() => {
-          window.dispatchEvent(new CustomEvent('feed-visited'));
-        });
-    }
-  }, [isVisitor, currentUser]);
-
-  // Check if current user is a founder
-  useEffect(() => {
-    const checkFounderStatus = async () => {
-      if (!currentUser) return;
-      
-      const { data, error } = await supabase.rpc('is_founder');
-      
-      if (!error && data) {
-        setIsFounder(true);
-      }
-    };
-    
-    checkFounderStatus();
-  }, [currentUser]);
-
-  // Use visitor posts when in visitor mode
-  const displayPosts = isVisitor ? visitorPosts : posts;
-
-  const handleRefresh = () => {
-    refreshFeed();
-    toast({
-      title: "Actualisation...",
-      description: "Le fil d'actualité est en cours de mise à jour.",
-    });
-  };
-
-  // Plan B: IntersectionObserver for infinite scroll — triggers fetchMorePosts
-  useEffect(() => {
-    if (!sentinelRef.current || isVisitor) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isFetchingMore) {
-          fetchMorePosts();
-        }
-      },
-      { rootMargin: '200px' } // Pre-fetch 200px before reaching bottom
-    );
-    observer.observe(sentinelRef.current);
-    return () => observer.disconnect();
-  }, [hasMore, isFetchingMore, isVisitor, fetchMorePosts]);
-
-  // Fix 4 + Plan B: Targeted realtime with new-post badge when scrolling
-  const subscribeToNewPosts = () => {
-    const channel = supabase
-      .channel("posts-changes")
-      .on("postgres_changes", {
-        event: "INSERT", schema: "public", table: "posts",
-      }, async (payload) => {
-        // Fetch only the new post's author profile (1 query, not full refetch)
-        const newPost = payload.new as any;
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("id, user_id, full_name, nickname, avatar_url, verified, academic_grade")
-          .eq("user_id", newPost.user_id)
-          .single();
-
-        const enrichedPost: Post = {
-          ...newPost,
-          profile: profile as Profile,
-          likes: 0, isLiked: false,
-          comments: [], commentCount: 0,
-          shareCount: 0, isShared: false,
-        };
-
-        // Check scroll position to decide: prepend or queue for badge
-        const scrollContainer = scrollContainerRef.current;
-        const isAtTop = scrollContainer ? scrollContainer.scrollTop < 100 : true;
-
-        if (isAtTop) {
-          // User is at top — prepend directly (no scroll jump)
-          addPostOptimistically(enrichedPost);
-        } else {
-          // User is scrolling — queue for "Nouveau post" badge
-          setNewPostsQueue(prev => [enrichedPost, ...prev]);
-        }
-      })
-      .on("postgres_changes", {
-        event: "UPDATE", schema: "public", table: "posts",
-      }, (payload) => {
-        // Patch only the changed post in cache
-        updatePostOptimistically(payload.new.id as string, payload.new as Partial<Post>);
-      })
-      .on("postgres_changes", {
-        event: "DELETE", schema: "public", table: "posts",
-      }, (payload) => {
-        // Remove from cache — no fetch needed
-        removePostOptimistically((payload.old as any).id);
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  };
-
-  // Plan C Fix 2: Pull-to-refresh touch handlers for mobile
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    // Only activate when scrolled to top
-    if (scrollContainerRef.current?.scrollTop === 0) {
-      touchStartY.current = e.touches[0].clientY;
-      setIsPulling(true);
-    }
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isPulling) return;
-    const deltaY = e.touches[0].clientY - touchStartY.current;
-    if (deltaY > 0) {
-      // Resistance factor: indicator moves slower than finger
-      setPullDistance(deltaY * 0.4);
-    }
-  }, [isPulling]);
-
-  const handleTouchEnd = useCallback(() => {
-    if (pullDistance > 60 && !isRefreshing && !isFetchingMore) {
-      refreshFeed();
-      toast({ title: "Actualisation...", description: "Le fil d'actualité est en cours de mise à jour." });
-    }
-    setPullDistance(0);
-    setIsPulling(false);
-  }, [pullDistance, isRefreshing, isFetchingMore, refreshFeed, toast]);
-
-  // Plan C Fix 1: Mark initial load complete after first posts render
-  useEffect(() => {
-    if (posts.length > 0 && !initialLoadCompleteRef.current) {
-      // Small delay to let initial stagger animation play
-      const timer = setTimeout(() => { initialLoadCompleteRef.current = true; }, 600);
-      return () => clearTimeout(timer);
-    }
-  }, [posts.length]);
-
-  const deletePost = async (postId: string) => {
-    const { error } = await supabase
-      .from("posts")
-      .delete()
-      .eq("id", postId);
-
-    if (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer le post",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "Succès",
-      description: "Post supprimé",
-    });
-    setDeletePostId(null);
-    refreshFeed();
-  };
-
-  const deleteComment = async (commentId: string, postId?: string) => {
-    const { error } = await supabase
-      .from("post_comments")
-      .delete()
-      .eq("id", commentId);
-
-    if (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer le commentaire",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "Succès",
-      description: "Commentaire supprimé",
-    });
-    setDeleteCommentInfo(null);
-    // Fix 2: Remove from local cache instead of full refetch
-    if (postId) {
-      removeCommentFromCache(postId, commentId);
-      const post = posts.find(p => p.id === postId);
-      if (post) {
-        updatePostOptimistically(postId, { commentCount: Math.max(0, (post.commentCount || 0) - 1) });
-      }
-    }
-  };
-
-  const toggleLike = async (postId: string, isCurrentlyLiked: boolean) => {
-    if (isVisitor) {
-      toast({
-        title: "Créez un compte",
-        description: "Inscrivez-vous pour aimer les publications !",
-      });
-      return;
-    }
-    if (!currentUser) return;
-
-    // Per-post spam guard — skip if a like is already in-flight for this post
-    if (isLikingRef.current.has(postId)) return;
-    isLikingRef.current.add(postId);
-
-    const post = posts.find(p => p.id === postId);
-    const currentCount = post?.likes || 0;
-
-    // 1. Optimistic update FIRST — instant UI feedback
-    updatePostOptimistically(postId, {
-      likes: isCurrentlyLiked ? currentCount - 1 : currentCount + 1,
-      isLiked: !isCurrentlyLiked,
-    });
-
-    try {
-      // 2. DB operation
-      if (isCurrentlyLiked) {
-        const { error } = await supabase
-          .from("post_likes")
-          .delete()
-          .eq("post_id", postId)
-          .eq("user_id", currentUser.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("post_likes")
-          .insert({ post_id: postId, user_id: currentUser.id });
-        if (error) throw error;
-
-        // 3. Fire-and-forget notification + push (non-blocking)
-        if (post && post.user_id !== currentUser.id) {
-          supabase.from("notifications").insert({
-            user_id: post.user_id,
-            actor_id: currentUser.id,
-            post_id: postId,
-            type: "like",
-          }).then(({ error: notifError }) => {
-            if (notifError) {
-              console.error("❌ Error creating like notification:", notifError);
-            } else {
-              // Push notification — also fire-and-forget
-              supabase.functions.invoke('send-push-notification', {
-                body: {
-                  recipientUserId: post.user_id,
-                  actorId: currentUser.id,
-                  type: 'like',
-                  entityId: postId,
-                  url: '/feed',
-                }
-              }).catch(pushErr => console.error("❌ Like push error:", pushErr));
-            }
-          });
-        }
-      }
-    } catch (error) {
-      // 4. Rollback on DB failure — restore previous state
-      console.error("Error toggling like:", error);
-      updatePostOptimistically(postId, {
-        likes: currentCount,
-        isLiked: isCurrentlyLiked,
-      });
-      toast({ title: "Erreur", description: "Impossible de réagir à cette publication." });
-    } finally {
-      isLikingRef.current.delete(postId);
-    }
-  };
-
-  const addComment = async (postId: string, parentCommentId: string | null = null) => {
-    if (isVisitor) {
-      toast({
-        title: "Créez un compte",
-        description: "Inscrivez-vous pour commenter les publications !",
-      });
-      return;
-    }
-    if (!currentUser) return;
-
-    const commentContent = parentCommentId 
-      ? replyInputs[parentCommentId]?.trim() 
-      : commentInputs[postId]?.trim();
-    
-    if (!commentContent) return;
-
-    const { data: newCommentData, error } = await supabase
-      .from("post_comments")
-      .insert({
-        post_id: postId,
-        user_id: currentUser.id,
-        content: commentContent,
-        parent_comment_id: parentCommentId,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error adding comment:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'ajouter le commentaire",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const post = posts.find(p => p.id === postId);
-    
-    // Create notification for post owner
-    if (post && post.user_id !== currentUser.id) {
-      const { error: notifError } = await supabase.from("notifications").insert({
-        user_id: post.user_id,
-        actor_id: currentUser.id,
-        post_id: postId,
-        type: "comment",
-        content: commentContent,
-      });
-
-      if (notifError) {
-        console.error("❌ Error creating notification:", notifError);
-      } else {
-        console.log("✅ Notification created successfully");
-        
-        // Send push notification via edge function
-        try {
-          await supabase.functions.invoke('send-push-notification', {
-            body: {
-              recipientUserId: post.user_id,
-              actorId: currentUser.id,
-              type: 'comment',
-              entityId: postId,
-              url: '/feed',
-            }
-          });
-          console.log("✅ Push notification sent");
-        } catch (pushError) {
-          console.error("❌ Error sending push notification:", pushError);
-        }
-      }
-    }
-
-    if (parentCommentId) {
-      setReplyInputs({ ...replyInputs, [parentCommentId]: "" });
-      setReplyingTo({ ...replyingTo, [postId]: null });
-    } else {
-      setCommentInputs({ ...commentInputs, [postId]: "" });
-    }
-    
-    // Fix 2: Append comment to local cache instead of full refetch
-    if (newCommentData) {
-      // Build profile for the new comment from current user session
-      const { data: myProfile } = await supabase
-        .from("profiles")
-        .select("id, user_id, full_name, nickname, avatar_url, verified, academic_grade")
-        .eq("user_id", currentUser.id)
-        .single();
-
-      const newComment: Comment = {
-        ...newCommentData,
-        profile: myProfile as Profile,
-        replies: [],
-      };
-      addCommentToCache(postId, newComment);
-      // Increment comment count in feed cache
-      updatePostOptimistically(postId, { commentCount: (post?.commentCount || 0) + 1 });
-    }
-
-    toast({
-      title: "Succès",
-      description: "Commentaire ajouté",
-    });
-  };
-
-  const openShareDialog = async (post: Post) => {
-    setSelectedPostToShare(post);
-    
-    // Fetch users that current user is following
-    const { data: followsData, error } = await supabase
-      .from("follows")
-      .select("following_id")
-      .eq("follower_id", currentUser.id)
-      .eq("status", "accepted");
-
-    if (error) {
-      console.error("Error fetching follows:", error);
-      return;
-    }
-
-    const followingIds = followsData?.map(f => f.following_id) || [];
-    
-    if (followingIds.length === 0) {
-      toast({
-        title: "Aucun contact",
-        description: "Vous ne suivez personne pour le moment",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const { data: profilesData } = await supabase
-      .from("profiles")
-      .select("*")
-      .in("user_id", followingIds);
-
-    setFollowingUsers(profilesData || []);
-    setShareDialogOpen(true);
-  };
-
-  // Plan C Fix 4: Single RPC replaces N+1 conversation lookup loop
-  const sendPostAsMessage = async (recipientUserId: string) => {
-    if (!currentUser || !selectedPostToShare) return;
-    setSendingMessage(true);
-
-    try {
-      // Single RPC call finds or creates DM conversation atomically
-      const { data: conversationId, error: convError } = await supabase
-        .rpc("start_direct_conversation", { other_user_id: recipientUserId });
-
-      if (convError) throw convError;
-
-      // Send the shared post message
-      const { error: messageError } = await supabase
-        .from("messages")
-        .insert({
-          conversation_id: conversationId,
-          sender_id: currentUser.id,
-          content: "📝 Post partagé",
-          shared_post_id: selectedPostToShare.id,
-        });
-
-      if (messageError) throw messageError;
-
-      // Record the share
-      await supabase
-        .from("post_shares")
-        .insert({ post_id: selectedPostToShare.id, user_id: currentUser.id });
-
-      toast({ title: "Succès", description: "Post envoyé en message" });
-      setShareDialogOpen(false);
-      setSelectedPostToShare(null);
-    } catch (error) {
-      console.error("Error sending message:", error);
-      toast({ title: "Erreur", description: "Impossible d'envoyer le message", variant: "destructive" });
-    } finally {
-      setSendingMessage(false);
-    }
-  };
-
-  const toggleShare = async (postId: string, isCurrentlyShared: boolean) => {
-    if (isVisitor) {
-      toast({
-        title: "Créez un compte",
-        description: "Inscrivez-vous pour partager les publications !",
-      });
-      return;
-    }
-    if (!currentUser) return;
-
-    const post = posts.find(p => p.id === postId);
-
-    if (isCurrentlyShared) {
-      const { error } = await supabase
-        .from("post_shares")
-        .delete()
-        .eq("post_id", postId)
-        .eq("user_id", currentUser.id);
-
-      if (error) {
-        console.error("Error unsharing post:", error);
-        return;
-      }
-    } else {
-      const { error } = await supabase
-        .from("post_shares")
-        .insert({ post_id: postId, user_id: currentUser.id });
-
-      if (error) {
-        console.error("Error sharing post:", error);
-        return;
-      }
-
-      // Create notification for post owner
-      if (post && post.user_id !== currentUser.id) {
-        const { error: notifError } = await supabase.from("notifications").insert({
-          user_id: post.user_id,
-          actor_id: currentUser.id,
-          post_id: postId,
-          type: "share",
-        });
-
-        if (notifError) {
-          console.error("❌ Error creating share notification:", notifError);
-        } else {
-          console.log("✅ Share notification created");
-          
-          // Send push notification
-          try {
-            await supabase.functions.invoke('send-push-notification', {
-              body: {
-                recipientUserId: post.user_id,
-                actorId: currentUser.id,
-                type: 'share',
-                entityId: postId,
-                url: '/feed',
-              }
-            });
-            console.log("✅ Share push notification sent");
-          } catch (pushError) {
-            console.error("❌ Error sending share push notification:", pushError);
-          }
-        }
-      }
-
-      toast({
-        title: "Succès",
-        description: "Post partagé",
-      });
-    }
-
-    // Optimistic update for shares
-    updatePostOptimistically(postId, {
-      shareCount: isCurrentlyShared ? ((posts.find(p => p.id === postId)?.shareCount || 0) - 1) : ((posts.find(p => p.id === postId)?.shareCount || 0) + 1),
-      isShared: !isCurrentlyShared
-    });
-  };
-
-  const handleEmojiSelect = (emojiData: any, postId: string, commentId?: string) => {
-    if (commentId) {
-      setReplyInputs({
-        ...replyInputs,
-        [commentId]: (replyInputs[commentId] || "") + emojiData.emoji
-      });
-    } else {
-      setCommentInputs({
-        ...commentInputs,
-        [postId]: (commentInputs[postId] || "") + emojiData.emoji
-      });
-    }
-  };
+  const {
+    navigate,
+    toast,
+    posts,
+    isLoading,
+    isRefreshing,
+    refreshFeed,
+    displayPosts,
+    isSlowConnection,
+    imageQuality,
+    shouldAnimate,
+    currentUser,
+    isVisitor,
+    isFounder,
+    commentsCache,
+    loadingComments,
+    fetchCommentsForPost,
+    commentInputs,
+    setCommentInputs,
+    replyInputs,
+    setReplyInputs,
+    showComments,
+    setShowComments,
+    replyingTo,
+    setReplyingTo,
+    expandedPosts,
+    setExpandedPosts,
+    newPostsQueue,
+    setNewPostsQueue,
+    addPostOptimistically,
+    deletePostId,
+    setDeletePostId,
+    deleteCommentInfo,
+    setDeleteCommentInfo,
+    deleteCommentId,
+    setDeleteCommentId,
+    shareDialogOpen,
+    setShareDialogOpen,
+    selectedPostToShare,
+    setSelectedPostToShare,
+    followingUsers,
+    sendingMessage,
+    reportDialogOpen,
+    setReportDialogOpen,
+    postToReport,
+    setPostToReport,
+    editingPost,
+    setEditingPost,
+    sentinelRef,
+    scrollContainerRef,
+    initialLoadCompleteRef,
+    hasMore,
+    isFetchingMore,
+    handleRefresh,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+    handleInputFocus,
+    handleEmojiSelect,
+    deletePost,
+    deleteComment,
+    toggleLike,
+    addComment,
+    openShareDialog,
+    sendPostAsMessage,
+    toggleShare,
+  } = useFeed();
 
   const renderComment = (comment: Comment, postId: string, isReply: boolean = false) => (
     <div key={comment.id} className={`flex gap-2.5 ${isReply ? "ml-8 mt-2" : ""}`}>
@@ -1282,49 +703,45 @@ const Feed = () => {
                         disabled={!commentInputs[post.id]?.trim()}
                         className="h-9 w-9 shrink-0"
                       >
-                        <Send size={16} />
+                        <Send size={18} />
                       </Button>
                     </div>
                   </div>
                 )}
               </motion.div>
             ))}
-
-            {/* Plan B: Loading spinner while fetching next page */}
+            
+            {/* Infinite scroll sentinel — triggers fetchMorePosts */}
+            <div ref={sentinelRef} className="h-1" />
             {isFetchingMore && (
               <div className="flex justify-center py-4">
                 <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
             )}
-
-            {/* Plan B: End-of-feed message */}
             {!hasMore && displayPosts.length > 0 && (
-              <div className="text-center py-6 text-sm text-muted-foreground">
-                Tu as tout vu! 🎉
-              </div>
+              <p className="text-center text-sm text-muted-foreground py-4">
+                Vous avez tout vu 🎉
+              </p>
             )}
-
-            {/* Plan B: Invisible sentinel for IntersectionObserver */}
-            <div ref={sentinelRef} className="h-1" />
             </div>
           )}
         </div>
       </section>
 
-      {/* Delete Post Dialog */}
+      {/* Delete Post Confirmation */}
       <AlertDialog open={!!deletePostId} onOpenChange={() => setDeletePostId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer le post</AlertDialogTitle>
+            <AlertDialogTitle>Supprimer ce post ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer ce post ? Cette action est irréversible.
+              Cette action est irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deletePostId && deletePost(deletePostId)}
-              className="bg-destructive hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Supprimer
             </AlertDialogAction>
@@ -1332,20 +749,20 @@ const Feed = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Delete Comment Dialog */}
+      {/* Delete Comment Confirmation */}
       <AlertDialog open={!!deleteCommentInfo} onOpenChange={() => setDeleteCommentInfo(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer le commentaire</AlertDialogTitle>
+            <AlertDialogTitle>Supprimer ce commentaire ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action est irréversible.
+              Cette action est irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteCommentInfo && deleteComment(deleteCommentInfo.commentId, deleteCommentInfo.postId)}
-              className="bg-destructive hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Supprimer
             </AlertDialogAction>
@@ -1353,50 +770,41 @@ const Feed = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Share Post Dialog */}
+      {/* Share Dialog */}
       <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Partager le post</DialogTitle>
+            <DialogTitle>Partager avec...</DialogTitle>
           </DialogHeader>
-          <ScrollArea className="max-h-[400px] pr-4">
-            <div className="space-y-2">
-              {followingUsers.map((user) => (
-                <button
-                  key={user.id}
-                  onClick={() => sendPostAsMessage(user.user_id)}
-                  disabled={sendingMessage}
-                  className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors disabled:opacity-50"
-                >
-                  <Avatar>
-                    <AvatarImage src={getAvatarUrl(user.avatar_url)} />
-                    <AvatarFallback>
-                      {user.nickname?.[0] || user.full_name?.[0] || "?"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 text-left">
-                    <p className="font-medium">{user.nickname || user.full_name}</p>
-                    <p className="text-sm text-muted-foreground">{user.full_name}</p>
-                  </div>
-                  <Send size={16} className="text-muted-foreground" />
-                </button>
-              ))}
-            </div>
-          </ScrollArea>
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {followingUsers.map((user) => (
+              <button
+                key={user.user_id}
+                onClick={() => sendPostAsMessage(user.user_id)}
+                disabled={sendingMessage}
+                className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors disabled:opacity-50"
+              >
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={getAvatarUrl(user.avatar_url)} />
+                  <AvatarFallback>{user.nickname?.[0] || "?"}</AvatarFallback>
+                </Avatar>
+                <div className="text-left">
+                  <p className="font-medium text-sm">{user.full_name}</p>
+                  <p className="text-xs text-muted-foreground">@{user.nickname}</p>
+                </div>
+              </button>
+            ))}
+          </div>
         </DialogContent>
       </Dialog>
 
-      {/* Report Post Dialog */}
-      {reportDialogOpen && postToReport && (
+      {/* Report Dialog */}
+      {postToReport && (
         <ReportDialog
-          isOpen={reportDialogOpen}
-          onClose={() => {
-            setReportDialogOpen(false);
-            setPostToReport(null);
-          }}
+          open={reportDialogOpen}
+          onOpenChange={setReportDialogOpen}
           postId={postToReport.id}
-          reportedUserId={postToReport.user_id}
-          reportedUserName={postToReport.profile?.full_name || postToReport.profile?.nickname}
+          postOwnerId={postToReport.user_id}
         />
       )}
 
@@ -1404,12 +812,9 @@ const Feed = () => {
       {editingPost && (
         <EditPostDialog
           post={editingPost}
-          isOpen={!!editingPost}
+          open={!!editingPost}
           onOpenChange={(open) => !open && setEditingPost(null)}
-          onPostUpdated={() => {
-            setEditingPost(null);
-            refreshFeed();
-          }}
+          onPostUpdated={refreshFeed}
         />
       )}
     </main>
