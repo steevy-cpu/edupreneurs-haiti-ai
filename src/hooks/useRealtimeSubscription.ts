@@ -68,7 +68,6 @@ export function useRealtimeSubscription({
 
     // Cleanup function
     return () => {
-      console.log(`🧹 Cleaning up subscription: ${channelName}`);
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
