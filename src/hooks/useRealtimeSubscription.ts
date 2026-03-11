@@ -62,9 +62,7 @@ export function useRealtimeSubscription({
           callbackRef.current(payload);
         }
       )
-      .subscribe((status) => {
-        console.log(`📡 Subscription status for ${channelName}:`, status);
-      });
+      .subscribe();
 
     channelRef.current = channel;
 
