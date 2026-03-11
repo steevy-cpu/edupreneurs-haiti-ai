@@ -507,21 +507,6 @@ const App = () => (
                               <Onboarding />
                             </Suspense>
                           } />
-                          <Route path="/dev/push" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <DevPush />
-                            </Suspense>
-                          } />
-                          <Route path="/upload-email-assets" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <UploadEmailAssets />
-                            </Suspense>
-                          } />
-                          <Route path="/payment-demo" element={
-                            <Suspense fallback={<GenericPageSkeleton />}>
-                              <PaymentDemo />
-                            </Suspense>
-                          } />
                           <Route path="/payment/callback" element={
                             <Suspense fallback={<GenericPageSkeleton />}>
                               <PaymentCallback />
