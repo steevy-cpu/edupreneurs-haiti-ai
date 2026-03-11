@@ -184,6 +184,7 @@ const Feed = () => {
     newPostsQueue,
     setNewPostsQueue,
     addPostOptimistically,
+    pullDistance,
     deletePostId,
     setDeletePostId,
     deleteCommentInfo,
