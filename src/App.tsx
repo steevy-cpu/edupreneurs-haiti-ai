@@ -85,7 +85,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const CookieSettings = lazy(() => import("./pages/CookieSettings"));
 const Terms = lazy(() => import("./pages/Terms"));
-const DevPush = lazy(() => import("./pages/DevPush"));
+
 const DynamicCoursePage = lazy(() => import("./pages/DynamicCoursePage"));
 const DynamicLessonPage = lazy(() => import("./pages/DynamicLessonPage"));
 // NotificationSettings removed — consolidated into Settings notifications tab
