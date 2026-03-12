@@ -118,6 +118,7 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
   const [userGrade, setUserGrade] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [isSuperUser, setIsSuperUser] = useState(false);
+  const [isPendingGift, setIsPendingGift] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const hasInitialized = useRef(false);
