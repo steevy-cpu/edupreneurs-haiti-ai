@@ -421,6 +421,20 @@ const OnboardingQuiz = () => {
   if (!firstTimeUser.showOnboardingQuiz || firstTimeUser.isLoading || !firstTimeUser.userId) return null;
   if (!profileLoaded) return null;
 
+  // Pending gift users see a waiting message instead of the quiz
+  if (isPendingGift) {
+    return (
+      <div className="fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center p-4">
+        <div className="bg-background rounded-2xl p-8 max-w-md text-center space-y-4">
+          <img src={ericWaving} alt="Jude" className="w-24 h-24 mx-auto" />
+          <div className="w-6 h-6 mx-auto border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-lg font-medium text-foreground">Votre paiement cadeau est en cours de confirmation...</p>
+          <p className="text-sm text-muted-foreground">Vous pourrez compléter votre profil dans quelques instants.</p>
+        </div>
+      </div>
+    );
+  }
+
   // Steps 0-2 (full_name, academic_grade, gender) are required — gender affects Jude's speech
   const isSkippable = currentStep >= 3;
   // Q5 (school) is required for academic grades, optional for UNIV/NONE

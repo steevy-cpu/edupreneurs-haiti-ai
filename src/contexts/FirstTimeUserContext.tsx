@@ -341,6 +341,7 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
         userGrade,
         userId,
         isSuperUser,
+        isPendingGift,
         isLoading,
         completeWelcome,
         completeOnboardingQuiz,
