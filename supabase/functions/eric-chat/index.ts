@@ -59,6 +59,19 @@ serve(async (req) => {
     const verifiedUserId = claims.user.id;
 
     const rawBody = await req.json();
+
+    // PII sanitizer — masks emails (incl. space-around-@ variants), phones, and URLs
+    const sanitizeContent = (content: string): string => {
+      if (!content) return content;
+      return content
+        // Mask email addresses including space-before/after-@ variants
+        .replace(/[a-zA-Z0-9._%+-]+\s*@\s*[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi, '[email masqué]')
+        // Mask phone numbers (Haiti +509 format + international)
+        .replace(/(\+509|00509)?\s*\d{2}\s*\d{2}\s*\d{2}\s*\d{2}/g, '[téléphone masqué]')
+        // Mask URLs to prevent data exfiltration
+        .replace(/https?:\/\/[^\s]+/gi, '[lien masqué]');
+    };
+
     const { conversationId, userMessage, userNickname } = rawBody;
 
     // Basic validation
@@ -139,7 +152,8 @@ serve(async (req) => {
     }
 
     const isFirstMessage = !conversationHistory || conversationHistory.length === 0;
-    const nicknameText = userNickname || "l'élève";
+    // PII hardening: sanitize nickname to strip any leaked email
+    const nicknameText = sanitizeContent(userNickname || "l'élève");
     const greetingInstruction = isFirstMessage 
       ? `SALUTATION PREMIÈRE FOIS: Commence par "${greeting} ${nicknameText} ! Je suis Jude, votre assistant IA éducatif."`
       : `CONVERSATION EN COURS: Ne dis pas bonjour à nouveau. Continue naturellement.`;
@@ -166,12 +180,18 @@ ${greetingInstruction}
 
 ❌ IMPORTANT: Ne commence JAMAIS tes réponses par "[nom]:" ou "[Jude]:" - commence directement par ta réponse.
 
-❌ HORS COMPÉTENCE: Questions non-éducatives → réponds poliment.`;
+❌ HORS COMPÉTENCE: Questions non-éducatives → réponds poliment.
 
+❌ NE RÉPÈTE JAMAIS d'adresse email, numéro de téléphone, ou toute information personnelle identifiable dans tes réponses. Adresse-toi aux utilisateurs uniquement par leur prénom/surnom.`;
+
+    // PII hardening: sanitize conversation history before sending to AI
     const aiMessages = [
       { role: 'system', content: systemPrompt },
-      ...conversationHistory.slice(-20), // Limit history
-      { role: 'user', content: `[${nicknameText}]: ${userMessage}` }
+      ...conversationHistory.slice(-20).map((msg: any) => ({
+        ...msg,
+        content: sanitizeContent(msg.content)
+      })),
+      { role: 'user', content: sanitizeContent(`[${nicknameText}]: ${userMessage}`) }
     ];
 
     console.log('Calling Lovable AI...');
@@ -205,6 +225,9 @@ ${greetingInstruction}
     const data = await response.json();
     let aiResponse = data.choices?.[0]?.message?.content || 'Désolé, je n\'ai pas pu générer une réponse.';
     
+    // PII output scrubbing — runs BEFORE markdown stripping to catch any AI-leaked PII
+    aiResponse = sanitizeContent(aiResponse);
+
     // Remove markdown formatting
     aiResponse = aiResponse.replace(/\*\*/g, '').replace(/\*/g, '');
     

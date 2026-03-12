@@ -92,16 +92,29 @@ ${
     : `CONTINÚA LA CONVERSACIÓN: Responde de forma natural en español. Si hay error, explícalo en francés.`
 }`;
 
+    // PII sanitizer — masks emails (incl. space-around-@ variants), phones, and URLs
+    const sanitizeContent = (content: string): string => {
+      if (!content) return content;
+      return content
+        // Mask email addresses including space-before/after-@ variants
+        .replace(/[a-zA-Z0-9._%+-]+\s*@\s*[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi, '[email masqué]')
+        // Mask phone numbers (Haiti +509 format + international)
+        .replace(/(\+509|00509)?\s*\d{2}\s*\d{2}\s*\d{2}\s*\d{2}/g, '[téléphone masqué]')
+        // Mask URLs to prevent data exfiltration
+        .replace(/https?:\/\/[^\s]+/gi, '[lien masqué]');
+    };
+
+    // PII hardening: sanitize chat history before sending to AI
     const messages: Message[] = [
       { role: "system", content: systemPrompt },
       ...(chatHistory || []).map((msg: any) => ({
         role: msg.role,
-        content: msg.content,
+        content: sanitizeContent(msg.content),
       })),
     ];
 
     if (!isInitialGreeting && message) {
-      messages.push({ role: "user", content: message });
+      messages.push({ role: "user", content: sanitizeContent(message) });
     }
 
     console.log("Calling Lovable AI for Spanish practice...");
@@ -145,7 +158,8 @@ ${
     }
 
     const data = await aiResponse.json();
-    const response = data.choices[0].message.content;
+    // PII output scrubbing — sanitize AI response before returning to frontend
+    const response = sanitizeContent(data.choices[0].message.content);
 
     console.log("Spanish practice response generated successfully");
     return new Response(JSON.stringify({ response }), {

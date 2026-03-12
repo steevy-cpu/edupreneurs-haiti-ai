@@ -364,15 +364,16 @@ CONTEXTE ACTUEL:
 - L'élève est actuellement ${pageContext || 'sur la plateforme'}
 - ${greeting}!`;
 
-    // Sanitize message content to prevent PII leakage to AI model
+    // PII sanitizer — masks emails (incl. space-around-@ variants), phones, and URLs
     const sanitizeContent = (content: string): string => {
+      if (!content) return content;
       return content
-        // Mask email addresses
-        .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[email masqué]')
+        // Mask email addresses including space-before/after-@ variants
+        .replace(/[a-zA-Z0-9._%+-]+\s*@\s*[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi, '[email masqué]')
         // Mask phone numbers (Haiti +509 format + international)
-        .replace(/(\+509|509)?[\s.-]?\(?\d{2}\)?[\s.-]?\d{2}[\s.-]?\d{2}[\s.-]?\d{2}/g, '[téléphone masqué]')
+        .replace(/(\+509|00509)?\s*\d{2}\s*\d{2}\s*\d{2}\s*\d{2}/g, '[téléphone masqué]')
         // Mask URLs to prevent data exfiltration
-        .replace(/https?:\/\/[^\s]+/g, '[lien masqué]');
+        .replace(/https?:\/\/[^\s]+/gi, '[lien masqué]');
     };
 
     // Prepare messages for AI with sanitized content
@@ -410,6 +411,9 @@ CONTEXTE ACTUEL:
     const aiData = await aiResponse.json();
     let responseText = aiData.choices?.[0]?.message?.content || "Je suis désolé, je n'ai pas pu générer une réponse.";
     
+    // PII output scrubbing — runs BEFORE markdown cleanup to catch any AI-leaked PII
+    responseText = sanitizeContent(responseText);
+
     // Clean up response
     responseText = responseText
       .replace(/\*\*/g, '')

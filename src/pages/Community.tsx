@@ -1640,7 +1640,8 @@ const Community = () => {
 
         // 4. FIRE-AND-FORGET NOTIFICATIONS - Don't await
         const conversation = conversations.find(c => c.id === selectedConversation);
-        const senderName = cachedUserProfile?.nickname || cachedUserProfile?.full_name || user.email || 'Someone';
+        // PII hardening: never fall back to email — use safe anonymous label
+        const senderName = cachedUserProfile?.nickname || cachedUserProfile?.full_name || 'Élève';
         
         if (conversation?.otherUser?.user_id === JUDE_USER_ID) {
           // Set awaiting state for typing indicator
