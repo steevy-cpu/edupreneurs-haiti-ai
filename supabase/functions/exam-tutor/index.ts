@@ -453,14 +453,26 @@ Explique l'erreur avec bienveillance et donne la bonne réponse avec une explica
       }
     }
 
-    // Build messages array
+    // PII sanitizer — masks emails (incl. space-around-@ variants), phones, and URLs
+    const sanitizeContent = (content: string): string => {
+      if (!content) return content;
+      return content
+        // Mask email addresses including space-before/after-@ variants
+        .replace(/[a-zA-Z0-9._%+-]+\s*@\s*[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi, '[email masqué]')
+        // Mask phone numbers (Haiti +509 format + international)
+        .replace(/(\+509|00509)?\s*\d{2}\s*\d{2}\s*\d{2}\s*\d{2}/g, '[téléphone masqué]')
+        // Mask URLs to prevent data exfiltration
+        .replace(/https?:\/\/[^\s]+/gi, '[lien masqué]');
+    };
+
+    // PII hardening: sanitize history and user message before sending to AI
     const messages = [
       { role: 'system', content: systemPrompt },
       ...(conversationHistory || []).map((msg: any) => ({
         role: msg.message_role === 'user' ? 'user' : 'assistant',
-        content: msg.message_content
+        content: sanitizeContent(msg.message_content)
       })),
-      { role: 'user', content: userMessage }
+      { role: 'user', content: sanitizeContent(userMessage) }
     ];
 
     // Call Lovable AI
