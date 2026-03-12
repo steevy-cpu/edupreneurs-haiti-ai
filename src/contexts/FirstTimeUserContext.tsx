@@ -40,6 +40,7 @@ interface FirstTimeUserContextType {
   userGrade: string | null;
   userId: string | null;
   isSuperUser: boolean;
+  isPendingGift: boolean;
   
   // Loading
   isLoading: boolean;
@@ -76,6 +77,7 @@ const SAFE_DEFAULTS: FirstTimeUserContextType = {
   userGrade: null,
   userId: null,
   isSuperUser: false,
+  isPendingGift: false,
   isLoading: false,
   completeWelcome: () => {},
   completeOnboardingQuiz: () => {},
@@ -116,6 +118,7 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
   const [userGrade, setUserGrade] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [isSuperUser, setIsSuperUser] = useState(false);
+  const [isPendingGift, setIsPendingGift] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const hasInitialized = useRef(false);
@@ -154,9 +157,11 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
 
         setUserNickname(profile?.nickname || null);
         setUserGrade(profile?.academic_grade || null);
+        // Track pending_gift status so OnboardingQuiz can show waiting UI
+        setIsPendingGift(profile?.subscription_status === 'pending_gift');
 
-        // Skip onboarding if subscription is not active
-        if (!profile?.has_free_access) {
+        // Skip onboarding if subscription is not active (allow pending_gift through)
+        if (!profile?.has_free_access && profile?.subscription_status !== 'pending_gift') {
           const isActive = profile?.subscription_status === 'active'
             && profile?.subscription_end_date
             && new Date(profile.subscription_end_date) > new Date();
@@ -336,6 +341,7 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
         userGrade,
         userId,
         isSuperUser,
+        isPendingGift,
         isLoading,
         completeWelcome,
         completeOnboardingQuiz,
