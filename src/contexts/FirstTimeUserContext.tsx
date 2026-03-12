@@ -77,6 +77,7 @@ const SAFE_DEFAULTS: FirstTimeUserContextType = {
   userGrade: null,
   userId: null,
   isSuperUser: false,
+  isPendingGift: false,
   isLoading: false,
   completeWelcome: () => {},
   completeOnboardingQuiz: () => {},
