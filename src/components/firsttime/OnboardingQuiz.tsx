@@ -59,7 +59,7 @@ function generateNicknameSuggestion(fullName: string): string {
 }
 
 const OnboardingQuiz = () => {
-  const firstTimeUser = useFirstTimeUser();
+  const { isPendingGift, ...firstTimeUser } = useFirstTimeUser();
   const { shouldAnimate } = useNetworkAwareAnimations();
   const queryClient = useQueryClient();
   // Voice — fire-and-forget TTS via existing generate-jude-voice edge function
