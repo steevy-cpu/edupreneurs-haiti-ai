@@ -164,7 +164,15 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
         payment_order_id: isMonCash ? data.paymentOrderId : null,
       } as any);
 
-    if (profileError) throw profileError;
+    if (profileError) {
+      // Clean up orphaned auth.users row so user can retry signup with same email
+      try {
+        await supabase.functions.invoke('delete-user-account');
+      } catch (_cleanupErr) {
+        // Swallow — orphan can be cleaned manually; user still sees retry message
+      }
+      throw new Error("Erreur lors de la création de votre profil. Veuillez réessayer.");
+    }
 
     // Handle referral if provided (while user session is still active)
     if (referralCode) {
