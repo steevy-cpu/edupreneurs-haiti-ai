@@ -411,6 +411,9 @@ CONTEXTE ACTUEL:
     const aiData = await aiResponse.json();
     let responseText = aiData.choices?.[0]?.message?.content || "Je suis désolé, je n'ai pas pu générer une réponse.";
     
+    // PII output scrubbing — runs BEFORE markdown cleanup to catch any AI-leaked PII
+    responseText = sanitizeContent(responseText);
+
     // Clean up response
     responseText = responseText
       .replace(/\*\*/g, '')
