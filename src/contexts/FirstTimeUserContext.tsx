@@ -40,6 +40,7 @@ interface FirstTimeUserContextType {
   userGrade: string | null;
   userId: string | null;
   isSuperUser: boolean;
+  isPendingGift: boolean;
   
   // Loading
   isLoading: boolean;
