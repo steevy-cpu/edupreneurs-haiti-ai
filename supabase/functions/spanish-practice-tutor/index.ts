@@ -158,7 +158,8 @@ ${
     }
 
     const data = await aiResponse.json();
-    const response = data.choices[0].message.content;
+    // PII output scrubbing — sanitize AI response before returning to frontend
+    const response = sanitizeContent(data.choices[0].message.content);
 
     console.log("Spanish practice response generated successfully");
     return new Response(JSON.stringify({ response }), {

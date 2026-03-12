@@ -497,7 +497,9 @@ Explique l'erreur avec bienveillance et donne la bonne réponse avec une explica
     }
 
     const data = await response.json();
-    const judeResponse = data.choices[0].message.content;
+    // PII output scrubbing — sanitize BEFORE grade parsing and cleanText extraction
+    const rawResponse = data.choices[0].message.content;
+    const judeResponse = sanitizeContent(rawResponse);
 
     // ============= Grade Parsing & Answer Validation =============
     const needsAiGrading = studentAnswer && (!exercise.correct_answer || exercise.exercise_type === 'open_ended');

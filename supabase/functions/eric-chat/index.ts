@@ -225,6 +225,9 @@ ${greetingInstruction}
     const data = await response.json();
     let aiResponse = data.choices?.[0]?.message?.content || 'Désolé, je n\'ai pas pu générer une réponse.';
     
+    // PII output scrubbing — runs BEFORE markdown stripping to catch any AI-leaked PII
+    aiResponse = sanitizeContent(aiResponse);
+
     // Remove markdown formatting
     aiResponse = aiResponse.replace(/\*\*/g, '').replace(/\*/g, '');
     
