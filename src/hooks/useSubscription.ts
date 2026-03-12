@@ -96,14 +96,20 @@ export function useSubscription(): SubscriptionResult {
 
   // Trial: 7-day free access via timed_free status
   const isTrial = status === 'timed_free';
+  // Client-side enforcement: trial active only if end date is still in the future
   const isTrialActive = isTrial && hasFreeAccess && endDate !== null && endDate.getTime() > Date.now();
-  const isTrialExpired = isTrial && (!endDate || endDate.getTime() <= Date.now());
+  // Bug 2A fix: after cron changes status to 'expired', isTrial is false — detect post-cron trial expiry
+  const wasTrialExpiredByCron = status === 'expired' && !!endDate && !hasFreeAccess;
+  const isTrialExpired = (isTrial && (!endDate || endDate.getTime() <= Date.now())) || wasTrialExpiredByCron;
 
   // Legacy: user created before subscription system with no subscription
   const isLegacy = isNone && !!createdAt && new Date(createdAt) < SUBSCRIPTION_CUTOFF_DATE;
 
-  // Active = any bypass OR paid active OR active trial
-  const isActive = hasFreeAccess || userIsFounder || isLegacy || isPaidActive || isTrialActive;
+  // Bug 2B fix: enforce trial expiry client-side instead of relying on cron to flip has_free_access
+  // For trial users, only grant access if end date is in the future
+  // For non-trial free access (founders, promo), hasFreeAccess alone is sufficient
+  const isActive = userIsFounder || isLegacy || isPaidActive || isTrialActive
+    || (hasFreeAccess && !isTrial);
 
   // Calculate days remaining for active paid subscriptions AND active trials
   let daysRemaining: number | null = null;
