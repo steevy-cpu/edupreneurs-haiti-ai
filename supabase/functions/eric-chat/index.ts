@@ -152,7 +152,8 @@ serve(async (req) => {
     }
 
     const isFirstMessage = !conversationHistory || conversationHistory.length === 0;
-    const nicknameText = userNickname || "l'élève";
+    // PII hardening: sanitize nickname to strip any leaked email
+    const nicknameText = sanitizeContent(userNickname || "l'élève");
     const greetingInstruction = isFirstMessage 
       ? `SALUTATION PREMIÈRE FOIS: Commence par "${greeting} ${nicknameText} ! Je suis Jude, votre assistant IA éducatif."`
       : `CONVERSATION EN COURS: Ne dis pas bonjour à nouveau. Continue naturellement.`;
