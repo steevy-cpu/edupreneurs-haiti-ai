@@ -180,12 +180,18 @@ ${greetingInstruction}
 
 ❌ IMPORTANT: Ne commence JAMAIS tes réponses par "[nom]:" ou "[Jude]:" - commence directement par ta réponse.
 
-❌ HORS COMPÉTENCE: Questions non-éducatives → réponds poliment.`;
+❌ HORS COMPÉTENCE: Questions non-éducatives → réponds poliment.
 
+❌ NE RÉPÈTE JAMAIS d'adresse email, numéro de téléphone, ou toute information personnelle identifiable dans tes réponses. Adresse-toi aux utilisateurs uniquement par leur prénom/surnom.`;
+
+    // PII hardening: sanitize conversation history before sending to AI
     const aiMessages = [
       { role: 'system', content: systemPrompt },
-      ...conversationHistory.slice(-20), // Limit history
-      { role: 'user', content: `[${nicknameText}]: ${userMessage}` }
+      ...conversationHistory.slice(-20).map((msg: any) => ({
+        ...msg,
+        content: sanitizeContent(msg.content)
+      })),
+      { role: 'user', content: sanitizeContent(`[${nicknameText}]: ${userMessage}`) }
     ];
 
     console.log('Calling Lovable AI...');
