@@ -162,22 +162,30 @@ export function saveSignupProgress(data: Partial<SignupFormData>): void {
   try {
     const existing = getSignupProgress();
     const merged = { ...existing, ...data };
-    sessionStorage.setItem(SIGNUP_DATA_KEY, JSON.stringify(merged));
+    // Split: non-sensitive fields → localStorage (survives MonCash in-app browser switch)
+    // Password → sessionStorage only (never persisted to disk)
+    const { password, ...safeData } = merged;
+    localStorage.setItem(SIGNUP_DATA_KEY, JSON.stringify(safeData));
+    if (password) {
+      sessionStorage.setItem(SIGNUP_DATA_KEY + '_pw', password);
+    }
   } catch (error) {
     console.error('Failed to save signup progress:', error);
   }
 }
 
 /**
- * Get signup progress from sessionStorage
+ * Get signup progress — merges localStorage (persistent) + sessionStorage (password)
  */
 export function getSignupProgress(): SignupFormData {
   try {
-    const stored = sessionStorage.getItem(SIGNUP_DATA_KEY);
-    // One-time cleanup: evict any legacy data stored in localStorage
-    localStorage.removeItem(SIGNUP_DATA_KEY);
+    const stored = localStorage.getItem(SIGNUP_DATA_KEY);
     if (!stored) return {};
-    return JSON.parse(stored);
+    const data: SignupFormData = JSON.parse(stored);
+    // Reunite password from sessionStorage if available (same-tab only)
+    const pw = sessionStorage.getItem(SIGNUP_DATA_KEY + '_pw');
+    if (pw) data.password = pw;
+    return data;
   } catch (error) {
     console.error('Failed to get signup progress:', error);
     return {};
@@ -185,12 +193,13 @@ export function getSignupProgress(): SignupFormData {
 }
 
 /**
- * Clear signup progress
+ * Clear signup progress from all storage locations
  */
 export function clearSignupProgress(): void {
   try {
+    localStorage.removeItem(SIGNUP_DATA_KEY);
     sessionStorage.removeItem(SIGNUP_DATA_KEY);
-    localStorage.removeItem(SIGNUP_DATA_KEY); // Legacy cleanup
+    sessionStorage.removeItem(SIGNUP_DATA_KEY + '_pw');
   } catch (error) {
     console.error('Failed to clear signup progress:', error);
   }
