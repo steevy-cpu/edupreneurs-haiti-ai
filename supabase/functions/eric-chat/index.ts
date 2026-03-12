@@ -59,6 +59,19 @@ serve(async (req) => {
     const verifiedUserId = claims.user.id;
 
     const rawBody = await req.json();
+
+    // PII sanitizer — masks emails (incl. space-around-@ variants), phones, and URLs
+    const sanitizeContent = (content: string): string => {
+      if (!content) return content;
+      return content
+        // Mask email addresses including space-before/after-@ variants
+        .replace(/[a-zA-Z0-9._%+-]+\s*@\s*[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi, '[email masqué]')
+        // Mask phone numbers (Haiti +509 format + international)
+        .replace(/(\+509|00509)?\s*\d{2}\s*\d{2}\s*\d{2}\s*\d{2}/g, '[téléphone masqué]')
+        // Mask URLs to prevent data exfiltration
+        .replace(/https?:\/\/[^\s]+/gi, '[lien masqué]');
+    };
+
     const { conversationId, userMessage, userNickname } = rawBody;
 
     // Basic validation
