@@ -157,9 +157,11 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
 
         setUserNickname(profile?.nickname || null);
         setUserGrade(profile?.academic_grade || null);
+        // Track pending_gift status so OnboardingQuiz can show waiting UI
+        setIsPendingGift(profile?.subscription_status === 'pending_gift');
 
-        // Skip onboarding if subscription is not active
-        if (!profile?.has_free_access) {
+        // Skip onboarding if subscription is not active (allow pending_gift through)
+        if (!profile?.has_free_access && profile?.subscription_status !== 'pending_gift') {
           const isActive = profile?.subscription_status === 'active'
             && profile?.subscription_end_date
             && new Date(profile.subscription_end_date) > new Date();
