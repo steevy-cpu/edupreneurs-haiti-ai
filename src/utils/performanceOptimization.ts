@@ -73,7 +73,10 @@ export function memoize<T extends (...args: any[]) => any>(func: T): T {
   }) as T;
 }
 
-// Check if user is on a slow connection
+/**
+ * Checks if the user is on a slow or data-saving connection via the Network Information API.
+ * @returns True if connection is 2G, slow-2G, or data saver is enabled
+ */
 export function isSlowConnection(): boolean {
   if ('connection' in navigator) {
     const connection = (navigator as any).connection;
