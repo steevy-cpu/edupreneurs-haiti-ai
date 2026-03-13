@@ -447,6 +447,16 @@ const OnboardingQuiz = () => {
   // Stop voice on unmount — use ref to avoid stale closure
   useEffect(() => () => stopRef.current(), []);
 
+  // FIX 3: track when reaction audio finishes via isSpeaking transition (true→false)
+  const prevIsSpeakingRef = useRef(isSpeaking);
+  useEffect(() => {
+    // Detect isSpeaking going from true→false while reaction is showing
+    if (prevIsSpeakingRef.current && !isSpeaking && showReaction) {
+      reactionAudioDoneRef.current = true;
+    }
+    prevIsSpeakingRef.current = isSpeaking;
+  }, [isSpeaking, showReaction]);
+
   // Early returns AFTER all hooks
   if (!isStable) return null;
   if (!firstTimeUser.showOnboardingQuiz || firstTimeUser.isLoading || !firstTimeUser.userId) return null;
