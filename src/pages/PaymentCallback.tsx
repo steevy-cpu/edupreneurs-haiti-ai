@@ -90,11 +90,11 @@ export default function PaymentCallback() {
       }
     } catch (err) {
       console.error('Payment status check failed:', err);
-      if (attemptsRef.current >= maxAttempts) {
+      if (attemptsRef.current >= PAYMENT_MAX_POLL_ATTEMPTS) {
         setStatus('error');
         setErrorMessage('Erreur lors de la vérification du paiement');
       } else {
-        setTimeout(checkPaymentStatus, pollInterval);
+        setTimeout(checkPaymentStatus, PAYMENT_POLL_INTERVAL_MS);
       }
     }
   }, [internalOrderId, bazikOrderId]);
