@@ -201,7 +201,12 @@ export function clearApiCache(): void {
   apiCache.clear();
 }
 
-// Optimize images
+/**
+ * Appends optimization query parameters to storage image URLs.
+ * @param url - Original image URL
+ * @param width - Optional target width for resizing
+ * @returns URL with optimization parameters appended (if applicable)
+ */
 export function getOptimizedImageUrl(url: string, width?: number): string {
   if (!url) return url;
   
