@@ -653,11 +653,16 @@ const OnboardingQuiz = () => {
                 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-b-[12px] border-b-card/95
                 md:border-t-[12px] md:border-t-transparent md:border-b-[12px] md:border-b-transparent md:border-r-[12px] md:border-r-card/95 md:border-l-0" 
               />
-              <p className="text-base sm:text-lg text-foreground font-medium">
+              <p className="text-base sm:text-lg text-foreground font-medium min-h-[3rem]">
                 {showReaction || isOutro ? (
-                  <SimpleTypewriter text={speech} speed={50} enableSound={true} /* FIX 1: always enable synth clicks */ soundVolume={0.04} />
+                  /* Reactions/outro — always show immediately, no speed gate */
+                  <SimpleTypewriter text={speech} speed={50} enableSound={true} soundVolume={0.04} />
+                ) : isSpeedReady ? (
+                  /* FIX 7: question text — gated on speed readiness for sync with voice */
+                  <SimpleTypewriter key={`speech-${currentStep}`} text={speech} speed={typingSpeed} enableSound={true} soundVolume={0.04} />
                 ) : (
-                  <SimpleTypewriter key={`speech-${currentStep}`} text={speech} speed={50} enableSound={true} /* FIX 1 */ soundVolume={0.04} />
+                  /* FIX 7: blinking cursor placeholder while waiting for duration probe */
+                  <span className="animate-pulse text-muted-foreground">|</span>
                 )}
               </p>
             </div>
