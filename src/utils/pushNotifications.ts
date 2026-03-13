@@ -111,6 +111,10 @@ export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration
   }
 };
 
+/**
+ * Requests notification permission from the user with iOS-specific checks.
+ * @returns The resulting permission state ('granted', 'denied', or 'default')
+ */
 export const requestNotificationPermission = async (): Promise<NotificationPermission> => {
   if (!('Notification' in window)) {
     if (DEBUG) console.error('❌ Notifications API not supported');
