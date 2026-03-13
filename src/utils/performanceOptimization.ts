@@ -119,7 +119,13 @@ export function batchUpdates<T>(
   }
 }
 
-// Lazy load components when they enter viewport
+/**
+ * Triggers a callback when an element enters the viewport using IntersectionObserver.
+ * Falls back to immediate execution if IntersectionObserver is unavailable.
+ * @param element - DOM element to observe
+ * @param callback - Function to call when element becomes visible
+ * @returns The observer instance (for manual cleanup) or null
+ */
 export function lazyLoadOnIntersection(
   element: Element,
   callback: () => void
