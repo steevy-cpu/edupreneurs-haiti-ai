@@ -47,6 +47,8 @@ export function JudeAudioProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isError, setIsError] = useState(false);
+  /** FIX 2: limit error toast to once per failure burst — reset on successful play */
+  const hasShownErrorRef = useRef(false);
 
   // Music ducking — save pre-duck volume to restore later
   const { volume, setVolume, isPlaying: isMusicPlaying } = useMusicPlayer();
