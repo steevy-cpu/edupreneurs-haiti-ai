@@ -22,6 +22,11 @@
 const RELOAD_KEY = 'chunk_reload_attempted';
 const RELOAD_COOLDOWN = 5000; // 5 seconds
 
+/**
+ * Determines whether an error is a chunk load failure from stale cache.
+ * @param error - The caught error to inspect
+ * @returns True if the error matches known chunk load failure patterns
+ */
 export function isChunkLoadError(error: unknown): boolean {
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
