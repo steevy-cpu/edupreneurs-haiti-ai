@@ -490,17 +490,22 @@ const FirstTimeUserTour = () => {
               >
                 <h3 className="font-bold text-foreground mb-1">{currentStep.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed min-h-[3rem]">
-                  {/* 3C: pass skipToEnd when user taps next while typing */}
+                  {/* FIX 7: gate typewriter on speed readiness for voice sync */}
                   {shouldAnimate ? (
-                    <SimpleTypewriter
-                      key={typewriterKey}
-                      text={getDescription()}
-                      speed={50}
-                      enableSound={true} /* FIX 7b: always enable synth clicks as fallback */
-                      soundVolume={0.04}
-                      skipToEnd={skipTyping}
-                      onComplete={() => setIsTypingComplete(true)}
-                    />
+                    isSpeedReady ? (
+                      <SimpleTypewriter
+                        key={typewriterKey}
+                        text={getDescription()}
+                        speed={typingSpeed}
+                        enableSound={true}
+                        soundVolume={0.04}
+                        skipToEnd={skipTyping}
+                        onComplete={() => setIsTypingComplete(true)}
+                      />
+                    ) : (
+                      /* Blinking cursor placeholder while waiting for duration probe */
+                      <span className="animate-pulse text-muted-foreground">|</span>
+                    )
                   ) : (
                     // On slow connections: render instantly
                     <span>{getDescription()}</span>
