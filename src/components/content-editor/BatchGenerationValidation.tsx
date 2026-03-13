@@ -77,67 +77,13 @@ import {
   type ParsedTrueFalseActivity,
   type ParseResult,
 } from "@/utils/quizActivityParsing";
-
-// Types
-type GenerationStatus = 'pending' | 'in_progress' | 'completed' | 'error';
-
-interface LessonGenerationStatus {
-  lessonId: string;
-  title: string;
-  status: GenerationStatus;
-  sectionsGenerated: string[];
-  generationTime: number;
-  qualityScore?: number;
-  error?: string;
-  generatedContent?: Record<string, any>;
-  audioUrls?: {
-    objectif?: string;
-    introduction?: string;
-    contenu?: string;
-    exemples?: string;
-  };
-}
-
-interface LessonValidation {
-  lesson: {
-    id: string;
-    title: string;
-    slug: string;
-    grade_level: string;
-    subject_name: string;
-  };
-  quizParsed: ParsedQuestion[];
-  quizErrors: string[];
-  activitiesParsed: ParsedActivity[];
-  activityErrors: string[];
-  originalActivityContent?: string;
-  originalQuizContent?: string;
-  aiValidation?: {
-    confidence: number;
-    issues: Array<{ questionIndex: number; issue: string; suggestedFix?: string }>;
-  };
-  activityAIValidation?: {
-    confidence: number;
-    issues: Array<{ activityIndex: number; issue: string; suggestedFix?: string }>;
-  };
-}
-
-interface ValidationStats {
-  total: number;
-  quizValid: number;
-  quizInvalid: number;
-  activitiesValid: number;
-  activitiesInvalid: number;
-}
-
-interface RegenerationPreview {
-  lessonId: string;
-  lessonTitle: string;
-  type: 'quiz' | 'activity';
-  correctedItems: any[];
-  newContent: string;
-  issuesFixed: number;
-}
+import type {
+  GenerationStatus,
+  LessonGenerationStatus,
+  LessonValidation,
+  ValidationStats,
+  RegenerationPreview,
+} from "@/types/batch-generation.types";
 
 export const BatchGenerationValidation = () => {
   // Shared filter states

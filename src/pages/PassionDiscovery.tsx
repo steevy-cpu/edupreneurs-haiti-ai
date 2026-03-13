@@ -46,57 +46,7 @@ import judePassionDiscovery from "@/assets/jude-passion-discovery.png";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { VisitorPassionOverlay } from "@/components/passion/VisitorPassionOverlay";
 import { useNetwork } from "@/contexts/NetworkContext";
-
-interface QuizQuestion {
-  id: number;
-  question: string;
-  options: Array<{ text: string; passion: string; judeImage: string }>;
-  judeImage: string;
-}
-
-interface Activity {
-  id: string;
-  type: "video" | "quiz" | "reading" | "game";
-  title: string;
-  description: string;
-  duration: string;
-  completed: boolean;
-}
-
-interface Module {
-  id: string;
-  title: string;
-  description: string;
-  duration: string;
-  completed: boolean;
-  locked: boolean;
-  activities: Activity[];
-}
-
-interface Category {
-  id: string;
-  title: string;
-  icon: React.ComponentType<{ className?: string }>;
-  description: string;
-  fullDescription: string;
-  color: string;
-  modules: Module[];
-  hasGameLink?: boolean;
-}
-
-interface YouTubeVideo {
-  id: string;
-  title: string;
-  thumbnail: string;
-  channelTitle: string;
-}
-
-interface PassionScores {
-  music: number;
-  arts: number;
-  chess: number;
-  literature: number;
-}
+import type { QuizQuestion, Activity, Module, Category, YouTubeVideo, PassionScores } from "@/types/passion.types";
 
 const PassionDiscoveryContent = () => {
   const navigate = useNavigate();

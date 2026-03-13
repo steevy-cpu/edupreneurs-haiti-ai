@@ -66,30 +66,10 @@ import { initializePushNotifications } from "@/utils/pushNotifications";
 import { useStreak } from "@/contexts/StreakContext";
 import { STREAK_FLAME_URL } from "@/lib/streakConstants";
 
+import type { UserProfile, NotificationGroup } from "@/types/settings.types";
+
 // Lazy load heavy components
 const AvatarSelector = lazy(() => import('@/components/AvatarSelector').then(m => ({ default: m.AvatarSelector })));
-
-interface UserProfile {
-  id: string;
-  full_name: string;
-  nickname: string;
-  academic_grade: string;
-  phone_number: string;
-  user_id: string;
-  bio: string | null;
-  school: string | null;
-  avatar_url: string | null;
-  gender: string | null;
-  date_of_birth: string | null;
-}
-
-/** Each group maps to one or more real categories checked by the push system */
-interface NotificationGroup {
-  key: string;
-  categories: string[];
-  label: string;
-  description: string;
-}
 
 const NOTIFICATION_GROUPS: NotificationGroup[] = [
   { key: 'interactions', categories: ['like', 'comment', 'share', 'mention'], label: 'Interactions', description: 'Likes, commentaires, partages et mentions' },

@@ -10,17 +10,7 @@ import judeProfile from "@/assets/eric-new-profile.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useUserGrade, isNonAcademicGrade, type AllGradeTypes } from "@/hooks/useUserGrade";
 import { NonAcademicLockedOverlay } from "@/components/shared/NonAcademicLockedOverlay";
-
-interface Exam {
-  id: string;
-  title: string;
-  subject: string;
-  grade_level: string;
-  year: number;
-  total_exercises: number;
-  total_points: number;
-  pdf_url: string | null;
-}
+import type { Exam } from "@/features/exams/types/exam.types";
 
 const SUBJECTS = [
   { name: "Mathématiques", color: "from-blue-500 to-blue-600", icon: Calculator },

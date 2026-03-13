@@ -13,44 +13,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { WordOfTheDayCard } from "@/components/dashboard/WordOfTheDayCard";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { DashboardFullSkeleton } from "@/components/shared/SkeletonLoaders";
-
-// Feature-level state interface for independent loading/error states
-interface FeatureState<T> {
-  data: T;
-  loading: boolean;
-  error: Error | null;
-}
-
-interface Note {
-  id: string;
-  lesson_id: string;
-  notes: string | null;
-  updated_at: string;
-  lesson_slug?: string;
-  lesson_title?: string;
-  subject_slug?: string;
-  subject_name?: string;
-}
-
-interface LeaderboardUser {
-  id: string;
-  user_id: string;
-  full_name: string;
-  nickname: string;
-  avatar_url: string | null;
-  gold_earned: number;
-  academic_grade: string;
-  rank: number;
-}
-
-interface RecentSubjectProgress {
-  subject: string;
-  subjectSlug: string;
-  lastLessonSlug: string;
-  lastLessonTitle: string;
-  progress: number;
-  lastActivity: string;
-}
+import type { FeatureState, Note, LeaderboardUser, RecentSubjectProgress } from "@/types/dashboard.types";
 
 const Dashboard = () => {
   const { restartTour } = useFirstTimeUser();

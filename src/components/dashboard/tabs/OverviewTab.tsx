@@ -12,21 +12,7 @@ import { StreakIndicator } from "@/components/dashboard/StreakIndicator";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { AnalyticsWidgetSkeleton } from "@/components/shared/SkeletonLoaders";
-
-interface RecentSubjectProgress {
-  subject: string;
-  subjectSlug: string;
-  lastLessonSlug: string;
-  lastLessonTitle: string;
-  progress: number;
-  lastActivity: string;
-}
-
-interface FeatureState<T> {
-  data: T;
-  loading: boolean;
-  error: Error | null;
-}
+import type { FeatureState, RecentSubjectProgress } from "@/types/dashboard.types";
 
 const SUBJECT_COLORS: Record<string, string> = {
   mathematiques: "border-l-blue-500",
