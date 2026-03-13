@@ -92,6 +92,10 @@ const OnboardingQuiz = () => {
   const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(null);
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
   const nicknameCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** FIX 3: tracks when reaction audio finishes so timer can wait for it */
+  const reactionAudioDoneRef = useRef(false);
+  /** FIX 4: generation counter to discard stale voice fetches on rapid clicks */
+  const fetchGenRef = useRef(0);
 
   // Derived firstName for speech bubbles
   const firstName = fullName.split(/\s+/)[0] || 'ami(e)';
