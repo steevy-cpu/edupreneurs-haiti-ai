@@ -236,19 +236,29 @@ const FirstTimeUserTour = () => {
   }, [computeSpotlight, firstTimeUser.tourStep, firstTimeUser.tourActive, firstTimeUser.tourCompleted]);
 
   // Voice: fetch and play TTS for each tour step with 600ms navigation settle delay.
-  // Uses refs for speak/stop to avoid stale closures, reads mute from localStorage
-  // for always-fresh value, and guards on tourActive/tourCompleted.
+  // FIX 7: probes audio duration to compute dynamic typing speed
   useEffect(() => {
     if (!firstTimeUser.tourActive || firstTimeUser.tourCompleted) return;
 
     stopRef.current();
+    if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
 
     // Read mute state directly from localStorage — avoids stale closure on isMuted
     const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
-    if (isMutedNow) return;
+    if (isMutedNow) {
+      setIsSpeedReady(true); // no audio → use default speed
+      return;
+    }
 
     const text = TOUR_VOICE_TEXTS[firstTimeUser.tourStep];
-    if (!text) return;
+    if (!text) {
+      setIsSpeedReady(true);
+      return;
+    }
+
+    const gen = ++fetchGenRef.current;
+    // Display text (with emojis) for speed calc
+    const displayText = tourSteps[firstTimeUser.tourStep]?.description || text;
 
     const timer = setTimeout(() => {
       supabase.functions.invoke('generate-jude-voice', {
@@ -258,11 +268,39 @@ const FirstTimeUserTour = () => {
           context: 'onboarding'
         }
       }).then(({ data }) => {
-        if (data?.url) speakRef.current(data.url);
-      }).catch(() => {}); // silent fail — typing sounds as fallback
+        if (gen !== fetchGenRef.current) return; // stale
+        if (data?.url) {
+          // FIX 7: probe audio duration before speaking
+          const probe = new Audio(data.url);
+          const probeTimeout = setTimeout(() => {
+            if (gen === fetchGenRef.current) setIsSpeedReady(true); // 800ms safety cap
+          }, 800);
+          speedTimeoutRef.current = probeTimeout;
+          probe.addEventListener('loadedmetadata', () => {
+            clearTimeout(probeTimeout);
+            if (gen !== fetchGenRef.current) return;
+            const computed = Math.max(30, Math.floor((probe.duration * 1000 * 0.9) / displayText.length));
+            setTypingSpeed(computed);
+            setIsSpeedReady(true);
+          });
+          probe.addEventListener('error', () => {
+            clearTimeout(probeTimeout);
+            if (gen === fetchGenRef.current) setIsSpeedReady(true);
+          });
+          probe.load();
+          speakRef.current(data.url);
+        } else {
+          setIsSpeedReady(true);
+        }
+      }).catch(() => {
+        if (gen === fetchGenRef.current) setIsSpeedReady(true);
+      });
     }, 600); // wait for navigation animation to settle
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
+    };
   }, [firstTimeUser.tourStep, firstTimeUser.tourActive, firstTimeUser.tourCompleted]);
 
   // Voice the celebration overlay
