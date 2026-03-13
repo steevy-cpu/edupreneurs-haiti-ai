@@ -30,8 +30,6 @@ export default function PaymentCallback() {
   const internalOrderId = searchParams.get('referenceId') || searchParams.get('orderId');
   const bazikOrderId = searchParams.get('orderId');
   const hasError = searchParams.get('error') === 'true';
-  const maxAttempts = 10;
-  const pollInterval = 3000; // 3 seconds
 
   const checkPaymentStatus = useCallback(async () => {
     if (!internalOrderId) return;

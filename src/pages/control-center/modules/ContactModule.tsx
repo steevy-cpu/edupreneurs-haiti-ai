@@ -321,12 +321,11 @@ export default function ContactModule() {
                 </PaginationItem>
                 {(() => {
                   // 5-page sliding window centered on currentPage — pages 6+ are always reachable
-                  const windowSize = 5;
-                  const halfWindow = Math.floor(windowSize / 2);
+                  const halfWindow = Math.floor(PAGINATION_WINDOW_SIZE / 2);
                   let startPage = Math.max(1, currentPage - halfWindow);
-                  let endPage = Math.min(totalPages, startPage + windowSize - 1);
-                  if (endPage - startPage < windowSize - 1) {
-                    startPage = Math.max(1, endPage - windowSize + 1);
+                  let endPage = Math.min(totalPages, startPage + PAGINATION_WINDOW_SIZE - 1);
+                  if (endPage - startPage < PAGINATION_WINDOW_SIZE - 1) {
+                    startPage = Math.max(1, endPage - PAGINATION_WINDOW_SIZE + 1);
                   }
                   return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
                 })().map((pageNum) => (

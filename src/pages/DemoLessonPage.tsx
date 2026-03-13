@@ -15,12 +15,10 @@ import { ArrowRight, AlertCircle } from 'lucide-react';
 import { LessonPageTemplate } from '@/components/LessonPageTemplate';
 import type { LessonData } from '@/features/matieres/types/lesson.types';
 import judeImage from '@/assets/eric-chair-desk.png';
+import { DEMO_LESSON_SLUG, DEMO_SUBJECT_SLUG, DEMO_GRADE_LEVEL } from '@/lib/constants/demo';
 
-// Hardcoded demo lesson — English 8AF "Physical and Emotional Descriptions"
+// Hardcoded demo lesson UUID — kept local, not in constants file
 const DEMO_LESSON_ID = '201daf11-e7bc-4fb9-bcf5-ca17475a1d3c';
-const DEMO_LESSON_SLUG = 'descriptions-physiques-emotives';
-const DEMO_SUBJECT_SLUG = 'anglais-8af';
-const DEMO_GRADE_LEVEL = '8AF';
 
 export default function DemoLessonPage() {
   const navigate = useNavigate();

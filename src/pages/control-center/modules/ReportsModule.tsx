@@ -47,8 +47,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { REPORT_REASONS, REPORT_STATUS, UserReport } from "../types";
 import { FOUNDER_USER_IDS } from "@/lib/founderConstants";
-
-const PAGE_SIZE = 15;
+import { ITEMS_PER_PAGE } from '@/lib/constants/pagination';
 
 // Protected accounts that cannot be deleted
 const PROTECTED_USER_IDS = [

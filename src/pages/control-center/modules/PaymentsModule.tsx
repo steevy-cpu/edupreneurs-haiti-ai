@@ -45,7 +45,7 @@ const PaymentsModule = () => {
   const [page, setPage] = useState(0);
   const [allPayments, setAllPayments] = useState<PaymentTransaction[]>([]);
   const [hasMore, setHasMore] = useState(true);
-  const PAGE_SIZE = 50;
+  
 
   // Reset accumulated data when filters change
   useEffect(() => {

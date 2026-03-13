@@ -20,7 +20,7 @@ const DonationsModule = () => {
   const [page, setPage] = useState(0);
   const [allDonations, setAllDonations] = useState<DonationAdmin[]>([]);
   const [hasMore, setHasMore] = useState(true);
-  const PAGE_SIZE = 50;
+  
 
   const queryClient = useQueryClient();
 

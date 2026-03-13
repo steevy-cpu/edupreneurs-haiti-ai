@@ -57,7 +57,7 @@ const GRADES = [
   { value: "S1", label: "S1" },
 ];
 
-const PAGE_SIZE = 20;
+
 
 export default function UsersModule() {
   const navigate = useNavigate();
