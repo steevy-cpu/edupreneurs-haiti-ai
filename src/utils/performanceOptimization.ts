@@ -54,7 +54,11 @@ export function throttle<T extends (...args: any[]) => any>(
   };
 }
 
-// Memoization helper for expensive computations
+/**
+ * Caches function results based on serialized arguments to avoid redundant computation.
+ * @param func - Pure function to memoize
+ * @returns Memoized version with internal Map cache
+ */
 export function memoize<T extends (...args: any[]) => any>(func: T): T {
   const cache = new Map();
   
