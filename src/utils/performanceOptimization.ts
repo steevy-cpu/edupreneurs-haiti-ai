@@ -33,7 +33,12 @@ export function debounce<T extends (...args: any[]) => any>(
   };
 }
 
-// Throttle function for limiting execution frequency
+/**
+ * Limits function execution to at most once per specified time period.
+ * @param func - Function to throttle
+ * @param limit - Minimum interval between executions in milliseconds
+ * @returns Throttled version of the function
+ */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
   limit: number
