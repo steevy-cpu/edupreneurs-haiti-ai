@@ -12,6 +12,7 @@ import {
   Clock
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { PAYMENT_MAX_POLL_ATTEMPTS, PAYMENT_POLL_INTERVAL_MS } from '@/lib/constants/payment';
 
 type PaymentStatus = 'checking' | 'completed' | 'failed' | 'pending' | 'error';
 
@@ -29,8 +30,6 @@ export default function PaymentCallback() {
   const internalOrderId = searchParams.get('referenceId') || searchParams.get('orderId');
   const bazikOrderId = searchParams.get('orderId');
   const hasError = searchParams.get('error') === 'true';
-  const maxAttempts = 10;
-  const pollInterval = 3000; // 3 seconds
 
   const checkPaymentStatus = useCallback(async () => {
     if (!internalOrderId) return;
@@ -58,12 +57,12 @@ export default function PaymentCallback() {
 
       if (error) {
         console.error('Status check error:', error);
-        if (attemptsRef.current >= maxAttempts) {
+        if (attemptsRef.current >= PAYMENT_MAX_POLL_ATTEMPTS) {
           setStatus('error');
           setErrorMessage('Impossible de vérifier le statut du paiement');
           return;
         }
-        setTimeout(checkPaymentStatus, pollInterval);
+        setTimeout(checkPaymentStatus, PAYMENT_POLL_INTERVAL_MS);
         return;
       }
 
@@ -79,9 +78,9 @@ export default function PaymentCallback() {
         setStatus('failed');
         setErrorMessage(data?.transaction?.description || data?.error || 'Le paiement a échoué');
       } else if (paymentStatus === 'pending') {
-        if (attemptsRef.current < maxAttempts) {
+        if (attemptsRef.current < PAYMENT_MAX_POLL_ATTEMPTS) {
           setStatus('pending');
-          setTimeout(checkPaymentStatus, pollInterval);
+          setTimeout(checkPaymentStatus, PAYMENT_POLL_INTERVAL_MS);
         } else {
           setStatus('pending');
         }
@@ -91,11 +90,11 @@ export default function PaymentCallback() {
       }
     } catch (err) {
       console.error('Payment status check failed:', err);
-      if (attemptsRef.current >= maxAttempts) {
+      if (attemptsRef.current >= PAYMENT_MAX_POLL_ATTEMPTS) {
         setStatus('error');
         setErrorMessage('Erreur lors de la vérification du paiement');
       } else {
-        setTimeout(checkPaymentStatus, pollInterval);
+        setTimeout(checkPaymentStatus, PAYMENT_POLL_INTERVAL_MS);
       }
     }
   }, [internalOrderId, bazikOrderId]);
@@ -140,7 +139,7 @@ export default function PaymentCallback() {
               </p>
             </div>
             <div className="text-sm text-muted-foreground">
-              Tentative {attempts}/{maxAttempts}
+              Tentative {attempts}/{PAYMENT_MAX_POLL_ATTEMPTS}
             </div>
           </>
         );

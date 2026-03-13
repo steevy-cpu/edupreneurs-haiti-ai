@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { PAYMENTS_PAGE_SIZE } from '@/lib/constants/pagination';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,7 +20,7 @@ const DonationsModule = () => {
   const [page, setPage] = useState(0);
   const [allDonations, setAllDonations] = useState<DonationAdmin[]>([]);
   const [hasMore, setHasMore] = useState(true);
-  const PAGE_SIZE = 50;
+  
 
   const queryClient = useQueryClient();
 
@@ -39,7 +40,7 @@ const DonationsModule = () => {
         .select("id, order_id, amount, currency, provider, donor_name, donor_email, donor_message, status, created_at")
         .order("created_at", { ascending: false })
         // 50 rows per page — prevents unbounded fetches
-        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+        .range(page * PAYMENTS_PAGE_SIZE, page * PAYMENTS_PAGE_SIZE + PAYMENTS_PAGE_SIZE - 1);
 
       if (statusFilter !== "all") {
         query = query.eq("status", statusFilter);
@@ -57,8 +58,8 @@ const DonationsModule = () => {
   // Append fetched page to accumulated list
   useEffect(() => {
     if (!pageDonations) return;
-    // Fewer than PAGE_SIZE means no more rows
-    setHasMore(pageDonations.length === PAGE_SIZE);
+    // Fewer than PAYMENTS_PAGE_SIZE means no more rows
+    setHasMore(pageDonations.length === PAYMENTS_PAGE_SIZE);
     if (page === 0) {
       // First page replaces everything (handles filter resets)
       setAllDonations(pageDonations);

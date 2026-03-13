@@ -38,8 +38,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { FEEDBACK_RATING_OPTIONS, type LessonFeedbackAdmin } from '../types';
-
-const ITEMS_PER_PAGE = 15;
+import { ITEMS_PER_PAGE } from '@/lib/constants/pagination';
 
 export default function FeedbackModule() {
   const [feedbacks, setFeedbacks] = useState<LessonFeedbackAdmin[]>([]);

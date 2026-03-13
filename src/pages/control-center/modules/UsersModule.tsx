@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { USERS_PAGE_SIZE } from '@/lib/constants/pagination';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -56,7 +57,7 @@ const GRADES = [
   { value: "S1", label: "S1" },
 ];
 
-const PAGE_SIZE = 20;
+
 
 export default function UsersModule() {
   const navigate = useNavigate();
@@ -82,7 +83,7 @@ export default function UsersModule() {
         .from("profiles")
         .select("id, user_id, full_name, nickname, avatar_url, academic_grade, school, verified, created_at, last_seen, gold_earned", { count: "exact" })
         .order("created_at", { ascending: false })
-        .range(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE - 1);
+        .range(currentPage * USERS_PAGE_SIZE, (currentPage + 1) * USERS_PAGE_SIZE - 1);
 
       if (searchTerm) {
         query = query.or(`full_name.ilike.%${searchTerm}%,nickname.ilike.%${searchTerm}%`);
@@ -110,7 +111,7 @@ export default function UsersModule() {
     ? users.filter(u => isOnline(u.user_id))
     : users;
 
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const totalPages = Math.ceil(totalCount / USERS_PAGE_SIZE);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Jamais";

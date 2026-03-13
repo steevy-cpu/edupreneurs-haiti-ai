@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { PAYMENTS_PAGE_SIZE } from '@/lib/constants/pagination';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -44,7 +45,7 @@ const PaymentsModule = () => {
   const [page, setPage] = useState(0);
   const [allPayments, setAllPayments] = useState<PaymentTransaction[]>([]);
   const [hasMore, setHasMore] = useState(true);
-  const PAGE_SIZE = 50;
+  
 
   // Reset accumulated data when filters change
   useEffect(() => {
@@ -61,7 +62,7 @@ const PaymentsModule = () => {
         .select('*')
         .order('created_at', { ascending: false })
         // 50 rows per page — prevents unbounded fetches
-        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+        .range(page * PAYMENTS_PAGE_SIZE, page * PAYMENTS_PAGE_SIZE + PAYMENTS_PAGE_SIZE - 1);
       
       // Apply filters
       if (statusFilter !== "all") {
@@ -85,7 +86,7 @@ const PaymentsModule = () => {
   // Append fetched page to accumulated list
   useEffect(() => {
     if (!pagePayments) return;
-    setHasMore(pagePayments.length === PAGE_SIZE);
+    setHasMore(pagePayments.length === PAYMENTS_PAGE_SIZE);
     if (page === 0) {
       setAllPayments(pagePayments);
     } else {

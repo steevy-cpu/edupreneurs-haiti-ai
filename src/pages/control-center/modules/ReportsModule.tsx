@@ -47,8 +47,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { REPORT_REASONS, REPORT_STATUS, UserReport } from "../types";
 import { FOUNDER_USER_IDS } from "@/lib/founderConstants";
-
-const PAGE_SIZE = 15;
+import { ITEMS_PER_PAGE } from '@/lib/constants/pagination';
 
 // Protected accounts that cannot be deleted
 const PROTECTED_USER_IDS = [
@@ -87,7 +86,7 @@ export default function ReportsModule() {
         .from("user_reports")
         .select("*", { count: "exact" })
         .order("created_at", { ascending: false })
-        .range(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE - 1);
+        .range(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE - 1);
 
       if (statusFilter !== "all") {
         query = query.eq("status", statusFilter);
@@ -320,7 +319,7 @@ export default function ReportsModule() {
 
   const isProtectedUser = (userId: string) => PROTECTED_USER_IDS.includes(userId);
 
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
   const formatDate = (dateString: string) => {
     return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale: fr });
