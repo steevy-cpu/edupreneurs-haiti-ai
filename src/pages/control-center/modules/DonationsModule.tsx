@@ -40,7 +40,7 @@ const DonationsModule = () => {
         .select("id, order_id, amount, currency, provider, donor_name, donor_email, donor_message, status, created_at")
         .order("created_at", { ascending: false })
         // 50 rows per page — prevents unbounded fetches
-        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+        .range(page * PAYMENTS_PAGE_SIZE, page * PAYMENTS_PAGE_SIZE + PAYMENTS_PAGE_SIZE - 1);
 
       if (statusFilter !== "all") {
         query = query.eq("status", statusFilter);
