@@ -96,6 +96,10 @@ const OnboardingQuiz = () => {
   const reactionAudioDoneRef = useRef(false);
   /** FIX 4: generation counter to discard stale voice fetches on rapid clicks */
   const fetchGenRef = useRef(0);
+  /** FIX 7: dynamic typing speed — syncs typewriter duration with voice clip */
+  const [typingSpeed, setTypingSpeed] = useState(50);
+  const [isSpeedReady, setIsSpeedReady] = useState(false);
+  const speedTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Derived firstName for speech bubbles
   const firstName = fullName.split(/\s+/)[0] || 'ami(e)';
@@ -378,12 +382,13 @@ const OnboardingQuiz = () => {
   }, [currentStep, fullName]);
 
   // --- Voice: fetch audio from generate-jude-voice and play via JudeAudioContext ---
-  /** FIX 4: generation counter prevents stale fetches from playing on rapid clicks */
-  const fetchAndSpeak = async (text: string, storageKey: string) => {
+  /** FIX 4+7: fetch voice audio, probe duration for typing speed, then play */
+  const fetchAndSpeak = async (text: string, storageKey: string, charCount?: number) => {
     const gen = ++fetchGenRef.current; // stamp this request
     const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
     if (isMutedNow) {
       reactionAudioDoneRef.current = true; // FIX 3: no audio → mark done immediately
+      setIsSpeedReady(true); // FIX 7: no audio → use default speed
       return;
     }
     stopRef.current(); // FIX 4: stop any playing audio before fetching
@@ -394,20 +399,64 @@ const OnboardingQuiz = () => {
       // FIX 4: discard if a newer fetch was started while we awaited
       if (gen !== fetchGenRef.current) return;
       if (data?.url) {
+        if (charCount && charCount > 0) {
+          // FIX 7: probe audio duration to compute dynamic typing speed
+          const probe = new Audio(data.url);
+          const probeTimeout = setTimeout(() => {
+            // Safety cap — 800ms max wait for metadata
+            if (gen === fetchGenRef.current) setIsSpeedReady(true);
+          }, 800);
+          probe.addEventListener('loadedmetadata', () => {
+            clearTimeout(probeTimeout);
+            if (gen !== fetchGenRef.current) return;
+            const computed = Math.max(30, Math.floor((probe.duration * 1000 * 0.9) / charCount));
+            setTypingSpeed(computed);
+            setIsSpeedReady(true);
+          });
+          probe.addEventListener('error', () => {
+            clearTimeout(probeTimeout);
+            if (gen === fetchGenRef.current) setIsSpeedReady(true); // fallback default
+          });
+          probe.load();
+        } else {
+          // No charCount — reaction/outro text, show immediately
+          setIsSpeedReady(true);
+        }
         speakRef.current(data.url);
       } else {
         reactionAudioDoneRef.current = true; // FIX 3: no URL → mark done
+        setIsSpeedReady(true);
       }
     } catch {
       // Silent fail — typing sounds serve as fallback
       reactionAudioDoneRef.current = true; // FIX 3: error → mark done
+      setIsSpeedReady(true);
     }
   };
 
-  // Voice question text when currentStep changes — guarded by phase to prevent race
+  /** FIX 7: get display speech text length for a given step — used to calculate typing speed */
+  const getStepContentForSpeed = (step: number): { speech: string } => {
+    switch (step) {
+      case 0: return { speech: 'Salut! Comment tu t\'appelles? 😊' };
+      case 1: return { speech: `Et maintenant, ${firstName}, tu es en quelle classe?` };
+      case 2: return { speech: 'Tu préfères qu\'on te parle comment? 😊' };
+      case 3: return { speech: 'Quel est ton pseudo? C\'est comme ça que les autres étudiants vont te voir! 😎' };
+      case 4: return { speech: 'Dans quelle école tu étudies? 🏫' };
+      case 5: return { speech: 'C\'est quand ton anniversaire? 🎂 Je t\'enverrai un email spécial ce jour-là!' };
+      case 6: return { speech: 'Dernière question! Comment tu as entendu parler d\'Edupreneurs? 🌟' };
+      default: return { speech: '' };
+    }
+  };
+
+  // FIX 7: reset speed readiness so typewriter waits for duration probe
   useEffect(() => {
     if (!firstTimeUser.showOnboardingQuiz) return;
     if (showReaction || isOutro) return;
+    // Reset speed for new step — typewriter gated on isSpeedReady
+    setIsSpeedReady(false);
+    setTypingSpeed(50);
+    // Cleanup previous probe timeout
+    if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
     // Build clean text for TTS (strip emojis — ElevenLabs ignores them anyway)
     const speechTexts: Record<number, string> = {
       0: "Salut! Comment tu t'appelles?",
@@ -419,11 +468,17 @@ const OnboardingQuiz = () => {
       6: "Dernière question! Comment tu as entendu parler d'Edupreneurs?",
     };
     const text = speechTexts[currentStep];
-    if (!text) return;
+    if (!text) {
+      setIsSpeedReady(true); // no text → show immediately
+      return;
+    }
     // All question keys are static — pre-generated CDN cache hits
     const key = `onboarding/quiz-q${currentStep}`;
-    fetchAndSpeak(text, key);
-  }, [currentStep, firstTimeUser.showOnboardingQuiz]);
+    // FIX 7: pass charCount for the display text (with emojis) for speed calculation
+    const { speech } = getStepContentForSpeed(currentStep);
+    fetchAndSpeak(text, key, speech.length);
+    return () => { if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current); };
+  }, [currentStep, firstTimeUser.showOnboardingQuiz]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Voice reactions when they appear — guarded by phase
   useEffect(() => {
@@ -598,11 +653,16 @@ const OnboardingQuiz = () => {
                 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-b-[12px] border-b-card/95
                 md:border-t-[12px] md:border-t-transparent md:border-b-[12px] md:border-b-transparent md:border-r-[12px] md:border-r-card/95 md:border-l-0" 
               />
-              <p className="text-base sm:text-lg text-foreground font-medium">
+              <p className="text-base sm:text-lg text-foreground font-medium min-h-[3rem]">
                 {showReaction || isOutro ? (
-                  <SimpleTypewriter text={speech} speed={50} enableSound={true} /* FIX 1: always enable synth clicks */ soundVolume={0.04} />
+                  /* Reactions/outro — always show immediately, no speed gate */
+                  <SimpleTypewriter text={speech} speed={50} enableSound={true} soundVolume={0.04} />
+                ) : isSpeedReady ? (
+                  /* FIX 7: question text — gated on speed readiness for sync with voice */
+                  <SimpleTypewriter key={`speech-${currentStep}`} text={speech} speed={typingSpeed} enableSound={true} soundVolume={0.04} />
                 ) : (
-                  <SimpleTypewriter key={`speech-${currentStep}`} text={speech} speed={50} enableSound={true} /* FIX 1 */ soundVolume={0.04} />
+                  /* FIX 7: blinking cursor placeholder while waiting for duration probe */
+                  <span className="animate-pulse text-muted-foreground">|</span>
                 )}
               </p>
             </div>

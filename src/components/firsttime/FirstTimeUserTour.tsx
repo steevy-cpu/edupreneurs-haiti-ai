@@ -112,6 +112,11 @@ const FirstTimeUserTour = () => {
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
   // 3D: celebration overlay
   const [showCelebration, setShowCelebration] = useState(false);
+  /** FIX 7: dynamic typing speed — syncs typewriter with voice clip duration */
+  const [typingSpeed, setTypingSpeed] = useState(50);
+  const [isSpeedReady, setIsSpeedReady] = useState(false);
+  const speedTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const fetchGenRef = useRef(0);
 
   // Voice — fire-and-forget TTS per tour step
   const { speak, stop } = useJudeAudio();
@@ -185,12 +190,15 @@ const FirstTimeUserTour = () => {
     }
   }, [firstTimeUser.tourStep, firstTimeUser.tourActive, firstTimeUser.tourCompleted, currentStep, location.pathname, navigate, isNavigating]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Reset typewriter + skip state when step changes
+  // Reset typewriter + skip state + speed readiness when step changes
   useEffect(() => {
     setTypewriterKey(prev => prev + 1);
     setSkipTyping(false);
     setIsTypingComplete(false);
     setSpotlightRect(null);
+    // FIX 7: reset speed for new step
+    setIsSpeedReady(false);
+    setTypingSpeed(50);
   }, [firstTimeUser.tourStep]);
 
   // 3B: Spotlight — compute target element bounding rect
@@ -228,19 +236,29 @@ const FirstTimeUserTour = () => {
   }, [computeSpotlight, firstTimeUser.tourStep, firstTimeUser.tourActive, firstTimeUser.tourCompleted]);
 
   // Voice: fetch and play TTS for each tour step with 600ms navigation settle delay.
-  // Uses refs for speak/stop to avoid stale closures, reads mute from localStorage
-  // for always-fresh value, and guards on tourActive/tourCompleted.
+  // FIX 7: probes audio duration to compute dynamic typing speed
   useEffect(() => {
     if (!firstTimeUser.tourActive || firstTimeUser.tourCompleted) return;
 
     stopRef.current();
+    if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
 
     // Read mute state directly from localStorage — avoids stale closure on isMuted
     const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
-    if (isMutedNow) return;
+    if (isMutedNow) {
+      setIsSpeedReady(true); // no audio → use default speed
+      return;
+    }
 
     const text = TOUR_VOICE_TEXTS[firstTimeUser.tourStep];
-    if (!text) return;
+    if (!text) {
+      setIsSpeedReady(true);
+      return;
+    }
+
+    const gen = ++fetchGenRef.current;
+    // Display text (with emojis) for speed calc
+    const displayText = tourSteps[firstTimeUser.tourStep]?.description || text;
 
     const timer = setTimeout(() => {
       supabase.functions.invoke('generate-jude-voice', {
@@ -250,11 +268,39 @@ const FirstTimeUserTour = () => {
           context: 'onboarding'
         }
       }).then(({ data }) => {
-        if (data?.url) speakRef.current(data.url);
-      }).catch(() => {}); // silent fail — typing sounds as fallback
+        if (gen !== fetchGenRef.current) return; // stale
+        if (data?.url) {
+          // FIX 7: probe audio duration before speaking
+          const probe = new Audio(data.url);
+          const probeTimeout = setTimeout(() => {
+            if (gen === fetchGenRef.current) setIsSpeedReady(true); // 800ms safety cap
+          }, 800);
+          speedTimeoutRef.current = probeTimeout;
+          probe.addEventListener('loadedmetadata', () => {
+            clearTimeout(probeTimeout);
+            if (gen !== fetchGenRef.current) return;
+            const computed = Math.max(30, Math.floor((probe.duration * 1000 * 0.9) / displayText.length));
+            setTypingSpeed(computed);
+            setIsSpeedReady(true);
+          });
+          probe.addEventListener('error', () => {
+            clearTimeout(probeTimeout);
+            if (gen === fetchGenRef.current) setIsSpeedReady(true);
+          });
+          probe.load();
+          speakRef.current(data.url);
+        } else {
+          setIsSpeedReady(true);
+        }
+      }).catch(() => {
+        if (gen === fetchGenRef.current) setIsSpeedReady(true);
+      });
     }, 600); // wait for navigation animation to settle
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
+    };
   }, [firstTimeUser.tourStep, firstTimeUser.tourActive, firstTimeUser.tourCompleted]);
 
   // Voice the celebration overlay
@@ -444,17 +490,22 @@ const FirstTimeUserTour = () => {
               >
                 <h3 className="font-bold text-foreground mb-1">{currentStep.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed min-h-[3rem]">
-                  {/* 3C: pass skipToEnd when user taps next while typing */}
+                  {/* FIX 7: gate typewriter on speed readiness for voice sync */}
                   {shouldAnimate ? (
-                    <SimpleTypewriter
-                      key={typewriterKey}
-                      text={getDescription()}
-                      speed={50}
-                      enableSound={isMuted}
-                      soundVolume={0.04}
-                      skipToEnd={skipTyping}
-                      onComplete={() => setIsTypingComplete(true)}
-                    />
+                    isSpeedReady ? (
+                      <SimpleTypewriter
+                        key={typewriterKey}
+                        text={getDescription()}
+                        speed={typingSpeed}
+                        enableSound={true}
+                        soundVolume={0.04}
+                        skipToEnd={skipTyping}
+                        onComplete={() => setIsTypingComplete(true)}
+                      />
+                    ) : (
+                      /* Blinking cursor placeholder while waiting for duration probe */
+                      <span className="animate-pulse text-muted-foreground">|</span>
+                    )
                   ) : (
                     // On slow connections: render instantly
                     <span>{getDescription()}</span>

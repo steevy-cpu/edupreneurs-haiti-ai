@@ -29,6 +29,11 @@ const AvatarGenerationStep = () => {
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
   const [textComplete, setTextComplete] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
+  /** FIX 7: dynamic typing speed — syncs typewriter with voice clip duration */
+  const [typingSpeed, setTypingSpeed] = useState(60);
+  const [isSpeedReady, setIsSpeedReady] = useState(false);
+  const speedTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const fetchGenRef = useRef(0);
   
   // Wait one render cycle for React dispatcher to stabilize after lazy load
   useEffect(() => {
@@ -46,11 +51,19 @@ const AvatarGenerationStep = () => {
     preloadImage(ericThumbUp).catch(() => {});
   }, []);
 
-  // Voice the avatar prompt — only when avatar phase is active (prevents race with welcome/quiz)
+  // Voice the avatar prompt — FIX 7: probes duration for dynamic typing speed
+  const AVATAR_DISPLAY_TEXT = "Maintenant, créons ton avatar personnalisé avec l'IA! 🎨✨";
   useEffect(() => {
     if (!firstTimeUser.showAvatarGeneration) return;
+    setIsSpeedReady(false);
+    setTypingSpeed(60);
+    if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
     const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
-    if (isMutedNow) return;
+    if (isMutedNow) {
+      setIsSpeedReady(true); // no audio → default speed
+      return;
+    }
+    const gen = ++fetchGenRef.current;
     supabase.functions.invoke('generate-jude-voice', {
       body: {
         text: "Maintenant, créons ton avatar personnalisé avec l'IA!",
@@ -58,9 +71,37 @@ const AvatarGenerationStep = () => {
         context: 'onboarding'
       }
     }).then(({ data }) => {
-      if (data?.url) speakRef.current(data.url);
-    }).catch(() => {}); // silent fail — typing sounds as fallback
-    return () => stopRef.current();
+      if (gen !== fetchGenRef.current) return;
+      if (data?.url) {
+        // FIX 7: probe duration before speaking
+        const probe = new Audio(data.url);
+        const probeTimeout = setTimeout(() => {
+          if (gen === fetchGenRef.current) setIsSpeedReady(true);
+        }, 800);
+        speedTimeoutRef.current = probeTimeout;
+        probe.addEventListener('loadedmetadata', () => {
+          clearTimeout(probeTimeout);
+          if (gen !== fetchGenRef.current) return;
+          const computed = Math.max(30, Math.floor((probe.duration * 1000 * 0.9) / AVATAR_DISPLAY_TEXT.length));
+          setTypingSpeed(computed);
+          setIsSpeedReady(true);
+        });
+        probe.addEventListener('error', () => {
+          clearTimeout(probeTimeout);
+          if (gen === fetchGenRef.current) setIsSpeedReady(true);
+        });
+        probe.load();
+        speakRef.current(data.url);
+      } else {
+        setIsSpeedReady(true);
+      }
+    }).catch(() => {
+      if (gen === fetchGenRef.current) setIsSpeedReady(true);
+    });
+    return () => {
+      stopRef.current();
+      if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
+    };
   }, [firstTimeUser.showAvatarGeneration]);
 
   // Voice the celebration when avatar is generated — guarded by phase
@@ -163,13 +204,18 @@ const AvatarGenerationStep = () => {
                   ) : (
                     <>
                       <p className="text-base sm:text-lg text-foreground font-medium min-h-[3rem]">
-                        <SimpleTypewriter
-                          text="Maintenant, créons ton avatar personnalisé avec l'IA! 🎨✨"
-                          speed={60}
-                          onComplete={() => setTextComplete(true)}
-                          enableSound={true} /* FIX 1: always enable synth clicks as fallback when voice fails */
-                          soundVolume={0.06}
-                        />
+                        {/* FIX 7: gate typewriter on speed readiness */}
+                        {isSpeedReady ? (
+                          <SimpleTypewriter
+                            text={AVATAR_DISPLAY_TEXT}
+                            speed={typingSpeed}
+                            onComplete={() => setTextComplete(true)}
+                            enableSound={true}
+                            soundVolume={0.06}
+                          />
+                        ) : (
+                          <span className="animate-pulse text-muted-foreground">|</span>
+                        )}
                       </p>
                       
                       {textComplete && (
