@@ -1,5 +1,10 @@
 /**
- * Shared utility functions and constants for course pages
+ * @file courseHelpers.ts
+ * @description Shared constants, interfaces, and helpers for course/lesson pages (month ordering, HTML stripping, lesson grouping).
+ * @module utils
+ *
+ * @example
+ * const groups = groupLessonsByMonth(lessons); // → { "Octobre": [...], "Novembre": [...] }
  */
 
 // Standard month order for lessons

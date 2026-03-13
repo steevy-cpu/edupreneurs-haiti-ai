@@ -60,6 +60,9 @@ export function handleChunkLoadError(error: Error): void {
   window.location.reload();
 }
 
+/**
+ * Clears the reload attempt flag, allowing future chunk error recovery.
+ */
 export function clearChunkReloadFlag(): void {
   sessionStorage.removeItem(RELOAD_KEY);
 }

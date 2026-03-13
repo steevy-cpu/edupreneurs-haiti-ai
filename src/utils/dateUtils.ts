@@ -10,6 +10,11 @@
 /**
  * Formats a timestamp into a human-readable relative time string in French
  */
+/**
+ * Formats a timestamp into a human-readable relative time string in French.
+ * @param timestamp - ISO 8601 timestamp string
+ * @returns Localized relative time (e.g. "À l'instant", "Il y a 3h", "Hier")
+ */
 export const formatTimeAgo = (timestamp: string): string => {
   const now = new Date();
   const date = new Date(timestamp);

@@ -334,6 +334,11 @@ export const initializePushNotifications = async (userId: string): Promise<void>
   }
 };
 
+/**
+ * Displays a browser notification if permission is granted, with click-to-navigate support.
+ * @param title - Notification title
+ * @param options - Standard NotificationOptions, plus optional data.url for click navigation
+ */
 export const showBrowserNotification = (title: string, options: NotificationOptions = {}) => {
   if (!('Notification' in window)) {
     return;

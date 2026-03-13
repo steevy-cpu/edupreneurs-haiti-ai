@@ -237,6 +237,12 @@ export function prefetchResource(url: string, type: 'script' | 'style' | 'image'
 // Reduce API calls with request deduplication
 const pendingRequests = new Map<string, Promise<any>>();
 
+/**
+ * Returns an existing in-flight promise for duplicate requests instead of creating a new one.
+ * @param key - Unique key identifying the request
+ * @param requestFn - Function that performs the actual request
+ * @returns The shared promise for this request key
+ */
 export async function deduplicateRequest<T>(
   key: string,
   requestFn: () => Promise<T>

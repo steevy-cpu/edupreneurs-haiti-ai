@@ -1,3 +1,12 @@
+/**
+ * @file lessonDownload.ts
+ * @description Generates downloadable lesson documents in PDF, DOCX, and TXT formats with branding and copyright.
+ * @module utils
+ *
+ * @example
+ * await generatePlainText({ lessonData, personalNotes, subjectName: 'Mathématiques' });
+ */
+
 import { jsPDF } from "jspdf";
 import { Document, Paragraph, TextRun, AlignmentType, HeadingLevel, Packer, ImageRun } from "docx";
 import { saveAs } from "file-saver";
