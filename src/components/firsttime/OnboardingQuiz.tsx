@@ -63,7 +63,7 @@ const OnboardingQuiz = () => {
   const { shouldAnimate } = useNetworkAwareAnimations();
   const queryClient = useQueryClient();
   // Voice — fire-and-forget TTS via existing generate-jude-voice edge function
-  const { speak, stop } = useJudeAudio();
+  const { speak, stop, isSpeaking } = useJudeAudio();
   // Ref-stable speak/stop to avoid stale closures in voice useEffects
   const speakRef = useRef(speak);
   const stopRef = useRef(stop);
