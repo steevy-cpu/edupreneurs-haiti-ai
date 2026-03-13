@@ -352,7 +352,10 @@ export default function SignupStep3() {
           <Link to="/privacy-policy" className="text-primary underline font-medium" target="_blank">
             politiques de confidentialité
           </Link>
-          {" "}et les conditions d'utilisation.
+          {" "}et les{" "}
+          <Link to="/terms" className="text-primary underline font-medium" target="_blank">
+            conditions d'utilisation
+          </Link>.
         </Label>
       </div>
 
