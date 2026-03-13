@@ -338,7 +338,11 @@ export const generatePlainText = async ({
   }
 };
 
-// Generate Word Document
+/**
+ * Generates and downloads a branded DOCX file of a lesson with logo, headings, and copyright.
+ * @param options - Download options containing lesson data, optional personal notes, and subject name
+ * @returns Promise that resolves when the file has been saved
+ */
 export const generateWordDocument = async ({
   lessonData,
   personalNotes,
