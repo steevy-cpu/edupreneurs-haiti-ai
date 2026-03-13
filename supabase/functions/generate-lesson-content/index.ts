@@ -1,3 +1,26 @@
+/**
+ * @file index.ts
+ * @function generate-lesson-content
+ * @description Generates full lesson content (introduction, body, key points) for a given lesson title using AI.
+ *
+ * @security
+ * - Authentication: Optional JWT
+ * - Rate limiting: RESOURCE_INTENSIVE tier via shared rateLimiter
+ * - RLS: No direct table access
+ *
+ * @inputs
+ * - lessonTitle: string — Lesson title
+ * - lessonNumber: string — Lesson sequence number
+ * - subject: string — Subject name
+ * - grade: string — Grade level
+ * - targetWords: string — Target word count
+ *
+ * @outputs
+ * - content: string — Generated HTML lesson content
+ *
+ * @triggers HTTP POST from content editor or process-ai-job
+ */
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";

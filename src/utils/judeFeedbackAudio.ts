@@ -1,3 +1,12 @@
+/**
+ * @file judeFeedbackAudio.ts
+ * @description Resolves public URLs for pre-generated Jude feedback audio clips (correct/incorrect responses).
+ * @module utils
+ *
+ * @example
+ * const url = getJudeFeedbackAudioUrl('correct', 2); // → public URL for correct-2.mp3
+ */
+
 import { supabase } from '@/integrations/supabase/client';
 
 /**

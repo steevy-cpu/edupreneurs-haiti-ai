@@ -1,3 +1,13 @@
+/**
+ * @file queryPersistence.ts
+ * @description localStorage-based query data caching with expiration, used to persist TanStack Query data across page reloads.
+ * @module utils
+ *
+ * @example
+ * persistQueryData('feed_posts', posts);
+ * const cached = getPersistedQueryData<Post[]>('feed_posts'); // → posts or null if expired
+ */
+
 // Query persistence utilities for localStorage caching
 
 const CACHE_PREFIX = 'edu_cache_';

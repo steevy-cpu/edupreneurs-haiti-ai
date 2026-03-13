@@ -1,3 +1,25 @@
+/**
+ * @file index.ts
+ * @function generate-custom-avatar
+ * @description Generates AI custom avatars (256×256 JPEG) using DALL-E 3, stores them in cloud storage, and returns the public URL.
+ *
+ * @security
+ * - Authentication: Required (JWT validated to extract user ID)
+ * - Rate limiting: RESOURCE_INTENSIVE tier via shared rateLimiter
+ * - RLS: Stores files in avatars storage bucket under user-scoped path
+ *
+ * @inputs
+ * - style: 'anime' | 'manga' | 'chibi' | 'cartoon' | 'realistic'
+ * - gender: 'male' | 'female'
+ * - hairColor, eyeColor, skinTone, expression: string — Character traits
+ * - accessories: string[] — Optional accessories
+ * - background: string — Background scene ID
+ *
+ * @outputs
+ * - avatarUrl: string — Public URL of the generated avatar image
+ *
+ * @triggers HTTP POST from avatar creator UI
+ */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";

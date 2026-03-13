@@ -1,3 +1,27 @@
+/**
+ * @file index.ts
+ * @function generate-explanatory-images
+ * @description Generates AI image prompts and explanatory diagram descriptions for lesson content illustration.
+ *
+ * @security
+ * - Authentication: None enforced
+ * - Rate limiting: None
+ * - RLS: No direct table access
+ *
+ * @inputs
+ * - lessonTitle: string — Lesson title
+ * - contenu: string — Lesson body content
+ * - exemplesExercices: string — Examples content
+ * - gradeLevel: string — Grade level
+ * - subject: string — Subject name
+ * - model: 'openai' | 'lovable' — Image generation model to use
+ *
+ * @outputs
+ * - images: object[] — Array of image prompt objects with descriptions and placement hints
+ *
+ * @triggers HTTP POST from content editor
+ */
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {

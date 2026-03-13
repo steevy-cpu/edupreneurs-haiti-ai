@@ -1,3 +1,27 @@
+/**
+ * @file index.ts
+ * @function fix-invalid-quiz
+ * @description Repairs malformed quiz JSON payloads using AI — fixes incorrect answer indices, missing explanations, and structural issues.
+ *
+ * @security
+ * - Authentication: None enforced
+ * - Rate limiting: None
+ * - RLS: No direct table access (operates on passed content)
+ *
+ * @inputs
+ * - lessonId: string — Optional lesson UUID for context
+ * - questions: object[] — Existing parsed quiz questions
+ * - issues: object[] — Detected issues with question indices and descriptions
+ * - parsingErrors: string[] — Raw parsing error messages
+ * - originalContent: string — Original quiz content to re-parse
+ * - needsFullRegeneration: boolean — Whether to regenerate from scratch
+ *
+ * @outputs
+ * - questions: object[] — Fixed/regenerated quiz question objects
+ * - fixedCount: number — Number of questions repaired
+ *
+ * @triggers HTTP POST from content validation dashboard
+ */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getSecureHeaders, secureJsonResponse, secureErrorResponse, corsPreflightResponse } from "../_shared/securityHeaders.ts";

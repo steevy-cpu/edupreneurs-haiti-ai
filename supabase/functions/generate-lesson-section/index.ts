@@ -1,3 +1,29 @@
+/**
+ * @file index.ts
+ * @function generate-lesson-section
+ * @description Generates individual lesson sections (objectif, introduction, contenu, exemples_exercices) with configurable word count targets.
+ *
+ * @security
+ * - Authentication: Optional JWT
+ * - Rate limiting: RESOURCE_INTENSIVE tier via shared rateLimiter
+ * - RLS: No direct table access
+ *
+ * @inputs
+ * - lessonId: string — Lesson UUID
+ * - sectionName: 'objectif' | 'introduction' | 'contenu' | 'exemples_exercices'
+ * - lessonTitle: string — Title for context
+ * - subject: string — Subject name
+ * - gradeLevel: string — Grade level
+ * - targetWords: number — Word count target
+ * - context: string — Optional additional context
+ *
+ * @outputs
+ * - content: string — Generated HTML section content
+ * - wordCount: number — Actual word count of generated content
+ *
+ * @triggers HTTP POST from content editor or process-ai-job
+ */
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { 

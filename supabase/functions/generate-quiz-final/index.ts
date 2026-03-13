@@ -1,3 +1,25 @@
+/**
+ * @file index.ts
+ * @function generate-quiz-final
+ * @description Generates final quiz content (MCQ with explanations) for a lesson using AI, with Zod schema validation for structured JSON output.
+ *
+ * @security
+ * - Authentication: None enforced in code
+ * - Rate limiting: None
+ * - RLS: No direct table access
+ *
+ * @inputs
+ * - lessonTitle: string — Lesson title
+ * - contenu: string — Lesson body (HTML, max 50K chars)
+ * - exemplesExercices: string — Examples content (HTML)
+ * - gradeLevel: string — Grade level
+ * - outputFormat: 'json' | 'html' — Output format (default: html)
+ *
+ * @outputs
+ * - quiz: string | object — Generated quiz in HTML or canonical JSON format
+ *
+ * @triggers HTTP POST from content editor or process-ai-job
+ */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getSecureHeaders, secureJsonResponse, secureErrorResponse, corsPreflightResponse } from "../_shared/securityHeaders.ts";

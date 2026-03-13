@@ -1,8 +1,19 @@
 /**
- * Performance optimization utilities
+ * @file performanceOptimization.ts
+ * @description Collection of performance utilities — debounce, throttle, memoization, API caching, request deduplication, and lazy loading.
+ * @module utils
+ *
+ * @example
+ * const debouncedSearch = debounce(search, 300);
+ * const cached = getCachedApiResponse<User[]>('users');
  */
 
-// Debounce function for expensive operations
+/**
+ * Delays function execution until after the specified wait period since the last invocation.
+ * @param func - Function to debounce
+ * @param wait - Delay in milliseconds
+ * @returns Debounced version of the function
+ */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
@@ -22,7 +33,12 @@ export function debounce<T extends (...args: any[]) => any>(
   };
 }
 
-// Throttle function for limiting execution frequency
+/**
+ * Limits function execution to at most once per specified time period.
+ * @param func - Function to throttle
+ * @param limit - Minimum interval between executions in milliseconds
+ * @returns Throttled version of the function
+ */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
   limit: number
@@ -38,7 +54,11 @@ export function throttle<T extends (...args: any[]) => any>(
   };
 }
 
-// Memoization helper for expensive computations
+/**
+ * Caches function results based on serialized arguments to avoid redundant computation.
+ * @param func - Pure function to memoize
+ * @returns Memoized version with internal Map cache
+ */
 export function memoize<T extends (...args: any[]) => any>(func: T): T {
   const cache = new Map();
   
@@ -53,7 +73,10 @@ export function memoize<T extends (...args: any[]) => any>(func: T): T {
   }) as T;
 }
 
-// Check if user is on a slow connection
+/**
+ * Checks if the user is on a slow or data-saving connection via the Network Information API.
+ * @returns True if connection is 2G, slow-2G, or data saver is enabled
+ */
 export function isSlowConnection(): boolean {
   if ('connection' in navigator) {
     const connection = (navigator as any).connection;
@@ -64,7 +87,11 @@ export function isSlowConnection(): boolean {
   return false;
 }
 
-// Preload image
+/**
+ * Preloads an image into the browser cache.
+ * @param src - Image URL to preload
+ * @returns Promise that resolves when the image is loaded
+ */
 export function preloadImage(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -74,7 +101,11 @@ export function preloadImage(src: string): Promise<void> {
   });
 }
 
-// Batch multiple updates together
+/**
+ * Executes multiple update functions together, optionally after a delay.
+ * @param updates - Array of update functions to execute
+ * @param delay - Optional delay in milliseconds before execution (default: 0)
+ */
 export function batchUpdates<T>(
   updates: Array<() => void>,
   delay: number = 0
@@ -88,7 +119,13 @@ export function batchUpdates<T>(
   }
 }
 
-// Lazy load components when they enter viewport
+/**
+ * Triggers a callback when an element enters the viewport using IntersectionObserver.
+ * Falls back to immediate execution if IntersectionObserver is unavailable.
+ * @param element - DOM element to observe
+ * @param callback - Function to call when element becomes visible
+ * @returns The observer instance (for manual cleanup) or null
+ */
 export function lazyLoadOnIntersection(
   element: Element,
   callback: () => void
@@ -112,7 +149,10 @@ export function lazyLoadOnIntersection(
   return null;
 }
 
-// Clean up subscriptions
+/**
+ * Safely invokes an array of unsubscribe/cleanup functions, catching errors per item.
+ * @param subscriptions - Array of cleanup functions to execute
+ */
 export function cleanupSubscriptions(subscriptions: Array<() => void>): void {
   subscriptions.forEach(unsubscribe => {
     try {
@@ -127,6 +167,11 @@ export function cleanupSubscriptions(subscriptions: Array<() => void>): void {
 const apiCache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+/**
+ * Retrieves a cached API response if it exists and hasn't expired.
+ * @param key - Cache key
+ * @returns Cached data or null if expired/missing
+ */
 export function getCachedApiResponse<T>(key: string): T | null {
   const cached = apiCache.get(key);
   if (!cached) return null;
@@ -140,15 +185,28 @@ export function getCachedApiResponse<T>(key: string): T | null {
   return cached.data as T;
 }
 
+/**
+ * Stores an API response in the in-memory cache with a timestamp.
+ * @param key - Cache key
+ * @param data - Response data to cache
+ */
 export function setCachedApiResponse(key: string, data: any): void {
   apiCache.set(key, { data, timestamp: Date.now() });
 }
 
+/**
+ * Clears all entries from the in-memory API cache.
+ */
 export function clearApiCache(): void {
   apiCache.clear();
 }
 
-// Optimize images
+/**
+ * Appends optimization query parameters to storage image URLs.
+ * @param url - Original image URL
+ * @param width - Optional target width for resizing
+ * @returns URL with optimization parameters appended (if applicable)
+ */
 export function getOptimizedImageUrl(url: string, width?: number): string {
   if (!url) return url;
   
@@ -163,7 +221,11 @@ export function getOptimizedImageUrl(url: string, width?: number): string {
   return url;
 }
 
-// Prefetch resources
+/**
+ * Adds a prefetch link hint to the document head for faster future loading.
+ * @param url - Resource URL to prefetch
+ * @param type - Resource type hint for the browser
+ */
 export function prefetchResource(url: string, type: 'script' | 'style' | 'image'): void {
   const link = document.createElement('link');
   link.rel = 'prefetch';
@@ -175,6 +237,12 @@ export function prefetchResource(url: string, type: 'script' | 'style' | 'image'
 // Reduce API calls with request deduplication
 const pendingRequests = new Map<string, Promise<any>>();
 
+/**
+ * Returns an existing in-flight promise for duplicate requests instead of creating a new one.
+ * @param key - Unique key identifying the request
+ * @param requestFn - Function that performs the actual request
+ * @returns The shared promise for this request key
+ */
 export async function deduplicateRequest<T>(
   key: string,
   requestFn: () => Promise<T>

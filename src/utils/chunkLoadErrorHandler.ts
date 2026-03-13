@@ -1,4 +1,13 @@
 /**
+ * @file chunkLoadErrorHandler.ts
+ * @description Handles dynamic import failures caused by stale Vite chunk cache after deployments.
+ * @module utils
+ *
+ * @example
+ * if (isChunkLoadError(error)) handleChunkLoadError(error);
+ */
+
+/**
  * Handles dynamic import failures caused by stale cache.
  * 
  * When Vite rebuilds, chunk hashes change. Users with cached
@@ -13,6 +22,11 @@
 const RELOAD_KEY = 'chunk_reload_attempted';
 const RELOAD_COOLDOWN = 5000; // 5 seconds
 
+/**
+ * Determines whether an error is a chunk load failure from stale cache.
+ * @param error - The caught error to inspect
+ * @returns True if the error matches known chunk load failure patterns
+ */
 export function isChunkLoadError(error: unknown): boolean {
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
@@ -25,6 +39,10 @@ export function isChunkLoadError(error: unknown): boolean {
   return false;
 }
 
+/**
+ * Attempts a single page reload to recover from stale chunks, with cooldown to prevent loops.
+ * @param error - The chunk load error that triggered recovery
+ */
 export function handleChunkLoadError(error: Error): void {
   const lastReload = sessionStorage.getItem(RELOAD_KEY);
   const now = Date.now();
@@ -42,6 +60,9 @@ export function handleChunkLoadError(error: Error): void {
   window.location.reload();
 }
 
+/**
+ * Clears the reload attempt flag, allowing future chunk error recovery.
+ */
 export function clearChunkReloadFlag(): void {
   sessionStorage.removeItem(RELOAD_KEY);
 }

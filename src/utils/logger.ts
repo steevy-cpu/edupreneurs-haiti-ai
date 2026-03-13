@@ -1,3 +1,13 @@
+/**
+ * @file logger.ts
+ * @description Environment-aware logging utility that suppresses non-error logs in production.
+ * @module utils
+ *
+ * @example
+ * logger.log('Debug info');   // Only in dev
+ * logger.error('Always shown'); // In all environments
+ */
+
 // Debug logger that only logs in development mode
 const isDev = import.meta.env.DEV;
 

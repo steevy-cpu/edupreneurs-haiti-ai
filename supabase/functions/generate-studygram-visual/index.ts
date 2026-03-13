@@ -1,3 +1,25 @@
+/**
+ * @file index.ts
+ * @function generate-studygram-visual
+ * @description Generates visual StudyGram sections with styled content blocks, diagrams, and visual cues from lesson content.
+ *
+ * @security
+ * - Authentication: Optional JWT
+ * - Rate limiting: RESOURCE_INTENSIVE tier via shared rateLimiter
+ * - RLS: No direct table access
+ *
+ * @inputs
+ * - lessonTitle: string — Lesson title
+ * - contenu: string — Lesson body content (HTML)
+ * - gradeLevel: string — Grade level
+ * - subject: string — Subject name
+ *
+ * @outputs
+ * - sections: object[] — Array of visual section blocks with layout and content
+ *
+ * @triggers HTTP POST from content editor or process-ai-job
+ */
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";

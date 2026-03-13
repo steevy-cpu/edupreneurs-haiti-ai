@@ -1,8 +1,22 @@
+/**
+ * @file pushNotifications.ts
+ * @description Web Push notification setup — service worker registration, permission handling, VAPID subscription, and cross-domain cleanup.
+ * @module utils
+ *
+ * @example
+ * await initializePushNotifications(userId);
+ * showBrowserNotification('New message', { body: 'Hello!' });
+ */
+
 import { supabase } from "@/integrations/supabase/client";
 
 const DEBUG = import.meta.env.DEV;
 
-// Convert base64 string to Uint8Array for VAPID key
+/**
+ * Converts a URL-safe base64 string to a Uint8Array for VAPID key usage.
+ * @param base64String - URL-safe base64-encoded string
+ * @returns Decoded byte array
+ */
 const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding)
@@ -18,7 +32,10 @@ const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
   return outputArray;
 };
 
-// Detect browser type
+/**
+ * Detects the user's browser from the user agent string.
+ * @returns Browser name (e.g. 'Chrome', 'Safari', 'Firefox')
+ */
 export const detectBrowser = (): string => {
   const ua = navigator.userAgent;
   
@@ -31,13 +48,19 @@ export const detectBrowser = (): string => {
   return 'Unknown';
 };
 
-// Check if running on iOS
+/**
+ * Checks if the current device is running iOS.
+ * @returns True if user agent indicates iPhone, iPad, or iPod
+ */
 export const isIOSDevice = (): boolean => {
   const userAgent = window.navigator.userAgent.toLowerCase();
   return /iphone|ipad|ipod/.test(userAgent);
 };
 
-// Check if running as installed PWA
+/**
+ * Checks if the app is running as an installed PWA (standalone or fullscreen mode).
+ * @returns True if running in standalone/fullscreen display mode
+ */
 export const isStandalonePWA = (): boolean => {
   const isIOSStandalone = (window.navigator as any).standalone === true;
   const isStandardStandalone = window.matchMedia('(display-mode: standalone)').matches;
@@ -46,6 +69,10 @@ export const isStandalonePWA = (): boolean => {
   return isIOSStandalone || isStandardStandalone || isFullscreen;
 };
 
+/**
+ * Registers the service worker with platform-specific guards (iOS requires PWA, Safari desktop unsupported).
+ * @returns The ready ServiceWorkerRegistration or null if unsupported/failed
+ */
 export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration | null> => {
   if (!('serviceWorker' in navigator)) {
     if (DEBUG) console.error('❌ Service Worker not supported');
@@ -84,6 +111,10 @@ export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration
   }
 };
 
+/**
+ * Requests notification permission from the user with iOS-specific checks.
+ * @returns The resulting permission state ('granted', 'denied', or 'default')
+ */
 export const requestNotificationPermission = async (): Promise<NotificationPermission> => {
   if (!('Notification' in window)) {
     if (DEBUG) console.error('❌ Notifications API not supported');
@@ -153,6 +184,12 @@ function getDeviceId() {
   return deviceId;
 }
 
+/**
+ * Subscribes the user to push notifications via VAPID, saves subscription to database, and cleans up old/stale entries.
+ * @param registration - Active service worker registration
+ * @param userId - Authenticated user's ID
+ * @returns True if subscription was saved successfully
+ */
 export const subscribeToPushNotifications = async (
   registration: ServiceWorkerRegistration,
   userId: string
@@ -269,6 +306,10 @@ export const checkSubscriptionValidity = async (userId: string): Promise<boolean
   }
 };
 
+/**
+ * Full push notification initialization flow: permission → service worker → subscription.
+ * @param userId - Authenticated user's ID
+ */
 export const initializePushNotifications = async (userId: string): Promise<void> => {
   if (DEBUG) console.log('🚀 Initializing push notifications...');
   
@@ -293,6 +334,11 @@ export const initializePushNotifications = async (userId: string): Promise<void>
   }
 };
 
+/**
+ * Displays a browser notification if permission is granted, with click-to-navigate support.
+ * @param title - Notification title
+ * @param options - Standard NotificationOptions, plus optional data.url for click navigation
+ */
 export const showBrowserNotification = (title: string, options: NotificationOptions = {}) => {
   if (!('Notification' in window)) {
     return;

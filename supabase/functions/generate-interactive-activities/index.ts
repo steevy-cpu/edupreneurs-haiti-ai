@@ -1,3 +1,26 @@
+/**
+ * @file index.ts
+ * @function generate-interactive-activities
+ * @description Generates structured JSON interactive activities (fill-blank, matching, ordering, true-false, quiz) for a lesson using AI.
+ *
+ * @security
+ * - Authentication: Optional JWT
+ * - Rate limiting: RESOURCE_INTENSIVE tier via shared rateLimiter
+ * - RLS: No direct table access (returns generated content to caller)
+ *
+ * @inputs
+ * - lessonTitle: string — Title of the lesson
+ * - contenu: string — Lesson body content (HTML)
+ * - exemplesExercices: string — Examples/exercises content (HTML)
+ * - gradeLevel: string — Student grade level
+ * - subject: string — Subject name
+ *
+ * @outputs
+ * - activities: object[] — Array of structured activity objects with type, prompts, and answers
+ *
+ * @triggers HTTP POST from content editor or process-ai-job
+ */
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";

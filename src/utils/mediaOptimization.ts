@@ -1,3 +1,13 @@
+/**
+ * @file mediaOptimization.ts
+ * @description Image compression, video validation, and thumbnail generation utilities optimized for 3G connections.
+ * @module utils
+ *
+ * @example
+ * const compressed = await compressImage(file); // JPEG 0.75 quality, max 1920px
+ * const thumb = await generateImageThumbnail(file); // 300x300 center-crop
+ */
+
 // Media optimization utilities for reducing storage costs
 
 const MAX_IMAGE_WIDTH = 1920;

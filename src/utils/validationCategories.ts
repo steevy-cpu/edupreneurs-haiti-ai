@@ -1,4 +1,13 @@
 /**
+ * @file validationCategories.ts
+ * @description Categorizes AI-generated content validation failures into standard issue types for dashboard reporting.
+ * @module utils
+ *
+ * @example
+ * const category = categorizeValidationIssue('formule non mentionnée'); // → 'formula_missing'
+ */
+
+/**
  * Utility to categorize validation failure reasons
  */
 
