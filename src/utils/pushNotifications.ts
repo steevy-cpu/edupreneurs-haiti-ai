@@ -57,7 +57,10 @@ export const isIOSDevice = (): boolean => {
   return /iphone|ipad|ipod/.test(userAgent);
 };
 
-// Check if running as installed PWA
+/**
+ * Checks if the app is running as an installed PWA (standalone or fullscreen mode).
+ * @returns True if running in standalone/fullscreen display mode
+ */
 export const isStandalonePWA = (): boolean => {
   const isIOSStandalone = (window.navigator as any).standalone === true;
   const isStandardStandalone = window.matchMedia('(display-mode: standalone)').matches;
