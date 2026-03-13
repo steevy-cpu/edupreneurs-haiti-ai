@@ -435,9 +435,15 @@ const OnboardingQuiz = () => {
   };
 
   // Voice question text when currentStep changes — guarded by phase to prevent race
+  // FIX 7: reset speed readiness so typewriter waits for duration probe
   useEffect(() => {
     if (!firstTimeUser.showOnboardingQuiz) return;
     if (showReaction || isOutro) return;
+    // Reset speed for new step — typewriter gated on isSpeedReady
+    setIsSpeedReady(false);
+    setTypingSpeed(50);
+    // Cleanup previous probe timeout
+    if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
     // Build clean text for TTS (strip emojis — ElevenLabs ignores them anyway)
     const speechTexts: Record<number, string> = {
       0: "Salut! Comment tu t'appelles?",
@@ -449,11 +455,17 @@ const OnboardingQuiz = () => {
       6: "Dernière question! Comment tu as entendu parler d'Edupreneurs?",
     };
     const text = speechTexts[currentStep];
-    if (!text) return;
+    if (!text) {
+      setIsSpeedReady(true); // no text → show immediately
+      return;
+    }
     // All question keys are static — pre-generated CDN cache hits
     const key = `onboarding/quiz-q${currentStep}`;
-    fetchAndSpeak(text, key);
-  }, [currentStep, firstTimeUser.showOnboardingQuiz]);
+    // FIX 7: pass charCount for the display text (with emojis) for speed calculation
+    const { speech } = getStepContentForSpeed(currentStep);
+    fetchAndSpeak(text, key, speech.length);
+    return () => { if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current); };
+  }, [currentStep, firstTimeUser.showOnboardingQuiz]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Voice reactions when they appear — guarded by phase
   useEffect(() => {
