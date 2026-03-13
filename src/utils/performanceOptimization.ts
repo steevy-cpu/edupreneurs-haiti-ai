@@ -87,7 +87,11 @@ export function isSlowConnection(): boolean {
   return false;
 }
 
-// Preload image
+/**
+ * Preloads an image into the browser cache.
+ * @param src - Image URL to preload
+ * @returns Promise that resolves when the image is loaded
+ */
 export function preloadImage(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const img = new Image();
