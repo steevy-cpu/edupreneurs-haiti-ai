@@ -112,6 +112,11 @@ const FirstTimeUserTour = () => {
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
   // 3D: celebration overlay
   const [showCelebration, setShowCelebration] = useState(false);
+  /** FIX 7: dynamic typing speed — syncs typewriter with voice clip duration */
+  const [typingSpeed, setTypingSpeed] = useState(50);
+  const [isSpeedReady, setIsSpeedReady] = useState(false);
+  const speedTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const fetchGenRef = useRef(0);
 
   // Voice — fire-and-forget TTS per tour step
   const { speak, stop } = useJudeAudio();
