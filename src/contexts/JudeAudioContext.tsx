@@ -106,7 +106,11 @@ export function JudeAudioProvider({ children }: { children: ReactNode }) {
       setIsError(true);
       restoreMusic();
       audioRef.current = null;
-      toast.error('Impossible de lire la voix de Jude.');
+      /* FIX 2: show at most one error toast per failure burst */
+      if (!hasShownErrorRef.current) {
+        toast.error('Impossible de lire la voix de Jude.');
+        hasShownErrorRef.current = true;
+      }
     };
 
     setIsError(false);
