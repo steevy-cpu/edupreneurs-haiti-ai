@@ -382,12 +382,13 @@ const OnboardingQuiz = () => {
   }, [currentStep, fullName]);
 
   // --- Voice: fetch audio from generate-jude-voice and play via JudeAudioContext ---
-  /** FIX 4: generation counter prevents stale fetches from playing on rapid clicks */
-  const fetchAndSpeak = async (text: string, storageKey: string) => {
+  /** FIX 4+7: fetch voice audio, probe duration for typing speed, then play */
+  const fetchAndSpeak = async (text: string, storageKey: string, charCount?: number) => {
     const gen = ++fetchGenRef.current; // stamp this request
     const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
     if (isMutedNow) {
       reactionAudioDoneRef.current = true; // FIX 3: no audio → mark done immediately
+      setIsSpeedReady(true); // FIX 7: no audio → use default speed
       return;
     }
     stopRef.current(); // FIX 4: stop any playing audio before fetching
@@ -398,13 +399,38 @@ const OnboardingQuiz = () => {
       // FIX 4: discard if a newer fetch was started while we awaited
       if (gen !== fetchGenRef.current) return;
       if (data?.url) {
+        if (charCount && charCount > 0) {
+          // FIX 7: probe audio duration to compute dynamic typing speed
+          const probe = new Audio(data.url);
+          const probeTimeout = setTimeout(() => {
+            // Safety cap — 800ms max wait for metadata
+            if (gen === fetchGenRef.current) setIsSpeedReady(true);
+          }, 800);
+          probe.addEventListener('loadedmetadata', () => {
+            clearTimeout(probeTimeout);
+            if (gen !== fetchGenRef.current) return;
+            const computed = Math.max(30, Math.floor((probe.duration * 1000 * 0.9) / charCount));
+            setTypingSpeed(computed);
+            setIsSpeedReady(true);
+          });
+          probe.addEventListener('error', () => {
+            clearTimeout(probeTimeout);
+            if (gen === fetchGenRef.current) setIsSpeedReady(true); // fallback default
+          });
+          probe.load();
+        } else {
+          // No charCount — reaction/outro text, show immediately
+          setIsSpeedReady(true);
+        }
         speakRef.current(data.url);
       } else {
         reactionAudioDoneRef.current = true; // FIX 3: no URL → mark done
+        setIsSpeedReady(true);
       }
     } catch {
       // Silent fail — typing sounds serve as fallback
       reactionAudioDoneRef.current = true; // FIX 3: error → mark done
+      setIsSpeedReady(true);
     }
   };
 
