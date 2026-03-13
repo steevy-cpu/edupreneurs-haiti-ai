@@ -62,7 +62,7 @@ const PaymentsModule = () => {
         .select('*')
         .order('created_at', { ascending: false })
         // 50 rows per page — prevents unbounded fetches
-        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+        .range(page * PAYMENTS_PAGE_SIZE, page * PAYMENTS_PAGE_SIZE + PAYMENTS_PAGE_SIZE - 1);
       
       // Apply filters
       if (statusFilter !== "all") {
