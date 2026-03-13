@@ -1,5 +1,11 @@
 /**
- * Performance optimization utilities
+ * @file performanceOptimization.ts
+ * @description Collection of performance utilities — debounce, throttle, memoization, API caching, request deduplication, and lazy loading.
+ * @module utils
+ *
+ * @example
+ * const debouncedSearch = debounce(search, 300);
+ * const cached = getCachedApiResponse<User[]>('users');
  */
 
 // Debounce function for expensive operations
