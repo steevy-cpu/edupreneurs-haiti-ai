@@ -1,4 +1,13 @@
 /**
+ * @file dateUtils.ts
+ * @description French-localized relative time formatting for timestamps (e.g. "Il y a 5m", "Hier").
+ * @module utils
+ *
+ * @example
+ * formatTimeAgo('2026-03-13T10:00:00Z') // → "Il y a 2h"
+ */
+
+/**
  * Formats a timestamp into a human-readable relative time string in French
  */
 export const formatTimeAgo = (timestamp: string): string => {
