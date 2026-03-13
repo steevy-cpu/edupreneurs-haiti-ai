@@ -49,6 +49,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { CONTACT_STATUS } from '../types';
+import { ITEMS_PER_PAGE, PAGINATION_WINDOW_SIZE } from '@/lib/constants/pagination';
 
 interface ContactSubmission {
   id: string;
