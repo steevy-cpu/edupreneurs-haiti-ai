@@ -86,7 +86,7 @@ export default function ReportsModule() {
         .from("user_reports")
         .select("*", { count: "exact" })
         .order("created_at", { ascending: false })
-        .range(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE - 1);
+        .range(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE - 1);
 
       if (statusFilter !== "all") {
         query = query.eq("status", statusFilter);
