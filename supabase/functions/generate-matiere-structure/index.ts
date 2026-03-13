@@ -1,3 +1,23 @@
+/**
+ * @file index.ts
+ * @function generate-matiere-structure
+ * @description Extracts and structures lesson topics from curriculum PDF text using AI, producing organized lesson lists by month.
+ *
+ * @security
+ * - Authentication: None enforced
+ * - Rate limiting: None
+ * - RLS: No direct table access
+ *
+ * @inputs
+ * - curriculumText: string — Extracted text from curriculum PDF (min 100 chars)
+ * - subjectName: string — Subject name
+ * - gradeLevel: string — Grade level
+ *
+ * @outputs
+ * - lessons: object[] — Structured lesson objects with titles, months, and order indices
+ *
+ * @triggers HTTP POST from curriculum analysis tool
+ */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 

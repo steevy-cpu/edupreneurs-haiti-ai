@@ -1,3 +1,27 @@
+/**
+ * @file index.ts
+ * @function fix-invalid-activities
+ * @description Repairs malformed interactive activity JSON payloads using AI — fixes parsing errors, missing fields, and structural issues.
+ *
+ * @security
+ * - Authentication: None enforced
+ * - Rate limiting: None
+ * - RLS: No direct table access (operates on passed content)
+ *
+ * @inputs
+ * - lessonId: string — Optional lesson UUID for context
+ * - activities: object[] — Existing parsed activities
+ * - issues: object[] — Detected issues with activity indices and descriptions
+ * - parsingErrors: string[] — Raw parsing error messages
+ * - originalContent: string — Original activity content to re-parse
+ * - needsFullRegeneration: boolean — Whether to regenerate from scratch
+ *
+ * @outputs
+ * - activities: object[] — Fixed/regenerated activity objects
+ * - fixedCount: number — Number of activities repaired
+ *
+ * @triggers HTTP POST from content validation dashboard
+ */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getSecureHeaders, secureJsonResponse, secureErrorResponse, corsPreflightResponse } from "../_shared/securityHeaders.ts";

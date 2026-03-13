@@ -1,3 +1,23 @@
+/**
+ * @file index.ts
+ * @function process-ai-job
+ * @description Orchestrates AI content generation jobs — processes queued entries sequentially through section generators with retry, backoff, and auto-publish on completion.
+ *
+ * @security
+ * - Authentication: Internal only (X-Internal-Secret header validated)
+ * - Rate limiting: None (internal trigger)
+ * - RLS: Accesses ai_generation_jobs and lessons tables via service role
+ *
+ * @inputs
+ * - jobId: string — UUID of the ai_generation_jobs record to process
+ *
+ * @outputs
+ * - success: boolean — Whether the job completed successfully
+ * - sections: SectionResult[] — Status of each generated section
+ *
+ * @triggers Internal HTTP call from client after job creation
+ */
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { 
   secureJsonResponse, 

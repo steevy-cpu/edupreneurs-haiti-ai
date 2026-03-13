@@ -1,3 +1,25 @@
+/**
+ * @file index.ts
+ * @function generate-battle-questions
+ * @description Generates quiz battle questions by subject and difficulty for multiplayer/solo battles using AI.
+ *
+ * @security
+ * - Authentication: Required (JWT Bearer token validated)
+ * - Rate limiting: AI_TUTOR tier via shared rateLimiter
+ * - RLS: No direct table access
+ *
+ * @inputs
+ * - subject: string — Subject name
+ * - gradeLevel: string — Grade level
+ * - difficulty: 'easy' | 'medium' | 'hard'
+ * - lessonContext: object[] — Optional lesson context for grounding
+ * - questionCount: number — Number of questions to generate
+ *
+ * @outputs
+ * - questions: object[] — Array of MCQ objects with question, options, correctAnswer, explanation
+ *
+ * @triggers HTTP POST from quiz battle client
+ */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
