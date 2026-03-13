@@ -52,7 +52,9 @@ export const stripHtml = (html: string): string => {
 };
 
 /**
- * Groups lessons by their month property
+ * Groups lessons by their month property, normalizing weekly formats to parent month.
+ * @param lessons - Array of lesson objects with optional mois field
+ * @returns Record mapping month names to arrays of lessons
  */
 export const groupLessonsByMonth = <T extends { mois?: string | null }>(
   lessons: T[]
