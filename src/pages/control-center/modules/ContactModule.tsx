@@ -66,7 +66,7 @@ interface ContactSubmission {
   user_agent: string | null;
 }
 
-const ITEMS_PER_PAGE = 15;
+
 
 export default function ContactModule() {
   const [submissions, setSubmissions] = useState<ContactSubmission[]>([]);
