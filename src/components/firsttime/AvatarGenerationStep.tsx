@@ -51,11 +51,19 @@ const AvatarGenerationStep = () => {
     preloadImage(ericThumbUp).catch(() => {});
   }, []);
 
-  // Voice the avatar prompt — only when avatar phase is active (prevents race with welcome/quiz)
+  // Voice the avatar prompt — FIX 7: probes duration for dynamic typing speed
+  const AVATAR_DISPLAY_TEXT = "Maintenant, créons ton avatar personnalisé avec l'IA! 🎨✨";
   useEffect(() => {
     if (!firstTimeUser.showAvatarGeneration) return;
+    setIsSpeedReady(false);
+    setTypingSpeed(60);
+    if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
     const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
-    if (isMutedNow) return;
+    if (isMutedNow) {
+      setIsSpeedReady(true); // no audio → default speed
+      return;
+    }
+    const gen = ++fetchGenRef.current;
     supabase.functions.invoke('generate-jude-voice', {
       body: {
         text: "Maintenant, créons ton avatar personnalisé avec l'IA!",
@@ -63,9 +71,37 @@ const AvatarGenerationStep = () => {
         context: 'onboarding'
       }
     }).then(({ data }) => {
-      if (data?.url) speakRef.current(data.url);
-    }).catch(() => {}); // silent fail — typing sounds as fallback
-    return () => stopRef.current();
+      if (gen !== fetchGenRef.current) return;
+      if (data?.url) {
+        // FIX 7: probe duration before speaking
+        const probe = new Audio(data.url);
+        const probeTimeout = setTimeout(() => {
+          if (gen === fetchGenRef.current) setIsSpeedReady(true);
+        }, 800);
+        speedTimeoutRef.current = probeTimeout;
+        probe.addEventListener('loadedmetadata', () => {
+          clearTimeout(probeTimeout);
+          if (gen !== fetchGenRef.current) return;
+          const computed = Math.max(30, Math.floor((probe.duration * 1000 * 0.9) / AVATAR_DISPLAY_TEXT.length));
+          setTypingSpeed(computed);
+          setIsSpeedReady(true);
+        });
+        probe.addEventListener('error', () => {
+          clearTimeout(probeTimeout);
+          if (gen === fetchGenRef.current) setIsSpeedReady(true);
+        });
+        probe.load();
+        speakRef.current(data.url);
+      } else {
+        setIsSpeedReady(true);
+      }
+    }).catch(() => {
+      if (gen === fetchGenRef.current) setIsSpeedReady(true);
+    });
+    return () => {
+      stopRef.current();
+      if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
+    };
   }, [firstTimeUser.showAvatarGeneration]);
 
   // Voice the celebration when avatar is generated — guarded by phase
