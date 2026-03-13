@@ -434,7 +434,20 @@ const OnboardingQuiz = () => {
     }
   };
 
-  // Voice question text when currentStep changes — guarded by phase to prevent race
+  /** FIX 7: get display speech text length for a given step — used to calculate typing speed */
+  const getStepContentForSpeed = (step: number): { speech: string } => {
+    switch (step) {
+      case 0: return { speech: 'Salut! Comment tu t\'appelles? 😊' };
+      case 1: return { speech: `Et maintenant, ${firstName}, tu es en quelle classe?` };
+      case 2: return { speech: 'Tu préfères qu\'on te parle comment? 😊' };
+      case 3: return { speech: 'Quel est ton pseudo? C\'est comme ça que les autres étudiants vont te voir! 😎' };
+      case 4: return { speech: 'Dans quelle école tu étudies? 🏫' };
+      case 5: return { speech: 'C\'est quand ton anniversaire? 🎂 Je t\'enverrai un email spécial ce jour-là!' };
+      case 6: return { speech: 'Dernière question! Comment tu as entendu parler d\'Edupreneurs? 🌟' };
+      default: return { speech: '' };
+    }
+  };
+
   // FIX 7: reset speed readiness so typewriter waits for duration probe
   useEffect(() => {
     if (!firstTimeUser.showOnboardingQuiz) return;
