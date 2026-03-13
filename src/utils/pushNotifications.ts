@@ -184,6 +184,12 @@ function getDeviceId() {
   return deviceId;
 }
 
+/**
+ * Subscribes the user to push notifications via VAPID, saves subscription to database, and cleans up old/stale entries.
+ * @param registration - Active service worker registration
+ * @param userId - Authenticated user's ID
+ * @returns True if subscription was saved successfully
+ */
 export const subscribeToPushNotifications = async (
   registration: ServiceWorkerRegistration,
   userId: string
