@@ -450,7 +450,7 @@ const FirstTimeUserTour = () => {
                       key={typewriterKey}
                       text={getDescription()}
                       speed={50}
-                      enableSound={isMuted}
+                      enableSound={true} /* FIX 7b: always enable synth clicks as fallback */
                       soundVolume={0.04}
                       skipToEnd={skipTyping}
                       onComplete={() => setIsTypingComplete(true)}
