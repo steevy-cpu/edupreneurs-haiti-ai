@@ -69,6 +69,10 @@ export const isStandalonePWA = (): boolean => {
   return isIOSStandalone || isStandardStandalone || isFullscreen;
 };
 
+/**
+ * Registers the service worker with platform-specific guards (iOS requires PWA, Safari desktop unsupported).
+ * @returns The ready ServiceWorkerRegistration or null if unsupported/failed
+ */
 export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration | null> => {
   if (!('serviceWorker' in navigator)) {
     if (DEBUG) console.error('❌ Service Worker not supported');
