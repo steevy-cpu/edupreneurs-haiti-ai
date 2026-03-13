@@ -204,13 +204,18 @@ const AvatarGenerationStep = () => {
                   ) : (
                     <>
                       <p className="text-base sm:text-lg text-foreground font-medium min-h-[3rem]">
-                        <SimpleTypewriter
-                          text="Maintenant, créons ton avatar personnalisé avec l'IA! 🎨✨"
-                          speed={60}
-                          onComplete={() => setTextComplete(true)}
-                          enableSound={true} /* FIX 1: always enable synth clicks as fallback when voice fails */
-                          soundVolume={0.06}
-                        />
+                        {/* FIX 7: gate typewriter on speed readiness */}
+                        {isSpeedReady ? (
+                          <SimpleTypewriter
+                            text={AVATAR_DISPLAY_TEXT}
+                            speed={typingSpeed}
+                            onComplete={() => setTextComplete(true)}
+                            enableSound={true}
+                            soundVolume={0.06}
+                          />
+                        ) : (
+                          <span className="animate-pulse text-muted-foreground">|</span>
+                        )}
                       </p>
                       
                       {textComplete && (
