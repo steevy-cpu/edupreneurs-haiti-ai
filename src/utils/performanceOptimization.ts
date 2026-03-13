@@ -149,7 +149,10 @@ export function lazyLoadOnIntersection(
   return null;
 }
 
-// Clean up subscriptions
+/**
+ * Safely invokes an array of unsubscribe/cleanup functions, catching errors per item.
+ * @param subscriptions - Array of cleanup functions to execute
+ */
 export function cleanupSubscriptions(subscriptions: Array<() => void>): void {
   subscriptions.forEach(unsubscribe => {
     try {
