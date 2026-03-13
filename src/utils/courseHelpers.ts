@@ -35,7 +35,9 @@ export const MONTH_COLORS: Record<string, string> = {
 };
 
 /**
- * Removes HTML tags from a string
+ * Removes HTML tags from a string, using DOM parsing when available.
+ * @param html - Raw HTML string to strip
+ * @returns Plain text with all HTML tags removed
  */
 export const stripHtml = (html: string): string => {
   if (!html) return '';
@@ -50,7 +52,9 @@ export const stripHtml = (html: string): string => {
 };
 
 /**
- * Groups lessons by their month property
+ * Groups lessons by their month property, normalizing weekly formats to parent month.
+ * @param lessons - Array of lesson objects with optional mois field
+ * @returns Record mapping month names to arrays of lessons
  */
 export const groupLessonsByMonth = <T extends { mois?: string | null }>(
   lessons: T[]
@@ -108,7 +112,9 @@ export interface BaseSubject {
 }
 
 /**
- * Gets the appropriate Eric image based on subject name
+ * Gets the appropriate Eric mascot image key based on subject name.
+ * @param subjectName - Display name of the subject
+ * @returns Image key string for the matching Eric variant
  */
 export const getEricImageForSubject = (subjectName: string): string => {
   const lower = subjectName.toLowerCase();
@@ -130,7 +136,10 @@ export const getEricImageForSubject = (subjectName: string): string => {
 };
 
 /**
- * Truncates text to a specified length with ellipsis
+ * Truncates text to a specified length with ellipsis, stripping HTML first.
+ * @param text - Raw text or HTML string to truncate
+ * @param maxLength - Maximum character count before truncation (default 100)
+ * @returns Truncated plain text with trailing ellipsis if needed
  */
 export const truncateText = (text: string, maxLength: number = 100): string => {
   if (!text) return '';

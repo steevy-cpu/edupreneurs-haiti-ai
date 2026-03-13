@@ -242,7 +242,11 @@ const loadLogoAsBase64 = async (): Promise<string> => {
   }
 };
 
-// Generate Plain Text
+/**
+ * Generates and downloads a branded plain-text file of a lesson.
+ * @param options - Download options containing lesson data, optional personal notes, and subject name
+ * @returns Promise that resolves when the file has been saved
+ */
 export const generatePlainText = async ({
   lessonData,
   personalNotes,
@@ -334,7 +338,11 @@ export const generatePlainText = async ({
   }
 };
 
-// Generate Word Document
+/**
+ * Generates and downloads a branded DOCX file of a lesson with logo, headings, and copyright.
+ * @param options - Download options containing lesson data, optional personal notes, and subject name
+ * @returns Promise that resolves when the file has been saved
+ */
 export const generateWordDocument = async ({
   lessonData,
   personalNotes,
@@ -526,7 +534,11 @@ export const generateWordDocument = async ({
   }
 };
 
-// Generate PDF (with protection)
+/**
+ * Generates and downloads a branded PDF of a lesson with styled headers, logo, and copyright footer.
+ * @param options - Download options containing lesson data, optional personal notes, and subject name
+ * @returns Promise that resolves when the PDF has been saved
+ */
 export const generateLessonPDF = async ({
   lessonData,
   personalNotes,
