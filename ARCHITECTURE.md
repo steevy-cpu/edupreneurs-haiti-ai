@@ -375,4 +375,31 @@ The app runs as a PWA and as a native app via Capacitor:
 
 ---
 
+## Environment Variables
+
+### Frontend (.env.local)
+These are safe for the browser — Supabase anon key is designed for frontend use:
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_SUPABASE_URL` | Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anonymous key (public) |
+
+### Edge Functions (Supabase Dashboard → Settings → Secrets)
+These are server-side only — never exposed to the browser:
+
+| Variable | Description |
+|----------|-------------|
+| `SUPABASE_SERVICE_ROLE_KEY` | Admin database access |
+| `GEMINI_API_KEY` | Google Gemini AI (lessons, tutoring) |
+| `OPENAI_API_KEY` | DALL-E 3 (avatar generation) |
+| `ELEVENLABS_API_KEY` | Jude voice synthesis |
+| `RESEND_API_KEY` | Transactional email delivery |
+| `BAZIK_API_KEY` | MonCash/NatCash payments |
+| `STRIPE_SECRET_KEY` | Stripe payment processing |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook verification |
+| `INTERNAL_SECRET` | Internal edge function authentication |
+
+---
+
 © 2026 EDUPRENEURS — Author: Steeve A. Celestin
