@@ -12,6 +12,7 @@ import {
   Clock
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { PAYMENT_MAX_POLL_ATTEMPTS, PAYMENT_POLL_INTERVAL_MS } from '@/lib/constants/payment';
 
 type PaymentStatus = 'checking' | 'completed' | 'failed' | 'pending' | 'error';
 
