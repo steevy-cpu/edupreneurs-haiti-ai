@@ -1,3 +1,12 @@
+/**
+ * @file uploadWithProgress.ts
+ * @description XHR-based file upload to storage with real-time progress tracking, bypassing the SDK for progress events.
+ * @module utils
+ *
+ * @example
+ * const { data, error } = await uploadWithProgress('avatars', 'user/avatar.jpg', file, onProgress);
+ */
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface UploadProgress {
