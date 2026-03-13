@@ -57,12 +57,12 @@ export default function PaymentCallback() {
 
       if (error) {
         console.error('Status check error:', error);
-        if (attemptsRef.current >= maxAttempts) {
+        if (attemptsRef.current >= PAYMENT_MAX_POLL_ATTEMPTS) {
           setStatus('error');
           setErrorMessage('Impossible de vérifier le statut du paiement');
           return;
         }
-        setTimeout(checkPaymentStatus, pollInterval);
+        setTimeout(checkPaymentStatus, PAYMENT_POLL_INTERVAL_MS);
         return;
       }
 
