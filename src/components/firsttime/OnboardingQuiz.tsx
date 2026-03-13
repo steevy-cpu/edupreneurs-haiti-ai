@@ -96,6 +96,10 @@ const OnboardingQuiz = () => {
   const reactionAudioDoneRef = useRef(false);
   /** FIX 4: generation counter to discard stale voice fetches on rapid clicks */
   const fetchGenRef = useRef(0);
+  /** FIX 7: dynamic typing speed — syncs typewriter duration with voice clip */
+  const [typingSpeed, setTypingSpeed] = useState(50);
+  const [isSpeedReady, setIsSpeedReady] = useState(false);
+  const speedTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Derived firstName for speech bubbles
   const firstName = fullName.split(/\s+/)[0] || 'ami(e)';
