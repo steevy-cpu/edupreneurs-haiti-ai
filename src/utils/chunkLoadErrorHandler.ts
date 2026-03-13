@@ -1,4 +1,13 @@
 /**
+ * @file chunkLoadErrorHandler.ts
+ * @description Handles dynamic import failures caused by stale Vite chunk cache after deployments.
+ * @module utils
+ *
+ * @example
+ * if (isChunkLoadError(error)) handleChunkLoadError(error);
+ */
+
+/**
  * Handles dynamic import failures caused by stale cache.
  * 
  * When Vite rebuilds, chunk hashes change. Users with cached
