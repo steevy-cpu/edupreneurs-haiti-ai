@@ -39,6 +39,10 @@ export function isChunkLoadError(error: unknown): boolean {
   return false;
 }
 
+/**
+ * Attempts a single page reload to recover from stale chunks, with cooldown to prevent loops.
+ * @param error - The chunk load error that triggered recovery
+ */
 export function handleChunkLoadError(error: Error): void {
   const lastReload = sessionStorage.getItem(RELOAD_KEY);
   const now = Date.now();
