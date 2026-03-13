@@ -27,11 +27,6 @@ export type OnUploadProgress = (progress: UploadProgress) => void;
  * @param onProgress - Callback invoked with upload progress updates
  * @returns Object with uploaded file path or error
  */
-
-/**
- * Upload a file to Supabase Storage with progress tracking using XHR.
- * Handles authentication automatically by getting the current session.
- */
 export async function uploadWithProgress(
   bucketName: string,
   filePath: string,
