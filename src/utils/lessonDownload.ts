@@ -534,7 +534,11 @@ export const generateWordDocument = async ({
   }
 };
 
-// Generate PDF (with protection)
+/**
+ * Generates and downloads a branded PDF of a lesson with styled headers, logo, and copyright footer.
+ * @param options - Download options containing lesson data, optional personal notes, and subject name
+ * @returns Promise that resolves when the PDF has been saved
+ */
 export const generateLessonPDF = async ({
   lessonData,
   personalNotes,

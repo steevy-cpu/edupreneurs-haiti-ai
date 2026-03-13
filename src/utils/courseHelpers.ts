@@ -136,7 +136,10 @@ export const getEricImageForSubject = (subjectName: string): string => {
 };
 
 /**
- * Truncates text to a specified length with ellipsis
+ * Truncates text to a specified length with ellipsis, stripping HTML first.
+ * @param text - Raw text or HTML string to truncate
+ * @param maxLength - Maximum character count before truncation (default 100)
+ * @returns Truncated plain text with trailing ellipsis if needed
  */
 export const truncateText = (text: string, maxLength: number = 100): string => {
   if (!text) return '';
