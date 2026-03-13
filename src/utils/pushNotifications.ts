@@ -48,7 +48,10 @@ export const detectBrowser = (): string => {
   return 'Unknown';
 };
 
-// Check if running on iOS
+/**
+ * Checks if the current device is running iOS.
+ * @returns True if user agent indicates iPhone, iPad, or iPod
+ */
 export const isIOSDevice = (): boolean => {
   const userAgent = window.navigator.userAgent.toLowerCase();
   return /iphone|ipad|ipod/.test(userAgent);
