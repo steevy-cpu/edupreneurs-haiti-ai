@@ -78,9 +78,9 @@ export default function PaymentCallback() {
         setStatus('failed');
         setErrorMessage(data?.transaction?.description || data?.error || 'Le paiement a échoué');
       } else if (paymentStatus === 'pending') {
-        if (attemptsRef.current < maxAttempts) {
+        if (attemptsRef.current < PAYMENT_MAX_POLL_ATTEMPTS) {
           setStatus('pending');
-          setTimeout(checkPaymentStatus, pollInterval);
+          setTimeout(checkPaymentStatus, PAYMENT_POLL_INTERVAL_MS);
         } else {
           setStatus('pending');
         }
