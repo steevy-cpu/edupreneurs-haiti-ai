@@ -221,7 +221,11 @@ export function getOptimizedImageUrl(url: string, width?: number): string {
   return url;
 }
 
-// Prefetch resources
+/**
+ * Adds a prefetch link hint to the document head for faster future loading.
+ * @param url - Resource URL to prefetch
+ * @param type - Resource type hint for the browser
+ */
 export function prefetchResource(url: string, type: 'script' | 'style' | 'image'): void {
   const link = document.createElement('link');
   link.rel = 'prefetch';
