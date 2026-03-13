@@ -194,6 +194,9 @@ export function setCachedApiResponse(key: string, data: any): void {
   apiCache.set(key, { data, timestamp: Date.now() });
 }
 
+/**
+ * Clears all entries from the in-memory API cache.
+ */
 export function clearApiCache(): void {
   apiCache.clear();
 }
