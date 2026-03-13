@@ -4,7 +4,7 @@ import ericWaving from '@/assets/eric-waving.png';
 import SimpleTypewriter from '@/components/visitor/SimpleTypewriter';
 import { useFirstTimeUser } from '@/contexts/FirstTimeUserContext';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, X } from 'lucide-react';
+import { ChevronRight, X, Volume2 } from 'lucide-react';
 import { useNetworkAwareAnimations } from '@/hooks/useNetworkAwareAnimations';
 import { preloadImage } from '@/utils/performanceOptimization';
 import { useJudeAudio } from '@/contexts/JudeAudioContext';
@@ -12,6 +12,15 @@ import { supabase } from '@/integrations/supabase/client';
 
 /** Default typing speeds (ms per char) for each message */
 const FIRSTTIME_DEFAULT_SPEEDS = [100, 90, 80];
+
+/** Minimal silent WAV — unlocks HTMLAudioElement on iOS Safari via user gesture */
+const SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+
+/** Detect iOS Safari — only platform that requires explicit audio unlock */
+const isIOS = () =>
+  typeof navigator !== 'undefined' &&
+  /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+  !(window as any).MSStream;
 
 const FirstTimeUserWelcome = () => {
   // STABILITY GUARD: Use safe context access pattern to prevent null dispatcher errors
@@ -24,6 +33,9 @@ const FirstTimeUserWelcome = () => {
   const [showGreeting, setShowGreeting] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [showWalkthrough, setShowWalkthrough] = useState(false);
+
+  // FIX 6: iOS audio unlock — non-iOS starts unlocked (no overlay shown)
+  const [audioUnlocked, setAudioUnlocked] = useState(() => !isIOS());
 
   // Voice auto-play for authenticated first-time users
   const { speak, stop } = useJudeAudio();
@@ -50,9 +62,33 @@ const FirstTimeUserWelcome = () => {
 
   const displayName = firstTimeUser.userNickname || 'ami(e)';
 
+  /** FIX 6: Unlock iOS audio via user gesture — plays silent WAV + resumes AudioContext */
+  const handleUnlockAudio = async () => {
+    try {
+      // Unlock HTMLAudioElement pipeline — iOS remembers this gesture
+      const silent = new Audio(SILENT_WAV);
+      await silent.play();
+      // Also unlock AudioContext for SimpleTypewriter synth clicks
+      const ctx = new AudioContext();
+      await ctx.resume();
+      ctx.close();
+    } catch {
+      // Ignore — synth clicks fallback will work regardless
+    }
+    setAudioUnlocked(true);
+  };
+
+  /** FIX 6: Skip audio unlock — user doesn't want sound */
+  const handleSkipAudio = () => {
+    // Mark as muted so voice won't attempt to play
+    localStorage.setItem('jude-voice-muted', 'true');
+    setAudioUnlocked(true);
+  };
+
   // Pre-fetch all 3 audio clips when welcome screen shows
+  // FIX 6: gated on audioUnlocked — on iOS, only fires after user taps "Activer le son"
   useEffect(() => {
-    if (!firstTimeUser.showWelcome || firstTimeUser.isLoading || isMuted) return;
+    if (!firstTimeUser.showWelcome || firstTimeUser.isLoading || isMuted || !audioUnlocked) return;
 
     // All messages use static keys — audio is pre-generated and CDN-cached
     const messages = [
@@ -81,7 +117,7 @@ const FirstTimeUserWelcome = () => {
         }
       }).catch(() => { /* silent fail — typewriter uses default speed */ });
     });
-  }, [firstTimeUser.showWelcome, firstTimeUser.isLoading, isMuted]);
+  }, [firstTimeUser.showWelcome, firstTimeUser.isLoading, isMuted, audioUnlocked]);
 
   // Stop audio on unmount or when welcome closes
   useEffect(() => {
@@ -121,6 +157,9 @@ const FirstTimeUserWelcome = () => {
       return;
     }
 
+    // FIX 6: Don't start greeting until audio is unlocked (iOS gate)
+    if (!audioUnlocked) return;
+
     // Smart delay: wait for audio URL 0 to resolve, cap at 3s for slow connections
     if (audioUrls[0]) {
       // Audio already ready (cached or fast fetch) — short delay for visual polish
@@ -131,7 +170,7 @@ const FirstTimeUserWelcome = () => {
     // Audio not ready yet — wait up to 3s then start with typing sounds as fallback
     const maxWait = setTimeout(() => setShowGreeting(true), 3000);
     return () => clearTimeout(maxWait);
-  }, [firstTimeUser.showWelcome, firstTimeUser.isLoading, audioUrls[0]]);
+  }, [firstTimeUser.showWelcome, firstTimeUser.isLoading, audioUrls[0], audioUnlocked]);
 
   const handleGreetingComplete = () => {
     setTimeout(() => {
@@ -170,6 +209,59 @@ const FirstTimeUserWelcome = () => {
   const imageAnimation = shouldAnimate
     ? { initial: { scale: 0, rotate: -10 }, animate: { scale: 1, rotate: 0 } }
     : {};
+
+  // FIX 6: iOS audio unlock overlay — only shown when !audioUnlocked (iOS Safari only)
+  if (!audioUnlocked) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="fixed inset-0 z-[9999] flex items-center justify-center"
+      >
+        {/* Gradient overlay — matches welcome screen style */}
+        <div className={`absolute inset-0 bg-gradient-to-br from-black/70 via-primary/10 to-black/70 ${shouldShowGlow ? 'backdrop-blur-sm' : ''}`} />
+        
+        <div className="relative flex flex-col items-center gap-6 p-8 max-w-sm text-center">
+          {/* Jude avatar */}
+          <motion.img
+            src={ericWaving}
+            alt="Jude"
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', damping: 15 }}
+            className="w-32 h-32 object-contain drop-shadow-2xl"
+          />
+
+          {/* Speech bubble */}
+          <div className="bg-card/95 backdrop-blur-md rounded-2xl px-6 py-5 shadow-xl border border-border/50">
+            <p className="text-lg font-bold text-foreground mb-1">
+              Jude veut te parler 🎙️
+            </p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Active le son pour entendre sa voix pendant la visite!
+            </p>
+            
+            {/* Primary unlock button — branded gradient */}
+            <Button
+              onClick={handleUnlockAudio}
+              className="w-full gap-2 bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 mb-3"
+            >
+              <Volume2 className="h-4 w-4" />
+              Activer le son
+            </Button>
+
+            {/* Secondary skip — text link for users who don't want audio */}
+            <button
+              onClick={handleSkipAudio}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Continuer sans son
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <AnimatePresence>
