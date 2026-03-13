@@ -101,7 +101,11 @@ export function preloadImage(src: string): Promise<void> {
   });
 }
 
-// Batch multiple updates together
+/**
+ * Executes multiple update functions together, optionally after a delay.
+ * @param updates - Array of update functions to execute
+ * @param delay - Optional delay in milliseconds before execution (default: 0)
+ */
 export function batchUpdates<T>(
   updates: Array<() => void>,
   delay: number = 0
