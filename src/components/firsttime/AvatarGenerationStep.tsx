@@ -167,7 +167,7 @@ const AvatarGenerationStep = () => {
                           text="Maintenant, créons ton avatar personnalisé avec l'IA! 🎨✨"
                           speed={60}
                           onComplete={() => setTextComplete(true)}
-                          enableSound={typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true'}
+                          enableSound={true} /* FIX 1: always enable synth clicks as fallback when voice fails */
                           soundVolume={0.06}
                         />
                       </p>

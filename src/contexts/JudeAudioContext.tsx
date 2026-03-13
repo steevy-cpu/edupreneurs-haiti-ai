@@ -118,8 +118,10 @@ export function JudeAudioProvider({ children }: { children: ReactNode }) {
 
     try {
       await audio.play();
+      /* FIX 2: successful playback — allow one future error toast */
+      hasShownErrorRef.current = false;
     } catch {
-      // Autoplay blocked or network error — handled by onerror
+      // Autoplay blocked or network error
       setIsSpeaking(false);
       setIsError(true);
       restoreMusic();
