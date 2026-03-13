@@ -110,17 +110,16 @@ export default function CookieSettings() {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Megaphone className="h-5 w-5 text-orange-500" />
-                <CardTitle className="text-lg">Cookies Marketing</CardTitle>
+                <CardTitle className="text-lg">Cookies de personnalisation</CardTitle>
               </div>
               <CardDescription>
-                Ces cookies sont utilisés pour vous montrer des contenus pertinents 
-                et personnaliser votre expérience sur le site.
+                Ces cookies permettent d'adapter le contenu et l'expérience de la plateforme à votre profil et vos préférences.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <Label htmlFor="marketing">
-                  Autoriser les cookies marketing
+                  Autoriser les cookies de personnalisation
                 </Label>
                 <Switch 
                   id="marketing" 
