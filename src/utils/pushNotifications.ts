@@ -306,6 +306,10 @@ export const checkSubscriptionValidity = async (userId: string): Promise<boolean
   }
 };
 
+/**
+ * Full push notification initialization flow: permission → service worker → subscription.
+ * @param userId - Authenticated user's ID
+ */
 export const initializePushNotifications = async (userId: string): Promise<void> => {
   if (DEBUG) console.log('🚀 Initializing push notifications...');
   
