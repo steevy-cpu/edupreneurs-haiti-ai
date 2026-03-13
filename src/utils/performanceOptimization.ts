@@ -185,6 +185,11 @@ export function getCachedApiResponse<T>(key: string): T | null {
   return cached.data as T;
 }
 
+/**
+ * Stores an API response in the in-memory cache with a timestamp.
+ * @param key - Cache key
+ * @param data - Response data to cache
+ */
 export function setCachedApiResponse(key: string, data: any): void {
   apiCache.set(key, { data, timestamp: Date.now() });
 }
