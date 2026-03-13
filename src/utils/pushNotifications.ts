@@ -1,3 +1,13 @@
+/**
+ * @file pushNotifications.ts
+ * @description Web Push notification setup — service worker registration, permission handling, VAPID subscription, and cross-domain cleanup.
+ * @module utils
+ *
+ * @example
+ * await initializePushNotifications(userId);
+ * showBrowserNotification('New message', { body: 'Hello!' });
+ */
+
 import { supabase } from "@/integrations/supabase/client";
 
 const DEBUG = import.meta.env.DEV;
