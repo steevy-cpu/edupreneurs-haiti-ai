@@ -63,7 +63,7 @@ const OnboardingQuiz = () => {
   const { shouldAnimate } = useNetworkAwareAnimations();
   const queryClient = useQueryClient();
   // Voice — fire-and-forget TTS via existing generate-jude-voice edge function
-  const { speak, stop } = useJudeAudio();
+  const { speak, stop, isSpeaking } = useJudeAudio();
   // Ref-stable speak/stop to avoid stale closures in voice useEffects
   const speakRef = useRef(speak);
   const stopRef = useRef(stop);
@@ -92,6 +92,10 @@ const OnboardingQuiz = () => {
   const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(null);
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
   const nicknameCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** FIX 3: tracks when reaction audio finishes so timer can wait for it */
+  const reactionAudioDoneRef = useRef(false);
+  /** FIX 4: generation counter to discard stale voice fetches on rapid clicks */
+  const fetchGenRef = useRef(0);
 
   // Derived firstName for speech bubbles
   const firstName = fullName.split(/\s+/)[0] || 'ami(e)';
@@ -224,10 +228,13 @@ const OnboardingQuiz = () => {
   }, [firstTimeUser.userId, saveFieldBackup]);
 
   // Show thumb-up reaction then advance to next step
+  // FIX 3: waits for reaction audio to finish (min 1500ms, max 4000ms)
   const showReactionAndAdvance = useCallback((text: string) => {
     setReactionText(text);
     setShowReaction(true);
-    setTimeout(() => {
+    reactionAudioDoneRef.current = false;
+
+    const advance = () => {
       setShowReaction(false);
       if (currentStep < TOTAL_STEPS - 1) {
         setCurrentStep(prev => prev + 1);
@@ -238,6 +245,21 @@ const OnboardingQuiz = () => {
           await flushBackupToDb();
           firstTimeUser.completeOnboardingQuiz();
         }, 2500);
+      }
+    };
+
+    // After 1500ms minimum, check if audio is done; if not, poll up to 4000ms cap
+    const startTime = Date.now();
+    setTimeout(() => {
+      if (reactionAudioDoneRef.current) {
+        advance();
+      } else {
+        const poll = setInterval(() => {
+          if (reactionAudioDoneRef.current || Date.now() - startTime >= 4000) {
+            clearInterval(poll);
+            advance();
+          }
+        }, 200);
       }
     }, 1500);
   }, [currentStep, firstTimeUser]);
@@ -356,20 +378,29 @@ const OnboardingQuiz = () => {
   }, [currentStep, fullName]);
 
   // --- Voice: fetch audio from generate-jude-voice and play via JudeAudioContext ---
-  /** Fire-and-forget voice fetch — reads mute from localStorage for fresh value, uses refs */
+  /** FIX 4: generation counter prevents stale fetches from playing on rapid clicks */
   const fetchAndSpeak = async (text: string, storageKey: string) => {
+    const gen = ++fetchGenRef.current; // stamp this request
     const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
-    if (isMutedNow) return;
+    if (isMutedNow) {
+      reactionAudioDoneRef.current = true; // FIX 3: no audio → mark done immediately
+      return;
+    }
+    stopRef.current(); // FIX 4: stop any playing audio before fetching
     try {
       const { data } = await supabase.functions.invoke('generate-jude-voice', {
         body: { text, storageKey, context: 'onboarding' }
       });
+      // FIX 4: discard if a newer fetch was started while we awaited
+      if (gen !== fetchGenRef.current) return;
       if (data?.url) {
-        stopRef.current();
         speakRef.current(data.url);
+      } else {
+        reactionAudioDoneRef.current = true; // FIX 3: no URL → mark done
       }
     } catch {
       // Silent fail — typing sounds serve as fallback
+      reactionAudioDoneRef.current = true; // FIX 3: error → mark done
     }
   };
 
@@ -415,6 +446,16 @@ const OnboardingQuiz = () => {
 
   // Stop voice on unmount — use ref to avoid stale closure
   useEffect(() => () => stopRef.current(), []);
+
+  // FIX 3: track when reaction audio finishes via isSpeaking transition (true→false)
+  const prevIsSpeakingRef = useRef(isSpeaking);
+  useEffect(() => {
+    // Detect isSpeaking going from true→false while reaction is showing
+    if (prevIsSpeakingRef.current && !isSpeaking && showReaction) {
+      reactionAudioDoneRef.current = true;
+    }
+    prevIsSpeakingRef.current = isSpeaking;
+  }, [isSpeaking, showReaction]);
 
   // Early returns AFTER all hooks
   if (!isStable) return null;
@@ -559,9 +600,9 @@ const OnboardingQuiz = () => {
               />
               <p className="text-base sm:text-lg text-foreground font-medium">
                 {showReaction || isOutro ? (
-                  <SimpleTypewriter text={speech} speed={50} enableSound={typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true'} soundVolume={0.04} />
+                  <SimpleTypewriter text={speech} speed={50} enableSound={true} /* FIX 1: always enable synth clicks */ soundVolume={0.04} />
                 ) : (
-                  <SimpleTypewriter key={`speech-${currentStep}`} text={speech} speed={50} enableSound={typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true'} soundVolume={0.04} />
+                  <SimpleTypewriter key={`speech-${currentStep}`} text={speech} speed={50} enableSound={true} /* FIX 1 */ soundVolume={0.04} />
                 )}
               </p>
             </div>

@@ -47,6 +47,8 @@ export function JudeAudioProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isError, setIsError] = useState(false);
+  /** FIX 2: limit error toast to once per failure burst — reset on successful play */
+  const hasShownErrorRef = useRef(false);
 
   // Music ducking — save pre-duck volume to restore later
   const { volume, setVolume, isPlaying: isMusicPlaying } = useMusicPlayer();
@@ -104,7 +106,11 @@ export function JudeAudioProvider({ children }: { children: ReactNode }) {
       setIsError(true);
       restoreMusic();
       audioRef.current = null;
-      toast.error('Impossible de lire la voix de Jude.');
+      /* FIX 2: show at most one error toast per failure burst */
+      if (!hasShownErrorRef.current) {
+        toast.error('Impossible de lire la voix de Jude.');
+        hasShownErrorRef.current = true;
+      }
     };
 
     setIsError(false);
@@ -112,8 +118,10 @@ export function JudeAudioProvider({ children }: { children: ReactNode }) {
 
     try {
       await audio.play();
+      /* FIX 2: successful playback — allow one future error toast */
+      hasShownErrorRef.current = false;
     } catch {
-      // Autoplay blocked or network error — handled by onerror
+      // Autoplay blocked or network error
       setIsSpeaking(false);
       setIsError(true);
       restoreMusic();

@@ -292,6 +292,7 @@ const FirstTimeUserTour = () => {
     // 3C: if typewriter is still running, skip it to end first
     if (!isTypingComplete) {
       setSkipTyping(true);
+      stop(); /* FIX 5: stop voice immediately when user skips typewriter */
       return;
     }
 
