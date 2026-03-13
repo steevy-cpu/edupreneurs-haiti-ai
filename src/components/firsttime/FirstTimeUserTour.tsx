@@ -190,12 +190,15 @@ const FirstTimeUserTour = () => {
     }
   }, [firstTimeUser.tourStep, firstTimeUser.tourActive, firstTimeUser.tourCompleted, currentStep, location.pathname, navigate, isNavigating]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Reset typewriter + skip state when step changes
+  // Reset typewriter + skip state + speed readiness when step changes
   useEffect(() => {
     setTypewriterKey(prev => prev + 1);
     setSkipTyping(false);
     setIsTypingComplete(false);
     setSpotlightRect(null);
+    // FIX 7: reset speed for new step
+    setIsSpeedReady(false);
+    setTypingSpeed(50);
   }, [firstTimeUser.tourStep]);
 
   // 3B: Spotlight — compute target element bounding rect
