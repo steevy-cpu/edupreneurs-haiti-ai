@@ -112,7 +112,9 @@ export interface BaseSubject {
 }
 
 /**
- * Gets the appropriate Eric image based on subject name
+ * Gets the appropriate Eric mascot image key based on subject name.
+ * @param subjectName - Display name of the subject
+ * @returns Image key string for the matching Eric variant
  */
 export const getEricImageForSubject = (subjectName: string): string => {
   const lower = subjectName.toLowerCase();
