@@ -86,7 +86,7 @@ const PaymentsModule = () => {
   // Append fetched page to accumulated list
   useEffect(() => {
     if (!pagePayments) return;
-    setHasMore(pagePayments.length === PAGE_SIZE);
+    setHasMore(pagePayments.length === PAYMENTS_PAGE_SIZE);
     if (page === 0) {
       setAllPayments(pagePayments);
     } else {

@@ -319,7 +319,7 @@ export default function ReportsModule() {
 
   const isProtectedUser = (userId: string) => PROTECTED_USER_IDS.includes(userId);
 
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
   const formatDate = (dateString: string) => {
     return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale: fr });

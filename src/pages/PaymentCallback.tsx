@@ -139,7 +139,7 @@ export default function PaymentCallback() {
               </p>
             </div>
             <div className="text-sm text-muted-foreground">
-              Tentative {attempts}/{maxAttempts}
+              Tentative {attempts}/{PAYMENT_MAX_POLL_ATTEMPTS}
             </div>
           </>
         );

@@ -58,8 +58,8 @@ const DonationsModule = () => {
   // Append fetched page to accumulated list
   useEffect(() => {
     if (!pageDonations) return;
-    // Fewer than PAGE_SIZE means no more rows
-    setHasMore(pageDonations.length === PAGE_SIZE);
+    // Fewer than PAYMENTS_PAGE_SIZE means no more rows
+    setHasMore(pageDonations.length === PAYMENTS_PAGE_SIZE);
     if (page === 0) {
       // First page replaces everything (handles filter resets)
       setAllDonations(pageDonations);

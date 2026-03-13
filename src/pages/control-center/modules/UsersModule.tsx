@@ -111,7 +111,7 @@ export default function UsersModule() {
     ? users.filter(u => isOnline(u.user_id))
     : users;
 
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const totalPages = Math.ceil(totalCount / USERS_PAGE_SIZE);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Jamais";
