@@ -8,7 +8,12 @@
  * const cached = getCachedApiResponse<User[]>('users');
  */
 
-// Debounce function for expensive operations
+/**
+ * Delays function execution until after the specified wait period since the last invocation.
+ * @param func - Function to debounce
+ * @param wait - Delay in milliseconds
+ * @returns Debounced version of the function
+ */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
