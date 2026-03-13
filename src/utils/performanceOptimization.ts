@@ -167,6 +167,11 @@ export function cleanupSubscriptions(subscriptions: Array<() => void>): void {
 const apiCache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+/**
+ * Retrieves a cached API response if it exists and hasn't expired.
+ * @param key - Cache key
+ * @returns Cached data or null if expired/missing
+ */
 export function getCachedApiResponse<T>(key: string): T | null {
   const cached = apiCache.get(key);
   if (!cached) return null;
