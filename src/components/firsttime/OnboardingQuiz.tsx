@@ -228,10 +228,13 @@ const OnboardingQuiz = () => {
   }, [firstTimeUser.userId, saveFieldBackup]);
 
   // Show thumb-up reaction then advance to next step
+  // FIX 3: waits for reaction audio to finish (min 1500ms, max 4000ms)
   const showReactionAndAdvance = useCallback((text: string) => {
     setReactionText(text);
     setShowReaction(true);
-    setTimeout(() => {
+    reactionAudioDoneRef.current = false;
+
+    const advance = () => {
       setShowReaction(false);
       if (currentStep < TOTAL_STEPS - 1) {
         setCurrentStep(prev => prev + 1);
@@ -242,6 +245,21 @@ const OnboardingQuiz = () => {
           await flushBackupToDb();
           firstTimeUser.completeOnboardingQuiz();
         }, 2500);
+      }
+    };
+
+    // After 1500ms minimum, check if audio is done; if not, poll up to 4000ms cap
+    const startTime = Date.now();
+    setTimeout(() => {
+      if (reactionAudioDoneRef.current) {
+        advance();
+      } else {
+        const poll = setInterval(() => {
+          if (reactionAudioDoneRef.current || Date.now() - startTime >= 4000) {
+            clearInterval(poll);
+            advance();
+          }
+        }, 200);
       }
     }, 1500);
   }, [currentStep, firstTimeUser]);
