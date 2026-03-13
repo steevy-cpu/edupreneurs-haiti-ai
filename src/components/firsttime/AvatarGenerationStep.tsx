@@ -29,6 +29,11 @@ const AvatarGenerationStep = () => {
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
   const [textComplete, setTextComplete] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
+  /** FIX 7: dynamic typing speed — syncs typewriter with voice clip duration */
+  const [typingSpeed, setTypingSpeed] = useState(60);
+  const [isSpeedReady, setIsSpeedReady] = useState(false);
+  const speedTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const fetchGenRef = useRef(0);
   
   // Wait one render cycle for React dispatcher to stabilize after lazy load
   useEffect(() => {
