@@ -83,7 +83,7 @@ export default function UsersModule() {
         .from("profiles")
         .select("id, user_id, full_name, nickname, avatar_url, academic_grade, school, verified, created_at, last_seen, gold_earned", { count: "exact" })
         .order("created_at", { ascending: false })
-        .range(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE - 1);
+        .range(currentPage * USERS_PAGE_SIZE, (currentPage + 1) * USERS_PAGE_SIZE - 1);
 
       if (searchTerm) {
         query = query.or(`full_name.ilike.%${searchTerm}%,nickname.ilike.%${searchTerm}%`);
