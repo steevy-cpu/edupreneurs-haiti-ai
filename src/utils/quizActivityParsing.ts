@@ -1,3 +1,13 @@
+/**
+ * @file quizActivityParsing.ts
+ * @description Parses AI-generated quiz and activity content from HTML/Markdown into structured objects for rendering and validation.
+ * @module utils
+ *
+ * @example
+ * const { items, errors } = parseQuizQuestions(htmlContent);
+ * const { items: activities } = parseActivities(markdownContent);
+ */
+
 // Shared parsing utilities for quiz and activity content validation
 
 export interface ParsedQuestion {

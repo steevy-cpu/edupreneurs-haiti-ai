@@ -1,3 +1,12 @@
+/**
+ * @file getTimeBasedGreeting.ts
+ * @description Returns French greetings appropriate to the current time of day, aligned with Haiti timezone conventions.
+ * @module utils
+ *
+ * @example
+ * const { greeting } = getTimeBasedGreeting(); // → "Bonjour" (morning)
+ */
+
 export type TimePeriod = 'morning' | 'afternoon' | 'evening' | 'night';
 
 export interface TimeGreeting {

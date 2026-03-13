@@ -1,4 +1,14 @@
 /**
+ * @file networkAwareCache.ts
+ * @description Adjusts TanStack Query caching behavior (stale time, GC, prefetch) based on connection quality for 3G-first optimization.
+ * @module utils
+ *
+ * @example
+ * const settings = getCacheSettings(); // → { staleTime: 600000, preferCache: true, ... }
+ * const stale = getStaleTimeFor('feed'); // → connection-appropriate stale time
+ */
+
+/**
  * Network-Aware Cache Strategy
  * 
  * Adjusts caching behavior based on connection quality.

@@ -1,3 +1,13 @@
+/**
+ * @file uploadExamPDFs.ts
+ * @description Uploads exam PDFs to cloud storage and updates database records; supports bulk migration from public folder.
+ * @module utils
+ *
+ * @example
+ * const result = await uploadPDFToStorage(file, 'math-2024.pdf');
+ * await migrateAllExamPDFs(); // Bulk migration
+ */
+
 import { supabase } from "@/integrations/supabase/client";
 
 /**

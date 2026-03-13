@@ -1,4 +1,13 @@
 /**
+ * @file deviceFingerprint.ts
+ * @description Generates semi-unique device fingerprints from browser/hardware characteristics for login trust verification.
+ * @module utils
+ *
+ * @example
+ * const { fingerprint, deviceName } = generateDeviceFingerprint();
+ */
+
+/**
  * Device fingerprinting utility for smart login notifications
  * Generates a semi-unique identifier based on browser/device characteristics
  */
