@@ -1,17 +1,10 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Search, Check, CheckCheck, BadgeCheck, Trash2, MoreVertical, Download, Users } from "lucide-react";
 import { useMessageSounds } from "@/hooks/useMessageSounds";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogTitle, DialogHeader } from "@/components/ui/dialog";
-import { getAvatarUrl } from "@/lib/avatarMap";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { optimizeMediaFile, formatFileSize, generateImageThumbnail } from "@/utils/mediaOptimization";
 import { uploadWithProgress } from "@/utils/uploadWithProgress";
 import { CreateGroupDialog } from "@/components/CreateGroupDialog";
@@ -28,7 +21,6 @@ import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import { useTimeBasedAccent } from "@/hooks/useTimeBasedAccent";
 import { useVisitor } from "@/contexts/VisitorContext";
-import { LockedOverlay } from "@/components/visitor";
 import { visitorConversationPreview } from "@/data/visitorDemoData";
 import { 
   ConversationListItem, 
@@ -44,17 +36,22 @@ import {
   ConversationSidebar,
   JudeTypingIndicator
 } from "@/components/community";
-import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { 
   Profile, 
-  GroupChat, 
   Conversation, 
   Message, 
   Reaction, 
   JUDE_USER_ID 
 } from "@/types/community";
 import { useOnlineUserIds } from "@/contexts/PresenceContext";
+
+// Hook imports — no hook imports another hook; all deps via params
+import { useCommunityMedia } from "@/features/community/hooks/useCommunityMedia";
+import { useTypingIndicators } from "@/features/community/hooks/useTypingIndicators";
+import { useCommunityConversations } from "@/features/community/hooks/useCommunityConversations";
+import { useCommunityMessages } from "@/features/community/hooks/useCommunityMessages";
+import { useCommunityRealtime } from "@/features/community/hooks/useCommunityRealtime";
 
 const Community = () => {
   const navigate = useNavigate();
@@ -73,7 +70,6 @@ const Community = () => {
     shouldShowGlow 
   } = useNetworkAwareAnimations();
   
-  // Network-aware loading for 3G optimization
   const {
     isSlowConnection,
     shouldDeferResources,
@@ -82,58 +78,26 @@ const Community = () => {
   
   const { accentColor, period } = useTimeBasedAccent();
   
+  // === Core shared state — owned by parent ===
   const [user, setUser] = useState<any>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [isLoadingConversations, setIsLoadingConversations] = useState(true);
-  /* Fix 6: Loading timeout for 3G resilience */
-  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(conversationId);
-  const [selectedConversationDetails, setSelectedConversationDetails] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [reactions, setReactions] = useState<Record<string, Reaction[]>>({});
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
-  const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null);
-  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
-  const [mediaType, setMediaType] = useState<'image' | 'video' | 'document' | null>(null);
   const [fullSizeImage, setFullSizeImage] = useState<string | null>(null);
-  const [reactions, setReactions] = useState<Record<string, Reaction[]>>({});
-  // Video upload progress (0-100) for 3G feedback
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
-  const [showReactionPicker, setShowReactionPicker] = useState<string | null>(null);
-  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
-  const [editedContent, setEditedContent] = useState("");
   const [deleteConversationId, setDeleteConversationId] = useState<string | null>(null);
-  const previousMessagesCount = useRef<number>(0);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const messageChannelRef = useRef<any>(null);
-  const reactionChannelRef = useRef<any>(null);
-  const presenceChannelsRef = useRef<Record<string, any>>({});
-  const profileCacheRef = useRef<Map<string, Profile>>(new Map());
-  const typingTimeoutRef = useRef<any>(null);
-  // Refs for race condition prevention and stale closure fixes
-  const currentConversationRef = useRef<string | null>(null);
-  const selectedConversationRef = useRef<string | null>(null);
-  const prevConversationIdsRef = useRef<string>('');
-  const [typingUsers, setTypingUsers] = useState<Record<string, Record<string, any>>>({});
-  // Use centralized presence from PresenceContext (event-driven, not polling)
-  const onlineUsers = useOnlineUserIds();
-  
-  // Track pending Jude AI response for typing indicator
   const [isAwaitingJudeResponse, setIsAwaitingJudeResponse] = useState(false);
-  // Track which message is currently showing typewriter effect
   const [typewriterMessageId, setTypewriterMessageId] = useState<string | null>(null);
-  
-  /**
-   * Fallback timestamps for OFFLINE users only.
-   * Shows "last seen X minutes ago" when user is not currently online.
-   * Real-time online status comes from PresenceContext (not this state).
-   */
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [showGroupInfo, setShowGroupInfo] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+
+  // Fallback timestamps for OFFLINE users only
   const [offlineLastSeenTimes, setOfflineLastSeenTimes] = useState<Record<string, string>>(() => {
-    // Initialize from localStorage
     try {
       const stored = localStorage.getItem('lastSeenTimes');
       return stored ? JSON.parse(stored) : {};
@@ -141,24 +105,75 @@ const Community = () => {
       return {};
     }
   });
-  const [showCreateGroup, setShowCreateGroup] = useState(false);
-  const [followers, setFollowers] = useState<Profile[]>([]);
-  const [showGroupInfo, setShowGroupInfo] = useState(false);
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
-  
-  // Cached user profile for optimistic updates - prevents redundant fetches
-  const [cachedUserProfile, setCachedUserProfile] = useState<Profile | null>(null);
 
-  // Detect if current conversation is with Jude (AI assistant) - hide media upload
+  // Use centralized presence from PresenceContext (event-driven, not polling)
+  const onlineUsers = useOnlineUserIds();
+
+  // === Refs — owned by parent, passed to hooks ===
+  const previousMessagesCount = useRef<number>(0);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const currentConversationRef = useRef<string | null>(null);
+  const selectedConversationRef = useRef<string | null>(null);
+  const prevConversationIdsRef = useRef<string>('');
+
+  // === Hook 1: Media (self-contained) ===
+  const mediaHook = useCommunityMedia();
+
+  // === Hook 2: Typing indicators ===
+  const typingHook = useTypingIndicators({
+    user,
+    selectedConversationRef,
+  });
+
+  // === Hook 3: Conversations ===
+  const convHook = useCommunityConversations({
+    user,
+    selectedConversation,
+    setSelectedConversation,
+    conversations,
+    setConversations,
+    setMessages,
+    setOfflineLastSeenTimes,
+  });
+
+  // === Hook 4: Messages ===
+  const msgHook = useCommunityMessages({
+    user,
+    messages,
+    setMessages,
+    reactions,
+    setReactions,
+    conversations,
+    setConversations,
+    currentConversationRef,
+  });
+
+  // === Hook 5: Realtime subscriptions ===
+  const realtimeHook = useCommunityRealtime({
+    user,
+    selectedConversation,
+    conversations,
+    setConversations,
+    setMessages,
+    setReactions,
+    markMessagesAsRead: msgHook.markMessagesAsRead,
+    getCachedProfile: msgHook.getCachedProfile,
+    setIsAwaitingJudeResponse,
+    setTypewriterMessageId,
+    selectedConversationRef,
+    playReceiveSound,
+  });
+
+  // Detect if current conversation is with Jude (AI assistant)
   const isJudeConversation = useMemo(() => {
     if (!selectedConversation) return false;
-    const conv = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
+    const conv = convHook.selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
     return conv?.otherUser?.user_id === JUDE_USER_ID;
-  }, [selectedConversation, conversations, selectedConversationDetails]);
+  }, [selectedConversation, conversations, convHook.selectedConversationDetails]);
 
   // Memoize chat background style with time-based mood overlay
   const chatBackgroundStyle = useMemo(() => {
-    // Time-based mood gradient overlay (subtle tint)
     const moodGradient = period === 'morning' 
       ? 'hsl(35 90% 55% / 0.03)' 
       : period === 'afternoon' 
@@ -175,13 +190,12 @@ const Community = () => {
     };
   }, [period]);
 
+  // === All useEffects stay in parent to maintain lifecycle order ===
+
   // Preload chat background image on mount
   useEffect(() => {
-    preloadImage(chatBackground).catch(() => {
-      // Silent fail - image will load normally when needed
-    });
+    preloadImage(chatBackground).catch(() => {});
   }, []);
-
 
   // Save offlineLastSeenTimes to localStorage whenever it changes
   useEffect(() => {
@@ -196,15 +210,15 @@ const Community = () => {
     checkUser();
   }, [isVisitor]);
 
-  /* Fix 6: 10s loading timeout — show retry instead of infinite skeleton */
+  // Fix 6: 10s loading timeout — show retry instead of infinite skeleton
   useEffect(() => {
-    if (!isLoadingConversations || isVisitor) {
-      setLoadingTimedOut(false);
+    if (!convHook.isLoadingConversations || isVisitor) {
+      convHook.setLoadingTimedOut(false);
       return;
     }
-    const timer = setTimeout(() => setLoadingTimedOut(true), 10_000);
+    const timer = setTimeout(() => convHook.setLoadingTimedOut(true), 10_000);
     return () => clearTimeout(timer);
-  }, [isLoadingConversations, isVisitor]);
+  }, [convHook.isLoadingConversations, isVisitor]);
 
   // Populate demo conversations for visitors
   useEffect(() => {
@@ -244,36 +258,18 @@ const Community = () => {
         })),
       ];
       setConversations(demoConversations);
-      setIsLoadingConversations(false);
+      convHook.setIsLoadingConversations(false);
     }
   }, [isVisitor]);
 
-  // Cache user profile on mount for optimistic updates
-  useEffect(() => {
-    const cacheUserProfile = async () => {
-      if (user && !cachedUserProfile) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-        if (profile) {
-          setCachedUserProfile(profile as Profile);
-        }
-      }
-    };
-    cacheUserProfile();
-  }, [user?.id]);
-
+  // Main subscription setup on user login
   useEffect(() => {
     if (user) {
-      fetchConversations();
-      fetchFollowers();
-      const unsubscribeMessages = subscribeToMessages();
-      // No longer need setupGlobalPresenceListener - using centralized PresenceContext
+      convHook.fetchConversations();
+      convHook.fetchFollowers();
+      const unsubscribeMessages = realtimeHook.subscribeToMessages();
       
       return () => {
-        // Fix 1: Properly cleanup message subscription to prevent memory leak
         if (unsubscribeMessages) unsubscribeMessages();
       };
     }
@@ -283,7 +279,7 @@ const Community = () => {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && user) {
-        fetchConversations();
+        convHook.fetchConversations();
       }
     };
     
@@ -291,161 +287,79 @@ const Community = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user]);
 
-  // Fix 6: Subscribe to typing presence - optimized dependency comparison
+  // Fix 6: Subscribe to typing presence — optimized dependency comparison
   useEffect(() => {
     if (!user || conversations.length === 0) return;
     
     const currentIds = conversations.map(c => c.id).sort().join(',');
-    
-    // Skip if conversation IDs haven't changed
     if (currentIds === prevConversationIdsRef.current) return;
     prevConversationIdsRef.current = currentIds;
     
     // Only set up channels for new conversations
     conversations.forEach(conv => {
-      if (!presenceChannelsRef.current[conv.id]) {
-        subscribeToTypingPresence(conv.id);
+      if (!typingHook.presenceChannelsRef.current[conv.id]) {
+        typingHook.subscribeToTypingPresence(conv.id);
       }
     });
     
     // Clean up channels for conversations that no longer exist
     const currentConvIds = new Set(conversations.map(c => c.id));
-    Object.keys(presenceChannelsRef.current).forEach(convId => {
+    Object.keys(typingHook.presenceChannelsRef.current).forEach(convId => {
       if (!currentConvIds.has(convId)) {
-        supabase.removeChannel(presenceChannelsRef.current[convId]);
-        delete presenceChannelsRef.current[convId];
+        supabase.removeChannel(typingHook.presenceChannelsRef.current[convId]);
+        delete typingHook.presenceChannelsRef.current[convId];
       }
     });
     
     return () => {
-      // Cleanup all presence channels on unmount
-      Object.keys(presenceChannelsRef.current).forEach(convId => {
-        supabase.removeChannel(presenceChannelsRef.current[convId]);
+      Object.keys(typingHook.presenceChannelsRef.current).forEach(convId => {
+        supabase.removeChannel(typingHook.presenceChannelsRef.current[convId]);
       });
-      presenceChannelsRef.current = {};
+      typingHook.presenceChannelsRef.current = {};
     };
   }, [conversations, user?.id]);
 
-  // Fetch single conversation data when navigating via URL (for new/empty conversations)
-  const fetchSingleConversation = async (convId: string): Promise<Conversation | null> => {
-    if (!user) return null;
-    
-    // Fetch conversation details
-    const { data: convData, error: convError } = await supabase
-      .from("conversations")
-      .select("id, created_at, is_group, group_id")
-      .eq("id", convId)
-      .single();
-    
-    if (convError || !convData) {
-      logger.error('Error fetching single conversation:', convError);
-      return null;
-    }
-    
-    // Fetch all participants
-    const { data: participants } = await supabase
-      .from("conversation_participants")
-      .select("user_id")
-      .eq("conversation_id", convId);
-    
-    // Find the other user
-    const otherUserId = participants?.find(p => p.user_id !== user.id)?.user_id;
-    
-    if (!otherUserId && !convData.is_group) return null;
-    
-    // Fetch the other user's profile
-    let otherUserProfile = null;
-    if (otherUserId) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", otherUserId)
-        .single();
-      otherUserProfile = profile as Profile | null;
-    }
-    
-    // Fetch group details if group conversation
-    let groupData = null;
-    if (convData.is_group && convData.group_id) {
-      const { data: group } = await supabase
-        .from("group_chats")
-        .select("*")
-        .eq("id", convData.group_id)
-        .single();
-      
-      if (group) {
-        // Get member count
-        const { data: members } = await supabase
-          .from("group_members")
-          .select("id")
-          .eq("group_id", convData.group_id);
-        
-        groupData = {
-          ...group,
-          member_count: members?.length || 0
-        };
-      }
-    }
-    
-    return {
-      id: convId,
-      created_at: convData.created_at,
-      is_group: convData.is_group,
-      otherUser: otherUserProfile || undefined,
-      group: groupData || undefined,
-      lastMessage: undefined,
-      lastMessageTime: undefined,
-      unreadCount: 0,
-    };
-  };
-
+  // Selected conversation load effect
   useEffect(() => {
     if (selectedConversation && user) {
-      // Fix 2: Track current conversation FIRST to prevent race conditions
       currentConversationRef.current = selectedConversation;
       
       const loadConversation = async () => {
-        // Check if conversation exists in list
         let convDetails = conversations.find(c => c.id === selectedConversation);
         
         if (!convDetails) {
-          // Fetch single conversation data (for new/empty conversations from profile "Envoyer un message")
-          const newConv = await fetchSingleConversation(selectedConversation);
+          const newConv = await convHook.fetchSingleConversation(selectedConversation);
           if (newConv) {
             convDetails = newConv;
-            // Add to conversations list
             setConversations(prev => [newConv, ...prev.filter(c => c.id !== newConv.id)]);
           }
         }
         
-        // Store conversation details in persistent state to prevent header flicker
         if (convDetails) {
-          setSelectedConversationDetails(convDetails);
+          convHook.setSelectedConversationDetails(convDetails);
         }
         
-        await fetchMessages(selectedConversation);
-        await markMessagesAsRead(selectedConversation);
-        await fetchReactions(selectedConversation);
+        await msgHook.fetchMessages(selectedConversation);
+        await msgHook.markMessagesAsRead(selectedConversation);
+        await msgHook.fetchReactions(selectedConversation);
         
-        // Force scroll to bottom when loading a new conversation
         requestAnimationFrame(() => {
           scrollToBottom(true);
         });
       };
       loadConversation();
-      subscribeToConversationMessages(selectedConversation);
-      subscribeToReactions(selectedConversation);
+      realtimeHook.subscribeToConversationMessages(selectedConversation);
+      realtimeHook.subscribeToReactions(selectedConversation);
     } else {
-      // Clear details when no conversation is selected
-      setSelectedConversationDetails(null);
+      convHook.setSelectedConversationDetails(null);
       currentConversationRef.current = null;
     }
     return () => {
-      if (messageChannelRef.current) {
-        supabase.removeChannel(messageChannelRef.current);
+      if (realtimeHook.messageChannelRef.current) {
+        supabase.removeChannel(realtimeHook.messageChannelRef.current);
       }
-      if (reactionChannelRef.current) {
-        supabase.removeChannel(reactionChannelRef.current);
+      if (realtimeHook.reactionChannelRef.current) {
+        supabase.removeChannel(realtimeHook.reactionChannelRef.current);
       }
     };
   }, [selectedConversation, user?.id]);
@@ -453,29 +367,18 @@ const Community = () => {
   // Fix 3: Keep selectedConversationRef in sync and clear typing on switch
   useEffect(() => {
     selectedConversationRef.current = selectedConversation;
-    
-    // Clear any pending typing timeout when switching conversations
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = null;
-    }
-    
-    // Clear Jude awaiting state when switching conversations
     setIsAwaitingJudeResponse(false);
     setTypewriterMessageId(null);
   }, [selectedConversation]);
 
   // Keep selectedConversationDetails in sync with conversations list updates
-  // This ensures lastMessage, unreadCount, etc. stay current without losing otherUser data
   useEffect(() => {
-    if (selectedConversation && selectedConversationDetails) {
+    if (selectedConversation && convHook.selectedConversationDetails) {
       const updatedConv = conversations.find(c => c.id === selectedConversation);
       if (updatedConv) {
-        // Merge: keep otherUser from details (in case list temporarily loses it), but update other fields
-        setSelectedConversationDetails(prev => ({
+        convHook.setSelectedConversationDetails(prev => ({
           ...prev!,
           ...updatedConv,
-          // Preserve otherUser if the updated conv doesn't have it (race condition protection)
           otherUser: updatedConv.otherUser || prev?.otherUser,
           group: updatedConv.group || prev?.group,
         }));
@@ -483,73 +386,39 @@ const Community = () => {
     }
   }, [conversations, selectedConversation]);
 
-  const markMessagesAsRead = async (conversationId: string) => {
-    if (!user) return;
-    
-    const { error } = await supabase
-      .from("messages")
-      .update({ read: true })
-      .eq("conversation_id", conversationId)
-      .neq("sender_id", user.id)
-      .eq("read", false);
-    
-    if (!error) {
-      // Update local state ONLY - no refetch needed (performance optimization)
-      setMessages(prev =>
-        prev.map(msg =>
-          msg.sender_id !== user.id && !msg.read
-            ? { ...msg, read: true }
-            : msg
-        )
-      );
-      
-      setConversations(prev => 
-        prev.map(conv => 
-          conv.id === conversationId 
-            ? { ...conv, unreadCount: 0 }
-            : conv
-        )
-      );
-      // Notify sidebar badge system to clear message count immediately
-      window.dispatchEvent(new Event('messages-read'));
-    }
-  };
-
+  // Scroll on new messages
   useEffect(() => {
     scrollToBottom();
-    // Don't play sound here - it's already handled in subscribeToConversationMessages
     previousMessagesCount.current = messages.length;
   }, [messages]);
+
+  // Periodically refresh to update "last seen" times (30s interval)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setOfflineLastSeenTimes(prev => ({ ...prev }));
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // === Functions that stay in parent ===
 
   const scrollToBottom = useCallback((force = false) => {
     const container = messagesContainerRef.current;
     if (!container) {
-      // Fallback to the old method if container ref not available
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
       return;
     }
-    
-    // Check if user is near bottom (within 150px) before auto-scrolling
-    // This prevents interrupting users who are reading older messages
     const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
-    
     if (force || isNearBottom) {
-      container.scrollTo({
-        top: container.scrollHeight,
-        behavior: 'smooth'
-      });
+      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
     }
   }, []);
 
-  // setupGlobalPresenceListener removed - using centralized PresenceContext
-
   const checkUser = async () => {
-    // Allow visitors to stay on page and see demo content
     if (isVisitor) {
-      setIsLoadingConversations(false);
+      convHook.setIsLoadingConversations(false);
       return;
     }
-    
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -558,885 +427,21 @@ const Community = () => {
       }
       setUser(user);
     } catch (error) {
-      /* Fix 6: Prevent infinite skeleton on auth failure (3G) */
       logger.error('checkUser failed:', error);
-      setIsLoadingConversations(false);
+      convHook.setIsLoadingConversations(false);
     }
   };
 
-  const fetchConversations = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setIsLoadingConversations(false);
-      return;
-    }
-
-    // Fetch all conversations with visibility info
-    const { data: participations } = await supabase
-      .from("conversation_participants")
-      .select("conversation_id, visible_from_message_id")
-      .eq("user_id", user.id);
-
-    if (!participations) {
-      setIsLoadingConversations(false);
-      return;
-    }
-
-    // Create map of visibility thresholds
-    const visibilityMap = new Map<string, string | null>();
-    participations.forEach(p => {
-      visibilityMap.set(p.conversation_id, p.visible_from_message_id);
-    });
-
-    const conversationIds = participations.map(p => p.conversation_id);
-    
-    if (conversationIds.length === 0) {
-      setConversations([]);
-      setIsLoadingConversations(false);
-      return;
-    }
-
-    // Fetch conversation details including group info
-    const { data: conversationData } = await supabase
-      .from("conversations")
-      .select("id, created_at, is_group, group_id")
-      .in("id", conversationIds);
-
-    // Fetch group details for group conversations
-    const groupIds = conversationData
-      ?.filter(c => c.is_group && c.group_id)
-      .map(c => c.group_id!) || [];
-
-    // Fetch all participants in a single batch query (optimized - one query for all conversations)
-    const { data: allParticipants } = await supabase
-      .from("conversation_participants")
-      .select("user_id, conversation_id")
-      .in("conversation_id", conversationIds);
-
-    // Get other user IDs (excluding current user) for profile fetching
-    const otherUserIds = allParticipants
-      ?.filter(p => p.user_id !== user.id)
-      .map(p => p.user_id) || [];
-    const uniqueOtherUserIds = [...new Set(otherUserIds)];
-
-    // Fetch profiles for all other participants
-    const { data: profiles } = uniqueOtherUserIds.length > 0
-      ? await supabase
-          .from("profiles")
-          .select("*")
-          .in("user_id", uniqueOtherUserIds)
-      : { data: [] };
-
-    // Update lastSeenTimes with actual database values
-    if (profiles && profiles.length > 0) {
-      const newLastSeenTimes: Record<string, string> = {};
-      profiles.forEach(profile => {
-        if (profile.last_seen) {
-          newLastSeenTimes[profile.user_id] = profile.last_seen;
-        }
-      });
-      setOfflineLastSeenTimes(prev => ({ ...prev, ...newLastSeenTimes }));
-    }
-
-    let groupDetails: any[] = [];
-    if (groupIds.length > 0) {
-      const { data: groups } = await supabase
-        .from("group_chats")
-        .select("*")
-        .in("id", groupIds);
-      
-      // Fetch member counts for each group
-      const { data: memberCounts } = await supabase
-        .from("group_members")
-        .select("group_id")
-        .in("group_id", groupIds);
-      
-      const memberCountMap = new Map<string, number>();
-      memberCounts?.forEach(m => {
-        memberCountMap.set(m.group_id, (memberCountMap.get(m.group_id) || 0) + 1);
-      });
-
-      groupDetails = groups?.map(g => ({
-        ...g,
-        member_count: memberCountMap.get(g.id) || 0
-      })) || [];
-    }
-    // Fetch conversation previews via optimized DB function (replaces fetch-all-messages)
-    const { data: previews } = await supabase.rpc('get_conversation_previews', {
-      p_user_id: user.id
-    });
-
-    // Build preview lookup map for O(1) access in the conversation loop
-    const previewMap = new Map<string, any>();
-    previews?.forEach((p: any) => previewMap.set(p.conversation_id, p));
-
-    // Build conversations list - deduplicate both group and 1-on-1
-    const groupedByUser = new Map<string, Conversation>();
-    const groupedByGroup = new Map<string, Conversation>();
-
-    conversationIds.forEach(convId => {
-      const convInfo = conversationData?.find(c => c.id === convId);
-      if (!convInfo) return;
-
-      // Get preview data from the DB function
-      const preview = previewMap.get(convId);
-      
-      // Skip if user soft-deleted and all messages are before visibility threshold
-      // Hide conversation if soft-deleted: no messages left OR last message matches the visibility cutoff
-      if (preview?.visible_from_message_id && (!preview?.last_message_id || preview.last_message_id === preview.visible_from_message_id)) {
-        return;
-      }
-
-      const lastMsg = preview?.last_message_id ? {
-        content: preview.last_message_content,
-        created_at: preview.last_message_at,
-        sender_id: preview.last_message_sender_id,
-      } : null;
-      const unreadCount = Number(preview?.unread_count || 0);
-
-      if (convInfo.is_group && convInfo.group_id) {
-        // Group conversation - deduplicate by group_id
-        const groupData = groupDetails.find(g => g.id === convInfo.group_id);
-        if (groupData) {
-          const conv: Conversation = {
-            id: convId,
-            created_at: lastMsg?.created_at || convInfo.created_at,
-            is_group: true,
-            group: groupData,
-            lastMessage: lastMsg?.content,
-            lastMessageTime: lastMsg?.created_at,
-            unreadCount,
-          };
-          
-          // Deduplicate by group_id - keep the most recent conversation
-          const existing = groupedByGroup.get(convInfo.group_id);
-          if (!existing) {
-            groupedByGroup.set(convInfo.group_id, conv);
-          } else {
-            const existingTime = new Date(existing.lastMessageTime || existing.created_at).getTime();
-            const currentTime = new Date(conv.lastMessageTime || conv.created_at).getTime();
-            
-            if (currentTime > existingTime) {
-              groupedByGroup.set(convInfo.group_id, {
-                ...conv,
-                unreadCount: (conv.unreadCount || 0) + (existing.unreadCount || 0)
-              });
-            } else {
-              groupedByGroup.set(convInfo.group_id, {
-                ...existing,
-                unreadCount: (conv.unreadCount || 0) + (existing.unreadCount || 0)
-              });
-            }
-          }
-        }
-      } else {
-        // 1-on-1 conversation
-        const otherUserId = allParticipants?.find(
-          p => p.conversation_id === convId && p.user_id !== user.id
-        )?.user_id;
-        
-        // Conversations with deleted users (otherUserId undefined) are intentionally
-        // kept visible so the user can still delete them from their sidebar list
-        const otherUserProfile = otherUserId
-          ? profiles?.find(p => p.user_id === otherUserId)
-          : undefined;
-        
-        const conv: Conversation = {
-          id: convId,
-          created_at: lastMsg?.created_at || convInfo.created_at,
-          is_group: false,
-          otherUser: otherUserProfile,
-          lastMessage: lastMsg?.content,
-          lastMessageTime: lastMsg?.created_at,
-          unreadCount,
-        };
-        
-        // Group by user to merge duplicate conversations; use convId as key for deleted users
-        const groupKey = otherUserId || convId;
-        const existing = groupedByUser.get(groupKey);
-        if (!existing) {
-          groupedByUser.set(groupKey, conv);
-        } else {
-          const existingTime = new Date(existing.lastMessageTime || existing.created_at).getTime();
-          const currentTime = new Date(conv.lastMessageTime || conv.created_at).getTime();
-          
-          if (currentTime > existingTime) {
-            groupedByUser.set(groupKey, {
-              ...conv,
-              unreadCount: (conv.unreadCount || 0) + (existing.unreadCount || 0)
-            });
-          } else {
-            groupedByUser.set(groupKey, {
-              ...existing,
-              unreadCount: (conv.unreadCount || 0) + (existing.unreadCount || 0)
-            });
-          }
-        }
-        }
-    });
-
-    // Combine group and 1-on-1 conversations and sort
-    const allConversations = [...Array.from(groupedByGroup.values()), ...Array.from(groupedByUser.values())];
-    const sortedConversations = allConversations.sort((a, b) => 
-      new Date(b.lastMessageTime || b.created_at).getTime() - 
-      new Date(a.lastMessageTime || a.created_at).getTime()
-    );
-    
-    setConversations(sortedConversations);
-    setIsLoadingConversations(false);
-  };
-
-  const fetchFollowers = async () => {
-    if (!user) return;
-
-    const { data: followsData } = await supabase
-      .from("follows")
-      .select("following_id")
-      .eq("follower_id", user.id)
-      .eq("status", "accepted");
-
-    if (!followsData) return;
-
-    const followingIds = followsData.map(f => f.following_id);
-    
-    if (followingIds.length === 0) {
-      setFollowers([]);
-      return;
-    }
-
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("*")
-      .in("user_id", followingIds);
-
-    setFollowers(profiles || []);
-  };
-
-  const fetchMessages = async (conversationId: string) => {
-    // NEW APPROACH: Use message ID-based filtering instead of timestamps
-    // This is more reliable and handles rejoin scenarios correctly
-    
-    // Get the visibility threshold for this user in this conversation
-    const { data: participantData, error: participantError } = await supabase
-      .from("conversation_participants")
-      .select("visible_from_message_id")
-      .eq("conversation_id", conversationId)
-      .eq("user_id", user?.id)
-      .single();
-    
-    if (participantError) {
-      logger.error('Error fetching participant visibility:', participantError);
-    }
-
-    const visibilityThreshold = participantData?.visible_from_message_id;
-
-    // Fetch messages with pagination (limit 50 for better performance)
-    let query = supabase
-      .from("messages")
-      .select("id, content, sender_id, created_at, read, shared_post_id, conversation_id, replied_to_id, image_url, video_url, document_url, document_name, thumbnail_url, edited_at")
-      .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: false })
-      .limit(50); // Optimized: only fetch last 50 messages initially
-
-    const { data: allMessages, error: messagesError } = await query;
-    
-    // Reverse to display in chronological order (oldest first)
-    const reversedMessages = allMessages ? [...allMessages].reverse() : [];
-    
-    if (messagesError) {
-      logger.error('Messages error:', messagesError);
-    }
-
-    // Filter messages on the client side based on visibility threshold
-    let messagesData = reversedMessages;
-    if (visibilityThreshold && reversedMessages.length > 0) {
-      // Find the index of the threshold message
-      const thresholdIndex = reversedMessages.findIndex(m => m.id === visibilityThreshold);
-      if (thresholdIndex !== -1) {
-        // Show messages FROM the threshold message onwards (inclusive)
-        messagesData = reversedMessages.slice(thresholdIndex);
-      }
-    }
-
-    // Handle empty conversations (new chats with no messages yet)
-    if (!messagesData || messagesData.length === 0) {
-      setMessages([]);
-      return;
-    }
-
-    const senderIds = [...new Set(messagesData.map(m => m.sender_id))];
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("*")
-      .in("user_id", senderIds);
-
-    // Get shared post IDs
-    const sharedPostIds = messagesData
-      .filter(m => m.shared_post_id)
-      .map(m => m.shared_post_id);
-
-    let sharedPosts: any[] = [];
-    let sharedPostProfiles: any[] = [];
-
-    if (sharedPostIds.length > 0) {
-      const { data: postsData } = await supabase
-        .from("posts")
-        .select("*")
-        .in("id", sharedPostIds);
-
-      sharedPosts = postsData || [];
-
-      const postUserIds = [...new Set(sharedPosts.map(p => p.user_id))];
-      const { data: postProfilesData } = await supabase
-        .from("profiles")
-        .select("*")
-        .in("user_id", postUserIds);
-
-      sharedPostProfiles = postProfilesData || [];
-    }
-
-    const enrichedMessages = messagesData.map(msg => {
-      const sharedPost = sharedPosts.find(p => p.id === msg.shared_post_id);
-      const repliedTo = msg.replied_to_id 
-        ? messagesData.find(m => m.id === msg.replied_to_id)
-        : null;
-      
-      return {
-        id: msg.id,
-        content: msg.content,
-        sender_id: msg.sender_id,
-        created_at: msg.created_at,
-        conversation_id: msg.conversation_id,
-        shared_post_id: msg.shared_post_id,
-        replied_to_id: msg.replied_to_id,
-        read: msg.read ?? false,
-        image_url: msg.image_url,
-        video_url: msg.video_url,
-        profile: profiles?.find(p => p.user_id === msg.sender_id),
-        replied_to: repliedTo ? {
-          id: repliedTo.id,
-          content: repliedTo.content,
-          sender_id: repliedTo.sender_id,
-          created_at: repliedTo.created_at,
-          read: repliedTo.read ?? false,
-          profile: profiles?.find(p => p.user_id === repliedTo.sender_id),
-          shared_post_id: repliedTo.shared_post_id,
-        } : undefined,
-        shared_post: sharedPost ? {
-          ...sharedPost,
-          profile: sharedPostProfiles.find(p => p.user_id === sharedPost.user_id)
-        } : undefined
-      };
-    });
-
-    // Fix 2: Guard against race condition - verify this is still the active conversation
-    if (conversationId !== currentConversationRef.current) {
-      console.log('[fetchMessages] Discarding stale fetch for:', conversationId);
-      return;
-    }
-
-    setMessages(enrichedMessages);
-  };
-
-  // Fix 4: Profile cache with LRU eviction to prevent memory leak
-  const MAX_PROFILE_CACHE_SIZE = 100;
-  
-  // Helper to get cached profile or fetch if not cached
-  const getCachedProfile = async (userId: string): Promise<Profile | null> => {
-    if (profileCacheRef.current.has(userId)) {
-      return profileCacheRef.current.get(userId)!;
-    }
-    
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("user_id", userId)
-      .single();
-      
-    if (profile) {
-      // Evict oldest entry if cache is full (LRU)
-      if (profileCacheRef.current.size >= MAX_PROFILE_CACHE_SIZE) {
-        const oldestKey = profileCacheRef.current.keys().next().value;
-        if (oldestKey) {
-          profileCacheRef.current.delete(oldestKey);
-        }
-      }
-      profileCacheRef.current.set(userId, profile as Profile);
-    }
-    return profile as Profile | null;
-  };
-
-  const subscribeToConversationMessages = (conversationId: string) => {
-    // Guard: Don't re-subscribe if already subscribed to this conversation
-    if (messageChannelRef.current?.topic === `realtime:messages-${conversationId}`) {
-      console.log('[Messages] Already subscribed to:', conversationId);
-      return;
-    }
-
-    // Note: Cleanup is handled by useEffect return function
-    // Removing here causes race conditions with React's cleanup timing
-
-    // Subscribe to real-time updates for this specific conversation
-    const channel = supabase
-      .channel(`messages-${conversationId}`, {
-        config: {
-          broadcast: { self: true },
-          presence: { key: user?.id },
-        },
-      })
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        async (payload) => {
-          // Fetch the sender profile from cache
-          const profile = await getCachedProfile(payload.new.sender_id);
-
-          // Fetch replied message if exists
-          let repliedToMessage = undefined;
-          if (payload.new.replied_to_id) {
-            const { data: repliedData } = await supabase
-              .from("messages")
-              .select("id, content, sender_id, created_at, read")
-              .eq("id", payload.new.replied_to_id)
-              .single();
-
-            if (repliedData) {
-              const repliedProfile = await getCachedProfile(repliedData.sender_id);
-
-              repliedToMessage = {
-                ...repliedData,
-                profile: repliedProfile
-              };
-            }
-          }
-
-          // Fetch shared post if exists
-          let sharedPost = undefined;
-          if (payload.new.shared_post_id) {
-            const { data: postData } = await supabase
-              .from("posts")
-              .select("*")
-              .eq("id", payload.new.shared_post_id)
-              .single();
-
-            if (postData) {
-              const postProfile = await getCachedProfile(postData.user_id);
-
-              sharedPost = {
-                ...postData,
-                profile: postProfile
-              };
-            }
-          }
-
-          // Add the new message with profile to the messages array
-          // Build message object including new media columns from realtime payload
-          const newMessage: Message = {
-            id: payload.new.id,
-            content: payload.new.content,
-            sender_id: payload.new.sender_id,
-            created_at: payload.new.created_at,
-            read: payload.new.read || false,
-            shared_post_id: payload.new.shared_post_id,
-            replied_to_id: payload.new.replied_to_id,
-            image_url: payload.new.image_url,
-            video_url: payload.new.video_url,
-            document_url: payload.new.document_url,
-            document_name: payload.new.document_name,
-            thumbnail_url: payload.new.thumbnail_url,
-            edited_at: payload.new.edited_at,
-            profile,
-            replied_to: repliedToMessage,
-            shared_post: sharedPost,
-          };
-
-          // Only add if message doesn't already exist (avoid duplicates with optimistic updates)
-          setMessages((prev) => {
-            const exists = prev.some(m => m.id === newMessage.id);
-            if (exists) return prev;
-            return [...prev, newMessage];
-          });
-
-          // Detect Jude's response - clear awaiting state and trigger typewriter effect
-          if (payload.new.sender_id === JUDE_USER_ID) {
-            setIsAwaitingJudeResponse(false);
-            setTypewriterMessageId(payload.new.id);
-          }
-
-          // Check if this is a group message mentioning Eric
-          const currentConversation = conversations.find(c => c.id === conversationId);
-          const isGroupChat = currentConversation?.is_group;
-          const mentionsJude = payload.new.content.toLowerCase().includes('hey jude');
-          
-          // If in group chat and mentions Jude, trigger Jude's response (including user's own messages)
-          if (isGroupChat && mentionsJude && payload.new.sender_id !== JUDE_USER_ID) {
-            // Get sender's profile info
-            supabase.functions.invoke('eric-chat', {
-              body: { 
-                conversationId: conversationId,
-                userMessage: payload.new.content,
-                userId: payload.new.sender_id,
-                userNickname: profile?.nickname || profile?.full_name
-              }
-            }).catch(error => {
-              logger.error('Error calling Eric chat:', error);
-            });
-          }
-
-          // Show notification if message is from another user AND this is the CURRENT conversation
-          // (notifications for other conversations are handled in subscribeToMessages)
-          if (payload.new.sender_id !== user?.id && conversationId === selectedConversation) {
-            if ('Notification' in window && Notification.permission === 'granted') {
-              const senderName = profile?.nickname || profile?.full_name || 'Quelqu\'un';
-              const messageContent = sharedPost 
-                ? 'a partagé un post' 
-                : (payload.new.content || 'Nouveau message').substring(0, 100);
-              
-              // Use service worker for better compatibility
-              if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.ready.then(registration => {
-                  registration.showNotification(senderName, {
-                    body: messageContent,
-                    icon: '/logo.png',
-                    badge: '/logo.png',
-                    tag: conversationId,
-                    requireInteraction: false,
-                    data: {
-                      url: `/community?conversation=${conversationId}`,
-                      conversationId: conversationId
-                    }
-                  });
-                });
-              }
-            }
-          }
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "messages",
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        (payload) => {
-          // Update message in real-time (read status, edits, media URLs)
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === payload.new.id 
-                ? { 
-                    ...msg, 
-                    read: payload.new.read,
-                    content: payload.new.content,
-                    edited_at: payload.new.edited_at,
-                    image_url: payload.new.image_url || msg.image_url,
-                    video_url: payload.new.video_url || msg.video_url,
-                    thumbnail_url: payload.new.thumbnail_url || msg.thumbnail_url,
-                  }
-                : msg
-            )
-          );
-        }
-      )
-      .subscribe((status) => {
-        console.log('[Messages] Subscription status for conversation:', conversationId, status);
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.error('[Messages] Channel error, attempting reconnect...');
-          setTimeout(() => {
-            if (selectedConversation === conversationId) {
-              subscribeToConversationMessages(conversationId);
-            }
-          }, 2000);
-        }
-      });
-
-    messageChannelRef.current = channel;
-  };
-
-  const subscribeToMessages = () => {
-    const channel = supabase
-      .channel("messages-changes", {
-        config: {
-          broadcast: { self: false }, // Don't receive our own messages
-        },
-      })
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `sender_id=neq.${user?.id}`, // Server-side filter: skip own messages (handled by optimistic update)
-        },
-        async (payload) => {
-          // Only play sound once here (not in conversation-specific subscription)
-          if (payload.new.sender_id !== user?.id) {
-            playReceiveSound();
-          }
-          
-          // Immediately update the conversation order in local state
-          const conversationId = payload.new.conversation_id;
-          const newMessageTime = payload.new.created_at;
-          
-          setConversations(prev => {
-            // Find and update the conversation with the new message time
-            const updated = prev.map(conv => {
-              if (conv.id !== conversationId) return conv;
-              
-              // Increment unread count only if:
-              // 1. Message is from another user
-              // 2. This is NOT the currently selected conversation
-              const shouldIncrementUnread = 
-                payload.new.sender_id !== user?.id && 
-                conversationId !== selectedConversationRef.current;
-              
-              return { 
-                ...conv, 
-                lastMessage: payload.new.content,
-                lastMessageTime: newMessageTime,
-                unreadCount: shouldIncrementUnread 
-                  ? (conv.unreadCount || 0) + 1 
-                  : conv.unreadCount,
-              };
-            });
-            
-            // Re-sort immediately
-            return updated.sort((a, b) => 
-              new Date(b.lastMessageTime || b.created_at).getTime() - 
-              new Date(a.lastMessageTime || a.created_at).getTime()
-            );
-          });
-          
-          // Show browser notification for messages in other conversations
-          // (messages in the current conversation are handled by subscribeToConversationMessages)
-          if (payload.new.sender_id !== user?.id && conversationId !== selectedConversationRef.current) {
-          // Use cached profile for notification
-          const senderProfile = await getCachedProfile(payload.new.sender_id);
-
-          const senderName = senderProfile?.nickname || senderProfile?.full_name || 'Quelqu\'un';
-            
-            // Fetch conversation details for notification
-            const { data: conversationData } = await supabase
-              .from('conversations')
-              .select('is_group, group_id')
-              .eq('id', conversationId)
-              .single();
-            
-            let conversationName = senderName;
-            
-            // If it's a group, get the group name
-            if (conversationData?.is_group && conversationData?.group_id) {
-              const { data: groupData } = await supabase
-                .from('group_chats')
-                .select('name')
-                .eq('id', conversationData.group_id)
-                .single();
-              
-              conversationName = groupData?.name || 'Groupe';
-            }
-            
-            // Show browser notification using service worker
-            if ('Notification' in window && Notification.permission === 'granted') {
-              const messagePreview = payload.new.content.substring(0, 100) || 'Nouveau message';
-              const notificationTitle = conversationData?.is_group 
-                ? `${senderName} dans ${conversationName}`
-                : `${senderName}`;
-              
-              // Use service worker for better compatibility and offline support
-              if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.ready.then(registration => {
-                  registration.showNotification(notificationTitle, {
-                    body: messagePreview,
-                    icon: '/logo.png',
-                    badge: '/logo.png',
-                    tag: conversationId,
-                    requireInteraction: false,
-                    data: {
-                      url: `/community?conversation=${conversationId}`,
-                      conversationId: conversationId
-                    }
-                  });
-                });
-              }
-            }
-          }
-          
-          // Also update messages state if this is the currently selected conversation
-          // This serves as a fallback if the conversation-specific subscription fails
-          if (conversationId === selectedConversation && payload.new.sender_id !== user?.id) {
-            const profile = await getCachedProfile(payload.new.sender_id);
-            
-            setMessages(prev => {
-              if (prev.some(m => m.id === payload.new.id)) return prev;
-              
-              return [...prev, {
-                id: payload.new.id,
-                content: payload.new.content,
-                sender_id: payload.new.sender_id,
-                created_at: payload.new.created_at,
-                read: payload.new.read || false,
-                image_url: payload.new.image_url,
-                video_url: payload.new.video_url,
-                profile,
-              }];
-            });
-          }
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "messages",
-          filter: `sender_id=neq.${user?.id}`, // Skip own message updates (e.g. read receipts)
-        },
-        (payload) => {
-          // If message was marked as read, update the conversation's unread count
-          if (payload.new.read && !payload.old.read) {
-            // Update conversation unread count immediately
-            setConversations(prev => 
-              prev.map(conv => 
-                conv.id === payload.new.conversation_id 
-                  ? { ...conv, unreadCount: Math.max(0, (conv.unreadCount || 0) - 1) }
-                  : conv
-              )
-            );
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  };
-
-  const handleMediaSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const isImage = file.type.startsWith('image/');
-    const isVideo = file.type.startsWith('video/');
-    const isDocument = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'text/plain'
-    ].includes(file.type) || file.name.endsWith('.txt');
-
-    if (!isImage && !isVideo && !isDocument) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez sélectionner une image, vidéo ou document (PDF, Word, TXT)",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Check document size limit (10MB)
-    if (isDocument && file.size > 10 * 1024 * 1024) {
-      toast({
-        title: "Erreur",
-        description: "Le document ne doit pas dépasser 10 Mo",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      if (isDocument) {
-        // For documents, no optimization needed
-        setSelectedMediaFile(file);
-        setMediaType('document');
-        setMediaPreview(file.name); // Use filename as preview
-        
-        toast({
-          title: "Document prêt",
-          description: `${file.name} (${formatFileSize(file.size)})`,
-        });
-      } else {
-        // Handle images and videos with optimization
-        const mediaTypeValue = isImage ? 'image' : 'video';
-        
-        if (isImage) {
-          toast({
-            title: "Optimisation...",
-            description: "Compression de l'image en cours...",
-          });
-        }
-
-        const { file: optimizedFile, originalSize, optimizedSize, savings } = await optimizeMediaFile(file, mediaTypeValue);
-        
-        setSelectedMediaFile(optimizedFile);
-        setMediaType(mediaTypeValue);
-
-        // For images, use FileReader for preview
-        // For videos, use createObjectURL for instant preview (much faster)
-        if (isImage) {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            setMediaPreview(reader.result as string);
-          };
-          reader.readAsDataURL(optimizedFile);
-        } else {
-          // For videos, createObjectURL is instant (no file reading needed)
-          const videoUrl = URL.createObjectURL(optimizedFile);
-          setMediaPreview(videoUrl);
-        }
-
-        if (isImage && savings > 10) {
-          toast({
-            title: "Image optimisée!",
-            description: `Taille réduite de ${savings.toFixed(0)}% (${formatFileSize(originalSize)} → ${formatFileSize(optimizedSize)})`,
-          });
-        } else if (isVideo) {
-          const sizeInMB = optimizedSize / (1024 * 1024);
-          if (sizeInMB > 10) {
-            toast({
-              title: "Vidéo prête",
-              description: `Taille: ${formatFileSize(optimizedSize)}. Prête à être envoyée!`,
-            });
-          }
-        }
-      }
-    } catch (error: any) {
-      logger.error('Error processing media:', error);
-      toast({
-        title: "Erreur",
-        description: error.message || `Impossible de traiter le fichier`,
-        variant: "destructive",
-      });
-      e.target.value = ''; // Reset input
-    }
-  };
-
-  const clearMedia = () => {
-    // Revoke object URL if it was created for video preview
-    if (mediaPreview && mediaType === 'video') {
-      URL.revokeObjectURL(mediaPreview);
-    }
-    setSelectedMediaFile(null);
-    setMediaPreview(null);
-    setMediaType(null);
-  };
-
+  // sendMessage stays in parent — heavy cross-cutting deps (media, typing, sounds, optimistic updates, Jude)
   const sendMessage = async () => {
-    if ((!newMessage.trim() && !selectedMediaFile) || !selectedConversation || !user) return;
+    if ((!newMessage.trim() && !mediaHook.selectedMediaFile) || !selectedConversation || !user) return;
 
     const messageContent = newMessage.trim();
-    const currentMediaFile = selectedMediaFile;
-    const currentMediaType = mediaType;
-    const currentMediaPreview = mediaPreview;
+    const currentMediaFile = mediaHook.selectedMediaFile;
+    const currentMediaType = mediaHook.mediaType;
+    const currentMediaPreview = mediaHook.mediaPreview;
     const currentReplyingTo = replyingTo;
     
-    // Determine display content for optimistic update
     let displayContent = messageContent;
     if (!displayContent && currentMediaType) {
       if (currentMediaType === 'image') displayContent = '📷 Image';
@@ -1444,8 +449,8 @@ const Community = () => {
       else if (currentMediaType === 'document') displayContent = `📄 ${currentMediaFile?.name || 'Document'}`;
     }
 
-    // 1. CREATE OPTIMISTIC MESSAGE - Show instantly in UI
-    const optimisticId = `temp-${Date.now()}`;
+    // 1. CREATE OPTIMISTIC MESSAGE
+    const optimisticId = `optimistic-${Date.now()}`;
     const optimisticMessage: Message = {
       id: optimisticId,
       content: displayContent || '',
@@ -1453,28 +458,25 @@ const Community = () => {
       created_at: new Date().toISOString(),
       read: false,
       conversation_id: selectedConversation,
-      profile: cachedUserProfile || undefined,
+      profile: msgHook.cachedUserProfile || undefined,
       replied_to: currentReplyingTo || undefined,
       replied_to_id: currentReplyingTo?.id || null,
-      // Show local preview for images immediately
       image_url: currentMediaType === 'image' ? currentMediaPreview : null,
       video_url: currentMediaType === 'video' ? currentMediaPreview : null,
     };
 
-    // 2. INSTANT UI UPDATE - Message appears immediately
+    // 2. INSTANT UI UPDATE
     setMessages(prev => [...prev, optimisticMessage]);
     setNewMessage("");
     setReplyingTo(null);
-    clearMedia();
+    mediaHook.clearMedia();
     playSendSound();
     
-    // Force scroll to bottom when sending a message - use requestAnimationFrame for reliable timing
     requestAnimationFrame(() => {
       setTimeout(() => scrollToBottom(true), 50);
     });
     
-    // Clear typing indicator
-    sendTypingStatus(false);
+    typingHook.sendTypingStatus(false);
 
     // Update conversation list immediately
     setConversations(prev => {
@@ -1489,7 +491,7 @@ const Community = () => {
       );
     });
 
-    // 3. BACKGROUND DATABASE OPERATIONS - Non-blocking
+    // 3. BACKGROUND DATABASE OPERATIONS
     (async () => {
       try {
         let imageUrl = null;
@@ -1498,7 +500,6 @@ const Community = () => {
         let documentName: string | null = null;
         let thumbnailUrl: string | null = null;
 
-        // Check participation (fast query)
         const { data: participation } = await supabase
           .from("conversation_participants")
           .select("id, visible_from_message_id")
@@ -1506,7 +507,6 @@ const Community = () => {
           .eq("user_id", user.id)
           .maybeSingle();
 
-        // Handle participation in background
         if (!participation) {
           await supabase
             .from("conversation_participants")
@@ -1528,12 +528,10 @@ const Community = () => {
           const timestamp = Date.now();
           
           if (currentMediaType === 'image') {
-            // Generate full image and thumbnail in parallel
             const [thumbBlob] = await Promise.all([
               generateImageThumbnail(currentMediaFile).catch(() => null),
             ]);
             
-            // Upload full image
             const fullFileName = `${user.id}/${timestamp}-full.jpg`;
             const { error: uploadError } = await supabase.storage
               .from('message-media')
@@ -1549,7 +547,6 @@ const Community = () => {
             const { data: { publicUrl: fullUrl } } = supabase.storage.from('message-media').getPublicUrl(fullFileName);
             imageUrl = fullUrl;
             
-            // Upload thumbnail if generated successfully
             if (thumbBlob) {
               const thumbFileName = `${user.id}/${timestamp}-thumb.jpg`;
               const thumbFile = new File([thumbBlob], 'thumb.jpg', { type: 'image/jpeg' });
@@ -1563,18 +560,17 @@ const Community = () => {
               }
             }
           } else if (currentMediaType === 'video') {
-            // Use uploadWithProgress for video — critical for large files on 3G
             const videoFileName = `${user.id}/${timestamp}.${currentMediaFile.name.split('.').pop()}`;
-            setUploadProgress(0);
+            mediaHook.setUploadProgress(0);
             
             const { error: uploadError } = await uploadWithProgress(
               'message-media',
               videoFileName,
               currentMediaFile,
-              (progress) => setUploadProgress(progress.progress)
+              (progress) => mediaHook.setUploadProgress(progress.progress)
             );
             
-            setUploadProgress(null);
+            mediaHook.setUploadProgress(null);
 
             if (uploadError) {
               logger.error('Video upload error:', uploadError);
@@ -1586,7 +582,6 @@ const Community = () => {
             const { data: { publicUrl } } = supabase.storage.from('message-media').getPublicUrl(videoFileName);
             videoUrl = publicUrl;
           } else if (currentMediaType === 'document') {
-            // Standard upload for documents (small files)
             const docFileName = `${user.id}/${timestamp}.${currentMediaFile.name.split('.').pop()}`;
             const { error: uploadError } = await supabase.storage
               .from('message-media')
@@ -1621,33 +616,25 @@ const Community = () => {
 
         if (error) {
           logger.error('Message insert error:', error);
-          // Remove optimistic message on error
           setMessages(prev => prev.filter(m => m.id !== optimisticId));
-          toast({
-            title: "Erreur",
-            description: "Impossible d'envoyer le message",
-            variant: "destructive",
-          });
+          toast({ title: "Erreur", description: "Impossible d'envoyer le message", variant: "destructive" });
           return;
         }
 
-        // Update optimistic message with real ID, URLs, and thumbnail
+        // Update optimistic message with real ID and URLs
         setMessages(prev => prev.map(m => 
           m.id === optimisticId 
             ? { ...m, id: insertedMessage.id, image_url: imageUrl, video_url: videoUrl, document_url: documentUrl, document_name: documentName, thumbnail_url: thumbnailUrl }
             : m
         ));
 
-        // 4. FIRE-AND-FORGET NOTIFICATIONS - Don't await
+        // 4. FIRE-AND-FORGET NOTIFICATIONS
         const conversation = conversations.find(c => c.id === selectedConversation);
-        // PII hardening: never fall back to email — use safe anonymous label
-        const senderName = cachedUserProfile?.nickname || cachedUserProfile?.full_name || 'Élève';
+        const senderName = msgHook.cachedUserProfile?.nickname || msgHook.cachedUserProfile?.full_name || 'Élève';
         
         if (conversation?.otherUser?.user_id === JUDE_USER_ID) {
-          // Set awaiting state for typing indicator
           setIsAwaitingJudeResponse(true);
           
-          // Call Jude in background
           supabase.functions.invoke('eric-chat', {
             body: { 
               conversationId: selectedConversation,
@@ -1657,10 +644,9 @@ const Community = () => {
             }
           }).catch(err => {
             logger.error('Jude chat error:', err);
-            setIsAwaitingJudeResponse(false); // Clear on error
+            setIsAwaitingJudeResponse(false);
           });
         } else if (conversation?.otherUser) {
-          // Send push notification in background
           const messagePreview = messageContent 
             ? messageContent.substring(0, 80) 
             : (imageUrl ? '📷 Image' : '🎥 Vidéo');
@@ -1675,7 +661,6 @@ const Community = () => {
             }
           }).catch(err => logger.error('Push notification error:', err));
         } else if (conversation?.is_group && conversation?.group?.id) {
-          // Group notifications in background - use Promise.all for parallel sends
           (async () => {
             try {
               const { data: groupMembers } = await supabase
@@ -1690,7 +675,6 @@ const Community = () => {
                   ? messageContent.substring(0, 80) 
                   : (imageUrl ? '📷 Image' : '🎥 Vidéo');
                 
-                // Send all notifications in parallel
                 await Promise.all(
                   groupMembers.map(member => 
                     supabase.functions.invoke('send-push-notification', {
@@ -1712,435 +696,10 @@ const Community = () => {
         }
       } catch (error) {
         logger.error('Background send error:', error);
-        // Remove optimistic message on error
         setMessages(prev => prev.filter(m => m.id !== optimisticId));
-        toast({
-          title: "Erreur",
-          description: "Impossible d'envoyer le message",
-          variant: "destructive",
-        });
+        toast({ title: "Erreur", description: "Impossible d'envoyer le message", variant: "destructive" });
       }
     })();
-  };
-
-  const fetchReactions = async (conversationId: string) => {
-    const { data: messagesData } = await supabase
-      .from("messages")
-      .select("id")
-      .eq("conversation_id", conversationId);
-
-    if (!messagesData) return;
-
-    const messageIds = messagesData.map(m => m.id);
-    
-    const { data: reactionsData } = await supabase
-      .from("message_reactions")
-      .select("*")
-      .in("message_id", messageIds);
-
-    if (reactionsData) {
-      const reactionsByMessage = reactionsData.reduce((acc, reaction) => {
-        if (!acc[reaction.message_id]) {
-          acc[reaction.message_id] = [];
-        }
-        acc[reaction.message_id].push(reaction);
-        return acc;
-      }, {} as Record<string, Reaction[]>);
-      
-      setReactions(reactionsByMessage);
-    }
-  };
-
-  const subscribeToReactions = (conversationId: string) => {
-    // Guard: Don't re-subscribe if already subscribed to this conversation
-    if (reactionChannelRef.current?.topic === `realtime:reactions-${conversationId}`) {
-      console.log('[Reactions] Already subscribed to:', conversationId);
-      return;
-    }
-
-    // Note: Cleanup is handled by useEffect return function
-    // Removing here causes race conditions with React's cleanup timing
-
-    const channel = supabase
-      .channel(`reactions-${conversationId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'message_reactions',
-        },
-        async (payload) => {
-          if (payload.eventType === 'INSERT') {
-            const newReaction = payload.new as Reaction;
-            // Client-side guard: only apply if message belongs to current conversation
-            setMessages(currentMsgs => {
-              if (!currentMsgs.some(m => m.id === newReaction.message_id)) return currentMsgs;
-              // Message exists — update reactions state (side effect inside functional update for atomicity)
-              setReactions(prev => ({
-                ...prev,
-                [newReaction.message_id]: [...(prev[newReaction.message_id] || []), newReaction]
-              }));
-              return currentMsgs; // Don't modify messages, just used for the guard check
-            });
-          } else if (payload.eventType === 'DELETE') {
-            const deletedReaction = payload.old as Reaction;
-            setReactions(prev => ({
-              ...prev,
-              [deletedReaction.message_id]: (prev[deletedReaction.message_id] || []).filter(
-                r => r.id !== deletedReaction.id
-              )
-            }));
-          }
-        }
-      )
-      .subscribe();
-
-    reactionChannelRef.current = channel;
-  };
-
-  const handleEditMessage = (messageId: string, currentContent: string) => {
-    setEditingMessageId(messageId);
-    setEditedContent(currentContent);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingMessageId(null);
-    setEditedContent("");
-  };
-
-  const handleSaveEdit = async (messageId: string) => {
-    if (!editedContent.trim()) {
-      toast({
-        title: "Erreur",
-        description: "Le message ne peut pas être vide",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from("messages")
-        .update({ content: editedContent.trim(), edited_at: new Date().toISOString() })
-        .eq("id", messageId);
-
-      if (error) throw error;
-
-      // Update local state with edited content and timestamp
-      const nowISO = new Date().toISOString();
-      setMessages(messages.map(msg => 
-        msg.id === messageId ? { ...msg, content: editedContent.trim(), edited_at: nowISO } : msg
-      ));
-
-      setEditingMessageId(null);
-      setEditedContent("");
-
-      toast({
-        title: "Succès",
-        description: "Message modifié",
-      });
-    } catch (error) {
-      logger.error("Error updating message:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de modifier le message",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleDeleteMessage = async (messageId: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer ce message ?")) {
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from("messages")
-        .delete()
-        .eq("id", messageId);
-
-      if (error) throw error;
-
-      setMessages(messages.filter(msg => msg.id !== messageId));
-
-      toast({
-        title: "Succès",
-        description: "Message supprimé",
-      });
-    } catch (error) {
-      logger.error("Error deleting message:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer le message",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const toggleReaction = async (messageId: string, emoji: string) => {
-    if (!user) return;
-
-    // Check if user already reacted with this emoji
-    const existingReaction = reactions[messageId]?.find(
-      r => r.user_id === user.id && r.emoji === emoji
-    );
-
-    if (existingReaction) {
-      // Remove reaction
-      const { error } = await supabase
-        .from('message_reactions')
-        .delete()
-        .eq('id', existingReaction.id);
-
-      if (!error) {
-        setShowReactionPicker(null);
-      }
-    } else {
-      // Add reaction
-      const { error } = await supabase
-        .from('message_reactions')
-        .insert({
-          message_id: messageId,
-          user_id: user.id,
-          emoji: emoji,
-        });
-
-      if (!error) {
-        setShowReactionPicker(null);
-      }
-    }
-  };
-
-  const subscribeToTypingPresence = (conversationId: string) => {
-    if (!user) {
-      return;
-    }
-
-    if (presenceChannelsRef.current[conversationId]) {
-      supabase.removeChannel(presenceChannelsRef.current[conversationId]);
-    }
-
-    const channel = supabase.channel(`typing-${conversationId}`, {
-      config: {
-        presence: {
-          key: user.id,
-        },
-      },
-    });
-
-    channel
-      .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState();
-        setTypingUsers(prev => ({
-          ...prev,
-          [conversationId]: state
-        }));
-      })
-      .on('presence', { event: 'join' }, () => {})
-      .on('presence', { event: 'leave' }, () => {})
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          await channel.track({
-            user_id: user.id,
-            typing: false,
-          });
-        }
-      });
-
-    presenceChannelsRef.current[conversationId] = channel;
-  };
-
-  const sendTypingStatus = async (isTyping: boolean) => {
-    if (!selectedConversation || !presenceChannelsRef.current[selectedConversation] || !user) {
-      return;
-    }
-
-    try {
-      await presenceChannelsRef.current[selectedConversation].track({
-        user_id: user.id,
-        typing: isTyping,
-      });
-    } catch (error) {
-      logger.error('Error sending typing status:', error);
-    }
-  };
-
-  // Fix 3: handleTyping with stale closure prevention
-  const handleTyping = (value: string) => {
-    setNewMessage(value);
-
-    // Clear existing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    // Send typing status
-    if (value.trim()) {
-      sendTypingStatus(true);
-
-      // Capture current conversation for timeout callback
-      const conversationAtCall = selectedConversationRef.current;
-
-      // Auto-clear typing status after 3 seconds of inactivity
-      typingTimeoutRef.current = setTimeout(() => {
-        // Only send if still in the same conversation
-        if (selectedConversationRef.current === conversationAtCall) {
-          sendTypingStatus(false);
-        }
-      }, 3000);
-    } else {
-      sendTypingStatus(false);
-    }
-  };
-  
-  // Fix 5: Cleanup typing timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Periodically refresh to update "last seen" times
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Force a re-render to update the relative time display
-      setOfflineLastSeenTimes(prev => ({ ...prev }));
-    }, 30000); // Update every 30 seconds
-    
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleDeleteConversation = async (conversationId: string) => {
-    try {
-      if (!user?.id) {
-        toast({
-          title: "Erreur",
-          description: "Utilisateur non authentifié",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Find if this is a group or single conversation
-      const conversation = conversations.find(c => c.id === conversationId);
-      const isGroup = conversation?.is_group;
-
-      if (isGroup) {
-        // For group conversations: delete only user's messages
-        const { error: deleteError } = await supabase
-          .from("messages")
-          .delete()
-          .eq("conversation_id", conversationId)
-          .eq("sender_id", user.id);
-
-        if (deleteError) {
-          logger.error("Error deleting messages:", deleteError);
-          throw deleteError;
-        }
-      } else {
-        // For single conversations (WhatsApp-like behavior):
-        // Set visible_from_message_id to hide all current messages
-        
-        // Get the last message ID to set as the threshold
-        const { data: lastMessage, error: fetchError } = await supabase
-          .from("messages")
-          .select("id")
-          .eq("conversation_id", conversationId)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (fetchError) {
-          logger.error("Error fetching last message:", fetchError);
-          throw fetchError;
-        }
-
-        if (!lastMessage) {
-          // Empty conversation — delete participant row entirely so it disappears
-          const { error: deleteError } = await supabase
-            .from("conversation_participants")
-            .delete()
-            .eq("conversation_id", conversationId)
-            .eq("user_id", user.id);
-
-          if (deleteError) {
-            logger.error("Error deleting participant row:", deleteError);
-            throw deleteError;
-          }
-        } else {
-          // Has messages — soft delete via visibility threshold (existing logic)
-          const { error: updateError } = await supabase
-            .from("conversation_participants")
-            .update({ visible_from_message_id: lastMessage.id })
-            .eq("conversation_id", conversationId)
-            .eq("user_id", user.id);
-
-          if (updateError) {
-            logger.error("Error updating visibility:", updateError);
-            throw updateError;
-          }
-        }
-      }
-
-      // Remove conversation from local state directly — avoids expensive refetch
-      setConversations(prev => prev.filter(c => c.id !== conversationId));
-      setMessages([]);
-
-      if (selectedConversation === conversationId) {
-        setSelectedConversation(null);
-        navigate('/community');
-      }
-      toast({
-        title: "Succès",
-        description: isGroup 
-          ? "Vos messages ont été supprimés" 
-          : "La conversation a été supprimée de votre liste",
-      });
-    } catch (error) {
-      logger.error("Error deleting conversation:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer la conversation",
-        variant: "destructive",
-      });
-    } finally {
-      setDeleteConversationId(null);
-    }
-  };
-
-  const handleDownloadMedia = async (url: string, type: 'image' | 'video') => {
-    try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      const timestamp = new Date().getTime();
-      const extension = type === 'image' ? 'jpg' : 'mp4';
-      link.download = `edupreneurs-${type}-${timestamp}.${extension}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      URL.revokeObjectURL(blobUrl);
-      
-      toast({
-        title: "Téléchargement réussi",
-        description: `${type === 'image' ? 'L\'image' : 'La vidéo'} a été enregistrée sur votre appareil`,
-      });
-    } catch (error) {
-      logger.error('Error downloading media:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de télécharger le fichier",
-        variant: "destructive",
-      });
-    }
   };
 
   const formatTime = (timestamp: string) => {
@@ -2167,19 +726,16 @@ const Community = () => {
       hour12: false 
     });
     
-    // If today, show "Dernière connexion à HH:MM"
     if (messageDate.getTime() === today.getTime()) {
       return `Dernière connexion à ${time}`;
     }
     
-    // If yesterday
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
     if (messageDate.getTime() === yesterday.getTime()) {
       return `Dernière connexion hier à ${time}`;
     }
     
-    // For older dates, show date and time
     const dateStr = date.toLocaleDateString('fr-FR', { 
       day: 'numeric', 
       month: 'short' 
@@ -2187,6 +743,7 @@ const Community = () => {
     return `Dernière connexion le ${dateStr} à ${time}`;
   };
 
+  // === JSX ===
   return (
     <div 
       className="relative h-dvh bg-background overflow-hidden grid grid-cols-1 md:grid-cols-[380px_1fr] lg:grid-cols-[420px_1fr]"
@@ -2195,16 +752,15 @@ const Community = () => {
       {/* Visitor Overlay */}
       {isVisitor && <VisitorCommunityOverlay />}
       
-      {/* Conversations List - Fixed sidebar on desktop/tablet */}
+      {/* Conversations List */}
       <div data-tour="community-list" className="h-full overflow-hidden">
-      {/* Fix 6: Show error state after 10s loading timeout */}
-      {loadingTimedOut && isLoadingConversations ? (
+      {convHook.loadingTimedOut && convHook.isLoadingConversations ? (
         <div className="flex items-center justify-center h-full p-4">
           <ErrorState
             message="Impossible de charger les conversations"
             onRetry={() => {
-              setLoadingTimedOut(false);
-              setIsLoadingConversations(true);
+              convHook.setLoadingTimedOut(false);
+              convHook.setIsLoadingConversations(true);
               checkUser();
             }}
           />
@@ -2213,9 +769,9 @@ const Community = () => {
       <ConversationSidebar
         conversations={conversations}
         selectedConversation={selectedConversation}
-        isLoading={isLoadingConversations}
+        isLoading={convHook.isLoadingConversations}
         isVisitor={isVisitor}
-        typingUsers={typingUsers}
+        typingUsers={typingHook.typingUsers}
         onlineUsers={onlineUsers}
         shouldShowGlow={shouldShowGlow}
         shouldShowRipples={shouldShowRipples}
@@ -2233,7 +789,7 @@ const Community = () => {
       )}
       </div>
 
-      {/* Messages View - fixed positioning with proper height for mobile nav */}
+      {/* Messages View */}
       <section
         className={`${
           selectedConversation
@@ -2243,7 +799,7 @@ const Community = () => {
       >
         {selectedConversation ? (
           (() => {
-            const currentConv = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
+            const currentConv = convHook.selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
             const isGroup = currentConv?.is_group;
             const otherUserId = currentConv?.otherUser?.user_id;
             
@@ -2270,14 +826,14 @@ const Community = () => {
                 footer={
                   <div className="relative">
                     {/* Video upload progress indicator for 3G users */}
-                    {uploadProgress !== null && (
+                    {mediaHook.uploadProgress !== null && (
                       <div className="px-4 py-2 bg-muted/50 border-t border-border">
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>Envoi vidéo: {uploadProgress}%</span>
+                          <span>Envoi vidéo: {mediaHook.uploadProgress}%</span>
                           <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-primary rounded-full transition-all duration-300"
-                              style={{ width: `${uploadProgress}%` }}
+                              style={{ width: `${mediaHook.uploadProgress}%` }}
                             />
                           </div>
                         </div>
@@ -2287,23 +843,22 @@ const Community = () => {
                       newMessage={newMessage}
                       isSending={isSending}
                       showEmojiPicker={showEmojiPicker}
-                      mediaPreview={mediaPreview}
-                      mediaType={mediaType}
+                      mediaPreview={mediaHook.mediaPreview}
+                      mediaType={mediaHook.mediaType}
                       replyingTo={replyingTo}
                       isJudeConversation={isJudeConversation}
-                      hasMediaFile={!!selectedMediaFile}
+                      hasMediaFile={!!mediaHook.selectedMediaFile}
                       onSend={sendMessage}
                       onEmojiPickerChange={setShowEmojiPicker}
                       onEmojiSelect={(emoji) => setNewMessage((prev) => prev + emoji)}
-                      onMediaSelect={handleMediaSelect}
-                      onClearMedia={clearMedia}
+                      onMediaSelect={mediaHook.handleMediaSelect}
+                      onClearMedia={mediaHook.clearMedia}
                       onCancelReply={() => setReplyingTo(null)}
-                      onTyping={handleTyping}
+                      onTyping={(value) => typingHook.handleTyping(value, setNewMessage)}
                     />
                   </div>
                 }
               >
-                {/* Messages - natural scroll, no paddingTop hack needed */}
                 <div className="p-4">
                   <div className="space-y-4 pb-4 max-w-full">
                     {messages.map((message, index) => {
@@ -2323,18 +878,18 @@ const Community = () => {
                           isOwn={isOwn}
                           userId={user?.id}
                           reactions={reactions[message.id] || []}
-                          editingMessageId={editingMessageId}
-                          editedContent={editedContent}
-                          showReactionPicker={showReactionPicker}
+                          editingMessageId={msgHook.editingMessageId}
+                          editedContent={msgHook.editedContent}
+                          showReactionPicker={msgHook.showReactionPicker}
                           onSetReplyingTo={setReplyingTo}
-                          onEditMessage={handleEditMessage}
-                          onCancelEdit={handleCancelEdit}
-                          onSaveEdit={handleSaveEdit}
-                          onSetEditedContent={setEditedContent}
-                          onDeleteMessage={handleDeleteMessage}
-                          onToggleReaction={toggleReaction}
-                          onSetShowReactionPicker={setShowReactionPicker}
-                          onDownloadMedia={handleDownloadMedia}
+                          onEditMessage={msgHook.handleEditMessage}
+                          onCancelEdit={msgHook.handleCancelEdit}
+                          onSaveEdit={msgHook.handleSaveEdit}
+                          onSetEditedContent={msgHook.setEditedContent}
+                          onDeleteMessage={msgHook.handleDeleteMessage}
+                          onToggleReaction={msgHook.toggleReaction}
+                          onSetShowReactionPicker={msgHook.setShowReactionPicker}
+                          onDownloadMedia={mediaHook.handleDownloadMedia}
                           onSetFullSizeImage={setFullSizeImage}
                           formatTime={formatTime}
                           messageIndex={index}
@@ -2355,12 +910,12 @@ const Community = () => {
                     {(() => {
                       if (!selectedConversation) return null;
                       
-                      const conversationTypingUsers = typingUsers[selectedConversation] || {};
+                      const conversationTypingUsers = typingHook.typingUsers[selectedConversation] || {};
                       
                       return Object.entries(conversationTypingUsers).map(([key, value]) => {
                         const presence = Array.isArray(value) ? value[0] : value;
                         if (presence?.typing && presence?.user_id !== user?.id) {
-                          const conversation = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
+                          const conversation = convHook.selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
                           
                           let typingUserProfile = conversation?.otherUser;
                           if (conversation?.is_group) {
@@ -2391,20 +946,18 @@ const Community = () => {
         )}
       </section>
       
-      {/* Create Group Dialog - only for non-visitors */}
+      {/* Create Group Dialog */}
       {!isVisitor && (
         <CreateGroupDialog
           open={showCreateGroup}
           onOpenChange={setShowCreateGroup}
-          followers={followers}
-          onGroupCreated={async (conversationId) => {
-            await fetchConversations();
+          followers={convHook.followers}
+          onGroupCreated={async (createdConversationId) => {
+            await convHook.fetchConversations();
             setShowCreateGroup(false);
-            // Navigate to the new conversation
-            setSelectedConversation(conversationId);
-            navigate(`/community?conversation=${conversationId}`);
-            // Fetch messages for the new conversation
-            await fetchMessages(conversationId);
+            setSelectedConversation(createdConversationId);
+            navigate(`/community?conversation=${createdConversationId}`);
+            await msgHook.fetchMessages(createdConversationId);
           }}
         />
       )}
@@ -2431,7 +984,7 @@ const Community = () => {
             <AlertDialogAction
               onClick={() => {
                 console.log('🟢 [CONFIRM] Confirm button clicked for:', deleteConversationId);
-                if (deleteConversationId) handleDeleteConversation(deleteConversationId);
+                if (deleteConversationId) convHook.handleDeleteConversation(deleteConversationId);
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
@@ -2452,12 +1005,12 @@ const Community = () => {
           onLeaveGroup={() => {
             setSelectedConversation(null);
             setShowGroupInfo(false);
-            fetchConversations();
+            convHook.fetchConversations();
           }}
           onDeleteGroup={() => {
             setSelectedConversation(null);
             setShowGroupInfo(false);
-            fetchConversations();
+            convHook.fetchConversations();
           }}
         />
       )}
