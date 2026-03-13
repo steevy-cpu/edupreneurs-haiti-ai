@@ -35,7 +35,9 @@ export const MONTH_COLORS: Record<string, string> = {
 };
 
 /**
- * Removes HTML tags from a string
+ * Removes HTML tags from a string, using DOM parsing when available.
+ * @param html - Raw HTML string to strip
+ * @returns Plain text with all HTML tags removed
  */
 export const stripHtml = (html: string): string => {
   if (!html) return '';
