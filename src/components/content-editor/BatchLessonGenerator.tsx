@@ -17,19 +17,7 @@ import { PlayCircle, PauseCircle, Download, RefreshCw, Loader2, CheckCircle2, XC
 import { DEFAULT_WORD_COUNTS, type SectionName } from "@/lib/lessonPrompts";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { createSanitizedMarkup } from "@/lib/sanitize";
-
-type GenerationStatus = 'pending' | 'in_progress' | 'completed' | 'error';
-
-interface LessonGenerationStatus {
-  lessonId: string;
-  title: string;
-  status: GenerationStatus;
-  sectionsGenerated: string[];
-  generationTime: number;
-  qualityScore?: number;
-  error?: string;
-  generatedContent?: Record<string, any>; // Changed from Record<string, string> to allow arrays/objects
-}
+import type { GenerationStatus, LessonGenerationStatus } from "@/types/batch-generation.types";
 
 export const BatchLessonGenerator = () => {
   const navigate = useNavigate();

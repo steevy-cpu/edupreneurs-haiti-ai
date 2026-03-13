@@ -6,34 +6,7 @@ import { getAvatarUrl } from "@/lib/avatarMap";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LeaderboardSkeleton, NotesListSkeleton } from "@/components/shared/SkeletonLoaders";
-
-interface Note {
-  id: string;
-  lesson_id: string;
-  notes: string | null;
-  updated_at: string;
-  lesson_slug?: string;
-  lesson_title?: string;
-  subject_slug?: string;
-  subject_name?: string;
-}
-
-interface LeaderboardUser {
-  id: string;
-  user_id: string;
-  full_name: string;
-  nickname: string;
-  avatar_url: string | null;
-  gold_earned: number;
-  academic_grade: string;
-  rank: number;
-}
-
-interface FeatureState<T> {
-  data: T;
-  loading: boolean;
-  error: Error | null;
-}
+import type { FeatureState, Note, LeaderboardUser } from "@/types/dashboard.types";
 
 export interface CommunityTabProps {
   leaderboardFeature: FeatureState<LeaderboardUser[]>;
