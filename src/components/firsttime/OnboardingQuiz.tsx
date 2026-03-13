@@ -378,20 +378,29 @@ const OnboardingQuiz = () => {
   }, [currentStep, fullName]);
 
   // --- Voice: fetch audio from generate-jude-voice and play via JudeAudioContext ---
-  /** Fire-and-forget voice fetch — reads mute from localStorage for fresh value, uses refs */
+  /** FIX 4: generation counter prevents stale fetches from playing on rapid clicks */
   const fetchAndSpeak = async (text: string, storageKey: string) => {
+    const gen = ++fetchGenRef.current; // stamp this request
     const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
-    if (isMutedNow) return;
+    if (isMutedNow) {
+      reactionAudioDoneRef.current = true; // FIX 3: no audio → mark done immediately
+      return;
+    }
+    stopRef.current(); // FIX 4: stop any playing audio before fetching
     try {
       const { data } = await supabase.functions.invoke('generate-jude-voice', {
         body: { text, storageKey, context: 'onboarding' }
       });
+      // FIX 4: discard if a newer fetch was started while we awaited
+      if (gen !== fetchGenRef.current) return;
       if (data?.url) {
-        stopRef.current();
         speakRef.current(data.url);
+      } else {
+        reactionAudioDoneRef.current = true; // FIX 3: no URL → mark done
       }
     } catch {
       // Silent fail — typing sounds serve as fallback
+      reactionAudioDoneRef.current = true; // FIX 3: error → mark done
     }
   };
 
