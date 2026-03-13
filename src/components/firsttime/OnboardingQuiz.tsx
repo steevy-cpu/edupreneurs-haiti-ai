@@ -600,9 +600,9 @@ const OnboardingQuiz = () => {
               />
               <p className="text-base sm:text-lg text-foreground font-medium">
                 {showReaction || isOutro ? (
-                  <SimpleTypewriter text={speech} speed={50} enableSound={typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true'} soundVolume={0.04} />
+                  <SimpleTypewriter text={speech} speed={50} enableSound={true} /* FIX 1: always enable synth clicks */ soundVolume={0.04} />
                 ) : (
-                  <SimpleTypewriter key={`speech-${currentStep}`} text={speech} speed={50} enableSound={typeof window !== 'undefined' && localStorage.getItem('jude-voice-muted') === 'true'} soundVolume={0.04} />
+                  <SimpleTypewriter key={`speech-${currentStep}`} text={speech} speed={50} enableSound={true} /* FIX 1 */ soundVolume={0.04} />
                 )}
               </p>
             </div>
