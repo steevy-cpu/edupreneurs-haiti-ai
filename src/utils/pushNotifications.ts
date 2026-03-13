@@ -32,7 +32,10 @@ const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
   return outputArray;
 };
 
-// Detect browser type
+/**
+ * Detects the user's browser from the user agent string.
+ * @returns Browser name (e.g. 'Chrome', 'Safari', 'Firefox')
+ */
 export const detectBrowser = (): string => {
   const ua = navigator.userAgent;
   
