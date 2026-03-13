@@ -242,7 +242,11 @@ const loadLogoAsBase64 = async (): Promise<string> => {
   }
 };
 
-// Generate Plain Text
+/**
+ * Generates and downloads a branded plain-text file of a lesson.
+ * @param options - Download options containing lesson data, optional personal notes, and subject name
+ * @returns Promise that resolves when the file has been saved
+ */
 export const generatePlainText = async ({
   lessonData,
   personalNotes,
