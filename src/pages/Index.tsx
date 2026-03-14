@@ -46,11 +46,28 @@ import { GradientOrbs } from "@/components/home/GradientOrbs";
  * 3. FloatingLayer (Chatbot) renders after scroll/idle
  */
 const Index = () => {
-  const { isAuthenticated, isLoading: authLoading } = useSessionAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useSessionAuth();
   const { isVisitor } = useVisitor();
   const { stats, isLoaded } = useDeferredStats();
   const [showVisitorSelector, setShowVisitorSelector] = useState(false);
   const [chatbotReady, setChatbotReady] = useState(false);
+  // Tracks whether ensureProfileExists has completed for Google users
+  const [profileChecked, setProfileChecked] = useState(false);
+
+  // For Google OAuth users landing on /, ensure profile exists before redirecting
+  useEffect(() => {
+    if (authLoading || !isAuthenticated || !user) return;
+
+    const provider = user.app_metadata?.provider;
+    if (provider === 'google') {
+      // Idempotent — creates profile if missing, syncs email_confirmed if exists
+      ensureProfileExists(user.id, user.user_metadata, 'google')
+        .finally(() => setProfileChecked(true));
+    } else {
+      // Non-Google users skip profile check (handled during signup)
+      setProfileChecked(true);
+    }
+  }, [authLoading, isAuthenticated, user]);
 
   // Defer chatbot loading until scroll or idle
   useEffect(() => {
