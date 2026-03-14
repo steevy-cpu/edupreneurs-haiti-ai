@@ -255,8 +255,7 @@ const FirstTimeUserTour = () => {
     };
   }, [computeSpotlight, firstTimeUser.tourStep, firstTimeUser.tourActive, firstTimeUser.tourCompleted]);
 
-  // Voice: fetch and play TTS for each tour step with 600ms navigation settle delay.
-  // FIX 7: probes audio duration to compute dynamic typing speed
+  // OPT 1 + OPT 2 + BONUS: voice per tour step — uses preloaded URL, 300ms settle delay
   useEffect(() => {
     if (!firstTimeUser.tourActive || firstTimeUser.tourCompleted) return;
 
@@ -280,7 +279,45 @@ const FirstTimeUserTour = () => {
     // Display text (with emojis) for speed calc
     const displayText = tourSteps[firstTimeUser.tourStep]?.description || text;
 
+    /** OPT 1+2: probe duration and play — shared logic for cached and fetched URLs */
+    const probeAndPlay = (url: string) => {
+      if (gen !== fetchGenRef.current) return;
+      const probe = new Audio(url);
+      const probeTimeout = setTimeout(() => {
+        if (gen === fetchGenRef.current) {
+          setIsSpeedReady(true);
+          speakRef.current(url); // OPT 2: sync with typewriter
+        }
+      }, 800);
+      speedTimeoutRef.current = probeTimeout;
+      probe.addEventListener('loadedmetadata', () => {
+        clearTimeout(probeTimeout);
+        if (gen !== fetchGenRef.current) return;
+        const computed = Math.max(30, Math.floor((probe.duration * 1000 * 0.9) / displayText.length));
+        setTypingSpeed(computed);
+        setIsSpeedReady(true);
+        speakRef.current(url); // OPT 2: sync with typewriter
+      });
+      probe.addEventListener('error', () => {
+        clearTimeout(probeTimeout);
+        if (gen === fetchGenRef.current) {
+          setIsSpeedReady(true);
+          speakRef.current(url); // OPT 2: play anyway on probe error
+        }
+      });
+      probe.load();
+    };
+
+    // BONUS: reduced from 600ms → 300ms — eager preloads ensure chunks are ready
     const timer = setTimeout(() => {
+      // OPT 1: check preloaded URL first — avoids edge function round-trip
+      const cachedUrl = preloadedTourUrls.get(firstTimeUser.tourStep);
+      if (cachedUrl) {
+        probeAndPlay(cachedUrl);
+        return;
+      }
+
+      // Fallback: URL not yet preloaded — fetch on demand
       supabase.functions.invoke('generate-jude-voice', {
         body: {
           text,
@@ -290,44 +327,20 @@ const FirstTimeUserTour = () => {
       }).then(({ data }) => {
         if (gen !== fetchGenRef.current) return; // stale
         if (data?.url) {
-          // OPT 2 + FIX 7: probe duration, then start audio + typewriter together
-          const probe = new Audio(data.url);
-          const probeTimeout = setTimeout(() => {
-            if (gen === fetchGenRef.current) {
-              setIsSpeedReady(true);
-              speakRef.current(data.url); // OPT 2: sync with typewriter
-            }
-          }, 800);
-          speedTimeoutRef.current = probeTimeout;
-          probe.addEventListener('loadedmetadata', () => {
-            clearTimeout(probeTimeout);
-            if (gen !== fetchGenRef.current) return;
-            const computed = Math.max(30, Math.floor((probe.duration * 1000 * 0.9) / displayText.length));
-            setTypingSpeed(computed);
-            setIsSpeedReady(true);
-            speakRef.current(data.url); // OPT 2: sync with typewriter
-          });
-          probe.addEventListener('error', () => {
-            clearTimeout(probeTimeout);
-            if (gen === fetchGenRef.current) {
-              setIsSpeedReady(true);
-              speakRef.current(data.url); // OPT 2: play anyway on probe error
-            }
-          });
-          probe.load();
+          probeAndPlay(data.url);
         } else {
           setIsSpeedReady(true);
         }
       }).catch(() => {
         if (gen === fetchGenRef.current) setIsSpeedReady(true);
       });
-    }, 600); // wait for navigation animation to settle
+    }, 300); // BONUS: 300ms settle delay (was 600ms)
 
     return () => {
       clearTimeout(timer);
       if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
     };
-  }, [firstTimeUser.tourStep, firstTimeUser.tourActive, firstTimeUser.tourCompleted]);
+  }, [firstTimeUser.tourStep, firstTimeUser.tourActive, firstTimeUser.tourCompleted, preloadedTourUrls]);
 
   // Voice the celebration overlay
   useEffect(() => {
