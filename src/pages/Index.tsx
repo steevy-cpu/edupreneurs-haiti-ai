@@ -1,6 +1,8 @@
 import { useState, useEffect, lazy, Suspense } from "react";
+import { Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { useVisitor } from "@/contexts/VisitorContext";
+import { useSessionAuth } from "@/contexts/SessionAuthContext";
 
 // Critical components (immediate render — above the fold)
 import { VisitorBanner } from "@/components/visitor";
@@ -43,6 +45,7 @@ import { GradientOrbs } from "@/components/home/GradientOrbs";
  * 3. FloatingLayer (Chatbot) renders after scroll/idle
  */
 const Index = () => {
+  const { isAuthenticated, isLoading: authLoading } = useSessionAuth();
   const { isVisitor } = useVisitor();
   const { stats, isLoaded } = useDeferredStats();
   const [showVisitorSelector, setShowVisitorSelector] = useState(false);
@@ -79,6 +82,11 @@ const Index = () => {
       }
     };
   }, [chatbotReady]);
+
+  // Redirect authenticated users to dashboard — prevents dead zone after OAuth callback on /
+  if (!authLoading && isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <>
