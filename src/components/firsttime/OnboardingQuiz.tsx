@@ -506,6 +506,7 @@ const OnboardingQuiz = () => {
       }
     });
     probe.load();
+  };
 
   /** FIX 7: get display speech text length for a given step — used to calculate typing speed */
   const getStepContentForSpeed = (step: number): { speech: string } => {
