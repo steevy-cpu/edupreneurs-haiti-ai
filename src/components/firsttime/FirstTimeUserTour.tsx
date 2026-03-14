@@ -117,6 +117,8 @@ const FirstTimeUserTour = () => {
   const [isSpeedReady, setIsSpeedReady] = useState(false);
   const speedTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const fetchGenRef = useRef(0);
+  /** OPT 1: preloaded audio URLs — populated at mount, keyed by step index */
+  const [preloadedTourUrls, setPreloadedTourUrls] = useState<Map<number, string>>(new Map());
 
   // Voice — fire-and-forget TTS per tour step
   const { speak, stop } = useJudeAudio();
