@@ -400,11 +400,14 @@ const OnboardingQuiz = () => {
       if (gen !== fetchGenRef.current) return;
       if (data?.url) {
         if (charCount && charCount > 0) {
-          // FIX 7: probe audio duration to compute dynamic typing speed
+          // OPT 2 + FIX 7: probe duration, then start audio + typewriter together
           const probe = new Audio(data.url);
           const probeTimeout = setTimeout(() => {
             // Safety cap — 800ms max wait for metadata
-            if (gen === fetchGenRef.current) setIsSpeedReady(true);
+            if (gen === fetchGenRef.current) {
+              setIsSpeedReady(true);
+              speakRef.current(data.url); // OPT 2: sync with typewriter
+            }
           }, 800);
           probe.addEventListener('loadedmetadata', () => {
             clearTimeout(probeTimeout);
@@ -412,17 +415,21 @@ const OnboardingQuiz = () => {
             const computed = Math.max(30, Math.floor((probe.duration * 1000 * 0.9) / charCount));
             setTypingSpeed(computed);
             setIsSpeedReady(true);
+            speakRef.current(data.url); // OPT 2: sync with typewriter
           });
           probe.addEventListener('error', () => {
             clearTimeout(probeTimeout);
-            if (gen === fetchGenRef.current) setIsSpeedReady(true); // fallback default
+            if (gen === fetchGenRef.current) {
+              setIsSpeedReady(true);
+              speakRef.current(data.url); // OPT 2: play anyway on probe error
+            }
           });
           probe.load();
         } else {
-          // No charCount — reaction/outro text, show immediately
+          // No charCount — reaction/outro text, play immediately
           setIsSpeedReady(true);
+          speakRef.current(data.url); // OPT 2: no probe needed for reactions
         }
-        speakRef.current(data.url);
       } else {
         reactionAudioDoneRef.current = true; // FIX 3: no URL → mark done
         setIsSpeedReady(true);

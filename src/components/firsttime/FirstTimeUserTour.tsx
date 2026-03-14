@@ -270,10 +270,13 @@ const FirstTimeUserTour = () => {
       }).then(({ data }) => {
         if (gen !== fetchGenRef.current) return; // stale
         if (data?.url) {
-          // FIX 7: probe audio duration before speaking
+          // OPT 2 + FIX 7: probe duration, then start audio + typewriter together
           const probe = new Audio(data.url);
           const probeTimeout = setTimeout(() => {
-            if (gen === fetchGenRef.current) setIsSpeedReady(true); // 800ms safety cap
+            if (gen === fetchGenRef.current) {
+              setIsSpeedReady(true);
+              speakRef.current(data.url); // OPT 2: sync with typewriter
+            }
           }, 800);
           speedTimeoutRef.current = probeTimeout;
           probe.addEventListener('loadedmetadata', () => {
@@ -282,13 +285,16 @@ const FirstTimeUserTour = () => {
             const computed = Math.max(30, Math.floor((probe.duration * 1000 * 0.9) / displayText.length));
             setTypingSpeed(computed);
             setIsSpeedReady(true);
+            speakRef.current(data.url); // OPT 2: sync with typewriter
           });
           probe.addEventListener('error', () => {
             clearTimeout(probeTimeout);
-            if (gen === fetchGenRef.current) setIsSpeedReady(true);
+            if (gen === fetchGenRef.current) {
+              setIsSpeedReady(true);
+              speakRef.current(data.url); // OPT 2: play anyway on probe error
+            }
           });
           probe.load();
-          speakRef.current(data.url);
         } else {
           setIsSpeedReady(true);
         }
