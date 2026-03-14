@@ -19,6 +19,7 @@ import { checkLoginAllowed } from "../services/loginAttempts.service";
 import { hasPendingPasswordReset } from "../store/authFlow.store";
 import { VisitorTypeSelector } from "@/components/visitor";
 import { useAnimationConfig } from "@/hooks/useAnimationConfig";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
 // Effect 6 — Staggered container orchestrates child delays
 const formVariants = {
