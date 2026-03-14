@@ -72,7 +72,9 @@ serve(async (req) => {
         .replace(/https?:\/\/[^\s]+/gi, '[lien masqué]');
     };
 
-    const { conversationId, userMessage, userNickname } = rawBody;
+    // Only extract fields we trust; userNickname is intentionally ignored
+    // to prevent stale-cache divergence (single source of truth = DB)
+    const { conversationId, userMessage } = rawBody;
 
     // Basic validation
     if (!conversationId || !userMessage) {
