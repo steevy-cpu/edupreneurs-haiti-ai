@@ -72,6 +72,28 @@ const effectDescriptions: Record<string, string> = {
   'urban-neon': 'Vibrant neon purple and blue light effects glow around the character',
 };
 
+// Explicit skin tone descriptions — improves DALL-E 3 fidelity vs raw IDs
+const skinToneDescriptions: Record<string, string> = {
+  'very-light': 'very pale white skin, fair complexion',
+  'light': 'light skin tone, slightly warm undertone',
+  'medium-light': 'medium-light beige skin, warm undertone',
+  'medium': 'medium brown skin tone, warm caramel complexion',
+  'medium-dark': 'medium-dark brown skin, rich warm tone',
+  'dark': 'dark brown skin, deep rich complexion, clearly dark-skinned',
+};
+
+// Explicit hair color descriptions — reduces DALL-E 3 reinterpretation
+const hairColorDescriptions: Record<string, string> = {
+  'black': 'jet black hair',
+  'brown': 'natural brown hair',
+  'blonde': 'golden blonde hair',
+  'red': 'vivid red hair',
+  'blue': 'bright blue hair, clearly artificial color',
+  'pink': 'bright pink hair, clearly artificial color',
+  'purple': 'vivid purple hair, clearly artificial color',
+  'white': 'pure white hair',
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return corsPreflightResponse();
@@ -136,10 +158,12 @@ serve(async (req) => {
       ? accessories.join(', ') 
       : 'none';
 
-    // Resolve descriptive text for new parameters
+    // Resolve descriptive text for parameters — use maps for improved fidelity
     const bgDescription = backgroundDescriptions[background] || backgroundDescriptions['classroom'];
     const outfitDescription = outfitDescriptions[outfitStyle] || outfitDescriptions['casual'];
     const effectDescription = effectDescriptions[specialEffect] || '';
+    const skinDesc = skinToneDescriptions[skinTone] || skinTone;
+    const hairDesc = hairColorDescriptions[hairColor] || hairColor;
 
     // Detailed prompt incorporating all character creator options — cultural block is non-negotiable
     const prompt = `MANDATORY CULTURAL CONTEXT: This avatar represents a Haitian student. The character must have features consistent with Caribbean/Haitian heritage — warm skin undertones, facial features reflecting Afro-Caribbean or mixed Caribbean ancestry. The overall aesthetic should feel warm, vibrant, and Caribbean in spirit regardless of the art style chosen. This is non-negotiable and must be reflected in every generated avatar.
@@ -148,8 +172,8 @@ CRITICAL INSTRUCTIONS - You MUST follow these characteristics EXACTLY:
 
 CHARACTER SPECIFICATIONS (DO NOT DEVIATE):
 - Gender: ${gender} (MUST be clearly ${gender}, this is NON-NEGOTIABLE)
-- Skin tone: ${skinTone} (EXACT shade required - if "dark" use dark skin, if "light" use light skin)
-- Hair color: ${hairColor} (MUST be this EXACT color: ${hairColor}, not similar, not close - EXACTLY this color)
+- Skin tone: ${skinDesc} (EXACT shade required - this is the precise skin color requested)
+- Hair color: ${hairDesc} (MUST be this EXACT color, not similar, not close - EXACTLY this)
 - Hair style: ${hairStyle} (MUST have this hairstyle)
 - Eye color: ${eyeColor} (MUST be this EXACT color: ${eyeColor}, clearly visible)
 - Facial expression: ${expression}
@@ -172,11 +196,11 @@ MANDATORY REQUIREMENTS:
 - Square aspect ratio (1:1)
 - NO text or watermarks
 - The character MUST match ALL specified characteristics EXACTLY as described above
-- Double-check: Hair is ${hairColor}, Eyes are ${eyeColor}, Skin is ${skinTone}, Gender is ${gender}`;
+- Double-check: Hair is ${hairDesc}, Eyes are ${eyeColor}, Skin is ${skinDesc}, Gender is ${gender}`;
 
     console.log('Generating avatar via DALL-E 3');
 
-    // Single DALL-E 3 call — no fallback chain needed
+    // Single DALL-E 3 call — hd quality + natural style for improved fidelity
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -188,7 +212,8 @@ MANDATORY REQUIREMENTS:
         prompt,
         n: 1,
         size: '1024x1024',
-        quality: 'standard',
+        quality: 'hd',
+        style: 'natural',
         response_format: 'url',
       }),
     });

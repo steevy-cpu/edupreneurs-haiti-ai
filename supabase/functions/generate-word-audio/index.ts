@@ -51,12 +51,17 @@ async function generateWithOpenAI(word: string): Promise<Uint8Array> {
   return new Uint8Array(await response.arrayBuffer());
 }
 
-async function generateWithElevenLabs(word: string): Promise<Uint8Array> {
+// Generates French TTS using Eric voice — accepts optional definition for better language detection
+async function generateWithElevenLabs(word: string, definition?: string): Promise<Uint8Array> {
   if (!ELEVENLABS_API_KEY) {
     throw new Error('ElevenLabs API key not configured');
   }
 
-  const voiceId = 'EXAVITQu4vr4xnSDxMaL'; // Sarah - good for French
+  // Eric — French male voice, same as generate-jude-voice
+  const voiceId = 'cjVigY5qzO86Huf0OWal';
+
+  // Include definition for richer French context; fallback to word alone
+  const ttsText = definition ? `${word}. ${definition}` : word;
 
   const response = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
@@ -67,13 +72,15 @@ async function generateWithElevenLabs(word: string): Promise<Uint8Array> {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        text: word,
+        text: ttsText,
         model_id: 'eleven_multilingual_v2',
+        // Force French language detection for Creole/French words
+        language_code: 'fr',
         voice_settings: {
           stability: 0.5,
           similarity_boost: 0.75,
           style: 0.3,
-          use_speaker_boost: true, // KEY: Ensures proper volume!
+          use_speaker_boost: true,
         },
       }),
     }
@@ -142,15 +149,23 @@ Deno.serve(async (req) => {
       return secureErrorResponse('ElevenLabs API key not configured', 500);
     }
 
-    console.log(`Generating audio for word: "${word}" (ID: ${wordId}) using ${ttsProvider}`);
-
     // Initialize Supabase client with service role for storage access
     const supabase = serviceClient;
 
-    // Generate audio based on provider
+    // Fetch definition from daily_words for richer French TTS context
+    const { data: wordData } = await supabase
+      .from('daily_words')
+      .select('definition')
+      .eq('id', wordId)
+      .single();
+    const definition = wordData?.definition || '';
+
+    console.log(`Generating audio for word: "${word}" (ID: ${wordId}) using ${ttsProvider}, definition: "${definition.slice(0, 50)}..."`);
+
+    // Generate audio based on provider — pass definition for ElevenLabs French context
     const audioBytes = ttsProvider === 'openai'
       ? await generateWithOpenAI(word)
-      : await generateWithElevenLabs(word);
+      : await generateWithElevenLabs(word, definition);
 
     console.log(`Audio generated, size: ${audioBytes.length} bytes`);
 
