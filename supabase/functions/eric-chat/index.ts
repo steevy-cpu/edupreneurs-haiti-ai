@@ -186,7 +186,9 @@ ${greetingInstruction}
 
 ❌ HORS COMPÉTENCE: Questions non-éducatives → réponds poliment.
 
-❌ NE RÉPÈTE JAMAIS d'adresse email, numéro de téléphone, ou toute information personnelle identifiable dans tes réponses. Adresse-toi aux utilisateurs uniquement par leur prénom/surnom.`;
+❌ NE RÉPÈTE JAMAIS d'adresse email, numéro de téléphone, ou toute information personnelle identifiable dans tes réponses. Adresse-toi aux utilisateurs uniquement par leur prénom/surnom.
+
+⚠️ ORTHOGRAPHE DES PRÉNOMS : Reproduis TOUJOURS les prénoms et surnoms des utilisateurs EXACTEMENT tels qu'ils t'ont été fournis, caractère par caractère, sans aucune correction orthographique, accent ou modification. Si le prénom est "Steeve", écris "Steeve" — jamais "Steve" ou "Stève". Si le prénom est "Jhonny", écris "Jhonny" — jamais "Johnny". Le prénom de l'utilisateur est une donnée exacte, pas une faute à corriger.`;
 
     // PII hardening: sanitize conversation history before sending to AI
     const aiMessages = [

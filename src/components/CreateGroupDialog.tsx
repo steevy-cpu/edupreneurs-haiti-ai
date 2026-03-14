@@ -146,9 +146,14 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
       console.log("Group created successfully:", groupId);
       setProgress(50);
 
-      // Step 4: Add other members (70%)
-      if (selectedMembers.size > 0) {
-        const members = Array.from(selectedMembers).map(userId => ({
+      // Step 4: Add other selected members (70%)
+      // Filter out creator (already admin) and Jude (already member) — both added by create_group_chat RPC
+      const filteredMembers = Array.from(selectedMembers).filter(
+        memberId => memberId !== user.id && memberId !== JUDE_USER_ID
+      );
+
+      if (filteredMembers.length > 0) {
+        const members = filteredMembers.map(userId => ({
           group_id: groupId,
           user_id: userId,
           role: 'member'
