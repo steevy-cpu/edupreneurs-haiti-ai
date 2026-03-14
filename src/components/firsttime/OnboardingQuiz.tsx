@@ -114,6 +114,37 @@ const OnboardingQuiz = () => {
     return () => cancelAnimationFrame(timer);
   }, []);
 
+  /** OPT 1: TTS texts for each quiz step — shared between preload and step useEffect */
+  const QUIZ_SPEECH_TEXTS: Record<number, string> = {
+    0: "Salut! Comment tu t'appelles?",
+    1: "Et maintenant, tu es en quelle classe?",
+    2: "Tu préfères qu'on te parle comment?",
+    3: "Quel est ton pseudo? C'est comme ça que les autres étudiants vont te voir!",
+    4: "Dans quelle école tu étudies?",
+    5: "C'est quand ton anniversaire? Je t'enverrai un email spécial ce jour-là!",
+    6: "Dernière question! Comment tu as entendu parler d'Edupreneurs?",
+  };
+
+  // OPT 1: Preload all 7 quiz voice clips in parallel at mount (like Welcome)
+  useEffect(() => {
+    if (!firstTimeUser.showOnboardingQuiz) return;
+    const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
+    if (isMutedNow) return;
+
+    // Fire-and-forget parallel fetches — populate preloadedUrls as each resolves
+    Object.entries(QUIZ_SPEECH_TEXTS).forEach(([stepStr, text]) => {
+      const step = Number(stepStr);
+      const key = `onboarding/quiz-q${step}`;
+      supabase.functions.invoke('generate-jude-voice', {
+        body: { text, storageKey: key, context: 'onboarding' }
+      }).then(({ data }) => {
+        if (data?.url) {
+          setPreloadedUrls(prev => new Map(prev).set(step, data.url));
+        }
+      }).catch(() => {}); // silent fail — on-demand fetch as fallback
+    });
+  }, [firstTimeUser.showOnboardingQuiz]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // On mount: load existing profile data to determine which questions to skip
   useEffect(() => {
     if (!firstTimeUser.showOnboardingQuiz || !firstTimeUser.userId) return;
