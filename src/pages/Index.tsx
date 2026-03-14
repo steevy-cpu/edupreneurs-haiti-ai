@@ -101,8 +101,8 @@ const Index = () => {
     };
   }, [chatbotReady]);
 
-  // Redirect authenticated users — Google users needing setup go to /auth/google-setup
-  if (!authLoading && isAuthenticated) {
+  // Redirect only after profile check completes — prevents redirect before flag is set
+  if (!authLoading && isAuthenticated && profileChecked) {
     const needsSetup = sessionStorage.getItem("google_needs_setup") === "true";
     return <Navigate to={needsSetup ? "/auth/google-setup" : "/dashboard"} replace />;
   }
