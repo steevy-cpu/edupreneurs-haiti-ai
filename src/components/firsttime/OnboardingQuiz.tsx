@@ -100,6 +100,8 @@ const OnboardingQuiz = () => {
   const [typingSpeed, setTypingSpeed] = useState(50);
   const [isSpeedReady, setIsSpeedReady] = useState(false);
   const speedTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  /** OPT 1: preloaded audio URLs — populated at mount, keyed by step index */
+  const [preloadedUrls, setPreloadedUrls] = useState<Map<number, string>>(new Map());
 
   // Derived firstName for speech bubbles
   const firstName = fullName.split(/\s+/)[0] || 'ami(e)';
@@ -111,6 +113,37 @@ const OnboardingQuiz = () => {
     });
     return () => cancelAnimationFrame(timer);
   }, []);
+
+  /** OPT 1: TTS texts for each quiz step — shared between preload and step useEffect */
+  const QUIZ_SPEECH_TEXTS: Record<number, string> = {
+    0: "Salut! Comment tu t'appelles?",
+    1: "Et maintenant, tu es en quelle classe?",
+    2: "Tu préfères qu'on te parle comment?",
+    3: "Quel est ton pseudo? C'est comme ça que les autres étudiants vont te voir!",
+    4: "Dans quelle école tu étudies?",
+    5: "C'est quand ton anniversaire? Je t'enverrai un email spécial ce jour-là!",
+    6: "Dernière question! Comment tu as entendu parler d'Edupreneurs?",
+  };
+
+  // OPT 1: Preload all 7 quiz voice clips in parallel at mount (like Welcome)
+  useEffect(() => {
+    if (!firstTimeUser.showOnboardingQuiz) return;
+    const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
+    if (isMutedNow) return;
+
+    // Fire-and-forget parallel fetches — populate preloadedUrls as each resolves
+    Object.entries(QUIZ_SPEECH_TEXTS).forEach(([stepStr, text]) => {
+      const step = Number(stepStr);
+      const key = `onboarding/quiz-q${step}`;
+      supabase.functions.invoke('generate-jude-voice', {
+        body: { text, storageKey: key, context: 'onboarding' }
+      }).then(({ data }) => {
+        if (data?.url) {
+          setPreloadedUrls(prev => new Map(prev).set(step, data.url));
+        }
+      }).catch(() => {}); // silent fail — on-demand fetch as fallback
+    });
+  }, [firstTimeUser.showOnboardingQuiz]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // On mount: load existing profile data to determine which questions to skip
   useEffect(() => {
@@ -400,11 +433,14 @@ const OnboardingQuiz = () => {
       if (gen !== fetchGenRef.current) return;
       if (data?.url) {
         if (charCount && charCount > 0) {
-          // FIX 7: probe audio duration to compute dynamic typing speed
+          // OPT 2 + FIX 7: probe duration, then start audio + typewriter together
           const probe = new Audio(data.url);
           const probeTimeout = setTimeout(() => {
             // Safety cap — 800ms max wait for metadata
-            if (gen === fetchGenRef.current) setIsSpeedReady(true);
+            if (gen === fetchGenRef.current) {
+              setIsSpeedReady(true);
+              speakRef.current(data.url); // OPT 2: sync with typewriter
+            }
           }, 800);
           probe.addEventListener('loadedmetadata', () => {
             clearTimeout(probeTimeout);
@@ -412,17 +448,21 @@ const OnboardingQuiz = () => {
             const computed = Math.max(30, Math.floor((probe.duration * 1000 * 0.9) / charCount));
             setTypingSpeed(computed);
             setIsSpeedReady(true);
+            speakRef.current(data.url); // OPT 2: sync with typewriter
           });
           probe.addEventListener('error', () => {
             clearTimeout(probeTimeout);
-            if (gen === fetchGenRef.current) setIsSpeedReady(true); // fallback default
+            if (gen === fetchGenRef.current) {
+              setIsSpeedReady(true);
+              speakRef.current(data.url); // OPT 2: play anyway on probe error
+            }
           });
           probe.load();
         } else {
-          // No charCount — reaction/outro text, show immediately
+          // No charCount — reaction/outro text, play immediately
           setIsSpeedReady(true);
+          speakRef.current(data.url); // OPT 2: no probe needed for reactions
         }
-        speakRef.current(data.url);
       } else {
         reactionAudioDoneRef.current = true; // FIX 3: no URL → mark done
         setIsSpeedReady(true);
@@ -432,6 +472,40 @@ const OnboardingQuiz = () => {
       reactionAudioDoneRef.current = true; // FIX 3: error → mark done
       setIsSpeedReady(true);
     }
+  };
+
+  /** OPT 1: probe duration and play from a pre-resolved URL (skips the edge function call) */
+  const probeAndPlay = (url: string, charCount: number) => {
+    const gen = ++fetchGenRef.current;
+    const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
+    if (isMutedNow) {
+      setIsSpeedReady(true);
+      return;
+    }
+    stopRef.current();
+    const probe = new Audio(url);
+    const probeTimeout = setTimeout(() => {
+      if (gen === fetchGenRef.current) {
+        setIsSpeedReady(true);
+        speakRef.current(url);
+      }
+    }, 800);
+    probe.addEventListener('loadedmetadata', () => {
+      clearTimeout(probeTimeout);
+      if (gen !== fetchGenRef.current) return;
+      const computed = Math.max(30, Math.floor((probe.duration * 1000 * 0.9) / charCount));
+      setTypingSpeed(computed);
+      setIsSpeedReady(true);
+      speakRef.current(url);
+    });
+    probe.addEventListener('error', () => {
+      clearTimeout(probeTimeout);
+      if (gen === fetchGenRef.current) {
+        setIsSpeedReady(true);
+        speakRef.current(url);
+      }
+    });
+    probe.load();
   };
 
   /** FIX 7: get display speech text length for a given step — used to calculate typing speed */
@@ -448,37 +522,35 @@ const OnboardingQuiz = () => {
     }
   };
 
-  // FIX 7: reset speed readiness so typewriter waits for duration probe
+  // OPT 1 + FIX 7: use preloaded URL if available, fallback to on-demand fetch
   useEffect(() => {
     if (!firstTimeUser.showOnboardingQuiz) return;
     if (showReaction || isOutro) return;
     // Reset speed for new step — typewriter gated on isSpeedReady
     setIsSpeedReady(false);
     setTypingSpeed(50);
-    // Cleanup previous probe timeout
     if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
-    // Build clean text for TTS (strip emojis — ElevenLabs ignores them anyway)
-    const speechTexts: Record<number, string> = {
-      0: "Salut! Comment tu t'appelles?",
-      1: "Et maintenant, tu es en quelle classe?",
-      2: "Tu préfères qu'on te parle comment?",
-      3: "Quel est ton pseudo? C'est comme ça que les autres étudiants vont te voir!",
-      4: "Dans quelle école tu étudies?",
-      5: "C'est quand ton anniversaire? Je t'enverrai un email spécial ce jour-là!",
-      6: "Dernière question! Comment tu as entendu parler d'Edupreneurs?",
-    };
-    const text = speechTexts[currentStep];
+
+    const text = QUIZ_SPEECH_TEXTS[currentStep];
     if (!text) {
-      setIsSpeedReady(true); // no text → show immediately
+      setIsSpeedReady(true);
       return;
     }
-    // All question keys are static — pre-generated CDN cache hits
-    const key = `onboarding/quiz-q${currentStep}`;
-    // FIX 7: pass charCount for the display text (with emojis) for speed calculation
+
     const { speech } = getStepContentForSpeed(currentStep);
+
+    // OPT 1: check preloaded URL first — avoids edge function round-trip
+    const cachedUrl = preloadedUrls.get(currentStep);
+    if (cachedUrl) {
+      probeAndPlay(cachedUrl, speech.length);
+      return () => { if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current); };
+    }
+
+    // Fallback: URL not yet preloaded — fetch on demand (1st visit or slow preload)
+    const key = `onboarding/quiz-q${currentStep}`;
     fetchAndSpeak(text, key, speech.length);
     return () => { if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current); };
-  }, [currentStep, firstTimeUser.showOnboardingQuiz]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentStep, firstTimeUser.showOnboardingQuiz, preloadedUrls]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Voice reactions when they appear — guarded by phase
   useEffect(() => {
