@@ -474,6 +474,39 @@ const OnboardingQuiz = () => {
     }
   };
 
+  /** OPT 1: probe duration and play from a pre-resolved URL (skips the edge function call) */
+  const probeAndPlay = (url: string, charCount: number) => {
+    const gen = ++fetchGenRef.current;
+    const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
+    if (isMutedNow) {
+      setIsSpeedReady(true);
+      return;
+    }
+    stopRef.current();
+    const probe = new Audio(url);
+    const probeTimeout = setTimeout(() => {
+      if (gen === fetchGenRef.current) {
+        setIsSpeedReady(true);
+        speakRef.current(url);
+      }
+    }, 800);
+    probe.addEventListener('loadedmetadata', () => {
+      clearTimeout(probeTimeout);
+      if (gen !== fetchGenRef.current) return;
+      const computed = Math.max(30, Math.floor((probe.duration * 1000 * 0.9) / charCount));
+      setTypingSpeed(computed);
+      setIsSpeedReady(true);
+      speakRef.current(url);
+    });
+    probe.addEventListener('error', () => {
+      clearTimeout(probeTimeout);
+      if (gen === fetchGenRef.current) {
+        setIsSpeedReady(true);
+        speakRef.current(url);
+      }
+    });
+    probe.load();
+
   /** FIX 7: get display speech text length for a given step — used to calculate typing speed */
   const getStepContentForSpeed = (step: number): { speech: string } => {
     switch (step) {
