@@ -64,6 +64,19 @@ export default function SignupLayout() {
         </div>
       </div>
 
+      {/* Google Sign-In shortcut — skip the multi-step form */}
+      <div className="px-5 pb-2">
+        <div className="relative my-3">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-3 text-muted-foreground">ou</span>
+          </div>
+        </div>
+        <GoogleSignInButton label="S'inscrire avec Google" />
+      </div>
+
       {/* Content with Progress */}
       <div className="auth-content p-5">
         {/* Visual Step Progress Indicator — 2 steps */}

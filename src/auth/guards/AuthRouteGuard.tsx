@@ -62,6 +62,13 @@ export function AuthRouteGuard({ children }: AuthRouteGuardProps) {
         // Fetch email_confirmed for authenticated users (skip if already confirmed)
         let emailConfirmed: boolean | null = emailConfirmedRef.current;
         if (isAuthenticated && user && emailConfirmedRef.current !== true) {
+          // Detect OAuth provider — ensure profile exists for Google users
+          // This runs before the profile SELECT so the row is guaranteed to exist
+          const provider = user.app_metadata?.provider;
+          if (provider === 'google') {
+            await ensureProfileExists(user.id, user.user_metadata, 'google');
+          }
+
           const { data: profile } = await supabase
             .from('profiles')
             .select('email_confirmed')
