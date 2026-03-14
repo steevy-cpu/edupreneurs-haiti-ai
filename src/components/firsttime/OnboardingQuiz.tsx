@@ -100,6 +100,8 @@ const OnboardingQuiz = () => {
   const [typingSpeed, setTypingSpeed] = useState(50);
   const [isSpeedReady, setIsSpeedReady] = useState(false);
   const speedTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  /** OPT 1: preloaded audio URLs — populated at mount, keyed by step index */
+  const [preloadedUrls, setPreloadedUrls] = useState<Map<number, string>>(new Map());
 
   // Derived firstName for speech bubbles
   const firstName = fullName.split(/\s+/)[0] || 'ami(e)';
