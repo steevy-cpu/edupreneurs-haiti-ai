@@ -1,6 +1,7 @@
 /**
  * SignupLayout - Progress bar + outlet for signup steps.
  * Streamlined to 2 steps: Compte (step-1) and Finalisation (step-3).
+ * Includes Google Sign-In option for faster onboarding.
  */
 
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -8,6 +9,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Telescope } from "lucide-react";
 import { VisitorTypeSelector } from "@/components/visitor";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
 export default function SignupLayout() {
   const location = useLocation();
