@@ -157,8 +157,7 @@ export function useCommunityRealtime({
               body: { 
                 conversationId: conversationId,
                 userMessage: payload.new.content,
-                userId: payload.new.sender_id,
-                userNickname: profile?.nickname || profile?.full_name
+                // userNickname intentionally omitted — eric-chat reads from DB
               }
             }).catch(error => {
               logger.error('Error calling Eric chat:', error);

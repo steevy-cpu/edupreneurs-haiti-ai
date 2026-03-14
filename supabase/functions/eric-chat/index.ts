@@ -72,7 +72,9 @@ serve(async (req) => {
         .replace(/https?:\/\/[^\s]+/gi, '[lien masqué]');
     };
 
-    const { conversationId, userMessage, userNickname } = rawBody;
+    // Only extract fields we trust; userNickname is intentionally ignored
+    // to prevent stale-cache divergence (single source of truth = DB)
+    const { conversationId, userMessage } = rawBody;
 
     // Basic validation
     if (!conversationId || !userMessage) {
@@ -152,8 +154,10 @@ serve(async (req) => {
     }
 
     const isFirstMessage = !conversationHistory || conversationHistory.length === 0;
-    // PII hardening: sanitize nickname to strip any leaked email
-    const nicknameText = sanitizeContent(userNickname || "l'élève");
+    // Single source of truth: use the DB profileMap instead of client-sent nickname
+    // This prevents stale-cache divergence where the system prompt says one name
+    // but the conversation history shows another (causing Jude to see "two people")
+    const nicknameText = sanitizeContent(profileMap.get(verifiedUserId) || "l'élève");
     const greetingInstruction = isFirstMessage 
       ? `SALUTATION PREMIÈRE FOIS: Commence par "${greeting} ${nicknameText} ! Je suis Jude, votre assistant IA éducatif."`
       : `CONVERSATION EN COURS: Ne dis pas bonjour à nouveau. Continue naturellement.`;

@@ -639,8 +639,8 @@ const Community = () => {
             body: { 
               conversationId: selectedConversation,
               userMessage: messageContent,
-              userId: user.id,
-              userNickname: senderName
+              // userNickname intentionally omitted — eric-chat reads from DB
+              // to prevent stale-cache name divergence (Jude "two people" bug)
             }
           }).catch(err => {
             logger.error('Jude chat error:', err);
