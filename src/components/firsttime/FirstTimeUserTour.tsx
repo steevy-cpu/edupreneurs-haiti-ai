@@ -156,6 +156,24 @@ const FirstTimeUserTour = () => {
     preloadImage(ericCelebrating).catch(() => {});
   }, []);
 
+  // OPT 1: Preload all 8 tour voice clips in parallel at mount
+  useEffect(() => {
+    if (!firstTimeUser.tourActive || firstTimeUser.tourCompleted) return;
+    const isMutedNow = localStorage.getItem('jude-voice-muted') === 'true';
+    if (isMutedNow) return;
+
+    // Fire-and-forget parallel fetches — populate preloadedTourUrls as each resolves
+    TOUR_VOICE_TEXTS.forEach((text, i) => {
+      supabase.functions.invoke('generate-jude-voice', {
+        body: { text, storageKey: `onboarding/tour-step-${i}`, context: 'onboarding' }
+      }).then(({ data }) => {
+        if (data?.url) {
+          setPreloadedTourUrls(prev => new Map(prev).set(i, data.url));
+        }
+      }).catch(() => {}); // silent fail — on-demand fetch as fallback
+    });
+  }, [firstTimeUser.tourActive, firstTimeUser.tourCompleted]);
+
   // EAGER_PRELOAD: Direct dynamic imports that fire immediately (bypass requestIdleCallback).
   // During the tour, the browser is never idle (animations + typewriter running), so
   // preloadChunk()'s requestIdleCallback would delay until AFTER navigate() fires.
