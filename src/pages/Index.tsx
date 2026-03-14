@@ -83,9 +83,10 @@ const Index = () => {
     };
   }, [chatbotReady]);
 
-  // Redirect authenticated users to dashboard — prevents dead zone after OAuth callback on /
+  // Redirect authenticated users — Google users needing setup go to /auth/google-setup
   if (!authLoading && isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    const needsSetup = sessionStorage.getItem("google_needs_setup") === "true";
+    return <Navigate to={needsSetup ? "/auth/google-setup" : "/dashboard"} replace />;
   }
 
   return (

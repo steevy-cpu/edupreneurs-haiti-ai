@@ -47,9 +47,8 @@ export async function ensureProfileExists(
       return; // Nothing else to do
     }
 
-    // No profile — create minimal one with 7-day free trial
-    const trialEnd = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-
+    // No profile — create minimal one with subscription_status "none"
+    // Google users must complete /auth/google-setup to choose an access method
     const { error: insertError } = await supabase
       .from('profiles')
       .insert({
@@ -58,15 +57,18 @@ export async function ensureProfileExists(
         avatar_url: userMeta?.avatar_url || userMeta?.picture || null,
         email_confirmed: true,          // Google verifies email
         phone_confirmed: false,
-        subscription_status: 'timed_free',
-        has_free_access: true,
-        subscription_end_date: trialEnd,
+        subscription_status: 'none',    // No access until setup completed
+        has_free_access: false,
+        subscription_end_date: null,
         onboarding_tour_completed: false,
       } as any);
 
     if (insertError) {
       console.error('[ensureProfile] Insert error:', insertError.message);
       // Fail open — user can still browse; profile may be created on next visit
+    } else {
+      // Profile created — flag for redirect to subscription setup page
+      sessionStorage.setItem('google_needs_setup', 'true');
     }
   } catch (err) {
     // Catch-all — never block the auth flow

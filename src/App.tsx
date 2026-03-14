@@ -288,6 +288,7 @@ const App = () => (
                             <Route path="step-3" element={<SignupStep3 />} />
                           </Route>
                           <Route path="signup/payment-callback" element={<SignupPaymentCallback />} />
+                          <Route path="google-setup" element={<GoogleSetupPage />} />
                           <Route path="verify-email" element={<VerifyEmailPage />} />
                           <Route path="verify-device" element={<VerifyDevicePage />} />
                           <Route path="forgot-password" element={<ForgotPasswordPage />} />

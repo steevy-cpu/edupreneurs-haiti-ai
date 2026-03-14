@@ -131,8 +131,9 @@ export function getRedirectIfNeeded(
   // Already on the correct route
   if (currentPath === targetRoute) return null;
 
-  // Authenticated users should leave auth pages
+  // Authenticated users should leave auth pages — except google-setup (needs auth + setup)
   if (state === 'authenticated' && isAuthRoute(currentPath)) {
+    if (currentPath === '/auth/google-setup') return null;
     return targetRoute;
   }
 
