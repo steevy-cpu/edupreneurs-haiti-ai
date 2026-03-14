@@ -45,9 +45,15 @@ import { GradientOrbs } from "@/components/home/GradientOrbs";
  * 3. FloatingLayer (Chatbot) renders after scroll/idle
  */
 const Index = () => {
+  const { isAuthenticated, isLoading: authLoading } = useSessionAuth();
   const { isVisitor } = useVisitor();
   const { stats, isLoaded } = useDeferredStats();
   const [showVisitorSelector, setShowVisitorSelector] = useState(false);
+
+  // Redirect authenticated users to dashboard — prevents dead zone after OAuth callback on /
+  if (!authLoading && isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
   const [chatbotReady, setChatbotReady] = useState(false);
 
   // Defer chatbot loading until scroll or idle
