@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { useSessionAuth } from "@/contexts/SessionAuthContext";
+import { ensureProfileExists } from "@/hooks/useEnsureProfile";
 
 // Critical components (immediate render — above the fold)
 import { VisitorBanner } from "@/components/visitor";
