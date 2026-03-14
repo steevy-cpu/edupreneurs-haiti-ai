@@ -236,3 +236,6 @@ verify_jwt = false
 
 [functions.check-jude-motivations]
 verify_jwt = false
+
+[functions.send-daily-word-notification]
+verify_jwt = false
