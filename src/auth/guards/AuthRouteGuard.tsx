@@ -3,6 +3,7 @@
  * 
  * Derives the current auth state and redirects if necessary.
  * All decision logic lives in authStateMachine.ts.
+ * Also ensures OAuth users (Google) have a profiles row via ensureProfileExists.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -12,6 +13,7 @@ import { getAuthFlow, saveAuthFlow } from "../store/authFlow.store";
 import { deriveAuthState, getRedirectIfNeeded } from "../store/authStateMachine";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ensureProfileExists } from "@/hooks/useEnsureProfile";
 
 interface AuthRouteGuardProps {
   children: React.ReactNode;
