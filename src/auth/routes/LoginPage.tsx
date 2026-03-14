@@ -19,6 +19,7 @@ import { checkLoginAllowed } from "../services/loginAttempts.service";
 import { hasPendingPasswordReset } from "../store/authFlow.store";
 import { VisitorTypeSelector } from "@/components/visitor";
 import { useAnimationConfig } from "@/hooks/useAnimationConfig";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
 // Effect 6 — Staggered container orchestrates child delays
 const formVariants = {
@@ -404,6 +405,21 @@ export default function LoginPage() {
                 "Se connecter"
               )}
             </Button>
+          </FieldGroup>
+
+          {/* Google Sign-In — OAuth separator + button */}
+          <FieldGroup
+            {...(shouldAnimate ? { variants: fieldVariants } : {})}
+          >
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-3 text-muted-foreground">ou</span>
+              </div>
+            </div>
+            <GoogleSignInButton />
           </FieldGroup>
           
           {/* Forgot password link */}

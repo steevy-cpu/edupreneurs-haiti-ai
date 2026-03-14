@@ -3,6 +3,7 @@
  * 
  * Derives the current auth state and redirects if necessary.
  * All decision logic lives in authStateMachine.ts.
+ * Also ensures OAuth users (Google) have a profiles row via ensureProfileExists.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -12,6 +13,7 @@ import { getAuthFlow, saveAuthFlow } from "../store/authFlow.store";
 import { deriveAuthState, getRedirectIfNeeded } from "../store/authStateMachine";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ensureProfileExists } from "@/hooks/useEnsureProfile";
 
 interface AuthRouteGuardProps {
   children: React.ReactNode;
@@ -60,6 +62,13 @@ export function AuthRouteGuard({ children }: AuthRouteGuardProps) {
         // Fetch email_confirmed for authenticated users (skip if already confirmed)
         let emailConfirmed: boolean | null = emailConfirmedRef.current;
         if (isAuthenticated && user && emailConfirmedRef.current !== true) {
+          // Detect OAuth provider — ensure profile exists for Google users
+          // This runs before the profile SELECT so the row is guaranteed to exist
+          const provider = user.app_metadata?.provider;
+          if (provider === 'google') {
+            await ensureProfileExists(user.id, user.user_metadata, 'google');
+          }
+
           const { data: profile } = await supabase
             .from('profiles')
             .select('email_confirmed')
