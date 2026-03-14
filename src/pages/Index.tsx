@@ -51,11 +51,6 @@ const Index = () => {
   const [showVisitorSelector, setShowVisitorSelector] = useState(false);
   const [chatbotReady, setChatbotReady] = useState(false);
 
-  // Redirect authenticated users to dashboard — prevents dead zone after OAuth callback on /
-  if (!authLoading && isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
   // Defer chatbot loading until scroll or idle
   useEffect(() => {
     if (chatbotReady) return;
@@ -87,6 +82,11 @@ const Index = () => {
       }
     };
   }, [chatbotReady]);
+
+  // Redirect authenticated users to dashboard — prevents dead zone after OAuth callback on /
+  if (!authLoading && isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <>
