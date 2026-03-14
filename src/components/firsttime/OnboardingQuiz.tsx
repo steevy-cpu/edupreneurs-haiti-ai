@@ -522,37 +522,35 @@ const OnboardingQuiz = () => {
     }
   };
 
-  // FIX 7: reset speed readiness so typewriter waits for duration probe
+  // OPT 1 + FIX 7: use preloaded URL if available, fallback to on-demand fetch
   useEffect(() => {
     if (!firstTimeUser.showOnboardingQuiz) return;
     if (showReaction || isOutro) return;
     // Reset speed for new step — typewriter gated on isSpeedReady
     setIsSpeedReady(false);
     setTypingSpeed(50);
-    // Cleanup previous probe timeout
     if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
-    // Build clean text for TTS (strip emojis — ElevenLabs ignores them anyway)
-    const speechTexts: Record<number, string> = {
-      0: "Salut! Comment tu t'appelles?",
-      1: "Et maintenant, tu es en quelle classe?",
-      2: "Tu préfères qu'on te parle comment?",
-      3: "Quel est ton pseudo? C'est comme ça que les autres étudiants vont te voir!",
-      4: "Dans quelle école tu étudies?",
-      5: "C'est quand ton anniversaire? Je t'enverrai un email spécial ce jour-là!",
-      6: "Dernière question! Comment tu as entendu parler d'Edupreneurs?",
-    };
-    const text = speechTexts[currentStep];
+
+    const text = QUIZ_SPEECH_TEXTS[currentStep];
     if (!text) {
-      setIsSpeedReady(true); // no text → show immediately
+      setIsSpeedReady(true);
       return;
     }
-    // All question keys are static — pre-generated CDN cache hits
-    const key = `onboarding/quiz-q${currentStep}`;
-    // FIX 7: pass charCount for the display text (with emojis) for speed calculation
+
     const { speech } = getStepContentForSpeed(currentStep);
+
+    // OPT 1: check preloaded URL first — avoids edge function round-trip
+    const cachedUrl = preloadedUrls.get(currentStep);
+    if (cachedUrl) {
+      probeAndPlay(cachedUrl, speech.length);
+      return () => { if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current); };
+    }
+
+    // Fallback: URL not yet preloaded — fetch on demand (1st visit or slow preload)
+    const key = `onboarding/quiz-q${currentStep}`;
     fetchAndSpeak(text, key, speech.length);
     return () => { if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current); };
-  }, [currentStep, firstTimeUser.showOnboardingQuiz]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentStep, firstTimeUser.showOnboardingQuiz, preloadedUrls]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Voice reactions when they appear — guarded by phase
   useEffect(() => {
