@@ -59,6 +59,7 @@ const SignupStep1 = lazy(() => import("./auth/routes/signup/Step1"));
 // SignupStep2 removed — profile fields moved to post-login OnboardingQuiz
 const SignupStep3 = lazy(() => import("./auth/routes/signup/Step3"));
 const SignupPaymentCallback = lazy(() => import("./auth/routes/signup/SignupPaymentCallback"));
+const GoogleSetupPage = lazy(() => import("./pages/auth/GoogleSetupPage"));
 const VerifyEmailPage = lazy(() => import("./auth/routes/VerifyEmailPage"));
 const VerifyDevicePage = lazy(() => import("./auth/routes/VerifyDevicePage"));
 const ForgotPasswordPage = lazy(() => import("./auth/routes/ForgotPasswordPage"));
