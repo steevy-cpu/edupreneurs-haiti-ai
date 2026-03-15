@@ -182,18 +182,13 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
 
       // Step 6: Add all participants to conversation FIRST (85%)
       setProgress(85);
-      // Add Jude (AI assistant) to all group chats
-      const allParticipantIds = [user.id, JUDE_USER_ID, ...Array.from(selectedMembers)];
-      const participantEntries = allParticipantIds.map(userId => ({
-        conversation_id: conversation.id,
-        user_id: userId,
-        // Initially null, will be updated after welcome message
-        visible_from_message_id: null
-      }));
-
+      // Add all participants via SECURITY DEFINER RPC to bypass circular RLS policy
+      const allParticipantIds = [user.id, JUDE_USER_ID, ...filteredMembers];
       const { error: participantsError } = await supabase
-        .from('conversation_participants')
-        .insert(participantEntries);
+        .rpc('add_group_conversation_participants', {
+          p_conversation_id: conversation.id,
+          p_participant_ids: allParticipantIds
+        });
 
       if (participantsError) throw participantsError;
 
