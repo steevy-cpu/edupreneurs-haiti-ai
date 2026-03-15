@@ -7,7 +7,7 @@
 import { useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/utils/logger";
-import { Message, Reaction, Profile, JUDE_USER_ID } from "@/types/community";
+import { Message, Reaction, Profile, Conversation, JUDE_USER_ID } from "@/types/community";
 
 interface UseCommunityRealtimeParams {
   user: any;
