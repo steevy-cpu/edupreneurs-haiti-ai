@@ -129,18 +129,18 @@ export const faqItems = [
   }
 ] as const;
 
-// Team Members
+// Team Members — bios reflect actual founder responsibilities
 export const teamMembers = [
   {
     name: "Djoodoodson F. FLORENT",
     role: "Fondateur & CEO",
-    bio: "Passionné par l'éducation et la technologie, dédié à transformer l'éducation haïtienne.",
+    bio: "Visionnaire derrière Edupreneurs, Djoodoodson pilote la stratégie globale, les relations nationales et internationales, les partenariats et la croissance de la communauté étudiante haïtienne.",
     image: "/blog-authors/djoodoodson.jpg"
   },
   {
     name: "Steeve Andolf Celestin",
-    role: "CTO & Innovation",
-    bio: "Expert en technologie et innovation, architecte des solutions numériques d'EDUPRENEURS.",
+    role: "Co-fondateur, Développeur & Ingénieur IA",
+    bio: "Développeur full-stack et ingénieur IA, responsable de l'architecture système, de l'intégration de l'intelligence artificielle (Jude), et de l'expérience utilisateur.",
     image: "/blog-authors/steeve.jpeg"
   }
 ] as const;
