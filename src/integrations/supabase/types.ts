@@ -4651,6 +4651,10 @@ export type Database = {
         Args: { p_invitation_id: string }
         Returns: string
       }
+      add_group_conversation_participants: {
+        Args: { p_conversation_id: string; p_participant_ids: string[] }
+        Returns: undefined
+      }
       add_user_to_group: {
         Args: {
           p_conversation_id: string
