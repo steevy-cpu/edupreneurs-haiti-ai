@@ -116,6 +116,8 @@ const Community = () => {
   const currentConversationRef = useRef<string | null>(null);
   const selectedConversationRef = useRef<string | null>(null);
   const prevConversationIdsRef = useRef<string>('');
+  /** Ref-synced conversations list — avoids stale closures in realtime callbacks */
+  const conversationsRef = useRef<Conversation[]>([]);
 
   // === Hook 1: Media (self-contained) ===
   const mediaHook = useCommunityMedia();
