@@ -149,13 +149,15 @@ export function useCommunityRealtime({
             setTypewriterMessageId(payload.new.id);
           }
 
-          // Check if this is a group message mentioning Jude
-          const currentConversation = conversations.find(c => c.id === conversationId);
+          // Check if this is a group message mentioning Jude or replying to Jude
+          const currentConversation = conversationsRef.current.find(c => c.id === conversationId);
           const isGroupChat = currentConversation?.is_group;
           const mentionsJude = payload.new.content.toLowerCase().includes('hey jude');
+          // Detect reply-to-Jude using repliedToMessage already fetched above (L82-96)
+          const isReplyToJude = repliedToMessage?.sender_id === JUDE_USER_ID;
           
-          // If in group chat and mentions Jude, trigger Jude's response
-          if (isGroupChat && mentionsJude && payload.new.sender_id !== JUDE_USER_ID) {
+          // If in group chat and mentions/replies to Jude, trigger Jude's response
+          if (isGroupChat && (mentionsJude || isReplyToJude) && payload.new.sender_id !== JUDE_USER_ID) {
             supabase.functions.invoke('eric-chat', {
               body: { 
                 conversationId: conversationId,
