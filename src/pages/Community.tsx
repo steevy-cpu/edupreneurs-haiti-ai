@@ -116,6 +116,8 @@ const Community = () => {
   const currentConversationRef = useRef<string | null>(null);
   const selectedConversationRef = useRef<string | null>(null);
   const prevConversationIdsRef = useRef<string>('');
+  /** Ref-synced conversations list — avoids stale closures in realtime callbacks */
+  const conversationsRef = useRef<Conversation[]>([]);
 
   // === Hook 1: Media (self-contained) ===
   const mediaHook = useCommunityMedia();
@@ -149,6 +151,9 @@ const Community = () => {
     currentConversationRef,
   });
 
+  // Sync conversationsRef on every conversations update — keeps realtime callbacks fresh
+  useEffect(() => { conversationsRef.current = conversations; }, [conversations]);
+
   // === Hook 5: Realtime subscriptions ===
   const realtimeHook = useCommunityRealtime({
     user,
@@ -162,6 +167,7 @@ const Community = () => {
     setIsAwaitingJudeResponse,
     setTypewriterMessageId,
     selectedConversationRef,
+    conversationsRef,
     playReceiveSound,
   });
 

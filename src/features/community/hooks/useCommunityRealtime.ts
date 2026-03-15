@@ -7,7 +7,7 @@
 import { useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/utils/logger";
-import { Message, Reaction, Profile, JUDE_USER_ID } from "@/types/community";
+import { Message, Reaction, Profile, Conversation, JUDE_USER_ID } from "@/types/community";
 
 interface UseCommunityRealtimeParams {
   user: any;
@@ -22,6 +22,8 @@ interface UseCommunityRealtimeParams {
   setTypewriterMessageId: React.Dispatch<React.SetStateAction<string | null>>;
   /** Ref to currently selected conversation — avoids stale closures in realtime callbacks */
   selectedConversationRef: React.MutableRefObject<string | null>;
+  /** Ref-synced conversations — avoids stale closure when checking isGroupChat in realtime callbacks */
+  conversationsRef: React.MutableRefObject<Conversation[]>;
   playReceiveSound: () => void;
 }
 
@@ -45,6 +47,7 @@ export function useCommunityRealtime({
   setIsAwaitingJudeResponse,
   setTypewriterMessageId,
   selectedConversationRef,
+  conversationsRef,
   playReceiveSound,
 }: UseCommunityRealtimeParams): UseCommunityRealtimeReturn {
   const messageChannelRef = useRef<any>(null);
@@ -146,13 +149,15 @@ export function useCommunityRealtime({
             setTypewriterMessageId(payload.new.id);
           }
 
-          // Check if this is a group message mentioning Jude
-          const currentConversation = conversations.find(c => c.id === conversationId);
+          // Check if this is a group message mentioning Jude or replying to Jude
+          const currentConversation = conversationsRef.current.find(c => c.id === conversationId);
           const isGroupChat = currentConversation?.is_group;
           const mentionsJude = payload.new.content.toLowerCase().includes('hey jude');
+          // Detect reply-to-Jude using repliedToMessage already fetched above (L82-96)
+          const isReplyToJude = repliedToMessage?.sender_id === JUDE_USER_ID;
           
-          // If in group chat and mentions Jude, trigger Jude's response
-          if (isGroupChat && mentionsJude && payload.new.sender_id !== JUDE_USER_ID) {
+          // If in group chat and mentions/replies to Jude, trigger Jude's response
+          if (isGroupChat && (mentionsJude || isReplyToJude) && payload.new.sender_id !== JUDE_USER_ID) {
             supabase.functions.invoke('eric-chat', {
               body: { 
                 conversationId: conversationId,
@@ -231,7 +236,7 @@ export function useCommunityRealtime({
       });
 
     messageChannelRef.current = channel;
-  }, [user, selectedConversation, conversations, setMessages, getCachedProfile, setIsAwaitingJudeResponse, setTypewriterMessageId]);
+  }, [user, selectedConversation, conversationsRef, setMessages, getCachedProfile, setIsAwaitingJudeResponse, setTypewriterMessageId]);
 
   // Global message subscription — updates conversation order, unread counts, and notifications
   const subscribeToMessages = useCallback(() => {
