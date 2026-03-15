@@ -22,6 +22,8 @@ interface UseCommunityRealtimeParams {
   setTypewriterMessageId: React.Dispatch<React.SetStateAction<string | null>>;
   /** Ref to currently selected conversation — avoids stale closures in realtime callbacks */
   selectedConversationRef: React.MutableRefObject<string | null>;
+  /** Ref-synced conversations — avoids stale closure when checking isGroupChat in realtime callbacks */
+  conversationsRef: React.MutableRefObject<Conversation[]>;
   playReceiveSound: () => void;
 }
 
