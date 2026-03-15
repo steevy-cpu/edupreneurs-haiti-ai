@@ -236,7 +236,7 @@ export function useCommunityRealtime({
       });
 
     messageChannelRef.current = channel;
-  }, [user, selectedConversation, conversations, setMessages, getCachedProfile, setIsAwaitingJudeResponse, setTypewriterMessageId]);
+  }, [user, selectedConversation, conversationsRef, setMessages, getCachedProfile, setIsAwaitingJudeResponse, setTypewriterMessageId]);
 
   // Global message subscription — updates conversation order, unread counts, and notifications
   const subscribeToMessages = useCallback(() => {

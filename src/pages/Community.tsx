@@ -151,6 +151,9 @@ const Community = () => {
     currentConversationRef,
   });
 
+  // Sync conversationsRef on every conversations update — keeps realtime callbacks fresh
+  useEffect(() => { conversationsRef.current = conversations; }, [conversations]);
+
   // === Hook 5: Realtime subscriptions ===
   const realtimeHook = useCommunityRealtime({
     user,
@@ -164,6 +167,7 @@ const Community = () => {
     setIsAwaitingJudeResponse,
     setTypewriterMessageId,
     selectedConversationRef,
+    conversationsRef,
     playReceiveSound,
   });
 
