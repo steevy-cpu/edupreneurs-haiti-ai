@@ -47,6 +47,7 @@ export function useCommunityRealtime({
   setIsAwaitingJudeResponse,
   setTypewriterMessageId,
   selectedConversationRef,
+  conversationsRef,
   playReceiveSound,
 }: UseCommunityRealtimeParams): UseCommunityRealtimeReturn {
   const messageChannelRef = useRef<any>(null);
