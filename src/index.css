@@ -1297,4 +1297,34 @@ All colors MUST be HSL.
   .prose p {
     @apply text-muted-foreground leading-relaxed mb-4;
   }
+
+  /* Dark mode: override inline styles from Tiptap rich-text editor
+     that hardcode colors (e.g. color: rgb(0,0,0)) and break contrast */
+  .dark .prose p,
+  .dark .prose li,
+  .dark .prose span,
+  .dark .prose div,
+  .dark .prose td,
+  .dark .prose th,
+  .dark .prose blockquote {
+    color: hsl(var(--muted-foreground)) !important;
+  }
+
+  .dark .prose h1,
+  .dark .prose h2,
+  .dark .prose h3,
+  .dark .prose h4,
+  .dark .prose h5,
+  .dark .prose h6 {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .dark .prose strong,
+  .dark .prose b {
+    color: hsl(var(--primary)) !important;
+  }
+
+  .dark .prose a {
+    color: hsl(var(--primary)) !important;
+  }
 }
