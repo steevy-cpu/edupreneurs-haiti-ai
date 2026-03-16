@@ -117,7 +117,7 @@ const Index = () => {
         <meta property="og:description" content="Plateforme éducative avec assistant IA personnalisé. Programme MENFP complet. Essai gratuit 7 jours." />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="fr_HT" />
-        <link rel="canonical" href="https://edupreneurs.app" />
+        <link rel="canonical" href="https://mon-edupreneur.com/" />
       </Helmet>
 
       <VisitorBanner />

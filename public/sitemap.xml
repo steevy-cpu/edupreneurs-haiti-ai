@@ -136,6 +136,30 @@
     <priority>0.6</priority>
   </url>
   
+  <!-- Blog Posts - Additional -->
+  <url>
+    <loc>https://mon-edupreneur.com/blog/5-astuces-tirer-maximum-edupreneurs</loc>
+    <lastmod>2026-03-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Terms -->
+  <url>
+    <loc>https://mon-edupreneur.com/terms</loc>
+    <lastmod>2026-03-15</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <!-- Donate -->
+  <url>
+    <loc>https://mon-edupreneur.com/donate</loc>
+    <lastmod>2026-03-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
   <!-- Legal Pages -->
   <url>
     <loc>https://mon-edupreneur.com/privacy-policy</loc>
