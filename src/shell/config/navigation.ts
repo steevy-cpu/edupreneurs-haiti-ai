@@ -18,7 +18,8 @@ import {
   BookMarked,
   FolderOpen, 
   Search, 
-  Palette, 
+  Palette,
+  Languages,
   Lock,
   BarChart3,
   type LucideIcon
@@ -88,6 +89,7 @@ export const SIDEBAR_NAVIGATION: NavSection[] = [
     title: 'Découverte',
     items: [
       { to: '/lecture', icon: BookMarked, label: 'Lecture', badge: 'new' },
+      { to: '/translate', icon: Languages, label: 'Traducteur', badge: 'new' },
       { to: '/games', icon: Gamepad2, label: 'Jeux' },
       { to: '/user-search', icon: Search, label: 'Rechercher' },
     ]
