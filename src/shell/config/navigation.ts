@@ -18,7 +18,8 @@ import {
   BookMarked,
   FolderOpen, 
   Search, 
-  Palette, 
+  Palette,
+  Languages,
   Lock,
   BarChart3,
   type LucideIcon
