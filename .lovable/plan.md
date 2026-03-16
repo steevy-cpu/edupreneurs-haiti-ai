@@ -1,46 +1,38 @@
 
 
-## Fix: Jude Reading Assistant Input Blocked on Mobile
+## Plan: Grant Admin Access to Rose Medjina Joseph
 
-**Problem:** On mobile/tablet, the chat panel sits at `bottom-0` (line 126) but the bottom navigation bar (`ShellMobileBottomNav`) is also fixed at `bottom-0` with `h-14` (56px) + safe-area padding. The input area is hidden behind the nav bar, making it impossible to type.
+**User found:** Rose Medjina Joseph — `user_id: a72154dd-97ae-4dfe-a939-b48ecc7764fb`, nickname: "Rose"
 
-**File to modify:** `src/components/ebook/EbookJudeAssistant.tsx` only
+### What "same access as Steevy" means
 
-### Changes
+Steevy has **two layers** of access:
 
-1. **Add bottom padding on mobile** to the outer container so the panel clears the bottom nav:
+1. **Founder status** (hardcoded in `src/lib/founderConstants.ts`) — grants:
+   - Control Center access
+   - Analytics access
+   - Hidden from leaderboards
+   - Bypass grade restrictions (Super User)
+   - Sidebar shows admin section
 
-   Line 126 — change:
-   ```tsx
-   <div className="fixed bottom-0 right-0 z-50 w-full sm:bottom-6 sm:right-4 sm:w-96">
-   ```
-   to:
-   ```tsx
-   <div className="fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] right-0 z-50 w-full sm:bottom-6 sm:right-4 sm:w-96">
-   ```
-   `3.5rem` = 56px = the nav bar height. `env(safe-area-inset-bottom)` accounts for notch devices. On `sm+` breakpoint, the existing `bottom-6` takes over (desktop/tablet landscape — no bottom nav).
+2. **Admin role** in `content_editor_roles` table — grants:
+   - Full Content Editor access (create, edit, delete, publish lessons/blog)
+   - Role management (grant/revoke editor roles)
 
-2. **Reduce max height on mobile** to prevent the panel from overflowing above the viewport now that it sits higher:
+### Changes required
 
-   Line 127 — change:
-   ```tsx
-   <div className="flex h-[70vh] max-h-[500px] flex-col ...">
-   ```
-   to:
-   ```tsx
-   <div className="flex h-[60vh] max-h-[500px] sm:h-[70vh] flex-col ...">
-   ```
-   Uses 60vh on mobile (where the bottom nav eats space) and 70vh on larger screens.
+**1. Add Rose to `FOUNDER_USER_IDS`** in `src/lib/founderConstants.ts`
+- Add `'a72154dd-97ae-4dfe-a939-b48ecc7764fb'` with comment `// Rose`
 
-3. **Also fix the closed-state FAB** (line 110) which currently uses `bottom-24` on mobile — verify this still clears the raised panel position. Current value `bottom-24` (96px) is fine since the nav is ~56px.
+**2. Add Rose to the `is_founder()` database functions**
+- Two SQL functions (`is_founder()` and `is_founder(uuid)`) hardcode founder UUIDs — Rose's ID must be added to both via a migration
 
-### Safety
+**3. Insert admin role in `content_editor_roles`**
+- `INSERT INTO content_editor_roles (user_id, role, granted_by)` with Rose's user_id, role `admin`, granted by Steevy's ID
 
-| Check | Result |
-|---|---|
-| Other files touched | No |
-| Desktop layout | Unchanged — `sm:bottom-6` overrides |
-| Keyboard handling | Bottom nav already hides via `useKeyboardOpen`, so no conflict |
-| Safe area | Respected via `env(safe-area-inset-bottom)` |
-| 3G impact | None — CSS only |
+### Impact
+- Rose will see the Control Center and Analytics links in the sidebar
+- Rose will have full Content Editor permissions (create, edit, delete, publish, manage roles)
+- Rose will be hidden from public leaderboards (founder behavior)
+- Rose will bypass grade restrictions as a Super User
 
