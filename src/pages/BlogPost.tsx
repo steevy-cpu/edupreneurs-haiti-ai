@@ -155,9 +155,11 @@ export default function BlogPost() {
         />
         <meta property="og:title" content={post.title} />
         <meta property="og:description" content={post.excerpt || post.title} />
-        {post.cover_image_url && (
-          <meta property="og:image" content={post.cover_image_url} />
-        )}
+        <meta property="og:image" content={post.cover_image_url || 'https://mon-edupreneur.com/og-image.jpeg'} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={post.title} />
+        <meta name="twitter:image" content={post.cover_image_url || 'https://mon-edupreneur.com/og-image.jpeg'} />
         <meta property="og:type" content="article" />
         <link
           rel="canonical"
