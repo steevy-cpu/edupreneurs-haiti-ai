@@ -148,7 +148,7 @@ export default function BlogPost() {
   return (
     <>
       <Helmet>
-        <title>{post.title} | Blog EDUPRENEURS Haiti</title>
+        <title>{post.title} | EDUPRENEURS</title>
         <meta
           name="description"
           content={post.excerpt || post.title}

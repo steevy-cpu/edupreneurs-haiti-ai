@@ -15,7 +15,7 @@ export default function Blog() {
   return (
     <>
       <Helmet>
-        <title>Blog | EDUPRENEURS Haiti - Actualités & Conseils Éducatifs</title>
+        <title>Blog | EDUPRENEURS — Éducation Haïti</title>
         <meta
           name="description"
           content="Découvrez nos articles sur l'éducation en Haïti, des conseils d'apprentissage, des guides d'utilisation de la plateforme et les dernières actualités d'EDUPRENEURS."
