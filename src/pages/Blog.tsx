@@ -28,6 +28,29 @@ export default function Blog() {
         <link rel="alternate" hrefLang="fr-HT" href="https://mon-edupreneur.com/blog" />
         <link rel="alternate" hrefLang="fr" href="https://mon-edupreneur.com/blog" />
         <meta property="og:url" content="https://mon-edupreneur.com/blog" />
+        {/* JSON-LD structured data for blog listing — improves rich snippets */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Blog",
+            "name": "Blog EDUPRENEURS",
+            "description": "Conseils, actualités et ressources pour les élèves haïtiens",
+            "url": "https://mon-edupreneur.com/blog",
+            "publisher": {
+              "@type": "EducationalOrganization",
+              "name": "EDUPRENEURS",
+              "url": "https://mon-edupreneur.com"
+            },
+            "blogPost": posts?.map(post => ({
+              "@type": "BlogPosting",
+              "headline": post.title,
+              "url": `https://mon-edupreneur.com/blog/${post.slug}`,
+              "datePublished": post.published_at,
+              "description": post.excerpt || "",
+              "image": post.cover_image_url || "https://mon-edupreneur.com/og-image.jpeg"
+            })) || []
+          })}
+        </script>
       </Helmet>
 
       <div className="min-h-screen bg-background">
