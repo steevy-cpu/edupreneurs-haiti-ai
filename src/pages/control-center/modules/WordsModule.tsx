@@ -144,6 +144,11 @@ const WordsModule = () => {
   const maxDurationRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
+  // ─── Batch audio generation state ──────────────────────────────────────
+  const [isBatchGenerating, setIsBatchGenerating] = useState(false);
+  const [batchProgress, setBatchProgress] = useState({ processed: 0, total: 0 });
+  const [batchFailed, setBatchFailed] = useState<{ id: string; word: string; error: string }[]>([]);
+
   // ─── CRUD state ────────────────────────────────────────────────────────
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingWord, setEditingWord] = useState<DailyWord | null>(null);
