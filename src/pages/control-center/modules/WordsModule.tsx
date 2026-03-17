@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -142,6 +143,11 @@ const WordsModule = () => {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const maxDurationRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // ─── Batch audio generation state ──────────────────────────────────────
+  const [isBatchGenerating, setIsBatchGenerating] = useState(false);
+  const [batchProgress, setBatchProgress] = useState({ processed: 0, total: 0 });
+  const [batchFailed, setBatchFailed] = useState<{ id: string; word: string; error: string }[]>([]);
 
   // ─── CRUD state ────────────────────────────────────────────────────────
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -612,7 +618,66 @@ const WordsModule = () => {
     }
   };
 
-  // Pause audio and release recording resources on unmount
+  // ─── Batch audio generation — loops until all missing words have audio ──
+  const startBatchGeneration = async () => {
+    setIsBatchGenerating(true);
+    setBatchProgress({ processed: 0, total: wordsWithoutAudio.length });
+    setBatchFailed([]);
+
+    let totalProcessed = 0;
+    let allFailed: { id: string; word: string; error: string }[] = [];
+    let remaining = wordsWithoutAudio.length;
+
+    try {
+      // Loop in batches of 30 until no words remain without audio
+      while (remaining > 0) {
+        const response = await supabase.functions.invoke('batch-generate-word-audio', {
+          headers: { 'x-internal-secret': 'founder-batch-call' },
+          body: {},
+        });
+
+        if (response.error) throw response.error;
+
+        const data = response.data;
+        if (!data || typeof data.processed !== 'number') {
+          throw new Error('Invalid response from batch function');
+        }
+
+        totalProcessed += data.processed;
+        if (data.failed?.length) {
+          allFailed = [...allFailed, ...data.failed];
+        }
+        remaining = data.remaining;
+
+        // Update progress for the UI bar
+        setBatchProgress({ processed: totalProcessed, total: totalProcessed + remaining });
+        setBatchFailed(allFailed);
+
+        // If nothing was processed and nothing remains, we're done
+        if (data.processed === 0 && remaining === 0) break;
+        // Safety: if nothing processed but remaining > 0, all are failing — stop
+        if (data.processed === 0 && data.failed?.length > 0) {
+          console.warn('Batch stalled — all words in batch failed');
+          break;
+        }
+      }
+
+      // Refresh word list to reflect new audio_url values
+      await fetchWords();
+
+      if (allFailed.length > 0) {
+        toast.warning(`${totalProcessed} audios générés, ${allFailed.length} échec(s)`);
+      } else {
+        toast.success(`${totalProcessed} audios générés avec succès !`);
+      }
+    } catch (err) {
+      console.error('Batch generation error:', err);
+      toast.error(`Erreur batch: ${err instanceof Error ? err.message : 'Erreur inconnue'}`);
+    } finally {
+      setIsBatchGenerating(false);
+    }
+  };
+
   useEffect(() => {
     return () => {
       if (audioRef.current) {
@@ -756,6 +821,71 @@ const WordsModule = () => {
           </p>
         </CardContent>
       </Card>
+
+      <Separator />
+
+      {/* ─── Batch Audio Generation Section ────────────────────────────────── */}
+      {wordsWithoutAudio.length > 0 && (
+        <Card className="border-purple-500/20 bg-purple-500/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Volume2 className="h-4 w-4 text-purple-500" />
+              Génération Audio en Lot
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              {wordsWithoutAudio.length} mot(s) actif(s) sans audio. Générez tous les audios manquants 
+              via ElevenLabs (voix Eric, français).
+            </p>
+
+            {/* Progress bar — visible during generation */}
+            {isBatchGenerating && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Progression</span>
+                  <span className="font-mono font-medium">
+                    {batchProgress.processed}/{batchProgress.total}
+                  </span>
+                </div>
+                <Progress 
+                  value={batchProgress.total > 0 ? (batchProgress.processed / batchProgress.total) * 100 : 0} 
+                  className="h-2"
+                />
+              </div>
+            )}
+
+            {/* Failed words list */}
+            {batchFailed.length > 0 && (
+              <div className="p-3 rounded-lg bg-destructive/10 text-sm space-y-1">
+                <p className="font-medium text-destructive">❌ {batchFailed.length} échec(s) :</p>
+                {batchFailed.map(f => (
+                  <p key={f.id} className="text-xs text-muted-foreground">
+                    • <strong>{f.word}</strong> — {f.error}
+                  </p>
+                ))}
+              </div>
+            )}
+
+            <Button
+              onClick={startBatchGeneration}
+              disabled={isBatchGenerating || wordsWithoutAudio.length === 0}
+              className="gap-2"
+            >
+              {isBatchGenerating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Génération en cours... ({batchProgress.processed}/{batchProgress.total})
+                </>
+              ) : (
+                <>
+                  🎵 Générer audios manquants ({wordsWithoutAudio.length})
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <Separator />
 

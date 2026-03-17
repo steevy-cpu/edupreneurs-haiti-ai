@@ -239,3 +239,6 @@ verify_jwt = false
 
 [functions.send-daily-word-notification]
 verify_jwt = false
+
+[functions.batch-generate-word-audio]
+verify_jwt = false
