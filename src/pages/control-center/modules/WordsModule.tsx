@@ -824,6 +824,71 @@ const WordsModule = () => {
 
       <Separator />
 
+      {/* ─── Batch Audio Generation Section ────────────────────────────────── */}
+      {wordsWithoutAudio.length > 0 && (
+        <Card className="border-purple-500/20 bg-purple-500/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Volume2 className="h-4 w-4 text-purple-500" />
+              Génération Audio en Lot
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              {wordsWithoutAudio.length} mot(s) actif(s) sans audio. Générez tous les audios manquants 
+              via ElevenLabs (voix Eric, français).
+            </p>
+
+            {/* Progress bar — visible during generation */}
+            {isBatchGenerating && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Progression</span>
+                  <span className="font-mono font-medium">
+                    {batchProgress.processed}/{batchProgress.total}
+                  </span>
+                </div>
+                <Progress 
+                  value={batchProgress.total > 0 ? (batchProgress.processed / batchProgress.total) * 100 : 0} 
+                  className="h-2"
+                />
+              </div>
+            )}
+
+            {/* Failed words list */}
+            {batchFailed.length > 0 && (
+              <div className="p-3 rounded-lg bg-destructive/10 text-sm space-y-1">
+                <p className="font-medium text-destructive">❌ {batchFailed.length} échec(s) :</p>
+                {batchFailed.map(f => (
+                  <p key={f.id} className="text-xs text-muted-foreground">
+                    • <strong>{f.word}</strong> — {f.error}
+                  </p>
+                ))}
+              </div>
+            )}
+
+            <Button
+              onClick={startBatchGeneration}
+              disabled={isBatchGenerating || wordsWithoutAudio.length === 0}
+              className="gap-2"
+            >
+              {isBatchGenerating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Génération en cours... ({batchProgress.processed}/{batchProgress.total})
+                </>
+              ) : (
+                <>
+                  🎵 Générer audios manquants ({wordsWithoutAudio.length})
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      <Separator />
+
       {/* ─── Word Management Section ──────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div>
