@@ -618,7 +618,66 @@ const WordsModule = () => {
     }
   };
 
-  // Pause audio and release recording resources on unmount
+  // ─── Batch audio generation — loops until all missing words have audio ──
+  const startBatchGeneration = async () => {
+    setIsBatchGenerating(true);
+    setBatchProgress({ processed: 0, total: wordsWithoutAudio.length });
+    setBatchFailed([]);
+
+    let totalProcessed = 0;
+    let allFailed: { id: string; word: string; error: string }[] = [];
+    let remaining = wordsWithoutAudio.length;
+
+    try {
+      // Loop in batches of 30 until no words remain without audio
+      while (remaining > 0) {
+        const response = await supabase.functions.invoke('batch-generate-word-audio', {
+          headers: { 'x-internal-secret': 'founder-batch-call' },
+          body: {},
+        });
+
+        if (response.error) throw response.error;
+
+        const data = response.data;
+        if (!data || typeof data.processed !== 'number') {
+          throw new Error('Invalid response from batch function');
+        }
+
+        totalProcessed += data.processed;
+        if (data.failed?.length) {
+          allFailed = [...allFailed, ...data.failed];
+        }
+        remaining = data.remaining;
+
+        // Update progress for the UI bar
+        setBatchProgress({ processed: totalProcessed, total: totalProcessed + remaining });
+        setBatchFailed(allFailed);
+
+        // If nothing was processed and nothing remains, we're done
+        if (data.processed === 0 && remaining === 0) break;
+        // Safety: if nothing processed but remaining > 0, all are failing — stop
+        if (data.processed === 0 && data.failed?.length > 0) {
+          console.warn('Batch stalled — all words in batch failed');
+          break;
+        }
+      }
+
+      // Refresh word list to reflect new audio_url values
+      await fetchWords();
+
+      if (allFailed.length > 0) {
+        toast.warning(`${totalProcessed} audios générés, ${allFailed.length} échec(s)`);
+      } else {
+        toast.success(`${totalProcessed} audios générés avec succès !`);
+      }
+    } catch (err) {
+      console.error('Batch generation error:', err);
+      toast.error(`Erreur batch: ${err instanceof Error ? err.message : 'Erreur inconnue'}`);
+    } finally {
+      setIsBatchGenerating(false);
+    }
+  };
+
   useEffect(() => {
     return () => {
       if (audioRef.current) {
