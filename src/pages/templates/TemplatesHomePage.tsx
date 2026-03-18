@@ -51,6 +51,9 @@ export default function TemplatesHomePage() {
   const { data: featured = [], isLoading: featuredLoading } = useFeaturedTemplates();
   const { data: counts = {} } = useTemplateCounts();
   const [searchQuery, setSearchQuery] = useState('');
+  // Wire search to the existing hook — only fires when query >= 2 chars
+  const { data: searchResults = [], isLoading: searchLoading } = useTemplateSearch(searchQuery);
+  const isSearchActive = searchQuery.trim().length >= 2;
 
   // Generate JSON-LD for categories
   const categoriesJsonLd = {
