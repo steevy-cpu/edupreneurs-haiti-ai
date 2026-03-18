@@ -139,16 +139,26 @@ export default function TemplatesHomePage() {
               <span className="text-foreground font-medium"> Adapté au système éducatif haïtien.</span>
             </p>
 
-            {/* Search Bar */}
+            {/* Search Bar with clear button */}
             <div className="max-w-lg mx-auto relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 type="search"
                 placeholder="Rechercher un template..."
-                className="pl-12 h-14 text-base rounded-xl shadow-lg border-muted-foreground/20 focus:border-primary/50"
+                className="pl-12 pr-10 h-14 text-base rounded-xl shadow-lg border-muted-foreground/20 focus:border-primary/50"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
+              {/* Clear button — visible only when query is non-empty */}
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Effacer la recherche"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              )}
             </div>
           </div>
         </section>

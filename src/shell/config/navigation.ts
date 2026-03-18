@@ -91,6 +91,7 @@ export const SIDEBAR_NAVIGATION: NavSection[] = [
     items: [
       { to: '/lecture', icon: BookMarked, label: 'Lecture', badge: 'new' },
       { to: '/translate', icon: Languages, label: 'Traducteur', badge: 'new' },
+      { to: '/templates', icon: LayoutTemplate, label: 'Templates' },
       { to: '/games', icon: Gamepad2, label: 'Jeux' },
       { to: '/user-search', icon: Search, label: 'Rechercher' },
     ]
