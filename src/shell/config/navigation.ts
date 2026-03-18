@@ -22,6 +22,7 @@ import {
   Languages,
   Lock,
   BarChart3,
+  LayoutTemplate,
   type LucideIcon
 } from "lucide-react";
 
