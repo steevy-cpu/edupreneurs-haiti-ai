@@ -8,10 +8,10 @@
 import { lazy, Suspense } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
-import { useTemplateCategories, useFeaturedTemplates, useTemplateCounts } from '@/hooks/useTemplates';
+import { useTemplateCategories, useFeaturedTemplates, useTemplateCounts, useTemplateSearch } from '@/hooks/useTemplates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowRight, FileText, Sparkles, Download, CheckCircle2 } from 'lucide-react';
+import { Search, ArrowRight, FileText, Sparkles, Download, CheckCircle2, X } from 'lucide-react';
 import { 
   Calendar, ClipboardList, Wallet, Award, FileText as FileTextIcon, Receipt,
   LucideIcon 
@@ -51,6 +51,9 @@ export default function TemplatesHomePage() {
   const { data: featured = [], isLoading: featuredLoading } = useFeaturedTemplates();
   const { data: counts = {} } = useTemplateCounts();
   const [searchQuery, setSearchQuery] = useState('');
+  // Wire search to the existing hook — only fires when query >= 2 chars
+  const { data: searchResults = [], isLoading: searchLoading } = useTemplateSearch(searchQuery);
+  const isSearchActive = searchQuery.trim().length >= 2;
 
   // Generate JSON-LD for categories
   const categoriesJsonLd = {
@@ -136,16 +139,26 @@ export default function TemplatesHomePage() {
               <span className="text-foreground font-medium"> Adapté au système éducatif haïtien.</span>
             </p>
 
-            {/* Search Bar */}
+            {/* Search Bar with clear button */}
             <div className="max-w-lg mx-auto relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 type="search"
                 placeholder="Rechercher un template..."
-                className="pl-12 h-14 text-base rounded-xl shadow-lg border-muted-foreground/20 focus:border-primary/50"
+                className="pl-12 pr-10 h-14 text-base rounded-xl shadow-lg border-muted-foreground/20 focus:border-primary/50"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
+              {/* Clear button — visible only when query is non-empty */}
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Effacer la recherche"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              )}
             </div>
           </div>
         </section>
@@ -190,50 +203,92 @@ export default function TemplatesHomePage() {
           )}
         </section>
 
-        {/* Featured Templates */}
-        {featured.length > 0 && (
+        {/* Search Results — shown when query >= 2 chars, replaces featured */}
+        {isSearchActive ? (
           <section className="py-16 relative">
             <div className="absolute inset-0 bg-gradient-to-b from-muted/30 via-muted/50 to-muted/30" />
             <div className="container mx-auto px-4 relative">
-              <div className="flex items-center justify-between mb-10">
-                <div>
-                  <h2 className="text-2xl md:text-3xl font-bold mb-2">Templates Populaires</h2>
-                  <p className="text-muted-foreground">Les plus téléchargés par la communauté</p>
-                </div>
-                <Link 
-                  to="/templates/schedule" 
-                  className="hidden md:flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors"
-                >
-                  Voir tout <ArrowRight className="h-4 w-4" />
-                </Link>
+              <div className="mb-10">
+                <h2 className="text-2xl md:text-3xl font-bold mb-2">
+                  {searchLoading
+                    ? 'Recherche en cours...'
+                    : `${searchResults.length} résultat${searchResults.length !== 1 ? 's' : ''} pour "${searchQuery}"`}
+                </h2>
               </div>
 
-              {featuredLoading ? (
+              {searchLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[...Array(3)].map((_, i) => (
                     <div key={i} className="h-72 rounded-2xl bg-muted animate-pulse" />
                   ))}
                 </div>
+              ) : searchResults.length === 0 ? (
+                <div className="text-center py-16">
+                  <Search className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
+                  <p className="text-lg text-muted-foreground">Aucun template trouvé pour cette recherche</p>
+                  <Button
+                    variant="outline"
+                    className="mt-4"
+                    onClick={() => setSearchQuery('')}
+                  >
+                    Effacer la recherche
+                  </Button>
+                </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <Suspense fallback={
-                    <div className="h-72 rounded-2xl bg-muted animate-pulse" />
-                  }>
-                    {featured.map((template) => (
+                  <Suspense fallback={<div className="h-72 rounded-2xl bg-muted animate-pulse" />}>
+                    {searchResults.map((template) => (
                       <TemplateCard key={template.id} template={template} />
                     ))}
                   </Suspense>
                 </div>
               )}
-
-              <Link 
-                to="/templates/schedule" 
-                className="md:hidden flex items-center justify-center gap-2 text-primary hover:text-primary/80 font-medium mt-6"
-              >
-                Voir tout <ArrowRight className="h-4 w-4" />
-              </Link>
             </div>
           </section>
+        ) : (
+          /* Featured Templates — default view when not searching */
+          featured.length > 0 && (
+            <section className="py-16 relative">
+              <div className="absolute inset-0 bg-gradient-to-b from-muted/30 via-muted/50 to-muted/30" />
+              <div className="container mx-auto px-4 relative">
+                <div className="flex items-center justify-between mb-10">
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold mb-2">Templates Populaires</h2>
+                    <p className="text-muted-foreground">Les plus téléchargés par la communauté</p>
+                  </div>
+                  <Link 
+                    to="/templates/schedule" 
+                    className="hidden md:flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors"
+                  >
+                    Voir tout <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+
+                {featuredLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-72 rounded-2xl bg-muted animate-pulse" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <Suspense fallback={<div className="h-72 rounded-2xl bg-muted animate-pulse" />}>
+                      {featured.map((template) => (
+                        <TemplateCard key={template.id} template={template} />
+                      ))}
+                    </Suspense>
+                  </div>
+                )}
+
+                <Link 
+                  to="/templates/schedule" 
+                  className="md:hidden flex items-center justify-center gap-2 text-primary hover:text-primary/80 font-medium mt-6"
+                >
+                  Voir tout <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </section>
+          )
         )}
 
         {/* How It Works */}
