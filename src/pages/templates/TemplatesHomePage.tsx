@@ -8,10 +8,10 @@
 import { lazy, Suspense } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
-import { useTemplateCategories, useFeaturedTemplates, useTemplateCounts } from '@/hooks/useTemplates';
+import { useTemplateCategories, useFeaturedTemplates, useTemplateCounts, useTemplateSearch } from '@/hooks/useTemplates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowRight, FileText, Sparkles, Download, CheckCircle2 } from 'lucide-react';
+import { Search, ArrowRight, FileText, Sparkles, Download, CheckCircle2, X } from 'lucide-react';
 import { 
   Calendar, ClipboardList, Wallet, Award, FileText as FileTextIcon, Receipt,
   LucideIcon 
