@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { Users, AlertTriangle, BarChart3, CreditCard, Heart, Megaphone, BookOpen, Newspaper, MessageSquare, MessageCircle, Gift } from "lucide-react";
+import { Users, AlertTriangle, BarChart3, CreditCard, Heart, Megaphone, BookOpen, Newspaper, MessageSquare, MessageCircle, Gift, Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ControlCenterModule } from "./types";
 
