@@ -242,3 +242,6 @@ verify_jwt = false
 
 [functions.batch-generate-word-audio]
 verify_jwt = false
+
+[functions.indexnow-submit]
+verify_jwt = false

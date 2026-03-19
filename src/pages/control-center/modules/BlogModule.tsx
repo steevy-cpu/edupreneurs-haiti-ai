@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Plus,
   Pencil,
@@ -131,6 +132,21 @@ export default function BlogModule() {
         status: newStatus,
         published_at: newStatus === "published" ? new Date().toISOString() : null,
       });
+
+      // Soumettre l'URL du nouvel article à Bing IndexNow — fire-and-forget
+      if (newStatus === "published" && post.slug) {
+        supabase.functions
+          .invoke("indexnow-submit", {
+            body: {
+              urls: [
+                `https://mon-edupreneur.com/blog/${post.slug}`,
+                `https://mon-edupreneur.com/blog`,
+              ],
+            },
+          })
+          .catch(() => {}); // ne pas bloquer la publication si IndexNow échoue
+      }
+
       toast({
         title: newStatus === "published" ? "Article publié" : "Article dépublié",
         description:

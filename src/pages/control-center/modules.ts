@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { Users, AlertTriangle, BarChart3, CreditCard, Heart, Megaphone, BookOpen, Newspaper, MessageSquare, MessageCircle, Gift } from "lucide-react";
+import { Users, AlertTriangle, BarChart3, CreditCard, Heart, Megaphone, BookOpen, Newspaper, MessageSquare, MessageCircle, Gift, Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ControlCenterModule } from "./types";
 
@@ -145,5 +145,12 @@ export const CONTROL_CENTER_MODULES: ControlCenterModule[] = [
         .select("id", { count: "exact", head: true });
       return count || 0;
     },
+  },
+  {
+    id: "seo",
+    label: "SEO & Indexation",
+    shortLabel: "SEO",
+    icon: Globe,
+    component: lazy(() => import("./modules/SEOModule")),
   },
 ];
