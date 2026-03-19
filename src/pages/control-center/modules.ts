@@ -146,4 +146,11 @@ export const CONTROL_CENTER_MODULES: ControlCenterModule[] = [
       return count || 0;
     },
   },
+  {
+    id: "seo",
+    label: "SEO & Indexation",
+    shortLabel: "SEO",
+    icon: Globe,
+    component: lazy(() => import("./modules/SEOModule")),
+  },
 ];
