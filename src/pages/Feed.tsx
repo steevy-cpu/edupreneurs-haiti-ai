@@ -309,7 +309,7 @@ const Feed = () => {
               placeholder="Écrire une réponse..."
               onKeyPress={(e) => {
                 if (e.key === "Enter") {
-                  addComment(postId, comment.id);
+                  handleAddComment(postId, comment.id);
                 }
               }}
                               onFocus={handleInputFocus}
@@ -334,11 +334,11 @@ const Feed = () => {
             </Popover>
             <Button
               size="icon"
-              onClick={() => addComment(postId, comment.id)}
-              disabled={!replyInputs[comment.id]?.trim()}
+              onClick={() => handleAddComment(postId, comment.id)}
+              disabled={!replyInputs[comment.id]?.trim() || submittingComments.has(comment.id)}
               className="h-8 w-8 shrink-0"
             >
-              <Send size={14} />
+              {submittingComments.has(comment.id) ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
             </Button>
           </div>
         )}
@@ -725,11 +725,11 @@ const Feed = () => {
                       </Popover>
                       <Button
                         size="icon"
-                        onClick={() => addComment(post.id)}
-                        disabled={!commentInputs[post.id]?.trim()}
+                        onClick={() => handleAddComment(post.id)}
+                        disabled={!commentInputs[post.id]?.trim() || submittingComments.has(post.id)}
                         className="h-9 w-9 shrink-0"
                       >
-                        <Send size={18} />
+                        {submittingComments.has(post.id) ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
                       </Button>
                     </div>
                   </div>
@@ -766,9 +766,11 @@ const Feed = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deletePostId && deletePost(deletePostId)}
+              onClick={() => deletePostId && handleDeletePost(deletePostId)}
+              disabled={isDeletingPost}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
+              {isDeletingPost ? <Loader2 size={16} className="animate-spin mr-1" /> : null}
               Supprimer
             </AlertDialogAction>
           </AlertDialogFooter>
