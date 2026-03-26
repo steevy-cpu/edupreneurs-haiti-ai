@@ -62,6 +62,12 @@ export function StreakIndicator() {
       <span className="text-[10px] sm:text-xs text-muted-foreground">
         {currentStreak === 1 ? 'jour' : 'jours'}
       </span>
+      {/* Motivational nudge when streak is cold */}
+      {currentStreak === 0 && (
+        <span className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
+          Lance ta série ! 🔥
+        </span>
+      )}
     </div>
   );
 }

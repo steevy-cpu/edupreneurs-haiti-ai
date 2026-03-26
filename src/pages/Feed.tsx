@@ -1,10 +1,10 @@
-import { type FocusEvent } from "react";
+import { useState, useCallback, type FocusEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Heart, MessageCircle, Send, Share2, Trash2, Smile, Reply, BadgeCheck, ArrowLeft, RefreshCw, Globe, MoreHorizontal, Flag, Pencil, ArrowUp } from "lucide-react";
+import { Heart, MessageCircle, Send, Share2, Trash2, Smile, Reply, BadgeCheck, ArrowLeft, RefreshCw, Globe, MoreHorizontal, Flag, Pencil, ArrowUp, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -223,6 +223,31 @@ const Feed = () => {
     toggleShare,
   } = useFeed();
 
+  // ── Loading states for button feedback (Fix 4) ──
+  const [submittingComments, setSubmittingComments] = useState<Set<string>>(new Set());
+  const [isDeletingPost, setIsDeletingPost] = useState(false);
+
+  // Wrapped addComment with loading feedback — preserves original logic
+  const handleAddComment = useCallback(async (postId: string, parentCommentId?: string) => {
+    const key = parentCommentId || postId;
+    setSubmittingComments(prev => new Set(prev).add(key));
+    try {
+      await addComment(postId, parentCommentId);
+    } finally {
+      setSubmittingComments(prev => { const next = new Set(prev); next.delete(key); return next; });
+    }
+  }, [addComment]);
+
+  // Wrapped deletePost with loading feedback — preserves original logic
+  const handleDeletePost = useCallback(async (postId: string) => {
+    setIsDeletingPost(true);
+    try {
+      await deletePost(postId);
+    } finally {
+      setIsDeletingPost(false);
+    }
+  }, [deletePost]);
+
   const renderComment = (comment: Comment, postId: string, isReply: boolean = false) => (
     <div key={comment.id} className={`flex gap-2.5 ${isReply ? "ml-8 mt-2" : ""}`}>
       <Avatar 
@@ -284,7 +309,7 @@ const Feed = () => {
               placeholder="Écrire une réponse..."
               onKeyPress={(e) => {
                 if (e.key === "Enter") {
-                  addComment(postId, comment.id);
+                  handleAddComment(postId, comment.id);
                 }
               }}
                               onFocus={handleInputFocus}
@@ -309,11 +334,11 @@ const Feed = () => {
             </Popover>
             <Button
               size="icon"
-              onClick={() => addComment(postId, comment.id)}
-              disabled={!replyInputs[comment.id]?.trim()}
+              onClick={() => handleAddComment(postId, comment.id)}
+              disabled={!replyInputs[comment.id]?.trim() || submittingComments.has(comment.id)}
               className="h-8 w-8 shrink-0"
             >
-              <Send size={14} />
+              {submittingComments.has(comment.id) ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
             </Button>
           </div>
         )}
@@ -700,11 +725,11 @@ const Feed = () => {
                       </Popover>
                       <Button
                         size="icon"
-                        onClick={() => addComment(post.id)}
-                        disabled={!commentInputs[post.id]?.trim()}
+                        onClick={() => handleAddComment(post.id)}
+                        disabled={!commentInputs[post.id]?.trim() || submittingComments.has(post.id)}
                         className="h-9 w-9 shrink-0"
                       >
-                        <Send size={18} />
+                        {submittingComments.has(post.id) ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
                       </Button>
                     </div>
                   </div>
@@ -741,9 +766,11 @@ const Feed = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deletePostId && deletePost(deletePostId)}
+              onClick={() => deletePostId && handleDeletePost(deletePostId)}
+              disabled={isDeletingPost}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
+              {isDeletingPost ? <Loader2 size={16} className="animate-spin mr-1" /> : null}
               Supprimer
             </AlertDialogAction>
           </AlertDialogFooter>

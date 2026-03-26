@@ -11,7 +11,7 @@
  * - Auth gating with skeleton fallback
  */
 
-import { useState, useEffect, useRef, ReactNode, memo, useCallback } from 'react';
+import { useState, useEffect, useRef, ReactNode, memo, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -35,6 +35,7 @@ import { useThemeSync } from '@/hooks/useThemeSync';
 import { AppSidebar } from './components/AppSidebar';
 import { ShellMobileBottomNav } from './components/ShellMobileBottomNav';
 import { FloatingLayer } from './FloatingLayer';
+import { AnimatePresence, motion } from 'framer-motion';
 import { VisitorBanner, JudeWelcomePopup } from '@/components/visitor';
 import { QuizInvitationHandler } from '@/components/quiz-battle/QuizInvitationHandler';
 import { ScrollToTop } from '@/components/ScrollToTop';
@@ -267,7 +268,17 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
           )}
         >
           <SubscriptionGate>
-            {children || <Outlet />}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.15, ease: 'easeInOut' }}
+              >
+                {children || <Outlet />}
+              </motion.div>
+            </AnimatePresence>
           </SubscriptionGate>
         </main>
 

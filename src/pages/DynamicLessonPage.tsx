@@ -195,10 +195,34 @@ export default function DynamicLessonPage() {
 
   if (isLoading || gradeLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">{loadingMessage}</p>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+        <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
+          {/* Header skeleton — matches LessonPageTemplate header */}
+          <div className="space-y-2">
+            <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+            <div className="h-8 w-3/4 bg-muted rounded animate-pulse" />
+            <div className="h-4 w-1/2 bg-muted rounded animate-pulse" />
+          </div>
+          {/* QuickStats skeleton — 4 stat blocks */}
+          <div className="flex gap-3">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="h-12 flex-1 bg-muted rounded animate-pulse" />
+            ))}
+          </div>
+          {/* Tabs skeleton — matches lesson tab bar */}
+          <div className="flex gap-2 border-b pb-2">
+            {[1,2,3,4,5].map(i => (
+              <div key={i} className="h-8 w-20 bg-muted rounded animate-pulse" />
+            ))}
+          </div>
+          {/* Content body skeleton — varying widths for realism */}
+          <div className="space-y-3 pt-2">
+            {[1,2,3,4,5,6].map(i => (
+              <div key={i} className={`h-4 bg-muted rounded animate-pulse ${i % 3 === 0 ? 'w-2/3' : 'w-full'}`} />
+            ))}
+          </div>
+          {/* Contextual loading message */}
+          <p className="text-center text-sm text-muted-foreground pt-4">{loadingMessage}</p>
         </div>
       </div>
     );

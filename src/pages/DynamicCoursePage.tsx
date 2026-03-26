@@ -117,10 +117,35 @@ export default function DynamicCoursePage() {
 
   if (isLoading || gradeLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">{loadingMessage}</p>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+        <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
+          {/* CourseHeader skeleton */}
+          <div className="space-y-2">
+            <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+            <div className="h-9 w-2/3 bg-muted rounded animate-pulse" />
+            <div className="h-4 w-full bg-muted rounded animate-pulse" />
+            <div className="h-4 w-3/4 bg-muted rounded animate-pulse" />
+          </div>
+          {/* QuickStatsBar skeleton — 4 KPI blocks */}
+          <div className="grid grid-cols-4 gap-3">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="h-16 bg-muted rounded animate-pulse" />
+            ))}
+          </div>
+          {/* MonthQuickNav skeleton — horizontal pill nav */}
+          <div className="flex gap-2 overflow-hidden">
+            {[1,2,3,4,5,6].map(i => (
+              <div key={i} className="h-8 w-24 bg-muted rounded-full animate-pulse flex-shrink-0" />
+            ))}
+          </div>
+          {/* LessonCards grid skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[1,2,3,4,5,6].map(i => (
+              <div key={i} className="h-24 bg-muted rounded-lg animate-pulse" />
+            ))}
+          </div>
+          {/* Contextual loading message */}
+          <p className="text-center text-sm text-muted-foreground pt-2">{loadingMessage}</p>
         </div>
       </div>
     );
