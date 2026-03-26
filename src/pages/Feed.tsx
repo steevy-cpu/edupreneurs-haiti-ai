@@ -223,6 +223,31 @@ const Feed = () => {
     toggleShare,
   } = useFeed();
 
+  // ── Loading states for button feedback (Fix 4) ──
+  const [submittingComments, setSubmittingComments] = useState<Set<string>>(new Set());
+  const [isDeletingPost, setIsDeletingPost] = useState(false);
+
+  // Wrapped addComment with loading feedback — preserves original logic
+  const handleAddComment = useCallback(async (postId: string, parentCommentId?: string) => {
+    const key = parentCommentId || postId;
+    setSubmittingComments(prev => new Set(prev).add(key));
+    try {
+      await addComment(postId, parentCommentId);
+    } finally {
+      setSubmittingComments(prev => { const next = new Set(prev); next.delete(key); return next; });
+    }
+  }, [addComment]);
+
+  // Wrapped deletePost with loading feedback — preserves original logic
+  const handleDeletePost = useCallback(async (postId: string) => {
+    setIsDeletingPost(true);
+    try {
+      await deletePost(postId);
+    } finally {
+      setIsDeletingPost(false);
+    }
+  }, [deletePost]);
+
   const renderComment = (comment: Comment, postId: string, isReply: boolean = false) => (
     <div key={comment.id} className={`flex gap-2.5 ${isReply ? "ml-8 mt-2" : ""}`}>
       <Avatar 
