@@ -1,46 +1,59 @@
 
 
-## Fix: Jude Reading Assistant Input Blocked on Mobile
+## Plan: Create a Test Edge Function to Preview All Email Templates
 
-**Problem:** On mobile/tablet, the chat panel sits at `bottom-0` (line 126) but the bottom navigation bar (`ShellMobileBottomNav`) is also fixed at `bottom-0` with `h-14` (56px) + safe-area padding. The input area is hidden behind the nav bar, making it impossible to type.
+### What This Does
 
-**File to modify:** `src/components/ebook/EbookJudeAssistant.tsx` only
+Creates a **single new edge function** (`test-send-all-emails`) that renders every email template with sample data and sends them all to `celestinsteeve738@gmail.com`. Zero changes to existing code — purely additive.
 
-### Changes
+### Emails to Send (16 templates total)
 
-1. **Add bottom padding on mobile** to the outer container so the panel clears the bottom nav:
+| # | Template | Source |
+|---|----------|--------|
+| 1 | Welcome | `send-welcome-email` |
+| 2 | Email Confirmation (signup) | `send-confirmation-email` |
+| 3 | Password Reset | `send-password-reset-email` |
+| 4 | Device Verification | `send-device-verification-email` |
+| 5 | Login Notification | `send-login-notification` |
+| 6 | Onboarding Day 1 | `check-onboarding-emails` |
+| 7 | Onboarding Day 3 | `check-onboarding-emails` |
+| 8 | Onboarding Day 7 | `check-onboarding-emails` |
+| 9 | Subscription Confirmation | `_shared/emails.ts` |
+| 10 | Subscription Invoice | `_shared/emails.ts` |
+| 11 | Gift Student Activation | `_shared/emails.ts` |
+| 12 | Gift Payer Invoice | `_shared/emails.ts` |
+| 13 | Gift Payer Thank You | `_shared/emails.ts` |
+| 14 | Renewal Student | `_shared/emails.ts` |
+| 15 | Renewal Payer Receipt | `_shared/emails.ts` |
+| 16 | Donation Thank You | `send-donation-thank-you` |
+| 17 | Report Confirmation | `send-report-confirmation` |
+| 18 | Farewell / Account Deleted | `send-farewell-email` |
+| 19 | Admin Post Deleted | `admin-delete-post` |
+| 20 | Birthday | `check-birthdays` |
 
-   Line 126 — change:
-   ```tsx
-   <div className="fixed bottom-0 right-0 z-50 w-full sm:bottom-6 sm:right-4 sm:w-96">
-   ```
-   to:
-   ```tsx
-   <div className="fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] right-0 z-50 w-full sm:bottom-6 sm:right-4 sm:w-96">
-   ```
-   `3.5rem` = 56px = the nav bar height. `env(safe-area-inset-bottom)` accounts for notch devices. On `sm+` breakpoint, the existing `bottom-6` takes over (desktop/tablet landscape — no bottom nav).
+### How It Works
 
-2. **Reduce max height on mobile** to prevent the panel from overflowing above the viewport now that it sits higher:
+- New file: `supabase/functions/test-send-all-emails/index.ts`
+- Imports template builders from `_shared/emails.ts`
+- Copies/inlines the template HTML from functions that don't export their builders (welcome, confirmation, password reset, etc.)
+- Sends each email with a numbered subject prefix (`[1/20] Template Name`) so you can identify them in your inbox
+- Uses sample/dummy data (fake name, fake amounts, fake codes)
+- Protected by `X-Internal-Secret` header so only you can trigger it
+- Returns a JSON summary of which emails succeeded/failed
 
-   Line 127 — change:
-   ```tsx
-   <div className="flex h-[70vh] max-h-[500px] flex-col ...">
-   ```
-   to:
-   ```tsx
-   <div className="flex h-[60vh] max-h-[500px] sm:h-[70vh] flex-col ...">
-   ```
-   Uses 60vh on mobile (where the bottom nav eats space) and 70vh on larger screens.
+### What Gets Modified
 
-3. **Also fix the closed-state FAB** (line 110) which currently uses `bottom-24` on mobile — verify this still clears the raised panel position. Current value `bottom-24` (96px) is fine since the nav is ~56px.
+- **Created:** `supabase/functions/test-send-all-emails/index.ts` (1 new file)
+- **Modified:** Nothing. Zero changes to any existing file.
 
-### Safety
+### After Testing
 
-| Check | Result |
-|---|---|
-| Other files touched | No |
-| Desktop layout | Unchanged — `sm:bottom-6` overrides |
-| Keyboard handling | Bottom nav already hides via `useKeyboardOpen`, so no conflict |
-| Safe area | Respected via `env(safe-area-inset-bottom)` |
-| 3G impact | None — CSS only |
+Once you've reviewed all emails, we simply delete the test function. No cleanup needed.
+
+### Technical Details
+
+- Each email is sent with a 500ms delay between sends to avoid Resend rate limits
+- All emails go to `celestinsteeve738@gmail.com` regardless of template
+- Sample data used: name "Steeve Celestin", amount "500 HTG", verification code "123456", etc.
+- The function is invoked manually via the backend functions panel or curl
 
