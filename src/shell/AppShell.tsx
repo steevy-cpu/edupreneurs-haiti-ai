@@ -11,7 +11,7 @@
  * - Auth gating with skeleton fallback
  */
 
-import { useState, useEffect, useRef, ReactNode, memo, useCallback } from 'react';
+import { useState, useEffect, useRef, ReactNode, memo, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
