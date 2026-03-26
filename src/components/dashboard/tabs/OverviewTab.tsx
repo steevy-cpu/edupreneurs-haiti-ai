@@ -104,6 +104,10 @@ export const OverviewTab = ({
               </div>
               <span className="text-lg sm:text-xl font-bold text-foreground">{profile.goldEarned}</span>
               <span className="text-[10px] sm:text-xs text-muted-foreground">Gold</span>
+              {/* Motivational nudge when gold is zero but other stats may exist */}
+              {profile.goldEarned === 0 && (
+                <span className="text-[9px] sm:text-[10px] text-amber-500 font-medium">Complète une leçon ! 🥇</span>
+              )}
             </div>
             <div className="flex flex-col items-center text-center">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center mb-1.5">

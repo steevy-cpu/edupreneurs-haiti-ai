@@ -13,6 +13,7 @@ import { useNotificationSync } from "@/hooks/useNotificationSync";
 import { useNotificationSound } from "@/hooks/useNotificationSound";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
+import { getRandomLoadingMessage } from "@/utils/loadingMessages";
 
 // Lazy load heavy dialog components
 const AlertDialog = lazy(() => import("@/components/ui/alert-dialog").then(m => ({ default: m.AlertDialog })));
@@ -752,7 +753,7 @@ export default function Notifications() {
               {isLoadingMore && (
                 <div className="flex items-center gap-2 text-muted-foreground text-sm">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Chargement...
+                  {getRandomLoadingMessage("notifications")}
                 </div>
               )}
               {!hasMore && notifications.length > 0 && (

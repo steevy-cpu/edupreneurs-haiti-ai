@@ -19,6 +19,7 @@ import { groupLessonsByMonth, MONTH_ORDER } from "@/utils/courseHelpers";
 import { useUserGrade, GRADE_LABELS } from "@/hooks/useUserGrade";
 import { useCourseData } from "@/hooks/useCourseData";
 import { Lock, Search } from "lucide-react";
+import { getRandomLoadingMessage } from "@/utils/loadingMessages";
 
 export default function DynamicCoursePage() {
   const { slug } = useParams();
@@ -39,6 +40,8 @@ export default function DynamicCoursePage() {
   // Active month state for navigation (for MonthQuickNav highlighting)
   const [activeMonth, setActiveMonth] = useState<string | undefined>();
   const [searchQuery, setSearchQuery] = useState('');
+  // Stable loading message — picked once at mount
+  const [loadingMessage] = useState(() => getRandomLoadingMessage("course"));
 
   // Accent-insensitive normalization for French/Haitian content
   const normalizeText = (str: string) =>
@@ -117,7 +120,7 @@ export default function DynamicCoursePage() {
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Chargement...</p>
+          <p className="text-muted-foreground">{loadingMessage}</p>
         </div>
       </div>
     );

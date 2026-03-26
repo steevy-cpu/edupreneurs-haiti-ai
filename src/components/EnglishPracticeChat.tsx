@@ -180,12 +180,12 @@ export const EnglishPracticeChat = ({
 
       if (error) throw error;
 
-      toast.success("Conversation history cleared!");
+      toast.success("Historique de conversation effacé ! 🗑️");
       startNewConversation();
       setShowDeleteDialog(false);
     } catch (error) {
       console.error('Error deleting history:', error);
-      toast.error("Failed to clear conversation history");
+      toast.error("Impossible d'effacer l'historique de conversation");
     }
   };
 

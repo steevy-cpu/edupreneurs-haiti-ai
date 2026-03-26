@@ -12,6 +12,7 @@ import judeBiologist from "@/assets/eric-biologist.png";
 import judeComputer from "@/assets/eric-computer.png";
 import judeMath from "@/assets/eric-math.png";
 import type { SiblingLesson } from "@/features/matieres/types/lesson.types";
+import { getRandomLoadingMessage } from "@/utils/loadingMessages";
 
 /** 24-hour TTL for offline lesson cache */
 const LESSON_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -35,6 +36,8 @@ export default function DynamicLessonPage() {
   const [previousLesson, setPreviousLesson] = useState<SiblingLesson | null>(null);
   const [nextLesson, setNextLesson] = useState<SiblingLesson | null>(null);
   const [isFirstLesson, setIsFirstLesson] = useState(false);
+  // Stable loading message — picked once at mount, stays consistent during load
+  const [loadingMessage] = useState(() => getRandomLoadingMessage("lesson"));
 
   // User grade access
   const { userGrade, canAccessGrade, isLoading: gradeLoading, isAuthenticated } = useUserGrade();
@@ -195,7 +198,7 @@ export default function DynamicLessonPage() {
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Chargement de la leçon...</p>
+          <p className="text-muted-foreground">{loadingMessage}</p>
         </div>
       </div>
     );
