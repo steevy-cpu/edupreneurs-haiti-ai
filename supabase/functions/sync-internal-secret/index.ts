@@ -10,7 +10,7 @@ serve(async (req) => {
   // Only allow service-role bearer token auth
   const authHeader = req.headers.get("Authorization");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!authHeader || !authHeader.includes(serviceKey!)) {
+  if (!authHeader || !serviceKey || !authHeader.includes(serviceKey)) {
     return new Response("Unauthorized", { status: 401 });
   }
 
@@ -23,30 +23,31 @@ serve(async (req) => {
   }
 
   try {
+    // Use service-role client to call the helper DB function
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      serviceKey!,
     );
 
-    // Set the GUC on the authenticator role so pg_cron can read it
-    const { error } = await supabase.rpc("exec_sql", {
-      query: `ALTER ROLE authenticator SET "app.settings.internal_call_secret" = '${secret.replace(/'/g, "''")}'`,
+    const { error } = await supabase.rpc("set_internal_call_secret", {
+      p_secret: secret,
     });
 
     if (error) {
-      // Fallback: try via direct pg connection if rpc doesn't exist
       return new Response(JSON.stringify({
-        error: "rpc exec_sql not available",
+        error: "Failed to set GUC",
         detail: error.message,
-        secret_length: secret.length,
-        hint: "Run ALTER ROLE manually with this secret length confirmation",
       }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    return new Response(JSON.stringify({ success: true, message: "GUC set on authenticator role" }), {
+    return new Response(JSON.stringify({
+      success: true,
+      message: "app.settings.internal_call_secret configured on authenticator role",
+      secret_length: secret.length,
+    }), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
