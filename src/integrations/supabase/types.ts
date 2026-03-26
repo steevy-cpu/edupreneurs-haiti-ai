@@ -287,6 +287,24 @@ export type Database = {
         }
         Relationships: []
       }
+      app_internal_config: {
+        Row: {
+          key: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          key: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          key?: string
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           key: string
@@ -4788,6 +4806,7 @@ export type Database = {
           student_name: string
         }[]
       }
+      get_internal_secret: { Args: never; Returns: string }
       get_leaderboard_profiles: {
         Args: { limit_count?: number }
         Returns: {
@@ -4916,10 +4935,6 @@ export type Database = {
         Returns: Json
       }
       resend_verification_code: { Args: { p_user_id: string }; Returns: Json }
-      set_internal_call_secret: {
-        Args: { p_secret: string }
-        Returns: undefined
-      }
       start_direct_conversation: {
         Args: { other_user_id: string }
         Returns: string
