@@ -1,10 +1,10 @@
-import { type FocusEvent } from "react";
+import { useState, useCallback, type FocusEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Heart, MessageCircle, Send, Share2, Trash2, Smile, Reply, BadgeCheck, ArrowLeft, RefreshCw, Globe, MoreHorizontal, Flag, Pencil, ArrowUp } from "lucide-react";
+import { Heart, MessageCircle, Send, Share2, Trash2, Smile, Reply, BadgeCheck, ArrowLeft, RefreshCw, Globe, MoreHorizontal, Flag, Pencil, ArrowUp, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
