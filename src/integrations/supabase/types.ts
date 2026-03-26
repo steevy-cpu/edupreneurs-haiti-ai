@@ -4916,6 +4916,10 @@ export type Database = {
         Returns: Json
       }
       resend_verification_code: { Args: { p_user_id: string }; Returns: Json }
+      set_internal_call_secret: {
+        Args: { p_secret: string }
+        Returns: undefined
+      }
       start_direct_conversation: {
         Args: { other_user_id: string }
         Returns: string
