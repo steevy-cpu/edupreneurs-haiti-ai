@@ -1,13 +1,39 @@
 /**
  * Shared Email Module
  * 
- * Centralized email sending and template building for all payment flows.
- * All edge functions import from here instead of duplicating email logic.
+ * Centralized email sending, universal template builder, and payment email
+ * templates for all Edupreneurs edge functions.
+ * Brand colors: teal #087E7E + amber #FF9F00
  */
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 // Fallback to production domain if SITE_URL secret is missing
 const SITE_URL = Deno.env.get("SITE_URL") || "https://mon-edupreneur.com";
+
+// ─── Brand colors — single source of truth for all emails ───
+
+export const BRAND_COLORS = {
+  primary: '#087E7E',      // teal — main site color
+  primaryDark: '#075E5E',  // teal dark
+  accent: '#FF9F00',       // amber — accent color
+  secondary: '#7C3AED',    // violet
+  blue: '#2563EB',         // security blue
+  red: '#EF4444',          // danger/destructive
+  cyan: '#0EA5E9',         // donation cyan
+  green: '#10B77F',        // success green
+  dark: '#232D3F',         // foreground text
+  mid: '#6B7280',          // muted text
+  light: '#9CA3AF',        // light text
+  bg: '#F4F7F6',           // email background
+  white: '#FFFFFF',
+};
+
+// ─── Template constants ───
+
+const LOGO_URL = 'https://mon-edupreneur.com/logo.png';
+// Jude AI avatar for signature block
+const JUDE_AVATAR_URL = 'https://xdyavylcmucjpueybdku.supabase.co/storage/v1/object/public/blog-images/content/1769227733253-download.png';
+const CURRENT_YEAR = new Date().getFullYear();
 
 // ─── Core send function ───
 
@@ -30,35 +56,116 @@ export async function sendEmail(to: string, subject: string, html: string): Prom
   }
 }
 
-// ─── Shared layout wrapper ───
+// ─── Universal email template builder ───
+// Every Edupreneurs email uses this layout:
+// Logo → teal-amber stripe → colored header → body → optional CTA → optional Jude signature → footer
 
-function emailWrapper(headerBg: string, headerIcon: string, headerTitle: string, headerSubtitle: string, bodyContent: string): string {
+export function buildEmailTemplate({
+  accentColor,
+  icon,
+  title,
+  subtitle,
+  body,
+  ctaText,
+  ctaUrl,
+  showJudeSignature = false,
+}: {
+  accentColor: string;
+  icon: string;
+  title: string;
+  subtitle?: string;
+  body: string;
+  ctaText?: string;
+  ctaUrl?: string;
+  showJudeSignature?: boolean;
+}): string {
+
+  // Optional CTA button using the accent color
+  const ctaButton = ctaText && ctaUrl ? `
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding-top:24px;">
+    <tr><td align="center">
+      <a href="${ctaUrl}" style="display:inline-block;background:${accentColor};color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:10px;font-size:15px;font-weight:700;">
+        ${ctaText}
+      </a>
+    </td></tr>
+    </table>` : '';
+
+  // Optional Jude AI signature with avatar
+  const judeSignature = showJudeSignature ? `
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding-top:24px;border-top:1px solid #e5e7eb;margin-top:24px;">
+    <tr><td>
+      <table cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="padding-right:12px;vertical-align:middle;">
+          <img src="${JUDE_AVATAR_URL}" alt="Jude" width="40" height="40" style="border-radius:50%;display:block;" />
+        </td>
+        <td style="vertical-align:middle;">
+          <p style="margin:0;font-size:14px;font-weight:600;color:${BRAND_COLORS.dark};">Jude</p>
+          <p style="margin:0;font-size:12px;color:${BRAND_COLORS.mid};">Ton assistant IA — Edupreneurs 🇭🇹</p>
+        </td>
+      </tr>
+      </table>
+    </td></tr>
+    </table>` : '';
+
   return `<!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background:#f4f7f6;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7f6;padding:32px 16px;">
+<body style="margin:0;padding:0;background:${BRAND_COLORS.bg};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND_COLORS.bg};padding:32px 16px;">
 <tr><td align="center">
-<table width="100%" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-<tr><td style="background:${headerBg};padding:40px 32px;text-align:center;">
-  <div style="font-size:48px;margin-bottom:8px;">${headerIcon}</div>
-  <h1 style="color:#ffffff;font-size:26px;margin:0 0 4px;">${headerTitle}</h1>
-  <p style="color:#d1fae5;font-size:14px;margin:0;">${headerSubtitle}</p>
-</td></tr>
-<tr><td style="padding:32px;">
-  ${bodyContent}
-</td></tr>
-<tr><td style="background:#f9fafb;padding:20px 32px;text-align:center;border-top:1px solid #e5e7eb;">
-  <p style="color:#9ca3af;font-size:12px;margin:0;">© ${new Date().getFullYear()} Edupreneurs Haiti · Transfòme edikasyon an nan Ayiti</p>
-</td></tr>
+<table width="100%" style="max-width:560px;">
+
+  <!-- Logo -->
+  <tr><td style="text-align:center;padding-bottom:24px;">
+    <img src="${LOGO_URL}" alt="Edupreneurs" width="160" height="auto" style="display:block;margin:0 auto;" />
+  </td></tr>
+
+  <!-- Card -->
+  <tr><td>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND_COLORS.white};border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+
+      <!-- Brand stripe: teal → amber (visual signature) -->
+      <tr><td style="height:4px;background:linear-gradient(90deg,${BRAND_COLORS.primary},${BRAND_COLORS.accent});font-size:0;line-height:0;">&nbsp;</td></tr>
+
+      <!-- Header with accent color -->
+      <tr><td style="background:${accentColor};padding:40px 32px;text-align:center;">
+        <div style="font-size:48px;margin-bottom:8px;">${icon}</div>
+        <h1 style="color:#ffffff;font-size:24px;font-weight:800;margin:0 0 4px;">${title}</h1>
+        ${subtitle ? `<p style="color:rgba(255,255,255,0.9);font-size:14px;margin:0;">${subtitle}</p>` : ''}
+      </td></tr>
+
+      <!-- Body content -->
+      <tr><td style="padding:32px;">
+        ${body}
+        ${ctaButton}
+        ${judeSignature}
+      </td></tr>
+
+      <!-- Footer with links -->
+      <tr><td style="background:#f9fafb;padding:20px 32px;text-align:center;border-top:1px solid #e5e7eb;">
+        <p style="margin:0 0 8px;font-size:12px;">
+          <a href="${SITE_URL}" style="color:${BRAND_COLORS.primary};text-decoration:none;">Site web</a>
+          &nbsp;·&nbsp;
+          <a href="${SITE_URL}/blog" style="color:${BRAND_COLORS.primary};text-decoration:none;">Blog</a>
+          &nbsp;·&nbsp;
+          <a href="${SITE_URL}/confidentialite" style="color:${BRAND_COLORS.primary};text-decoration:none;">Confidentialité</a>
+        </p>
+        <p style="color:#9ca3af;font-size:11px;margin:0;">
+          © ${CURRENT_YEAR} Edupreneurs Haiti · 🇭🇹 Fait pour les élèves haïtiens<br>
+          Tu reçois cet email car tu as un compte Edupreneurs.
+        </p>
+      </td></tr>
+
+    </table>
+  </td></tr>
+
 </table>
 </td></tr>
 </table>
 </body>
 </html>`;
 }
-
-const GREEN_GRADIENT = "linear-gradient(135deg,#16a34a,#059669)";
 
 // ─── Template: Subscription Confirmation (for the student/user) ───
 
@@ -73,25 +180,25 @@ export function buildSubscriptionConfirmationEmail(
     ? '<span style="display:inline-block;background:#0066cc;color:#fff;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;">NatCash</span>'
     : '<span style="display:inline-block;background:#635bff;color:#fff;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;">Stripe</span>';
 
-  return emailWrapper(
-    GREEN_GRADIENT, "🎉", "Abonnement activé!", "Votre accès de 30 jours est actif",
-    `<p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">Bonjour <strong>${studentName}</strong>,</p>
+  return buildEmailTemplate({
+    accentColor: BRAND_COLORS.primary,
+    icon: '🎉',
+    title: 'Abonnement activé!',
+    subtitle: 'Votre accès de 30 jours est actif',
+    body: `<p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">Bonjour <strong>${studentName}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px;">
   Votre abonnement Edupreneurs de 30 jours est maintenant actif. Vous avez accès à toutes les leçons, quiz, tuteurs IA et bien plus!
 </p>
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;margin-bottom:24px;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdfd;border:1px solid #b2dfdb;border-radius:12px;margin-bottom:24px;">
 <tr><td style="padding:20px;text-align:center;">
   <p style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;">Accès actif jusqu'au</p>
-  <p style="color:#16a34a;font-size:28px;font-weight:700;margin:0 0 12px;">${endDate}</p>
+  <p style="color:${BRAND_COLORS.primary};font-size:28px;font-weight:700;margin:0 0 12px;">${endDate}</p>
   ${methodBadge}
 </td></tr>
-</table>
-<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-  <a href="${SITE_URL}" style="display:inline-block;background:#16a34a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:15px;font-weight:600;">
-    Continuer à apprendre 🚀
-  </a>
-</td></tr></table>`
-  );
+</table>`,
+    ctaText: 'Continuer à apprendre 🚀',
+    ctaUrl: SITE_URL,
+  });
 }
 
 // ─── Template: Invoice/Receipt (for the payer) ───
@@ -105,50 +212,53 @@ export function buildSubscriptionInvoiceEmail(
   description?: string
 ): string {
   const desc = description || "Abonnement 30 jours";
-  return emailWrapper(
-    GREEN_GRADIENT, "🧾", "Reçu de paiement", "Abonnement Edupreneurs",
-    `<p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">Bonjour <strong>${name}</strong>,</p>
+  return buildEmailTemplate({
+    accentColor: BRAND_COLORS.primary,
+    icon: '🧾',
+    title: 'Reçu de paiement',
+    subtitle: 'Abonnement Edupreneurs',
+    body: `<p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">Bonjour <strong>${name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px;">
   Voici le reçu de votre paiement pour votre abonnement Edupreneurs.
 </p>
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;margin-bottom:24px;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdfd;border:1px solid #b2dfdb;border-radius:12px;margin-bottom:24px;">
 <tr><td style="padding:20px;">
   <table width="100%" cellpadding="0" cellspacing="0">
   <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Description</td><td style="color:#1f2937;font-size:13px;font-weight:600;text-align:right;padding:6px 0;">${desc}</td></tr>
   <tr><td colspan="2" style="border-bottom:1px solid #e5e7eb;"></td></tr>
-  <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Montant</td><td style="color:#16a34a;font-size:20px;font-weight:700;text-align:right;padding:6px 0;">${amount}</td></tr>
+  <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Montant</td><td style="color:${BRAND_COLORS.primary};font-size:20px;font-weight:700;text-align:right;padding:6px 0;">${amount}</td></tr>
   <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Date</td><td style="color:#1f2937;font-size:13px;text-align:right;padding:6px 0;">${date}</td></tr>
   <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Méthode</td><td style="color:#1f2937;font-size:13px;text-align:right;padding:6px 0;">${paymentMethod}</td></tr>
   <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Référence</td><td style="color:#9ca3af;font-size:11px;text-align:right;padding:6px 0;">${orderId}</td></tr>
   </table>
 </td></tr>
 </table>
-<p style="color:#9ca3af;font-size:12px;margin:0;">Ce reçu sert de confirmation de paiement. Conservez-le pour vos archives.</p>`
-  );
+<p style="color:#9ca3af;font-size:12px;margin:0;">Ce reçu sert de confirmation de paiement. Conservez-le pour vos archives.</p>`,
+  });
 }
 
 // ─── Template: Gift Student Activation (first-time gift) ───
 
 export function buildGiftStudentEmail(studentName: string, payerName: string, endDate: string): string {
   const displayPayer = payerName || "un proche";
-  return emailWrapper(
-    GREEN_GRADIENT, "🎉", "Votre abonnement est activé!", `Grâce à ${displayPayer}`,
-    `<p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">Bonjour <strong>${studentName}</strong>,</p>
+  return buildEmailTemplate({
+    accentColor: BRAND_COLORS.primary,
+    icon: '🎉',
+    title: 'Votre abonnement est activé!',
+    subtitle: `Grâce à ${displayPayer}`,
+    body: `<p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">Bonjour <strong>${studentName}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px;">
   Bonne nouvelle! <strong>${displayPayer}</strong> a payé votre abonnement Edupreneurs. Vous avez maintenant accès à toutes les leçons, quiz, tuteurs IA et bien plus encore!
 </p>
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;margin-bottom:24px;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdfd;border:1px solid #b2dfdb;border-radius:12px;margin-bottom:24px;">
 <tr><td style="padding:20px;text-align:center;">
   <p style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;">Accès actif jusqu'au</p>
-  <p style="color:#16a34a;font-size:28px;font-weight:700;margin:0;">${endDate}</p>
+  <p style="color:${BRAND_COLORS.primary};font-size:28px;font-weight:700;margin:0;">${endDate}</p>
 </td></tr>
-</table>
-<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-  <a href="${SITE_URL}" style="display:inline-block;background:#16a34a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:15px;font-weight:600;">
-    Commencer à apprendre 🚀
-  </a>
-</td></tr></table>`
-  );
+</table>`,
+    ctaText: 'Commencer à apprendre 🚀',
+    ctaUrl: SITE_URL,
+  });
 }
 
 // ─── Template: Gift Payer Invoice ───
@@ -162,34 +272,40 @@ export function buildGiftPayerInvoiceEmail(
 ): string {
   const displayPayer = payerName || "Ami(e) d'Edupreneurs";
   const formattedAmount = `$${(amount / 100).toFixed(2)} USD`;
-  return emailWrapper(
-    GREEN_GRADIENT, "🧾", "Reçu de paiement", "Abonnement Edupreneurs",
-    `<p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">Bonjour <strong>${displayPayer}</strong>,</p>
+  return buildEmailTemplate({
+    accentColor: BRAND_COLORS.primary,
+    icon: '🧾',
+    title: 'Reçu de paiement',
+    subtitle: 'Abonnement Edupreneurs',
+    body: `<p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">Bonjour <strong>${displayPayer}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px;">
   Voici le reçu de votre paiement pour l'abonnement de <strong>${studentName}</strong> sur Edupreneurs.
 </p>
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;margin-bottom:24px;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdfd;border:1px solid #b2dfdb;border-radius:12px;margin-bottom:24px;">
 <tr><td style="padding:20px;">
   <table width="100%" cellpadding="0" cellspacing="0">
   <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Description</td><td style="color:#1f2937;font-size:13px;font-weight:600;text-align:right;padding:6px 0;">Abonnement 30 jours pour ${studentName}</td></tr>
   <tr><td colspan="2" style="border-bottom:1px solid #e5e7eb;"></td></tr>
-  <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Montant</td><td style="color:#16a34a;font-size:20px;font-weight:700;text-align:right;padding:6px 0;">${formattedAmount}</td></tr>
+  <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Montant</td><td style="color:${BRAND_COLORS.primary};font-size:20px;font-weight:700;text-align:right;padding:6px 0;">${formattedAmount}</td></tr>
   <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Date</td><td style="color:#1f2937;font-size:13px;text-align:right;padding:6px 0;">${date}</td></tr>
   <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Référence</td><td style="color:#9ca3af;font-size:11px;text-align:right;padding:6px 0;">${sessionId}</td></tr>
   </table>
 </td></tr>
 </table>
-<p style="color:#9ca3af;font-size:12px;margin:0;">Ce reçu sert de confirmation de paiement. Conservez-le pour vos archives.</p>`
-  );
+<p style="color:#9ca3af;font-size:12px;margin:0;">Ce reçu sert de confirmation de paiement. Conservez-le pour vos archives.</p>`,
+  });
 }
 
 // ─── Template: Gift Payer Thank You ───
 
 export function buildGiftPayerThankYouEmail(payerName: string, studentName: string): string {
   const displayPayer = payerName || "Ami(e) d'Edupreneurs";
-  return emailWrapper(
-    GREEN_GRADIENT, "💚", "Mèsi anpil!", "Vous changez des vies 🇭🇹",
-    `<p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">Bonjour <strong>${displayPayer}</strong>,</p>
+  return buildEmailTemplate({
+    accentColor: BRAND_COLORS.primary,
+    icon: '💚',
+    title: 'Mèsi anpil!',
+    subtitle: 'Vous changez des vies 🇭🇹',
+    body: `<p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">Bonjour <strong>${displayPayer}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 20px;">
   Grâce à vous, <strong>${studentName}</strong> a maintenant accès à une éducation de qualité sur Edupreneurs. Votre geste fait une vraie différence!
 </p>
@@ -197,9 +313,9 @@ export function buildGiftPayerThankYouEmail(payerName: string, studentName: stri
 <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
 <tr>
   <td width="33%" style="padding:4px;">
-    <table width="100%" style="background:#eff6ff;border-radius:10px;"><tr><td style="padding:14px;text-align:center;">
+    <table width="100%" style="background:#f0fdfd;border-radius:10px;"><tr><td style="padding:14px;text-align:center;">
       <div style="font-size:24px;margin-bottom:4px;">🤖</div>
-      <p style="color:#1e40af;font-size:12px;font-weight:600;margin:0;">Tuteurs IA</p>
+      <p style="color:${BRAND_COLORS.primaryDark};font-size:12px;font-weight:600;margin:0;">Tuteurs IA</p>
     </td></tr></table>
   </td>
   <td width="33%" style="padding:4px;">
@@ -218,57 +334,57 @@ export function buildGiftPayerThankYouEmail(payerName: string, studentName: stri
 </table>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px;">
   Edupreneurs aide les élèves haïtiens à accéder à une éducation moderne avec l'intelligence artificielle. Chaque abonnement compte!
-</p>
-<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-  <a href="${SITE_URL}" style="display:inline-block;background:#16a34a;color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:14px;font-weight:600;">
-    Découvrir Edupreneurs
-  </a>
-</td></tr></table>`
-  );
+</p>`,
+    ctaText: 'Découvrir Edupreneurs',
+    ctaUrl: SITE_URL,
+  });
 }
 
 // ─── Template: Renewal Student (recurring gift) ───
 
 export function buildRenewalStudentEmail(studentName: string, endDate: string): string {
-  return emailWrapper(
-    GREEN_GRADIENT, "🔄", "Abonnement renouvelé!", "Votre accès continue",
-    `<p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">Bonjour <strong>${studentName}</strong>,</p>
+  return buildEmailTemplate({
+    accentColor: BRAND_COLORS.primary,
+    icon: '🔄',
+    title: 'Abonnement renouvelé!',
+    subtitle: 'Votre accès continue',
+    body: `<p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">Bonjour <strong>${studentName}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px;">
   Votre abonnement Edupreneurs a été renouvelé automatiquement grâce au soutien de votre proche. Continuez à apprendre!
 </p>
-<table width="100%" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;margin-bottom:24px;">
+<table width="100%" style="background:#f0fdfd;border:1px solid #b2dfdb;border-radius:12px;margin-bottom:24px;">
 <tr><td style="padding:20px;text-align:center;">
   <p style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;">Accès actif jusqu'au</p>
-  <p style="color:#16a34a;font-size:28px;font-weight:700;margin:0;">${endDate}</p>
+  <p style="color:${BRAND_COLORS.primary};font-size:28px;font-weight:700;margin:0;">${endDate}</p>
 </td></tr>
-</table>
-<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-  <a href="${SITE_URL}" style="display:inline-block;background:#16a34a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:15px;font-weight:600;">
-    Continuer à apprendre 🚀
-  </a>
-</td></tr></table>`
-  );
+</table>`,
+    ctaText: 'Continuer à apprendre 🚀',
+    ctaUrl: SITE_URL,
+  });
 }
 
 // ─── Template: Renewal Payer Receipt (recurring gift) ───
 
 export function buildRenewalPayerEmail(studentName: string, amount: string, date: string): string {
-  return emailWrapper(
-    GREEN_GRADIENT, "🧾", "Renouvellement mensuel", "Abonnement Edupreneurs",
-    `<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 20px;">
+  return buildEmailTemplate({
+    accentColor: BRAND_COLORS.primary,
+    icon: '🧾',
+    title: 'Renouvellement mensuel',
+    subtitle: 'Abonnement Edupreneurs',
+    body: `<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 20px;">
   Votre abonnement mensuel pour <strong>${studentName}</strong> a été renouvelé avec succès.
 </p>
-<table width="100%" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;margin-bottom:24px;">
+<table width="100%" style="background:#f0fdfd;border:1px solid #b2dfdb;border-radius:12px;margin-bottom:24px;">
 <tr><td style="padding:20px;">
   <table width="100%" cellpadding="0" cellspacing="0">
-  <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Montant</td><td style="color:#16a34a;font-size:18px;font-weight:700;text-align:right;padding:6px 0;">${amount}</td></tr>
+  <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Montant</td><td style="color:${BRAND_COLORS.primary};font-size:18px;font-weight:700;text-align:right;padding:6px 0;">${amount}</td></tr>
   <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Date</td><td style="color:#1f2937;font-size:13px;text-align:right;padding:6px 0;">${date}</td></tr>
   <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;">Étudiant</td><td style="color:#1f2937;font-size:13px;text-align:right;padding:6px 0;">${studentName}</td></tr>
   </table>
 </td></tr>
 </table>
-<p style="color:#9ca3af;font-size:12px;margin:0;">Merci pour votre soutien continu! 💚</p>`
-  );
+<p style="color:#9ca3af;font-size:12px;margin:0;">Merci pour votre soutien continu! 💚</p>`,
+  });
 }
 
 // ─── Helper: Send subscription emails after payment ───

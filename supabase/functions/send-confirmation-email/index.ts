@@ -14,174 +14,57 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
 import { validateInput, confirmationEmailSchema, validationErrorResponse } from "../_shared/validation.ts";
 import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
-import { getTimeAwareGreeting } from "../_shared/emailGreeting.ts";
+import { buildEmailTemplate, BRAND_COLORS } from "../_shared/emails.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-// Template accepts nullable nickname/academicGrade — conditionally renders those rows
-const getEmailTemplate = (fullName: string, nickname: string | null | undefined, academicGrade: string | null | undefined, email: string, confirmationCode: string) => `
-<!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="color-scheme" content="light">
-    <meta name="supported-color-schemes" content="light">
-    <title>Confirmez votre inscription</title>
-    <!--[if mso]>
-    <noscript>
-      <xml>
-        <o:OfficeDocumentSettings>
-          <o:PixelsPerInch>96</o:PixelsPerInch>
-        </o:OfficeDocumentSettings>
-      </xml>
-    </noscript>
-    <![endif]-->
-  </head>
-  <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc;">
-      <tr>
-        <td style="padding: 40px 20px;">
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; max-width: 600px;">
-            
-            <!-- Logo Header -->
-            <tr>
-              <td style="text-align: center; padding-bottom: 30px;">
-                <img src="https://mon-edupreneur.com/logo.png" alt="Edupreneurs" width="180" height="auto" style="display: block; margin: 0 auto; max-width: 180px; height: auto;" />
-              </td>
-            </tr>
-            
-            <!-- Main Card -->
-            <tr>
-              <td>
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: #ffffff; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); overflow: hidden;">
-                  
-                  <!-- Hero Section -->
-                  <tr>
-                    <td style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%); padding: 50px 40px; text-align: center;">
-                      <div style="font-size: 64px; margin-bottom: 16px;">✉️</div>
-                      <h1 style="margin: 0 0 12px 0; font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
-                        Vérifiez votre email
-                      </h1>
-                      <p style="margin: 0; font-size: 18px; color: rgba(255, 255, 255, 0.9); font-weight: 500;">
-                        Plus qu'une étape pour rejoindre l'aventure !
-                      </p>
-                    </td>
-                  </tr>
-                  
-                  <!-- Content -->
-                  <tr>
-                    <td style="padding: 40px;">
-                      <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b; line-height: 1.7;">
-                        ${getTimeAwareGreeting(fullName)}
-                      </p>
-                      <p style="margin: 0 0 32px 0; font-size: 16px; color: #475569; line-height: 1.8;">
-                        Bienvenue sur Edupreneurs ! Pour activer votre compte et commencer votre parcours d'apprentissage, veuillez utiliser le code de confirmation ci-dessous. <strong style="color: #ef4444;">Ce code expire dans 1 heure.</strong>
-                      </p>
-                      
-                      <!-- Code Box -->
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 32px;">
-                        <tr>
-                          <td style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 2px dashed #cbd5e1; border-radius: 16px; padding: 32px; text-align: center;">
-                            <p style="margin: 0 0 12px 0; font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
-                              Votre code de confirmation
-                            </p>
-                            <div style="font-size: 42px; font-weight: 800; color: #6366f1; letter-spacing: 8px; font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;">
-                              ${confirmationCode}
-                            </div>
-                          </td>
-                        </tr>
-                      </table>
-                      
-                      <!-- Divider -->
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 32px;">
-                        <tr>
-                          <td style="height: 1px; background: linear-gradient(to right, transparent, #e2e8f0, transparent);"></td>
-                        </tr>
-                      </table>
-                      
-                      <!-- Account Info -->
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: #f8fafc; border-radius: 16px; overflow: hidden; margin-bottom: 32px;">
-                        <tr>
-                          <td style="padding: 24px;">
-                            <h3 style="margin: 0 0 20px 0; font-size: 16px; font-weight: 700; color: #1e293b;">
-                              📋 Informations de votre compte
-                            </h3>
-                            
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                              <tr>
-                                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
-                                  <span style="font-size: 14px; color: #64748b;">Nom complet</span>
-                                </td>
-                                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">
-                                  <span style="font-size: 14px; color: #1e293b; font-weight: 600;">${fullName}</span>
-                                </td>
-                              </tr>
-                              ${nickname ? `<tr>
-                                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
-                                  <span style="font-size: 14px; color: #64748b;">Pseudo</span>
-                                </td>
-                                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">
-                                  <span style="font-size: 14px; color: #1e293b; font-weight: 600;">@${nickname}</span>
-                                </td>
-                              </tr>` : ''}
-                              ${academicGrade ? `<tr>
-                                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
-                                  <span style="font-size: 14px; color: #64748b;">Niveau</span>
-                                </td>
-                                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">
-                                  <span style="font-size: 14px; color: #1e293b; font-weight: 600;">${academicGrade}</span>
-                                </td>
-                              </tr>` : ''}
-                              <tr>
-                                <td style="padding: 12px 0;">
-                                  <span style="font-size: 14px; color: #64748b;">Email</span>
-                                </td>
-                                <td style="padding: 12px 0; text-align: right;">
-                                  <span style="font-size: 14px; color: #1e293b; font-weight: 600;">${email}</span>
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
-                        </tr>
-                      </table>
-                      
-                      <!-- Security Notice -->
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                        <tr>
-                          <td style="background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 0 12px 12px 0; padding: 16px 20px;">
-                            <p style="margin: 0; font-size: 14px; color: #92400e; line-height: 1.6;">
-                              <strong>🔒 Important :</strong> Gardez ce code en sécurité et ne le partagez avec personne.
-                            </p>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                  
-                </table>
-              </td>
-            </tr>
-            
-            <!-- Footer -->
-            <tr>
-              <td style="padding: 40px 20px; text-align: center;">
-                <p style="margin: 0 0 12px 0; font-size: 14px; color: #64748b;">
-                  Si vous n'avez pas créé ce compte, veuillez ignorer cet email.
-                </p>
-                <p style="margin: 0; font-size: 13px; color: #94a3b8;">
-                  © ${new Date().getFullYear()} Edupreneurs. Tous droits réservés.
-                </p>
-              </td>
-            </tr>
-            
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>
-`;
+// Template: confirmation code email — uses brand secondary (violet) header
+const getEmailTemplate = (fullName: string, nickname: string | null | undefined, academicGrade: string | null | undefined, email: string, confirmationCode: string) => {
+  return buildEmailTemplate({
+    accentColor: BRAND_COLORS.secondary,
+    icon: '✉️',
+    title: 'Vérifiez votre email',
+    subtitle: "Plus qu'une étape pour rejoindre l'aventure !",
+    body: `
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">
+        Salut <strong style="color:${BRAND_COLORS.secondary};">${fullName}</strong> ! 👋
+      </p>
+      <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        Voici ton code de confirmation pour finaliser la création de ton compte :
+      </p>
+      <!-- Code box -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+      <tr><td style="background:linear-gradient(135deg,#f8fafc 0%,#f1f5f9 100%);border:2px dashed #cbd5e1;border-radius:16px;padding:32px;text-align:center;">
+        <p style="margin:0 0 12px;font-size:14px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:1px;">
+          Ton code de confirmation
+        </p>
+        <div style="font-size:42px;font-weight:800;color:${BRAND_COLORS.secondary};letter-spacing:8px;font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace;">
+          ${confirmationCode}
+        </div>
+      </td></tr>
+      </table>
+      <!-- Account info summary -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:12px;margin-bottom:24px;">
+      <tr><td style="padding:20px;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+        <tr><td style="padding:8px 0;color:#64748b;font-size:13px;">Nom</td><td style="padding:8px 0;text-align:right;color:#1e293b;font-size:13px;font-weight:600;">${fullName}</td></tr>
+        ${nickname ? `<tr><td style="padding:8px 0;color:#64748b;font-size:13px;">Pseudo</td><td style="padding:8px 0;text-align:right;color:#1e293b;font-size:13px;font-weight:600;">@${nickname}</td></tr>` : ''}
+        ${academicGrade ? `<tr><td style="padding:8px 0;color:#64748b;font-size:13px;">Niveau</td><td style="padding:8px 0;text-align:right;color:#1e293b;font-size:13px;font-weight:600;">${academicGrade}</td></tr>` : ''}
+        <tr><td style="padding:8px 0;color:#64748b;font-size:13px;">Email</td><td style="padding:8px 0;text-align:right;color:#1e293b;font-size:13px;font-weight:600;">${email}</td></tr>
+        </table>
+      </td></tr>
+      </table>
+      <!-- Security warning -->
+      <table width="100%" cellpadding="0" cellspacing="0">
+      <tr><td style="background:#fef3c7;border-left:4px solid ${BRAND_COLORS.accent};border-radius:0 12px 12px 0;padding:16px 20px;">
+        <p style="margin:0;font-size:14px;color:#92400e;line-height:1.6;">
+          ⏱️ Ce code expire dans <strong>15 minutes</strong>. Ne le partage avec personne.
+        </p>
+      </td></tr>
+      </table>
+    `,
+  });
+};
 
 const handler = async (req: Request): Promise<Response> => {
   // CORS preflight
