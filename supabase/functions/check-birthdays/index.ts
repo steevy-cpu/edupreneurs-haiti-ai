@@ -1,13 +1,49 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { buildEmailTemplate, BRAND_COLORS } from "../_shared/emails.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const SITE_URL = Deno.env.get("SITE_URL") || "https://mon-edupreneur.com";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Template: birthday email — uses amber accent for celebration
+function buildBirthdayEmail(username: string): string {
+  return buildEmailTemplate({
+    accentColor: BRAND_COLORS.accent,
+    icon: '🎂',
+    title: 'Joyeux Anniversaire !',
+    subtitle: `${username}, c'est ton jour ! 🎉`,
+    body: `
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">
+        Salut <strong style="color:${BRAND_COLORS.accent};">${username}</strong> ! 🌟
+      </p>
+      <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        En ce jour spécial, Jude et toute l'équipe Edupreneurs te souhaitent
+        un joyeux anniversaire plein de succès ! 🇭🇹
+      </p>
+      <!-- Gift card -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:16px;margin-bottom:24px;">
+      <tr><td style="padding:24px;text-align:center;">
+        <div style="font-size:48px;margin-bottom:8px;">🎁</div>
+        <p style="color:#92400e;font-size:16px;font-weight:700;margin:0 0 4px;">
+          Cadeau d'anniversaire
+        </p>
+        <p style="color:#78350f;font-size:14px;margin:0;">
+          Connecte-toi aujourd'hui pour une surprise spéciale de Jude !
+        </p>
+      </td></tr>
+      </table>
+    `,
+    ctaText: 'Récupérer mon cadeau 🎁',
+    ctaUrl: SITE_URL + '/dashboard',
+    showJudeSignature: true,
+  });
+}
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
@@ -30,7 +66,6 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Looking for users with birthday on ${monthDay}`);
 
     // Get all users whose birthday is today
-    // We compare the month and day part of date_of_birth
     const { data: birthdayUsers, error: fetchError } = await supabase
       .from('profiles')
       .select('user_id, full_name, nickname, date_of_birth')
@@ -71,92 +106,11 @@ const handler = async (req: Request): Promise<Response> => {
 
         console.log(`Sending birthday email to ${email} (${username})`);
 
-        const emailHtml = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Joyeux Anniversaire!</title>
-</head>
-<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
-  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <!-- Logo -->
-    <div style="text-align: center; margin-bottom: 30px;">
-      <img src="https://mon-edupreneur.com/logo.png" alt="Edupreneurs Logo" style="height: 60px; width: auto;" />
-    </div>
-    
-    <!-- Main Card -->
-    <div style="background: linear-gradient(180deg, #ffffff 0%, #f8f9ff 100%); border-radius: 24px; padding: 50px 40px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
-      
-      <!-- Birthday Icon -->
-      <div style="text-align: center; margin-bottom: 30px;">
-        <div style="font-size: 80px; line-height: 1;">🎂</div>
-      </div>
-      
-      <!-- Main Title -->
-      <h1 style="text-align: center; font-size: 32px; font-weight: 700; color: #1a1a2e; margin: 0 0 10px 0;">
-        🎉 Joyeux Anniversaire! 🎉
-      </h1>
-      
-      <!-- Greeting -->
-      <p style="text-align: center; font-size: 18px; color: #4a5568; margin: 0 0 30px 0;">
-        Salut ${username}! 🌟
-      </p>
-      
-      <!-- Birthday Message Box -->
-      <div style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); border-radius: 16px; padding: 30px; margin-bottom: 30px; text-align: center;">
-        <p style="font-size: 18px; color: #5c3d2e; margin: 0 0 15px 0; font-weight: 600;">
-          Toute l'équipe d'Edupreneurs te souhaite une merveilleuse journée remplie de joie et de bonheur! 🎈
-        </p>
-        <p style="font-size: 16px; color: #7c5c4e; margin: 0;">
-          Que cette nouvelle année de ta vie soit riche en apprentissages, en réussites et en belles surprises! 🌈✨
-        </p>
-      </div>
-      
-      <!-- Fun Facts -->
-      <div style="background: #f0f4ff; border-radius: 12px; padding: 20px; margin-bottom: 30px;">
-        <p style="text-align: center; font-size: 16px; color: #4a5568; margin: 0;">
-          🎁 <strong>Cadeau spécial:</strong> Continue à apprendre avec nous et atteins tes objectifs! Tu es incroyable! 💪
-        </p>
-      </div>
-      
-      <!-- CTA Button -->
-      <div style="text-align: center; margin-bottom: 30px;">
-        <a href="https://mon-edupreneur.com/dashboard" 
-           style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 40px; border-radius: 30px; text-decoration: none; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
-          🎓 Célébrer en apprenant
-        </a>
-      </div>
-      
-      <!-- Decorations -->
-      <div style="text-align: center; margin-bottom: 20px;">
-        <span style="font-size: 30px;">🎈🎊🎁🎀🎈</span>
-      </div>
-      
-      <!-- Signature -->
-      <p style="text-align: center; color: #718096; font-size: 14px; margin: 0;">
-        Avec toute notre affection,<br>
-        <strong style="color: #667eea;">L'équipe Edupreneurs</strong> 💜
-      </p>
-    </div>
-    
-    <!-- Footer -->
-    <div style="text-align: center; margin-top: 30px;">
-      <p style="color: rgba(255, 255, 255, 0.8); font-size: 12px; margin: 0;">
-        © ${new Date().getFullYear()} Edupreneurs. Tous droits réservés.
-      </p>
-    </div>
-  </div>
-</body>
-</html>
-        `;
-
         await resend.emails.send({
           from: "Edupreneurs <noreply@mon-edupreneur.com>",
           to: [email],
           subject: `🎂 Joyeux Anniversaire ${username}! 🎉`,
-          html: emailHtml,
+          html: buildBirthdayEmail(username),
         });
 
         emailsSent.push(email);

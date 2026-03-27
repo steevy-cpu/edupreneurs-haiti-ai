@@ -14,7 +14,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getTimeAwareGreeting } from "../_shared/emailGreeting.ts";
-import { sendEmail } from "../_shared/emails.ts";
+import { sendEmail, buildEmailTemplate, BRAND_COLORS } from "../_shared/emails.ts";
 
 // ─── Internal auth guard (mirrors check-subscription-expiry) ───────────────────
 function validateInternalSecret(req: Request): boolean {
@@ -27,130 +27,118 @@ function validateInternalSecret(req: Request): boolean {
 const SITE_URL = Deno.env.get("SITE_URL") || "https://mon-edupreneur.com";
 const MATIERES_URL = `${SITE_URL}/matieres`;
 const BATTLE_URL = `${SITE_URL}/quiz-battle`;
-// Brand gradient used across onboarding emails (purple → amber)
-const ONBOARDING_GRADIENT = "linear-gradient(135deg, #7c3aed, #d97706)";
-
-// ─── Shared email layout with onboarding header ───────────────────────────────
-function onboardingWrapper(
-  headerIcon: string,
-  headerTitle: string,
-  headerSubtitle: string,
-  bodyContent: string,
-): string {
-  return `<!DOCTYPE html>
-<html lang="fr">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background:#f4f7f6;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7f6;padding:32px 16px;">
-<tr><td align="center">
-<table width="100%" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-<tr><td style="background:${ONBOARDING_GRADIENT};padding:40px 32px;text-align:center;">
-  <div style="font-size:48px;margin-bottom:8px;">${headerIcon}</div>
-  <h1 style="color:#ffffff;font-size:24px;margin:0 0 4px;">${headerTitle}</h1>
-  <p style="color:#fef3c7;font-size:14px;margin:0;">${headerSubtitle}</p>
-</td></tr>
-<tr><td style="padding:32px;">
-  ${bodyContent}
-</td></tr>
-<tr><td style="background:#f9fafb;padding:20px 32px;text-align:center;border-top:1px solid #e5e7eb;">
-  <p style="color:#9ca3af;font-size:12px;margin:0 0 4px;">© ${new Date().getFullYear()} Edupreneurs Haiti · Transfòme edikasyon an nan Ayiti</p>
-  <p style="color:#d1d5db;font-size:11px;margin:0;">Tu reçois cet email car tu es inscrit sur Mon Edupreneurs</p>
-</td></tr>
-</table>
-</td></tr>
-</table>
-</body>
-</html>`;
-}
-
-/** CTA button reused across all onboarding templates */
-function ctaButton(label: string, url: string): string {
-  return `<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding-top:24px;">
-  <a href="${url}" style="display:inline-block;background:#7c3aed;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:15px;font-weight:600;">
-    ${label}
-  </a>
-</td></tr></table>`;
-}
 
 // ─── Day 1: Welcome nudge ─────────────────────────────────────────────────────
 function buildDay1Email(greeting: string, name: string): string {
-  return onboardingWrapper("📚", "Ta première leçon t'attend!", "Ton compte est prêt",
-    `<p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 16px;">${greeting}</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">
-  Ton compte Edupreneurs est maintenant configuré et <strong>Jude</strong>, ton assistant IA, est prêt à t'accompagner! 🤖
-</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">
-  Ta première leçon ne prend que <strong>15 minutes</strong> et tu peux choisir parmi toutes les matières disponibles pour ton niveau.
-</p>
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:12px;margin-bottom:20px;">
-<tr><td style="padding:16px;text-align:center;">
-  <p style="color:#5b21b6;font-size:14px;font-weight:600;margin:0;">
-    🎯 Objectif: Complète ta première leçon aujourd'hui!
-  </p>
-</td></tr>
-</table>
-${ctaButton("Commencer ma première leçon 🚀", MATIERES_URL)}`
-  );
+  return buildEmailTemplate({
+    accentColor: BRAND_COLORS.primary,
+    icon: '📚',
+    title: 'Ta première leçon t\'attend!',
+    subtitle: 'Ton compte est prêt',
+    body: `
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 16px;">
+        Salut <strong style="color:${BRAND_COLORS.primary};">${name}</strong> ! 👋
+      </p>
+      <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">
+        Tu t'es inscrit sur Edupreneurs — c'est un grand pas !
+        Il est temps de commencer ta première leçon.
+        Ça ne prend que <strong>15 minutes</strong>.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdfd;border:1px solid #b2dfdb;border-radius:12px;margin-bottom:20px;">
+      <tr><td style="padding:16px;text-align:center;">
+        <p style="color:${BRAND_COLORS.primaryDark};font-size:14px;font-weight:600;margin:0 0 4px;">
+          🎯 Ton objectif du jour
+        </p>
+        <p style="color:#374151;font-size:13px;margin:0;">
+          Complète ta première leçon et gagne tes premiers Gold ! 🥇
+        </p>
+      </td></tr>
+      </table>
+    `,
+    ctaText: 'Commencer ma première leçon 🚀',
+    ctaUrl: MATIERES_URL,
+    showJudeSignature: true,
+  });
 }
 
 // ─── Day 3: Re-engagement (no lessons completed yet) ──────────────────────────
 function buildDay3Email(greeting: string, name: string): string {
-  return onboardingWrapper("👋", "Jude t'attend!", "Tu n'as pas encore commencé",
-    `<p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 16px;">${greeting}</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">
-  C'est Jude, ton assistant IA éducatif! 🤖 J'ai remarqué que tu n'as pas encore commencé ta première leçon — et je voulais te dire que c'est <strong>très simple</strong>.
-</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 8px;">
-  Voici comment faire en 3 étapes:
-</p>
-<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
-<tr><td style="padding:8px 0;">
-  <p style="color:#374151;font-size:14px;margin:0;">
-    <strong style="color:#7c3aed;">1.</strong> Clique sur "Voir mes matières" ci-dessous
-  </p>
-</td></tr>
-<tr><td style="padding:8px 0;">
-  <p style="color:#374151;font-size:14px;margin:0;">
-    <strong style="color:#7c3aed;">2.</strong> Choisis une matière qui t'intéresse
-  </p>
-</td></tr>
-<tr><td style="padding:8px 0;">
-  <p style="color:#374151;font-size:14px;margin:0;">
-    <strong style="color:#7c3aed;">3.</strong> Lis la leçon et essaie le quiz — je suis là pour t'aider! 💡
-  </p>
-</td></tr>
-</table>
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;margin-bottom:20px;">
-<tr><td style="padding:16px;text-align:center;">
-  <p style="color:#92400e;font-size:14px;font-weight:600;margin:0;">
-    ⏱️ Une leçon = 15 minutes. Tu peux commencer maintenant!
-  </p>
-</td></tr>
-</table>
-${ctaButton("Voir mes matières 📖", MATIERES_URL)}`
-  );
+  return buildEmailTemplate({
+    accentColor: BRAND_COLORS.accent,
+    icon: '👋',
+    title: 'Jude t\'attend!',
+    subtitle: 'Tu n\'as pas encore commencé',
+    body: `
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 16px;">
+        Salut <strong style="color:${BRAND_COLORS.accent};">${name}</strong> ! 👋
+      </p>
+      <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">
+        Ça fait 3 jours — et Jude t'attend toujours.
+        Pas de pression, mais sache que c'est maintenant le meilleur moment pour commencer !
+      </p>
+      <!-- 3 steps -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+      <tr><td style="padding:8px 0;">
+        <p style="color:#374151;font-size:14px;margin:0;">
+          <strong style="color:${BRAND_COLORS.accent};">1️⃣</strong> Va sur mon-edupreneur.com
+        </p>
+      </td></tr>
+      <tr><td style="padding:8px 0;">
+        <p style="color:#374151;font-size:14px;margin:0;">
+          <strong style="color:${BRAND_COLORS.accent};">2️⃣</strong> Choisis une matière que tu aimes
+        </p>
+      </td></tr>
+      <tr><td style="padding:8px 0;">
+        <p style="color:#374151;font-size:14px;margin:0;">
+          <strong style="color:${BRAND_COLORS.accent};">3️⃣</strong> Complète ta première leçon en 15 min
+        </p>
+      </td></tr>
+      </table>
+      <!-- Reminder -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef3c7;border:1px solid #fde68a;border-radius:12px;margin-bottom:20px;">
+      <tr><td style="padding:16px;text-align:center;">
+        <p style="color:#92400e;font-size:14px;font-weight:600;margin:0;">
+          🎁 Rappel : ton accès est gratuit jusqu'au 8 mai 2026 !
+        </p>
+      </td></tr>
+      </table>
+    `,
+    ctaText: 'Voir mes matières 📖',
+    ctaUrl: MATIERES_URL,
+    showJudeSignature: true,
+  });
 }
 
 // ─── Day 7: Progression (at least 1 lesson completed) ─────────────────────────
 function buildDay7Email(greeting: string, name: string): string {
-  return onboardingWrapper("🏆", "Bravo — essaie le Quiz Battle!", "Tu as complété une leçon",
-    `<p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 16px;">${greeting}</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">
-  Félicitations <strong>${name}</strong>! 🎉 Tu as déjà complété ta première leçon — c'est un excellent début!
-</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">
-  Maintenant, passe au niveau suivant avec le <strong>Quiz Battle</strong>: défie tes camarades dans un quiz en temps réel et gagne des points XP! ⚡
-</p>
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:12px;margin-bottom:20px;">
-<tr><td style="padding:16px;">
-  <p style="color:#5b21b6;font-size:14px;font-weight:600;margin:0 0 8px;">🎮 Comment ça marche:</p>
-  <p style="color:#374151;font-size:13px;margin:0 0 4px;">• Choisis une matière et un niveau</p>
-  <p style="color:#374151;font-size:13px;margin:0 0 4px;">• Réponds aux questions plus vite que ton adversaire</p>
-  <p style="color:#374151;font-size:13px;margin:0;">• Gagne des XP et monte dans le classement!</p>
-</td></tr>
-</table>
-${ctaButton("Défier un camarade 🏆", BATTLE_URL)}`
-  );
+  return buildEmailTemplate({
+    accentColor: BRAND_COLORS.primary,
+    icon: '🏆',
+    title: 'Bravo — essaie le Quiz Battle!',
+    subtitle: 'Tu as complété une leçon',
+    body: `
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 16px;">
+        Félicitations <strong style="color:${BRAND_COLORS.primary};">${name}</strong> ! 🎉
+      </p>
+      <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">
+        Tu as déjà complété une leçon — c'est le plus difficile !
+        Maintenant, essaie le <strong>Quiz Battle</strong> pour défier
+        tes camarades en temps réel.
+      </p>
+      <!-- Quiz Battle card -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdfd;border:1px solid #b2dfdb;border-radius:12px;margin-bottom:20px;">
+      <tr><td style="padding:16px;">
+        <p style="color:${BRAND_COLORS.primaryDark};font-size:14px;font-weight:600;margin:0 0 8px;">⚔️ Quiz Battle</p>
+        <p style="color:#374151;font-size:13px;margin:0 0 4px;">• Défie tes amis en temps réel</p>
+        <p style="color:#374151;font-size:13px;margin:0 0 4px;">• Gagne des badges et de l'XP</p>
+        <p style="color:#374151;font-size:13px;margin:0;">• Monte dans le classement national</p>
+      </td></tr>
+      </table>
+    `,
+    ctaText: 'Défier un camarade 🏆',
+    ctaUrl: BATTLE_URL,
+    showJudeSignature: true,
+  });
 }
 
 // ─── Main handler ──────────────────────────────────────────────────────────────

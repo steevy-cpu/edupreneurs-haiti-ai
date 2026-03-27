@@ -12,127 +12,47 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
 import { validateInput, welcomeEmailSchema, validationErrorResponse } from "../_shared/validation.ts";
 import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
-import { getTimeAwareGreeting } from "../_shared/emailGreeting.ts";
+import { buildEmailTemplate, BRAND_COLORS } from "../_shared/emails.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const SITE_URL = Deno.env.get("SITE_URL") || "https://mon-edupreneur.com";
 
-// Template: welcome email — sent AFTER email verification is complete (no verification URL needed)
+// Template: welcome email — sent AFTER email verification is complete
 const getEmailTemplate = (fullName: string, nickname: string | null) => {
-  // Use nickname if available, otherwise fall back to full name
   const displayName = nickname || fullName;
-  return `
-<!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bienvenue sur Edupreneurs</title>
-  </head>
-  <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc;">
-      <tr>
-        <td style="padding: 40px 20px;">
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; max-width: 600px;">
-            
-            <tr>
-              <td style="text-align: center; padding-bottom: 30px;">
-                <img src="https://mon-edupreneur.com/logo.png" alt="Edupreneurs" width="180" height="auto" style="display: block; margin: 0 auto;" />
-              </td>
-            </tr>
-            
-            <tr>
-              <td>
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: #ffffff; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); overflow: hidden;">
-                  
-                  <tr>
-                    <td style="background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%); padding: 50px 40px; text-align: center;">
-                      <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
-                      <h1 style="margin: 0 0 12px 0; font-size: 32px; font-weight: 800; color: #ffffff;">
-                        Bienvenue parmi nous !
-                      </h1>
-                      <p style="margin: 0; font-size: 18px; color: rgba(255, 255, 255, 0.9);">
-                        Votre aventure éducative commence maintenant
-                      </p>
-                    </td>
-                  </tr>
-                  
-                  <tr>
-                    <td style="padding: 40px;">
-                      <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b;">
-                        ${getTimeAwareGreeting(displayName)}
-                      </p>
-                      <p style="margin: 0 0 32px 0; font-size: 16px; color: #475569; line-height: 1.8;">
-                        Félicitations ! Vous faites maintenant partie de la communauté Edupreneurs.
-                      </p>
-                      
-                      <!-- CTA: direct link to platform (verification already complete at this point) -->
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 32px;">
-                        <tr>
-                          <td style="text-align: center;">
-                            <a href="https://mon-edupreneur.com" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 12px; font-weight: 700;">
-                              🚀 Accéder à la plateforme
-                            </a>
-                          </td>
-                        </tr>
-                      </table>
-                      
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 32px;">
-                        <tr>
-                          <td style="padding-bottom: 20px;">
-                            <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #1e293b;">
-                              🚀 Ce qui vous attend
-                            </h3>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                              <tr>
-                                <td width="48%" style="vertical-align: top; padding-right: 8px; padding-bottom: 16px;">
-                                  <table style="background: #f0fdf4; border-radius: 16px; padding: 20px;" width="100%">
-                                    <tr><td>
-                                      <div style="font-size: 32px; margin-bottom: 12px;">📚</div>
-                                      <h4 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 700; color: #166534;">Cours interactifs</h4>
-                                      <p style="margin: 0; font-size: 13px; color: #15803d;">Apprenez de manière ludique</p>
-                                    </td></tr>
-                                  </table>
-                                </td>
-                                <td width="48%" style="vertical-align: top; padding-left: 8px; padding-bottom: 16px;">
-                                  <table style="background: #eff6ff; border-radius: 16px; padding: 20px;" width="100%">
-                                    <tr><td>
-                                      <div style="font-size: 32px; margin-bottom: 12px;">🤖</div>
-                                      <h4 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 700; color: #1e40af;">Assistant IA Jude</h4>
-                                      <p style="margin: 0; font-size: 13px; color: #1d4ed8;">Tuteur disponible 24/7</p>
-                                    </td></tr>
-                                  </table>
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                  
-                </table>
-              </td>
-            </tr>
-            
-            <tr>
-              <td style="padding: 40px 20px; text-align: center;">
-                <p style="margin: 0; font-size: 13px; color: #94a3b8;">
-                  © ${new Date().getFullYear()} Edupreneurs. Tous droits réservés.
-                </p>
-              </td>
-            </tr>
-            
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>
-`;
+  return buildEmailTemplate({
+    accentColor: BRAND_COLORS.primary,
+    icon: '🎉',
+    title: 'Bienvenue parmi nous !',
+    subtitle: 'Ton aventure éducative commence maintenant',
+    body: `
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">
+        Salut <strong style="color:${BRAND_COLORS.primary};">${displayName}</strong> ! 👋
+      </p>
+      <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        Ton compte Edupreneurs est maintenant actif. Tu as accès à plus de
+        <strong>2 800 leçons</strong> alignées sur le programme du MENFP,
+        des examens officiels du BAC avec corrections IA, et ton assistant
+        personnel <strong>Jude</strong> disponible 24h/24.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdfd;border:1px solid #b2dfdb;border-radius:12px;margin-bottom:20px;">
+      <tr><td style="padding:16px;text-align:center;">
+        <p style="color:${BRAND_COLORS.primaryDark};font-size:15px;font-weight:700;margin:0 0 4px;">
+          🎁 Accès gratuit jusqu'au 8 mai 2026
+        </p>
+        <p style="color:#374151;font-size:13px;margin:0;">
+          Profite de toutes les fonctionnalités sans limitation.
+        </p>
+      </td></tr>
+      </table>
+      <p style="color:#374151;font-size:15px;line-height:1.6;margin:0;">
+        Commence ta première leçon dès aujourd'hui ! 🚀
+      </p>
+    `,
+    ctaText: 'Commencer à apprendre →',
+    ctaUrl: SITE_URL + '/dashboard',
+    showJudeSignature: true,
+  });
 };
 
 const handler = async (req: Request): Promise<Response> => {

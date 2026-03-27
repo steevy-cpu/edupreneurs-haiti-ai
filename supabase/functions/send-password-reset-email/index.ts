@@ -12,106 +12,43 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
 import { validateInput, passwordResetEmailSchema, validationErrorResponse } from "../_shared/validation.ts";
 import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
-import { getTimeAwareGreeting } from "../_shared/emailGreeting.ts";
+import { buildEmailTemplate, BRAND_COLORS } from "../_shared/emails.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-const getEmailTemplate = (resetUrl: string, fullName?: string) => `
-<!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Réinitialisation de mot de passe</title>
-  </head>
-  <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc;">
-      <tr>
-        <td style="padding: 40px 20px;">
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; max-width: 600px;">
-            
-            <tr>
-              <td style="text-align: center; padding-bottom: 30px;">
-                <img src="https://mon-edupreneur.com/logo.png" alt="Edupreneurs" width="180" height="auto" style="display: block; margin: 0 auto;" />
-              </td>
-            </tr>
-            
-            <tr>
-              <td>
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: #ffffff; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); overflow: hidden;">
-                  
-                  <tr>
-                    <td style="background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #dc2626 100%); padding: 50px 40px; text-align: center;">
-                      <div style="font-size: 64px; margin-bottom: 16px;">🔐</div>
-                      <h1 style="margin: 0 0 12px 0; font-size: 32px; font-weight: 800; color: #ffffff;">
-                        Réinitialisation
-                      </h1>
-                      <p style="margin: 0; font-size: 18px; color: rgba(255, 255, 255, 0.9);">
-                        de votre mot de passe
-                      </p>
-                    </td>
-                  </tr>
-                  
-                  <tr>
-                    <td style="padding: 40px;">
-                      <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b;">
-                        ${fullName ? getTimeAwareGreeting(fullName) : '👋'}
-                      </p>
-                      <p style="margin: 0 0 32px 0; font-size: 16px; color: #475569; line-height: 1.8;">
-                        Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte Edupreneurs.
-                      </p>
-                      
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 24px;">
-                        <tr>
-                          <td style="text-align: center;">
-                            <a href="${resetUrl}" style="display: inline-block; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 12px; font-weight: 700;">
-                              🔑 Réinitialiser mon mot de passe
-                            </a>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td style="text-align: center; padding-top: 12px;">
-                            <p style="margin: 0; font-size: 13px; color: #94a3b8;">
-                              Ce lien est valide pendant 1 heure
-                            </p>
-                          </td>
-                        </tr>
-                      </table>
-                      
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 32px;">
-                        <tr>
-                          <td style="background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 0 12px 12px 0; padding: 20px;">
-                            <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 700; color: #991b1b;">
-                              ⚠️ Important !
-                            </p>
-                            <p style="margin: 0; font-size: 14px; color: #b91c1c; line-height: 1.6;">
-                              Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.
-                            </p>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                  
-                </table>
-              </td>
-            </tr>
-            
-            <tr>
-              <td style="padding: 40px 20px; text-align: center;">
-                <p style="margin: 0; font-size: 13px; color: #94a3b8;">
-                  © ${new Date().getFullYear()} Edupreneurs. Tous droits réservés.
-                </p>
-              </td>
-            </tr>
-            
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>
-`;
+// Template: password reset — uses red accent for urgency
+const getEmailTemplate = (resetUrl: string, fullName?: string) => {
+  const userName = fullName || 'Utilisateur';
+  return buildEmailTemplate({
+    accentColor: BRAND_COLORS.red,
+    icon: '🔐',
+    title: 'Réinitialisation',
+    subtitle: 'de votre mot de passe',
+    body: `
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">
+        Salut <strong style="color:${BRAND_COLORS.red};">${userName}</strong> ! 👋
+      </p>
+      <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        Tu as demandé la réinitialisation de ton mot de passe Edupreneurs.
+        Clique sur le bouton ci-dessous pour créer un nouveau mot de passe sécurisé.
+      </p>
+      <!-- Warning box -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+      <tr><td style="background:#fef2f2;border-left:4px solid ${BRAND_COLORS.red};border-radius:0 12px 12px 0;padding:16px 20px;">
+        <p style="margin:0;font-size:14px;color:#991b1b;line-height:1.6;">
+          ⚠️ Si tu n'as pas demandé cette réinitialisation, ignore cet email.
+          Ton compte reste sécurisé.
+        </p>
+      </td></tr>
+      </table>
+      <p style="color:#9ca3af;font-size:13px;margin:0;">
+        Ce lien expire dans 1 heure.
+      </p>
+    `,
+    ctaText: 'Réinitialiser mon mot de passe →',
+    ctaUrl: resetUrl,
+  });
+};
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {

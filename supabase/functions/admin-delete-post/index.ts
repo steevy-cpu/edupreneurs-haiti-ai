@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { buildEmailTemplate, BRAND_COLORS } from "../_shared/emails.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -9,69 +10,41 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const getPostDeletionEmailTemplate = (fullName: string, reason?: string) => `
-<!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Publication supprimée - Edupreneurs</title>
-  </head>
-  <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc;">
-      <tr>
-        <td style="padding: 40px 20px;">
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; max-width: 600px;">
-            <tr>
-              <td style="text-align: center; padding-bottom: 30px;">
-                <img src="https://mon-edupreneur.com/logo.png" alt="Edupreneurs" width="180" height="auto" />
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: #ffffff; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-                  <tr>
-                    <td style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 50px 40px; text-align: center; border-radius: 24px 24px 0 0;">
-                      <div style="font-size: 64px; margin-bottom: 16px;">📢</div>
-                      <h1 style="margin: 0 0 12px 0; font-size: 28px; font-weight: 800; color: #ffffff;">
-                        Publication supprimée
-                      </h1>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 40px;">
-                      <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b;">
-                        Bonjour <strong style="color: #f97316;">${fullName}</strong>,
-                      </p>
-                      <p style="margin: 0 0 24px 0; font-size: 16px; color: #475569; line-height: 1.8;">
-                        Nous vous informons que l'une de vos publications a été supprimée par notre équipe de modération car elle ne respectait pas nos règles communautaires.
-                      </p>
-                      ${reason ? `<p style="margin: 0 0 24px 0; font-size: 14px; color: #64748b; padding: 12px; background: #f1f5f9; border-radius: 8px;"><strong>Motif :</strong> ${reason}</p>` : ''}
-                      <p style="margin: 0 0 24px 0; font-size: 16px; color: #475569; line-height: 1.8;">
-                        Nous vous encourageons à consulter nos règles de la communauté pour éviter que cela ne se reproduise. Si vous pensez qu'il s'agit d'une erreur, vous pouvez nous contacter.
-                      </p>
-                      <p style="margin: 0; font-size: 16px; color: #475569;">
-                        L'équipe Edupreneurs
-                      </p>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 40px 20px; text-align: center;">
-                <p style="margin: 0; font-size: 13px; color: #94a3b8;">
-                  © ${new Date().getFullYear()} Edupreneurs. Tous droits réservés.
-                </p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>
-`;
+// Template: post deletion notification — uses red accent for moderation
+const getPostDeletionEmailTemplate = (fullName: string, reason?: string) => {
+  return buildEmailTemplate({
+    accentColor: BRAND_COLORS.red,
+    icon: '📢',
+    title: 'Publication supprimée',
+    subtitle: 'Action de modération',
+    body: `
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 20px;">
+        Salut <strong style="color:${BRAND_COLORS.red};">${fullName}</strong>,
+      </p>
+      <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 20px;">
+        Une de tes publications a été retirée par notre équipe de modération
+        car elle ne respectait pas les conditions d'utilisation d'Edupreneurs.
+      </p>
+      ${reason ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+      <tr><td style="background:#f1f5f9;border-radius:8px;padding:12px 16px;">
+        <p style="margin:0;font-size:14px;color:#64748b;"><strong>Motif :</strong> ${reason}</p>
+      </td></tr>
+      </table>` : ''}
+      <!-- Warning -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+      <tr><td style="background:#fef2f2;border-left:4px solid ${BRAND_COLORS.red};border-radius:0 12px 12px 0;padding:16px 20px;">
+        <p style="margin:0;font-size:14px;color:#991b1b;line-height:1.6;">
+          ⚠️ En cas de violations répétées, ton compte pourra être suspendu.
+        </p>
+      </td></tr>
+      </table>
+      <p style="color:#374151;font-size:14px;line-height:1.6;margin:0;">
+        Si tu penses que c'est une erreur, contacte-nous à
+        <a href="mailto:contact@edupreneurs.com" style="color:${BRAND_COLORS.primary};text-decoration:none;">contact@edupreneurs.com</a>
+      </p>
+    `,
+  });
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -167,7 +140,6 @@ serve(async (req) => {
     const mediaToDelete: string[] = [];
     
     if (post.image_url) {
-      // Extract the path from the URL
       const imageMatch = post.image_url.match(/post-images\/(.+)/);
       if (imageMatch && imageMatch[1]) {
         mediaToDelete.push(imageMatch[1]);
@@ -189,7 +161,6 @@ serve(async (req) => {
 
       if (storageError) {
         console.error('Error deleting media:', storageError);
-        // Continue with post deletion even if media deletion fails
       } else {
         console.log(`Deleted ${mediaToDelete.length} media files`);
       }
@@ -218,7 +189,6 @@ serve(async (req) => {
 
     if (updateReportsError) {
       console.error('Error updating reports:', updateReportsError);
-      // Don't throw, post is already deleted
     }
 
     // Send notification email to post owner
@@ -233,7 +203,6 @@ serve(async (req) => {
         console.log('Post deletion email sent to:', ownerEmail);
       } catch (emailError) {
         console.error('Error sending post deletion email:', emailError);
-        // Don't throw, post is already deleted
       }
     }
 
@@ -249,7 +218,6 @@ serve(async (req) => {
           reason: reason || null,
         });
     } catch (logError) {
-      // Table might not exist, that's okay
       console.log('Admin action logging skipped (table may not exist)');
     }
 
