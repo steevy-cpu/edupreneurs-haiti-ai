@@ -1,14 +1,14 @@
 /**
  * @file GoogleSignInButton — Branded Google sign-in button.
  *
- * Uses lovable.auth.signInWithOAuth("google") for managed OAuth.
+ * Uses supabase.auth.signInWithOAuth for Google OAuth with our own credentials.
  * Follows Google's branding guidelines with the official G logo colors.
  */
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { lovable } from '@/integrations/lovable/index';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface GoogleSignInButtonProps {
@@ -32,19 +32,21 @@ export default function GoogleSignInButton({ label = 'Continuer avec Google' }: 
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  // Uses Supabase OAuth directly with our own Google credentials
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      const result = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: window.location.origin,
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/dashboard',
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
       });
-
-      // If redirected, the page will navigate away — keep loading state
-      if (result?.redirected) return;
-
-      if (result?.error) {
-        throw result.error;
-      }
+      if (error) throw error;
     } catch (err: any) {
       console.error('[GoogleSignIn] Error:', err);
       toast({
