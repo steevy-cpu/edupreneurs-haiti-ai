@@ -4844,6 +4844,14 @@ export type Database = {
         Args: { p_category: string; p_user_id: string }
         Returns: boolean
       }
+      get_public_homepage_stats: {
+        Args: never
+        Returns: {
+          exams_count: number
+          lessons_count: number
+          users_count: number
+        }[]
+      }
       get_public_profile: {
         Args: { profile_user_id: string }
         Returns: {
