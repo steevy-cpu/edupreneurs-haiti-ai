@@ -27,7 +27,7 @@ import { createElement } from "react";
 // ============================================
 
 // Default fallback stats — keep users value close to real DB count
-export const DEFAULT_STATS = { lessons: 0, exams: 0, users: 0 };
+export const DEFAULT_STATS = { lessons: 0, exams: 0, users: 47 };
 
 // Features Section
 export const features = [
