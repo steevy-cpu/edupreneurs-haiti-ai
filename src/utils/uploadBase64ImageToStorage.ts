@@ -46,7 +46,6 @@ export async function uploadBase64ImageToStorage(
       .from('lesson-images')
       .getPublicUrl(fileName);
 
-    console.log('[Storage] Image uploaded successfully:', publicUrlData.publicUrl);
     return publicUrlData.publicUrl;
   } catch (e) {
     console.error('[Storage] Upload exception:', e);

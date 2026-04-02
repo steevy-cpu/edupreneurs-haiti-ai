@@ -57,7 +57,6 @@ export function useCommunityRealtime({
   const subscribeToConversationMessages = useCallback((conversationId: string) => {
     // Guard: Don't re-subscribe if already subscribed to this conversation
     if (messageChannelRef.current?.topic === `realtime:messages-${conversationId}`) {
-      console.log('[Messages] Already subscribed to:', conversationId);
       return;
     }
 
@@ -224,7 +223,6 @@ export function useCommunityRealtime({
         }
       )
       .subscribe((status) => {
-        console.log('[Messages] Subscription status for conversation:', conversationId, status);
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           console.error('[Messages] Channel error, attempting reconnect...');
           setTimeout(() => {
@@ -392,7 +390,6 @@ export function useCommunityRealtime({
   const subscribeToReactions = useCallback((conversationId: string) => {
     // Guard: Don't re-subscribe if already subscribed to this conversation
     if (reactionChannelRef.current?.topic === `realtime:reactions-${conversationId}`) {
-      console.log('[Reactions] Already subscribed to:', conversationId);
       return;
     }
 

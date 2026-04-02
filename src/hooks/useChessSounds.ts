@@ -105,7 +105,6 @@ export const useChessSounds = () => {
           break;
       }
     } catch (error) {
-      console.log('Sound not available:', error);
     }
   }, []);
 

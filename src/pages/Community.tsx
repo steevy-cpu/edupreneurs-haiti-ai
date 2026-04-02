@@ -989,7 +989,6 @@ const Community = () => {
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                console.log('🟢 [CONFIRM] Confirm button clicked for:', deleteConversationId);
                 if (deleteConversationId) convHook.handleDeleteConversation(deleteConversationId);
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

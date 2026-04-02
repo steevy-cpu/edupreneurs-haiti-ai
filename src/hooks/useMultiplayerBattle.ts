@@ -87,7 +87,6 @@ export const useMultiplayerBattle = ({
     event: '*',
     filter: battleId ? `battle_id=eq.${battleId}` : undefined,
     callback: async (payload) => {
-      console.log('[Multiplayer] Player update:', payload);
       
       if (payload.eventType === 'INSERT' && payload.new.user_id !== userId) {
         // Opponent joined
@@ -118,7 +117,6 @@ export const useMultiplayerBattle = ({
     event: 'UPDATE',
     filter: matchmakingIdRef.current ? `id=eq.${matchmakingIdRef.current}` : undefined,
     callback: async (payload) => {
-      console.log('[Multiplayer] Matchmaking update:', payload);
       const record = payload.new as any;
       
       if (record.matched_with && record.battle_id) {
@@ -213,7 +211,6 @@ export const useMultiplayerBattle = ({
     
     // Poll every 3 seconds as fallback for missed realtime events
     const pollInterval = setInterval(() => {
-      console.log('[Multiplayer] Polling player states (fallback)...');
       syncPlayerStates();
     }, 3000);
     
@@ -265,7 +262,6 @@ export const useMultiplayerBattle = ({
 
       setBattleId(battle.id);
       setInviteCode(code);
-      console.log('[Multiplayer] Created private battle:', battle.id, 'Code:', code);
     } catch (error) {
       console.error('Error creating private battle:', error);
       toast.error('Erreur lors de la création de la partie');
@@ -293,7 +289,6 @@ export const useMultiplayerBattle = ({
       // Prevent user from joining their own battle
       if (battle.created_by === userId) {
         toast.error('Tu ne peux pas rejoindre ta propre partie. Utilise un autre compte.');
-        console.log('[Multiplayer] Blocked self-join attempt - user is the host');
         return { success: false };
       }
 
@@ -327,7 +322,6 @@ export const useMultiplayerBattle = ({
             toast.error('Tu ne peux pas rejoindre ta propre partie');
             return { success: false };
           }
-          console.log('[Multiplayer] User already joined this battle, continuing...');
         } else {
           console.error('[Multiplayer] Failed to join battle:', insertError);
           toast.error('Erreur de connexion. Réessaye.');
@@ -370,7 +364,6 @@ export const useMultiplayerBattle = ({
         return { success: false };
       }
 
-      console.log('[Multiplayer] Successfully joined/verified in battle, player id:', verifyPlayer.id);
 
       // Fetch host info
       await fetchOpponentInfo(battle.created_by);
@@ -380,7 +373,6 @@ export const useMultiplayerBattle = ({
       setIsHost(false);
       updatePhase('matched');
       
-      console.log('[Multiplayer] Joined battle:', battle.id);
       
       // Force sync after a short delay to catch any missed realtime events
       setTimeout(() => {
@@ -442,7 +434,6 @@ export const useMultiplayerBattle = ({
 
       if (existingMatch) {
         // Found a match! Create battle and link both players
-        console.log('[Multiplayer] Found existing match:', existingMatch.user_id);
         
         const { data: battle, error: battleError } = await supabase
           .from('quiz_battles')
@@ -499,7 +490,6 @@ export const useMultiplayerBattle = ({
         if (error) throw error;
 
         matchmakingIdRef.current = queueEntry.id;
-        console.log('[Multiplayer] Added to matchmaking queue:', queueEntry.id);
         
         // Set timeout for expiry
         cleanupRef.current = () => {
@@ -512,7 +502,7 @@ export const useMultiplayerBattle = ({
               .from('quiz_battle_matchmaking')
               .delete()
               .eq('id', matchmakingIdRef.current)
-              .then(() => console.log('[Multiplayer] Cleaned up matchmaking entry'));
+              .then(() => {});
           }
         };
         
@@ -564,7 +554,6 @@ export const useMultiplayerBattle = ({
       }
       
       setMyReady(true);
-      console.log('[Multiplayer] Set ready and verified');
     } catch (error) {
       console.error('Error setting ready:', error);
       toast.error('Erreur de connexion. Réessaye.');

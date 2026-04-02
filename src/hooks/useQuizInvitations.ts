@@ -40,7 +40,6 @@ export const useQuizInvitations = ({ userId, enabled = true }: UseQuizInvitation
     if (!userId) return;
     try {
       await supabase.rpc('cleanup_stale_games');
-      console.log('[QuizInvitations] Server-side stale games cleanup completed');
     } catch (err) {
       console.error('[QuizInvitations] Cleanup RPC failed:', err);
     }

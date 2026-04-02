@@ -157,7 +157,6 @@ export default function FollowRequests() {
             type: 'follow_accepted'
           }
         });
-        console.log('✅ Follow acceptance push notification sent');
       } catch (pushError) {
         console.error('❌ Error sending push notification:', pushError);
       }

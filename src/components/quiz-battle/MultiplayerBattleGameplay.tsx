@@ -114,11 +114,9 @@ export const MultiplayerBattleGameplay = ({
           .single();
         
         if (verifyBattle?.status !== 'cancelled') {
-          console.log('[MultiplayerGameplay] False positive cancelled event, ignoring');
           return;
         }
         
-        console.log('[MultiplayerGameplay] Battle cancelled verified - opponent abandoned');
         gameEnded.current = true;
         setOpponentAbandoned(true);
         stopTicking();
@@ -152,7 +150,6 @@ export const MultiplayerBattleGameplay = ({
       
       // Only process if we haven't already and round advanced
       if (newIndex > processedRound.current && newIndex > currentIndex) {
-        console.log('[MultiplayerGameplay] Realtime: advancing to question', newIndex);
         processedRound.current = newIndex;
         
         // Parse round_answers to update scores
@@ -263,158 +260,6 @@ export const MultiplayerBattleGameplay = ({
       }
     }
     
-    console.log('[MultiplayerGameplay] Final scores from server:', {
-      myRounds: serverMyRoundsWon,
-      opponentRounds: serverOpponentRoundsWon,
-      localMyRounds: myRoundsWon,
-      localOpponentRounds: opponentRoundsWon
-    });
-    
-    let xp = correctCount * 10;
-    const timeBonus = Math.round(answers.filter(a => a.correct && a.timeMs < 5000).length * 5);
-    xp += timeBonus;
-    
-    if (correctCount === questions.length) {
-      xp += 20;
-    }
-    xp += 5;
-
-    onComplete({
-      score: Math.round((correctCount / questions.length) * 100),
-      totalQuestions: questions.length,
-      correctAnswers: correctCount,
-      xpEarned: xp,
-      timeBonus,
-      answers,
-      questions,
-      isPerfect: correctCount === questions.length,
-      roundsWon: serverMyRoundsWon,
-      opponentRoundsWon: serverOpponentRoundsWon,
-    });
-  }, [answers, questions, battleId, userId, opponent.id, myRoundsWon, opponentRoundsWon, onComplete, playGameComplete]);
-
-  const handleAnswer = useCallback(async (answerIndex: number) => {
-    if (showFeedback || waitingForOpponent || submitting) return;
-
-    stopTicking();
-    setSubmitting(true);
-
-    const timeMs = Date.now() - questionStartTime;
-    const isCorrect = answerIndex === currentQuestion.correct_answer;
-
-    setSelectedAnswer(answerIndex);
-    setShowFeedback(true);
-
-    if (isCorrect) {
-      playCorrect();
-    } else {
-      playIncorrect();
-    }
-
-    const newAnswer = {
-      questionIndex: currentIndex,
-      selectedAnswer: answerIndex,
-      correct: isCorrect,
-      timeMs,
-    };
-
-    setAnswers((prev) => [...prev, newAnswer]);
-
-    try {
-      // Call atomic answer submission RPC
-      const { data, error } = await supabase.rpc('submit_multiplayer_answer', {
-        p_battle_id: battleId,
-        p_user_id: userId,
-        p_question_index: currentIndex,
-        p_answer: answerIndex,
-        p_is_correct: isCorrect,
-      });
-
-      if (error) {
-        console.error('[MultiplayerGameplay] RPC error:', error);
-        setSubmitting(false);
-        return;
-      }
-
-      // Type assertion for the RPC result
-      const result = data as {
-        status: string;
-        round_winner: string | null;
-        should_advance: boolean;
-        new_question_index: number;
-        my_answer_correct: boolean;
-        current_index?: number;
-      };
-
-      console.log('[MultiplayerGameplay] Answer result:', result);
-
-      if (result.status === 'round_complete') {
-        // Round finished - show who won
-        setRoundWinner(result.round_winner);
-        
-        if (result.round_winner === userId) {
-          setMyRoundsWon((prev) => prev + 1);
-        } else if (result.round_winner === opponent.id) {
-          setOpponentRoundsWon((prev) => prev + 1);
-        }
-        
-        processedRound.current = result.new_question_index;
-        
-        // Wait for feedback display, then advance
-        setTimeout(() => {
-          if (result.new_question_index < questions.length) {
-            moveToNextQuestion(result.new_question_index);
-          } else {
-            finishGame();
-          }
-          setSubmitting(false);
-        }, 2000);
-      } else if (result.status === 'waiting_opponent') {
-        // I answered wrong first, waiting for opponent
-        setWaitingForOpponent(true);
-        setSubmitting(false);
-      } else if (result.status === 'already_advanced') {
-        // Question already completed, move on
-        const currentIdx = result.current_index ?? result.new_question_index;
-        if (currentIdx < questions.length) {
-          moveToNextQuestion(currentIdx);
-        } else {
-          finishGame();
-        }
-        setSubmitting(false);
-      } else {
-        setSubmitting(false);
-      }
-    } catch (err) {
-      console.error('[MultiplayerGameplay] Error submitting answer:', err);
-      setSubmitting(false);
-    }
-  }, [
-    currentIndex, currentQuestion, battleId, userId, opponent.id, questions,
-    showFeedback, waitingForOpponent, submitting, questionStartTime,
-    stopTicking, playCorrect, playIncorrect, moveToNextQuestion, finishGame
-  ]);
-
-  const handleStop = () => {
-    stopTicking();
-    setShowStopDialog(true);
-  };
-
-  const confirmStop = () => {
-    const correctCount = answers.filter((a) => a.correct).length;
-    onComplete({
-      score: answers.length > 0 ? Math.round((correctCount / answers.length) * 100) : 0,
-      totalQuestions: questions.length,
-      correctAnswers: correctCount,
-      xpEarned: 0,
-      timeBonus: 0,
-      answers,
-      questions,
-      isPerfect: false,
-      wasAbandoned: true,
-      roundsWon: myRoundsWon,
-      opponentRoundsWon: opponentRoundsWon,
-    });
   };
 
   const cancelStop = () => {

@@ -156,13 +156,11 @@ export default function Notifications() {
       } = await supabase.auth.getUser();
       
       if (!user) {
-        console.log("❌ No user found - redirecting to auth");
         navigate("/auth/login");
         setIsLoading(false);
         return;
       }
 
-      console.log(`✅ Fetching notifications for user: ${user.id} (offset: ${offsetRef.current})`);
 
       // Paginated query
       const { data: notificationsData, error } = await supabase
@@ -183,10 +181,8 @@ export default function Notifications() {
         return;
       }
 
-      console.log(`✅ Found ${notificationsData?.length || 0} notifications`);
 
       if (!notificationsData || notificationsData.length === 0) {
-        console.log("ℹ️ No more notifications");
         setHasMore(false);
         if (isInitial) setNotifications([]);
         return;
@@ -248,7 +244,6 @@ export default function Notifications() {
         };
       });
 
-      console.log("✅ Processed notifications with profiles:", notificationsWithProfiles.length);
       
       if (isInitial) {
         setNotifications(notificationsWithProfiles);
@@ -442,7 +437,6 @@ export default function Notifications() {
             type: 'follow_accepted'
           }
         });
-        console.log('✅ Follow acceptance push notification sent');
       } catch (pushError) {
         console.error('❌ Error sending push notification:', pushError);
       }

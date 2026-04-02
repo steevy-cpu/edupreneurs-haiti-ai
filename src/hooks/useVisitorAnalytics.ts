@@ -18,7 +18,6 @@ export const useVisitorAnalytics = () => {
     
     // For now, just log to console
     // In the future, this could send to Supabase, Mixpanel, Google Analytics, etc.
-    console.log("[Visitor Analytics]", analyticsEvent);
   };
 
   const trackPageView = (page: string) => {

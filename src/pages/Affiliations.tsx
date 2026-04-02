@@ -170,7 +170,6 @@ const Affiliations = () => {
           url: referralUrl,
         });
       } catch (err) {
-        console.log("Error sharing:", err);
       }
     } else {
       copyReferralLink();

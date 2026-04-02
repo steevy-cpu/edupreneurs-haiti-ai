@@ -197,7 +197,6 @@ export default function Profile() {
             type: 'follow'
           }
         });
-        console.log('✅ Follow request push notification sent');
       } catch (pushError) {
         console.error('❌ Error sending push notification:', pushError);
       }

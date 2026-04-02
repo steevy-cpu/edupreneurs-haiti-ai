@@ -113,14 +113,10 @@ export function useGenerationJob({ lessonId, onJobComplete }: UseGenerationJobOp
         progress: rawJob.progress as unknown as JobProgress,
         result_content: rawJob.result_content as Record<string, any> | null,
       };
-      console.log('📡 Job update received:', updatedJob.status, updatedJob.current_section);
-      
       setActiveJob(updatedJob);
 
       // Check if job is completed or failed
       if (updatedJob.status === 'completed' || updatedJob.status === 'failed') {
-        console.log('🎉 Job finished:', updatedJob.status);
-        
         // Invalidate queries
         queryClient.invalidateQueries({ queryKey: ['ai-generation-job', lessonId] });
         
@@ -149,8 +145,6 @@ export function useGenerationJob({ lessonId, onJobComplete }: UseGenerationJobOp
         throw new Error('User not authenticated');
       }
 
-      console.log('🚀 Creating new generation job...');
-
       // Create the job record
       const { data: job, error: insertError } = await supabase
         .from('ai_generation_jobs')
@@ -169,8 +163,6 @@ export function useGenerationJob({ lessonId, onJobComplete }: UseGenerationJobOp
         console.error('Error creating job:', insertError);
         throw insertError;
       }
-
-      console.log('📋 Job created:', job.id);
 
       // Trigger the edge function to process the job
       // We don't await this - it runs in the background
@@ -191,7 +183,6 @@ export function useGenerationJob({ lessonId, onJobComplete }: UseGenerationJobOp
       } as GenerationJob;
     },
     onSuccess: (job) => {
-      console.log('✅ Job started successfully');
       setActiveJob(job);
       toast.info('Génération démarrée en arrière-plan');
     },
@@ -207,8 +198,6 @@ export function useGenerationJob({ lessonId, onJobComplete }: UseGenerationJobOp
       if (!activeJob?.id) {
         throw new Error('No active job to cancel');
       }
-
-      console.log('🛑 Cancelling job:', activeJob.id);
 
       const { error } = await supabase
         .from('ai_generation_jobs')
@@ -233,7 +222,6 @@ export function useGenerationJob({ lessonId, onJobComplete }: UseGenerationJobOp
 
   // Resume watching an existing job
   const resumeJob = useCallback((job: GenerationJob) => {
-    console.log('🔄 Resuming job:', job.id);
     setActiveJob(job);
   }, []);
 

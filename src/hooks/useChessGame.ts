@@ -294,7 +294,6 @@ export const useChessGame = (
             return;
           }
         } catch (e) {
-          console.log('Move failed, trying fallback');
         }
       }
 

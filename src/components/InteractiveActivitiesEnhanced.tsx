@@ -171,7 +171,6 @@ export const InteractiveActivitiesEnhanced = ({
       }
     }
     
-    console.log(`✅ Parsed ${activities.length} TRUEFALSE activities`);
     return activities;
   };
   
@@ -239,7 +238,6 @@ export const InteractiveActivitiesEnhanced = ({
       }
     }
     
-    console.log(`✅ Parsed ${activities.length} QUIZ activities`);
     return activities;
   };
 
@@ -247,13 +245,11 @@ export const InteractiveActivitiesEnhanced = ({
   const activities = useMemo(() => {
     if (!content) return [];
     
-    console.log('🔍 Parsing activities content:', content.substring(0, 200));
     
     const trueFalseActivities = parseTrueFalseActivities(content);
     const quizActivities = parseQuizActivities(content);
     
     const allActivities = [...quizActivities, ...trueFalseActivities];
-    console.log(`📊 Total activities parsed: ${allActivities.length} (${quizActivities.length} QUIZ, ${trueFalseActivities.length} TRUEFALSE)`);
     
     return allActivities;
   }, [content]);

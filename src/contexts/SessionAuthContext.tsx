@@ -46,13 +46,11 @@ export function SessionAuthProvider({ children }: SessionAuthProviderProps) {
       if (event === 'SIGNED_OUT') {
         clearAllPersistedCache();
         queryClient.clear();
-        console.log('User signed out - cleared all caches');
       }
       if (event === 'SIGNED_IN') {
         // Clear stale profile cache to ensure fresh data for new user
         queryClient.removeQueries({ queryKey: ['user-profile'] });
         queryClient.removeQueries({ queryKey: ['sidebar-badges'] });
-        console.log('User signed in - cleared profile caches for fresh data');
       }
     });
 

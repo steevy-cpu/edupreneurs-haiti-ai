@@ -218,8 +218,6 @@ export const BatchLessonGenerator = () => {
   const deleteOldImages = async (imageUrls: string[]) => {
     if (imageUrls.length === 0) return;
 
-    console.log(`🗑️ Deleting ${imageUrls.length} old image(s)...`);
-    
     for (const url of imageUrls) {
       try {
         // Extract the file path from the URL
@@ -229,11 +227,9 @@ export const BatchLessonGenerator = () => {
           const { error } = await supabase.storage
             .from('lesson-images')
             .remove([filePath]);
-          
+
           if (error) {
             console.error(`Failed to delete ${filePath}:`, error);
-          } else {
-            console.log(`✅ Deleted: ${filePath}`);
           }
         }
       } catch (error) {
@@ -332,13 +328,6 @@ export const BatchLessonGenerator = () => {
 
   const fetchLessons = async () => {
     try {
-      console.log('🔍 Fetching lessons with:', {
-        selectedLessonIds,
-        gradeLevel,
-        subject,
-        onlyEmpty
-      });
-
       // If specific lessons are selected, return only those lessons
       if (selectedLessonIds.length > 0) {
         const { data: selectedLessons, error } = await supabase
@@ -351,7 +340,6 @@ export const BatchLessonGenerator = () => {
           toast.error("Erreur lors de la récupération des leçons: " + error.message);
           return [];
         }
-        console.log('✅ Selected lessons fetched:', selectedLessons?.length);
         return selectedLessons || [];
       }
 
@@ -366,7 +354,6 @@ export const BatchLessonGenerator = () => {
         query = query.eq('subject_id', subject);
       }
 
-      console.log('📡 Executing query...');
       const { data, error } = await query;
 
       if (error) {
@@ -375,14 +362,11 @@ export const BatchLessonGenerator = () => {
         return [];
       }
 
-      console.log('✅ Lessons fetched:', data?.length || 0);
-
       // Filter for empty sections if needed
       if (onlyEmpty && selectedLessonIds.length === 0) {
         const filtered = (data || []).filter(lesson =>
           selectedSections.some(section => !lesson[section] || lesson[section].trim() === '')
         );
-        console.log('🔎 Filtered for empty sections:', filtered.length);
         return filtered;
       }
 
@@ -400,17 +384,8 @@ export const BatchLessonGenerator = () => {
       return;
     }
 
-    console.log('🚀 Starting generation with filters:', {
-      gradeLevel,
-      subject,
-      selectedLessonIds,
-      onlyEmpty
-    });
-
     const lessons = await fetchLessons();
-    
-    console.log('📚 Fetched lessons:', lessons?.length || 0);
-    
+
     if (!lessons || lessons.length === 0) {
       toast.error("Aucune leçon trouvée avec ces critères. Vérifiez qu'il existe des leçons.");
       return;
@@ -438,7 +413,6 @@ export const BatchLessonGenerator = () => {
     const endIdx = Math.min(startIdx + batchSize, allLessonsData.length);
     const batchLessons = allLessonsData.slice(startIdx, endIdx);
 
-    console.log(`📦 Processing batch ${batchNumber}/${totalBatchCount}: lessons ${startIdx + 1}-${endIdx}`);
     toast.info(`Début du lot ${batchNumber}/${totalBatchCount}: ${batchLessons.length} leçons`);
 
     setTotalLessons(batchLessons.length);
@@ -506,13 +480,6 @@ export const BatchLessonGenerator = () => {
   const generateLessonSections = async (lesson: any, index: number): Promise<boolean> => {
     const startTime = Date.now();
     
-    console.log('🟢 [Batch] Starting generation for lesson:', {
-      id: lesson.id,
-      title: lesson.title,
-      gradeLevel: lesson.grade_level,
-      subjects: lesson.subjects
-    });
-    
     setLessonStatuses(prev => prev.map((l, i) =>
       i === index ? { ...l, status: 'in_progress' as GenerationStatus } : l
     ));
@@ -531,7 +498,6 @@ export const BatchLessonGenerator = () => {
           const shouldGenerate = onlyEmpty ? !lesson[sectionName] || lesson[sectionName].trim() === '' : true;
           
           if (!shouldGenerate) {
-            console.log('🟡 [Batch] Skipping section (already has content):', sectionName);
             continue;
           }
 
@@ -543,7 +509,6 @@ export const BatchLessonGenerator = () => {
 
           // Special handling for activites_interactives section
           if (sectionName === 'activites_interactives') {
-            console.log('🎮 [Batch] Generating interactive activities');
             
             // Combine both contenu and exemples_exercices to get all exercises
             const fullContent = [
@@ -569,15 +534,6 @@ export const BatchLessonGenerator = () => {
             generationData = { content: data.content, wordCount: data.content.split(/\s+/).length };
           } else {
             // Standard generation for other sections
-            console.log('🔵 [Batch] Calling edge function with:', {
-              lessonId: lesson.id,
-              sectionName,
-              lessonTitle: lesson.title,
-              subject: subjectName,
-              gradeLevel: lesson.grade_level,
-              targetWords: wordCounts[sectionName]
-            });
-
             const { data, error } = await supabase.functions.invoke('generate-lesson-section', {
               body: {
                 lessonId: lesson.id,
@@ -598,12 +554,6 @@ export const BatchLessonGenerator = () => {
             generatedContent = data.content;
             generationData = data;
           }
-
-          console.log('✅ [Batch] Section generated successfully:', {
-            sectionName,
-            wordCount: generationData?.wordCount,
-            generationTime: generationData?.generationTime
-          });
 
           // Store generated content in status
           setLessonStatuses(prev => prev.map((l, i) => {
@@ -650,8 +600,6 @@ export const BatchLessonGenerator = () => {
         // Generate Quiz Final if selected (OUTSIDE the sections if block)
         if (generateQuiz) {
           try {
-            console.log('📝 [Batch] Generating Quiz Final');
-            
             const { data: quizData, error: quizError } = await supabase.functions.invoke('generate-quiz-final', {
               body: {
                 lessonTitle: lesson.title,
@@ -683,8 +631,6 @@ export const BatchLessonGenerator = () => {
                 return l;
               }));
               setHasGeneratedOptionalContent(true);
-              
-              console.log('✅ [Batch] Quiz Final generated and saved');
             }
           } catch (error) {
             console.error('❌ [Batch] Error generating quiz:', error);
@@ -694,8 +640,6 @@ export const BatchLessonGenerator = () => {
         // Suggest YouTube videos if selected (OUTSIDE the sections if block)
         if (generateVideos) {
           try {
-            console.log('🎥 [Batch] Suggesting YouTube videos');
-            
             const { data: videoData, error: videoError } = await supabase.functions.invoke('suggest-youtube-videos', {
               body: {
                 lessonTitle: lesson.title,
@@ -721,12 +665,6 @@ export const BatchLessonGenerator = () => {
               return l;
             }));
             setHasGeneratedOptionalContent(true);
-            
-            if (videos.length > 0) {
-              console.log('✅ [Batch] YouTube videos suggested:', videos.length);
-            } else {
-              console.log('ℹ️ [Batch] No YouTube videos found');
-            }
           } catch (error) {
             console.error('❌ [Batch] Error suggesting videos:', error);
           }
@@ -735,15 +673,12 @@ export const BatchLessonGenerator = () => {
         // Generate explanatory images if selected
         if (imageGenerationModel !== 'none') {
           try {
-            console.log('🎨 [Batch] Generating explanatory images');
-            
             // Step 1: Clean up old images before generating new ones
             const oldContenuImages = extractImageUrls(lesson.contenu || '');
             const oldExemplesImages = extractImageUrls(lesson.exemples_exercices || '');
             const allOldImages = [...oldContenuImages, ...oldExemplesImages];
-            
+
             if (allOldImages.length > 0) {
-              console.log(`🗑️ Found ${allOldImages.length} old image(s) to clean up for lesson: ${lesson.title}`);
               await deleteOldImages(allOldImages);
             }
             
@@ -773,8 +708,6 @@ export const BatchLessonGenerator = () => {
                 return l;
               }));
               setHasGeneratedOptionalContent(true);
-              
-              console.log('✅ [Batch] Generated', imagesData.images.length, 'explanatory images');
             }
           } catch (error) {
             console.error('❌ [Batch] Error generating images:', error);
@@ -817,7 +750,6 @@ export const BatchLessonGenerator = () => {
         }
         
         if (error.message?.includes('429')) {
-          console.log('⏱️ [Batch] Rate limited, waiting 10s...');
           await new Promise(resolve => setTimeout(resolve, 10000));
         } else if (retryCount >= maxRetries) {
           console.error('💥 [Batch] Max retries reached for lesson:', lesson.id);
@@ -940,8 +872,6 @@ export const BatchLessonGenerator = () => {
   const handleApplyLesson = async (lessonId: string, shouldPublish: boolean = false) => {
     setIsApplying(true);
     try {
-      console.log('🔄 Starting to apply lesson...');
-      
       // Find the lesson status to get generated content
       const lessonStatus = lessonStatuses.find(l => l.lessonId === lessonId);
       if (!lessonStatus || !lessonStatus.generatedContent) {
@@ -958,9 +888,7 @@ export const BatchLessonGenerator = () => {
 
       const updates: any = {};
       const generatedContent = lessonStatus.generatedContent;
-      
-      console.log('Generated content:', generatedContent);
-      
+
       // Start with generated or existing content
       let updatedContenu = generatedContent.contenu || currentLesson?.contenu || '';
       let updatedExemples = generatedContent.exemples_exercices || currentLesson?.exemples_exercices || '';
@@ -968,20 +896,18 @@ export const BatchLessonGenerator = () => {
       // CRITICAL: Remove all existing image HTML before processing new images
       // This ensures old images are removed when regenerating
       if (generatedContent.explanatory_images) {
-        console.log('🧹 Cleaning old images from content before inserting new ones...');
         updatedContenu = removeAllImageHtml(updatedContenu);
         updatedExemples = removeAllImageHtml(updatedExemples);
       }
-      
+
       // Process explanatory images if they exist
       if (generatedContent.explanatory_images) {
         const images = generatedContent.explanatory_images;
-        console.log(`📸 Processing ${images.length} images...`);
-        
+
         // Separate images by their target section
         const contenuImages: any[] = [];
         const exemplesImages: any[] = [];
-        
+
         for (const image of images) {
           if (image.insertAt === 'contenu') {
             contenuImages.push(image);
@@ -989,12 +915,9 @@ export const BatchLessonGenerator = () => {
             exemplesImages.push(image);
           }
         }
-        
-        console.log(`📊 Distribution: ${contenuImages.length} for contenu, ${exemplesImages.length} for exemples`);
-        
+
         for (const image of images) {
           try {
-            console.log(`🖼️ Processing image: ${image.concept} (insertAt: ${image.insertAt})`);
             
             // Convert base64 to blob for WebP format
             const base64Data = image.base64Data;
@@ -1018,8 +941,6 @@ export const BatchLessonGenerator = () => {
               canvas.toBlob((blob) => resolve(blob!), 'image/webp', 0.85);
             });
             
-            console.log(`✅ Converted to WebP, size: ${webpBlob.size} bytes (from ${blob.size} bytes)`);
-            
             // Sanitize filename to remove special characters
             const sanitizedConcept = image.concept
               .normalize('NFD')
@@ -1031,8 +952,6 @@ export const BatchLessonGenerator = () => {
             
             // Upload to Supabase Storage with WebP extension
             const fileName = `${lessonId}/${sanitizedConcept}-${Date.now()}.webp`;
-            console.log(`📤 Uploading to: ${fileName}`);
-            
             const { data: uploadData, error: uploadError } = await supabase.storage
               .from('lesson-images')
               .upload(fileName, webpBlob, {
@@ -1045,15 +964,11 @@ export const BatchLessonGenerator = () => {
               toast.error(`Erreur lors de l'upload de l'image: ${image.concept}`);
               continue;
             }
-            
-            console.log('✅ Image uploaded successfully');
-            
+
             // Get public URL
             const { data: { publicUrl } } = supabase.storage
               .from('lesson-images')
               .getPublicUrl(fileName);
-            
-            console.log(`🔗 Public URL: ${publicUrl}`);
             
             // Create HTML for the image without the heading
             const imageHtml = `
@@ -1078,13 +993,11 @@ export const BatchLessonGenerator = () => {
               const insertIndex = Math.floor(paragraphs.length / (contenuImages.length + 1)) * (contenuImages.indexOf(image) + 1);
               paragraphs.splice(insertIndex, 0, imageHtml);
               updatedContenu = paragraphs.join('\n\n');
-              console.log(`➕ Added image ${contenuImages.indexOf(image) + 1}/${contenuImages.length} to contenu at position ${insertIndex}`);
             } else if (image.insertAt === 'exemples_exercices') {
               const paragraphs = updatedExemples.split('\n\n');
               const insertIndex = Math.floor(paragraphs.length / (exemplesImages.length + 1)) * (exemplesImages.indexOf(image) + 1);
               paragraphs.splice(insertIndex, 0, imageHtml);
               updatedExemples = paragraphs.join('\n\n');
-              console.log(`➕ Added image ${exemplesImages.indexOf(image) + 1}/${exemplesImages.length} to exemples at position ${insertIndex}`);
             }
           } catch (imageError) {
             console.error('❌ Error processing image:', imageError);
@@ -1092,9 +1005,8 @@ export const BatchLessonGenerator = () => {
           }
         }
         
-        console.log('✅ All images processed and inserted');
       }
-      
+
       // Function to remove AI-generated image description headings
       const cleanImageDescriptions = (text: string): string => {
         // Remove markdown headings that describe images (### followed by emoji and description)
@@ -1114,7 +1026,6 @@ export const BatchLessonGenerator = () => {
       if (generatedContent.explanatory_images) {
         updates.contenu = updatedContenu;
         updates.exemples_exercices = updatedExemples;
-        console.log('📝 Updating database with images included (descriptions cleaned)');
       } else {
         if (generatedContent.contenu) updates.contenu = generatedContent.contenu;
         if (generatedContent.exemples_exercices) updates.exemples_exercices = generatedContent.exemples_exercices;
@@ -1123,7 +1034,6 @@ export const BatchLessonGenerator = () => {
       // Apply Quiz Final
       if (generatedContent.quiz_final) {
         updates.quiz_final = generatedContent.quiz_final;
-        console.log('✅ Applying Quiz Final:', generatedContent.quiz_final.substring(0, 100) + '...');
       }
       
       // Handle YouTube videos - pick the most relevant one (first in sorted list)
@@ -1133,7 +1043,6 @@ export const BatchLessonGenerator = () => {
           // Videos are already sorted by relevance in the edge function
           const bestVideo = videos[0];
           updates.youtube_url = `https://www.youtube.com/watch?v=${bestVideo.id}`;
-          console.log('✅ Applying most relevant YouTube video:', bestVideo.title);
         }
       }
       
@@ -1141,8 +1050,6 @@ export const BatchLessonGenerator = () => {
         updates.is_published = true;
         updates.workflow_status = 'published';
       }
-
-      console.log('💾 Saving updates to database:', Object.keys(updates));
 
       if (Object.keys(updates).length > 0) {
         const { error } = await supabase
@@ -1156,7 +1063,6 @@ export const BatchLessonGenerator = () => {
         }
       }
 
-      console.log('✅ Database updated successfully');
       toast.success(shouldPublish ? "Leçon publiée avec succès (images incluses)!" : "Contenu appliqué avec succès (images incluses)!");
       setIsPreviewOpen(false);
     } catch (error: any) {

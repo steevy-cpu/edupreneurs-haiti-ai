@@ -57,12 +57,6 @@ export const GenerationPreviewDialog = ({
         img.insertAt === 'exemples_exercices'
       );
       
-      console.log('[Save] Images distribution:', {
-        total: content.images.length,
-        contenu: contenuImages.length,
-        exemples: exemplesImages.length
-      });
-      
       toast.info("Téléchargement des images en cours...");
       
       // Fetch current lesson data for both sections
@@ -137,9 +131,6 @@ export const GenerationPreviewDialog = ({
           audio_generated_at: hasAudio ? new Date().toISOString() : undefined,
         };
         
-        console.log('[Save] Lesson ID:', previewLesson.lessonId);
-        console.log('[Save] Audio URLs in payload:', audioUpdates);
-        
         const { error } = await supabase
           .from('lessons')
           .update(updatePayload)
@@ -198,8 +189,6 @@ export const GenerationPreviewDialog = ({
           audio_generated_at: hasAudio ? new Date().toISOString() : undefined,
         };
         
-        console.log('[Publish] Phase 1 - Saving content for lesson:', previewLesson.lessonId);
-        console.log('[Publish] Content payload size:', JSON.stringify(contentPayload).length, 'bytes');
         const phase1Start = Date.now();
         
         toast.info("Sauvegarde du contenu en cours...");
@@ -209,12 +198,9 @@ export const GenerationPreviewDialog = ({
           .update(contentPayload)
           .eq('id', previewLesson.lessonId);
         
-        console.log('[Publish] Phase 1 completed in', Date.now() - phase1Start, 'ms');
-        
         if (contentError) throw contentError;
-        
+
         // PHASE 2: Set publish flags only (lightweight, no version trigger)
-        console.log('[Publish] Phase 2 - Setting publish flags');
         const phase2Start = Date.now();
         
         // Retry logic for publish flags (in case of transient lock)
@@ -234,12 +220,9 @@ export const GenerationPreviewDialog = ({
             break;
           }
           publishError = flagError;
-          console.log('[Publish] Phase 2 attempt', attempt + 1, 'failed:', flagError.message);
           // Small delay before retry
           await new Promise(resolve => setTimeout(resolve, 500));
         }
-        
-        console.log('[Publish] Phase 2 completed in', Date.now() - phase2Start, 'ms');
         
         if (!publishSuccess) {
           throw publishError || new Error('Failed to set publish flags');

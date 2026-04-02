@@ -513,7 +513,6 @@ const QuizBattleSolo = () => {
         toast.success(`🏆 Nouveau badge: ${badge.name}!`);
       } catch (error) {
         // Badge might already exist
-        console.log('Badge already earned or error:', badge.key);
       }
     }
   };

@@ -136,7 +136,6 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
   // Per-answer awardGold() removed — gold is now consolidated into markLessonComplete()
 
   const parseQuestions = (content: string): QuizQuestion[] => {
-    console.log('🔍 Parsing quiz content:', content.substring(0, 200));
     const questions: QuizQuestion[] = [];
     
     // Check if content is HTML format
@@ -152,10 +151,8 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
       sections = content.split(/Question\s+\d+/i);
     }
     
-    console.log('📊 Found sections:', sections.length);
     
     sections.slice(1).forEach((section, idx) => {
-      console.log(`🔍 Processing section ${idx + 1}:`, section.substring(0, 100));
       
       // Extract question text - everything before first option, more flexible
       const questionMatch = section.match(/^\s*(.+?)(?=\n\s*[A-D][\):\.])/is);
@@ -176,7 +173,6 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
         }
       });
       
-      console.log(`📝 Found ${options.length} options for question ${idx + 1}`);
       
       // Extract correct answer - multiple patterns
       let correctMatch = section.match(/#{2,3}\s*Réponse\s+correcte\s*:?\s*([A-D])/i);

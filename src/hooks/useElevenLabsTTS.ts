@@ -47,11 +47,9 @@ export const useElevenLabsTTS = ({
         const response = await fetch(data.publicUrl, { method: 'HEAD' });
         if (response.ok) {
           setAudioUrl(data.publicUrl);
-          console.log('Found cached audio:', data.publicUrl);
         }
       } catch (err) {
         // No cached audio found, will generate on first play
-        console.log('No cached audio found, will generate on demand');
       }
     };
 

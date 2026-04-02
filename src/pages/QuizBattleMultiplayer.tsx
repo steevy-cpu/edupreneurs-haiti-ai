@@ -54,7 +54,6 @@ const QuizBattleMultiplayer = () => {
         .update({ status: 'cancelled', ended_at: new Date().toISOString() })
         .eq('id', id)
         .eq('status', 'waiting'); // Only cancel if still waiting
-      console.log('[QuizBattleMultiplayer] Cancelled waiting battle:', id);
     } catch (err) {
       console.error('[QuizBattleMultiplayer] Error cancelling battle:', err);
     }
@@ -108,7 +107,6 @@ const QuizBattleMultiplayer = () => {
 
       // CRITICAL: Check if battle is already finished - prevent restart on refresh
       if (battle.status === 'completed' || battle.status === 'cancelled') {
-        console.log('[Multiplayer] Battle already finished, redirecting to lobby');
         toast.info('Cette bataille est terminée');
         navigate('/quiz-battle/lobby');
         return;
@@ -121,7 +119,6 @@ const QuizBattleMultiplayer = () => {
       // React state updates (setIsHost) are async and won't be available in same render
       const host = battle.created_by === user.id;
       setIsHost(host);
-      console.log('[Multiplayer] Battle loaded, host=', host, 'battleId=', battleId, 'mode=', battle.mode);
 
       // Fetch my profile
       const { data: myProfileData } = await supabase
@@ -160,19 +157,16 @@ const QuizBattleMultiplayer = () => {
 
       // Check if questions already generated
       if (battle.questions && Array.isArray(battle.questions) && battle.questions.length > 0) {
-        console.log('[Multiplayer] Questions already exist, starting gameplay');
         setQuestions(battle.questions as unknown as BattleQuestion[]);
         saveQuizBattleSession(battleId, battleMode as 'friend' | 'random');
         updatePhase('playing');
       } else if (host) {
         // Host generates questions - use local 'host' variable, NOT state
-        console.log('[Multiplayer] Host generating questions...');
         updatePhase('generating');
         setGenerationStartTime(Date.now());
         await generateQuestions(battle);
       } else {
         // Guest waits for questions
-        console.log('[Multiplayer] Guest polling for questions...');
         updatePhase('loading');
         setGenerationStartTime(Date.now());
         pollForQuestions(battleId);
@@ -185,7 +179,6 @@ const QuizBattleMultiplayer = () => {
   // Retry fetching opponent profile if missing when playing (race condition recovery)
   useEffect(() => {
     if (phase === 'playing' && !opponent && battleId && userId) {
-      console.log('[Multiplayer] Opponent missing in playing phase, retrying fetch...');
       const fetchOpponent = async () => {
         const { data: players } = await supabase
           .from('quiz_battle_players')
@@ -201,7 +194,6 @@ const QuizBattleMultiplayer = () => {
             .single();
           
           if (profile) {
-            console.log('[Multiplayer] Opponent fetched on retry:', profile.nickname);
             setOpponent({
               id: profile.user_id,
               nickname: profile.nickname,
@@ -281,7 +273,6 @@ const QuizBattleMultiplayer = () => {
 
   const pollForQuestions = useCallback((bId: string) => {
     let resolved = false;
-    console.log('[Multiplayer] Guest starting poll for battleId:', bId);
     
     const interval = setInterval(async () => {
       if (resolved) return;
@@ -295,7 +286,6 @@ const QuizBattleMultiplayer = () => {
       if (battle?.status === 'cancelled') {
         resolved = true;
         clearInterval(interval);
-        console.log('[Multiplayer] Battle was cancelled, exiting poll');
         toast.error('La partie a été annulée');
         navigate('/quiz-battle');
         return;
@@ -304,7 +294,6 @@ const QuizBattleMultiplayer = () => {
       if (battle?.questions && Array.isArray(battle.questions) && battle.questions.length > 0) {
         resolved = true;
         clearInterval(interval);
-        console.log('[Multiplayer] Questions received:', battle.questions.length);
         setQuestions(battle.questions as unknown as BattleQuestion[]);
         saveQuizBattleSession(bId, 'friend'); // Guest doesn't know battle mode, default to friend
         updatePhase('playing');
@@ -315,7 +304,6 @@ const QuizBattleMultiplayer = () => {
     setTimeout(async () => {
       clearInterval(interval);
       if (!resolved) {
-        console.log('[Multiplayer] Guest poll timeout after 45s');
         toast.error('Timeout: questions non générées');
         // Cancel the stuck waiting battle before navigating away
         await cancelBattleSafely(bId);
@@ -335,7 +323,6 @@ const QuizBattleMultiplayer = () => {
     try {
       // Handle case where I abandoned - mark battle as cancelled and exit
       if (result.wasAbandoned) {
-        console.log('[Multiplayer] User abandoned, cancelling battle');
         
         await supabase
           .from('quiz_battles')
@@ -364,7 +351,6 @@ const QuizBattleMultiplayer = () => {
 
       // Handle case where opponent abandoned - go straight to results with victory
       if (result.opponentAbandoned) {
-        console.log('[Multiplayer] Opponent abandoned, showing victory results');
         setOpponentResult({
           score: 0,
           correctAnswers: 0,

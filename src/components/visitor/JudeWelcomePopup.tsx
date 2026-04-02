@@ -66,11 +66,9 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
     );
     
     if (trackIndex !== -1) {
-      console.log('🎵 Starting study music for visitor tour');
       playTrack(trackIndex);
     } else if (tracks.length > 0) {
       // Fallback to first track if not found
-      console.log('🎵 Study music not found, playing first track');
       playTrack(0);
     }
   }, [tracks, playTrack]);

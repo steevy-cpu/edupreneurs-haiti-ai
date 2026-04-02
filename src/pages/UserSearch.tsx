@@ -90,12 +90,10 @@ const UserSearch = () => {
 
   const startConversation = async (otherUserId: string) => {
     if (!currentUser) {
-      console.log("No current user found");
       return;
     }
 
     setLoadingConversation(otherUserId);
-    console.log("Starting conversation with user:", otherUserId);
 
     // Check if conversation already exists
     const { data: existingConversations, error: existingError } = await supabase
@@ -115,7 +113,6 @@ const UserSearch = () => {
           .eq("conversation_id", conv.conversation_id);
 
         if (participants?.length === 2 && participants.some(p => p.user_id === otherUserId)) {
-          console.log("Found existing conversation:", conv.conversation_id);
           navigate(`/community?conversation=${conv.conversation_id}`);
           setLoadingConversation(null);
           return;
@@ -123,13 +120,11 @@ const UserSearch = () => {
       }
     }
 
-    console.log("Creating new conversation...");
 
     // Create new conversation using the database function
     const { data: conversationId, error: convError } = await supabase
       .rpc("create_conversation");
 
-    console.log("Conversation creation result:", { conversationId, convError });
 
     if (convError) {
       console.error("Conversation creation error:", convError);
@@ -153,7 +148,6 @@ const UserSearch = () => {
       return;
     }
 
-    console.log("Adding participants to conversation:", conversationId);
 
     // Add participants
     const { error: participantsError } = await supabase
@@ -163,7 +157,6 @@ const UserSearch = () => {
         { conversation_id: conversationId, user_id: otherUserId },
       ]);
 
-    console.log("Participants insertion result:", { participantsError });
 
     if (participantsError) {
       console.error("Participants error:", participantsError);
@@ -176,7 +169,6 @@ const UserSearch = () => {
       return;
     }
 
-    console.log("Successfully created conversation, navigating...");
     navigate(`/community?conversation=${conversationId}`);
     setLoadingConversation(null);
   };

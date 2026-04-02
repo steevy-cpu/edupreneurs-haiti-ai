@@ -26,7 +26,6 @@ export const AuthMusicSync = () => {
 
     // Stop music when transitioning FROM authenticated TO unauthenticated
     if (prevAuthRef.current === true && isAuthenticated === false) {
-      console.log('[AuthMusicSync] User logged out -> stopping music');
       stopMusic();
     }
     

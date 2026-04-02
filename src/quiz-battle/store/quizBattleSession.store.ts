@@ -27,7 +27,6 @@ export function saveQuizBattleSession(battleId: string, mode: 'solo' | 'friend' 
       expiresAt: Date.now() + SESSION_TTL_MS,
     };
     sessionStorage.setItem(QUIZ_BATTLE_SESSION_KEY, JSON.stringify(state));
-    console.log('[QuizBattleSession] Saved session:', state);
   } catch (err) {
     console.error('[QuizBattleSession] Failed to save session:', err);
   }
@@ -47,7 +46,6 @@ export function getQuizBattleSession(): QuizBattleSessionState | null {
     // Check expiration
     if (Date.now() > state.expiresAt) {
       clearQuizBattleSession();
-      console.log('[QuizBattleSession] Session expired, cleared');
       return null;
     }
     
@@ -65,7 +63,6 @@ export function getQuizBattleSession(): QuizBattleSessionState | null {
 export function clearQuizBattleSession(): void {
   try {
     sessionStorage.removeItem(QUIZ_BATTLE_SESSION_KEY);
-    console.log('[QuizBattleSession] Session cleared');
   } catch (err) {
     console.error('[QuizBattleSession] Failed to clear session:', err);
   }

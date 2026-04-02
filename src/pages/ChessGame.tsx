@@ -296,7 +296,6 @@ const ChessGame: React.FC = () => {
             return;
           }
         } catch (e) {
-          console.log('Move failed');
         }
       }
 

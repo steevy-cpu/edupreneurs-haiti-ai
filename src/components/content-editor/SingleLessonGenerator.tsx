@@ -99,8 +99,6 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
   // Helper function to delete old images from storage
   const deleteOldImages = async (imageUrls: string[]) => {
     if (imageUrls.length === 0) return;
-    console.log(`🗑️ Deleting ${imageUrls.length} old image(s)...`);
-    
     for (const url of imageUrls) {
       try {
         const urlParts = url.split('/lesson-images/');
@@ -109,11 +107,9 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
           const { error } = await supabase.storage
             .from('lesson-images')
             .remove([filePath]);
-          
+
           if (error) {
             console.error(`Failed to delete ${filePath}:`, error);
-          } else {
-            console.log(`✅ Deleted: ${filePath}`);
           }
         }
       } catch (error) {
@@ -169,27 +165,22 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
   const handleApplyChanges = async () => {
     setIsApplying(true);
     try {
-      console.log('🔄 Starting to apply changes...');
-      console.log('Generated content:', generatedContent);
-      
       let updatedContenu = generatedContent.contenu || lesson.contenu || '';
       let updatedExemples = generatedContent.exemples_exercices || lesson.exemples_exercices || '';
-      
+
       // Clean old images before processing new ones
       if (generatedContent.explanatory_images) {
-        console.log('🧹 Cleaning old images from content before inserting new ones...');
         updatedContenu = removeAllImageHtml(updatedContenu);
         updatedExemples = removeAllImageHtml(updatedExemples);
       }
-      
+
       // Process explanatory images if they exist
       if (generatedContent.explanatory_images) {
         const images = generatedContent.explanatory_images;
-        console.log(`📸 Processing ${images.length} images...`);
-        
+
         const contenuImages: any[] = [];
         const exemplesImages: any[] = [];
-        
+
         for (const image of images) {
           if (image.insertAt === 'contenu') {
             contenuImages.push(image);
@@ -197,12 +188,9 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
             exemplesImages.push(image);
           }
         }
-        
-        console.log(`📊 Distribution: ${contenuImages.length} for contenu, ${exemplesImages.length} for exemples`);
-        
+
         for (const image of images) {
           try {
-            console.log(`🖼️ Processing image: ${image.concept} (insertAt: ${image.insertAt})`);
             
             const base64Data = image.base64Data;
             const binaryString = atob(base64Data);
@@ -223,8 +211,6 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
               canvas.toBlob((blob) => resolve(blob!), 'image/webp', 0.85);
             });
             
-            console.log(`✅ Converted to WebP, size: ${webpBlob.size} bytes (from ${blob.size} bytes)`);
-            
             const sanitizedConcept = image.concept
               .normalize('NFD')
               .replace(/[\u0300-\u036f]/g, '')
@@ -234,8 +220,6 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
               .substring(0, 100);
             
             const fileName = `${lesson.id}/${sanitizedConcept}-${Date.now()}.webp`;
-            console.log(`📤 Uploading to: ${fileName}`);
-            
             const { data: uploadData, error: uploadError } = await supabase.storage
               .from('lesson-images')
               .upload(fileName, webpBlob, {
@@ -248,14 +232,10 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
               toast.error(`Erreur lors de l'upload de l'image: ${image.concept}`);
               continue;
             }
-            
-            console.log('✅ Image uploaded successfully');
-            
+
             const { data: { publicUrl } } = supabase.storage
               .from('lesson-images')
               .getPublicUrl(fileName);
-            
-            console.log(`🔗 Public URL: ${publicUrl}`);
             
             const imageHtml = `
 <div class="my-6 flex justify-center">
@@ -278,13 +258,11 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
               const insertIndex = Math.floor(paragraphs.length / (contenuImages.length + 1)) * (contenuImages.indexOf(image) + 1);
               paragraphs.splice(insertIndex, 0, imageHtml);
               updatedContenu = paragraphs.join('\n\n');
-              console.log(`➕ Added image ${contenuImages.indexOf(image) + 1}/${contenuImages.length} to contenu at position ${insertIndex}`);
             } else if (image.insertAt === 'exemples_exercices') {
               const paragraphs = updatedExemples.split('\n\n');
               const insertIndex = Math.floor(paragraphs.length / (exemplesImages.length + 1)) * (exemplesImages.indexOf(image) + 1);
               paragraphs.splice(insertIndex, 0, imageHtml);
               updatedExemples = paragraphs.join('\n\n');
-              console.log(`➕ Added image ${exemplesImages.indexOf(image) + 1}/${exemplesImages.length} to exemples at position ${insertIndex}`);
             }
           } catch (imageError) {
             console.error('❌ Error processing image:', imageError);
@@ -292,9 +270,8 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
           }
         }
         
-        console.log('✅ All images processed and inserted');
       }
-      
+
       const cleanImageDescriptions = (text: string): string => {
         return text.replace(/###\s*[\u{1F300}-\u{1F9FF}]\s*[^\n]+\n\n?/gu, '');
       };
@@ -313,7 +290,6 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       if (generatedContent.explanatory_images) {
         updates.contenu = updatedContenu;
         updates.exemples_exercices = updatedExemples;
-        console.log('📝 Updating database with images included (descriptions cleaned)');
       } else {
         if (updatedContenu !== (lesson.contenu || '')) {
           updates.contenu = updatedContenu;
@@ -323,8 +299,6 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
         }
       }
 
-      console.log('💾 Saving updates to database:', Object.keys(updates));
-      
       const { error } = await supabase
         .from('lessons')
         .update(updates)
@@ -335,8 +309,6 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
         throw error;
       }
 
-      console.log('✅ Database updated successfully');
-      
       await onComplete();
       
       toast.success("Contenu appliqué avec succès");

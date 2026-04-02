@@ -95,7 +95,6 @@ export function clearAllPersistedCache(): void {
       }
     }
     keysToRemove.forEach(key => localStorage.removeItem(key));
-    console.log(`Cleared ${keysToRemove.length} cached entries`);
   } catch (e) {
     console.warn('Failed to clear all cache:', e);
   }

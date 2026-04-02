@@ -64,7 +64,6 @@ export const JudeModel = forwardRef<JudeModelRef, JudeModelProps>(({
     },
     setEmotion: (emotion: EmotionType) => {
       // Emotions are handled by JudeEmotions component
-      console.log('Setting emotion:', emotion);
     }
   }));
 

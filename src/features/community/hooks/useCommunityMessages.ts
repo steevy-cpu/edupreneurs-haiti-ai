@@ -251,7 +251,6 @@ export function useCommunityMessages({
 
     // Fix 2: Guard against race condition — verify this is still the active conversation
     if (conversationId !== currentConversationRef.current) {
-      console.log('[fetchMessages] Discarding stale fetch for:', conversationId);
       return;
     }
 

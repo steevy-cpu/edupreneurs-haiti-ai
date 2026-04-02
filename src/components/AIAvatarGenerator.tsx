@@ -369,7 +369,6 @@ export const AIAvatarGenerator = ({
           0.75
         );
       });
-      console.log(`Avatar compressed: ${(blob.size / 1024).toFixed(1)}KB`);
       const fileName = `${userId}/avatar-${Date.now()}.jpg`;
       const { error: uploadError } = await supabase.storage
         .from("user-avatars")

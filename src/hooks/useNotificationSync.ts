@@ -9,15 +9,12 @@ interface NotificationSyncMessage {
 
 export const useNotificationSync = (onSync?: () => void) => {
   const handleMessage = useCallback(async (event: MessageEvent<NotificationSyncMessage>) => {
-    console.log('📨 Notification sync message:', event.data);
 
     if (event.data.type === 'notification_received') {
       // New notification received via push while app was in background
-      console.log('🔔 New notification received, refreshing...');
       onSync?.();
     } else if (event.data.type === 'notification_read' && event.data.notificationId) {
       // Notification marked as read from service worker
-      console.log('✓ Notification marked as read, syncing local state...');
       
       // Update local cache
       const { error } = await supabase

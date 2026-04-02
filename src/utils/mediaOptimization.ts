@@ -67,7 +67,6 @@ export const compressImage = async (file: File): Promise<File> => {
               { type: 'image/jpeg' }
             );
             
-            console.log(`Image compressed: ${(file.size / 1024).toFixed(2)}KB → ${(compressedFile.size / 1024).toFixed(2)}KB`);
             resolve(compressedFile);
           },
           'image/jpeg',
@@ -98,7 +97,6 @@ export const validateAndPrepareVideo = async (file: File): Promise<{ file: File;
   // Warn if video is larger than 10MB
   const needsWarning = sizeInMB > 10;
   
-  console.log(`Video size: ${sizeInMB.toFixed(2)}MB${needsWarning ? ' (consider compressing)' : ''}`);
   
   return { file, needsWarning };
 };
@@ -142,7 +140,6 @@ export const generateImageThumbnail = async (file: File): Promise<Blob> => {
               reject(new Error('Failed to generate thumbnail'));
               return;
             }
-            console.log(`Thumbnail generated: ${(blob.size / 1024).toFixed(1)}KB`);
             resolve(blob);
           },
           'image/jpeg',
@@ -189,7 +186,6 @@ export const generateVideoThumbnail = (file: File): Promise<Blob> => {
       canvas.toBlob(
         (blob) => {
           if (blob) {
-            console.log('Video thumbnail generated');
             resolve(blob);
           } else {
             reject(new Error('Failed to generate thumbnail'));

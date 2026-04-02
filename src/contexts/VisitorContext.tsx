@@ -101,15 +101,12 @@ export const VisitorProvider = ({ children }: VisitorProviderProps) => {
     setTourActive(false); // Tour doesn't start yet - wait for welcome popup
     setShowWelcomePopup(true); // Show welcome popup first
     
-    // Analytics stub - ready for future implementation
-    console.log("[Visitor Analytics] visitor_mode_started", { visitorType: type });
   };
 
   const completeWelcomePopup = () => {
     setShowWelcomePopup(false);
     setTourActive(true); // Now start the tour
     
-    console.log("[Visitor Analytics] welcome_popup_completed");
   };
 
   const exitVisitorMode = () => {
@@ -121,15 +118,11 @@ export const VisitorProvider = ({ children }: VisitorProviderProps) => {
     setShowWelcomePopup(false);
     sessionStorage.removeItem(VISITOR_STORAGE_KEY);
     
-    // Analytics stub
-    console.log("[Visitor Analytics] visitor_mode_exited");
   };
 
   const nextTourStep = () => {
     setTourStep((prev) => prev + 1);
     
-    // Analytics stub
-    console.log("[Visitor Analytics] tour_step_next", { step: tourStep + 1 });
   };
 
   const previousTourStep = () => {
@@ -140,8 +133,6 @@ export const VisitorProvider = ({ children }: VisitorProviderProps) => {
     setTourActive(false);
     setTourCompleted(true);
     
-    // Analytics stub
-    console.log("[Visitor Analytics] tour_skipped", { atStep: tourStep });
   };
 
   const startTour = () => {
@@ -154,8 +145,6 @@ export const VisitorProvider = ({ children }: VisitorProviderProps) => {
     setTourActive(false);
     setTourCompleted(true);
     
-    // Analytics stub
-    console.log("[Visitor Analytics] tour_completed");
   };
 
   return (

@@ -52,14 +52,12 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
   }, []);
 
   const streamChat = async (userMessage: string, operation: string) => {
-    console.log('🚀 streamChat called:', { userMessage, operation });
     setIsLoading(true);
     setLoadingOperation(operation);
     const newMessages: Message[] = [
       ...messages,
       { role: 'user', content: userMessage, timestamp: Date.now() }
     ];
-    console.log('📝 Setting user message:', newMessages);
     setMessages(newMessages);
     
     let currentOperation = operation;
@@ -89,17 +87,6 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
         } : null,
       };
 
-      console.log('📦 Enhanced context:', JSON.stringify({
-        selectedLesson: enhancedContext.selectedLesson ? {
-          id: enhancedContext.selectedLesson.id,
-          title: enhancedContext.selectedLesson.title,
-          subject_id: enhancedContext.selectedLesson.subject_id,
-          subjectName: enhancedContext.selectedLesson.subjectName,
-          grade_level: enhancedContext.selectedLesson.grade_level
-        } : null
-      }, null, 2));
-
-      console.log('📡 Calling edge function...');
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/content-ai-assistant`,
         {
@@ -118,8 +105,6 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
         }
       );
 
-      console.log('📥 Response received:', { ok: response.ok, status: response.status, contentType: response.headers.get('content-type') });
-
       if (!response.ok) {
         if (response.status === 429) {
           toast.error("Limite de requêtes atteinte. Attendez quelques instants.");
@@ -134,13 +119,11 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
       }
 
       // Handle streaming response
-      console.log('🔄 Starting stream processing...');
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let assistantMessage = '';
 
       if (reader) {
-        console.log('✅ Reader obtained, starting read loop...');
         let buffer = '';
         
         while (true) {
@@ -166,7 +149,6 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
               const content = parsed.choices?.[0]?.delta?.content;
               if (content) {
                 assistantMessage += content;
-                console.log('💬 Received chunk:', content.substring(0, 50), 'Total length:', assistantMessage.length);
                 setMessages([
                   ...newMessages,
                   { role: 'assistant', content: assistantMessage, operation: currentOperation }
@@ -181,11 +163,8 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
         }
       }
 
-      console.log('✅ Stream complete, final message length:', assistantMessage.length);
-      
       // Automatically refresh lesson data after AI completes tool execution
       if (selectedLesson && ['introduction', 'contenu', 'exemples', 'quiz'].includes(currentOperation)) {
-        console.log('🔄 Refreshing lesson data after AI tool execution...');
         onApplyContent('', currentOperation);
       }
       

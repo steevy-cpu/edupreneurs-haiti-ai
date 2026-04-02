@@ -25,7 +25,6 @@ export const ChangeLog = ({ selectedLesson }: ChangeLogProps) => {
     filter: selectedLesson ? `lesson_id=eq.${selectedLesson.id}` : undefined,
     enabled: !!selectedLesson,
     callback: (payload) => {
-      console.log('📋 New change received:', payload);
       setIsRealtime(true);
       
       // Add the new change to the list

@@ -158,7 +158,6 @@ const QuizBattleLobby = () => {
         return;
       }
       
-      console.log('[QuizBattleLobby] Loaded invitation:', invitation.id, 'status:', invitation.status);
       
       // Fetch recipient name separately
       const { data: recipientProfile } = await supabase
@@ -192,7 +191,6 @@ const QuizBattleLobby = () => {
       }
       
       // Subscribe to invitation changes
-      console.log('[QuizBattleLobby] Subscribing to invitation updates:', invitationId);
       channel = supabase
         .channel(`invitation-sender-${invitationId}`)
         .on('postgres_changes', {
@@ -201,10 +199,8 @@ const QuizBattleLobby = () => {
           table: 'quiz_battle_invitations',
           filter: `id=eq.${invitationId}`,
         }, (payload) => {
-          console.log('[QuizBattleLobby] Received invitation update:', payload.new);
           const updated = payload.new as any;
           if (updated.status === 'accepted' && updated.battle_id) {
-            console.log('[QuizBattleLobby] Invitation accepted! Navigating to battle:', updated.battle_id);
             toast.success('Invitation acceptée!');
             navigate(`/quiz-battle/multiplayer/${updated.battle_id}`);
           } else if (updated.status === 'declined') {
@@ -216,7 +212,6 @@ const QuizBattleLobby = () => {
           }
         })
         .subscribe((status) => {
-          console.log('[QuizBattleLobby] Subscription status:', status);
         });
     };
     

@@ -101,7 +101,6 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
       // Step 1: Get user (10%)
       setProgress(10);
       const { data: { user } } = await supabase.auth.getUser();
-      console.log("User authenticated:", user?.id);
       if (!user) throw new Error("Non authentifié");
 
       let avatarUrl = null;
@@ -129,7 +128,6 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
 
       // Step 3: Create group using secure function (50%)
       setProgress(40);
-      console.log("Creating group with secure function for user:", user.id);
       
       const { data: groupId, error: groupError } = await supabase
         .rpc('create_group_chat', {
@@ -143,7 +141,6 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
         throw groupError;
       }
       
-      console.log("Group created successfully:", groupId);
       setProgress(50);
 
       // Step 4: Add other selected members (70%)
@@ -217,7 +214,6 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
           console.error('Error creating welcome message:', msgError);
         } else if (welcomeMsg) {
           welcomeMessageId = welcomeMsg.id;
-          console.log('✅ Welcome message created:', welcomeMessageId);
         }
       }
 

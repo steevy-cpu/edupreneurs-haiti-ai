@@ -15,7 +15,6 @@ export const VisitorMusicSync = () => {
   useEffect(() => {
     // Only stop music when transitioning FROM visitor mode TO non-visitor mode
     if (prevIsVisitorRef.current === true && isVisitor === false) {
-      console.log('[VisitorMusicSync] Visitor exited -> stopping music');
       stopMusic();
     }
     

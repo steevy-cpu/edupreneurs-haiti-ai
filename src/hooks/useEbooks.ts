@@ -122,7 +122,6 @@ export function useEbookComments(ebookId: string | undefined) {
         );
       } catch (e) {
         // If profile fetch fails (e.g., unauthenticated), continue with empty profiles
-        console.log('Could not fetch profiles, using fallback');
       }
 
       // Combine comments with profiles
