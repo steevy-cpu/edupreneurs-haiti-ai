@@ -38,29 +38,29 @@ export function useDeferredStats(options?: UseDeferredStatsOptions): UseDeferred
 
   const fetchStats = useCallback(async () => {
     try {
-      const [lessonsRes, examsRes, usersRes] = await Promise.all([
-        supabase.from('lessons').select('id', { count: 'exact', head: true }).eq('is_published', true),
-        supabase.from('official_exams').select('id', { count: 'exact', head: true }),
-        // Exclude system accounts (e.g. Jude) from public student count
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).or('is_system_account.is.null,is_system_account.eq.false')
-      ]);
+      // Use SECURITY DEFINER RPC to bypass RLS — returns only aggregated counts,
+      // safe for anonymous visitors (no PII exposed)
+      const { data, error } = await supabase.rpc('get_public_homepage_stats');
 
-      // Check for errors
-      if (lessonsRes.error || examsRes.error || usersRes.error) {
-        throw new Error('Failed to fetch stats');
+      if (error) {
+        throw error;
       }
 
-      setStats({
-        lessons: lessonsRes.count || DEFAULT_STATS.lessons,
-        exams: examsRes.count || DEFAULT_STATS.exams,
-        users: usersRes.count || DEFAULT_STATS.users
-      });
+      if (data && data.length > 0) {
+        const row = data[0];
+        setStats({
+          lessons: Number(row.lessons_count) || DEFAULT_STATS.lessons,
+          exams: Number(row.exams_count) || DEFAULT_STATS.exams,
+          users: Number(row.users_count) || DEFAULT_STATS.users,
+        });
+      }
+
       setIsLoaded(true);
       setError(null);
     } catch (err) {
       console.error('Error fetching stats:', err);
       setError(err instanceof Error ? err : new Error('Unknown error'));
-      // Keep default stats on error - don't show broken UI
+      // Keep default stats on error — don't show broken UI
       setIsLoaded(true);
     }
   }, []);
