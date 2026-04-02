@@ -1,14 +1,15 @@
 /**
  * @file GoogleSignInButton — Branded Google sign-in button.
  *
- * Uses supabase.auth.signInWithOAuth for Google OAuth with our own credentials.
- * Follows Google's branding guidelines with the official G logo colors.
+ * Uses Lovable Cloud managed OAuth for Google sign-in.
+ * Handles redirect URIs automatically — no manual Cloud Console config needed.
  */
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { lovable } from '@/integrations/lovable/index';
 import { useToast } from '@/hooks/use-toast';
 
 interface GoogleSignInButtonProps {
@@ -31,22 +32,26 @@ function GoogleLogo({ className }: { className?: string }) {
 export default function GoogleSignInButton({ label = 'Continuer avec Google' }: GoogleSignInButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  // Uses Supabase OAuth directly with our own Google credentials
+  // Uses Lovable Cloud managed OAuth — redirect URIs handled automatically
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin + '/dashboard',
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
       });
-      if (error) throw error;
+
+      // Browser will redirect to Google — just return
+      if (result.redirected) return;
+
+      if (result.error) {
+        throw result.error;
+      }
+
+      // Session set by lovable SDK — navigate based on setup state
+      const needsSetup = sessionStorage.getItem('google_needs_setup') === 'true';
+      navigate(needsSetup ? '/auth/google-setup' : '/dashboard');
     } catch (err: any) {
       console.error('[GoogleSignIn] Error:', err);
       toast({
@@ -54,6 +59,7 @@ export default function GoogleSignInButton({ label = 'Continuer avec Google' }: 
         description: err?.message || 'Une erreur est survenue. Réessayez.',
         variant: 'destructive',
       });
+    } finally {
       setIsLoading(false);
     }
   };
