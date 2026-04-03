@@ -328,7 +328,175 @@ export const useBatchGeneration = (config: BatchGenerationConfig) => {
             const exemplesImages = imageData.images.filter((img: any) => 
               img.insertAt === 'exemples_exercices'
             );
+
+            // Build updates for each section — upload to storage first
+            const lessonUpdates: Record<string, string> = {};
             
+            if (contenuImages.length > 0) {
+              let updatedContenu = lesson.contenu || '';
+              for (let i = 0; i < contenuImages.length; i++) {
+                const img = contenuImages[i];
+                if (img.base64Data) {
+                  const imageUrl = await uploadBase64ImageToStorage(img.base64Data, lesson.id, img.concept || 'image', i);
+                  if (imageUrl) {
+                    updatedContenu += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                  }
+                }
+              }
+              lessonUpdates.contenu = updatedContenu;
+            }
+            
+            if (exemplesImages.length > 0) {
+              // Fetch current exemples_exercices to append to
+              const { data: currentLesson } = await supabase
+                .from('lessons')
+                .select('exemples_exercices')
+                .eq('id', lesson.id)
+                .single();
+              
+              let updatedExemples = currentLesson?.exemples_exercices || '';
+              for (let i = 0; i < exemplesImages.length; i++) {
+                const img = exemplesImages[i];
+                if (img.base64Data) {
+                  const imageUrl = await uploadBase64ImageToStorage(img.base64Data, lesson.id, img.concept || 'exemple', i);
+                  if (imageUrl) {
+                    updatedExemples += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                  }
+                }
+              }
+              lessonUpdates.exemples_exercices = updatedExemples;
+            }
+            
+            if (Object.keys(lessonUpdates).length > 0) {
+              await supabase.from('lessons').update(lessonUpdates).eq('id', lesson.id);
+            }
+            
+            setLessonStatuses(prev => prev.map((l, i) => {
+              if (i === index) {
+                return { 
+                  ...l, 
+                  sectionsGenerated: [...l.sectionsGenerated, 'images'],
+                  generatedContent: { ...l.generatedContent, images: imageData.images } 
+                };
+              }
+              return l;
+            }));
+          }
+        } catch (e: any) {
+          console.error('Image generation exception:', e);
+          setLessonStatuses(prev => prev.map((l, i) =>
+            i === index ? { ...l, error: (l.error || '') + ' Images: ' + e.message } : l
+          ));
+        }
+      }
+
+      // === AUDIO TTS (ElevenLabs) ===
+      if (generateAudio) {
+        const cleanForTTS = (htmlOrText: string) =>
+          (htmlOrText || '')
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        // Fetch latest content (may have been updated by previous steps)
+        const { data: latestLesson, error: latestError } = await supabase
+          .from('lessons')
+          .select('objectif, introduction, contenu, exemples_exercices')
+          .eq('id', lesson.id)
+          .single();
+
+        if (latestError) {
+          console.error('Audio TTS: failed to load lesson content:', latestError);
+          setLessonStatuses(prev => prev.map((l, i) =>
+            i === index ? { ...l, error: (l.error || '') + ' Audio: ' + latestError.message } : l
+          ));
+        } else {
+          const audioPlan = [
+            { sectionName: 'objectif' as const, sourceField: 'objectif' as const },
+            { sectionName: 'introduction' as const, sourceField: 'introduction' as const },
+            { sectionName: 'contenu' as const, sourceField: 'contenu' as const },
+            { sectionName: 'exemples' as const, sourceField: 'exemples_exercices' as const },
+          ];
+
+          for (let ai = 0; ai < audioPlan.length; ai++) {
+            const { sectionName, sourceField } = audioPlan[ai];
+            const rawText = (latestLesson as any)?.[sourceField] || '';
+            const cleanText = cleanForTTS(rawText);
+
+            if (!cleanText) continue;
+
+            try {
+              const { error: ttsError } = await supabase.functions.invoke('elevenlabs-tts', {
+                body: {
+                  text: cleanText,
+                  lessonId: lesson.id,
+                  sectionName,
+                }
+              });
+              if (ttsError) {
+                console.error(`Audio TTS error for ${sectionName}:`, ttsError);
+              }
+              // Small delay between TTS calls to avoid rate limits
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            } catch (ttsErr: any) {
+              console.error(`Audio TTS exception for ${sectionName}:`, ttsErr);
+            }
+          }
+
+          // Fetch final audio URLs and store in state
+          const { data: lessonWithAudio } = await supabase
+            .from('lessons')
+            .select('audio_objectif_url, audio_introduction_url, audio_contenu_url, audio_exemples_url')
+            .eq('id', lesson.id)
+            .single();
+
+          if (lessonWithAudio) {
+            setLessonStatuses(prev => prev.map((l, i) => {
+              if (i === index) {
+                return {
+                  ...l,
+                  audioUrls: {
+                    objectif: lessonWithAudio.audio_objectif_url || undefined,
+                    introduction: lessonWithAudio.audio_introduction_url || undefined,
+                    contenu: lessonWithAudio.audio_contenu_url || undefined,
+                    exemples: lessonWithAudio.audio_exemples_url || undefined,
+                  }
+                };
+              }
+              return l;
+            }));
+          }
+        }
+      }
+
+      // Mark lesson as completed with timing info
+      const generationTime = Date.now() - startTime;
+      setLessonStatuses(prev => prev.map((l, i) =>
+        i === index ? { ...l, status: 'completed' as GenerationStatus, generationTime } : l
+      ));
+      setCompletedCount(prev => prev + 1);
+
+    } catch (error: any) {
+      setLessonStatuses(prev => prev.map((l, i) =>
+        i === index ? { ...l, status: 'error' as GenerationStatus, error: error.message } : l
+      ));
+    }
+  };
+
+  /** Export generation results as CSV for review */
+  const exportGenerationResults = useCallback(() => {
+    const csv = [
+      ['Leçon', 'Statut', 'Sections générées', 'Temps (ms)', 'Erreur'],
+      ...lessonStatuses.map(l => [
+        l.title,
+        l.status,
+        l.sectionsGenerated.join(', '),
+        l.generationTime.toString(),
+        l.error || ''
+      ])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

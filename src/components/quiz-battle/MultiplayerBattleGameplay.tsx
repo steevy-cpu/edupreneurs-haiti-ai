@@ -260,7 +260,29 @@ export const MultiplayerBattleGameplay = ({
       }
     }
     
-  };
+    // Calculate XP: base per correct + time bonus + perfect bonus + participation
+    let xp = correctCount * 10;
+    const timeBonus = Math.round(answers.filter(a => a.correct && a.timeMs < 5000).length * 5);
+    xp += timeBonus;
+    
+    if (correctCount === questions.length) {
+      xp += 20;
+    }
+    xp += 5;
+
+    onComplete({
+      score: Math.round((correctCount / questions.length) * 100),
+      totalQuestions: questions.length,
+      correctAnswers: correctCount,
+      xpEarned: xp,
+      timeBonus,
+      answers,
+      questions,
+      isPerfect: correctCount === questions.length,
+      roundsWon: serverMyRoundsWon,
+      opponentRoundsWon: serverOpponentRoundsWon,
+    });
+  }, [answers, questions, battleId, userId, opponent.id, myRoundsWon, opponentRoundsWon, onComplete, playGameComplete]);
 
   const cancelStop = () => {
     setShowStopDialog(false);
