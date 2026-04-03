@@ -284,6 +284,128 @@ export const MultiplayerBattleGameplay = ({
     });
   }, [answers, questions, battleId, userId, opponent.id, myRoundsWon, opponentRoundsWon, onComplete, playGameComplete]);
 
+  const handleAnswer = useCallback(async (answerIndex: number) => {
+    if (showFeedback || waitingForOpponent || submitting) return;
+
+    stopTicking();
+    setSubmitting(true);
+
+    const timeMs = Date.now() - questionStartTime;
+    const isCorrect = answerIndex === currentQuestion.correct_answer;
+
+    setSelectedAnswer(answerIndex);
+    setShowFeedback(true);
+
+    if (isCorrect) {
+      playCorrect();
+    } else {
+      playIncorrect();
+    }
+
+    const newAnswer = {
+      questionIndex: currentIndex,
+      selectedAnswer: answerIndex,
+      correct: isCorrect,
+      timeMs,
+    };
+
+    setAnswers((prev) => [...prev, newAnswer]);
+
+    try {
+      // Call atomic answer submission RPC
+      const { data, error } = await supabase.rpc('submit_multiplayer_answer', {
+        p_battle_id: battleId,
+        p_user_id: userId,
+        p_question_index: currentIndex,
+        p_answer: answerIndex,
+        p_is_correct: isCorrect,
+      });
+
+      if (error) {
+        console.error('[MultiplayerGameplay] RPC error:', error);
+        setSubmitting(false);
+        return;
+      }
+
+      // Type assertion for the RPC result
+      const result = data as {
+        status: string;
+        round_winner: string | null;
+        should_advance: boolean;
+        new_question_index: number;
+        my_answer_correct: boolean;
+        current_index?: number;
+      };
+
+      if (result.status === 'round_complete') {
+        // Round finished — show who won
+        setRoundWinner(result.round_winner);
+        
+        if (result.round_winner === userId) {
+          setMyRoundsWon((prev) => prev + 1);
+        } else if (result.round_winner === opponent.id) {
+          setOpponentRoundsWon((prev) => prev + 1);
+        }
+        
+        processedRound.current = result.new_question_index;
+        
+        // Wait for feedback display, then advance
+        setTimeout(() => {
+          if (result.new_question_index < questions.length) {
+            moveToNextQuestion(result.new_question_index);
+          } else {
+            finishGame();
+          }
+          setSubmitting(false);
+        }, 2000);
+      } else if (result.status === 'waiting_opponent') {
+        // Answered first, waiting for opponent's answer
+        setWaitingForOpponent(true);
+        setSubmitting(false);
+      } else if (result.status === 'already_advanced') {
+        // Question already completed, move on
+        const currentIdx = result.current_index ?? result.new_question_index;
+        if (currentIdx < questions.length) {
+          moveToNextQuestion(currentIdx);
+        } else {
+          finishGame();
+        }
+        setSubmitting(false);
+      } else {
+        setSubmitting(false);
+      }
+    } catch (err) {
+      console.error('[MultiplayerGameplay] Error submitting answer:', err);
+      setSubmitting(false);
+    }
+  }, [
+    currentIndex, currentQuestion, battleId, userId, opponent.id, questions,
+    showFeedback, waitingForOpponent, submitting, questionStartTime,
+    stopTicking, playCorrect, playIncorrect, moveToNextQuestion, finishGame
+  ]);
+
+  const handleStop = () => {
+    stopTicking();
+    setShowStopDialog(true);
+  };
+
+  const confirmStop = () => {
+    const correctCount = answers.filter((a) => a.correct).length;
+    onComplete({
+      score: answers.length > 0 ? Math.round((correctCount / answers.length) * 100) : 0,
+      totalQuestions: questions.length,
+      correctAnswers: correctCount,
+      xpEarned: 0,
+      timeBonus: 0,
+      answers,
+      questions,
+      isPerfect: false,
+      wasAbandoned: true,
+      roundsWon: myRoundsWon,
+      opponentRoundsWon: opponentRoundsWon,
+    });
+  };
+
   const cancelStop = () => {
     setShowStopDialog(false);
     startTickingTimer(timeLeft, maxTime);
