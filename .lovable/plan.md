@@ -1,31 +1,39 @@
 
 
-## Fix Google OAuth redirect_uri_mismatch
+## Fix Build Errors — Corrupted Code in Two Files
 
-**Problem:** `GoogleSignInButton.tsx` uses `supabase.auth.signInWithOAuth` directly, which sends a callback URL that isn't registered in your Google Cloud Console's authorized redirect URIs.
+The preview is broken because two files were corrupted during a previous automated edit (the "remove 196 console.log statements" commit). The removal accidentally deleted surrounding code blocks, leaving broken syntax.
 
-**Solution:** Switch to `lovable.auth.signInWithOAuth("google")` — the Lovable Cloud managed OAuth that handles redirect URIs automatically. No need to configure redirect URIs in Google Cloud Console.
+### File 1: `src/features/content-editor/hooks/useBatchGeneration.ts`
 
-### Changes
+**Problem:** Lines 331 onward are corrupted. After image filtering code (line 330), the file jumps directly to the `exportGenerationResults` CSV logic, missing ~40 lines of code: image processing, audio URL fetching, lesson completion marking, error handling, and proper closing braces.
 
-**File: `src/components/auth/GoogleSignInButton.tsx`**
-- Replace `import { supabase }` with `import { lovable } from "@/integrations/lovable/index"`
-- Replace the `handleGoogleSignIn` function body:
-  - Use `lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin })` 
-  - Handle `result.redirected` (let browser redirect)
-  - Handle `result.error` (show toast)
-  - On success, navigate to `/dashboard` or `/auth/google-setup` based on `google_needs_setup` flag
-- Remove the `supabase` import (no longer needed in this file)
+**Fix:** Replace lines 331–353 with the correct code from the previous working version. This restores:
+- Image insertion into lesson content
+- Audio URL fetching after generation
+- Lesson completion status update with timing
+- Try/catch error handling
+- The `exportGenerationResults` callback
+- Proper closing of the hook
 
-**File: `src/hooks/useEnsureProfile.ts`** — No changes needed; it runs post-auth in Index.tsx.
+### File 2: `src/components/quiz-battle/MultiplayerBattleGameplay.tsx`
 
-### Safety Verification
+**Problem:** The `finishGame` function (line 236) is truncated at line 262. It computes round scores but never calls `onComplete()` or calculates XP — the function body was cut short when `console.log` statements were removed.
+
+**Fix:** Replace lines 262–263 with the missing code that was deleted: XP calculation logic, the `onComplete()` call with all game results, and the proper closing of the `useCallback`.
+
+### File 3: `supabase/functions/create-stripe-renewal/index.ts`
+
+**Problem:** Edge function uses `npm:@supabase/supabase-js@2.57.2` which isn't resolved in the Deno environment. This is a non-blocking error (edge functions deploy separately) but should be fixed.
+
+**Fix:** Change the import to use `https://esm.sh/@supabase/supabase-js@2` (ESM pattern consistent with other edge functions).
+
+### Safety
 
 | Check | Status |
 |-------|--------|
-| Breaks existing functionality? | No — same OAuth flow, different managed client |
-| Adds dependencies? | No — `@lovable.dev/cloud-auth-js` already installed |
-| Works on 3G? | Yes — same network path |
-| RLS impact? | None |
-| Existing Google users affected? | No — session/profile logic unchanged |
+| Restores previous working code? | Yes — from git history |
+| Adds new functionality? | No |
+| Affects other files? | No |
+| Risk | Very low — restoring proven code |
 
