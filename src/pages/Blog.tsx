@@ -68,7 +68,9 @@ export default function Blog() {
                 </Button>
               </Link>
               <Link to="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity duration-300 ease-out">
-                <img 
+                <img
+          loading="lazy"
+          decoding="async" 
                   src={edupreneursLogo} 
                   alt="EDUPRENEURS" 
                   className="h-8 w-auto"

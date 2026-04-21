@@ -601,6 +601,8 @@ export const AIAvatarGenerator = ({
             <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-xl shadow-lg overflow-hidden bg-muted flex items-center justify-center shrink-0">
               {generatedImage ? (
                 <img
+          loading="lazy"
+          decoding="async"
                   src={generatedImage}
                   alt="Avatar généré"
                   className="w-full h-full object-cover"
@@ -616,6 +618,8 @@ export const AIAvatarGenerator = ({
             {/* Jude reaction area */}
             <div className="flex flex-col items-center gap-1 min-w-0">
               <img
+          loading="lazy"
+          decoding="async"
                 src={judeProfile}
                 alt="Jude"
                 className="h-10 w-10 sm:h-12 sm:w-12 md:h-16 md:w-16 rounded-full object-cover"

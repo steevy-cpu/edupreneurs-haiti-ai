@@ -483,7 +483,9 @@ export const JudeChatbot = () => {
                 className={`flex items-start gap-2 ${message.sender === "user" ? "flex-row-reverse" : "flex-row"}`}
               >
                 {message.sender === "user" && (
-                  <img 
+                  <img
+          loading="lazy"
+          decoding="async" 
                     src={getAvatarUrl(userAvatarUrl) || "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>"}
                     alt="user"
                     className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover flex-shrink-0"

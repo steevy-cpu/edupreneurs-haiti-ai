@@ -15,7 +15,9 @@ const ComingSoonOverlay = () => {
           </div>
         </div>
         
-        <img 
+        <img
+          loading="lazy"
+          decoding="async" 
           src={ericThinking} 
           alt="Eric thinking" 
           className="w-32 h-32 object-contain mx-auto mb-4"

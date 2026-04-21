@@ -677,7 +677,9 @@ function StreakInfoCard() {
     <Card className="border-none rounded-[20px] shadow-md">
       <CardHeader className="p-4 sm:p-6">
         <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-          <img src={STREAK_FLAME_URL} alt="Streak" className="w-5 h-5" />
+          <img
+          loading="lazy"
+          decoding="async" src={STREAK_FLAME_URL} alt="Streak" className="w-5 h-5" />
           Série d'apprentissage
         </CardTitle>
         <CardDescription className="text-sm">

@@ -22,6 +22,8 @@ export const Footer = memo(function Footer() {
         {/* Logo and Tagline */}
         <div className="text-center mb-8">
           <img
+          loading="lazy"
+          decoding="async"
             src={edupreneursLogo}
             alt="Edupreneurs"
             width={36}

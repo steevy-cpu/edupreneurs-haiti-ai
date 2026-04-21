@@ -29,7 +29,9 @@ export const HeroSkeleton = () => {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center">
       {/* Logo/Brand */}
       <div className="mb-8">
-        <img 
+        <img
+          loading="lazy"
+          decoding="async" 
           src={edupreneursLogo} 
           alt="Edupreneurs"
           className="h-16 sm:h-20 w-auto"

@@ -452,6 +452,8 @@ const FirstTimeUserTour = () => {
               className="flex flex-col items-center gap-6 text-center px-8"
             >
               <img
+          loading="lazy"
+          decoding="async"
                 src={ericCelebrating}
                 alt="Jude celebrating"
                 className="w-40 h-40 object-contain drop-shadow-2xl"
@@ -513,6 +515,8 @@ const FirstTimeUserTour = () => {
               {/* Jude avatar */}
               <div className="flex-shrink-0">
                 <img
+          loading="lazy"
+          decoding="async"
                   src={ericStudentDesk}
                   alt="Jude"
                   className={`w-20 h-20 object-contain ${shouldShowGlow ? 'drop-shadow-lg' : 'drop-shadow'}`}

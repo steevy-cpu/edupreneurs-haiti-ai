@@ -96,6 +96,8 @@ export default function DonationSuccessCallback() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-card border border-border rounded-2xl p-8 text-center space-y-6">
         <img
+          loading="lazy"
+          decoding="async"
           src={judeAvatar}
           alt="Jude"
           className="w-20 h-20 rounded-full mx-auto border-4 border-primary/30"

@@ -107,6 +107,8 @@ export function ExamHubHeader({ track, series, subject }: ExamHubHeaderProps) {
           </div>
           
           <img
+          loading="lazy"
+          decoding="async"
             src={judeProfile}
             alt="Jude"
             className="w-64 h-64 object-contain drop-shadow-2xl"

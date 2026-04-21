@@ -93,6 +93,8 @@ export function ExamResultsModal({
             {/* Jude avatar */}
             <div className="flex justify-center">
               <img
+          loading="lazy"
+          decoding="async"
                 src={judeProfile}
                 alt="Jude"
                 className="w-20 h-20 rounded-full border-4 border-primary/30 shadow-lg"

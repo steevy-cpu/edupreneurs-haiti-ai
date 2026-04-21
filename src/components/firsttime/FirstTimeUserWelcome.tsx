@@ -309,6 +309,8 @@ const FirstTimeUserWelcome = () => {
             className="relative"
           >
             <img
+          loading="lazy"
+          decoding="async"
               src={ericWaving}
               alt="Jude"
               className={`w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 object-contain ${shouldShowGlow ? 'drop-shadow-2xl' : 'drop-shadow-md'}`}

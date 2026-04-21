@@ -68,7 +68,9 @@ const JudeCoachBanner: React.FC<JudeCoachBannerProps> = ({
       {/* Floating Bubble Banner */}
       <div className="relative flex items-start gap-2 sm:gap-3">
         {/* Jude Avatar - Clickable to open dialog */}
-        <img 
+        <img
+          loading="lazy"
+          decoding="async" 
           src={judeChairDesk} 
           alt="Jude" 
           className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0 border-2 border-primary/30 shadow-md cursor-pointer hover:scale-105 transition-transform"

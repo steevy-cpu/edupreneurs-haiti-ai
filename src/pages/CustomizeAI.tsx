@@ -74,7 +74,9 @@ const CustomizeAI = () => {
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full blur-3xl" />
                 <div className="relative w-64 h-64 rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 border-2 border-primary/20 flex items-center justify-center overflow-hidden">
-                  <img 
+                  <img
+          loading="lazy"
+          decoding="async" 
                     src={aiAssistant} 
                     alt="AI Assistant" 
                     className="w-48 h-48 object-contain"

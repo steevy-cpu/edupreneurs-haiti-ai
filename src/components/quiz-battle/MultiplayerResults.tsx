@@ -127,7 +127,9 @@ export const MultiplayerResults = ({
       <Card className={cn("border-2 overflow-hidden relative", resultConfig.bg, resultConfig.borderColor)}>
         <CardContent className="py-8 text-center relative">
           {/* Jude character image - centered as main icon */}
-          <img 
+          <img
+          loading="lazy"
+          decoding="async" 
             src={resultConfig.image} 
             alt="Jude" 
             className="w-20 h-24 mx-auto mb-4 object-contain"

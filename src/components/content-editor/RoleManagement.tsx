@@ -251,6 +251,8 @@ export const RoleManagement = () => {
                           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                             {editor.profiles?.avatar_url ? (
                               <img
+          loading="lazy"
+          decoding="async"
                                 src={editor.profiles.avatar_url}
                                 alt=""
                                 className="h-10 w-10 rounded-full"
