@@ -1,6 +1,6 @@
 // Service Worker for Push Notifications and Asset Caching - Optimized for 3G
 // Phase 9: Enhanced "Load Once" Behavior
-const SW_VERSION = '2.0.0';
+const SW_VERSION = '1.7.0';
 const CACHE_NAME = `edupreneurs-v${SW_VERSION}`;
 const STATIC_CACHE_NAME = `edupreneurs-static-v${SW_VERSION}`;
 const API_CACHE_NAME = `edupreneurs-api-v${SW_VERSION}`;
