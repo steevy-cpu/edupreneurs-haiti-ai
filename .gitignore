@@ -31,7 +31,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# macOS metadata files — created on non-APFS volumes (e.g. exFAT/FAT32 USB drives)
-._*
-**/.DS_Store

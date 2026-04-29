@@ -291,9 +291,7 @@ export function EbookManager() {
                   <Label>Image de couverture</Label>
                   <div className="flex items-center gap-4">
                     {formData.cover_url && (
-                      <img
-          loading="lazy"
-          decoding="async" 
+                      <img 
                         src={formData.cover_url} 
                         alt="Cover" 
                         className="h-24 w-16 object-cover rounded border"
@@ -426,8 +424,6 @@ export function EbookManager() {
                 <div className="relative aspect-[3/4] bg-muted">
                   {ebook.cover_url ? (
                     <img
-          loading="lazy"
-          decoding="async"
                       src={ebook.cover_url}
                       alt={ebook.title}
                       className="h-full w-full object-cover"

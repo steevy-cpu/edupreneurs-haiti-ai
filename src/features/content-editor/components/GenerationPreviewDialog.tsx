@@ -74,9 +74,7 @@ export const GenerationPreviewDialog = ({
           if (img.base64Data) {
             const imageUrl = await uploadBase64ImageToStorage(img.base64Data, previewLesson.lessonId, img.concept || 'image', i);
             if (imageUrl) {
-              updatedContenu += `\n\n<figure class="my-4"><img
-          loading="lazy"
-          decoding="async" src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+              updatedContenu += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
             }
           }
         }
@@ -91,9 +89,7 @@ export const GenerationPreviewDialog = ({
           if (img.base64Data) {
             const imageUrl = await uploadBase64ImageToStorage(img.base64Data, previewLesson.lessonId, img.concept || 'exemple', i);
             if (imageUrl) {
-              updatedExemples += `\n\n<figure class="my-4"><img
-          loading="lazy"
-          decoding="async" src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+              updatedExemples += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
             }
           }
         }
@@ -300,9 +296,7 @@ export const GenerationPreviewDialog = ({
                               {content.filter((img: any) => !img.insertAt || img.insertAt === 'contenu').map((img: any, idx: number) => (
                                 <div key={idx} className="space-y-2">
                                   {img.base64Data && (
-                                    <img
-          loading="lazy"
-          decoding="async" 
+                                    <img 
                                       src={`data:image/png;base64,${img.base64Data}`} 
                                       alt={img.concept || `Image ${idx + 1}`}
                                       className="w-full rounded-lg border"
@@ -324,9 +318,7 @@ export const GenerationPreviewDialog = ({
                               {content.filter((img: any) => img.insertAt === 'exemples_exercices').map((img: any, idx: number) => (
                                 <div key={idx} className="space-y-2">
                                   {img.base64Data && (
-                                    <img
-          loading="lazy"
-          decoding="async" 
+                                    <img 
                                       src={`data:image/png;base64,${img.base64Data}`} 
                                       alt={img.concept || `Image ${idx + 1}`}
                                       className="w-full rounded-lg border"

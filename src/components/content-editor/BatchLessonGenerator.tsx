@@ -243,9 +243,7 @@ export const BatchLessonGenerator = () => {
     // Remove all <div class="my-6 flex justify-center">...</div> blocks containing images
     let cleaned = htmlContent.replace(/<div class="my-6 flex justify-center">[\s\S]*?<\/div>\s*<\/div>/g, '');
     
-    // Also remove standalone <img
-          loading="lazy"
-          decoding="async"> tags
+    // Also remove standalone <img> tags
     cleaned = cleaned.replace(/<img[^>]*>/g, '');
     
     // Clean up extra whitespace
@@ -1688,9 +1686,7 @@ export const BatchLessonGenerator = () => {
                           {videosList.slice(0, 2).map((video: any, idx: number) => (
                             <div key={idx} className="border rounded-lg p-3 bg-background/50 space-y-2">
                               <div className="flex items-start gap-3">
-                                <img
-          loading="lazy"
-          decoding="async" 
+                                <img 
                                   src={video.thumbnail} 
                                   alt={video.title}
                                   className="w-32 h-24 object-cover rounded"
@@ -1744,9 +1740,7 @@ export const BatchLessonGenerator = () => {
                                   </Badge>
                                 </div>
                                 <div className="flex justify-center bg-background/80 rounded-lg p-2">
-                                  <img
-          loading="lazy"
-          decoding="async" 
+                                  <img 
                                     src={`data:image/png;base64,${image.base64Data}`}
                                     alt={image.description}
                                     className="max-w-full h-auto max-h-64 rounded shadow-md border border-border"

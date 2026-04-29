@@ -403,8 +403,6 @@ export const VisitorTour = () => {
           <div className="flex-shrink-0">
             {ericImage ? (
               <img
-          loading="lazy"
-          decoding="async"
                 src={ericImage}
                 alt="Jude"
                 className="w-20 h-20 object-contain drop-shadow-lg"

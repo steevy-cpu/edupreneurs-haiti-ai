@@ -560,9 +560,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
                                     </Badge>
                                   </div>
                                   <div className="flex justify-center bg-background/80 rounded-lg p-2">
-                                    <img
-          loading="lazy"
-          decoding="async" 
+                                    <img 
                                       src={`data:image/png;base64,${image.base64Data}`}
                                       alt={image.description}
                                       className="max-w-full h-auto max-h-64 rounded shadow-md border border-border"
@@ -584,9 +582,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
                                 return videos.slice(0, 2).map((video: any, idx: number) => (
                                   <div key={idx} className="border rounded-lg p-3 bg-background/50 space-y-2">
                                     <div className="flex items-start gap-3">
-                                      <img
-          loading="lazy"
-          decoding="async" 
+                                      <img 
                                         src={video.thumbnail} 
                                         alt={video.title}
                                         className="w-24 h-18 object-cover rounded"

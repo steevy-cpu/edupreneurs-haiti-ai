@@ -292,8 +292,6 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
               className="relative"
             >
               <img
-          loading="lazy"
-          decoding="async"
                 src={ericStudentDesk}
                 alt="Jude"
                 className="w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 object-contain drop-shadow-2xl"

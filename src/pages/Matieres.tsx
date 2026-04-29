@@ -278,9 +278,7 @@ export default function Matieres() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 dark:bg-white/5 backdrop-blur-md border border-white/30 mb-6 animate-fade-in">
-              <img
-          loading="lazy"
-          decoding="async" src={menfpLogo} alt="MENFP" className="w-6 h-6 rounded-full" />
+              <img src={menfpLogo} alt="MENFP" className="w-6 h-6 rounded-full" />
               <span className="text-sm font-semibold text-white drop-shadow-md">Programme officiel MENFP</span>
             </div>
             
@@ -497,9 +495,7 @@ export default function Matieres() {
               <Card className="p-6 mb-8 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
                 <div className="flex flex-col md:flex-row items-center gap-6">
                   <div className="w-24 h-24 rounded-lg bg-background flex items-center justify-center p-2 shadow-md">
-                    <img
-          loading="lazy"
-          decoding="async" src={menfpLogo} alt="MENFP Logo" className="w-full h-full object-contain" />
+                    <img src={menfpLogo} alt="MENFP Logo" className="w-full h-full object-contain" />
                   </div>
                   <div className="flex-1 text-center md:text-left">
                     <h3 className="text-2xl font-bold mb-2">Préparation aux Examens Officiels</h3>

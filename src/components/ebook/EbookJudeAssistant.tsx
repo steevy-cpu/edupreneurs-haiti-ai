@@ -154,9 +154,7 @@ export function EbookJudeAssistant({
           <div ref={scrollRef}>
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <img
-          loading="lazy"
-          decoding="async" src={judeProfile} alt="Jude" className="h-16 w-16 rounded-full object-cover mb-3" />
+                <img src={judeProfile} alt="Jude" className="h-16 w-16 rounded-full object-cover mb-3" />
                 <p className="text-sm text-muted-foreground mb-4">
                   Sélectionne un mot que tu ne comprends pas, ou pose-moi une question sur ta lecture ! 📚
                 </p>

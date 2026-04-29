@@ -258,8 +258,6 @@ export default function BlogModule() {
                     <div className="flex items-center gap-3">
                       {post.cover_image_url && (
                         <img
-          loading="lazy"
-          decoding="async"
                           src={post.cover_image_url}
                           alt={post.title}
                           className="w-16 h-10 object-cover rounded"

@@ -176,8 +176,6 @@ const AvatarGenerationStep = () => {
                 transition={shouldAnimate ? { type: "spring", damping: 15, stiffness: 200 } : { duration: 0.1 }}
               >
                 <img
-          loading="lazy"
-          decoding="async"
                   src={judeImg}
                   alt="Jude"
                   className={`w-28 h-28 sm:w-36 sm:h-36 object-contain ${shouldShowGlow ? 'drop-shadow-2xl' : 'drop-shadow-md'}`}

@@ -122,9 +122,7 @@ export const LessonImageManager: React.FC<LessonImageManagerProps> = ({
       const content = selectedImage.field === 'contenu' ? contenu : exemplesExercices;
       if (!content) return;
 
-      const newImgTag = `<img
-          loading="lazy"
-          decoding="async" src="${publicUrl}" alt="${selectedImage.alt}" class="w-full max-w-2xl mx-auto rounded-lg shadow-md my-4">`;
+      const newImgTag = `<img src="${publicUrl}" alt="${selectedImage.alt}" class="w-full max-w-2xl mx-auto rounded-lg shadow-md my-4">`;
       const newContent = content.replace(selectedImage.fullMatch, newImgTag);
 
       onContentUpdate(selectedImage.field === 'contenu' ? 'contenu' : 'exemples_exercices', newContent);
@@ -203,9 +201,7 @@ export const LessonImageManager: React.FC<LessonImageManagerProps> = ({
         const content = selectedImage.field === 'contenu' ? contenu : exemplesExercices;
         if (!content) return;
 
-        const newImgTag = `<img
-          loading="lazy"
-          decoding="async" src="${newImageUrl}" alt="${regeneratePrompt.substring(0, 50)}" class="w-full max-w-2xl mx-auto rounded-lg shadow-md my-4">`;
+        const newImgTag = `<img src="${newImageUrl}" alt="${regeneratePrompt.substring(0, 50)}" class="w-full max-w-2xl mx-auto rounded-lg shadow-md my-4">`;
         const newContent = content.replace(selectedImage.fullMatch, newImgTag);
 
         onContentUpdate(selectedImage.field === 'contenu' ? 'contenu' : 'exemples_exercices', newContent);
@@ -254,8 +250,6 @@ export const LessonImageManager: React.FC<LessonImageManagerProps> = ({
                   >
                     <div className="aspect-video">
                       <img
-          loading="lazy"
-          decoding="async"
                         src={image.src}
                         alt={image.alt}
                         className="w-full h-full object-cover"
@@ -344,8 +338,6 @@ export const LessonImageManager: React.FC<LessonImageManagerProps> = ({
             {selectedImage && (
               <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
                 <img
-          loading="lazy"
-          decoding="async"
                   src={selectedImage.src}
                   alt={selectedImage.alt}
                   className="w-full h-full object-contain"

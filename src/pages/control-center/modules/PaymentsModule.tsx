@@ -417,9 +417,7 @@ const PaymentsModule = () => {
           </DialogHeader>
           {viewReceiptUrl && (
             <div className="flex justify-center overflow-auto">
-              <img
-          loading="lazy"
-          decoding="async" 
+              <img 
                 src={viewReceiptUrl} 
                 alt="Reçu de paiement"
                 className="max-w-full h-auto rounded-lg"

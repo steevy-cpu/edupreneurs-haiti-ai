@@ -72,9 +72,7 @@ const ChessChat: React.FC<ChessChatProps> = ({
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex-shrink-0 flex items-center gap-3 p-3 border-b bg-card">
-        <img
-          loading="lazy"
-          decoding="async" 
+        <img 
           src={ericChairDesk} 
           alt="Eric" 
           className="w-10 h-10 rounded-full object-cover"

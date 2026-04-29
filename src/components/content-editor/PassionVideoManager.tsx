@@ -737,9 +737,7 @@ export const PassionVideoManager = () => {
                                     {/* Configured Video Info */}
                                     {configuredVideo && videoId && (
                                       <div className="flex items-center gap-2">
-                                        <img
-          loading="lazy"
-          decoding="async" 
+                                        <img 
                                           src={`https://img.youtube.com/vi/${videoId}/default.jpg`}
                                           alt="Thumbnail"
                                           className="w-12 h-8 object-cover rounded"
@@ -1044,9 +1042,7 @@ export const PassionVideoManager = () => {
                                           className="flex items-center gap-3 p-3 pl-8 text-sm hover:bg-muted/30"
                                         >
                                           {video.thumbnail && (
-                                            <img
-          loading="lazy"
-          decoding="async" 
+                                            <img 
                                               src={video.thumbnail}
                                               alt={video.title || 'Video'}
                                               className="w-16 h-10 object-cover rounded"
@@ -1230,9 +1226,7 @@ export const PassionVideoManager = () => {
                         key={video.id}
                         className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50"
                       >
-                        <img
-          loading="lazy"
-          decoding="async" 
+                        <img 
                           src={`https://img.youtube.com/vi/${video.video_id}/default.jpg`}
                           alt="Thumbnail"
                           className="w-20 h-14 object-cover rounded"
@@ -1339,9 +1333,7 @@ const ActivityCard = ({
         {hasCustomVideo && savedUrl && (
           <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
             {extractYouTubeVideoId(savedUrl) && (
-              <img
-          loading="lazy"
-          decoding="async" 
+              <img 
                 src={`https://img.youtube.com/vi/${extractYouTubeVideoId(savedUrl)}/default.jpg`}
                 alt="Thumbnail"
                 className="w-20 h-14 object-cover rounded"

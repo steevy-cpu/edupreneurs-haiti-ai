@@ -160,9 +160,7 @@ const ExamsHub = () => {
                 </div>
               </div>
             </div>
-            <img
-          loading="lazy"
-          decoding="async" 
+            <img 
               src={judeProfile} 
               alt="Jude" 
               className="w-64 h-64 object-contain drop-shadow-2xl"

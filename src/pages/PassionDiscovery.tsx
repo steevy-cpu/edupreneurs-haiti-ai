@@ -167,9 +167,7 @@ const PassionDiscoveryContent = () => {
         {/* Intro screen preview (blurred behind) */}
         <div className="min-h-screen p-4 flex flex-col items-center justify-center">
           <div className="max-w-md mx-auto text-center space-y-6 opacity-50 blur-[2px]">
-            <img
-          loading="lazy"
-          decoding="async" 
+            <img 
               src={judeWaving} 
               alt="Jude"
               className="w-40 h-40 mx-auto object-contain"
