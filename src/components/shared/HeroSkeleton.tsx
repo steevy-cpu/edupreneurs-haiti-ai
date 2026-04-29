@@ -30,12 +30,12 @@ export const HeroSkeleton = () => {
       {/* Logo/Brand */}
       <div className="mb-8">
         <img
-          loading="lazy"
-          decoding="async" 
-          src={edupreneursLogo} 
+          loading="eager"
+          decoding="sync"
+          fetchPriority="high"
+          src={edupreneursLogo}
           alt="Edupreneurs"
           className="h-16 sm:h-20 w-auto"
-          fetchPriority="high"
         />
       </div>
       

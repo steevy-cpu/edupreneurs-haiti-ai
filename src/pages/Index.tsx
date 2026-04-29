@@ -5,10 +5,6 @@ import { useVisitor } from "@/contexts/VisitorContext";
 import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { ensureProfileExists } from "@/hooks/useEnsureProfile";
 
-// LCP asset preload — imported so Vite resolves the hashed production URL
-import ericCelebratingWebp from "@/assets/eric-celebrating.webp";
-import ericCelebratingPng from "@/assets/eric-celebrating.png";
-
 // Critical components (immediate render — above the fold)
 import { VisitorBanner } from "@/components/visitor";
 import { HeaderNav } from "@/components/home/HeaderNav";
@@ -122,9 +118,7 @@ const Index = () => {
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="fr_HT" />
         <link rel="canonical" href="https://mon-edupreneur.com/" />
-        {/* Preload LCP hero image — WebP preferred, PNG fallback */}
-        <link rel="preload" as="image" href={ericCelebratingWebp} type="image/webp" fetchpriority="high" />
-        <link rel="preload" as="image" href={ericCelebratingPng} fetchpriority="high" />
+        {/* Preload already in index.html — no duplication needed here */}
       </Helmet>
 
       <VisitorBanner />
