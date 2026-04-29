@@ -93,6 +93,8 @@ function ModalContent({ milestone, onDismiss }: { milestone: MilestoneData; onDi
       >
         {/* Milestone icon GIF */}
         <img
+          loading="lazy"
+          decoding="async"
           src={milestone.iconUrl}
           alt={milestone.title}
           className="w-20 h-20 object-contain"

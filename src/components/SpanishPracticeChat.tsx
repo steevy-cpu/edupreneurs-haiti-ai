@@ -339,6 +339,8 @@ export const SpanishPracticeChat = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2 sm:gap-3">
                 <img
+          loading="lazy"
+          decoding="async"
                   src={judeChairDesk}
                   alt="Jude"
                   className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 object-contain flex-shrink-0"

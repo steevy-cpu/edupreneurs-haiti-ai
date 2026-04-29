@@ -161,6 +161,8 @@ export function BlogPostForm({ post, onSubmit, isSubmitting }: BlogPostFormProps
           {coverImage ? (
             <div className="relative max-w-2xl rounded-lg overflow-hidden border bg-muted/30">
               <img
+          loading="lazy"
+          decoding="async"
                 src={coverImage}
                 alt="Cover"
                 className="w-full h-auto object-contain max-h-80"

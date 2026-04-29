@@ -45,6 +45,8 @@ const ChessModeSelector = ({
             <div className="relative">
               {judeAvatar ? (
                 <img
+          loading="lazy"
+          decoding="async"
                   src={judeAvatar}
                   alt="Jude"
                   className="w-14 h-14 rounded-full object-cover ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all"

@@ -65,7 +65,9 @@ const FloatingChessMessages: React.FC<FloatingChessMessagesProps> = ({
         onClick={onToggle}
         className="absolute bottom-4 right-4 z-20 flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-3 py-2 shadow-lg hover:scale-105 transition-transform"
       >
-        <img 
+        <img
+          loading="lazy"
+          decoding="async" 
           src={judeChairDesk} 
           alt="Jude" 
           className="w-8 h-8 rounded-full object-cover border-2 border-primary-foreground/20"
@@ -86,7 +88,9 @@ const FloatingChessMessages: React.FC<FloatingChessMessagesProps> = ({
         >
           <div className="bg-card/95 backdrop-blur-sm border rounded-2xl rounded-br-md p-3 shadow-lg max-w-[280px] ml-auto">
             <div className="flex items-start gap-2">
-              <img 
+              <img
+          loading="lazy"
+          decoding="async" 
                 src={judeChairDesk} 
                 alt="Jude" 
                 className="w-6 h-6 rounded-full object-cover flex-shrink-0"
@@ -105,7 +109,9 @@ const FloatingChessMessages: React.FC<FloatingChessMessagesProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between p-3 border-b bg-muted/50">
             <div className="flex items-center gap-2">
-              <img 
+              <img
+          loading="lazy"
+          decoding="async" 
                 src={judeChairDesk} 
                 alt="Jude" 
                 className="w-8 h-8 rounded-full object-cover"

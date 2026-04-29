@@ -86,6 +86,8 @@ export const LessonAIPracticeSection = ({
                 <div className="relative">
                   <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl" />
                   <img
+          loading="lazy"
+          decoding="async"
                     src={judeChairDesk}
                     alt="Jude AI Assistant"
                     className="relative w-12 h-12 sm:w-16 sm:h-16 object-contain"

@@ -150,6 +150,8 @@ export const LessonHeader = ({
             <div className="relative flex-shrink-0">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent rounded-full blur-2xl lg:blur-3xl" />
               <img
+          loading="lazy"
+          decoding="async"
                 src={judeImage}
                 alt="Jude - Professeur"
                 className="relative w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-48 lg:h-48 object-contain drop-shadow-xl lg:drop-shadow-2xl"
