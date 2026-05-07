@@ -161,7 +161,7 @@ serve(async (req) => {
         .update({
           has_free_access: true,
           subscription_status: "active",
-          subscription_end_date: "2026-05-08T00:00:00.000Z",
+          subscription_end_date: "2026-06-08T00:00:00.000Z",
         })
         .eq("user_id", userId);
 

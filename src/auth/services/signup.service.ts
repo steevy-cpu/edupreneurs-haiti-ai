@@ -160,7 +160,7 @@ export async function createAccount(data: SignupFormData, referralCode?: string)
           ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
           : (isTrial || isFreeTrial)
             ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-            : (data.promoGrantsFreeAccess ? '2026-05-08T00:00:00.000Z' : null),
+            : (data.promoGrantsFreeAccess ? '2026-06-08T00:00:00.000Z' : null),
         payment_order_id: isMonCash ? data.paymentOrderId : null,
       } as any);
 

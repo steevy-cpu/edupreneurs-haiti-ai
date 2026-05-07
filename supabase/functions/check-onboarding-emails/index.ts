@@ -98,7 +98,7 @@ function buildDay3Email(greeting: string, name: string): string {
       <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef3c7;border:1px solid #fde68a;border-radius:12px;margin-bottom:20px;">
       <tr><td style="padding:16px;text-align:center;">
         <p style="color:#92400e;font-size:14px;font-weight:600;margin:0;">
-          🎁 Rappel : ton accès est gratuit jusqu'au 8 mai 2026 !
+          🎁 Rappel : ton accès est gratuit jusqu'au 8 juin 2026 !
         </p>
       </td></tr>
       </table>
