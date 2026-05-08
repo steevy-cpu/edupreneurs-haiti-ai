@@ -10,9 +10,9 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
-  // Force a fresh Vite dependency cache to avoid stale prebundled deps (e.g. react-chessboard)
-  // Force fresh cache rebuild to clear stale React references
-  cacheDir: "node_modules/.vite-edupreneurs-v4",
+  // Force a fresh Vite dependency cache to avoid stale prebundled deps (e.g. react-chessboard).
+  // Bump this namespace when preview serves mixed React chunks after dependency optimizer drift.
+  cacheDir: "node_modules/.vite-edupreneurs-v5",
   optimizeDeps: {
     // Avoid using any previously prebundled react-chessboard that may require React 19's `use`
     exclude: ["react-chessboard"],
