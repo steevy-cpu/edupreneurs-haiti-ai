@@ -84,6 +84,11 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Keep Vite optimized deps and app source on one React instance; duplicate React breaks hooks.
+      "react": path.resolve(__dirname, "./node_modules/react"),
+      "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
+      "react/jsx-runtime": path.resolve(__dirname, "./node_modules/react/jsx-runtime.js"),
+      "react/jsx-dev-runtime": path.resolve(__dirname, "./node_modules/react/jsx-dev-runtime.js"),
     },
     // Force all packages to use the same React instance
     // Prevents "Cannot read properties of null (reading 'useState'/'useContext')" errors
