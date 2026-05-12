@@ -21,6 +21,7 @@
  */
 
 import { ReactNode } from 'react';
+import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Core Infrastructure
@@ -114,7 +115,8 @@ interface AppProvidersProps {
  * 3. NetworkProvider - connection detection
  * 4. ThemeProvider - theming
  * 5. UIProviders - tooltips, toasts
- * 6. FeatureProviders - auth-dependent features; BrowserRouter lives at App root
+ * 6. BrowserRouter - route context required by feature providers using router hooks
+ * 7. FeatureProviders - auth-dependent features that may read the current route
  */
 export function AppProviders({ children }: AppProvidersProps) {
   return (
@@ -129,9 +131,12 @@ export function AppProviders({ children }: AppProvidersProps) {
               forcedTheme={undefined}
             >
             <UIProviders>
-              <FeatureProviders>
-                {children}
-              </FeatureProviders>
+              <BrowserRouter>
+                {/* Keep route-aware providers inside BrowserRouter so useLocation/useNavigate are safe. */}
+                <FeatureProviders>
+                  {children}
+                </FeatureProviders>
+              </BrowserRouter>
             </UIProviders>
           </ThemeProvider>
         </NetworkProvider>
