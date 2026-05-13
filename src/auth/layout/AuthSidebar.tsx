@@ -7,7 +7,7 @@
  */
 
 import { motion } from "framer-motion";
-import authImage from "@/assets/auth00.png";
+const authImage = '/images/auth00-200w.webp';
 import TypewriterText from "@/components/TypewriterText";
 import { useAnimationConfig } from "@/hooks/useAnimationConfig";
 
@@ -51,6 +51,8 @@ export default function AuthSidebar() {
       {shouldAnimate ? (
         <motion.img
           src={authImage}
+          srcSet="/images/auth00-200w.webp 200w, /images/auth00-400w.webp 400w"
+          sizes="(max-width: 768px) 112px, 144px"
           alt="Eric - Assistant EDUPRENEURS"
           className="w-28 md:w-36 h-auto drop-shadow-lg"
           loading="lazy"
@@ -74,6 +76,8 @@ export default function AuthSidebar() {
       ) : (
         <img
           src={authImage}
+          srcSet="/images/auth00-200w.webp 200w, /images/auth00-400w.webp 400w"
+          sizes="(max-width: 768px) 112px, 144px"
           alt="Eric - Assistant EDUPRENEURS"
           className="w-28 md:w-36 h-auto drop-shadow-lg"
           loading="lazy"

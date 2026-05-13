@@ -8,7 +8,7 @@ import { Sparkles, ArrowRight, BookOpen, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import ericWaving from "@/assets/eric-main01.png";
+const ericWaving = '/images/eric-main01-200w.webp';
 
 const subjects = [
   { id: "math", name: "Mathématiques", icon: "📐" },
@@ -66,9 +66,11 @@ const Onboarding = () => {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
-            <img 
-              src={ericWaving} 
-              alt="Eric vous souhaite la bienvenue" 
+            <img
+              src={ericWaving}
+              srcSet="/images/eric-main01-200w.webp 200w, /images/eric-main01-400w.webp 400w"
+              sizes="(max-width: 640px) 128px, 160px"
+              alt="Eric vous souhaite la bienvenue"
               className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
               loading="lazy"
               decoding="async"

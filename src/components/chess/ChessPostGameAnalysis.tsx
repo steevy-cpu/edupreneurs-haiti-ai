@@ -21,7 +21,7 @@ import {
   Brain
 } from 'lucide-react';
 const ericCelebrating = '/images/eric-celebrating-400w.webp';
-import ericThinking from '@/assets/eric-thinking-pose.png';
+const ericThinking = '/images/eric-thinking-pose-200w.webp';
 
 interface MoveAnalysis {
   moveNumber: number;

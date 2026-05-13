@@ -1,6 +1,6 @@
 import ericAvatar from "@/assets/eric-welcome.png";
-import ericProfile from "@/assets/eric-new-profile.png";
-import ericEdupreneurs from "@/assets/eric-edupreneurs.png";
+const ericProfile = '/images/eric-new-profile-300w.webp';
+const ericEdupreneurs = '/images/eric-edupreneurs-300w.webp';
 import judeProfile from "@/assets/jude-profile.jpeg";
 
 export const avatarMap: Record<string, string> = {

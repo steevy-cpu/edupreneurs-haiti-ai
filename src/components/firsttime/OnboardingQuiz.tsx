@@ -24,11 +24,11 @@ import SimpleTypewriter from '@/components/visitor/SimpleTypewriter';
 import { useJudeAudio } from '@/contexts/JudeAudioContext';
 
 // Jude images — lazy imported for 3G performance
-import ericWaving from '@/assets/eric-waving.png';
-import ericThumbUp from '@/assets/eric-thumb-up.png';
-import ericStudentDesk from '@/assets/eric-student-desk.png';
-import ericThinkingPose from '@/assets/eric-thinking-pose.png';
-import ericPointingUp from '@/assets/eric-pointing-up.png';
+const ericWaving = '/images/eric-waving-200w.webp';
+const ericThumbUp = '/images/eric-thumb-up-200w.webp';
+const ericStudentDesk = '/images/eric-student-desk-200w.webp';
+const ericThinkingPose = '/images/eric-thinking-pose-200w.webp';
+const ericPointingUp = '/images/eric-pointing-up-200w.webp';
 import ericTeaching from '@/assets/eric-teaching.png';
 const ericCelebrating = '/images/eric-celebrating-400w.webp';
 

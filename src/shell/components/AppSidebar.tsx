@@ -17,7 +17,7 @@ import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Skeleton } from '@/components/ui/skeleton';
-import dashboardImage from '@/assets/dashboard00.png';
+const dashboardImage = '/images/dashboard00-200w.webp';
 
 // Hooks
 import { useSessionAuth } from '@/contexts/SessionAuthContext';

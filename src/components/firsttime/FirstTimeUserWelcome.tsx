@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ericWaving from '@/assets/eric-waving.png';
+const ericWaving = '/images/eric-waving-200w.webp';
 import SimpleTypewriter from '@/components/visitor/SimpleTypewriter';
 import { useFirstTimeUser } from '@/contexts/FirstTimeUserContext';
 import { Button } from '@/components/ui/button';
@@ -225,11 +225,15 @@ const FirstTimeUserWelcome = () => {
           {/* Jude avatar */}
           <motion.img
             src={ericWaving}
+            srcSet="/images/eric-waving-200w.webp 200w, /images/eric-waving-400w.webp 400w"
+            sizes="128px"
             alt="Jude"
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', damping: 15 }}
             className="w-32 h-32 object-contain drop-shadow-2xl"
+            loading="lazy"
+            decoding="async"
           />
 
           {/* Speech bubble */}
@@ -310,8 +314,12 @@ const FirstTimeUserWelcome = () => {
           >
             <img
               src={ericWaving}
+              srcSet="/images/eric-waving-200w.webp 200w, /images/eric-waving-400w.webp 400w"
+              sizes="(max-width: 640px) 128px, (max-width: 1024px) 160px, 192px"
               alt="Jude"
               className={`w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 object-contain ${shouldShowGlow ? 'drop-shadow-2xl' : 'drop-shadow-md'}`}
+              loading="lazy"
+              decoding="async"
             />
           </motion.div>
 

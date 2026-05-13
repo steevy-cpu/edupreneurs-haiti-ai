@@ -17,8 +17,8 @@ import { useToast } from '@/hooks/use-toast';
 
 // Jude/Eric images for different result states
 const judeCelebrating = '/images/eric-celebrating-400w.webp';
-import judeThinking from '@/assets/eric-thinking-pose.png';
-import judeSad from '@/assets/eric-404.png';
+const judeThinking = '/images/eric-thinking-pose-200w.webp';
+const judeSad = '/images/eric-404-200w.webp';
 
 interface OpponentProgress {
   score: number;

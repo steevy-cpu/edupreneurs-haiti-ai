@@ -11,7 +11,7 @@ import { Bell } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { initializePushNotifications } from '@/utils/pushNotifications';
-import ericPointingUp from '@/assets/eric-pointing-up.png';
+const ericPointingUp = '/images/eric-pointing-up-100w.webp';
 
 interface PushPermissionPromptProps {
   userId: string;
@@ -93,9 +93,12 @@ export default function PushPermissionPrompt({ userId, onDismiss }: PushPermissi
             {/* Jude/Eric mascot image */}
             <img
               src={ericPointingUp}
+              srcSet="/images/eric-pointing-up-100w.webp 100w, /images/eric-pointing-up-200w.webp 200w"
+              sizes="64px"
               alt="Jude"
               className="h-16 w-auto flex-shrink-0 object-contain"
-              loading="eager"
+              loading="lazy"
+              decoding="async"
             />
 
             <div className="flex-1 min-w-0">

@@ -123,7 +123,9 @@ export const CoursesSection = memo(function CoursesSection() {
               <div className="pt-4">
                 <div className="w-64 h-64 mx-auto flex items-center justify-center">
                   <img
-                    src="/images/jude-passion-discovery.png"
+                    src="/images/jude-passion-discovery-300w.webp"
+                    srcSet="/images/jude-passion-discovery-300w.webp 300w, /images/jude-passion-discovery-500w.webp 500w"
+                    sizes="256px"
                     alt="Jude - Assistant IA personnalisé"
                     className="w-full h-full object-contain"
                     loading="lazy"

@@ -204,9 +204,9 @@ export const VisitorTour = () => {
     return () => cancelAnimationFrame(timer);
   }, []);
 
-  // Lazy load the Eric image for 3G optimization
+  // Load the Eric image after first render to avoid blocking initial paint
   useEffect(() => {
-    import("@/assets/eric-student-desk.png").then((m) => setEricImage(m.default));
+    setEricImage('/images/eric-student-desk-200w.webp');
   }, []);
 
   // On-mount: deferred safety-net preload of all unique tour paths
@@ -404,8 +404,12 @@ export const VisitorTour = () => {
             {ericImage ? (
               <img
                 src={ericImage}
+                srcSet="/images/eric-student-desk-200w.webp 200w, /images/eric-student-desk-400w.webp 400w"
+                sizes="80px"
                 alt="Jude"
                 className="w-20 h-20 object-contain drop-shadow-lg"
+                loading="lazy"
+                decoding="async"
               />
             ) : (
               <div className="w-20 h-20 rounded-full bg-muted animate-pulse" />

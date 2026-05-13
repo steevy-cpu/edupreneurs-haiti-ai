@@ -1,5 +1,4 @@
-// Use public paths for WebP optimization
-const ericAiHelper = "/images/eric-ai-helper.png";
+const ericAiHelper = '/images/eric-ai-helper-100w.webp';
 
 interface JudeBannerProps {
   isVisible: boolean;
@@ -17,12 +16,14 @@ export const JudeBanner = ({ isVisible }: JudeBannerProps) => {
       <div className="px-3 py-2.5 bg-gradient-to-r from-primary/10 via-primary/5 to-success/10 border border-primary/20 rounded-xl backdrop-blur-md shadow-lg">
         <div className="flex items-center gap-2.5 sm:gap-3">
           <div className="relative">
-            <img 
-              src={ericAiHelper} 
-              alt="Jude AI Assistant" 
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover shrink-0 ring-2 ring-primary/20" 
-              loading="lazy" 
-              decoding="async" 
+            <img
+              src={ericAiHelper}
+              srcSet="/images/eric-ai-helper-100w.webp 100w, /images/eric-ai-helper-200w.webp 200w"
+              sizes="(max-width: 640px) 36px, 40px"
+              alt="Jude AI Assistant"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover shrink-0 ring-2 ring-primary/20"
+              loading="lazy"
+              decoding="async"
             />
             <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" />
           </div>

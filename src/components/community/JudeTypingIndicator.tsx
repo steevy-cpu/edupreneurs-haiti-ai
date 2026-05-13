@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2 } from "lucide-react";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 
-const ericAiHelper = "/images/eric-ai-helper.png";
+const ericAiHelper = '/images/eric-ai-helper-100w.webp';
 
 interface JudeTypingIndicatorProps {
   isThinking?: boolean;

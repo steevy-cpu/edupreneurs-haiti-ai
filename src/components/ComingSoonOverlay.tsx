@@ -1,7 +1,7 @@
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import ericThinking from "@/assets/eric-thinking-pose.png";
+const ericThinking = '/images/eric-thinking-pose-200w.webp';
 
 const ComingSoonOverlay = () => {
   const navigate = useNavigate();
@@ -15,10 +15,14 @@ const ComingSoonOverlay = () => {
           </div>
         </div>
         
-        <img 
-          src={ericThinking} 
-          alt="Eric thinking" 
+        <img
+          src={ericThinking}
+          srcSet="/images/eric-thinking-pose-200w.webp 200w, /images/eric-thinking-pose-400w.webp 400w"
+          sizes="128px"
+          alt="Eric thinking"
           className="w-32 h-32 object-contain mx-auto mb-4"
+          loading="lazy"
+          decoding="async"
         />
         
         <h2 className="text-2xl font-bold text-foreground mb-3">

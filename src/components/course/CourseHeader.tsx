@@ -3,11 +3,11 @@ import { OptimizedImage } from "@/components/OptimizedImage";
 import { Sparkles, GraduationCap, BookOpen } from "lucide-react";
 // Asset files - will rename later
 import judeTeaching from "@/assets/eric-teaching.png";
-import judeScientist from "@/assets/eric-scientist.png";
-import judeBiologist from "@/assets/eric-biologist.png";
-import judeComputer from "@/assets/eric-computer.png";
-import judeMath from "@/assets/eric-math.png";
-import judeEdupreneurs from "@/assets/eric-edupreneurs.png";
+const judeScientist = '/images/eric-scientist-300w.webp';
+const judeBiologist = '/images/eric-biologist-300w.webp';
+const judeComputer = '/images/eric-computer-300w.webp';
+const judeMath = '/images/eric-math-300w.webp';
+const judeEdupreneurs = '/images/eric-edupreneurs-300w.webp';
 
 interface CourseHeaderProps {
   title: string;

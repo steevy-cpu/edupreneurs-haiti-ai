@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Send, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import judeAvatar from "@/assets/dashboard00.png";
+const judeAvatar = '/images/dashboard00-200w.webp';
 import { cn } from "@/lib/utils";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { useEricDraggable } from "@/hooks/useEricDraggable";
@@ -412,9 +412,11 @@ export const JudeChatbot = () => {
         )}
         
         <div className="w-14 sm:w-16 md:w-20 lg:w-28">
-          <img 
-            src={judeAvatar} 
-            alt="Jude - Assistant IA" 
+          <img
+            src={judeAvatar}
+            srcSet="/images/dashboard00-200w.webp 200w, /images/dashboard00-400w.webp 400w"
+            sizes="(max-width: 640px) 56px, (max-width: 768px) 64px, (max-width: 1024px) 80px, 112px"
+            alt="Jude - Assistant IA"
             title={isOpen ? "Cliquez pour fermer" : "Cliquez pour parler avec Jude"}
             className="w-full h-auto pointer-events-none drop-shadow-2xl"
             loading="lazy"

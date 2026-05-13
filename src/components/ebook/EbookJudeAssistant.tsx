@@ -7,9 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import judeProfile from "@/assets/jude-profile.jpeg";
 
-// Use public paths for WebP optimization  
-const ericAiHelper = "/images/eric-ai-helper.png";
-const ericAiHelperWebP = "/images/eric-ai-helper.webp";
+const ericAiHelper = '/images/eric-ai-helper-100w.webp';
+const ericAiHelperWebP = '/images/eric-ai-helper-100w.webp';
 
 interface Message {
   role: "user" | "assistant";

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookOpen, Calendar, FileCheck, ArrowLeft, Calculator, Beaker, Globe, Languages, Flag, MessageCircle } from "lucide-react";
-import judeProfile from "@/assets/eric-new-profile.png";
+const judeProfile = '/images/eric-new-profile-300w.webp';
 
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useUserGrade, isNonAcademicGrade, type AllGradeTypes } from "@/hooks/useUserGrade";
@@ -160,10 +160,14 @@ const ExamsHub = () => {
                 </div>
               </div>
             </div>
-            <img 
-              src={judeProfile} 
-              alt="Jude" 
+            <img
+              src={judeProfile}
+              srcSet="/images/eric-new-profile-300w.webp 300w, /images/eric-new-profile-500w.webp 500w"
+              sizes="256px"
+              alt="Jude"
               className="w-64 h-64 object-contain drop-shadow-2xl"
+              loading="lazy"
+              decoding="async"
             />
           </div>
         </div>

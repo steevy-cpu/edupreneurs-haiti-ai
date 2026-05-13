@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Lock, Bell, Globe } from "lucide-react";
-import ericArmsCrossed from "@/assets/eric-main01.png";
+const ericArmsCrossed = '/images/eric-main01-400w.webp';
 import { PageHeader, SettingsPageSkeleton } from "@/components/shared";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import { useSessionAuth } from "@/contexts/SessionAuthContext";

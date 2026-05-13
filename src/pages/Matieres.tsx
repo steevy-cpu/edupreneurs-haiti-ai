@@ -91,14 +91,13 @@ export default function Matieres() {
     const loadImages = async () => {
       // Only load background on fast connections
       if (!isSlowConnection) {
-        const bgMod = await import("@/assets/edupreneurs-bg.png");
-        setLazyImages(prev => ({ ...prev, edupreneursBg: bgMod.default }));
+        setLazyImages(prev => ({ ...prev, edupreneursBg: '/images/edupreneurs-bg-800w.webp' }));
       }
       // Use public paths for Eric image with WebP support
       setLazyImages(prev => ({ 
         ...prev, 
-        ericPointing: "/images/eric-right-pointing.png",
-        ericPointingWebP: "/images/eric-right-pointing.webp"
+        ericPointing: "/images/eric-right-pointing-200w.webp",
+        ericPointingWebP: "/images/eric-right-pointing-400w.webp"
       }));
     };
     loadImages();
@@ -640,7 +639,7 @@ export default function Matieres() {
                   <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
                 )}
                 {lazyImages.ericPointing ? (
-                  <img src={lazyImages.ericPointing} alt="Jude - Assistant IA" className="w-32 h-32 sm:w-48 sm:h-48 object-contain relative z-10" loading="lazy" />
+                  <img src={lazyImages.ericPointing} srcSet={`${lazyImages.ericPointing} 200w, ${lazyImages.ericPointingWebP} 400w`} sizes="(max-width: 640px) 128px, 192px" alt="Jude - Assistant IA" className="w-32 h-32 sm:w-48 sm:h-48 object-contain relative z-10" loading="lazy" decoding="async" />
                 ) : (
                   <Skeleton className="w-32 h-32 sm:w-48 sm:h-48 rounded-full" />
                 )}
