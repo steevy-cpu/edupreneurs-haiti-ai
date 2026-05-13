@@ -49,6 +49,8 @@ function MorphingBlob({
       aria-hidden="true"
     >
       <motion.path
+        // Seed the path on first paint so Framer never renders an undefined SVG d value.
+        d={BLOB_PATHS[0]}
         fill={`url(#${gradientId})`}
         animate={{
           d: [BLOB_PATHS[0], BLOB_PATHS[1], BLOB_PATHS[2], BLOB_PATHS[0]]
