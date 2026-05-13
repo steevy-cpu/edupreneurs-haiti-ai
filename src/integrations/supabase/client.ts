@@ -2,8 +2,20 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// TODO: Remove hardcoded fallback once Lovable Cloud env injection is restored
+const FALLBACK_SUPABASE_URL = 'https://xdyavylcmucjpueybdku.supabase.co';
+const FALLBACK_SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkeWF2eWxjbXVjanB1ZXliZGt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTIxODIsImV4cCI6MjA3NDk4ODE4Mn0.TU1dWtjyxFRpNVg3ePt4Kj9cUMpbXFfpsrNawIBv60o';
+
+const ENV_SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const ENV_SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+if (!ENV_SUPABASE_URL || !ENV_SUPABASE_PUBLISHABLE_KEY) {
+  // Surfaces broken Lovable Cloud env injection during build/preview without crashing the app
+  console.warn('[supabase] Lovable Cloud env injection missing — using hardcoded fallback values.');
+}
+
+const SUPABASE_URL = ENV_SUPABASE_URL || FALLBACK_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = ENV_SUPABASE_PUBLISHABLE_KEY || FALLBACK_SUPABASE_PUBLISHABLE_KEY;
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
