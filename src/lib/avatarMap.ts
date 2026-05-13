@@ -28,7 +28,8 @@ export const getAvatarUrl = (
       const url = new URL(avatarId);
       url.searchParams.set('width', size.toString());
       url.searchParams.set('height', size.toString());
-      url.searchParams.set('quality', '80');
+      url.searchParams.set('quality', '75');
+      url.searchParams.set('format', 'webp');
       return url.toString();
     } catch {
       // If URL parsing fails, return as-is
