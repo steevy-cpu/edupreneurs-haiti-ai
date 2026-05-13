@@ -26,11 +26,14 @@
     <meta name="keywords" content="éducation Haïti, apprentissage IA, MENFP, cours en ligne, plateforme éducative, assistant IA, école Haïti, 7AF, 8AF, 9AF, baccalauréat Haïti">
     <meta name="robots" content="index, follow" />
     
-    <!-- Preload LCP hero image - PNG (WebP lost transparency) -->
-    <link rel="preload" as="image" href="/images/eric-celebrating.png" fetchpriority="high" type="image/png" />
-    
+    <!-- Preload LCP hero image -->
+    <link rel="preload" as="image" href="/images/eric-celebrating-400w.webp"
+      imagesrcset="/images/eric-celebrating-400w.webp 400w, /images/eric-celebrating-600w.webp 600w, /images/eric-celebrating-800w.webp 800w"
+      imagesizes="(max-width: 640px) 300px, 500px"
+      fetchpriority="high" type="image/webp" />
+
     <!-- Preload logo for header -->
-    <link rel="preload" as="image" href="/images/edupreneurs-new-logo.webp" fetchpriority="high" type="image/webp" />
+    <link rel="preload" as="image" href="/images/edupreneurs-new-logo-128w.webp" fetchpriority="high" type="image/webp" />
     
     <!-- Preconnect to critical origins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -155,7 +158,7 @@
       <header style="position:sticky;top:0;z-index:50;background:var(--card, rgba(255,255,255,0.95));backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,0,0,0.05);">
         <div style="max-width:1280px;margin:0 auto;padding:0.5rem 1rem;display:flex;justify-content:space-between;align-items:center;">
           <a href="/" style="display:flex;align-items:center;gap:0.5rem;text-decoration:none;">
-            <img src="/images/edupreneurs-new-logo.webp" alt="Edupreneurs" height="32" width="48" style="height:2rem;width:auto;" fetchpriority="high" />
+            <img src="/images/edupreneurs-new-logo-128w.webp" srcset="/images/edupreneurs-new-logo-64w.webp 64w, /images/edupreneurs-new-logo-128w.webp 128w" sizes="(max-width: 640px) 32px, 48px" alt="Edupreneurs" height="32" width="48" style="height:2rem;width:auto;" fetchpriority="high" />
           </a>
           <div style="display:flex;gap:0.5rem;align-items:center;">
             <div class="hero-skeleton" style="width:2rem;height:2rem;border-radius:9999px;"></div>
