@@ -11,8 +11,8 @@ import { Loader2, Eye, EyeOff, Check, X } from "lucide-react";
 import { clearAuthFlow } from "@/auth/store/authFlow.store";
 
 // Use public paths for WebP optimization
-const edupreneursLogo = "/images/edupreneurs-new-logo.png";
-const edupreneursLogoWebP = "/images/edupreneurs-new-logo.webp";
+const edupreneursLogo = "/images/edupreneurs-new-logo-128w.webp";
+const edupreneursLogoWebP = "/images/edupreneurs-new-logo-256w.webp";
 
 export default function ResetPassword() {
   const navigate = useNavigate();

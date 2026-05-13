@@ -15,7 +15,7 @@ import {
 import { Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import judeChairDesk from "@/assets/eric-chair-desk.png";
+const judeChairDesk = "/images/eric-chair-desk-200w.webp";
 
 /**
  * Strip HTML and truncate text for API payloads (3G optimization)
@@ -348,8 +348,11 @@ export const EnglishPracticeChat = ({
               <div className="flex items-center gap-2 sm:gap-3">
                 <img
                   src={judeChairDesk}
+                  srcSet="/images/eric-chair-desk-200w.webp 200w, /images/eric-chair-desk-400w.webp 400w"
+                  sizes="(max-width: 640px) 40px, (max-width: 768px) 48px, 64px"
                   alt="Jude"
                   className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 object-contain flex-shrink-0"
+                  loading="lazy"
                 />
                 <div className="min-w-0 flex-1">
                   <h3 className="text-base sm:text-lg md:text-xl font-semibold text-foreground truncate">

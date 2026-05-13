@@ -3,7 +3,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send, Loader2, MessageCircle, X } from 'lucide-react';
-import judeChairDesk from '@/assets/eric-chair-desk.png';
+const judeChairDesk = '/images/eric-chair-desk-200w.webp';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -65,10 +65,13 @@ const FloatingChessMessages: React.FC<FloatingChessMessagesProps> = ({
         onClick={onToggle}
         className="absolute bottom-4 right-4 z-20 flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-3 py-2 shadow-lg hover:scale-105 transition-transform"
       >
-        <img 
-          src={judeChairDesk} 
-          alt="Jude" 
+        <img
+          src={judeChairDesk}
+          srcSet="/images/eric-chair-desk-200w.webp 200w, /images/eric-chair-desk-400w.webp 400w"
+          sizes="32px"
+          alt="Jude"
           className="w-8 h-8 rounded-full object-cover border-2 border-primary-foreground/20"
+          loading="lazy"
         />
         {!isOpen && (
           <span className="text-sm font-medium max-w-[120px] truncate">
@@ -86,10 +89,13 @@ const FloatingChessMessages: React.FC<FloatingChessMessagesProps> = ({
         >
           <div className="bg-card/95 backdrop-blur-sm border rounded-2xl rounded-br-md p-3 shadow-lg max-w-[280px] ml-auto">
             <div className="flex items-start gap-2">
-              <img 
-                src={judeChairDesk} 
-                alt="Jude" 
+              <img
+                src={judeChairDesk}
+                srcSet="/images/eric-chair-desk-200w.webp 200w, /images/eric-chair-desk-400w.webp 400w"
+                sizes="24px"
+                alt="Jude"
                 className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                loading="lazy"
               />
               <p className="text-sm text-foreground line-clamp-3">
                 {lastAssistantMessage.content}
@@ -105,10 +111,13 @@ const FloatingChessMessages: React.FC<FloatingChessMessagesProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between p-3 border-b bg-muted/50">
             <div className="flex items-center gap-2">
-              <img 
-                src={judeChairDesk} 
-                alt="Jude" 
+              <img
+                src={judeChairDesk}
+                srcSet="/images/eric-chair-desk-200w.webp 200w, /images/eric-chair-desk-400w.webp 400w"
+                sizes="32px"
+                alt="Jude"
                 className="w-8 h-8 rounded-full object-cover"
+                loading="lazy"
               />
               <div>
                 <h3 className="font-semibold text-foreground text-sm">Jude - Coach</h3>

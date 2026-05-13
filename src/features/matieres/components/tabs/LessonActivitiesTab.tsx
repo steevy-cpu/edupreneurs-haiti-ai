@@ -4,7 +4,7 @@ import { JudeGeneratingOverlay } from '@/components/jude/JudeGeneratingOverlay';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw, WifiOff } from 'lucide-react';
-import judeChairDesk from '@/assets/eric-chair-desk.png';
+const judeChairDesk = '/images/eric-chair-desk-200w.webp';
 
 interface LessonActivitiesTabProps {
   lessonId: string;
@@ -78,7 +78,7 @@ export function LessonActivitiesTab({
       <Card>
         <CardHeader className="p-3 sm:p-6">
           <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
-            <img src={judeChairDesk} alt="Jude" className="h-6 w-6 sm:h-7 sm:w-7 object-contain rounded-full" loading="lazy" decoding="async" />
+            <img src={judeChairDesk} srcSet="/images/eric-chair-desk-200w.webp 200w, /images/eric-chair-desk-400w.webp 400w" sizes="(max-width: 640px) 24px, 28px" alt="Jude" className="h-6 w-6 sm:h-7 sm:w-7 object-contain rounded-full" loading="lazy" decoding="async" />
             Activités par Jude
           </CardTitle>
         </CardHeader>
@@ -115,7 +115,7 @@ export function LessonActivitiesTab({
         <CardHeader className="p-3 sm:p-6">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
-              <img src={judeChairDesk} alt="Jude" className="h-6 w-6 sm:h-7 sm:w-7 object-contain rounded-full" loading="lazy" decoding="async" />
+              <img src={judeChairDesk} srcSet="/images/eric-chair-desk-200w.webp 200w, /images/eric-chair-desk-400w.webp 400w" sizes="(max-width: 640px) 24px, 28px" alt="Jude" className="h-6 w-6 sm:h-7 sm:w-7 object-contain rounded-full" loading="lazy" decoding="async" />
               Activités par Jude
             </CardTitle>
             <Button

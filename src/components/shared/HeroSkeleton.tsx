@@ -1,6 +1,5 @@
 import { Progress } from "@/components/ui/progress";
 import { useState, useEffect } from "react";
-import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 
 /**
  * Branded loading screen for the homepage.
@@ -29,8 +28,10 @@ export const HeroSkeleton = () => {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center">
       {/* Logo/Brand */}
       <div className="mb-8">
-        <img 
-          src={edupreneursLogo} 
+        <img
+          src="/images/edupreneurs-new-logo-128w.webp"
+          srcSet="/images/edupreneurs-new-logo-64w.webp 64w, /images/edupreneurs-new-logo-128w.webp 128w, /images/edupreneurs-new-logo-256w.webp 256w"
+          sizes="(max-width: 640px) 64px, 80px"
           alt="Edupreneurs"
           className="h-16 sm:h-20 w-auto"
           fetchPriority="high"

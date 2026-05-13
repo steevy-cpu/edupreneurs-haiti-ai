@@ -19,7 +19,6 @@ import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { isFounder } from "@/lib/founderConstants";
 import { Footer } from "@/components/Footer";
-import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 // Social media icons
@@ -216,9 +215,11 @@ export default function BlogPost() {
                 </Button>
               </Link>
               <Link to="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity duration-300 ease-out">
-                <img 
-                  src={edupreneursLogo} 
-                  alt="EDUPRENEURS" 
+                <img
+                  src="/images/edupreneurs-new-logo-128w.webp"
+                  srcSet="/images/edupreneurs-new-logo-64w.webp 64w, /images/edupreneurs-new-logo-128w.webp 128w"
+                  sizes="28px"
+                  alt="EDUPRENEURS"
                   className="h-7 w-auto"
                 />
                 <span className="text-sm font-medium text-muted-foreground hidden sm:inline">

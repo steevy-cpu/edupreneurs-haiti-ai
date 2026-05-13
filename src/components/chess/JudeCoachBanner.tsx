@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import judeChairDesk from '@/assets/eric-chair-desk.png';
+const judeChairDesk = '/images/eric-chair-desk-200w.webp';
 import { useNetworkAwareLoading } from '@/hooks/useNetworkAwareLoading';
 
 interface Message {
@@ -69,8 +69,10 @@ const JudeCoachBanner: React.FC<JudeCoachBannerProps> = ({
       <div className="relative flex items-start gap-2 sm:gap-3">
         {/* Jude Avatar - Clickable to open dialog */}
         <img 
-          src={judeChairDesk} 
-          alt="Jude" 
+          src={judeChairDesk}
+          srcSet="/images/eric-chair-desk-200w.webp 200w, /images/eric-chair-desk-400w.webp 400w"
+          sizes="(max-width: 640px) 40px, 48px"
+          alt="Jude"
           className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0 border-2 border-primary/30 shadow-md cursor-pointer hover:scale-105 transition-transform"
           onClick={() => setIsDialogOpen(true)}
           loading="lazy"
@@ -114,8 +116,10 @@ const JudeCoachBanner: React.FC<JudeCoachBannerProps> = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
               <img 
-                src={judeChairDesk} 
-                alt="Jude" 
+                src={judeChairDesk}
+                srcSet="/images/eric-chair-desk-200w.webp 200w, /images/eric-chair-desk-400w.webp 400w"
+                sizes="40px"
+                alt="Jude"
                 className="w-10 h-10 rounded-full object-cover border-2 border-primary/30"
                 loading="lazy"
                 decoding="async"
@@ -133,9 +137,11 @@ const JudeCoachBanner: React.FC<JudeCoachBannerProps> = ({
                   className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   {msg.role === 'assistant' && (
-                    <img 
-                      src={judeChairDesk} 
-                      alt="Jude" 
+                    <img
+                      src={judeChairDesk}
+                      srcSet="/images/eric-chair-desk-200w.webp 200w, /images/eric-chair-desk-400w.webp 400w"
+                      sizes="28px"
+                      alt="Jude"
                       className="w-7 h-7 rounded-full object-cover flex-shrink-0"
                       loading="lazy"
                       decoding="async"

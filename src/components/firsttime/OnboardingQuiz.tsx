@@ -30,7 +30,7 @@ import ericStudentDesk from '@/assets/eric-student-desk.png';
 import ericThinkingPose from '@/assets/eric-thinking-pose.png';
 import ericPointingUp from '@/assets/eric-pointing-up.png';
 import ericTeaching from '@/assets/eric-teaching.png';
-import ericCelebrating from '@/assets/eric-celebrating.png';
+const ericCelebrating = '/images/eric-celebrating-400w.webp';
 
 // Total quiz steps (0-indexed internally)
 const TOTAL_STEPS = 7;

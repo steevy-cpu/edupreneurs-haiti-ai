@@ -6,7 +6,7 @@ import { MessageCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { EnglishPracticeChat } from "@/components/EnglishPracticeChat";
 import { SpanishPracticeChat } from "@/components/SpanishPracticeChat";
-import judeChairDesk from "@/assets/eric-chair-desk.png";
+const judeChairDesk = "/images/eric-chair-desk-200w.webp";
 
 interface LessonAIPracticeSectionProps {
   subjectName: string;
@@ -87,8 +87,11 @@ export const LessonAIPracticeSection = ({
                   <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl" />
                   <img
                     src={judeChairDesk}
+                    srcSet="/images/eric-chair-desk-200w.webp 200w, /images/eric-chair-desk-400w.webp 400w"
+                    sizes="(max-width: 640px) 48px, 64px"
                     alt="Jude AI Assistant"
                     className="relative w-12 h-12 sm:w-16 sm:h-16 object-contain"
+                    loading="lazy"
                   />
                 </div>
                 <div className="min-w-0 flex-1">

@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X, Rss, Heart } from "lucide-react";
 import { navLinks } from "@/data/homePageData";
-import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import { motion, useMotionValue, animate as fmAnimate } from "framer-motion";
 import { useAnimationConfig } from "@/hooks/useAnimationConfig";
 
@@ -71,12 +70,14 @@ export const HeaderNav = memo(function HeaderNav() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-1.5 sm:gap-3">
           {/* PNG logo — WebP lost transparent background */}
-          <img 
-            src={edupreneursLogo} 
-            alt="EDUPRENEURS Logo" 
+          <img
+            src="/images/edupreneurs-new-logo-128w.webp"
+            srcSet="/images/edupreneurs-new-logo-64w.webp 64w, /images/edupreneurs-new-logo-128w.webp 128w, /images/edupreneurs-new-logo-256w.webp 256w"
+            sizes="(max-width: 640px) 32px, 48px"
+            alt="EDUPRENEURS Logo"
             width={45}
             height={56}
-            className="h-8 sm:h-12 w-auto object-contain" 
+            className="h-8 sm:h-12 w-auto object-contain"
             loading="eager"
             fetchPriority="high"
           />

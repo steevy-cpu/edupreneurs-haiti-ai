@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useRef, forwardRef } from "react";
-import judeChairDesk from "@/assets/eric-chair-desk.png";
+const judeChairDesk = "/images/eric-chair-desk-200w.webp";
 
 interface JudeGeneratingOverlayProps {
   isVisible: boolean;
@@ -112,6 +112,8 @@ export const JudeGeneratingOverlay = forwardRef<HTMLDivElement, JudeGeneratingOv
         <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl animate-pulse" />
         <img
           src={judeChairDesk}
+          srcSet="/images/eric-chair-desk-200w.webp 200w, /images/eric-chair-desk-400w.webp 400w"
+          sizes="(max-width: 640px) 96px, 128px"
           alt="Jude prépare le contenu"
           className="relative w-24 h-24 sm:w-32 sm:h-32 object-contain"
           style={{

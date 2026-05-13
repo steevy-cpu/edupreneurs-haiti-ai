@@ -20,7 +20,7 @@ import {
   Star,
   Brain
 } from 'lucide-react';
-import ericCelebrating from '@/assets/eric-celebrating.png';
+const ericCelebrating = '/images/eric-celebrating-400w.webp';
 import ericThinking from '@/assets/eric-thinking-pose.png';
 
 interface MoveAnalysis {

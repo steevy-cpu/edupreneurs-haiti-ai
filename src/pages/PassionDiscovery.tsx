@@ -36,7 +36,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { getActivitiesForModule, type ActivityContent } from "@/data/passionActivities";
-import judeCelebrating from "@/assets/eric-celebrating.png";
+const judeCelebrating = "/images/eric-celebrating-400w.webp";
 import judeThinking from "@/assets/eric-thinking-pose.png";
 import judeWaving from "@/assets/eric-waving.png";
 import judeThumbUp from "@/assets/eric-thumb-up.png";

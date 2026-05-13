@@ -14,7 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowRight, AlertCircle } from 'lucide-react';
 import { LessonPageTemplate } from '@/components/LessonPageTemplate';
 import type { LessonData } from '@/features/matieres/types/lesson.types';
-import judeImage from '@/assets/eric-chair-desk.png';
+const judeImage = '/images/eric-chair-desk-200w.webp';
 import { DEMO_LESSON_SLUG, DEMO_SUBJECT_SLUG, DEMO_GRADE_LEVEL } from '@/lib/constants/demo';
 
 // Hardcoded demo lesson UUID — kept local, not in constants file
