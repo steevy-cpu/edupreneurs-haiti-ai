@@ -32,7 +32,7 @@ import { Footer } from "@/components/Footer";
 import { VisitorTypeSelector } from "@/components/visitor";
 
 // Lazy-loaded floating elements
-const HomeChatbot = lazy(() => import("@/components/HomeChatbot").then(module => ({ default: module.HomeChatbot })));
+const HomeChatbot = lazy(() => import("@/components/HomeChatbot").then((module) => ({ default: module.HomeChatbot })));
 
 // Hooks
 import { useDeferredStats } from "@/hooks/useDeferredStats";
@@ -59,10 +59,9 @@ const Index = () => {
     if (authLoading || !isAuthenticated || !user) return;
 
     const provider = user.app_metadata?.provider;
-    if (provider === 'google') {
+    if (provider === "google") {
       // Idempotent — creates profile if missing, syncs email_confirmed if exists
-      ensureProfileExists(user.id, user.user_metadata, 'google')
-        .finally(() => setProfileChecked(true));
+      ensureProfileExists(user.id, user.user_metadata, "google").finally(() => setProfileChecked(true));
     } else {
       // Non-Google users skip profile check (handled during signup)
       setProfileChecked(true);
@@ -80,20 +79,17 @@ const Index = () => {
     };
 
     let idleId: number | ReturnType<typeof setTimeout>;
-    if ('requestIdleCallback' in window) {
-      idleId = window.requestIdleCallback(
-        () => setChatbotReady(true),
-        { timeout: 5000 }
-      );
+    if ("requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(() => setChatbotReady(true), { timeout: 5000 });
     } else {
       idleId = setTimeout(() => setChatbotReady(true), 2000);
     }
 
-    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      if ('requestIdleCallback' in window) {
+      window.removeEventListener("scroll", onScroll);
+      if ("requestIdleCallback" in window) {
         window.cancelIdleCallback(idleId as number);
       } else {
         clearTimeout(idleId as ReturnType<typeof setTimeout>);
@@ -111,57 +107,77 @@ const Index = () => {
     <>
       <Helmet>
         <title>EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA | Éducation Haïti</title>
-        <meta name="description" content="EDUPRENEURS: Plateforme éducative haïtienne avec assistant IA personnalisé. Programme MENFP complet de la 7AF à NS4. Cours, examens officiels. Essai gratuit 7 jours." />
-        <meta name="keywords" content="éducation haïti, MENFP, cours en ligne, assistant IA, examens officiels, apprentissage personnalisé, 7AF, NS4" />
+        <meta
+          name="description"
+          content="EDUPRENEURS: Plateforme éducative haïtienne avec assistant IA personnalisé. Programme MENFP complet de la 7AF à NS4. Cours, examens officiels. Essai gratuit 7 jours."
+        />
+        <meta
+          name="keywords"
+          content="éducation haïti, MENFP, cours en ligne, assistant IA, examens officiels, apprentissage personnalisé, 7AF, NS4"
+        />
         <meta property="og:title" content="EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA" />
-        <meta property="og:description" content="Plateforme éducative avec assistant IA personnalisé. Programme MENFP complet. Essai gratuit 7 jours." />
+        <meta
+          property="og:description"
+          content="Plateforme éducative avec assistant IA personnalisé. Programme MENFP complet. Essai gratuit 7 jours."
+        />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="fr_HT" />
         <link rel="canonical" href="https://mon-edupreneur.com/" />
       </Helmet>
 
       <VisitorBanner />
-      
+
       <div className="min-h-screen bg-background font-poppins relative">
         {/* Effect 6: Morphing gradient orbs — desktop only, fixed behind all content */}
         <GradientOrbs />
 
         {/* Critical Shell - renders immediately */}
         <HeaderNav />
-        <HeroSection 
-          stats={stats} 
-          statsLoaded={isLoaded}
-          onVisitorClick={() => setShowVisitorSelector(true)}
-        />
-        
+        <HeroSection stats={stats} statsLoaded={isLoaded} onVisitorClick={() => setShowVisitorSelector(true)} />
+
         {/* Deferred Content — lazy sections wrapped in Suspense for code splitting */}
         <DeferredContent minHeight="400px" timeout={2000}>
-          <Suspense fallback={null}><FeaturesSection /></Suspense>
-          <Suspense fallback={null}><HowItWorksSection /></Suspense>
-          <Suspense fallback={null}><PlatformFeaturesSection examsCount={stats.exams} /></Suspense>
-          <Suspense fallback={null}><CoursesSection /></Suspense>
-          <Suspense fallback={null}><FAQSection /></Suspense>
-          <Suspense fallback={null}><AboutSection /></Suspense>
-          <Suspense fallback={null}><TeamSection /></Suspense>
-          <Suspense fallback={null}><ContactSection /></Suspense>
-          <Suspense fallback={null}><BlogSectionWrapper /></Suspense>
+          <Suspense fallback={null}>
+            <FeaturesSection />
+          </Suspense>
+          <Suspense fallback={null}>
+            <HowItWorksSection />
+          </Suspense>
+          <Suspense fallback={null}>
+            <PlatformFeaturesSection examsCount={stats.exams} />
+          </Suspense>
+          <Suspense fallback={null}>
+            <CoursesSection />
+          </Suspense>
+          <Suspense fallback={null}>
+            <FAQSection />
+          </Suspense>
+          <Suspense fallback={null}>
+            <AboutSection />
+          </Suspense>
+          <Suspense fallback={null}>
+            <TeamSection />
+          </Suspense>
+          <Suspense fallback={null}>
+            <ContactSection />
+          </Suspense>
+          <Suspense fallback={null}>
+            <BlogSectionWrapper />
+          </Suspense>
         </DeferredContent>
-        
+
         <CTASection />
         <Footer />
       </div>
-      
+
       {/* Floating Layer - deferred until scroll or idle */}
       {chatbotReady && (
         <Suspense fallback={null}>
           <HomeChatbot />
         </Suspense>
       )}
-      
-      <VisitorTypeSelector 
-        open={showVisitorSelector} 
-        onOpenChange={setShowVisitorSelector} 
-      />
+
+      <VisitorTypeSelector open={showVisitorSelector} onOpenChange={setShowVisitorSelector} />
     </>
   );
 };
