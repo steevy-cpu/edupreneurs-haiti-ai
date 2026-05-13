@@ -7,7 +7,6 @@ import { BlogCard } from "@/components/blog/BlogCard";
 import { usePublishedBlogPosts } from "@/hooks/useBlogPosts";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Footer } from "@/components/Footer";
-import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 
 export default function Blog() {
   const { data: posts, isLoading, error } = usePublishedBlogPosts();
@@ -68,9 +67,11 @@ export default function Blog() {
                 </Button>
               </Link>
               <Link to="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity duration-300 ease-out">
-                <img 
-                  src={edupreneursLogo} 
-                  alt="EDUPRENEURS" 
+                <img
+                  src="/images/edupreneurs-new-logo-128w.webp"
+                  srcSet="/images/edupreneurs-new-logo-64w.webp 64w, /images/edupreneurs-new-logo-128w.webp 128w"
+                  sizes="32px"
+                  alt="EDUPRENEURS"
                   className="h-8 w-auto"
                 />
                 <span className="text-lg font-bold text-foreground">

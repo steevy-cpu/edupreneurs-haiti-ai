@@ -46,7 +46,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 // Logo paths
-const edupreneursLogo = '/images/edupreneurs-new-logo.png';
+const edupreneursLogo = '/images/edupreneurs-new-logo-128w.webp';
 
 // Hook to persist sidebar collapsed state
 const useSidebarCollapsed = () => {
@@ -154,9 +154,11 @@ export const AppSidebar = memo(function AppSidebar({
               E
             </div>
           ) : (
-            <img 
-              src={edupreneursLogo} 
-              alt="EDUPRENEURS" 
+            <img
+              src={edupreneursLogo}
+              srcSet="/images/edupreneurs-new-logo-64w.webp 64w, /images/edupreneurs-new-logo-128w.webp 128w, /images/edupreneurs-new-logo-256w.webp 256w"
+              sizes="(max-width: 640px) 48px, 56px"
+              alt="EDUPRENEURS"
               className="h-12 sm:h-14 w-auto object-contain logo-no-filter"
               loading="eager"
               decoding="async"

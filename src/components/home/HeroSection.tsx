@@ -1,5 +1,4 @@
 import { memo, useRef, useEffect, useCallback, useState } from "react";
-import ericCelebrating from "@/assets/eric-celebrating.png";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { GraduationCap, Heart, Eye } from "lucide-react";
@@ -548,10 +547,12 @@ export const HeroSection = memo(function HeroSection({
           >
             <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/30 rounded-full blur-2xl opacity-40" />
             <img
-              src={ericCelebrating}
+              src="/images/eric-celebrating-400w.webp"
+              srcSet="/images/eric-celebrating-400w.webp 400w, /images/eric-celebrating-600w.webp 600w, /images/eric-celebrating-800w.webp 800w"
+              sizes="(max-width: 640px) 300px, (max-width: 1024px) 500px, 800px"
               alt="Eric célébrant - Mascotte EDUPRENEURS"
-              width={500}
-              height={500}
+              width={800}
+              height={1200}
               className="relative z-10 w-full h-full object-contain drop-shadow-2xl"
               loading="eager"
               fetchPriority="high"

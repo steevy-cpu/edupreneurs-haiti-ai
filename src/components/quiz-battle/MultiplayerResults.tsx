@@ -16,7 +16,7 @@ import confetti from 'canvas-confetti';
 import { useToast } from '@/hooks/use-toast';
 
 // Jude/Eric images for different result states
-import judeCelebrating from '@/assets/eric-celebrating.png';
+const judeCelebrating = '/images/eric-celebrating-400w.webp';
 import judeThinking from '@/assets/eric-thinking-pose.png';
 import judeSad from '@/assets/eric-404.png';
 

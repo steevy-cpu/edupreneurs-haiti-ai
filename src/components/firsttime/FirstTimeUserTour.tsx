@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { ChevronRight, ChevronLeft, X, Sparkles, Volume2, VolumeX } from "lucide-react";
 import { useFirstTimeUser } from "@/contexts/FirstTimeUserContext";
 import ericStudentDesk from "@/assets/eric-student-desk.png";
-import ericCelebrating from "@/assets/eric-celebrating.png";
+const ericCelebrating = "/images/eric-celebrating-400w.webp";
 import SimpleTypewriter from "@/components/visitor/SimpleTypewriter";
 import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
 import { useRoutePreloader } from "@/shell/hooks/useRoutePreloader";
@@ -453,8 +453,11 @@ const FirstTimeUserTour = () => {
             >
               <img
                 src={ericCelebrating}
+                srcSet="/images/eric-celebrating-400w.webp 400w, /images/eric-celebrating-600w.webp 600w, /images/eric-celebrating-800w.webp 800w"
+                sizes="160px"
                 alt="Jude celebrating"
                 className="w-40 h-40 object-contain drop-shadow-2xl"
+                loading="lazy"
               />
               <div className="space-y-2">
                 <h2 className="text-2xl sm:text-3xl font-bold text-white">

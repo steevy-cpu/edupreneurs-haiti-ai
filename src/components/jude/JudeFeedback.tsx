@@ -11,7 +11,7 @@
 
 import { useMemo, useState, useEffect, useRef, useCallback, forwardRef } from 'react';
 import { Volume2, VolumeX, Loader2, Square } from 'lucide-react';
-import judeChairDesk from "@/assets/eric-chair-desk.png";
+const judeChairDesk = "/images/eric-chair-desk-200w.webp";
 import { getJudeFeedbackAudioUrl } from '@/utils/judeFeedbackAudio';
 import { useJudeVoice } from '@/hooks/useJudeVoice';
 
@@ -203,6 +203,8 @@ export const JudeFeedback = forwardRef<HTMLDivElement, JudeFeedbackProps>(
       <div className="flex items-start gap-3">
         <img
           src={judeChairDesk}
+          srcSet="/images/eric-chair-desk-200w.webp 200w, /images/eric-chair-desk-400w.webp 400w"
+          sizes="(max-width: 640px) 40px, 48px"
           alt="Jude"
           className="w-10 h-10 sm:w-12 sm:h-12 object-contain rounded-full bg-primary/5 p-1 flex-shrink-0"
           loading="lazy"

@@ -1,6 +1,5 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
-import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import { footerLinks } from "@/data/homePageData";
 
 const sections = [
@@ -22,7 +21,9 @@ export const Footer = memo(function Footer() {
         {/* Logo and Tagline */}
         <div className="text-center mb-8">
           <img
-            src={edupreneursLogo}
+            src="/images/edupreneurs-new-logo-128w.webp"
+            srcSet="/images/edupreneurs-new-logo-64w.webp 64w, /images/edupreneurs-new-logo-128w.webp 128w, /images/edupreneurs-new-logo-256w.webp 256w"
+            sizes="40px"
             alt="Edupreneurs"
             width={36}
             height={45}
