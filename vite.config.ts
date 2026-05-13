@@ -1,14 +1,28 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+
+  // Preview safety net: Lovable Cloud normally injects these VITE_* values, but a
+  // missing injection crashes @supabase/supabase-js during module import before
+  // React can replace the static skeleton. The publishable key is safe in client code.
+  const supabaseUrl = env.VITE_SUPABASE_URL || 'https://xdyavylcmucjpueybdku.supabase.co';
+  const supabasePublishableKey = env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkeWF2eWxjbXVjanB1ZXliZGt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTIxODIsImV4cCI6MjA3NDk4ODE4Mn0.TU1dWtjyxFRpNVg3ePt4Kj9cUMpbXFfpsrNawIBv60o';
+
+  return ({
   server: {
     host: "::",
     port: 8080,
+  },
+  define: {
+    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(supabaseUrl),
+    'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(supabasePublishableKey),
+    'import.meta.env.VITE_SUPABASE_PROJECT_ID': JSON.stringify(env.VITE_SUPABASE_PROJECT_ID || 'xdyavylcmucjpueybdku'),
   },
   // Force a fresh Vite dependency cache to avoid stale prebundled deps (e.g. react-chessboard).
   // Bump this namespace when preview serves mixed React chunks after dependency optimizer drift.
@@ -138,4 +152,5 @@ export default defineConfig(({ mode }) => ({
     // Reduce chunk size for faster loading on 3G
     chunkSizeWarningLimit: 300,
   },
-}));
+  });
+});
