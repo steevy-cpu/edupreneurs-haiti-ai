@@ -30,6 +30,7 @@ import { useMessageSounds } from '@/hooks/useMessageSounds';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useThemeSync } from '@/hooks/useThemeSync';
+import { useOnlinePresence } from '@/hooks/useOnlinePresence';
 
 // Components
 import { AppSidebar } from './components/AppSidebar';
@@ -78,6 +79,9 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
   
   // Sync theme preference to/from database for cross-device persistence
   useThemeSync();
+
+  // Broadcast presence so the homepage live counter reflects active users
+  useOnlinePresence(!isVisitor ? userId : null);
   
   // Ref for pathname — used inside realtime callbacks to avoid re-subscribing on navigation
   const pathnameRef = useRef(location.pathname);

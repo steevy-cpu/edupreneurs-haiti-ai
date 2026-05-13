@@ -6,6 +6,7 @@ import { GraduationCap, Heart, Eye } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, useInView, useMotionValue, useTransform, useSpring, animate } from "framer-motion";
 import { useAnimationConfig } from "@/hooks/useAnimationConfig";
+import { useOnlineCount } from "@/hooks/useOnlineCount";
 
 interface HeroStats {
   lessons: number;
@@ -329,6 +330,7 @@ export const HeroSection = memo(function HeroSection({
   onVisitorClick
 }: HeroSectionProps) {
   const { shouldAnimate } = useAnimationConfig();
+  const onlineCount = useOnlineCount();
 
   // ─── Effect 1: Mouse parallax on Eric image ───
   const mouseX = useMotionValue(0);
@@ -425,6 +427,17 @@ export const HeroSection = memo(function HeroSection({
               <Heart className="w-4 h-4" />
               <span>Fait un don avec nous</span>
             </Link>
+            {onlineCount !== null && onlineCount > 0 && (
+              <div className="inline-flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold text-green-600 dark:text-green-400">
+                <span className="relative flex h-2 w-2 flex-shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                </span>
+                <span>
+                  {onlineCount} étudiant{onlineCount > 1 ? "s" : ""} en ligne
+                </span>
+              </div>
+            )}
           </MotionDiv>
 
           {/* Title — word-by-word reveal + text scramble overlay on desktop, plain on mobile */}
