@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ChevronRight, ChevronLeft, X, Sparkles, Volume2, VolumeX } from "lucide-react";
 import { useFirstTimeUser } from "@/contexts/FirstTimeUserContext";
-import ericStudentDesk from "@/assets/eric-student-desk.png";
+const ericStudentDesk = '/images/eric-student-desk-200w.webp';
 const ericCelebrating = "/images/eric-celebrating-400w.webp";
 import SimpleTypewriter from "@/components/visitor/SimpleTypewriter";
 import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
@@ -517,8 +517,12 @@ const FirstTimeUserTour = () => {
               <div className="flex-shrink-0">
                 <img
                   src={ericStudentDesk}
+                  srcSet="/images/eric-student-desk-200w.webp 200w, /images/eric-student-desk-400w.webp 400w"
+                  sizes="80px"
                   alt="Jude"
                   className={`w-20 h-20 object-contain ${shouldShowGlow ? 'drop-shadow-lg' : 'drop-shadow'}`}
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
 

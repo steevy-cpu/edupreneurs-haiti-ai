@@ -4,9 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-// Use public paths for WebP optimization
-const judeAiHelper = "/images/eric-ai-helper.png";
-const judeAiHelperWebP = "/images/eric-ai-helper.webp";
+const judeAiHelper = '/images/eric-ai-helper-200w.webp';
+const judeAiHelperWebP = '/images/eric-ai-helper-200w.webp';
 
 interface AIPracticeSectionProps {
   subjectName: string;

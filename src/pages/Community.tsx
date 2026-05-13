@@ -10,11 +10,10 @@ import { uploadWithProgress } from "@/utils/uploadWithProgress";
 import { CreateGroupDialog } from "@/components/CreateGroupDialog";
 import { GroupInfoDialog } from "@/components/GroupInfoDialog";
 
-import chatBackground from "@/assets/edupreneur-watermark-patterns.png";
+const chatBackground = '/images/edupreneur-watermark-patterns-400w.webp';
 
-// Use public paths for WebP optimization
-const ericAiHelper = "/images/eric-ai-helper.png";
-const ericAiHelperWebP = "/images/eric-ai-helper.webp";
+const ericAiHelper = '/images/eric-ai-helper-200w.webp';
+const ericAiHelperWebP = '/images/eric-ai-helper-200w.webp';
 import { logger } from "@/utils/logger";
 import { preloadImage } from "@/utils/performanceOptimization";
 import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";

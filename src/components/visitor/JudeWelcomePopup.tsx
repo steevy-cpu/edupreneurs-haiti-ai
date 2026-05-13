@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ericStudentDesk from '@/assets/eric-student-desk.png';
+const ericStudentDesk = '/images/eric-student-desk-200w.webp';
 import SimpleTypewriter from './SimpleTypewriter';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { useNetworkAwareLoading } from '@/hooks/useNetworkAwareLoading';
@@ -293,8 +293,12 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
             >
               <img
                 src={ericStudentDesk}
+                srcSet="/images/eric-student-desk-200w.webp 200w, /images/eric-student-desk-400w.webp 400w"
+                sizes="(max-width: 640px) 128px, (max-width: 1024px) 160px, 192px"
                 alt="Jude"
                 className="w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 object-contain drop-shadow-2xl"
+                loading="lazy"
+                decoding="async"
               />
               
               {/* Music note animation when playing */}

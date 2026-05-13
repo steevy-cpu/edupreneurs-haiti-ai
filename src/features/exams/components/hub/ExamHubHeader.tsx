@@ -7,7 +7,7 @@ import { ArrowLeft, BookOpen, Calendar, FileCheck, GraduationCap } from 'lucide-
 import { useNavigate } from 'react-router-dom';
 import { useExamStats } from '../../data/exams.queries';
 import type { ExamTrack, ExamSeries } from '../../types/exam.types';
-import judeProfile from '@/assets/eric-new-profile.png';
+const judeProfile = '/images/eric-new-profile-300w.webp';
 
 interface ExamHubHeaderProps {
   track?: ExamTrack;
@@ -108,8 +108,12 @@ export function ExamHubHeader({ track, series, subject }: ExamHubHeaderProps) {
           
           <img
             src={judeProfile}
+            srcSet="/images/eric-new-profile-300w.webp 300w, /images/eric-new-profile-500w.webp 500w"
+            sizes="256px"
             alt="Jude"
             className="w-64 h-64 object-contain drop-shadow-2xl"
+            loading="lazy"
+            decoding="async"
           />
         </div>
       </div>

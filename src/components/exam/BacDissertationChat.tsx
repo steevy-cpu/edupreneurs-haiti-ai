@@ -20,9 +20,8 @@ import {
 import ReactMarkdown from "react-markdown";
 import 'katex/dist/katex.min.css';
 
-// Use public paths for WebP optimization
-const ericAiHelper = "/images/eric-ai-helper.png";
-const ericAiHelperWebP = "/images/eric-ai-helper.webp";
+const ericAiHelper = '/images/eric-ai-helper-100w.webp';
+const ericAiHelperWebP = '/images/eric-ai-helper-100w.webp';
 import { InlineMath, BlockMath } from 'react-katex';
 
 // Check if content has LaTeX delimiters or math patterns

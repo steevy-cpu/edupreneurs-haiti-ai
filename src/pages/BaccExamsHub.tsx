@@ -22,7 +22,7 @@ import {
   Palette,
   Music
 } from "lucide-react";
-import judeProfile from "@/assets/eric-new-profile.png";
+const judeProfile = '/images/eric-new-profile-300w.webp';
 
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useUserGrade, isNonAcademicGrade, type AllGradeTypes } from "@/hooks/useUserGrade";
@@ -243,8 +243,12 @@ const BaccExamsHub = () => {
             </div>
             <img
               src={judeProfile}
+              srcSet="/images/eric-new-profile-300w.webp 300w, /images/eric-new-profile-500w.webp 500w"
+              sizes="256px"
               alt="Jude"
               className="w-64 h-64 object-contain drop-shadow-2xl"
+              loading="lazy"
+              decoding="async"
             />
           </div>
         </div>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Home, BookOpen, MessageCircle, Trophy, Gamepad2, ArrowLeft, Search } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Input } from "@/components/ui/input";
-import ericSad from "@/assets/eric-404.png";
+const ericSad = '/images/eric-404-200w.webp';
 
 const quickLinks = [
   { to: "/matieres", label: "Matières", icon: BookOpen, description: "Explorez les cours" },
@@ -38,9 +38,11 @@ const NotFound = () => {
         {/* Eric mascot with animation */}
         <div className="relative mb-6">
           <div className="absolute inset-0 bg-primary/10 rounded-full blur-3xl scale-75 animate-pulse" />
-          <img 
-            src={ericSad} 
-            alt="Eric looking sad - 404 error" 
+          <img
+            src={ericSad}
+            srcSet="/images/eric-404-200w.webp 200w, /images/eric-404-400w.webp 400w"
+            sizes="192px"
+            alt="Eric looking sad - 404 error"
             className="w-48 h-48 mx-auto object-contain relative z-10 drop-shadow-lg"
             loading="eager"
             decoding="async"

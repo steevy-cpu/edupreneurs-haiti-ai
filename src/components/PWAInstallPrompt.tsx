@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Star, Zap, WifiOff, Bell, Download, Share, PlusSquare, CheckCircle } from 'lucide-react';
 import { Button } from './ui/button';
-import ericPointingUp from '@/assets/eric-pointing-up.png';
+const ericPointingUp = '/images/eric-pointing-up-100w.webp';
 
 interface PWAInstallPromptProps {
   isIOS: boolean;
@@ -83,7 +83,7 @@ export const PWAInstallPrompt = ({
             animate={{ scale: 1, opacity: 1 }}
             className="text-center py-4"
           >
-            <img src={ericPointingUp} alt="Eric" className="w-24 h-24 mx-auto mb-4 object-contain" loading="lazy" />
+            <img src={ericPointingUp} srcSet="/images/eric-pointing-up-100w.webp 100w, /images/eric-pointing-up-200w.webp 200w" sizes="96px" alt="Eric" className="w-24 h-24 mx-auto mb-4 object-contain" loading="lazy" decoding="async" />
             <h3 className="text-xl font-bold mb-2">🎉 Super!</h3>
             <p className="text-sm text-muted-foreground mb-4">
               Edupreneurs est maintenant sur ton écran d'accueil. Tu peux y accéder en un tap!

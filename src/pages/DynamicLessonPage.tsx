@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { useUserGrade, GRADE_LABELS } from "@/hooks/useUserGrade";
 import { Lock } from "lucide-react";
 import judeTeaching from "@/assets/eric-teaching.png";
-import judeScientist from "@/assets/eric-scientist.png";
-import judeBiologist from "@/assets/eric-biologist.png";
-import judeComputer from "@/assets/eric-computer.png";
-import judeMath from "@/assets/eric-math.png";
+const judeScientist = '/images/eric-scientist-300w.webp';
+const judeBiologist = '/images/eric-biologist-300w.webp';
+const judeComputer = '/images/eric-computer-300w.webp';
+const judeMath = '/images/eric-math-300w.webp';
 import type { SiblingLesson } from "@/features/matieres/types/lesson.types";
 import { getRandomLoadingMessage } from "@/utils/loadingMessages";
 

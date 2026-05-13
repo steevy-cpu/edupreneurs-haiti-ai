@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { useSessionAuth } from "@/contexts/SessionAuthContext";
 import { getAvatarUrl } from "@/lib/avatarMap";
-import dashboardImage from "@/assets/dashboard00.png";
+const dashboardImage = '/images/dashboard00-200w.webp';
 import { 
   persistQueryData, 
   getPersistedQueryData, 

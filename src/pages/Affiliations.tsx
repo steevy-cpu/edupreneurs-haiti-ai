@@ -18,7 +18,7 @@ import {
   Share2,
   Users,
 } from "lucide-react";
-import ericExcited from "@/assets/eric-main01.png";
+const ericExcited = '/images/eric-main01-200w.webp';
 
 interface UserProfile {
   id: string;
@@ -196,9 +196,11 @@ const Affiliations = () => {
               </p>
             </div>
             <div className="flex-shrink-0 relative z-10">
-              <img 
-                src={ericExcited} 
-                alt="Eric - Excited" 
+              <img
+                src={ericExcited}
+                srcSet="/images/eric-main01-200w.webp 200w, /images/eric-main01-400w.webp 400w"
+                sizes="(max-width: 640px) 112px, 144px"
+                alt="Eric - Excited"
                 className="w-28 h-28 sm:w-36 sm:h-36 object-contain animate-[float_4s_ease-in-out_infinite]"
                 loading="lazy"
                 decoding="async"

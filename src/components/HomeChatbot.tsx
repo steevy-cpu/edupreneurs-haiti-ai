@@ -9,7 +9,7 @@ import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import { ChatMessageRenderer } from "@/components/ChatMessageRenderer";
 import { cn } from "@/lib/utils";
 import { getTimeBasedGreeting } from "@/utils/getTimeBasedGreeting";
-import ericStudentDesk from "@/assets/eric-student-desk.png";
+const ericStudentDesk = '/images/eric-student-desk-200w.webp';
 interface Message {
   content: string;
   sender: "user" | "eric";
@@ -313,9 +313,11 @@ const messagesEndRef = useRef<HTMLDivElement>(null);
             Cliquez sur moi
           </div>
         )}
-        <img 
-          src={ericStudentDesk} 
-          alt="Jude - Assistant IA" 
+        <img
+          src={ericStudentDesk}
+          srcSet="/images/eric-student-desk-200w.webp 200w, /images/eric-student-desk-400w.webp 400w"
+          sizes="(max-width: 640px) 64px, (max-width: 768px) 80px, (max-width: 1024px) 96px, 112px"
+          alt="Jude - Assistant IA"
           title={isOpen ? "Jude - Votre assistant" : "Cliquez pour parler avec Jude"}
           width={112}
           height={168}

@@ -37,12 +37,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { getActivitiesForModule, type ActivityContent } from "@/data/passionActivities";
 const judeCelebrating = "/images/eric-celebrating-400w.webp";
-import judeThinking from "@/assets/eric-thinking-pose.png";
-import judeWaving from "@/assets/eric-waving.png";
-import judeThumbUp from "@/assets/eric-thumb-up.png";
-import judePointing from "@/assets/eric-pointing-up.png";
+const judeThinking = '/images/eric-thinking-pose-200w.webp';
+const judeWaving = '/images/eric-waving-200w.webp';
+const judeThumbUp = '/images/eric-thumb-up-200w.webp';
+const judePointing = '/images/eric-pointing-up-200w.webp';
 import judeTeaching from "@/assets/eric-teaching.png";
-import judePassionDiscovery from "@/assets/jude-passion-discovery.png";
+const judePassionDiscovery = '/images/jude-passion-discovery-300w.webp';
 import { useVisitor } from "@/contexts/VisitorContext";
 import { VisitorPassionOverlay } from "@/components/passion/VisitorPassionOverlay";
 import { useNetwork } from "@/contexts/NetworkContext";

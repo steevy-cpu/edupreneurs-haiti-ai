@@ -9,8 +9,7 @@ import { Sparkles, Loader2, RefreshCw, Check, User, Clock, AlertTriangle } from 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-// Proper Vite asset import so the image is hashed and served correctly in all envs
-import judeProfile from '@/assets/eric-new-profile.png';
+const judeProfile = '/images/eric-new-profile-300w.webp';
 
 // ─── Props (unchanged) ───
 interface AIAvatarGeneratorProps {

@@ -17,7 +17,7 @@ import {
   Loader2,
   Sparkles
 } from 'lucide-react';
-import ericThinking from '@/assets/eric-thinking-pose.png';
+const ericThinking = '/images/eric-thinking-pose-200w.webp';
 
 interface ChessPuzzle {
   id: string;
@@ -381,9 +381,11 @@ const ChessPuzzleTrainer: React.FC<ChessPuzzleTrainerProps> = ({ userId, onBack 
         <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
           <CardContent className="py-4">
             <div className="flex items-start gap-3">
-              <img 
-                src={ericThinking} 
-                alt="Eric" 
+              <img
+                src={ericThinking}
+                srcSet="/images/eric-thinking-pose-200w.webp 200w, /images/eric-thinking-pose-400w.webp 400w"
+                sizes="48px"
+                alt="Eric"
                 className="w-12 h-12 rounded-full object-cover"
                 loading="lazy"
                 decoding="async"

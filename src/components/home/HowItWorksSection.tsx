@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { howItWorksSteps, getIcon } from "@/data/homePageData";
-import ericStudentDesk from "@/assets/eric-student-desk.png";
+const ericStudentDesk = '/images/eric-student-desk-200w.webp';
 import { motion, useInView } from "framer-motion";
 import { useAnimationConfig } from "@/hooks/useAnimationConfig";
 
@@ -82,6 +82,8 @@ export const HowItWorksSection = memo(function HowItWorksSection() {
                     {'useImage' in item && item.useImage ? (
                       <img
                         src={ericStudentDesk}
+                        srcSet="/images/eric-student-desk-200w.webp 200w, /images/eric-student-desk-400w.webp 400w"
+                        sizes="80px"
                         alt={item.title}
                         className="w-full h-full object-contain relative z-10"
                         loading="lazy"
