@@ -30,6 +30,7 @@ const composition = await selectComposition({
 const out = process.argv[2] ?? "/mnt/documents/edupreneurs-promo-v1.mp4";
 console.log(`[render] rendering → ${out}`);
 
+// High-quality master: CRF 16 + preset slow + tune film for paper/teal gradients.
 await renderMedia({
   composition,
   serveUrl: bundled,
@@ -38,6 +39,9 @@ await renderMedia({
   puppeteerInstance: browser,
   muted: true,
   concurrency: 1,
+  crf: 16,
+  x264Preset: "slow",
+  pixelFormat: "yuv420p",
   onProgress: ({ progress }) => {
     if (Math.floor(progress * 100) % 5 === 0) {
       process.stdout.write(`\r[render] ${Math.round(progress * 100)}%   `);
