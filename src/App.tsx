@@ -271,6 +271,13 @@ const App = () => (
                             <Translate />
                           </Suspense>
                         } />
+
+                        {/* Page promo publique — vidéo cinématique 75s */}
+                        <Route path="/decouvrir" element={
+                          <Suspense fallback={<GenericPageSkeleton />}>
+                            <Decouvrir />
+                          </Suspense>
+                        } />
                         
                         {/* AUTH ROUTES - Auth shell */}
                         <Route path="/auth" element={
