@@ -132,6 +132,7 @@ const TemplateEditorPage = lazy(() => import("./pages/templates/TemplateEditorPa
 
 // Translate (public, no auth)
 const Translate = lazy(() => import("./pages/Translate"));
+const Decouvrir = lazyWithRetry(() => import("./pages/Decouvrir"));
 
 /**
  * AnalyticsInitializer — consent-gated initialization of GA4 and TikTok Pixel.
