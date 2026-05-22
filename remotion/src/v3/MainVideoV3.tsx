@@ -662,44 +662,47 @@ const BigWord: React.FC<{ word: string; kicker?: string; sub?: string; accent?: 
   const f = useCurrentFrame();
   const op = interpolate(f, [0, 18], [0, 1], { extrapolateRight: "clamp" });
   const blur = interpolate(f, [0, 22], [12, 0], { extrapolateRight: "clamp" });
-  const scale = interpolate(f, [0, 90], [1.0, 1.06], { extrapolateRight: "clamp", easing: ease });
+  const scale = interpolate(f, [0, 90], [1.0, 1.08], { extrapolateRight: "clamp", easing: ease });
   const kickerOp = interpolate(f, [4, 22], [0, 1], { extrapolateRight: "clamp" });
-  const ruleW = interpolate(f, [22, 62], [0, 100], { extrapolateRight: "clamp", easing: ease });
+  const ruleW = interpolate(f, [22, 62], [0, 140], { extrapolateRight: "clamp", easing: ease });
   const subOp = interpolate(f, [30, 50], [0, 1], { extrapolateRight: "clamp" });
   const subY = interpolate(f, [30, 55], [12, 0], { extrapolateRight: "clamp", easing: ease });
+  // Big words sit on deep teal — strong cinematic break against paper scenes.
+  const ivory = "#F5F0E4";
+  const wordColor = accent ? "#FFD27A" : ivory;
   return (
-    <Paper>
+    <Paper ambiance="teal">
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", opacity: op, transform: `scale(${scale})`, filter: `blur(${blur}px)` }}>
           {kicker && (
-            <div style={{ fontSize: 18, color: C.teal, letterSpacing: 5, fontWeight: 700, marginBottom: 28, opacity: kickerOp }}>
+            <div style={{ fontSize: 18, color: "#7BD3D3", letterSpacing: 6, fontWeight: 700, marginBottom: 32, opacity: kickerOp }}>
               {kicker}
             </div>
           )}
           <div
             style={{
               fontFamily: SERIF,
-              fontSize: 320,
-              letterSpacing: -10,
-              color: accent ? C.teal : C.ink,
+              fontSize: 360,
+              letterSpacing: -14,
+              color: wordColor,
               lineHeight: 0.9,
               fontStyle: accent ? "italic" : "normal",
+              textShadow: "0 8px 40px rgba(0,0,0,0.35)",
             }}
           >
             {word}
           </div>
-          {/* hairline rule that draws in */}
-          <div style={{ display: "flex", justifyContent: "center", marginTop: 30 }}>
-            <div style={{ width: `${ruleW}px`, height: 2, background: C.ink, opacity: 0.7 }} />
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 34 }}>
+            <div style={{ width: `${ruleW}px`, height: 1.5, background: ivory, opacity: 0.5 }} />
           </div>
           {sub && (
             <div
               style={{
-                marginTop: 28,
+                marginTop: 30,
                 fontFamily: SERIF,
                 fontStyle: "italic",
-                fontSize: 42,
-                color: C.muted,
+                fontSize: 44,
+                color: "rgba(245,240,228,0.72)",
                 opacity: subOp,
                 transform: `translateY(${subY}px)`,
               }}
