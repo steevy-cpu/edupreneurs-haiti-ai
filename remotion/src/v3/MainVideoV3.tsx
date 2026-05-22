@@ -37,19 +37,135 @@ const bezier = (t: number, p0: number, p1: number, p2: number) =>
   (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2;
 
 // =================================================================
-// Persistent paper background with subtle vignette
+// Ambiance system — each scene picks one of 6 atmospheres so the eye
+// never sits on the same canvas. Subtle but visible.
 // =================================================================
-const Paper: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
-  <AbsoluteFill style={{ background: C.paper, fontFamily: SANS, color: C.ink }}>
-    <AbsoluteFill
-      style={{
-        background: "radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.04) 100%)",
-        pointerEvents: "none",
-      }}
-    />
-    {children}
-  </AbsoluteFill>
-);
+type Ambiance = "paper" | "grid" | "halo" | "ivory" | "cold" | "teal" | "haloCenter";
+const AmbianceCtx = React.createContext<Ambiance>("paper");
+
+// Floating teal particles — adds depth, ~3-5 dots drifting slowly.
+const Particles: React.FC<{ count?: number; color?: string }> = ({ count = 4, color = C.teal }) => {
+  const f = useCurrentFrame();
+  const pts = React.useMemo(
+    () =>
+      Array.from({ length: count }, (_, i) => ({
+        x: ((i * 187) % 1700) + 110,
+        y: ((i * 263) % 900) + 90,
+        r: 3 + ((i * 7) % 6),
+        speed: 0.15 + ((i * 13) % 30) / 100,
+        phase: (i * 41) % 360,
+      })),
+    [count]
+  );
+  return (
+    <AbsoluteFill style={{ pointerEvents: "none" }}>
+      {pts.map((p, i) => {
+        const dy = Math.sin((f * p.speed + p.phase) * (Math.PI / 180)) * 18;
+        const dx = Math.cos((f * p.speed * 0.7 + p.phase) * (Math.PI / 180)) * 12;
+        return (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              left: p.x + dx,
+              top: p.y + dy,
+              width: p.r,
+              height: p.r,
+              borderRadius: "50%",
+              background: color,
+              opacity: 0.18,
+              filter: "blur(0.5px)",
+            }}
+          />
+        );
+      })}
+    </AbsoluteFill>
+  );
+};
+
+// Persistent ambiance-aware background. Backward compatible — defaults to paper.
+const Paper: React.FC<{ children?: React.ReactNode; ambiance?: Ambiance }> = ({ children, ambiance: amb }) => {
+  const ctxAmb = React.useContext(AmbianceCtx);
+  const ambiance = amb ?? ctxAmb;
+  let bg = C.paper;
+  let overlay: React.ReactNode = null;
+  let particles: React.ReactNode = null;
+  switch (ambiance) {
+    case "grid":
+      overlay = (
+        <AbsoluteFill
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(8,126,126,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(8,126,126,0.06) 1px, transparent 1px)",
+            backgroundSize: "64px 64px",
+            pointerEvents: "none",
+          }}
+        />
+      );
+      particles = <Particles count={3} />;
+      break;
+    case "halo":
+      overlay = (
+        <AbsoluteFill
+          style={{
+            background:
+              "radial-gradient(circle at 18% 22%, rgba(8,126,126,0.18) 0%, rgba(8,126,126,0) 45%)",
+            pointerEvents: "none",
+          }}
+        />
+      );
+      particles = <Particles count={4} />;
+      break;
+    case "ivory":
+      bg = "#F7F3EC";
+      particles = <Particles count={3} color="#C9A84C" />;
+      break;
+    case "cold":
+      bg = "#F4F6F7";
+      particles = <Particles count={3} color={C.tealDim} />;
+      break;
+    case "teal":
+      bg = "#0A4F4F";
+      overlay = (
+        <AbsoluteFill
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0) 60%)",
+            pointerEvents: "none",
+          }}
+        />
+      );
+      particles = <Particles count={5} color="#7BD3D3" />;
+      break;
+    case "haloCenter":
+      overlay = (
+        <AbsoluteFill
+          style={{
+            background:
+              "radial-gradient(circle at 50% 50%, rgba(8,126,126,0.14) 0%, rgba(8,126,126,0) 55%)",
+            pointerEvents: "none",
+          }}
+        />
+      );
+      break;
+  }
+  return (
+    <AbsoluteFill style={{ background: bg, fontFamily: SANS, color: ambiance === "teal" ? "#F7F3EC" : C.ink }}>
+      {overlay}
+      <AbsoluteFill
+        style={{
+          background:
+            ambiance === "teal"
+              ? "radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.25) 100%)"
+              : "radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.05) 100%)",
+          pointerEvents: "none",
+        }}
+      />
+      {particles}
+      {children}
+    </AbsoluteFill>
+  );
+};
 
 // Soft cross-fade wrapper for scene entry/exit
 const SceneFade: React.FC<{ children: React.ReactNode; durationInFrames: number; fadeIn?: number; fadeOut?: number }> = ({
