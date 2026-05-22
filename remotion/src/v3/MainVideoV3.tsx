@@ -702,7 +702,7 @@ const SceneFeed: React.FC = () => {
   const op = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
   const likes = Math.round(interpolate(f, [60, 110], [42, 87], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: ease }));
   const liked = f >= 70;
-  const pulse = liked ? 1 + 0.3 * Math.exp(-((f - 70) / 8) ** 2) : 1;
+  const pulse = liked ? 1 + 0.3 * Math.exp(-Math.pow((f - 70) / 8, 2)) : 1;
   return (
     <Paper>
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: op }}>
