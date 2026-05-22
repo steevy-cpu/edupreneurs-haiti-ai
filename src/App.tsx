@@ -132,6 +132,7 @@ const TemplateEditorPage = lazy(() => import("./pages/templates/TemplateEditorPa
 
 // Translate (public, no auth)
 const Translate = lazy(() => import("./pages/Translate"));
+const Decouvrir = lazyWithRetry(() => import("./pages/Decouvrir"));
 
 /**
  * AnalyticsInitializer — consent-gated initialization of GA4 and TikTok Pixel.
@@ -269,6 +270,13 @@ const App = () => (
                         <Route path="/translate" element={
                           <Suspense fallback={<GenericPageSkeleton />}>
                             <Translate />
+                          </Suspense>
+                        } />
+
+                        {/* Page promo publique — vidéo cinématique 75s */}
+                        <Route path="/decouvrir" element={
+                          <Suspense fallback={<GenericPageSkeleton />}>
+                            <Decouvrir />
                           </Suspense>
                         } />
                         
