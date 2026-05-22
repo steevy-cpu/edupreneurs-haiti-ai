@@ -1,146 +1,103 @@
-# Vidéo Pitch Edupreneurs v2 — Fidèle, agressive, ancrée dans le vrai site
+## Vision
 
-Remplacement de `public/edupreneurs-promo.mp4` par une nouvelle version qui **pitche le vrai site** : ouverture sur une recherche Google "mon-edupreneur.com", puis traversée des vraies pages avec la **vraie palette** et les **vraies fonctionnalités**, ton visuel **agressif** (cuts rapides, gros type, springs nerveux, glitch contrôlé), avec une **mise en valeur forte de la dimension communauté** (Feed + Messages).
+Vidéo promo **Apple Keynote style** : calme, majestueuse, éditoriale. Beaucoup d'air blanc, typographie énorme, cuts lents (3–5s), zooms doux sur les vraies pages du site. Le contraire de la v2 agressive — on laisse respirer chaque feature.
 
-## 1. Cartographie du site (réelle)
+## Direction artistique
 
-Pages identifiées dans `src/pages/` à pitcher fidèlement :
+- **Palette claire** : `#FAFAF7` (paper bg) · `#EDEAE1` (surface) · `#087E7E` (teal accent) · `#FF9F00` (amber ponctuel) · `#1A1A1A` (texte)
+- **Typo** : Instrument Serif pour les titres énormes (220–320px) + Inter pour UI/captions. Mix serif éditorial + sans tech.
+- **Motion** : ease-out cubic `(0.22, 1, 0.36, 1)`, springs `{damping: 30, stiffness: 80}` (smooth, zéro bounce). Pas de flash, pas de glitch.
+- **Transitions** : cross-fade lent (20f) entre scènes, un seul wipe horizontal réservé aux moments charnière.
+- **Rythme** : chaque scène 4–6s. Total ~80s = 2400 frames @ 30fps.
 
-| Page réelle | Ce qu'on montre |
-|---|---|
-| Google search (intro) | Barre de recherche, frappe "mon-edupreneur.com", clic résultat |
-| `Index` / landing | Logo + hero + grille brand |
-| `Dashboard` | Streak, Gold, XP, niveau, progression |
-| `Matieres` | Grille matières par grade (7AF→NS4) |
-| `DynamicLessonPage` | Sections, KaTeX, bouton audio Eric, quiz |
-| `BaccExamsHub` | Hub examens d'État (séries NS3/NS4) |
-| Jude AI tutor | Chat streaming + avatar Jude |
-| **`Feed` (Community)** | Posts, likes optimistes, commentaires, badges grade |
-| **Messages / Conversations** | Liste convos + bulle chat temps réel + indicateur typing |
-| `QuizBattleMultiplayer` | Duel quiz PvP |
-| `ChessMultiplayerGame` | Échecs PvP + ELO |
-| `PassionDiscovery` | Wizard découverte passion |
-| `Leaderboard` | Classement Gold/XP |
-| `Library` / `Templates` | Ressources + templates |
-| `Translate` | Traducteur créole |
-| Outro | mon-edupreneur.com + CTA |
+## Pipeline visuel (captures + mockups)
 
-## 2. Palette réelle (extraite de `src/index.css`)
+1. **Script Puppeteer** `remotion/scripts/capture-pages.mjs` capture les pages publiques du preview Lovable en 1920×1080 (`/`, `/decouvrir`, `/translate`, leçon démo publique).
+2. Pour les pages authentifiées (Dashboard, Jude, Feed, etc.) : **mockups TSX haute-fidélité** reconstruits avec les vrais tokens design.
+3. Les captures servent d'arrière-plan avec zoom-in lent (scale 1.0→1.08) et parallax doux. Mockups overlay pour focus sur features clés.
 
-- **Teal primary** `hsl(180 88% 27%)` ≈ `#087E7E`
-- **Amber accent** `hsl(38 100% 50%)` ≈ `#FF9F00`
-- **Violet secondary** `hsl(262 83% 58%)` ≈ `#7C3AED`
-- **Success emerald** `hsl(160 84% 39%)`
-- **Background** `#0A0B0D` / surfaces `#111316` / élévé `#16191D`
-- **Typo** Inter 800/900 pour titres XXL (déjà chargée via `@remotion/google-fonts/Inter`)
-
-## 3. Direction artistique — "Agressif"
-
-- **Durée** ~78s = 2340 frames à 30fps
-- **Pacing** coupes 1.5–3s, jamais > 5s
-- **Motion** : spring snappy `{damping: 14, stiffness: 220}` par défaut ; accent punch `scale 0.7→1.05→1` + flash amber 2 frames
-- **Transitions** : `wipe` agressif + cuts secs + 1 `flip` ponctuel — pas de fade lent
-- **Motifs récurrents** :
-  - Grille teal subtile en fond (parallax)
-  - Curseur souris animé qui interagit avec les vraies UIs
-  - HUD ticker amber bas d'écran ("STREAK +1 · GOLD +25 · NIVEAU 7 · 1.2K EN LIGNE")
-  - Glitch RGB ponctuel 2-3 frames sur titres clés
-- **Typo cinétique** : mots-clés énormes (200-300px) en trans-screen : "ÉCOLE.", "PASSION.", "EXAMENS.", "ENSEMBLE.", "RÉUSSIS."
-
-## 4. Découpage 16 scènes (~78s / 2340 frames)
+## Storyboard (17 scènes, ~80s)
 
 ```
-Frame      Durée  Scène
-0-150      5s    INTRO GOOGLE : navigateur stylisé, barre de recherche,
-                 typing "mon-edupreneur.com" caractère par caractère
-                 (cursor blink, autocomplete suggéré), clic sur le 1er
-                 résultat → wipe vers site
-150-240    3s    Hook : logo Edupreneurs + tagline + flash
-240-390    5s    Dashboard réel (Gold/Streak/XP) + curseur clic
-390-510    4s    Matieres grid → zoom NS4
-510-660    5s    Leçon dynamique : scroll + KaTeX + bouton audio Eric
-660-780    4s    Jude AI réponse en streaming (texte qui se tape)
-780-930    5s    Examens d'État NS4 (4 séries LLA/SES/SMP/SVT)
-930-1110   6s    ★ FEED Community : 3 posts qui apparaissent en stagger,
-                 like optimiste (+1 amber pop), commentaires, badge grade
-1110-1290  6s    ★ MESSAGES : liste conversations + ouverture chat,
-                 bulles qui apparaissent l'une après l'autre,
-                 indicateur "...typing", message reçu, sons visuels
-1290-1410  4s    Quiz Battle PvP — score temps réel
-1410-1530  4s    Échecs multijoueur — ELO +24
-1530-1680  5s    Passion Discovery — wizard étapes
-1680-1770  3s    Leaderboard — montée au top
-1770-1890  4s    Library / Templates — download
-1890-2010  4s    Translate créole — démo
-2010-2190  6s    Outro : URL géante "mon-edupreneur.com" + CTA
-2190-2340  5s    Lockup final + fade
+00:00 ─ Hook Google search        (5s) — barre Google, typing lettre par lettre
+                                          "mon-edupreneur.com" + autocomplete
+00:05 ─ Landing reveal            (4s) — capture /, titre "Apprendre. Autrement."
+00:09 ─ Sélection de classe       (6s) — wizard 7 classes (7AF, 8AF, 9AF, NS1,
+                                          NS2, NS3, NS4) cards staggered,
+                                          curseur clique sur NS3, check teal
+00:15 ─ Big word "ÉCOLE."         (3s) — serif 280px sur paper bg
+00:18 ─ Dashboard                 (5s) — mockup Gold/Streak/XP counter qui monte
+00:23 ─ Matières grid             (4s) — capture + highlight 6 cards subjects
+00:27 ─ Leçon immersive           (5s) — capture lesson + zoom sur formule KaTeX
+00:32 ─ Big word "JUDE."          (3s)
+00:35 ─ Jude AI tutor             (6s) — mockup chat avec réponse en streaming
+00:41 ─ Examens Bacc              (5s) — capture exam-hub + NS4 séries (LLA/SES/SMP/SVT)
+00:46 ─ Big word "ENSEMBLE."      (3s)
+00:49 ─ Feed communauté           (5s) — mockup feed + like + commentaire animés
+00:54 ─ Messages                  (4s) — mockup conversation + typing indicator
+00:58 ─ Quiz Battle               (4s) — mockup countdown 3-2-1 + score
+01:02 ─ Échecs + Passions         (5s) — split screen
+01:07 ─ Translate (Kreyòl)        (4s) — capture /translate, mot traduit
+01:11 ─ Outro                     (8s) — logo + "mon-edupreneur.com" + tagline
 ```
 
-**Scène INTRO Google (détaillée)** :
-- Fond blanc cassé Google (`#F8F9FA`)
-- Barre URL Chrome stylisée en haut
-- Logo "Google" multicolore centré
-- Champ de recherche avec curseur clignotant
-- Typing frame par frame : `m → mo → mon → mon- → ... → mon-edupreneur.com`
-- Cadence : 3 frames par caractère = ~2s de typing
-- Suggestions autocomplete qui apparaissent (mon-edupreneur.com en 1er, surligné)
-- Curseur souris glisse + clique → wipe agressif vers le site
+**Détail scène "Sélection de classe"** (6s, 180 frames) :
+- Frame 0-30 : titre "Choisis ta classe." fade-in (serif 120px)
+- Frame 20-90 : 7 cards apparaissent en grille 4+3, stagger 8f chacune, ease-out
+  Cards : `7ᵉ AF` · `8ᵉ AF` · `9ᵉ AF` · `NS1` · `NS2` · `NS3` · `NS4` (Bacc)
+  Chaque card = fond `#EDEAE1`, bordure 1px, label + sous-titre niveau
+- Frame 90-130 : curseur doux glisse vers NS3, scale card 1→1.04
+- Frame 130-150 : click — card devient teal `#087E7E`, check ✓ blanc apparaît
+- Frame 150-180 : badge "NS3 sélectionnée" en bas, fade-out
 
-**Scène FEED (détaillée)** :
-- Recréation fidèle de la card post : avatar rond, nom + badge grade (ex "NS4"), timestamp, contenu, ligne actions (❤ 💬 🔁)
-- 3 posts qui s'empilent en stagger (springs)
-- Sur le 2e post : curseur clique cœur → compteur passe de 23→24, cœur devient amber, micro-burst de particules
-- Sur le 3e post : un commentaire s'écrit en typing dessous
+## Composants Remotion à créer
 
-**Scène MESSAGES (détaillée)** :
-- Layout 2 colonnes : sidebar conversations (3 avatars + last message + unread badge amber) à gauche, chat ouvert à droite
-- Bulles existantes au mount (3-4 bulles)
-- Nouvelle bulle reçue qui slide-in depuis la gauche
-- Indicateur "● ● ●" typing animé
-- Réponse envoyée qui slide-in depuis la droite (teal)
-- Petit son visuel (onde concentrique amber)
+```
+remotion/src/v3/
+├── MainVideo.tsx              — TransitionSeries 17 scènes
+├── theme.ts                   — tokens palette claire + easings
+├── components/
+│   ├── PaperBackground.tsx    — fond crème + grain SVG subtil
+│   ├── BigSerifWord.tsx       — type 280px, fade+blur reveal
+│   ├── PageCapture.tsx        — wrapper image zoom+parallax
+│   ├── UICursor.tsx           — curseur SVG doux animé
+│   └── GradeCard.tsx          — card classe réutilisable
+└── scenes/
+    ├── 01-GoogleSearch.tsx
+    ├── 02-Landing.tsx
+    ├── 03-GradeSelection.tsx  ← NOUVEAU (7 classes)
+    ├── 04-WordEcole.tsx
+    ├── 05-Dashboard.tsx
+    ├── 06-Matieres.tsx
+    ├── 07-Lesson.tsx
+    ├── 08-WordJude.tsx
+    ├── 09-Jude.tsx
+    ├── 10-Exams.tsx
+    ├── 11-WordEnsemble.tsx
+    ├── 12-Feed.tsx
+    ├── 13-Messages.tsx
+    ├── 14-QuizBattle.tsx
+    ├── 15-ChessPassions.tsx
+    ├── 16-Translate.tsx
+    └── 17-Outro.tsx
+```
 
-## 5. Détails techniques
+## Livrables
 
-- Réutiliser le scaffold `remotion/` (musl + ffmpeg symlinks OK, Inter chargée)
-- Nouveaux composants dans `remotion/src/scenes/v2/` :
-  - `SceneGoogleIntro.tsx`
-  - `SceneHook.tsx` (réutiliser/adapter existant)
-  - `SceneDashboard.tsx` (refonte fidèle)
-  - `SceneMatieres.tsx`
-  - `SceneLesson.tsx`
-  - `SceneJude.tsx`
-  - `SceneExams.tsx`
-  - `SceneFeed.tsx` ★ nouveau
-  - `SceneMessages.tsx` ★ nouveau
-  - `SceneQuizBattle.tsx`
-  - `SceneChess.tsx`
-  - `ScenePassion.tsx`
-  - `SceneLeaderboard.tsx`
-  - `SceneLibrary.tsx`
-  - `SceneTranslate.tsx`
-  - `SceneOutro.tsx`
-- Mockups en TSX/SVG pur reproduisant fidèlement les UIs (cartes, sidebars, modales) avec les tokens HSL réels
-- Jude : forme abstraite teal+amber (pas le vrai 3D React Three Fiber, trop lourd au render headless)
-- Composer dans `remotion/src/MainVideo.tsx` via `TransitionSeries` (durée recalculée pour absorber les overlaps de transition)
-- Render : `node remotion/scripts/render-remotion.mjs` → `/mnt/documents/edupreneurs-promo-v2.mp4`
-- 1920×1080, 30fps, H.264, muet (ajout musique en post si demandé)
-- Côté app : remplacer `public/edupreneurs-promo.mp4` et `public/edupreneurs-promo-poster.jpg` par les nouveaux fichiers, sans toucher à `/decouvrir`
+- `/mnt/documents/edupreneurs-promo-v3.mp4` (1920×1080, H.264, muet, ~80s, viser <15MB)
+- `public/edupreneurs-promo.mp4` mis à jour (route `/decouvrir`)
+- `public/edupreneurs-promo-poster.jpg` régénéré (frame ~150 = scène classe)
+- v1 et v2 conservées dans `/mnt/documents/` pour comparaison
 
-## 6. Bug runtime à corriger en passant
+## Hors périmètre
 
-`Decouvrir is not defined` dans `src/App.tsx` → vérifier l'import lazy (probablement perdu). Fix discret pendant l'implémentation.
+- Pas de voix off (peut être ajouté plus tard)
+- Pas de musique (à ajouter en post)
+- Aucun changement sur les vraies pages du site
+- Pas de version courte réseaux sociaux
 
-## 7. Hors scope
+## Risques & mitigations
 
-- Pas de voix off (musique + texte cinétique, comme convenu)
-- Pas de vraies captures vidéo (reproductions fidèles en TSX)
-- Pas de modification des pages live, juste swap MP4 + poster
-- Pas de versions courtes réseaux sociaux
-
-## 8. Livrables
-
-- `/mnt/documents/edupreneurs-promo-v2.mp4` (HD, téléchargeable)
-- `public/edupreneurs-promo.mp4` mis à jour pour `/decouvrir`
-- `public/edupreneurs-promo-poster.jpg` régénéré
-- Fix runtime `Decouvrir`
+- **Puppeteer login** : auth bloque les pages privées → on s'appuie sur mockups TSX pour Dashboard/Jude/Feed/Messages, captures réelles seulement pour pages publiques.
+- **Temps de rendu** : 80s @ 30fps avec images ≈ 6–8 min, OK sous la limite 10 min de `code--exec`.
+- **Poids MP4** : CRF 22 pour rester <15MB, sinon CRF 24.
