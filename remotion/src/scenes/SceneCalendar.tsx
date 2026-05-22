@@ -1,3 +1,4 @@
+import React from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
 import { COLORS, FONT } from "../theme";
 
@@ -88,6 +89,3 @@ export const SceneCalendar: React.FC = () => {
     </AbsoluteFill>
   );
 };
-
-// React import for Fragment
-import React from "react";
