@@ -1346,25 +1346,41 @@ const SceneOutro: React.FC = () => {
 // =================================================================
 // Scene durations (frames @ 30fps).
 // SceneGoogle extended to 240 because human-typing + cursor click takes longer.
-const SCENES: Array<{ comp: React.FC; dur: number }> = [
-  { comp: SceneGoogle, dur: 240 }, // 8s — human typing + cursor click + flash
-  { comp: SceneLanding, dur: 120 }, // 4s
-  { comp: SceneGrades, dur: 210 }, // 7s — Bézier cursor + selection
-  { comp: () => <BigWord word="ÉCOLE." kicker="PARTIE 1" sub="Toute la tienne, dans ta poche." />, dur: 100 },
-  { comp: SceneDashboard, dur: 150 }, // 5s
-  { comp: SceneMatieres, dur: 135 }, // 4.5s
-  { comp: SceneLesson, dur: 150 }, // 5s
-  { comp: () => <BigWord word="Jude." kicker="PARTIE 2" sub="Ton tuteur, jour et nuit." accent />, dur: 100 },
-  { comp: SceneJude, dur: 240 }, // 8s — slower realistic streaming
-  { comp: SceneExams, dur: 150 }, // 5s
-  { comp: () => <BigWord word="ENSEMBLE." kicker="PARTIE 3" sub="Parce que personne n'apprend seul." />, dur: 100 },
-  { comp: SceneFeed, dur: 150 }, // 5s
-  { comp: SceneMessages, dur: 135 }, // 4.5s
-  { comp: SceneQuiz, dur: 140 }, // ~4.7s — full countdown 3-2-1-GO
-  { comp: SceneChessPassions, dur: 150 }, // 5s
-  { comp: SceneTranslate, dur: 120 }, // 4s
-  { comp: SceneOutro, dur: 195 }, // 6.5s
+// Each scene picks an ambiance so the canvas changes mood across the video.
+type SceneDef = { comp: React.FC; dur: number; amb: Ambiance; cam?: "panLeft" | "pushIn" | "pullOut" | "scrollUp" | "none" };
+const SCENES: SceneDef[] = [
+  { comp: SceneGoogle, dur: 240, amb: "paper", cam: "none" },
+  { comp: SceneLanding, dur: 120, amb: "paper", cam: "none" },
+  { comp: SceneGrades, dur: 210, amb: "grid", cam: "none" },
+  { comp: () => <BigWord word="ÉCOLE." kicker="PARTIE 1" sub="Toute la tienne, dans ta poche." />, dur: 100, amb: "teal" },
+  { comp: SceneDashboard, dur: 150, amb: "halo", cam: "panLeft" },
+  { comp: SceneMatieres, dur: 135, amb: "grid", cam: "pullOut" },
+  { comp: SceneLesson, dur: 150, amb: "halo", cam: "pushIn" },
+  { comp: () => <BigWord word="Jude." kicker="PARTIE 2" sub="Ton tuteur, jour et nuit." accent />, dur: 100, amb: "teal" },
+  { comp: SceneJude, dur: 240, amb: "ivory", cam: "pushIn" },
+  { comp: SceneExams, dur: 150, amb: "ivory", cam: "none" },
+  { comp: () => <BigWord word="ENSEMBLE." kicker="PARTIE 3" sub="Parce que personne n'apprend seul." />, dur: 100, amb: "teal" },
+  { comp: SceneFeed, dur: 150, amb: "cold", cam: "scrollUp" },
+  { comp: SceneMessages, dur: 135, amb: "cold", cam: "none" },
+  { comp: SceneQuiz, dur: 140, amb: "cold", cam: "none" },
+  { comp: SceneChessPassions, dur: 150, amb: "halo", cam: "none" },
+  { comp: SceneTranslate, dur: 120, amb: "ivory", cam: "none" },
+  { comp: SceneOutro, dur: 195, amb: "haloCenter", cam: "pushIn" },
 ];
+
+// Virtual camera — subtle transform applied per-scene to break the static feel.
+const Camera: React.FC<{ kind: SceneDef["cam"]; dur: number; children: React.ReactNode }> = ({ kind, dur, children }) => {
+  const f = useCurrentFrame();
+  const t = Math.min(1, f / Math.max(1, dur));
+  const e = ease(t);
+  let transform = "";
+  if (kind === "panLeft") transform = `translateX(${interpolate(e, [0, 1], [10, -20])}px)`;
+  else if (kind === "pushIn") transform = `scale(${interpolate(e, [0, 1], [1.0, 1.04])})`;
+  else if (kind === "pullOut") transform = `scale(${interpolate(e, [0, 1], [1.05, 1.0])})`;
+  else if (kind === "scrollUp") transform = `translateY(${interpolate(e, [0, 1], [20, -30])}px)`;
+  if (!transform) return <>{children}</>;
+  return <AbsoluteFill style={{ transform, transformOrigin: "center center" }}>{children}</AbsoluteFill>;
+};
 
 export const MainVideoV3: React.FC = () => {
   let acc = 0;
@@ -1376,9 +1392,13 @@ export const MainVideoV3: React.FC = () => {
         const Comp = s.comp;
         return (
           <Sequence key={i} from={from} durationInFrames={s.dur}>
-            <SceneFade durationInFrames={s.dur}>
-              <Comp />
-            </SceneFade>
+            <AmbianceCtx.Provider value={s.amb}>
+              <SceneFade durationInFrames={s.dur}>
+                <Camera kind={s.cam ?? "none"} dur={s.dur}>
+                  <Comp />
+                </Camera>
+              </SceneFade>
+            </AmbianceCtx.Provider>
           </Sequence>
         );
       })}
