@@ -1,120 +1,110 @@
-## Objectif
+## Cap levé sur le poids → on vise la qualité maximale
 
-Passer la v3 d'un rendu "soigné mais IA" à un rendu **studio pro** en corrigeant le typing artificiel et en polissant 12 points faibles identifiés. Pas de refonte — chirurgie ciblée.
+Tu m'autorises à dépasser 15 Mo. Cible révisée : **25-35 Mo**, qualité broadcast, zéro compromis visuel.
 
-## 1. Fix typing humain (priorité #1)
+---
 
-Remplacer la cadence uniforme par une fonction de timing réaliste :
+## 1. Render haute qualité (plus de two-pass agressif)
+
+- **CRF 16** (visuellement lossless, contre 23 actuel)
+- Preset `slow` + profil `high` + `yuv420p`
+- `-tune film` + `aq-mode=3` pour préserver dégradés paper/teal
+- **Pas de re-compression two-pass** : on garde le rendu Remotion natif
+- Léger grain pellicule (`noise=alloc=1:c0s=2`) — masque tout artefact résiduel et donne un côté cinéma
+
+Résultat attendu : ~25-30 Mo, indistinguable d'un master.
+
+---
+
+## 2. Visuel — sortir radicalement de la monotonie
+
+### a) 5 ambiances de fond réparties (au lieu du paper uniforme)
 
 ```text
-m-o-n[pause longue]---e-d-u[pause courte]p-r-[hésitation: backspace 'r' puis retape]-r-e-n-e-u-r[pause]-.-c-o-m
+Google + Landing         → paper pur (#FAFAF7)
+Grades + Matières        → paper + grille fine teal 1%
+Dashboard + Leçon        → paper + halo radial teal haut-gauche
+Jude + Translate         → ivory chaud (#F7F3EC) — ambiance IA
+Feed + Messages + Quiz   → paper froid (#F4F6F7) — ambiance social
+Big words (ÉCOLE/JUDE/ENSEMBLE) → fond teal profond (#0A4F4F), texte ivory
+Outro                    → paper + halo teal central diffus
 ```
 
-- **Délais variables par lettre** : table de durées (4–14 frames) basée sur la difficulté de la touche (lettre courante 4–6f, tiret 10f, point 14f, caractère après pause 8f).
-- **Pause longue après "mon"** (20 frames) — simule réflexion.
-- **Hésitation réaliste** : à la lettre "p" de "edupreneur", taper "pe", marquer 8 frames, effacer le "e", retaper "pr". Ça humanise instantanément.
-- **Curseur** : clignote seulement pendant les pauses ≥6 frames, jamais pendant la frappe active.
-- **Soumission** : à la fin du typing, curseur souris descend jusqu'au bouton "Recherche Google" (mouvement courbe Bézier, pas linéaire), clic visible (scale 0.96 sur le bouton 4 frames), puis transition wipe vers la page.
+Les big words sur teal profond = **rupture cinématique forte**, l'œil sort du paper.
 
-## 2. Google scene — finitions
+### b) Profondeur — 3 couches par scène
 
-- Ajouter favicon Edupreneurs (couleur teal, lettre "E") devant la suggestion autocomplete.
-- 2 suggestions au lieu d'une seule (la première = celle qu'on choisit, la seconde = "mon edupreneur connexion").
-- Curseur souris SVG présent dès frame 0, bouge subtilement, va vers la barre de recherche au début, attend, puis descend vers la suggestion sélectionnée.
-- Transition fin de scène : la page Google fait un léger zoom (×1.02) puis wipe blanc vers la landing.
+- **Fond** : couleur + texture (grille, halo radial, ou bruit 1%)
+- **Midground** : cards/mockups existants
+- **Foreground** : particules teal qui dérivent (3-5 max) + anneau lumineux derrière l'élément focus
 
-## 3. Sélection classe — polish
+### c) Caméra virtuelle (fin de l'image fixe)
 
-- Mouvement curseur en **arc de Bézier** (pas ligne droite) : `cubicBezier((1700, 200) → (1100, 280) → (target))`.
-- **Focus ring teal 2px** sur la card survolée, animé en scale (ring grandit de 0 → 100%).
-- Hover prolongé : 18 frames au lieu de 10.
-- Corriger sous-titre NS3 → "Secondaire avancé" (pas de série, c'est NS4 qui a LLA/SES/SMP/SVT).
-- Badge final : remplacer "NS3 sélectionnée — Sciences & Lettres" par juste "**NS3 — Tu es prêt.**" (plus éditorial, moins data-sheet).
+Chaque scène UI gagne un mouvement subtil mais perceptible :
+- Dashboard : pan lent gauche→droite (translate -20px)
+- Leçon : push-in (scale 1.0 → 1.04)
+- Matières : pull-out (1.05 → 1.0) qui révèle plus de cards
+- Jude : push-in sur la bulle réponse (scale 1.0 → 1.06 + Y -10px)
+- Feed : scroll vertical lent du fil
+- Quiz Battle : micro-shake continu + rumble fort sur GO!
+- Big words : zoom continu 1.0 → 1.08
 
-## 4. Big words (ÉCOLE / JUDE / ENSEMBLE)
+Toutes en `ease-out cubic` longues (60-90 frames), jamais robotiques.
 
-Ajouter à chaque big word :
-- **Kicker** au-dessus en sans-serif 18px teal letterspaced ("PARTIE 1", "PARTIE 2", "PARTIE 3").
-- **Mot complémentaire** qui apparaît 20 frames après en serif italique 60px ("ÉCOLE. — Toute la tienne, dans ta poche.").
-- **Ligne horizontale fine 80px** centrée sous le mot, qui s'étire de 0 → 80px (ease-out 40f).
-- Zoom continu pendant toute la scène (1.0 → 1.06 sur 90f) pour éviter le statique.
+### d) Typographie enrichie
 
-## 5. Dashboard
+- Ajouter **Fraunces** (display sérif moderne) en complément d'`Instrument Serif` pour les big words
+- Tailles plus contrastées : ÉCOLE/JUDE/ENSEMBLE de 140 → **200px**
+- Kerning serré (-0.04em) sur les big words = look magazine éditorial
+- Kicker au-dessus en sans-serif 18px teal ("PARTIE 1·2·3")
 
-- Remplacer "Marvens" par "**Wideline**" (prénom haïtien crédible, féminin pour varier).
-- Counter Gold : ajouter overshoot subtil (target = 2840 → atteint 2900 à frame 55 → redescend à 2840 à frame 65).
-- Ajouter mini-icônes SVG personnalisées au lieu de ◆ ♦ ▲ (gold coin, flame, level-up).
-- Hauteur du bloc augmentée pour respirer (padding 36 → 48).
+### e) Finitions premium
 
-## 6. Matières — cohérence visuelle
+- Ombres portées subtiles sous chaque card : `0 20px 40px rgba(0,0,0,0.06)`
+- Bordures hairline 0.5px (au lieu de 1px)
+- Mini-sparklines teal 30% derrière les counters Dashboard
+- **4 types de transitions** au lieu d'un seul cross-fade :
+  1. Cross-fade — au sein d'une même section
+  2. Wipe teal vertical — avant chaque big word
+  3. Push horizontal — Matières → Leçon (suggère navigation)
+  4. Iris/zoom — Outro
 
-Passer tous les badges en **monogrammes lettre** dans le même style :
-- Maths → "M" teal
-- Français → "F" violet
-- Physique → "P" bleu
-- SVT → "S" vert
-- Histoire → "H" ambre
-- Anglais → "E" rouge
+### f) Détails par scène prioritaires
 
-Plus aucun emoji. Typo serif 38px dans le badge.
+- **Google** : ajouter favicon teal "E" devant la suggestion, 2 suggestions au lieu d'1, curseur souris SVG dès frame 0
+- **Grades** : focus ring teal animé, hover 18f au lieu de 10f, sous-titre corrigé "Secondaire avancé" pour NS3
+- **Dashboard** : Wideline (pas Marvens), counter overshoot 2840→2900→2840, SVG coin/flame/level
+- **Matières** : monogrammes lettres uniformes (M/F/P/S/H/E), zéro emoji
+- **Leçon** : vraie KaTeX (`x = (-b±√(b²-4ac))/2a`), dégradé subtil dans bloc formule
+- **Jude** : breadcrumb header, avatar "W" sur user, streaming 1.2 char/f, "✨ Jude réfléchit…" avant réponse
+- **Quiz** : 2 portraits SVG, countdown pulse scale 1.4→1.0, GO! ambre + rumble
+- **Outro** : suppression CTA pill, URL en sans-serif 44px medium sous fine ligne 120px, "Conçu en Haïti · Pour Haïti" 16px muted
 
-## 7. Leçon — vraie KaTeX
+---
 
-- Installer `katex` (déjà dans le projet web, l'ajouter aussi dans `remotion/`).
-- Rendre la formule via `<KaTeX>` ou injecter le HTML KaTeX statique : `x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}`.
-- Fond du bloc formule : passer de surface plate à un dégradé subtil paper → surface (donne du relief).
-- Ajouter en bas un mini bouton "Écouter cette leçon" (visuel seulement, pas d'audio) avec icône speaker.
+## 3. Fichiers touchés
 
-## 8. Jude — plus réaliste
+- `remotion/src/v3/MainVideoV3.tsx` — ambiances, caméra, particules, détails
+- `remotion/scripts/render-remotion.mjs` — CRF 16, preset slow, profil high
+- `remotion/scripts/finalize-v4.sh` (nouveau) — grain ffmpeg simple pass
+- `public/edupreneurs-promo.mp4` — remplacement
+- `public/edupreneurs-promo-poster.jpg` — re-capture sur big word JUDE (fond teal, plus iconique)
+- Ajout dép : `@remotion/google-fonts/Fraunces` (~40 KB)
 
-- Header de chat avec breadcrumb : "Maths · NS3 · Équations du 2nd degré"
-- Bulle user : ajouter petit avatar initiale "W" (Wideline)
-- Réduire vitesse streaming : 1.2 char/frame (36 char/s — proche d'un vrai LLM perçu)
-- Curseur de streaming : barre fine teal qui clignote, pas un bloc plein
-- Ajouter "✨ Jude réfléchit…" qui apparaît avant le début de la réponse (frames 25–50), remplacé par le texte qui stream
+v1, v2, v3 préservées dans `/mnt/documents/`.
 
-## 9. Quiz Battle
+---
 
-- Vraie UI : 2 portraits SVG en haut (avatars cercles avec initiales W et S), barre de score 0–0 entre les deux
-- Countdown avec pulse propre : chaque chiffre apparaît avec scale 1.4 → 1.0 + opacity 0 → 1 sur 8 frames, reste 22f, puis disparaît avec scale 1 → 0.85 + opacity 1 → 0 sur 8f
-- "GO!" en couleur amber (pas teal) pour contraste avec le reste
-- Ajouter rumble subtil de l'écran sur "GO!" (translate ±3px sur 6 frames, sinusoïdal)
+## Hors périmètre (inchangé)
 
-## 10. Outro — plus éditorial
+- Pas de voix off ni musique (muet)
+- Pas de nouvelles scènes (17 existantes)
+- Pas de captures Puppeteer
 
-- Supprimer le CTA pill noir
-- Remplacer par : URL "mon-edupreneur.com" en sans-serif 44px medium, color ink, sous une fine ligne horizontale 120px
-- Ajouter en bas en très petit (16px, muted) : "Conçu en Haïti · Pour Haïti"
-- Logo Edupreneurs (lettre "E" stylisée teal dans un cercle) au-dessus du titre
+---
 
-## 11. Rythme global
+## Une seule confirmation
 
-- 2 wipes horizontaux teal pour les moments charnière : avant "JUDE." (passage individuel → IA) et avant "ENSEMBLE." (passage IA → communauté).
-- 3 frames de paper blanc pur entre certaines scènes pour respirer (avant chaque big word).
-- Zoom global continu (1.0 → 1.04) sur toutes les scènes UI Dashboard/Matières/Leçon/Jude/Feed/Messages/Translate pour éviter le statique parfait.
+**Big words sur fond teal profond** (recommandé — rupture forte, plus cinéma) ou rester paper partout (plus calme) ?
 
-## 12. Poster
-
-Capturer frame **165** (premier frame de scène 2 — landing révélée) OU frame **480** (Dashboard avec compteurs montés à mi-course). Choix : frame 480 — plus parlant qu'un titre seul.
-
-## Détails techniques
-
-- Toutes modifs dans `remotion/src/v3/MainVideoV3.tsx` (fichier unique).
-- Ajout d'un helper `useHumanTyping(query, startFrame)` retournant `{ text, showCursor }` avec la table de timings réaliste + hésitation scriptée.
-- Ajout d'un helper `useBezierCursor(from, control, to, t0, t1)` pour mouvement courbe.
-- Ajout dépendance `katex` côté remotion : `cd remotion && bun add katex` (taille ~280KB, ok).
-- Re-render `/mnt/documents/edupreneurs-promo-v3.mp4` (écrasement) + re-publication dans `public/`.
-- Régénération poster via `ffmpeg -ss <timestamp_frame_480>`.
-
-## Livrables
-
-- `/mnt/documents/edupreneurs-promo-v3.mp4` (écrasé, ~5–7 Mo)
-- `public/edupreneurs-promo.mp4` (mis à jour)
-- `public/edupreneurs-promo-poster.jpg` (nouveau cadrage)
-- v1, v2, v3 d'origine préservées dans `/mnt/documents/`
-
-## Hors périmètre
-
-- Pas de voix off ni musique (conformément à v3)
-- Pas de nouvelles scènes (les 17 existantes restent, on les améliore)
-- Pas de captures Puppeteer réelles (rester full TSX pour fiabilité)
+Si tu valides "go avec teal", j'exécute tout d'un bloc.

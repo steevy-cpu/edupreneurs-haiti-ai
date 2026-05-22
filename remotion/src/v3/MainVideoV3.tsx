@@ -37,19 +37,135 @@ const bezier = (t: number, p0: number, p1: number, p2: number) =>
   (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2;
 
 // =================================================================
-// Persistent paper background with subtle vignette
+// Ambiance system — each scene picks one of 6 atmospheres so the eye
+// never sits on the same canvas. Subtle but visible.
 // =================================================================
-const Paper: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
-  <AbsoluteFill style={{ background: C.paper, fontFamily: SANS, color: C.ink }}>
-    <AbsoluteFill
-      style={{
-        background: "radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.04) 100%)",
-        pointerEvents: "none",
-      }}
-    />
-    {children}
-  </AbsoluteFill>
-);
+type Ambiance = "paper" | "grid" | "halo" | "ivory" | "cold" | "teal" | "haloCenter";
+const AmbianceCtx = React.createContext<Ambiance>("paper");
+
+// Floating teal particles — adds depth, ~3-5 dots drifting slowly.
+const Particles: React.FC<{ count?: number; color?: string }> = ({ count = 4, color = C.teal }) => {
+  const f = useCurrentFrame();
+  const pts = React.useMemo(
+    () =>
+      Array.from({ length: count }, (_, i) => ({
+        x: ((i * 187) % 1700) + 110,
+        y: ((i * 263) % 900) + 90,
+        r: 3 + ((i * 7) % 6),
+        speed: 0.15 + ((i * 13) % 30) / 100,
+        phase: (i * 41) % 360,
+      })),
+    [count]
+  );
+  return (
+    <AbsoluteFill style={{ pointerEvents: "none" }}>
+      {pts.map((p, i) => {
+        const dy = Math.sin((f * p.speed + p.phase) * (Math.PI / 180)) * 18;
+        const dx = Math.cos((f * p.speed * 0.7 + p.phase) * (Math.PI / 180)) * 12;
+        return (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              left: p.x + dx,
+              top: p.y + dy,
+              width: p.r,
+              height: p.r,
+              borderRadius: "50%",
+              background: color,
+              opacity: 0.18,
+              filter: "blur(0.5px)",
+            }}
+          />
+        );
+      })}
+    </AbsoluteFill>
+  );
+};
+
+// Persistent ambiance-aware background. Backward compatible — defaults to paper.
+const Paper: React.FC<{ children?: React.ReactNode; ambiance?: Ambiance }> = ({ children, ambiance: amb }) => {
+  const ctxAmb = React.useContext(AmbianceCtx);
+  const ambiance = amb ?? ctxAmb;
+  let bg = C.paper;
+  let overlay: React.ReactNode = null;
+  let particles: React.ReactNode = null;
+  switch (ambiance) {
+    case "grid":
+      overlay = (
+        <AbsoluteFill
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(8,126,126,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(8,126,126,0.06) 1px, transparent 1px)",
+            backgroundSize: "64px 64px",
+            pointerEvents: "none",
+          }}
+        />
+      );
+      particles = <Particles count={3} />;
+      break;
+    case "halo":
+      overlay = (
+        <AbsoluteFill
+          style={{
+            background:
+              "radial-gradient(circle at 18% 22%, rgba(8,126,126,0.18) 0%, rgba(8,126,126,0) 45%)",
+            pointerEvents: "none",
+          }}
+        />
+      );
+      particles = <Particles count={4} />;
+      break;
+    case "ivory":
+      bg = "#F7F3EC";
+      particles = <Particles count={3} color="#C9A84C" />;
+      break;
+    case "cold":
+      bg = "#F4F6F7";
+      particles = <Particles count={3} color={C.tealDim} />;
+      break;
+    case "teal":
+      bg = "#0A4F4F";
+      overlay = (
+        <AbsoluteFill
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0) 60%)",
+            pointerEvents: "none",
+          }}
+        />
+      );
+      particles = <Particles count={5} color="#7BD3D3" />;
+      break;
+    case "haloCenter":
+      overlay = (
+        <AbsoluteFill
+          style={{
+            background:
+              "radial-gradient(circle at 50% 50%, rgba(8,126,126,0.14) 0%, rgba(8,126,126,0) 55%)",
+            pointerEvents: "none",
+          }}
+        />
+      );
+      break;
+  }
+  return (
+    <AbsoluteFill style={{ background: bg, fontFamily: SANS, color: ambiance === "teal" ? "#F7F3EC" : C.ink }}>
+      {overlay}
+      <AbsoluteFill
+        style={{
+          background:
+            ambiance === "teal"
+              ? "radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.25) 100%)"
+              : "radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.05) 100%)",
+          pointerEvents: "none",
+        }}
+      />
+      {particles}
+      {children}
+    </AbsoluteFill>
+  );
+};
 
 // Soft cross-fade wrapper for scene entry/exit
 const SceneFade: React.FC<{ children: React.ReactNode; durationInFrames: number; fadeIn?: number; fadeOut?: number }> = ({
@@ -546,44 +662,47 @@ const BigWord: React.FC<{ word: string; kicker?: string; sub?: string; accent?: 
   const f = useCurrentFrame();
   const op = interpolate(f, [0, 18], [0, 1], { extrapolateRight: "clamp" });
   const blur = interpolate(f, [0, 22], [12, 0], { extrapolateRight: "clamp" });
-  const scale = interpolate(f, [0, 90], [1.0, 1.06], { extrapolateRight: "clamp", easing: ease });
+  const scale = interpolate(f, [0, 90], [1.0, 1.08], { extrapolateRight: "clamp", easing: ease });
   const kickerOp = interpolate(f, [4, 22], [0, 1], { extrapolateRight: "clamp" });
-  const ruleW = interpolate(f, [22, 62], [0, 100], { extrapolateRight: "clamp", easing: ease });
+  const ruleW = interpolate(f, [22, 62], [0, 140], { extrapolateRight: "clamp", easing: ease });
   const subOp = interpolate(f, [30, 50], [0, 1], { extrapolateRight: "clamp" });
   const subY = interpolate(f, [30, 55], [12, 0], { extrapolateRight: "clamp", easing: ease });
+  // Big words sit on deep teal — strong cinematic break against paper scenes.
+  const ivory = "#F5F0E4";
+  const wordColor = accent ? "#FFD27A" : ivory;
   return (
-    <Paper>
+    <Paper ambiance="teal">
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", opacity: op, transform: `scale(${scale})`, filter: `blur(${blur}px)` }}>
           {kicker && (
-            <div style={{ fontSize: 18, color: C.teal, letterSpacing: 5, fontWeight: 700, marginBottom: 28, opacity: kickerOp }}>
+            <div style={{ fontSize: 18, color: "#7BD3D3", letterSpacing: 6, fontWeight: 700, marginBottom: 32, opacity: kickerOp }}>
               {kicker}
             </div>
           )}
           <div
             style={{
               fontFamily: SERIF,
-              fontSize: 320,
-              letterSpacing: -10,
-              color: accent ? C.teal : C.ink,
+              fontSize: 360,
+              letterSpacing: -14,
+              color: wordColor,
               lineHeight: 0.9,
               fontStyle: accent ? "italic" : "normal",
+              textShadow: "0 8px 40px rgba(0,0,0,0.35)",
             }}
           >
             {word}
           </div>
-          {/* hairline rule that draws in */}
-          <div style={{ display: "flex", justifyContent: "center", marginTop: 30 }}>
-            <div style={{ width: `${ruleW}px`, height: 2, background: C.ink, opacity: 0.7 }} />
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 34 }}>
+            <div style={{ width: `${ruleW}px`, height: 1.5, background: ivory, opacity: 0.5 }} />
           </div>
           {sub && (
             <div
               style={{
-                marginTop: 28,
+                marginTop: 30,
                 fontFamily: SERIF,
                 fontStyle: "italic",
-                fontSize: 42,
-                color: C.muted,
+                fontSize: 44,
+                color: "rgba(245,240,228,0.72)",
                 opacity: subOp,
                 transform: `translateY(${subY}px)`,
               }}
@@ -1227,25 +1346,41 @@ const SceneOutro: React.FC = () => {
 // =================================================================
 // Scene durations (frames @ 30fps).
 // SceneGoogle extended to 240 because human-typing + cursor click takes longer.
-const SCENES: Array<{ comp: React.FC; dur: number }> = [
-  { comp: SceneGoogle, dur: 240 }, // 8s — human typing + cursor click + flash
-  { comp: SceneLanding, dur: 120 }, // 4s
-  { comp: SceneGrades, dur: 210 }, // 7s — Bézier cursor + selection
-  { comp: () => <BigWord word="ÉCOLE." kicker="PARTIE 1" sub="Toute la tienne, dans ta poche." />, dur: 100 },
-  { comp: SceneDashboard, dur: 150 }, // 5s
-  { comp: SceneMatieres, dur: 135 }, // 4.5s
-  { comp: SceneLesson, dur: 150 }, // 5s
-  { comp: () => <BigWord word="Jude." kicker="PARTIE 2" sub="Ton tuteur, jour et nuit." accent />, dur: 100 },
-  { comp: SceneJude, dur: 240 }, // 8s — slower realistic streaming
-  { comp: SceneExams, dur: 150 }, // 5s
-  { comp: () => <BigWord word="ENSEMBLE." kicker="PARTIE 3" sub="Parce que personne n'apprend seul." />, dur: 100 },
-  { comp: SceneFeed, dur: 150 }, // 5s
-  { comp: SceneMessages, dur: 135 }, // 4.5s
-  { comp: SceneQuiz, dur: 140 }, // ~4.7s — full countdown 3-2-1-GO
-  { comp: SceneChessPassions, dur: 150 }, // 5s
-  { comp: SceneTranslate, dur: 120 }, // 4s
-  { comp: SceneOutro, dur: 195 }, // 6.5s
+// Each scene picks an ambiance so the canvas changes mood across the video.
+type SceneDef = { comp: React.FC; dur: number; amb: Ambiance; cam?: "panLeft" | "pushIn" | "pullOut" | "scrollUp" | "none" };
+const SCENES: SceneDef[] = [
+  { comp: SceneGoogle, dur: 240, amb: "paper", cam: "none" },
+  { comp: SceneLanding, dur: 120, amb: "paper", cam: "none" },
+  { comp: SceneGrades, dur: 210, amb: "grid", cam: "none" },
+  { comp: () => <BigWord word="ÉCOLE." kicker="PARTIE 1" sub="Toute la tienne, dans ta poche." />, dur: 100, amb: "teal" },
+  { comp: SceneDashboard, dur: 150, amb: "halo", cam: "panLeft" },
+  { comp: SceneMatieres, dur: 135, amb: "grid", cam: "pullOut" },
+  { comp: SceneLesson, dur: 150, amb: "halo", cam: "pushIn" },
+  { comp: () => <BigWord word="Jude." kicker="PARTIE 2" sub="Ton tuteur, jour et nuit." accent />, dur: 100, amb: "teal" },
+  { comp: SceneJude, dur: 240, amb: "ivory", cam: "pushIn" },
+  { comp: SceneExams, dur: 150, amb: "ivory", cam: "none" },
+  { comp: () => <BigWord word="ENSEMBLE." kicker="PARTIE 3" sub="Parce que personne n'apprend seul." />, dur: 100, amb: "teal" },
+  { comp: SceneFeed, dur: 150, amb: "cold", cam: "scrollUp" },
+  { comp: SceneMessages, dur: 135, amb: "cold", cam: "none" },
+  { comp: SceneQuiz, dur: 140, amb: "cold", cam: "none" },
+  { comp: SceneChessPassions, dur: 150, amb: "halo", cam: "none" },
+  { comp: SceneTranslate, dur: 120, amb: "ivory", cam: "none" },
+  { comp: SceneOutro, dur: 195, amb: "haloCenter", cam: "pushIn" },
 ];
+
+// Virtual camera — subtle transform applied per-scene to break the static feel.
+const Camera: React.FC<{ kind: SceneDef["cam"]; dur: number; children: React.ReactNode }> = ({ kind, dur, children }) => {
+  const f = useCurrentFrame();
+  const t = Math.min(1, f / Math.max(1, dur));
+  const e = ease(t);
+  let transform = "";
+  if (kind === "panLeft") transform = `translateX(${interpolate(e, [0, 1], [10, -20])}px)`;
+  else if (kind === "pushIn") transform = `scale(${interpolate(e, [0, 1], [1.0, 1.04])})`;
+  else if (kind === "pullOut") transform = `scale(${interpolate(e, [0, 1], [1.05, 1.0])})`;
+  else if (kind === "scrollUp") transform = `translateY(${interpolate(e, [0, 1], [20, -30])}px)`;
+  if (!transform) return <>{children}</>;
+  return <AbsoluteFill style={{ transform, transformOrigin: "center center" }}>{children}</AbsoluteFill>;
+};
 
 export const MainVideoV3: React.FC = () => {
   let acc = 0;
@@ -1257,9 +1392,13 @@ export const MainVideoV3: React.FC = () => {
         const Comp = s.comp;
         return (
           <Sequence key={i} from={from} durationInFrames={s.dur}>
-            <SceneFade durationInFrames={s.dur}>
-              <Comp />
-            </SceneFade>
+            <AmbianceCtx.Provider value={s.amb}>
+              <SceneFade durationInFrames={s.dur}>
+                <Camera kind={s.cam ?? "none"} dur={s.dur}>
+                  <Comp />
+                </Camera>
+              </SceneFade>
+            </AmbianceCtx.Provider>
           </Sequence>
         );
       })}
