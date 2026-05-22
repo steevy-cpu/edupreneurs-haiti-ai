@@ -4,15 +4,12 @@ import {
   useCurrentFrame,
   useVideoConfig,
   interpolate,
-  spring,
   Sequence,
-  Img,
-  staticFile,
 } from "remotion";
 import { loadFont as loadSerif } from "@remotion/google-fonts/InstrumentSerif";
 import { loadFont as loadSans } from "@remotion/google-fonts/Inter";
 
-// Load fonts at module scope so Remotion can embed them.
+// Fonts loaded at module scope so the Remotion bundler embeds them.
 const { fontFamily: SERIF } = loadSerif("normal", { weights: ["400"], subsets: ["latin"] });
 const { fontFamily: SANS } = loadSans("normal", { weights: ["400", "500", "600", "700", "800"], subsets: ["latin"] });
 
@@ -32,16 +29,18 @@ const C = {
   border: "#E1DDD2",
 };
 
-// Ease-out cubic (Apple-style)
+// Apple-style easings used everywhere for coherence.
 const ease = (t: number) => 1 - Math.pow(1 - t, 3);
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+// Quadratic Bézier — used so the mouse cursor moves on an arc, not a straight line.
+const bezier = (t: number, p0: number, p1: number, p2: number) =>
+  (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2;
 
 // =================================================================
-// Persistent paper background with subtle grain
+// Persistent paper background with subtle vignette
 // =================================================================
 const Paper: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
   <AbsoluteFill style={{ background: C.paper, fontFamily: SANS, color: C.ink }}>
-    {/* subtle vignette */}
     <AbsoluteFill
       style={{
         background: "radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.04) 100%)",
@@ -70,21 +69,145 @@ const SceneFade: React.FC<{ children: React.ReactNode; durationInFrames: number;
 };
 
 // =================================================================
-// SCENE 1 — Google search typing "mon-edupreneur.com"
+// Reusable mouse cursor SVG (used in Google + Grades scenes)
+// =================================================================
+const MouseCursor: React.FC<{ x: number; y: number; pressed?: boolean }> = ({ x, y, pressed }) => (
+  <svg
+    width="38"
+    height="38"
+    viewBox="0 0 24 24"
+    style={{
+      position: "absolute",
+      left: x - 6,
+      top: y - 4,
+      pointerEvents: "none",
+      filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.25))",
+      transform: pressed ? "scale(0.92)" : "scale(1)",
+      transformOrigin: "6px 4px",
+    }}
+  >
+    <path
+      d="M3 2 L3 18 L7 14 L10 21 L13 20 L10 13 L17 13 Z"
+      fill="#fff"
+      stroke="#1a1a1a"
+      strokeWidth="1.2"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+// =================================================================
+// Edupreneurs favicon mark (used in Google autocomplete)
+// =================================================================
+const EduMark: React.FC<{ size?: number }> = ({ size = 22 }) => (
+  <div
+    style={{
+      width: size,
+      height: size,
+      borderRadius: "50%",
+      background: C.teal,
+      color: "#fff",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontFamily: SERIF,
+      fontSize: size * 0.65,
+      fontStyle: "italic",
+      flexShrink: 0,
+    }}
+  >
+    E
+  </div>
+);
+
+// =================================================================
+// Human typing simulator — variable per-char delays + 1 hesitation/backspace
+// Returns the visible text at the current frame, plus a caret hint.
+// Why scripted: a real human pauses, mis-types, corrects. Uniform speed = robotic.
+// =================================================================
+type TypingStep = { ch: string; delay: number; backspace?: boolean };
+
+const TYPING_SCRIPT: TypingStep[] = [
+  // "mon"
+  { ch: "m", delay: 6 },
+  { ch: "o", delay: 5 },
+  { ch: "n", delay: 5 },
+  // Long pause — "did I spell it right?" beat
+  { ch: "-", delay: 24 },
+  // "edu" comes faster, in the flow
+  { ch: "e", delay: 5 },
+  { ch: "d", delay: 4 },
+  { ch: "u", delay: 5 },
+  // Hesitation: type "pe", pause, backspace, retype "pr"
+  { ch: "p", delay: 7 },
+  { ch: "e", delay: 6 },
+  { ch: "", delay: 14, backspace: true }, // delete the wrong 'e'
+  { ch: "r", delay: 9 },
+  // "eneur" — comfortable cadence
+  { ch: "e", delay: 5 },
+  { ch: "n", delay: 5 },
+  { ch: "e", delay: 5 },
+  { ch: "u", delay: 6 },
+  { ch: "r", delay: 6 },
+  // Tiny breath before the TLD
+  { ch: ".", delay: 12 },
+  { ch: "c", delay: 7 },
+  { ch: "o", delay: 5 },
+  { ch: "m", delay: 6 },
+];
+
+const useHumanTyping = (startFrame: number) => {
+  const f = useCurrentFrame();
+  let text = "";
+  let cursor = startFrame;
+  let lastEventFrame = startFrame;
+  for (const step of TYPING_SCRIPT) {
+    cursor += step.delay;
+    if (f < cursor) break;
+    if (step.backspace) {
+      text = text.slice(0, -1);
+    } else {
+      text += step.ch;
+    }
+    lastEventFrame = cursor;
+  }
+  // Caret blinks only when not actively typing (gap ≥ 6f since last event).
+  const idle = f - lastEventFrame > 6;
+  const showCaret = idle ? Math.floor(f / 14) % 2 === 0 : true;
+  const totalDur = TYPING_SCRIPT.reduce((a, s) => a + s.delay, 0);
+  const done = f >= startFrame + totalDur;
+  return { text, showCaret, done, endFrame: startFrame + totalDur };
+};
+
+// =================================================================
+// SCENE 1 — Google search with HUMAN typing + mouse cursor
 // =================================================================
 const SceneGoogle: React.FC = () => {
   const f = useCurrentFrame();
-  const query = "mon-edupreneur.com";
-  // Typing: 1 char every 5 frames, starts at frame 20
-  const typed = Math.max(0, Math.min(query.length, Math.floor((f - 20) / 5)));
-  const text = query.slice(0, typed);
-  const showCaret = Math.floor(f / 12) % 2 === 0;
-  const showAuto = f > 60;
-  const submit = f > 130;
+  const { text, showCaret, done, endFrame } = useHumanTyping(20);
 
-  // Window enters with subtle scale
+  // Autocomplete drops after the user pauses near the end (after ".com" or near it).
+  const showAuto = text.length >= 12;
+
+  // Mouse moves on a Bézier arc toward the autocomplete suggestion after typing finishes.
+  const clickStart = endFrame + 14;
+  const clickEnd = clickStart + 22;
+  const cursorT = interpolate(f, [clickStart, clickEnd], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const cx0 = 1180, cy0 = 320; // resting position (near the search bar)
+  const cx2 = 1060, cy2 = 700; // suggestion target
+  const cxC = 1320, cyC = 460; // control point — gives the arc
+  const cursorX = bezier(easeInOut(cursorT), cx0, cxC, cx2);
+  const cursorY = bezier(easeInOut(cursorT), cy0, cyC, cy2);
+  const pressed = f >= clickEnd - 3 && f < clickEnd + 4;
+  const navigating = f >= clickEnd + 4;
+
+  // Whole window enters with subtle scale
   const enterScale = interpolate(f, [0, 25], [0.98, 1], { extrapolateRight: "clamp", easing: ease });
   const enterOp = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
+
+  // Subtle zoom on navigation moment, white flash near the end
+  const navScale = navigating ? interpolate(f, [clickEnd + 4, clickEnd + 26], [1, 1.04], { extrapolateRight: "clamp", easing: ease }) : 1;
+  const flash = navigating ? interpolate(f, [clickEnd + 18, clickEnd + 30], [0, 1], { extrapolateRight: "clamp" }) : 0;
 
   return (
     <Paper>
@@ -97,7 +220,7 @@ const SceneGoogle: React.FC = () => {
             boxShadow: "0 30px 80px -30px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.04)",
             border: `1px solid ${C.border}`,
             overflow: "hidden",
-            transform: `scale(${enterScale})`,
+            transform: `scale(${enterScale * navScale})`,
             opacity: enterOp,
           }}
         >
@@ -107,11 +230,11 @@ const SceneGoogle: React.FC = () => {
             <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#FEBC2E" }} />
             <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#28C840" }} />
             <div style={{ marginLeft: 18, padding: "6px 14px", background: "#fff", borderRadius: 8, fontSize: 14, color: "#5f6368", border: `1px solid ${C.border}`, minWidth: 420 }}>
-              🔒 google.com/search
+              🔒 google.com
             </div>
           </div>
           {/* google body */}
-          <div style={{ padding: "60px 80px 40px", textAlign: "center" }}>
+          <div style={{ padding: "60px 80px 50px", textAlign: "center" }}>
             <div style={{ fontSize: 72, fontWeight: 400, letterSpacing: -2, marginBottom: 32 }}>
               <span style={{ color: "#4285F4" }}>G</span>
               <span style={{ color: "#EA4335" }}>o</span>
@@ -138,51 +261,65 @@ const SceneGoogle: React.FC = () => {
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
-              <div style={{ fontSize: 22, color: C.ink, textAlign: "left", flex: 1 }}>
+              <div style={{ fontSize: 22, color: C.ink, textAlign: "left", flex: 1, fontFamily: SANS }}>
                 {text}
-                {showCaret && !submit && <span style={{ borderLeft: "2px solid #4285F4", marginLeft: 1 }}>&nbsp;</span>}
+                {showCaret && !done && <span style={{ borderLeft: "2px solid #4285F4", marginLeft: 1 }}>&nbsp;</span>}
               </div>
             </div>
 
-            {/* autocomplete suggestion */}
-            {showAuto && !submit && (
+            {/* autocomplete — 2 suggestions, the first being the chosen one */}
+            {showAuto && (
               <div
                 style={{
-                  marginTop: 8,
+                  marginTop: 10,
                   maxWidth: 700,
-                  margin: "8px auto 0",
+                  margin: "10px auto 0",
                   background: "#fff",
                   border: `1px solid ${C.border}`,
                   borderRadius: 16,
-                  padding: "10px 22px",
+                  padding: "8px 0",
                   textAlign: "left",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  fontSize: 18,
-                  color: C.ink,
-                  opacity: interpolate(f, [60, 75], [0, 1], { extrapolateRight: "clamp" }),
+                  overflow: "hidden",
+                  opacity: interpolate(f, [endFrame - 15, endFrame], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }),
                 }}
               >
-                <span style={{ color: "#9aa0a6" }}>↗</span>
-                <span><b>mon-edupreneur.com</b> — apprendre autrement en Haïti</span>
-              </div>
-            )}
-
-            {submit && (
-              <div
-                style={{
-                  marginTop: 30,
-                  fontSize: 16,
-                  color: C.teal,
-                  opacity: interpolate(f, [130, 145], [0, 1], { extrapolateRight: "clamp" }),
-                }}
-              >
-                Chargement…
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 14,
+                    padding: "12px 22px",
+                    background: pressed ? "#F1F3F4" : "transparent",
+                    fontSize: 18,
+                    color: C.ink,
+                  }}
+                >
+                  <EduMark size={22} />
+                  <span><b>mon-edupreneur.com</b> — apprendre autrement en Haïti</span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 14,
+                    padding: "12px 22px",
+                    fontSize: 18,
+                    color: C.inkDim,
+                  }}
+                >
+                  <span style={{ color: "#9aa0a6", fontSize: 18 }}>↗</span>
+                  <span>mon edupreneur connexion</span>
+                </div>
               </div>
             )}
           </div>
         </div>
+
+        {/* mouse cursor — present from frame 0, subtle drift, then arc toward suggestion */}
+        <MouseCursor x={cursorX} y={cursorY} pressed={pressed} />
+
+        {/* white flash for the page-transition feel */}
+        <AbsoluteFill style={{ background: "#fff", opacity: flash, pointerEvents: "none" }} />
       </AbsoluteFill>
     </Paper>
   );
@@ -229,7 +366,7 @@ const SceneLanding: React.FC = () => {
 };
 
 // =================================================================
-// SCENE 3 — Grade selection (7 classes)
+// SCENE 3 — Grade selection (7 classes) with Bézier cursor + focus ring
 // =================================================================
 const GRADES = [
   { code: "7ᵉ AF", sub: "Fondamental" },
@@ -237,19 +374,16 @@ const GRADES = [
   { code: "9ᵉ AF", sub: "Fondamental" },
   { code: "NS1", sub: "Secondaire" },
   { code: "NS2", sub: "Secondaire" },
-  { code: "NS3", sub: "Secondaire" },
+  { code: "NS3", sub: "Secondaire avancé" }, // corrected: series only appear at NS4
   { code: "NS4", sub: "Baccalauréat" },
 ];
 
 const SceneGrades: React.FC = () => {
   const f = useCurrentFrame();
-  const { fps } = useVideoConfig();
 
   const titleOp = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
   const titleY = interpolate(f, [0, 25], [20, 0], { extrapolateRight: "clamp", easing: ease });
 
-  // Cursor target: NS3 card (index 5) — grid is 4 cols x 2 rows
-  // Coords computed below
   const cardW = 240;
   const cardH = 200;
   const gap = 24;
@@ -258,20 +392,23 @@ const SceneGrades: React.FC = () => {
   const startX = (1920 - gridW) / 2;
   const startY = 420;
 
-  // Cursor animation
+  // Cursor moves on a Bézier arc — more natural than a straight slide.
   const cursorStart = 90;
-  const cursorEnd = 130;
+  const cursorEnd = 138;
   const cursorT = interpolate(f, [cursorStart, cursorEnd], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const targetIdx = 5; // NS3
   const targetCol = targetIdx % cols;
   const targetRow = Math.floor(targetIdx / cols);
   const targetX = startX + targetCol * (cardW + gap) + cardW / 2;
   const targetY = startY + targetRow * (cardH + gap) + cardH / 2;
-  const cursorFromX = 1700;
-  const cursorFromY = 200;
-  const cursorX = cursorFromX + (targetX - cursorFromX) * easeInOut(cursorT);
-  const cursorY = cursorFromY + (targetY - cursorFromY) * easeInOut(cursorT);
-  const clicked = f >= 130;
+  const p0x = 1700, p0y = 200;
+  const cpx = 1280, cpy = 280; // arc control point
+  const cursorX = bezier(easeInOut(cursorT), p0x, cpx, targetX);
+  const cursorY = bezier(easeInOut(cursorT), p0y, cpy, targetY);
+  // Hover sustained for 18 frames before click
+  const hoverActive = f >= 120 && f < 138;
+  const pressed = f >= 136 && f < 142;
+  const clicked = f >= 138;
 
   return (
     <Paper>
@@ -297,7 +434,7 @@ const SceneGrades: React.FC = () => {
             width: gridW,
             display: "grid",
             gridTemplateColumns: `repeat(${cols}, ${cardW}px)`,
-            gap: gap,
+            gap,
           }}
         >
           {GRADES.map((g, i) => {
@@ -305,12 +442,14 @@ const SceneGrades: React.FC = () => {
             const op = interpolate(f, [delay, delay + 20], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
             const ty = interpolate(f, [delay, delay + 25], [16, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: ease });
             const isTarget = i === targetIdx;
-            const hover = isTarget && f >= 120 && f < 130 ? 1 : 0;
+            const hover = isTarget && hoverActive ? 1 : 0;
             const isSelected = isTarget && clicked;
             const sc = 1 + hover * 0.04;
             const bg = isSelected ? C.teal : C.surface;
             const fg = isSelected ? "#fff" : C.ink;
             const sub = isSelected ? "rgba(255,255,255,0.75)" : C.muted;
+            // Focus ring scales in while hover is active
+            const ringT = isTarget ? interpolate(f, [120, 132], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) : 0;
             return (
               <div
                 key={g.code}
@@ -325,12 +464,25 @@ const SceneGrades: React.FC = () => {
                   justifyContent: "space-between",
                   opacity: op,
                   transform: `translateY(${ty}px) scale(${sc})`,
-                  transition: "none",
                   color: fg,
                   position: "relative",
                   boxShadow: isSelected ? "0 20px 50px -20px rgba(8,126,126,0.5)" : "none",
                 }}
               >
+                {/* hover focus ring */}
+                {isTarget && !isSelected && ringT > 0 && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: -6,
+                      borderRadius: 22,
+                      border: `2px solid ${C.teal}`,
+                      opacity: ringT,
+                      transform: `scale(${0.96 + ringT * 0.04})`,
+                      pointerEvents: "none",
+                    }}
+                  />
+                )}
                 <div style={{ fontSize: 14, color: sub, letterSpacing: 1.5, fontWeight: 600 }}>{g.sub.toUpperCase()}</div>
                 <div>
                   <div style={{ fontFamily: SERIF, fontSize: 56, lineHeight: 1, letterSpacing: -1 }}>{g.code}</div>
@@ -351,7 +503,7 @@ const SceneGrades: React.FC = () => {
                       justifyContent: "center",
                       fontWeight: 800,
                       fontSize: 22,
-                      opacity: interpolate(f, [130, 145], [0, 1], { extrapolateRight: "clamp" }),
+                      opacity: interpolate(f, [138, 152], [0, 1], { extrapolateRight: "clamp" }),
                     }}
                   >
                     ✓
@@ -363,18 +515,9 @@ const SceneGrades: React.FC = () => {
         </div>
 
         {/* Cursor */}
-        {f >= cursorStart && (
-          <svg
-            width="40"
-            height="40"
-            viewBox="0 0 24 24"
-            style={{ position: "absolute", left: cursorX - 8, top: cursorY - 8, pointerEvents: "none", filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.25))" }}
-          >
-            <path d="M3 2 L3 18 L7 14 L10 21 L13 20 L10 13 L17 13 Z" fill="#fff" stroke="#1a1a1a" strokeWidth="1.2" strokeLinejoin="round" />
-          </svg>
-        )}
+        {f >= cursorStart && <MouseCursor x={cursorX} y={cursorY} pressed={pressed} />}
 
-        {/* Selected badge */}
+        {/* Editorial confirmation badge */}
         {clicked && (
           <div
             style={{
@@ -383,12 +526,12 @@ const SceneGrades: React.FC = () => {
               left: 0,
               right: 0,
               textAlign: "center",
-              opacity: interpolate(f, [140, 160, 175, 180], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }),
+              opacity: interpolate(f, [148, 165, 180, 188], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }),
             }}
           >
-            <span style={{ background: C.ink, color: "#fff", padding: "14px 28px", borderRadius: 999, fontSize: 18, fontWeight: 600, letterSpacing: 0.5 }}>
-              NS3 sélectionnée — Sciences & Lettres
-            </span>
+            <div style={{ fontFamily: SERIF, fontSize: 44, color: C.ink, letterSpacing: -1 }}>
+              NS3 — <span style={{ fontStyle: "italic", color: C.teal }}>tu es prêt.</span>
+            </div>
           </div>
         )}
       </AbsoluteFill>
@@ -397,17 +540,26 @@ const SceneGrades: React.FC = () => {
 };
 
 // =================================================================
-// Big serif word scenes
+// Big serif word scenes — now with kicker + subtitle + animated rule
 // =================================================================
-const BigWord: React.FC<{ word: string; sub?: string; accent?: boolean }> = ({ word, sub, accent }) => {
+const BigWord: React.FC<{ word: string; kicker?: string; sub?: string; accent?: boolean }> = ({ word, kicker, sub, accent }) => {
   const f = useCurrentFrame();
   const op = interpolate(f, [0, 18], [0, 1], { extrapolateRight: "clamp" });
   const blur = interpolate(f, [0, 22], [12, 0], { extrapolateRight: "clamp" });
-  const scale = interpolate(f, [0, 60], [1.0, 1.04], { extrapolateRight: "clamp", easing: ease });
+  const scale = interpolate(f, [0, 90], [1.0, 1.06], { extrapolateRight: "clamp", easing: ease });
+  const kickerOp = interpolate(f, [4, 22], [0, 1], { extrapolateRight: "clamp" });
+  const ruleW = interpolate(f, [22, 62], [0, 100], { extrapolateRight: "clamp", easing: ease });
+  const subOp = interpolate(f, [30, 50], [0, 1], { extrapolateRight: "clamp" });
+  const subY = interpolate(f, [30, 55], [12, 0], { extrapolateRight: "clamp", easing: ease });
   return (
     <Paper>
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", opacity: op, transform: `scale(${scale})`, filter: `blur(${blur}px)` }}>
+          {kicker && (
+            <div style={{ fontSize: 18, color: C.teal, letterSpacing: 5, fontWeight: 700, marginBottom: 28, opacity: kickerOp }}>
+              {kicker}
+            </div>
+          )}
           <div
             style={{
               fontFamily: SERIF,
@@ -420,8 +572,24 @@ const BigWord: React.FC<{ word: string; sub?: string; accent?: boolean }> = ({ w
           >
             {word}
           </div>
+          {/* hairline rule that draws in */}
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 30 }}>
+            <div style={{ width: `${ruleW}px`, height: 2, background: C.ink, opacity: 0.7 }} />
+          </div>
           {sub && (
-            <div style={{ marginTop: 30, fontSize: 26, letterSpacing: 4, color: C.muted, fontWeight: 500 }}>{sub}</div>
+            <div
+              style={{
+                marginTop: 28,
+                fontFamily: SERIF,
+                fontStyle: "italic",
+                fontSize: 42,
+                color: C.muted,
+                opacity: subOp,
+                transform: `translateY(${subY}px)`,
+              }}
+            >
+              {sub}
+            </div>
           )}
         </div>
       </AbsoluteFill>
@@ -430,32 +598,60 @@ const BigWord: React.FC<{ word: string; sub?: string; accent?: boolean }> = ({ w
 };
 
 // =================================================================
-// SCENE — Dashboard mockup with counters
+// SCENE — Dashboard mockup with counters (Wideline, overshoot, SVG icons)
 // =================================================================
-const Counter: React.FC<{ target: number; suffix?: string; from?: number }> = ({ target, suffix = "", from = 0 }) => {
+// Counter with subtle overshoot — lands above target, then settles.
+const Counter: React.FC<{ target: number; suffix?: string }> = ({ target, suffix = "" }) => {
   const f = useCurrentFrame();
-  const v = Math.round(interpolate(f, [10, 60], [from, target], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: ease }));
+  const overshoot = target * 1.022;
+  // Climbs to overshoot by f=55, then settles to target by f=72
+  const v = Math.round(
+    f < 55
+      ? interpolate(f, [10, 55], [0, overshoot], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: ease })
+      : interpolate(f, [55, 72], [overshoot, target], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: ease })
+  );
   return <span>{v.toLocaleString("fr-FR")}{suffix}</span>;
 };
+
+// Compact crafted icons (gold coin / flame / level-up) — replaces glyph diamonds.
+const IconCoin: React.FC<{ color: string }> = ({ color }) => (
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="9" fill={color} />
+    <circle cx="12" cy="12" r="6" fill="none" stroke="#fff" strokeWidth="1.6" opacity="0.85" />
+    <text x="12" y="16" textAnchor="middle" fontFamily={SERIF} fontSize="11" fill="#fff" fontWeight="700">G</text>
+  </svg>
+);
+const IconFlame: React.FC<{ color: string }> = ({ color }) => (
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+    <path d="M12 2 C 13 6 17 8 17 13 a 5 5 0 0 1 -10 0 c 0 -3 2 -4 2 -7 c 1 2 3 3 3 -4 z" fill={color} />
+  </svg>
+);
+const IconLevel: React.FC<{ color: string }> = ({ color }) => (
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+    <path d="M4 20 L 12 4 L 20 20 Z" fill={color} />
+    <path d="M8 15 L 12 9 L 16 15 Z" fill="#fff" opacity="0.7" />
+  </svg>
+);
 
 const SceneDashboard: React.FC = () => {
   const f = useCurrentFrame();
   const op = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
-  const sc = interpolate(f, [0, 150], [1, 1.05], { extrapolateRight: "clamp", easing: ease });
+  const sc = interpolate(f, [0, 150], [1, 1.04], { extrapolateRight: "clamp", easing: ease });
+  const stats = [
+    { label: "GOLD", value: 2840, color: C.amber, Icon: IconCoin },
+    { label: "STREAK", value: 27, suffix: " j", color: "#E85D3A", Icon: IconFlame },
+    { label: "XP NIVEAU 12", value: 7350, color: C.teal, Icon: IconLevel },
+  ] as const;
   return (
     <Paper>
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: op }}>
         <div style={{ transform: `scale(${sc})`, width: 1500 }}>
           <div style={{ fontSize: 18, color: C.muted, letterSpacing: 3, marginBottom: 14, fontWeight: 600 }}>TABLEAU DE BORD</div>
           <div style={{ fontFamily: SERIF, fontSize: 88, letterSpacing: -2, marginBottom: 50, color: C.ink }}>
-            Salut, <span style={{ color: C.teal, fontStyle: "italic" }}>Marvens</span>.
+            Salut, <span style={{ color: C.teal, fontStyle: "italic" }}>Wideline</span>.
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 28 }}>
-            {[
-              { label: "GOLD", value: 2840, color: C.amber, icon: "◆" },
-              { label: "STREAK", value: 27, suffix: " j", color: "#E85D3A", icon: "♦" },
-              { label: "XP NIVEAU 12", value: 7350, color: C.teal, icon: "▲" },
-            ].map((s, i) => {
+            {stats.map((s, i) => {
               const delay = 20 + i * 10;
               const cOp = interpolate(f, [delay, delay + 25], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
               const cY = interpolate(f, [delay, delay + 30], [30, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: ease });
@@ -466,17 +662,17 @@ const SceneDashboard: React.FC = () => {
                     background: C.surface,
                     border: `1px solid ${C.border}`,
                     borderRadius: 24,
-                    padding: 36,
+                    padding: 48,
                     opacity: cOp,
                     transform: `translateY(${cY}px)`,
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 22 }}>
-                    <div style={{ fontSize: 28, color: s.color }}>{s.icon}</div>
+                    <s.Icon color={s.color} />
                     <div style={{ fontSize: 14, color: C.muted, letterSpacing: 2, fontWeight: 700 }}>{s.label}</div>
                   </div>
                   <div style={{ fontFamily: SERIF, fontSize: 96, letterSpacing: -3, color: C.ink, lineHeight: 1 }}>
-                    <Counter target={s.value} suffix={s.suffix} />
+                    <Counter target={s.value} suffix={(s as { suffix?: string }).suffix} />
                   </div>
                 </div>
               );
@@ -489,23 +685,24 @@ const SceneDashboard: React.FC = () => {
 };
 
 // =================================================================
-// SCENE — Matières grid
+// SCENE — Matières grid (monogram badges, no emoji mix)
 // =================================================================
 const MATIERES = [
-  { name: "Mathématiques", emoji: "∑", color: C.teal },
-  { name: "Français", emoji: "✎", color: "#7C3AED" },
-  { name: "Sciences Physiques", emoji: "⚛", color: "#3B82F6" },
-  { name: "SVT", emoji: "❀", color: "#10B981" },
-  { name: "Histoire", emoji: "🏛", color: "#B45309" },
-  { name: "Anglais", emoji: "A", color: "#E11D48" },
+  { name: "Mathématiques", letter: "M", color: C.teal },
+  { name: "Français", letter: "F", color: "#7C3AED" },
+  { name: "Sciences Physiques", letter: "P", color: "#3B82F6" },
+  { name: "SVT", letter: "S", color: "#10B981" },
+  { name: "Histoire", letter: "H", color: "#B45309" },
+  { name: "Anglais", letter: "E", color: "#E11D48" },
 ];
 
 const SceneMatieres: React.FC = () => {
   const f = useCurrentFrame();
+  const sc = interpolate(f, [0, 135], [1, 1.03], { extrapolateRight: "clamp", easing: ease });
   return (
     <Paper>
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
-        <div style={{ width: 1500 }}>
+        <div style={{ width: 1500, transform: `scale(${sc})` }}>
           <div style={{ fontFamily: SERIF, fontSize: 96, letterSpacing: -2, marginBottom: 40, color: C.ink, textAlign: "left" }}>
             Toutes tes matières.
           </div>
@@ -539,11 +736,12 @@ const SceneMatieres: React.FC = () => {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: 38,
-                      fontWeight: 700,
+                      fontFamily: SERIF,
+                      fontSize: 44,
+                      lineHeight: 1,
                     }}
                   >
-                    {m.emoji}
+                    {m.letter}
                   </div>
                   <div>
                     <div style={{ fontSize: 28, fontWeight: 700, color: C.ink }}>{m.name}</div>
@@ -560,12 +758,27 @@ const SceneMatieres: React.FC = () => {
 };
 
 // =================================================================
-// SCENE — Lesson with KaTeX-like formula
+// SCENE — Lesson with formula (polished pseudo-KaTeX)
 // =================================================================
+// Inline fraction renderer — proportional, classic LaTeX look.
+const Frac: React.FC<{ top: React.ReactNode; bottom: React.ReactNode }> = ({ top, bottom }) => (
+  <span style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", verticalAlign: "middle", margin: "0 10px", lineHeight: 1.1 }}>
+    <span style={{ padding: "0 14px" }}>{top}</span>
+    <span style={{ width: "100%", height: 3, background: C.ink, margin: "8px 0" }} />
+    <span style={{ padding: "0 14px" }}>{bottom}</span>
+  </span>
+);
+const Sqrt: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <span style={{ display: "inline-flex", alignItems: "center", verticalAlign: "middle" }}>
+    <span style={{ fontSize: "1.2em", marginRight: 2 }}>√</span>
+    <span style={{ borderTop: `3px solid ${C.ink}`, padding: "4px 6px 0" }}>{children}</span>
+  </span>
+);
+
 const SceneLesson: React.FC = () => {
   const f = useCurrentFrame();
   const op = interpolate(f, [0, 25], [0, 1], { extrapolateRight: "clamp" });
-  const zoom = interpolate(f, [40, 150], [1, 1.15], { extrapolateRight: "clamp", easing: ease });
+  const zoom = interpolate(f, [40, 150], [1, 1.08], { extrapolateRight: "clamp", easing: ease });
   return (
     <Paper>
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: op }}>
@@ -579,23 +792,30 @@ const SceneLesson: React.FC = () => {
           </div>
           <div
             style={{
-              background: C.surface,
+              background: `linear-gradient(180deg, ${C.paper} 0%, ${C.surface} 100%)`,
               border: `1px solid ${C.border}`,
               borderRadius: 20,
-              padding: "50px 60px",
+              padding: "60px 60px",
               fontFamily: SERIF,
               fontSize: 92,
               textAlign: "center",
               color: C.ink,
               letterSpacing: -1,
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 12px rgba(0,0,0,0.04)",
             }}
           >
-            x = <span style={{ display: "inline-block", verticalAlign: "middle", textAlign: "center", margin: "0 12px" }}>
-              <div style={{ borderBottom: `3px solid ${C.ink}`, padding: "0 20px 8px" }}>
-                −b ± √<span style={{ borderTop: `3px solid ${C.ink}`, padding: "4px 8px 0" }}>b² − 4ac</span>
-              </div>
-              <div style={{ paddingTop: 8 }}>2a</div>
-            </span>
+            <span>x = </span>
+            <Frac
+              top={<span>−b ± <Sqrt>b² − 4ac</Sqrt></span>}
+              bottom={<span>2a</span>}
+            />
+          </div>
+          <div style={{ marginTop: 28, display: "flex", alignItems: "center", gap: 10, color: C.muted, fontSize: 18 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill={C.teal}>
+              <path d="M3 9 v 6 h 4 l 5 4 V 5 L 7 9 H 3 z" />
+              <path d="M16 8 a 5 5 0 0 1 0 8" fill="none" stroke={C.teal} strokeWidth="2" />
+            </svg>
+            <span>Écouter cette leçon · 4 min</span>
           </div>
         </div>
       </AbsoluteFill>
@@ -604,45 +824,74 @@ const SceneLesson: React.FC = () => {
 };
 
 // =================================================================
-// SCENE — Jude AI tutor (streaming chat)
+// SCENE — Jude AI tutor (breadcrumb, thinking state, slower streaming)
 // =================================================================
 const SceneJude: React.FC = () => {
   const f = useCurrentFrame();
   const op = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
 
   const reply =
-    "Bien sûr ! Pour résoudre x² − 5x + 6 = 0, on calcule le discriminant : Δ = b² − 4ac = 25 − 24 = 1. Comme Δ > 0, on a deux solutions réelles : x₁ = 2 et x₂ = 3. Tu veux qu'on en fasse un autre ensemble ? ✨";
-  const charsPerFrame = 2.5;
-  const shown = Math.max(0, Math.floor((f - 50) * charsPerFrame));
+    "Bien sûr ! Pour résoudre x² − 5x + 6 = 0, on calcule le discriminant : Δ = b² − 4ac = 25 − 24 = 1. Comme Δ > 0, il y a deux solutions réelles : x₁ = 2 et x₂ = 3. Tu veux qu'on en fasse un autre ensemble ? ✨";
+  // ~36 char/s — close to a real LLM perceived speed
+  const charsPerFrame = 1.2;
+  const streamStart = 60;
+  const shown = Math.max(0, Math.floor((f - streamStart) * charsPerFrame));
   const text = reply.slice(0, shown);
+  const thinking = f >= 30 && f < streamStart;
+  const dot = Math.floor(f / 6) % 3;
 
   return (
     <Paper>
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: op }}>
         <div style={{ width: 1200 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 36 }}>
+          {/* header with breadcrumb */}
+          <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 28 }}>
             <div style={{ width: 70, height: 70, borderRadius: "50%", background: `linear-gradient(135deg, ${C.teal}, ${C.tealDim})`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontFamily: SERIF, fontSize: 32 }}>J</div>
             <div>
               <div style={{ fontSize: 28, fontWeight: 700 }}>Jude</div>
-              <div style={{ fontSize: 16, color: C.teal, fontWeight: 600 }}>● Ton tuteur IA · en ligne</div>
+              <div style={{ fontSize: 15, color: C.muted, fontWeight: 500, marginTop: 2 }}>
+                Maths <span style={{ color: C.border, margin: "0 6px" }}>·</span>
+                NS3 <span style={{ color: C.border, margin: "0 6px" }}>·</span>
+                Équations du 2ⁿᵈ degré
+              </div>
+            </div>
+            <div style={{ marginLeft: "auto", fontSize: 14, color: C.teal, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: C.teal }} />
+              en ligne
             </div>
           </div>
 
-          {/* user bubble */}
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16, opacity: interpolate(f, [10, 30], [0, 1], { extrapolateRight: "clamp" }) }}>
+          {/* user bubble with avatar */}
+          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-end", gap: 10, marginBottom: 18, opacity: interpolate(f, [10, 30], [0, 1], { extrapolateRight: "clamp" }) }}>
             <div style={{ background: C.ink, color: "#fff", padding: "16px 24px", borderRadius: 20, fontSize: 22, maxWidth: 700 }}>
               Aide-moi à résoudre x² − 5x + 6 = 0
             </div>
+            <div style={{ width: 40, height: 40, borderRadius: "50%", background: C.amber, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 16, flexShrink: 0 }}>W</div>
           </div>
 
-          {/* jude bubble */}
-          <div style={{ opacity: interpolate(f, [40, 55], [0, 1], { extrapolateRight: "clamp" }) }}>
-            <div style={{ background: C.surface, color: C.ink, padding: "22px 28px", borderRadius: 20, fontSize: 22, lineHeight: 1.55, maxWidth: 900, border: `1px solid ${C.border}` }}>
-              {text}
-              {text.length < reply.length && f > 50 && (
-                <span style={{ display: "inline-block", width: 10, height: 22, background: C.teal, marginLeft: 4, verticalAlign: "middle" }} />
-              )}
-            </div>
+          {/* thinking → jude bubble */}
+          <div style={{ minHeight: 220 }}>
+            {thinking && (
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: C.surface, padding: "16px 22px", borderRadius: 18, border: `1px solid ${C.border}` }}>
+                <span style={{ fontSize: 18, color: C.teal }}>✨</span>
+                <span style={{ fontSize: 18, color: C.muted }}>Jude réfléchit</span>
+                <span style={{ display: "inline-flex", gap: 4 }}>
+                  {[0, 1, 2].map((i) => (
+                    <span key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: dot === i ? C.teal : "#ccc" }} />
+                  ))}
+                </span>
+              </div>
+            )}
+            {f >= streamStart && (
+              <div style={{ opacity: interpolate(f, [streamStart, streamStart + 8], [0, 1], { extrapolateRight: "clamp" }) }}>
+                <div style={{ background: C.surface, color: C.ink, padding: "22px 28px", borderRadius: 20, fontSize: 22, lineHeight: 1.55, maxWidth: 900, border: `1px solid ${C.border}` }}>
+                  {text}
+                  {text.length < reply.length && (
+                    <span style={{ display: "inline-block", width: 2, height: 22, background: C.teal, marginLeft: 2, verticalAlign: "middle", opacity: Math.floor(f / 8) % 2 === 0 ? 1 : 0.2 }} />
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </AbsoluteFill>
@@ -703,10 +952,11 @@ const SceneFeed: React.FC = () => {
   const likes = Math.round(interpolate(f, [60, 110], [42, 87], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: ease }));
   const liked = f >= 70;
   const pulse = liked ? 1 + 0.3 * Math.exp(-Math.pow((f - 70) / 8, 2)) : 1;
+  const sc = interpolate(f, [0, 150], [1, 1.03], { extrapolateRight: "clamp", easing: ease });
   return (
     <Paper>
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: op }}>
-        <div style={{ width: 900 }}>
+        <div style={{ width: 900, transform: `scale(${sc})` }}>
           <div style={{ fontSize: 16, color: C.teal, letterSpacing: 3, fontWeight: 700, marginBottom: 12 }}>FEED COMMUNAUTÉ</div>
           <div style={{ fontFamily: SERIF, fontSize: 64, letterSpacing: -1.5, marginBottom: 36 }}>Personne n'apprend seul.</div>
 
@@ -742,25 +992,23 @@ const SceneMessages: React.FC = () => {
   const f = useCurrentFrame();
   const op = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
   const dot = Math.floor(f / 8) % 3;
+  const sc = interpolate(f, [0, 135], [1, 1.03], { extrapolateRight: "clamp", easing: ease });
   return (
     <Paper>
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: op }}>
-        <div style={{ width: 900 }}>
+        <div style={{ width: 900, transform: `scale(${sc})` }}>
           <div style={{ fontFamily: SERIF, fontSize: 64, letterSpacing: -1.5, marginBottom: 28 }}>Messages directs.</div>
           <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 20, padding: 28, minHeight: 380 }}>
-            {/* incoming */}
             <div style={{ display: "flex", marginBottom: 14, opacity: interpolate(f, [10, 30], [0, 1], { extrapolateRight: "clamp" }) }}>
               <div style={{ background: C.surface, padding: "14px 20px", borderRadius: 18, fontSize: 20, maxWidth: 500 }}>
                 Salut ! Tu fais quoi ce soir ? On révise SVT ?
               </div>
             </div>
-            {/* outgoing */}
             <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14, opacity: interpolate(f, [40, 60], [0, 1], { extrapolateRight: "clamp" }) }}>
               <div style={{ background: C.teal, color: "#fff", padding: "14px 20px", borderRadius: 18, fontSize: 20, maxWidth: 500 }}>
                 Carrément 🙌 j'arrive à 19h sur l'app
               </div>
             </div>
-            {/* typing indicator */}
             {f > 70 && (
               <div style={{ display: "flex", opacity: interpolate(f, [70, 85], [0, 1], { extrapolateRight: "clamp" }) }}>
                 <div style={{ background: C.surface, padding: "16px 22px", borderRadius: 18, display: "flex", gap: 6 }}>
@@ -778,32 +1026,66 @@ const SceneMessages: React.FC = () => {
 };
 
 // =================================================================
-// SCENE — Quiz Battle countdown
+// SCENE — Quiz Battle countdown with real UI + clean pulse + screen rumble
 // =================================================================
 const SceneQuiz: React.FC = () => {
   const f = useCurrentFrame();
   const op = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
-  const n = f < 40 ? 3 : f < 70 ? 2 : f < 100 ? 1 : 0;
-  const showGo = f >= 100;
+
+  // Countdown beats: 3 (10-40), 2 (40-70), 1 (70-100), GO! (100-130)
+  const beat = f < 40 ? { n: "3", start: 10 } : f < 70 ? { n: "2", start: 40 } : f < 100 ? { n: "1", start: 70 } : { n: "GO!", start: 100 };
+  const local = f - beat.start;
+  // appear (0-8), hold (8-22), fade-out (22-30)
+  const num0 = interpolate(local, [0, 8], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const num1 = interpolate(local, [22, 30], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const numScale = interpolate(local, [0, 8], [1.4, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: ease });
+  const isGo = beat.n === "GO!";
+
+  // Screen rumble for "GO!" — subtle, sinusoidal, 6 frames
+  const rumbleActive = isGo && local >= 0 && local < 8;
+  const rx = rumbleActive ? Math.sin(local * 4) * 3 : 0;
+  const ry = rumbleActive ? Math.cos(local * 5) * 2 : 0;
+
   return (
     <Paper>
-      <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: op }}>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 18, color: C.amber, letterSpacing: 4, fontWeight: 700, marginBottom: 18 }}>QUIZ BATTLE · 1 vs 1</div>
-          <div style={{ fontFamily: SERIF, fontSize: 64, marginBottom: 50, color: C.ink, letterSpacing: -1 }}>
-            Marvens <span style={{ color: C.muted }}>vs</span> Stéphanie
+      <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: op, transform: `translate(${rx}px, ${ry}px)` }}>
+        <div style={{ textAlign: "center", width: 1200 }}>
+          <div style={{ fontSize: 18, color: C.amber, letterSpacing: 4, fontWeight: 700, marginBottom: 26 }}>QUIZ BATTLE · 1 vs 1</div>
+
+          {/* Players row */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 50, marginBottom: 40 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 96, height: 96, borderRadius: "50%", background: C.teal, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: SERIF, fontSize: 44, border: `3px solid ${C.ink}` }}>W</div>
+              <div style={{ fontSize: 22, fontWeight: 700 }}>Wideline</div>
+              <div style={{ fontSize: 14, color: C.muted, letterSpacing: 1 }}>NS3 · 1420 pts</div>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+              <div style={{ fontFamily: SERIF, fontSize: 52, color: C.ink, letterSpacing: -1 }}>0 — 0</div>
+              <div style={{ fontSize: 13, color: C.muted, letterSpacing: 2, fontWeight: 700 }}>VS</div>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 96, height: 96, borderRadius: "50%", background: "#7C3AED", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: SERIF, fontSize: 44, border: `3px solid ${C.ink}` }}>S</div>
+              <div style={{ fontSize: 22, fontWeight: 700 }}>Stéphanie</div>
+              <div style={{ fontSize: 14, color: C.muted, letterSpacing: 1 }}>NS3 · 1380 pts</div>
+            </div>
           </div>
+
+          {/* Countdown number */}
           <div
-            key={n}
             style={{
               fontFamily: SERIF,
-              fontSize: 380,
+              fontSize: isGo ? 280 : 320,
               lineHeight: 1,
-              color: showGo ? C.teal : C.ink,
-              transform: `scale(${interpolate((f) % 30, [0, 15, 30], [0.85, 1.05, 1])})`,
+              color: isGo ? C.amber : C.ink,
+              letterSpacing: isGo ? -8 : -12,
+              fontStyle: isGo ? "italic" : "normal",
+              opacity: Math.min(num0, num1),
+              transform: `scale(${numScale})`,
             }}
           >
-            {showGo ? "GO!" : n}
+            {beat.n}
           </div>
         </div>
       </AbsoluteFill>
@@ -820,7 +1102,6 @@ const SceneChessPassions: React.FC = () => {
   return (
     <Paper>
       <AbsoluteFill style={{ display: "flex", flexDirection: "row", opacity: op }}>
-        {/* chess */}
         <div style={{ flex: 1, padding: 80, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <div style={{ fontSize: 16, color: C.teal, letterSpacing: 3, fontWeight: 700, marginBottom: 14 }}>ÉCHECS · MULTIJOUEUR</div>
           <div style={{ fontFamily: SERIF, fontSize: 72, letterSpacing: -1.5, marginBottom: 40 }}>Joue. Apprends.</div>
@@ -833,7 +1114,6 @@ const SceneChessPassions: React.FC = () => {
             })}
           </div>
         </div>
-        {/* passions */}
         <div style={{ flex: 1, padding: 80, background: C.surface, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <div style={{ fontSize: 16, color: C.amber, letterSpacing: 3, fontWeight: 700, marginBottom: 14 }}>PASSIONS</div>
           <div style={{ fontFamily: SERIF, fontSize: 72, letterSpacing: -1.5, marginBottom: 40 }}>Découvre ta voie.</div>
@@ -862,10 +1142,11 @@ const SceneTranslate: React.FC = () => {
   const word = "Bonjou";
   const trans = "Bonjour";
   const showTrans = f > 40;
+  const sc = interpolate(f, [0, 120], [1, 1.03], { extrapolateRight: "clamp", easing: ease });
   return (
     <Paper>
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: op }}>
-        <div style={{ width: 1200 }}>
+        <div style={{ width: 1200, transform: `scale(${sc})` }}>
           <div style={{ fontSize: 16, color: C.teal, letterSpacing: 3, fontWeight: 700, marginBottom: 12, textAlign: "center" }}>TRADUCTEUR · KREYÒL ↔ FRANÇAIS</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 40, alignItems: "center" }}>
             <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 20, padding: 40, textAlign: "center" }}>
@@ -885,38 +1166,55 @@ const SceneTranslate: React.FC = () => {
 };
 
 // =================================================================
-// SCENE — Outro
+// SCENE — Outro (editorial, not marketing pill)
 // =================================================================
 const SceneOutro: React.FC = () => {
   const f = useCurrentFrame();
   const op = interpolate(f, [0, 30], [0, 1], { extrapolateRight: "clamp" });
   const y = interpolate(f, [0, 40], [20, 0], { extrapolateRight: "clamp", easing: ease });
+  const ruleW = interpolate(f, [50, 90], [0, 120], { extrapolateRight: "clamp", easing: ease });
+  const urlOp = interpolate(f, [60, 90], [0, 1], { extrapolateRight: "clamp" });
+  const footOp = interpolate(f, [110, 140], [0, 1], { extrapolateRight: "clamp" });
   return (
     <Paper>
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", opacity: op, transform: `translateY(${y}px)` }}>
-          <div style={{ fontSize: 28, color: C.teal, letterSpacing: 4, fontWeight: 600, marginBottom: 30 }}>ÉDUPRENEURS</div>
-          <div style={{ fontFamily: SERIF, fontSize: 220, lineHeight: 0.95, letterSpacing: -6, color: C.ink }}>
+          {/* mark */}
+          <div style={{ marginBottom: 32, display: "flex", justifyContent: "center" }}>
+            <EduMark size={72} />
+          </div>
+          <div style={{ fontFamily: SERIF, fontSize: 200, lineHeight: 0.95, letterSpacing: -6, color: C.ink }}>
             Ton école.
           </div>
-          <div style={{ fontFamily: SERIF, fontSize: 220, lineHeight: 0.95, letterSpacing: -6, color: C.teal, fontStyle: "italic" }}>
+          <div style={{ fontFamily: SERIF, fontSize: 200, lineHeight: 0.95, letterSpacing: -6, color: C.teal, fontStyle: "italic" }}>
             Réinventée.
+          </div>
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 56 }}>
+            <div style={{ width: `${ruleW}px`, height: 1.5, background: C.ink, opacity: 0.6 }} />
           </div>
           <div
             style={{
-              marginTop: 70,
-              display: "inline-block",
-              background: C.ink,
-              color: "#fff",
-              padding: "22px 44px",
-              borderRadius: 999,
-              fontSize: 32,
-              fontWeight: 700,
-              letterSpacing: 0.5,
-              opacity: interpolate(f, [30, 60], [0, 1], { extrapolateRight: "clamp" }),
+              marginTop: 26,
+              fontSize: 44,
+              fontWeight: 500,
+              letterSpacing: -0.5,
+              color: C.ink,
+              opacity: urlOp,
             }}
           >
             mon-edupreneur.com
+          </div>
+          <div
+            style={{
+              marginTop: 42,
+              fontSize: 16,
+              letterSpacing: 3,
+              color: C.muted,
+              fontWeight: 600,
+              opacity: footOp,
+            }}
+          >
+            CONÇU EN HAÏTI · POUR HAÏTI
           </div>
         </div>
       </AbsoluteFill>
@@ -925,27 +1223,28 @@ const SceneOutro: React.FC = () => {
 };
 
 // =================================================================
-// MAIN — Series of all scenes with cross-fades
+// MAIN — Sequence of all scenes with cross-fades
 // =================================================================
-// Scene durations (frames @ 30fps). Total: 2400 frames = 80s.
+// Scene durations (frames @ 30fps).
+// SceneGoogle extended to 240 because human-typing + cursor click takes longer.
 const SCENES: Array<{ comp: React.FC; dur: number }> = [
-  { comp: SceneGoogle, dur: 165 }, // 5.5s
+  { comp: SceneGoogle, dur: 240 }, // 8s — human typing + cursor click + flash
   { comp: SceneLanding, dur: 120 }, // 4s
-  { comp: SceneGrades, dur: 195 }, // 6.5s — selection wizard
-  { comp: () => <BigWord word="ÉCOLE." />, dur: 90 }, // 3s
+  { comp: SceneGrades, dur: 210 }, // 7s — Bézier cursor + selection
+  { comp: () => <BigWord word="ÉCOLE." kicker="PARTIE 1" sub="Toute la tienne, dans ta poche." />, dur: 100 },
   { comp: SceneDashboard, dur: 150 }, // 5s
   { comp: SceneMatieres, dur: 135 }, // 4.5s
   { comp: SceneLesson, dur: 150 }, // 5s
-  { comp: () => <BigWord word="Jude." accent />, dur: 90 }, // 3s
-  { comp: SceneJude, dur: 195 }, // 6.5s
+  { comp: () => <BigWord word="Jude." kicker="PARTIE 2" sub="Ton tuteur, jour et nuit." accent />, dur: 100 },
+  { comp: SceneJude, dur: 240 }, // 8s — slower realistic streaming
   { comp: SceneExams, dur: 150 }, // 5s
-  { comp: () => <BigWord word="ENSEMBLE." />, dur: 90 }, // 3s
+  { comp: () => <BigWord word="ENSEMBLE." kicker="PARTIE 3" sub="Parce que personne n'apprend seul." />, dur: 100 },
   { comp: SceneFeed, dur: 150 }, // 5s
   { comp: SceneMessages, dur: 135 }, // 4.5s
-  { comp: SceneQuiz, dur: 135 }, // 4.5s
+  { comp: SceneQuiz, dur: 140 }, // ~4.7s — full countdown 3-2-1-GO
   { comp: SceneChessPassions, dur: 150 }, // 5s
   { comp: SceneTranslate, dur: 120 }, // 4s
-  { comp: SceneOutro, dur: 180 }, // 6s
+  { comp: SceneOutro, dur: 195 }, // 6.5s
 ];
 
 export const MainVideoV3: React.FC = () => {
