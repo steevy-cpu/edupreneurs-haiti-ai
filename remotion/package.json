@@ -2,5 +2,19 @@
   "name": "edupreneurs-promo",
   "version": "1.0.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@remotion/bundler": "^4.0.464",
+    "@remotion/cli": "^4.0.464",
+    "@remotion/compositor-linux-x64-gnu": "^4.0.464",
+    "@remotion/compositor-linux-x64-musl": "^4.0.464",
+    "@remotion/google-fonts": "^4.0.464",
+    "@remotion/renderer": "^4.0.464",
+    "@remotion/transitions": "^4.0.464",
+    "@types/react": "^19.2.15",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "remotion": "^4.0.464",
+    "typescript": "^6.0.3"
+  }
 }
