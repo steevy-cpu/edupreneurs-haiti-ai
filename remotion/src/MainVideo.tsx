@@ -1,101 +1,57 @@
-import { AbsoluteFill, useCurrentFrame, interpolate } from "remotion";
-import { TransitionSeries, linearTiming } from "@remotion/transitions";
-import { fade } from "@remotion/transitions/fade";
+import { AbsoluteFill, Series, useCurrentFrame, interpolate } from "remotion";
 import { loadFont } from "@remotion/google-fonts/Inter";
 import { COLORS } from "./theme";
-import { SceneHook } from "./scenes/SceneHook";
-import { SceneDashboard } from "./scenes/SceneDashboard";
-import { SceneCourses } from "./scenes/SceneCourses";
-import { ScenePassions } from "./scenes/ScenePassions";
-import { SceneCalendar } from "./scenes/SceneCalendar";
-import { SceneOutro } from "./scenes/SceneOutro";
+import { HudTicker } from "./components/Flash";
+
+import { SceneGoogleIntro } from "./scenes/v2/SceneGoogleIntro";
+import { SceneHook } from "./scenes/v2/SceneHook";
+import { SceneDashboard } from "./scenes/v2/SceneDashboard";
+import { SceneMatieres } from "./scenes/v2/SceneMatieres";
+import { SceneLesson } from "./scenes/v2/SceneLesson";
+import { SceneJude } from "./scenes/v2/SceneJude";
+import { SceneExams } from "./scenes/v2/SceneExams";
+import { SceneFeed } from "./scenes/v2/SceneFeed";
+import { SceneMessages } from "./scenes/v2/SceneMessages";
+import { SceneQuizBattle } from "./scenes/v2/SceneQuizBattle";
+import { SceneChess } from "./scenes/v2/SceneChess";
+import { ScenePassion } from "./scenes/v2/ScenePassion";
+import { SceneLeaderboard } from "./scenes/v2/SceneLeaderboard";
+import { SceneLibrary } from "./scenes/v2/SceneLibrary";
+import { SceneTranslate } from "./scenes/v2/SceneTranslate";
+import { SceneOutro } from "./scenes/v2/SceneOutro";
 
 // Load Inter at module scope so every text node has the right metrics on first paint.
 loadFont("normal", { weights: ["400", "500", "600", "700", "800", "900"], subsets: ["latin"] });
 
-// Persistent ambient layer: subtle drifting gradient orbs and grain.
-// Lives outside TransitionSeries so it never resets between scenes.
-const AmbientBackground: React.FC = () => {
-  const frame = useCurrentFrame();
-  // Slow sinusoidal drift — gives the static-looking dark canvas a "breathing" quality.
-  const driftX = Math.sin(frame / 180) * 80;
-  const driftY = Math.cos(frame / 220) * 60;
-  return (
-    <AbsoluteFill style={{ backgroundColor: COLORS.bg, overflow: "hidden" }}>
-      <div
-        style={{
-          position: "absolute",
-          left: `calc(20% + ${driftX}px)`,
-          top: `calc(15% + ${driftY}px)`,
-          width: 900,
-          height: 900,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, ${COLORS.teal}33 0%, transparent 60%)`,
-          filter: "blur(40px)",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          right: `calc(10% + ${-driftX}px)`,
-          bottom: `calc(10% + ${-driftY}px)`,
-          width: 700,
-          height: 700,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, ${COLORS.amber}22 0%, transparent 60%)`,
-          filter: "blur(40px)",
-        }}
-      />
-      {/* Subtle vignette to anchor focus toward the centre */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.55) 100%)",
-        }}
-      />
-    </AbsoluteFill>
-  );
-};
-
+// Total: 2340 frames @ 30fps = 78s. Aggressive pitch with hard cuts (Series, no transitions).
 export const MainVideo: React.FC = () => {
   const frame = useCurrentFrame();
-  // Global fade-out for the very last 20 frames to feel like a soft cut to black.
-  const globalOpacity = interpolate(frame, [2230, 2250], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  // Soft fade at very end
+  const globalOpacity = interpolate(frame, [2310, 2340], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  // Hide HUD during the Google intro and outro (they need clean canvases)
+  const showHud = frame > 150 && frame < 2010;
 
   return (
-    <AbsoluteFill style={{ opacity: globalOpacity }}>
-      <AmbientBackground />
-      <TransitionSeries>
-        <TransitionSeries.Sequence durationInFrames={360}>
-          <SceneHook />
-        </TransitionSeries.Sequence>
-        <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: 20 })} />
-
-        <TransitionSeries.Sequence durationInFrames={450}>
-          <SceneDashboard />
-        </TransitionSeries.Sequence>
-        <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: 20 })} />
-
-        <TransitionSeries.Sequence durationInFrames={450}>
-          <SceneCourses />
-        </TransitionSeries.Sequence>
-        <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: 20 })} />
-
-        <TransitionSeries.Sequence durationInFrames={390}>
-          <ScenePassions />
-        </TransitionSeries.Sequence>
-        <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: 20 })} />
-
-        <TransitionSeries.Sequence durationInFrames={360}>
-          <SceneCalendar />
-        </TransitionSeries.Sequence>
-        <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: 20 })} />
-
-        <TransitionSeries.Sequence durationInFrames={340}>
-          <SceneOutro />
-        </TransitionSeries.Sequence>
-      </TransitionSeries>
+    <AbsoluteFill style={{ opacity: globalOpacity, backgroundColor: COLORS.bg }}>
+      <Series>
+        <Series.Sequence durationInFrames={150}><SceneGoogleIntro /></Series.Sequence>
+        <Series.Sequence durationInFrames={90}><SceneHook /></Series.Sequence>
+        <Series.Sequence durationInFrames={150}><SceneDashboard /></Series.Sequence>
+        <Series.Sequence durationInFrames={120}><SceneMatieres /></Series.Sequence>
+        <Series.Sequence durationInFrames={150}><SceneLesson /></Series.Sequence>
+        <Series.Sequence durationInFrames={120}><SceneJude /></Series.Sequence>
+        <Series.Sequence durationInFrames={150}><SceneExams /></Series.Sequence>
+        <Series.Sequence durationInFrames={180}><SceneFeed /></Series.Sequence>
+        <Series.Sequence durationInFrames={180}><SceneMessages /></Series.Sequence>
+        <Series.Sequence durationInFrames={120}><SceneQuizBattle /></Series.Sequence>
+        <Series.Sequence durationInFrames={120}><SceneChess /></Series.Sequence>
+        <Series.Sequence durationInFrames={150}><ScenePassion /></Series.Sequence>
+        <Series.Sequence durationInFrames={90}><SceneLeaderboard /></Series.Sequence>
+        <Series.Sequence durationInFrames={120}><SceneLibrary /></Series.Sequence>
+        <Series.Sequence durationInFrames={120}><SceneTranslate /></Series.Sequence>
+        <Series.Sequence durationInFrames={330}><SceneOutro /></Series.Sequence>
+      </Series>
+      {showHud && <HudTicker text="STREAK +1 · GOLD +25 · NIVEAU 7 · 1.2K EN LIGNE · QUIZ BATTLE GAGNÉ · ELO +24" />}
     </AbsoluteFill>
   );
 };
