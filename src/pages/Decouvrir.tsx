@@ -113,7 +113,7 @@ export default function Decouvrir() {
 
         <div className="mt-6 flex flex-col items-center gap-3 md:flex-row md:justify-between">
           <p className="text-sm" style={{ color: "rgba(245,245,247,0.5)" }}>
-            75 secondes · 1920×1080 HD · sans son
+            73 secondes · 1920×1080 HD · sans son
           </p>
           <a
             href="/edupreneurs-promo.mp4"
