@@ -1,110 +1,124 @@
-## Cap levé sur le poids → on vise la qualité maximale
+## Constat
 
-Tu m'autorises à dépasser 15 Mo. Cible révisée : **25-35 Mo**, qualité broadcast, zéro compromis visuel.
-
----
-
-## 1. Render haute qualité (plus de two-pass agressif)
-
-- **CRF 16** (visuellement lossless, contre 23 actuel)
-- Preset `slow` + profil `high` + `yuv420p`
-- `-tune film` + `aq-mode=3` pour préserver dégradés paper/teal
-- **Pas de re-compression two-pass** : on garde le rendu Remotion natif
-- Léger grain pellicule (`noise=alloc=1:c0s=2`) — masque tout artefact résiduel et donne un côté cinéma
-
-Résultat attendu : ~25-30 Mo, indistinguable d'un master.
+La v4 reste monotone et trop "abstraite" : palette paper/teal partout, mockups stylisés qui ne ressemblent pas à mon-edupreneur.com, et zéro argument de conversion. On va corriger les deux en même temps : **fidélité visuelle au site réel** + **structure persuasive qui pousse à s'inscrire**.
 
 ---
 
-## 2. Visuel — sortir radicalement de la monotonie
+## 1. Fidélité au vrai site
 
-### a) 5 ambiances de fond réparties (au lieu du paper uniforme)
+Capture screenshots réels des pages clés via Puppeteer sur `https://mon-edupreneur.com` (login automatique avec compte démo si nécessaire — sinon pages publiques) :
+
+- Landing (hero + sections)
+- Dashboard (vrai layout : sidebar teal, cards gold/streak, graphes)
+- Matières (vraies cards SVT/Math/Français avec vraies couleurs)
+- Leçon (vrai header, vrai contenu KaTeX, vrais boutons)
+- Jude AI (vraie bulle de chat, vrai avatar)
+- Feed / Messages / Quiz Battle / Leaderboard / Translate
+
+Ces screenshots deviennent des **assets PNG** importés dans les scènes — plus de mockups inventés. On garde les animations Remotion (entrées, zooms, pans) mais sur des **images réelles du produit**.
+
+Avantage : le viewer reconnaît immédiatement le site → confiance + envie d'essayer.
+
+Fallback si Puppeteer/login bloque : on **rebuild des mockups pixel-perfect** en lisant les composants réels (`src/pages/Dashboard.tsx`, `src/shell/AppShell.tsx`, etc.) — vraie sidebar teal `#087E7E`, vrais tokens Tailwind, vrais composants shadcn.
+
+---
+
+## 2. Variété visuelle (sortir du monotone)
+
+Adopter le **vrai design system du site** au lieu du paper/teal uniforme :
 
 ```text
-Google + Landing         → paper pur (#FAFAF7)
-Grades + Matières        → paper + grille fine teal 1%
-Dashboard + Leçon        → paper + halo radial teal haut-gauche
-Jude + Translate         → ivory chaud (#F7F3EC) — ambiance IA
-Feed + Messages + Quiz   → paper froid (#F4F6F7) — ambiance social
-Big words (ÉCOLE/JUDE/ENSEMBLE) → fond teal profond (#0A4F4F), texte ivory
-Outro                    → paper + halo teal central diffus
+Fond app                → blanc/dark selon thème (#FFFFFF / #0A0B0D)
+Sidebar                 → teal #087E7E (vraie sidebar)
+Accents                 → amber #FF9F00 (gold, streak, CTA)
+Violet                  → #7C3AED (Jude AI, badges premium)
+Cards                   → blanc + ombres subtiles + bordures hairline
 ```
 
-Les big words sur teal profond = **rupture cinématique forte**, l'œil sort du paper.
-
-### b) Profondeur — 3 couches par scène
-
-- **Fond** : couleur + texture (grille, halo radial, ou bruit 1%)
-- **Midground** : cards/mockups existants
-- **Foreground** : particules teal qui dérivent (3-5 max) + anneau lumineux derrière l'élément focus
-
-### c) Caméra virtuelle (fin de l'image fixe)
-
-Chaque scène UI gagne un mouvement subtil mais perceptible :
-- Dashboard : pan lent gauche→droite (translate -20px)
-- Leçon : push-in (scale 1.0 → 1.04)
-- Matières : pull-out (1.05 → 1.0) qui révèle plus de cards
-- Jude : push-in sur la bulle réponse (scale 1.0 → 1.06 + Y -10px)
-- Feed : scroll vertical lent du fil
-- Quiz Battle : micro-shake continu + rumble fort sur GO!
-- Big words : zoom continu 1.0 → 1.08
-
-Toutes en `ease-out cubic` longues (60-90 frames), jamais robotiques.
-
-### d) Typographie enrichie
-
-- Ajouter **Fraunces** (display sérif moderne) en complément d'`Instrument Serif` pour les big words
-- Tailles plus contrastées : ÉCOLE/JUDE/ENSEMBLE de 140 → **200px**
-- Kerning serré (-0.04em) sur les big words = look magazine éditorial
-- Kicker au-dessus en sans-serif 18px teal ("PARTIE 1·2·3")
-
-### e) Finitions premium
-
-- Ombres portées subtiles sous chaque card : `0 20px 40px rgba(0,0,0,0.06)`
-- Bordures hairline 0.5px (au lieu de 1px)
-- Mini-sparklines teal 30% derrière les counters Dashboard
-- **4 types de transitions** au lieu d'un seul cross-fade :
-  1. Cross-fade — au sein d'une même section
-  2. Wipe teal vertical — avant chaque big word
-  3. Push horizontal — Matières → Leçon (suggère navigation)
-  4. Iris/zoom — Outro
-
-### f) Détails par scène prioritaires
-
-- **Google** : ajouter favicon teal "E" devant la suggestion, 2 suggestions au lieu d'1, curseur souris SVG dès frame 0
-- **Grades** : focus ring teal animé, hover 18f au lieu de 10f, sous-titre corrigé "Secondaire avancé" pour NS3
-- **Dashboard** : Wideline (pas Marvens), counter overshoot 2840→2900→2840, SVG coin/flame/level
-- **Matières** : monogrammes lettres uniformes (M/F/P/S/H/E), zéro emoji
-- **Leçon** : vraie KaTeX (`x = (-b±√(b²-4ac))/2a`), dégradé subtil dans bloc formule
-- **Jude** : breadcrumb header, avatar "W" sur user, streaming 1.2 char/f, "✨ Jude réfléchit…" avant réponse
-- **Quiz** : 2 portraits SVG, countdown pulse scale 1.4→1.0, GO! ambre + rumble
-- **Outro** : suppression CTA pill, URL en sans-serif 44px medium sous fine ligne 120px, "Conçu en Haïti · Pour Haïti" 16px muted
+**6 ambiances de scène** mixées :
+1. **Mode jour** (Landing, Dashboard, Matières) → fond clair, sidebar teal
+2. **Mode sombre** (Leçon nuit, Jude) → fond `#0A0B0D`, glow teal
+3. **Mockup mobile** (Feed, Messages, Quiz) → frame iPhone, fond noir autour
+4. **Plein écran teal** (big words ÉCOLE/JUDE/ENSEMBLE) → rupture cinéma
+5. **Split-screen témoignage** (nouveau) → photo élève + citation + nom/grade
+6. **Stats fullscreen** (nouveau) → chiffres énormes amber sur fond sombre
 
 ---
 
-## 3. Fichiers touchés
+## 3. Structure persuasive (nouvelle narration en 6 actes)
 
-- `remotion/src/v3/MainVideoV3.tsx` — ambiances, caméra, particules, détails
-- `remotion/scripts/render-remotion.mjs` — CRF 16, preset slow, profil high
-- `remotion/scripts/finalize-v4.sh` (nouveau) — grain ffmpeg simple pass
-- `public/edupreneurs-promo.mp4` — remplacement
-- `public/edupreneurs-promo-poster.jpg` — re-capture sur big word JUDE (fond teal, plus iconique)
-- Ajout dép : `@remotion/google-fonts/Fraunces` (~40 KB)
+L'actuelle est descriptive ("voici les features"). La nouvelle est **vendeuse** :
 
-v1, v2, v3 préservées dans `/mnt/documents/`.
+```text
+ACTE 1 — PROBLÈME (3s)
+  "Étudier en Haïti, c'est dur." (texte sur fond sombre + bruit léger)
+  Sous-texte: "Pannes. Pas de prof. Manuels chers."
+
+ACTE 2 — PROMESSE (2s)
+  Big word: "ÇA CHANGE." (fond teal, type énorme)
+
+ACTE 3 — SOLUTION EN ACTION (35s) ← cœur, fidèle au site
+  Dashboard réel → Matières → Leçon (KaTeX) → Jude répond → Quiz Battle gagné
+  Voice-over visuel (sous-titres kinétiques) :
+  "Tout le programme MENFP. Jude, ton tuteur IA. Quiz multijoueur. Gratuit pour commencer."
+
+ACTE 4 — PREUVE SOCIALE (8s) ← nouveau
+  3 témoignages courts :
+  • "+2 moyennes en Math" — Marvens, NS3
+  • "Jude répond à 2h du matin" — Wideline, NS4
+  • "1ère du classement de ma classe" — Sara, 9AF
+  Format split-screen photo + citation amber
+
+ACTE 5 — CHIFFRES (5s) ← nouveau
+  Stats fullscreen avec compteurs animés :
+  "1200+ leçons · 50 000+ questions · 24/7 Jude · 100% MENFP"
+
+ACTE 6 — CTA URGENT (5s)
+  Big word ENSEMBLE → URL géante mon-edupreneur.com
+  "Crée ton compte. 2 minutes. Gratuit."
+  Petit badge: "Conçu en Haïti 🇭🇹"
+```
+
+Total ~58s (vs 78s actuel) — plus punchy, conversion-driven.
 
 ---
 
-## Hors périmètre (inchangé)
+## 4. Techniques de persuasion
 
-- Pas de voix off ni musique (muet)
-- Pas de nouvelles scènes (17 existantes)
-- Pas de captures Puppeteer
+- **Hook problème → solution** dans les 5 premières secondes (sinon le viewer scroll)
+- **Témoignages réels** = preuve sociale (le levier #1 en marketing edu)
+- **Chiffres énormes** = autorité + crédibilité
+- **Urgence douce** = "2 minutes" + "gratuit" répétés
+- **Mascotte Jude** visible 3x minimum (ancrage brand)
+- **Logo + URL** visible en watermark discret 100% du temps (coin bas-droite)
+- **Couleur amber sur tous les CTA** = cohérence avec les boutons réels du site
 
 ---
 
-## Une seule confirmation
+## 5. Fichiers touchés
 
-**Big words sur fond teal profond** (recommandé — rupture forte, plus cinéma) ou rester paper partout (plus calme) ?
+- `remotion/src/v5/MainVideoV5.tsx` (nouveau) — narration 6 actes
+- `remotion/src/v5/scenes/` (nouveau) — 1 fichier par scène
+- `remotion/src/v5/assets/` — screenshots réels PNG (capturés via script)
+- `remotion/scripts/capture-site-screenshots.mjs` (nouveau) — Puppeteer sur prod
+- `remotion/src/Root.tsx` — registrer composition v5
+- `remotion/scripts/render-remotion.mjs` — pointer v5
+- `public/edupreneurs-promo.mp4` + `-poster.jpg` — remplacement final
 
-Si tu valides "go avec teal", j'exécute tout d'un bloc.
+v1-v4 préservées intactes dans `/mnt/documents/`.
+
+---
+
+## 6. Hors périmètre
+
+- Pas de voix off (muet, sous-titres kinétiques visibles)
+- Pas de musique (le silence force la lecture du texte)
+- Pas de nouvelles fonctionnalités du site
+
+---
+
+## Questions avant exécution
+
+1. **Témoignages** : j'utilise des **prénoms + photos AI génériques** (cohérent identité haïtienne) ou tu as des **vrais témoignages clients** à me fournir (texte + prénom + grade) ?
+2. **Captures réelles vs mockups pixel-perfect** : je tente d'abord Puppeteer sur la prod (risque de login bloquant) puis fallback mockup, OU je vais direct en mockup pixel-perfect basé sur le code source (plus rapide, plus contrôlé) ?
+3. **Durée cible** : 58s (recommandé pour réseaux sociaux) ou tu veux garder ~78s ?
