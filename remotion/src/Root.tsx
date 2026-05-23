@@ -1,12 +1,12 @@
 import { Composition } from "remotion";
-import { MainVideoV5, TOTAL_FRAMES } from "./v5/MainVideoV5";
+import { MainVideoV6, TOTAL_FRAMES } from "./v6/MainVideoV6";
 
-// v5 — conversion-driven, faithful to mon-edupreneur.com, 58s @ 30fps
+// v6 — polish pass (rolling tickers, fake cursor, SVG formula, particles, glow CTA)
 export const RemotionRoot: React.FC = () => {
   return (
     <Composition
       id="main"
-      component={MainVideoV5}
+      component={MainVideoV6}
       durationInFrames={TOTAL_FRAMES}
       fps={30}
       width={1920}
