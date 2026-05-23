@@ -1,12 +1,13 @@
 import { Composition } from "remotion";
-import { MainVideoV6, TOTAL_FRAMES } from "./v6/MainVideoV6";
+import { MainVideoV7, TOTAL_FRAMES } from "./v7/MainVideoV7";
 
-// v6 — polish pass (rolling tickers, fake cursor, SVG formula, particles, glow CTA)
+// v7 — polish pass on v6: word-stagger subtitle, flat hero,
+// cursor click choreography, vector formula, accessible footer.
 export const RemotionRoot: React.FC = () => {
   return (
     <Composition
       id="main"
-      component={MainVideoV6}
+      component={MainVideoV7}
       durationInFrames={TOTAL_FRAMES}
       fps={30}
       width={1920}
