@@ -15,30 +15,6 @@ export default function DonationSuccessCallback() {
   const orderId = searchParams.get("order") || searchParams.get("orderId") || searchParams.get("referenceId");
   const judeAvatar = getAvatarUrl("jude", 128);
 
-  const sendThankYouEmail = async (donationOrderId: string) => {
-    try {
-      const { data: donation } = await supabase
-        .from("donations")
-        .select("donor_name, donor_email, amount, currency")
-        .eq("order_id", donationOrderId)
-        .maybeSingle();
-
-      if (donation?.donor_email) {
-        await supabase.functions.invoke("send-donation-thank-you", {
-          body: {
-            donorName: donation.donor_name,
-            donorEmail: donation.donor_email,
-            amount: donation.amount,
-            currency: donation.currency,
-            orderId: donationOrderId,
-          },
-        });
-      }
-    } catch (e) {
-      console.error("Thank-you email failed (non-blocking):", e);
-    }
-  };
-
   useEffect(() => {
     if (!orderId) {
       setStatus("failed");
@@ -48,21 +24,13 @@ export default function DonationSuccessCallback() {
     const verify = async () => {
       try {
         if (isStripe) {
-          // Stripe handles payment confirmation; mark donation as completed
-          const { error: updateError } = await supabase
-            .from("donations")
-            .update({ status: "completed" })
-            .eq("order_id", orderId)
-            .eq("status", "pending");
-
-          if (updateError) {
-            console.error("Stripe donation update error:", updateError);
-          }
-
+          // Stripe donations are confirmed server-side by stripe-donation-webhook,
+          // which also sends the thank-you email. The callback page no longer
+          // reads/writes the donations table directly — anonymous access has been
+          // removed to protect donor PII (names, emails).
           setStatus("success");
-          await sendThankYouEmail(orderId);
         } else {
-          // MonCash flow: verify via edge function
+          // MonCash flow: verify via edge function (handles status + thank-you email server-side).
           const { data, error } = await supabase.functions.invoke("moncash-check-status", {
             body: { orderId },
           });
@@ -73,7 +41,6 @@ export default function DonationSuccessCallback() {
           }
 
           setStatus("success");
-          await sendThankYouEmail(orderId);
         }
 
         // Fire confetti
@@ -90,7 +57,7 @@ export default function DonationSuccessCallback() {
     };
 
     verify();
-  }, [orderId]);
+  }, [orderId, isStripe]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
