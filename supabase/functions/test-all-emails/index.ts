@@ -70,7 +70,7 @@ serve(async (req) => {
         </p>
         <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdfd;border:1px solid #b2dfdb;border-radius:12px;margin-bottom:20px;">
         <tr><td style="padding:16px;text-align:center;">
-          <p style="color:${BRAND_COLORS.primaryDark};font-size:15px;font-weight:700;margin:0 0 4px;">🎁 Accès gratuit jusqu'au 8 juin 2026</p>
+          <p style="color:${BRAND_COLORS.primaryDark};font-size:15px;font-weight:700;margin:0 0 4px;">🎁 Accès gratuit jusqu'au 8 septembre 2026</p>
           <p style="color:#374151;font-size:13px;margin:0;">Profite de toutes les fonctionnalités sans limitation.</p>
         </td></tr>
         </table>
@@ -353,7 +353,7 @@ serve(async (req) => {
         </table>
         <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef3c7;border:1px solid #fde68a;border-radius:12px;margin-bottom:20px;">
         <tr><td style="padding:16px;text-align:center;">
-          <p style="color:#92400e;font-size:14px;font-weight:600;margin:0;">🎁 Rappel : ton accès est gratuit jusqu'au 8 juin 2026 !</p>
+          <p style="color:#92400e;font-size:14px;font-weight:600;margin:0;">🎁 Rappel : ton accès est gratuit jusqu'au 8 septembre 2026 !</p>
         </td></tr>
         </table>
       `,

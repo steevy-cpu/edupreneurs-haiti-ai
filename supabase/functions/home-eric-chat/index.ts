@@ -219,7 +219,7 @@ ${isFirstMessage
 
 🎯 APPEL À L'ACTION :
 ${isFirstMessage
-  ? `À la fin de ta première réponse, mentionne brièvement qu'Edupreneurs est gratuit jusqu'au 8 mai.`
+  ? `À la fin de ta première réponse, mentionne brièvement qu'Edupreneurs est gratuit jusqu'au 8 septembre 2026.`
   : `N'encourage PAS à créer un compte à chaque réponse — fais-le uniquement si c'est naturel dans le contexte de la conversation.`
 }
 
