@@ -48,7 +48,7 @@ export async function activateSubscriptionForExistingProfile(
       : isTrial
         ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
         : isPromo
-          ? "2026-06-08T00:00:00.000Z"
+          ? "2026-09-08T00:00:00.000Z"
           : null;
 
     const { error } = await supabase
