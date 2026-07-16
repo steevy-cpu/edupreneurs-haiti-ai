@@ -1,61 +1,41 @@
-## Promo v7 — Polish Pass (Accessibility, Cohérence, Micro-interactions)
+## Objectif
+Générer un pitch deck PPTX téléchargeable (~14 slides) positionnant Edupreneurs comme un SaaS EdTech, ciblant les investisseurs / VC. Livré sous `/mnt/documents/edupreneurs-pitch-vc.pptx` avec artefact affiché.
 
-Création d'une nouvelle composition `MainVideoV7` (basée sur v6) intégrant les 5 corrections demandées, avec **+15s de durée** pour respirer les améliorations.
+## Direction visuelle
+- **Palette Paper & Teal** (cohérente avec branding): fond ivoire `#F7F5F0`, Teal `#087E7E`, Amber accent `#FF9F00`, charcoal `#0F1720`, gris muet `#6B7280`.
+- **Typo**: Georgia (titres, éditorial, ~54pt) + Calibri (body 24-32pt). Kickers Amber uppercase tracked.
+- **Motif**: bande verticale Teal côté gauche des slides de section, gros chiffres (100pt+) pour stats, cartes ivoire avec bordure fine 1px.
+- **Densité**: 1 idée par slide, respect du budget (headers 100px, footers 80px, max 3 cartes/ligne).
 
-### Durée cible
-- v6 : 58s (1740 frames)
-- **v7 : 73s (2190 frames)** — 15s ajoutées réparties sur Hook (+2s), Dashboard (+3s), Matières (+2s), Lesson math (+3s), Quiz (+2s), Outro (+3s)
+## Structure (14 slides)
 
-### Corrections techniques
+1. **Cover** — Logo É + "Edupreneurs" · tagline "The learning OS for Haitian students" · mon-edupreneur.com
+2. **The Problem** — 3 stats chocs: 60% élèves Haïti sans accès au soutien scolaire · profs tuteurs $$$ · contenu FR/créole rare & non-personnalisé
+3. **Market** — TAM/SAM/SOM: Haïti 2.5M étudiants K-12, diaspora francophone 4M, LATAM/Afrique francophone 80M — approche bottom-up
+4. **The Product** — 4 piliers: AI Tutor (Jude) · Curriculum MENFP · Community & Battles · Passions (musique, échecs, arts)
+5. **How it works** — Screenshot Dashboard + flow 3 étapes (Inscription → IA personnalise → Progression trackée)
+6. **AI Moat** — 11 tuteurs IA spécialisés · contenu généré + validé · voix Eric ElevenLabs · KaTeX math native
+7. **Traction (projections)** — Placeholder: 200 users actifs → 2 000 (Q4 2026) → 20 000 (2027). Marqué "Projections"
+8. **Business Model SaaS** — $1.50/mois/user (200 HTG) · B2C direct · B2B écoles ($3-5/élève) · Diaspora premium ($9.99)
+9. **Unit Economics** — CAC $2.50 (organique + referral), LTV $18, LTV/CAC 7.2x, payback 2 mois — projections marquées
+10. **Competitive Landscape** — Matrice 2x2: Local vs Global × Généraliste vs Curriculum-specific. Kartable/Khan Academy loin du marché haïtien
+11. **Go-to-Market** — 3 vagues: (1) Étudiants urbains Port-au-Prince/Cap-Haïtien via TikTok, (2) Partenariats écoles privées, (3) Diaspora US/Canada/France
+12. **Team & Vision** — Founders (placeholder) · advisors · vision "Le Duolingo de l'éducation francophone émergente"
+13. **The Ask** — Seed $500K pour 18 mois · usage: 40% produit/IA, 30% growth, 20% équipe, 10% ops
+14. **Closing** — "Rejoins-nous" · mon-edupreneur.com · email contact · logo
 
-**1. Hook / Intro (00:00–00:04)**
-- Sous-titre "PANNES • PAS DE PROF • MANUELS CHERS" : entrée mot-par-mot avec **fade-in + slide-up 12px**, courbe `ease-out` (`interpolate` + `cubic-bezier(0.16, 1, 0.3, 1)` via easing custom). Stagger 4 frames entre chaque token.
-- "ÇA CHANGE" : suppression du biseau/relief 3D. Remplacé par texte **flat blanc** + **drop-shadow diffuse** (`textShadow: '0 8px 40px rgba(255,159,0,0.35), 0 2px 12px rgba(0,0,0,0.4)'`).
+## Implementation
 
-**2. Curseur & navigation UI (00:05–00:16)**
-- `FakeCursor` : trajectoire Bézier prolongée **jusqu'au bouton "Reprendre"** (coordonnées cibles précises sur la carte CTA du Dashboard).
-- Ajout d'une **micro-animation de clic** au point d'arrivée : 
-  - Rétrécissement du bouton (`scale 1 → 0.96 → 1` sur 6 frames)
-  - **Ripple concentrique** émanant du curseur (cercle SVG, `r: 0→40`, `opacity: 0.6→0`)
-  - Délai 2 frames avant transition vers la scène suivante
-- Même logique appliquée scène Matières (curseur clique réellement sur la tuile mise en avant).
-- Cartes matières : remplacement de l'easing par **`cubic-bezier(0.16, 1, 0.3, 1)`** (Quint out) — entrée rapide puis ralentissement doux.
+- **Skill**: `pptx` (pptxgenjs).
+- **Script**: `/tmp/build-pitch.mjs` génère le PPTX avec pptxgenjs, embed logo Edupreneurs (SVG É gradient teal→amber inline shape), tokens couleur ci-dessus.
+- **QA**: convertir en PDF via LibreOffice, rasteriser toutes les 14 slides à 150dpi, inspecter chaque image, corriger overflow/contraste/alignement avant livraison.
+- **Livraison**: `<presentation-artifact path="edupreneurs-pitch-vc.pptx" mime_type="application/vnd.openxmlformats-officedocument.presentationml.presentation">`.
 
-**3. Formule mathématique (00:17–00:22)**
-- Réécriture complète de `QuadraticFormulaSVG` :
-  - **SVG natif vectoriel pur**, viewBox haute résolution (800×200)
-  - Texte rendu en `<text>` SVG (pas en `<foreignObject>`), `font-family: 'Instrument Serif'`
-  - Symbole `±` et barre de fraction dessinés en **`<path>` / `<line>` SVG** (vecteur pur, jamais pixelisé)
-  - `shape-rendering: geometricPrecision`, `text-rendering: geometricPrecision`
-  - Rendu à 2× résolution interne puis scalé.
+Tous les chiffres financiers/traction seront marqués "Projections — non-audité" en footer des slides concernées (7, 8, 9).
 
-**4. Quiz Battle — cohérence (00:34–00:39)**
-- Boutons de réponse : `borderRadius` aligné sur le système (**18px** comme les cartes Examens/Stats au lieu de 14px actuel).
-- Bouton vert validé : même radius, plus le glow vert existant.
-- Audit rapide des autres éléments anguleux du quiz (timer, scores) pour harmoniser à 18-20px.
+## Ce qui n'est PAS inclus
+- Pas de code appli modifié (pitch = livrable externe uniquement).
+- Pas de nouvelle page `/pitch` dans l'app.
+- Pas de vidéo (déjà couvert par le workflow Promo v7 existant).
 
-**5. CTA final — accessibilité (00:53+)**
-- "Conçu en Haïti 🇭🇹 Pour Haïti" : couleur passée de gris foncé à **`rgba(255,255,255,0.72)`** (WCAG AA sur fond teal/amber dégradé).
-- Légère augmentation de `font-weight` (400 → 500) pour lisibilité mobile.
-- Fondu enchaîné plus doux (durée 25 → 40 frames).
-- **+3s** sur l'outro pour laisser respirer le CTA + glow pulsant du bouton "Crée ton compte".
-
-### Fichiers touchés
-- **Créé** : `remotion/src/v7/MainVideoV7.tsx` (composition + scènes patchées)
-- **Créé** : `remotion/src/v7/QuadraticFormulaSVG.tsx` (vecteur pur)
-- **Créé** : `remotion/src/v7/FakeCursorV7.tsx` (trajectoire + click ripple)
-- **Modifié** : `remotion/src/Root.tsx` — pointer vers `MainVideoV7`, `TOTAL_FRAMES = 2190`
-- **Régénéré** : `public/edupreneurs-promo.mp4` (CRF 16 + film grain post-process via ffmpeg)
-- **Régénéré** : `public/edupreneurs-promo-poster.jpg`
-- **Mis à jour** : `src/pages/Decouvrir.tsx` — mention "73 secondes" au lieu de "75 secondes"
-
-### Rendu & QA
-- Render programmatique via `remotion/scripts/render-remotion.mjs` (CRF 16, h264)
-- Post-process ffmpeg : `-tune film`, `aq-mode=3`, `noise=c0s=2` (grain subtil)
-- Stills de vérification aux frames clés : 30 (sous-titre stagger), 90 (clic curseur), 540 (formule SVG), 1050 (boutons quiz arrondis), 2100 (footer CTA accessible)
-- Vérification taille finale < 15MB
-
-### Notes
-- Aucune modification backend, RLS, ou edge function.
-- Aucune dépendance ajoutée.
-- Compatible avec le lecteur HTML5 existant sur `/decouvrir`.
+Prêt à générer.
