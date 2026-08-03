@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import legacy from '@vitejs/plugin-legacy';
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
 // https://vitejs.dev/config/
@@ -35,6 +36,19 @@ export default defineConfig(({ mode }) => {
   },
   plugins: [
     react(),
+    // Legacy bundle for old Android WebViews (2018-era phones in Haiti).
+    // Modern browsers still load the fast es2020 module build untouched;
+    // old browsers get a transpiled SystemJS bundle via nomodule + core-js polyfills.
+    // NOTE: this plugin intentionally overrides build.target for its own output.
+    // To REVERSE this change: delete this plugin entry, the import above, and the
+    // @vitejs/plugin-legacy devDependency. Nothing else depends on it.
+    legacy({
+      targets: ['defaults', 'chrome >= 64', 'android >= 64'],
+      // Keep the modern (module) build at our existing es2020 baseline; the plugin's
+      // default modernTargets (chrome>=64) can't parse BigInt literals used by chess.js.
+      modernTargets: ['chrome >= 87', 'edge >= 88', 'firefox >= 78', 'safari >= 14'],
+      modernPolyfills: false,
+    }),
     mode === "development" && componentTagger(),
     // Build-time image optimization - tuned for 3G connections in Haiti
     ViteImageOptimizer({
