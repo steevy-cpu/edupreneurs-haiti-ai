@@ -6,6 +6,8 @@
  * All subscription UI should consume this hook instead of querying profiles directly.
  */
 
+import { FREE_ACCESS_MODE } from '@/config/access';
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
