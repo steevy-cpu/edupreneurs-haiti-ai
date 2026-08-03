@@ -83,7 +83,7 @@ export const DownloadLessonButton = ({
           : "Erreur lors du téléchargement. Veuillez réessayer."
       );
     } finally {
-      setIsGenerating(false);
+      setPhase("idle");
     }
   };
 
