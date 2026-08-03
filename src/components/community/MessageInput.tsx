@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ImageIcon, Send, Smile } from "lucide-react";
-import EmojiPicker from "emoji-picker-react";
+// Emoji picker (~100KB) is code-split — matches the LazyEmojiPicker convention
+import { LazyEmojiPicker } from "@/components/LazyEmojiPicker";
 import { Message } from "@/types/community";
 
 interface MessageInputProps {
