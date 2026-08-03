@@ -237,7 +237,7 @@ export default function SignupStep3() {
             </li>
           </ul>
           <p className="text-xs text-muted-foreground pt-1">
-            Après 7 jours, choisissez de continuer à 200 HTG/mois
+            Accès gratuit pendant la période de lancement 🎉
           </p>
         </div>
       )}
