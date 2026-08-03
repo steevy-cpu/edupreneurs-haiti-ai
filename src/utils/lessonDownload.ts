@@ -13,6 +13,25 @@
 import type { Paragraph as DocxParagraph } from "docx";
 type DocxModule = typeof import("docx");
 
+/**
+ * Warms the dynamic chunks for a given format before generation starts.
+ * On 3G the first fetch can take several seconds, so the UI awaits this
+ * separately to show a "Préparation..." state distinct from generation.
+ * Throws a user-facing message when the chunk cannot be downloaded (offline).
+ */
+export const preloadDownloadLibs = async (format: DownloadFormat): Promise<void> => {
+  try {
+    if (format === "pdf") await import("jspdf");
+    if (format === "docx") await Promise.all([import("docx"), import("file-saver")]);
+    if (format === "txt") await import("file-saver");
+  } catch {
+    throw new Error(
+      "Impossible de charger le module de téléchargement. Vérifie ta connexion et réessaie."
+    );
+  }
+};
+
+
 interface LessonData {
   title: string;
   objectif?: string;
