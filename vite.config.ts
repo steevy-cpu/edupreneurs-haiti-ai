@@ -44,6 +44,9 @@ export default defineConfig(({ mode }) => {
     // @vitejs/plugin-legacy devDependency. Nothing else depends on it.
     legacy({
       targets: ['defaults', 'chrome >= 64', 'android >= 64'],
+      // Keep the modern (module) build at our existing es2020 baseline; the plugin's
+      // default modernTargets (chrome>=64) can't parse BigInt literals used by chess.js.
+      modernTargets: ['chrome >= 87', 'edge >= 88', 'firefox >= 78', 'safari >= 14'],
       modernPolyfills: false,
     }),
     mode === "development" && componentTagger(),
