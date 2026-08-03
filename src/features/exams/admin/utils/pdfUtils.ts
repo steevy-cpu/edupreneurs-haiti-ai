@@ -64,6 +64,7 @@ export async function convertPdfToImages(
   onProgress?: (progress: PDFConversionProgress) => void
 ): Promise<string[]> {
   const arrayBuffer = await file.arrayBuffer();
+  const pdfjsLib = await loadPdfjs();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
   const numPages = pdf.numPages;
 
