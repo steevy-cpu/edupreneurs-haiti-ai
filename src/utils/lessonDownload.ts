@@ -7,9 +7,11 @@
  * await generatePlainText({ lessonData, personalNotes, subjectName: 'Mathématiques' });
  */
 
-import { jsPDF } from "jspdf";
-import { Document, Paragraph, TextRun, AlignmentType, HeadingLevel, Packer, ImageRun } from "docx";
-import { saveAs } from "file-saver";
+// Heavy document libraries (jspdf ~350KB, docx ~200KB, file-saver) are loaded
+// dynamically inside each generator so they never ship with the lesson page chunk.
+// Type-only imports below are erased at build time and cost nothing at runtime.
+import type { Paragraph as DocxParagraph } from "docx";
+type DocxModule = typeof import("docx");
 
 interface LessonData {
   title: string;
