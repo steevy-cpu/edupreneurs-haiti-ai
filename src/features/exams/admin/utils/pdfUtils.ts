@@ -3,16 +3,27 @@
  * Shared utilities for PDF conversion and upload
  * Optimized for 3G connections with JPEG output and guardrails
  */
-import * as pdfjsLib from "pdfjs-dist";
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeToSlug } from "@/lib/slugNormalization";
 import { uploadWithProgress, type OnUploadProgress } from "@/utils/uploadWithProgress";
 
-// Set up PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/legacy/build/pdf.worker.min.mjs",
-  import.meta.url
-).toString();
+// pdfjs-dist (~350KB) is loaded on demand at conversion time so it never ships
+// with the exam admin chunk. Mirrors the pattern in ExamPDFViewer/EbookPDFViewer.
+let pdfjsPromise: Promise<typeof import("pdfjs-dist")> | null = null;
+
+const loadPdfjs = async () => {
+  if (!pdfjsPromise) {
+    pdfjsPromise = import("pdfjs-dist").then((lib) => {
+      // Worker must be configured once, right after the library resolves
+      lib.GlobalWorkerOptions.workerSrc = new URL(
+        "pdfjs-dist/legacy/build/pdf.worker.min.mjs",
+        import.meta.url
+      ).toString();
+      return lib;
+    });
+  }
+  return pdfjsPromise;
+};
 
 /** Max file size: 25MB */
 const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024;
