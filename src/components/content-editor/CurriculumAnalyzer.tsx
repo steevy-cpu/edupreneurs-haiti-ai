@@ -20,13 +20,23 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure worker - use legacy build to avoid ESM issues
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
+// pdfjs-dist (~350KB) is loaded on demand so it stays out of the content-editor chunk
+let pdfjsPromise: Promise<typeof import('pdfjs-dist')> | null = null;
+
+const loadPdfjs = async () => {
+  if (!pdfjsPromise) {
+    pdfjsPromise = import('pdfjs-dist').then((lib) => {
+      // Worker configured once, right after the library resolves
+      lib.GlobalWorkerOptions.workerSrc = new URL(
+        'pdfjs-dist/build/pdf.worker.min.mjs',
+        import.meta.url
+      ).toString();
+      return lib;
+    });
+  }
+  return pdfjsPromise;
+};
 
 interface CurriculumAnalyzerProps {
   subjectId: string;
@@ -94,6 +104,7 @@ export const CurriculumAnalyzer: React.FC<CurriculumAnalyzerProps> = ({
 
   const convertPDFToImages = async (file: File): Promise<string[]> => {
     const arrayBuffer = await file.arrayBuffer();
+    const pdfjsLib = await loadPdfjs();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     const numPages = pdf.numPages;
     const images: string[] = [];

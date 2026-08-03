@@ -7,9 +7,30 @@
  * await generatePlainText({ lessonData, personalNotes, subjectName: 'Mathématiques' });
  */
 
-import { jsPDF } from "jspdf";
-import { Document, Paragraph, TextRun, AlignmentType, HeadingLevel, Packer, ImageRun } from "docx";
-import { saveAs } from "file-saver";
+// Heavy document libraries (jspdf ~350KB, docx ~200KB, file-saver) are loaded
+// dynamically inside each generator so they never ship with the lesson page chunk.
+// Type-only imports below are erased at build time and cost nothing at runtime.
+import type { Paragraph as DocxParagraph } from "docx";
+type DocxModule = typeof import("docx");
+
+/**
+ * Warms the dynamic chunks for a given format before generation starts.
+ * On 3G the first fetch can take several seconds, so the UI awaits this
+ * separately to show a "Préparation..." state distinct from generation.
+ * Throws a user-facing message when the chunk cannot be downloaded (offline).
+ */
+export const preloadDownloadLibs = async (format: DownloadFormat): Promise<void> => {
+  try {
+    if (format === "pdf") await import("jspdf");
+    if (format === "docx") await Promise.all([import("docx"), import("file-saver")]);
+    if (format === "txt") await import("file-saver");
+  } catch {
+    throw new Error(
+      "Impossible de charger le module de téléchargement. Vérifie ta connexion et réessaie."
+    );
+  }
+};
+
 
 interface LessonData {
   title: string;
@@ -194,8 +215,13 @@ const formatContentForText = (html: string | undefined): string => {
   return cleanContentForText(html);
 };
 
-// Format content into multiple paragraphs for Word document
-const formatContentToParagraphs = (html: string | undefined): Paragraph[] => {
+// Format content into multiple paragraphs for Word document.
+// The docx `Paragraph` constructor is injected by the caller because docx is
+// now loaded dynamically — the module can no longer close over a static import.
+const formatContentToParagraphs = (
+  html: string | undefined,
+  Paragraph: DocxModule["Paragraph"]
+): DocxParagraph[] => {
   if (!html) return [
     new Paragraph({
       text: "Contenu non disponible",
@@ -331,6 +357,8 @@ export const generatePlainText = async ({
     content += "════════════════════════════════════════════════════════════════\n";
     
     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    // file-saver loaded on demand — keeps it out of the lesson page chunk
+    const { saveAs } = await import("file-saver");
     saveAs(blob, generateFilename(lessonData, subjectName, "txt"));
   } catch (error) {
     console.error("Error generating plain text:", error);
@@ -349,6 +377,11 @@ export const generateWordDocument = async ({
   subjectName,
 }: DownloadOptions): Promise<void> => {
   try {
+    // docx + file-saver are fetched only when the user actually asks for a Word file
+    const { Document, Paragraph, TextRun, AlignmentType, HeadingLevel, Packer, ImageRun } =
+      await import("docx");
+    const { saveAs } = await import("file-saver");
+
     // Load logo
     const logoBase64 = await loadLogoAsBase64();
     const logoData = logoBase64.split(",")[1]; // Remove data:image/png;base64, prefix
@@ -421,7 +454,7 @@ export const generateWordDocument = async ({
                 heading: HeadingLevel.HEADING_2,
                 spacing: { before: 600, after: 300 },
               }),
-              ...formatContentToParagraphs(lessonData.objectif),
+              ...formatContentToParagraphs(lessonData.objectif, Paragraph),
             ] : []),
             
             // Introduction
@@ -431,7 +464,7 @@ export const generateWordDocument = async ({
                 heading: HeadingLevel.HEADING_2,
                 spacing: { before: 600, after: 300 },
               }),
-              ...formatContentToParagraphs(lessonData.introduction),
+              ...formatContentToParagraphs(lessonData.introduction, Paragraph),
             ] : []),
             
             // Main Content
@@ -441,7 +474,7 @@ export const generateWordDocument = async ({
                 heading: HeadingLevel.HEADING_2,
                 spacing: { before: 600, after: 300 },
               }),
-              ...formatContentToParagraphs(lessonData.contenu),
+              ...formatContentToParagraphs(lessonData.contenu, Paragraph),
             ] : []),
             
             // Examples and Exercises
@@ -451,7 +484,7 @@ export const generateWordDocument = async ({
                 heading: HeadingLevel.HEADING_2,
                 spacing: { before: 600, after: 300 },
               }),
-              ...formatContentToParagraphs(lessonData.exemples_exercices),
+              ...formatContentToParagraphs(lessonData.exemples_exercices, Paragraph),
             ] : []),
             
             // Personal Notes
@@ -545,6 +578,8 @@ export const generateLessonPDF = async ({
   subjectName,
 }: DownloadOptions): Promise<void> => {
   try {
+    // jspdf (~350KB) fetched on demand at click time
+    const { jsPDF } = await import("jspdf");
     const pdf = new jsPDF("p", "mm", "a4");
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();

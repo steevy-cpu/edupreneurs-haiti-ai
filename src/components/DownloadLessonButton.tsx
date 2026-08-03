@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2, FileText, File, FileType } from "lucide-react";
-import { generateLessonPDF, generateWordDocument, generatePlainText, type DownloadFormat } from "@/utils/lessonDownload";
+import { generateLessonPDF, generateWordDocument, generatePlainText, preloadDownloadLibs, type DownloadFormat } from "@/utils/lessonDownload";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -42,10 +42,13 @@ export const DownloadLessonButton = ({
   size = "default",
   className = "",
 }: DownloadLessonButtonProps) => {
-  const [isGenerating, setIsGenerating] = useState(false);
+  // Two-phase state: 'preparing' = fetching the dynamic pdf/docx chunks (slow on 3G),
+  // 'generating' = building the document once the libraries are in memory.
+  const [phase, setPhase] = useState<"idle" | "preparing" | "generating">("idle");
+  const isGenerating = phase !== "idle";
 
   const handleDownload = async (format: DownloadFormat) => {
-    setIsGenerating(true);
+    setPhase("preparing");
     try {
       const options = {
         lessonData,
@@ -53,7 +56,12 @@ export const DownloadLessonButton = ({
         subjectName,
       };
 
+      // Warm the code-split chunk first so failures surface as a toast, not a crash
+      await preloadDownloadLibs(format);
+      setPhase("generating");
+
       switch (format) {
+
         case "pdf":
           await generateLessonPDF(options);
           toast.success("📥 PDF téléchargé avec succès!");
@@ -75,7 +83,7 @@ export const DownloadLessonButton = ({
           : "Erreur lors du téléchargement. Veuillez réessayer."
       );
     } finally {
-      setIsGenerating(false);
+      setPhase("idle");
     }
   };
 
@@ -91,7 +99,7 @@ export const DownloadLessonButton = ({
           {isGenerating ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Génération...
+              {phase === "preparing" ? "Préparation..." : "Génération..."}
             </>
           ) : (
             <>
