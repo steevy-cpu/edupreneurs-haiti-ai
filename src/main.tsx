@@ -4,12 +4,17 @@ import App from "./App.tsx";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
 import "./index.css";
 
-// Initialise Sentry before React renders so it can catch errors during React's own init.
-// Guarded by env var — if VITE_SENTRY_DSN is absent (local dev), Sentry is never loaded.
-const sentryDsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
+// Signals to the inline ES5 watchdog in index.html that the module bundle parsed
+// and executed on this browser. Must run before anything else can throw.
+(window as any).__APP_BOOTED = true;
 
-if (sentryDsn) {
-  Sentry.init({
+// Initialise Sentry before React renders so it can catch errors during React's own init.
+// Hardcoded DSN fallback: env injection has failed before, and Sentry DSNs are public-safe.
+const sentryDsn =
+  (import.meta.env.VITE_SENTRY_DSN as string | undefined) ||
+  'https://0a15fabbd1d14b5698af8cafe3da3aba@o4510909608886272.ingest.us.sentry.io/4510909610524672';
+
+Sentry.init({
     dsn: sentryDsn,
     // Vite sets MODE to "production" in builds and "development" in dev server
     environment: import.meta.env.MODE,
@@ -32,8 +37,7 @@ if (sentryDsn) {
       // Return null to silently drop the event
       return fromExtension ? null : event;
     },
-  });
-}
+});
 
 // Register service worker for push notifications
 if ('serviceWorker' in navigator) {

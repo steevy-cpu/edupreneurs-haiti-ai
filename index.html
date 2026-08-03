@@ -202,5 +202,43 @@
       }
     </style>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- ES5-only boot watchdog: catches browsers (old Android WebView) where the module
+         bundle never parses/executes, so main.tsx and its Sentry init never run. -->
+    <script>
+      (function () {
+        try {
+          setTimeout(function () {
+            try {
+              if (window.__APP_BOOTED) { return; }
+              var root = document.getElementById('root');
+              if (root) {
+                root.innerHTML = '<div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; font-family: system-ui, -apple-system, sans-serif; background-color: #1a1a2e; color: #ffffff; text-align: center;"><div style="font-size: 48px; margin-bottom: 16px;">&#128533;</div><h1 style="font-size: 24px; font-weight: 600; margin-bottom: 8px;">Aplikasyon an pa ka chaje</h1><p style="font-size: 16px; color: #a0a0a0; margin-bottom: 24px; max-width: 400px;">Tanpri eseye rechaje paj la oswa netwaye kach navigat&egrave; w la.</p><button onclick="window.location.reload()" style="padding: 12px 32px; font-size: 16px; font-weight: 600; background-color: #6366f1; color: #ffffff; border: none; border-radius: 8px; cursor: pointer;">Rechaje Paj la</button></div>';
+              }
+              // Report straight to Sentry's envelope endpoint — the SDK is unavailable here.
+              try {
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', 'https://o4510909608886272.ingest.us.sentry.io/api/4510909610524672/envelope/?sentry_key=0a15fabbd1d14b5698af8cafe3da3aba', true);
+                xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+                var body = JSON.stringify({ sent_at: new Date().toISOString() }) + '\n' +
+                  JSON.stringify({ type: 'event' }) + '\n' +
+                  JSON.stringify({
+                    message: 'BOOT_FAILURE: module bundle never executed',
+                    level: 'error',
+                    platform: 'javascript',
+                    timestamp: Date.now() / 1000,
+                    tags: { boot_failure: 'true' },
+                    extra: {
+                      userAgent: navigator.userAgent,
+                      screen: screen.width + 'x' + screen.height,
+                      url: location.href
+                    }
+                  });
+                xhr.send(body);
+              } catch (e) {}
+            } catch (e) {}
+          }, 12000);
+        } catch (e) {}
+      })();
+    </script>
   </body>
 </html>
