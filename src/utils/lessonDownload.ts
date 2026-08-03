@@ -435,7 +435,7 @@ export const generateWordDocument = async ({
                 heading: HeadingLevel.HEADING_2,
                 spacing: { before: 600, after: 300 },
               }),
-              ...formatContentToParagraphs(lessonData.objectif),
+              ...formatContentToParagraphs(lessonData.objectif, Paragraph),
             ] : []),
             
             // Introduction
@@ -445,7 +445,7 @@ export const generateWordDocument = async ({
                 heading: HeadingLevel.HEADING_2,
                 spacing: { before: 600, after: 300 },
               }),
-              ...formatContentToParagraphs(lessonData.introduction),
+              ...formatContentToParagraphs(lessonData.introduction, Paragraph),
             ] : []),
             
             // Main Content
@@ -455,7 +455,7 @@ export const generateWordDocument = async ({
                 heading: HeadingLevel.HEADING_2,
                 spacing: { before: 600, after: 300 },
               }),
-              ...formatContentToParagraphs(lessonData.contenu),
+              ...formatContentToParagraphs(lessonData.contenu, Paragraph),
             ] : []),
             
             // Examples and Exercises
@@ -465,7 +465,7 @@ export const generateWordDocument = async ({
                 heading: HeadingLevel.HEADING_2,
                 spacing: { before: 600, after: 300 },
               }),
-              ...formatContentToParagraphs(lessonData.exemples_exercices),
+              ...formatContentToParagraphs(lessonData.exemples_exercices, Paragraph),
             ] : []),
             
             // Personal Notes
@@ -559,6 +559,8 @@ export const generateLessonPDF = async ({
   subjectName,
 }: DownloadOptions): Promise<void> => {
   try {
+    // jspdf (~350KB) fetched on demand at click time
+    const { jsPDF } = await import("jspdf");
     const pdf = new jsPDF("p", "mm", "a4");
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
