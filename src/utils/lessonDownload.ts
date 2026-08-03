@@ -358,6 +358,11 @@ export const generateWordDocument = async ({
   subjectName,
 }: DownloadOptions): Promise<void> => {
   try {
+    // docx + file-saver are fetched only when the user actually asks for a Word file
+    const { Document, Paragraph, TextRun, AlignmentType, HeadingLevel, Packer, ImageRun } =
+      await import("docx");
+    const { saveAs } = await import("file-saver");
+
     // Load logo
     const logoBase64 = await loadLogoAsBase64();
     const logoData = logoBase64.split(",")[1]; // Remove data:image/png;base64, prefix
