@@ -136,14 +136,14 @@ export const MessageInput = ({
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-full p-0 border-0" align="start">
-              <EmojiPicker
+              <LazyEmojiPicker
                 onEmojiClick={(emojiData) => {
                   onEmojiSelect(emojiData.emoji);
                   onEmojiPickerChange(false);
                 }}
                 width="100%"
-                height="400px"
               />
+
             </PopoverContent>
           </Popover>
 
