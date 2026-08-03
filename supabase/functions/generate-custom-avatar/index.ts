@@ -200,7 +200,9 @@ MANDATORY REQUIREMENTS:
 
     console.log('Generating avatar via DALL-E 3');
 
-    // Single DALL-E 3 call — hd quality + natural style for improved fidelity
+    // Single DALL-E 3 call — hd quality for improved fidelity.
+    // NOTE: the `style` parameter was removed — OpenAI no longer accepts it on this
+    // endpoint and returned 400 unknown_parameter on every request.
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -213,7 +215,6 @@ MANDATORY REQUIREMENTS:
         n: 1,
         size: '1024x1024',
         quality: 'hd',
-        style: 'natural',
         response_format: 'url',
       }),
     });
@@ -221,15 +222,34 @@ MANDATORY REQUIREMENTS:
     if (!response.ok) {
       const errorText = await response.text();
       console.error('DALL-E 3 error:', response.status, errorText);
-      
-      if (response.status === 429) {
+
+      // Distinguish transient throttling from a hard billing/quota stop so the
+      // client can show "retry soon" vs "service unavailable".
+      let providerCode: string | undefined;
+      try {
+        providerCode = JSON.parse(errorText)?.error?.code;
+      } catch {
+        // Non-JSON error body — fall back to status-based classification only.
+      }
+
+      if (response.status === 429 && providerCode !== 'insufficient_quota') {
         return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again in a moment.' }),
+          JSON.stringify({ error: 'Rate limit exceeded. Please try again in a moment.', code: 'rate_limited' }),
           { status: 429, headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
         );
       }
+
+      // OpenAI signals exhausted credits as either HTTP 402 or 429 + insufficient_quota.
+      if (response.status === 402 || providerCode === 'insufficient_quota' || providerCode === 'billing_hard_limit_reached') {
+        return new Response(
+          JSON.stringify({ error: 'Image generation quota exhausted.', code: 'quota_exceeded' }),
+          { status: 402, headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       throw new Error(`DALL-E 3 error: ${response.status}`);
     }
+
 
     const data = await response.json();
     console.log('DALL-E 3 response received');

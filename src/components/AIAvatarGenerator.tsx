@@ -318,7 +318,20 @@ export const AIAvatarGenerator = ({
           specialEffect: selectedEffect,
         },
       });
-      if (error) throw error;
+      if (error) {
+        // invoke() collapses every non-2xx into a generic message — read the real
+        // body so we can tell throttling apart from an exhausted quota.
+        let code: string | undefined;
+        try {
+          const raw = await (error as any)?.context?.text?.();
+          code = raw ? JSON.parse(raw)?.code : undefined;
+        } catch {
+          // Body unreadable — fall through to the generic error path.
+        }
+        const err = new Error(code ?? "unknown") as Error & { code?: string };
+        err.code = code;
+        throw err;
+      }
       if (data.error) throw new Error(data.error);
       setGeneratedImage(data.imageUrl);
       toast.success("Avatar généré avec succès!");
@@ -326,6 +339,8 @@ export const AIAvatarGenerator = ({
       console.error("Error generating avatar:", error);
       if (isOnboarding) {
         setGenerationFailed(true);
+      } else if ((error as { code?: string })?.code === "rate_limited") {
+        toast.error("Trop de demandes en ce moment. Réessaie dans quelques minutes.");
       } else {
         toast.error("La génération d'avatar est temporairement indisponible. Réessaie plus tard.");
       }
@@ -333,6 +348,7 @@ export const AIAvatarGenerator = ({
       setIsGenerating(false);
     }
   };
+
 
   // ─── Save handler (completely unchanged) ───
   const handleSaveAvatar = async () => {
