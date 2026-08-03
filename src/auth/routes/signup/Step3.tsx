@@ -23,7 +23,7 @@ export default function SignupStep3() {
   const { toast } = useToast();
   
   // Tab state — trial is the default so users see free option first
-  const [activeTab, setActiveTab] = useState<AccessTab>('promo');
+  const [activeTab, setActiveTab] = useState<AccessTab>('trial');
   
   // Promo code state
   const [promoCode, setPromoCode] = useState("");
