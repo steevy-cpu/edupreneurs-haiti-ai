@@ -37,8 +37,7 @@ Sentry.init({
       // Return null to silently drop the event
       return fromExtension ? null : event;
     },
-  });
-}
+});
 
 // Register service worker for push notifications
 if ('serviceWorker' in navigator) {
