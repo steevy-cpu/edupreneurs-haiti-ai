@@ -104,6 +104,7 @@ export const CurriculumAnalyzer: React.FC<CurriculumAnalyzerProps> = ({
 
   const convertPDFToImages = async (file: File): Promise<string[]> => {
     const arrayBuffer = await file.arrayBuffer();
+    const pdfjsLib = await loadPdfjs();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     const numPages = pdf.numPages;
     const images: string[] = [];
