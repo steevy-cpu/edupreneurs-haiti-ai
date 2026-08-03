@@ -196,8 +196,13 @@ const formatContentForText = (html: string | undefined): string => {
   return cleanContentForText(html);
 };
 
-// Format content into multiple paragraphs for Word document
-const formatContentToParagraphs = (html: string | undefined): Paragraph[] => {
+// Format content into multiple paragraphs for Word document.
+// The docx `Paragraph` constructor is injected by the caller because docx is
+// now loaded dynamically — the module can no longer close over a static import.
+const formatContentToParagraphs = (
+  html: string | undefined,
+  Paragraph: DocxModule["Paragraph"]
+): DocxParagraph[] => {
   if (!html) return [
     new Paragraph({
       text: "Contenu non disponible",
