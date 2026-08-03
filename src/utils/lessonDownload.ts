@@ -338,6 +338,8 @@ export const generatePlainText = async ({
     content += "════════════════════════════════════════════════════════════════\n";
     
     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    // file-saver loaded on demand — keeps it out of the lesson page chunk
+    const { saveAs } = await import("file-saver");
     saveAs(blob, generateFilename(lessonData, subjectName, "txt"));
   } catch (error) {
     console.error("Error generating plain text:", error);
