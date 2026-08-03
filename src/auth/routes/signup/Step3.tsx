@@ -23,7 +23,7 @@ export default function SignupStep3() {
   const { toast } = useToast();
   
   // Tab state — trial is the default so users see free option first
-  const [activeTab, setActiveTab] = useState<AccessTab>('promo');
+  const [activeTab, setActiveTab] = useState<AccessTab>('trial');
   
   // Promo code state
   const [promoCode, setPromoCode] = useState("");
@@ -237,7 +237,7 @@ export default function SignupStep3() {
             </li>
           </ul>
           <p className="text-xs text-muted-foreground pt-1">
-            Après 7 jours, choisissez de continuer à 200 HTG/mois
+            Accès gratuit pendant la période de lancement 🎉
           </p>
         </div>
       )}
@@ -269,18 +269,6 @@ export default function SignupStep3() {
               {isValidatingPromo ? <Loader2 className="h-4 w-4 animate-spin" /> : "Vérifier"}
             </Button>
           </div>
-          {/* Testing hint — auto-fills promo input on tap */}
-          <p className="text-xs text-muted-foreground">
-            Utilisez le code{" "}
-            <button
-              type="button"
-              onClick={() => handlePromoCodeChange('JUDE2026')}
-              className="font-mono bg-muted px-1.5 py-0.5 rounded cursor-pointer hover:bg-muted/80 transition-colors font-semibold"
-            >
-              jude2026
-            </button>
-            {" "}pour un accès gratuit (période de test)
-          </p>
           {promoCode && promoCode.trim().length >= 3 && !isValidatingPromo && promoValidationAttempted && (
             <>
               {promoNetworkError ? (

@@ -6,6 +6,8 @@
  * All subscription UI should consume this hook instead of querying profiles directly.
  */
 
+import { FREE_ACCESS_MODE } from '@/config/access';
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -117,16 +119,20 @@ export function useSubscription(): SubscriptionResult {
     daysRemaining = Math.max(0, Math.floor((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
   }
 
+  // FREE_ACCESS_MODE override — relaunch period.
+  // Only the DERIVED access flags are overridden here; the raw DB-backed fields
+  // (subscriptionStatus, subscriptionEndDate, daysRemaining) stay untouched so the
+  // real subscription state is preserved for when the flag is flipped back to false.
   return {
-    isActive,
-    isExpired,
+    isActive: FREE_ACCESS_MODE ? true : isActive,
+    isExpired: FREE_ACCESS_MODE ? false : isExpired,
     isFreeAccess: hasFreeAccess,
     isFounder: userIsFounder,
     isLegacy,
-    isPendingGift,
+    isPendingGift: FREE_ACCESS_MODE ? false : isPendingGift,
     isNone,
     isTrial,
-    isTrialExpired,
+    isTrialExpired: FREE_ACCESS_MODE ? false : isTrialExpired,
     daysRemaining,
     subscriptionEndDate: endDateStr,
     subscriptionStatus: status,
