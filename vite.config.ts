@@ -36,6 +36,16 @@ export default defineConfig(({ mode }) => {
   },
   plugins: [
     react(),
+    // Legacy bundle for old Android WebViews (2018-era phones in Haiti).
+    // Modern browsers still load the fast es2020 module build untouched;
+    // old browsers get a transpiled SystemJS bundle via nomodule + core-js polyfills.
+    // NOTE: this plugin intentionally overrides build.target for its own output.
+    // To REVERSE this change: delete this plugin entry, the import above, and the
+    // @vitejs/plugin-legacy devDependency. Nothing else depends on it.
+    legacy({
+      targets: ['defaults', 'chrome >= 64', 'android >= 64'],
+      modernPolyfills: false,
+    }),
     mode === "development" && componentTagger(),
     // Build-time image optimization - tuned for 3G connections in Haiti
     ViteImageOptimizer({
