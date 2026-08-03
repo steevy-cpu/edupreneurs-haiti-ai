@@ -1,6 +1,7 @@
 // Shell module exports - main components
 export { AppShell } from './AppShell';
-export { FloatingLayer } from './FloatingLayer';
+// NOTE: FloatingLayer is intentionally NOT re-exported here. AppShell lazy-loads
+// it; re-exporting would drag it (and framer-motion) back into the entry chunk.
 
 // Shell component exports
 export { AppSidebar } from './components/AppSidebar';
@@ -45,6 +46,6 @@ export { useRoutePreloader, type UseRoutePreloaderResult } from './hooks/useRout
 // Layout component exports
 export { PageContainer, type PageContainerProps, type PageContainerVariant } from './components/PageContainer';
 
-// Wrapper exports
-export { NotificationBannerWrapper } from './wrappers/NotificationBannerWrapper';
-export { PWAPromptWrapper } from './wrappers/PWAPromptWrapper';
+// Wrapper exports intentionally removed from this barrel — they are only used
+// inside FloatingLayer (lazy) and re-exporting pulled framer-motion into the
+// entry chunk. Import them directly from './wrappers/...' if ever needed.

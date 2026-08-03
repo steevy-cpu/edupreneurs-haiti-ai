@@ -423,6 +423,7 @@ All colors MUST be HSL.
     .animate-glow-pulse,
     .animate-send-bounce,
     .animate-typing-wave,
+    .animate-page-enter,
     .avatar-interactive,
     .presence-indicator::before,
     .unread-glow {
