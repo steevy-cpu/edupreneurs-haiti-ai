@@ -207,7 +207,13 @@
     <script>
       (function () {
         try {
-          setTimeout(function () {
+          // 32-hex event_id — required by the Sentry envelope spec, else the event is dropped.
+          function genId() {
+            var s = '';
+            for (var i = 0; i < 32; i++) { s += Math.floor(Math.random() * 16).toString(16); }
+            return s;
+          }
+          function checkBoot() {
             try {
               if (window.__APP_BOOTED) { return; }
               var root = document.getElementById('root');
@@ -216,12 +222,14 @@
               }
               // Report straight to Sentry's envelope endpoint — the SDK is unavailable here.
               try {
+                var eventId = genId();
                 var xhr = new XMLHttpRequest();
                 xhr.open('POST', 'https://o4510909608886272.ingest.us.sentry.io/api/4510909610524672/envelope/?sentry_key=0a15fabbd1d14b5698af8cafe3da3aba', true);
                 xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
-                var body = JSON.stringify({ sent_at: new Date().toISOString() }) + '\n' +
+                var body = JSON.stringify({ event_id: eventId, sent_at: new Date().toISOString() }) + '\n' +
                   JSON.stringify({ type: 'event' }) + '\n' +
                   JSON.stringify({
+                    event_id: eventId,
                     message: 'BOOT_FAILURE: module bundle never executed',
                     level: 'error',
                     platform: 'javascript',
@@ -236,7 +244,13 @@
                 xhr.send(body);
               } catch (e) {}
             } catch (e) {}
-          }, 12000);
+          }
+          // Arm only after load: module scripts always run before it, so a slow 3G
+          // download can't trigger a false-positive error screen.
+          function armWatchdog() { setTimeout(checkBoot, 8000); }
+          if (document.readyState === 'complete') { armWatchdog(); }
+          else if (window.addEventListener) { window.addEventListener('load', armWatchdog, false); }
+          else { setTimeout(checkBoot, 30000); }
         } catch (e) {}
       })();
     </script>
