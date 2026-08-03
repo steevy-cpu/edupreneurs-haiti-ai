@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2, FileText, File, FileType } from "lucide-react";
-import { generateLessonPDF, generateWordDocument, generatePlainText, type DownloadFormat } from "@/utils/lessonDownload";
+import { generateLessonPDF, generateWordDocument, generatePlainText, preloadDownloadLibs, type DownloadFormat } from "@/utils/lessonDownload";
 import { toast } from "sonner";
 import {
   DropdownMenu,
