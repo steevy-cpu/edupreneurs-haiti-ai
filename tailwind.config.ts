@@ -201,6 +201,13 @@ export default {
           "0%, 100%": { boxShadow: "0 0 8px rgba(249, 115, 22, 0.4)" },
           "50%": { boxShadow: "0 0 20px rgba(249, 115, 22, 0.8)" },
         },
+        // Route transition — CSS replacement for the former framer-motion
+        // page transition in AppShell. Same 150ms / easeInOut / 8px offset,
+        // but costs zero JS on the first-paint path.
+        "page-enter": {
+          from: { opacity: "0", transform: "translateY(8px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -220,6 +227,7 @@ export default {
         "flame-idle": "flameIdle 2s ease-in-out infinite",
         "flame-burst": "flameBurst 0.6s ease-out forwards",
         "streak-glow": "streakGlow 2s ease-in-out infinite",
+        "page-enter": "page-enter 0.15s ease-in-out both",
       },
     },
   },

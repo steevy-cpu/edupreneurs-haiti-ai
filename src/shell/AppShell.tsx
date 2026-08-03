@@ -11,7 +11,7 @@
  * - Auth gating with skeleton fallback
  */
 
-import { useState, useEffect, useRef, ReactNode, memo, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, ReactNode, memo, lazy, Suspense } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -34,14 +34,20 @@ import { useThemeSync } from '@/hooks/useThemeSync';
 // Components
 import { AppSidebar } from './components/AppSidebar';
 import { ShellMobileBottomNav } from './components/ShellMobileBottomNav';
-import { FloatingLayer } from './FloatingLayer';
-import { AnimatePresence, motion } from 'framer-motion';
-import { VisitorBanner, JudeWelcomePopup } from '@/components/visitor';
+// Deep import (not the visitor barrel) so the barrel's heavy siblings
+// (subject cards, tour) stay out of the first-paint graph.
+import { VisitorBanner } from '@/components/visitor/VisitorBanner';
 import { QuizInvitationHandler } from '@/components/quiz-battle/QuizInvitationHandler';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { ConnectionStatusBanner } from '@/components/shared/ConnectionStatusBanner';
 import { NavigationProgress } from './components/NavigationProgress';
 import { SubscriptionGate } from '@/components/SubscriptionGate';
+
+// Floating widgets mount after first paint by nature — keeping them out of the
+// entry chunk removes framer-motion and friends from the eager path.
+const FloatingLayer = lazy(() => import('./FloatingLayer').then(m => ({ default: m.FloatingLayer })));
+// Visitor-only popup: never needed for first paint of an authenticated session.
+const JudeWelcomePopup = lazy(() => import('@/components/visitor/JudeWelcomePopup'));
 
 interface AppShellProps {
   /** Optional children - if not provided, uses <Outlet /> */
@@ -268,25 +274,22 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
           )}
         >
           <SubscriptionGate>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={location.pathname}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.15, ease: 'easeInOut' }}
-              >
-                {children || <Outlet />}
-              </motion.div>
-            </AnimatePresence>
+            {/* CSS-driven route transition (same 150ms / 8px / easeInOut as the
+                previous framer-motion one). `key` remounts the node per route so
+                the enter animation replays; reduced-motion is handled in index.css. */}
+            <div key={location.pathname} className="animate-page-enter">
+              {children || <Outlet />}
+            </div>
           </SubscriptionGate>
         </main>
 
         {/* Mobile Bottom Navigation */}
         {visibility.showBottomNav && <ShellMobileBottomNav />}
 
-        {/* Floating Layer - Jude, Music Player, FABs, etc. */}
-        <FloatingLayer />
+        {/* Floating Layer - Jude, Music Player, FABs, etc. (lazy: post first paint) */}
+        <Suspense fallback={null}>
+          <FloatingLayer />
+        </Suspense>
 
         {/* Connection status banner — visible on disconnect/reconnect */}
         <ConnectionStatusBanner />
@@ -296,10 +299,12 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
 
         {/* Visitor Welcome Popup */}
         {showWelcomePopup && (
-          <JudeWelcomePopup 
-            isOpen={showWelcomePopup} 
-            onComplete={completeWelcomePopup} 
-          />
+          <Suspense fallback={null}>
+            <JudeWelcomePopup 
+              isOpen={showWelcomePopup} 
+              onComplete={completeWelcomePopup} 
+            />
+          </Suspense>
         )}
       </div>
     </>

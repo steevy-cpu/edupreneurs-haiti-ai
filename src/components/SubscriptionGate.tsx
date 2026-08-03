@@ -18,8 +18,14 @@ import { useSessionAuth } from '@/contexts/SessionAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, CalendarX2, Clock, CreditCard, Gift, Loader2, RefreshCw, Sparkles } from 'lucide-react';
-import { StripeRenewalButton } from '@/components/subscription/StripeRenewalButton';
-import { RenewalGiftLink } from '@/components/subscription/RenewalGiftLink';
+// Renewal widgets only render on the expired/none branch — lazy so they stay
+// out of the shell's first-paint chunk for the vast majority of sessions.
+const StripeRenewalButton = React.lazy(() =>
+  import('@/components/subscription/StripeRenewalButton').then(m => ({ default: m.StripeRenewalButton }))
+);
+const RenewalGiftLink = React.lazy(() =>
+  import('@/components/subscription/RenewalGiftLink').then(m => ({ default: m.RenewalGiftLink }))
+);
 import { toast } from 'sonner';
 
 interface SubscriptionGateProps {
@@ -189,11 +195,15 @@ function PaymentActions() {
           )}
         </Button>
       ) : (
-        <StripeRenewalButton size="lg" />
+        <React.Suspense fallback={null}>
+          <StripeRenewalButton size="lg" />
+        </React.Suspense>
       )}
 
       {/* Shareable renewal link for family/gift payments */}
-      <RenewalGiftLink />
+      <React.Suspense fallback={null}>
+        <RenewalGiftLink />
+      </React.Suspense>
     </div>
   );
 }

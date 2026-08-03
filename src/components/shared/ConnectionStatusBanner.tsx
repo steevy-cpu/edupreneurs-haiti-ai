@@ -8,7 +8,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { WifiOff, CheckCircle, Loader2 } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { useRealtimeConnection, ConnectionState } from '@/hooks/useRealtimeConnection';
 
 // How long to show the green "reconnected" banner
@@ -54,34 +53,30 @@ export function ConnectionStatusBanner() {
   // Determine visual style based on display state
   const isRecovery = displayState === 'connected';
 
+  // CSS transition replaces the former framer-motion slide (300ms easeOut,
+  // 100px vertical travel). Kept mounted so the exit transition still plays;
+  // pointer-events are disabled while hidden so it never blocks the UI.
   return (
-    <AnimatePresence>
-      {visible && (
-        <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-          className={`fixed bottom-16 lg:bottom-0 left-0 right-0 z-[999] py-2 px-4 flex items-center justify-center gap-2 text-white text-sm font-medium ${
-            isRecovery ? 'bg-green-600' : 'bg-amber-600'
-          }`}
-          role="status"
-          aria-live="polite"
-        >
-          {isRecovery ? (
-            <>
-              <CheckCircle className="h-4 w-4 shrink-0" />
-              <span>Connexion rétablie!</span>
-            </>
-          ) : (
-            <>
-              <WifiOff className="h-4 w-4 shrink-0" />
-              <span>Connexion perdue. Reconnexion en cours...</span>
-              <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
-            </>
-          )}
-        </motion.div>
+    <div
+      className={`fixed bottom-16 lg:bottom-0 left-0 right-0 z-[999] py-2 px-4 flex items-center justify-center gap-2 text-white text-sm font-medium transition-all duration-300 ease-out ${
+        isRecovery ? 'bg-green-600' : 'bg-amber-600'
+      } ${visible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}`}
+      role="status"
+      aria-live="polite"
+      aria-hidden={!visible}
+    >
+      {isRecovery ? (
+        <>
+          <CheckCircle className="h-4 w-4 shrink-0" />
+          <span>Connexion rétablie!</span>
+        </>
+      ) : (
+        <>
+          <WifiOff className="h-4 w-4 shrink-0" />
+          <span>Connexion perdue. Reconnexion en cours...</span>
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+        </>
       )}
-    </AnimatePresence>
+    </div>
   );
 }

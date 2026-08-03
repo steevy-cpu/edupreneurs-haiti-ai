@@ -8,7 +8,7 @@
  * - Badge support for notifications/messages
  */
 
-import { useState, memo } from 'react';
+import { useState, memo, lazy, Suspense } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -32,18 +32,14 @@ import { SIDEBAR_NAVIGATION, type BadgeKey } from '../config/navigation';
 
 // Components
 import { SidebarNavLink } from './SidebarNavLink';
-import { GlobalSearch } from '@/components/shared';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+
+// GlobalSearch pulls cmdk + radix dialog; it is interaction-only, so it is
+// lazy-loaded (deep import, not the shared barrel) to keep the entry chunk lean.
+const GlobalSearch = lazy(() =>
+  import('@/components/shared/GlobalSearch').then(m => ({ default: m.GlobalSearch }))
+);
+// Logout confirmation uses radix alert-dialog — only needed once the user clicks.
+const LogoutConfirmDialog = lazy(() => import('./LogoutConfirmDialog'));
 
 // Logo paths
 const edupreneursLogo = '/images/edupreneurs-new-logo-128w.webp';
@@ -83,6 +79,8 @@ export const AppSidebar = memo(function AppSidebar({
 }: AppSidebarProps) {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useSidebarCollapsed();
+  // Gates the lazy logout dialog — its code only loads once this flips true.
+  const [logoutOpen, setLogoutOpen] = useState(false);
   const { preloadRoute } = useRoutePreloader();
   
   // Auth and profile data
@@ -215,7 +213,9 @@ export const AppSidebar = memo(function AppSidebar({
         {/* Global Search - Desktop only when not collapsed */}
         {!collapsed && (
           <div className="hidden lg:block px-3 py-2 border-b border-border flex-shrink-0">
-            <GlobalSearch />
+            <Suspense fallback={<Skeleton className="h-9 w-full rounded-lg" />}>
+              <GlobalSearch />
+            </Suspense>
           </div>
         )}
 
@@ -299,38 +299,30 @@ export const AppSidebar = memo(function AppSidebar({
             )}
           </button>
           
-          {/* Logout Button */}
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button
-                className={cn(
-                  'flex items-center gap-2 sm:gap-2.5 lg:gap-3',
-                  'px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5',
-                  'mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1',
-                  'rounded-lg sm:rounded-xl text-sm sm:text-base font-medium',
-                  'text-destructive hover:bg-destructive/10 transition-all duration-300',
-                  collapsed && 'justify-center lg:px-2'
-                )}
-              >
-                <LogOut size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
-                {!collapsed && 'Déconnexion'}
-              </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Se déconnecter?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Êtes-vous sûr de vouloir vous déconnecter de votre compte?
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Annuler</AlertDialogCancel>
-                <AlertDialogAction onClick={handleLogout}>
-                  Déconnexion
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          {/* Logout Button — dialog code is fetched on first click */}
+          <button
+            onClick={() => setLogoutOpen(true)}
+            className={cn(
+              'flex items-center gap-2 sm:gap-2.5 lg:gap-3',
+              'px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5',
+              'mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1',
+              'rounded-lg sm:rounded-xl text-sm sm:text-base font-medium',
+              'text-destructive hover:bg-destructive/10 transition-all duration-300',
+              collapsed && 'justify-center lg:px-2'
+            )}
+          >
+            <LogOut size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
+            {!collapsed && 'Déconnexion'}
+          </button>
+          {logoutOpen && (
+            <Suspense fallback={null}>
+              <LogoutConfirmDialog
+                open={logoutOpen}
+                onOpenChange={setLogoutOpen}
+                onConfirm={handleLogout}
+              />
+            </Suspense>
+          )}
         </nav>
       </aside>
     </>
