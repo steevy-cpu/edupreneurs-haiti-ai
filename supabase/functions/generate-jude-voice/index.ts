@@ -127,10 +127,10 @@ serve(async (req) => {
       // HEAD request failed — proceed to generate
     }
 
-    // ── Generate audio via the built-in Lovable AI connector ──────────────
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    // ── Generate audio via ElevenLabs ─────────────────────────────────────
+    const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
+    if (!ELEVENLABS_API_KEY) {
+      throw new Error('ELEVENLABS_API_KEY not configured');
     }
 
     const cleanText = stripHtml(text);
@@ -143,39 +143,40 @@ serve(async (req) => {
 
     console.log(`[generate-jude-voice] Generating: ${storagePath} (${cleanText.length} chars)`);
 
-    // mp3 file response (no stream_format) — audio is cached in Storage, so a single
-    // buffered file is simpler than SSE and keeps the response shape unchanged.
-    const ttsResponse = await fetch('https://ai.gateway.lovable.dev/v1/audio/speech', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'openai/gpt-4o-mini-tts',
-        input: cleanText,
-        voice: 'onyx',
-        response_format: 'mp3',
-        instructions: 'Parle avec chaleur et enthousiasme, comme un tuteur amical qui encourage un élève.',
-      }),
-    });
+    // Eric voice, 3G-optimized format
+    const ttsResponse = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/cjVigY5qzO86Huf0OWal?output_format=mp3_22050_32`,
+      {
+        method: 'POST',
+        headers: {
+          'xi-api-key': ELEVENLABS_API_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: cleanText,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.75,
+            style: 0.3,
+            use_speaker_boost: true,
+          },
+        }),
+      }
+    );
 
     if (!ttsResponse.ok) {
       const errorText = await ttsResponse.text();
-      console.error('[generate-jude-voice] Lovable AI TTS error:', ttsResponse.status, errorText);
+      console.error('[generate-jude-voice] ElevenLabs error:', ttsResponse.status, errorText);
       if (ttsResponse.status === 429) {
-        throw new Error('Lovable AI rate limit exceeded');
+        throw new Error('ElevenLabs rate limit exceeded');
       }
-      if (ttsResponse.status === 402) {
-        throw new Error('Lovable AI credits exhausted');
-      }
-      throw new Error(`Lovable AI TTS error: ${ttsResponse.status}`);
+      throw new Error(`ElevenLabs API error: ${ttsResponse.status}`);
     }
 
     const audioBuffer = await ttsResponse.arrayBuffer();
     const audioBytes = new Uint8Array(audioBuffer);
     console.log(`[generate-jude-voice] Audio generated: ${audioBytes.length} bytes`);
-
 
     // ── Upload to Storage (never overwrite existing) ─────────────────────
     const { error: uploadError } = await supabase.storage
