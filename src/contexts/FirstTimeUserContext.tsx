@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
+import { FREE_ACCESS_MODE } from '@/config/access';
 
 // Map tour step index to nav icon path for mobile highlighting.
 const TOUR_STEP_NAV_PATHS: Record<number, string | null> = {
