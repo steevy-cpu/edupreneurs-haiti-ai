@@ -269,7 +269,7 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
           </h2>
           {/* No "incorrect" framing — we simply teach the answer. */}
           <p className="text-white/85 text-sm leading-relaxed">
-            «&nbsp;{quiz.word}&nbsp;» veut dire : {quiz.options[quiz.correctIndex]}
+            «&nbsp;{quiz.word}&nbsp;» veut dire : {correctText}
           </p>
 
           {awarded && (
