@@ -322,28 +322,40 @@ export const AIAvatarGenerator = ({
         // invoke() collapses every non-2xx into a generic message — read the real
         // body so we can tell throttling apart from an exhausted quota.
         let code: string | undefined;
+        let hoursRemaining: number | undefined;
         try {
           const raw = await (error as any)?.context?.text?.();
-          code = raw ? JSON.parse(raw)?.code : undefined;
+          const parsed = raw ? JSON.parse(raw) : undefined;
+          code = parsed?.code;
+          hoursRemaining = parsed?.hoursRemaining;
         } catch {
           // Body unreadable — fall through to the generic error path.
         }
-        const err = new Error(code ?? "unknown") as Error & { code?: string };
+        const err = new Error(code ?? "unknown") as Error & { code?: string; hoursRemaining?: number };
         err.code = code;
+        err.hoursRemaining = hoursRemaining;
         throw err;
       }
+
       if (data.error) throw new Error(data.error);
       setGeneratedImage(data.imageUrl);
       toast.success("Avatar généré avec succès!");
     } catch (error) {
       console.error("Error generating avatar:", error);
-      if (isOnboarding) {
+      const err = error as { code?: string; hoursRemaining?: number };
+      if (err?.code === "cooldown_active") {
+        // Server-side cooldown — tell the student exactly when they can retry.
+        const hours = err.hoursRemaining ?? 72;
+        const label = hours >= 24 ? `${Math.ceil(hours / 24)} jour(s)` : `${hours} heure(s)`;
+        toast.error(`Tu peux régénérer ton avatar dans ${label}.`);
+      } else if (isOnboarding) {
         setGenerationFailed(true);
-      } else if ((error as { code?: string })?.code === "rate_limited") {
+      } else if (err?.code === "rate_limited") {
         toast.error("Trop de demandes en ce moment. Réessaie dans quelques minutes.");
       } else {
         toast.error("La génération d'avatar est temporairement indisponible. Réessaie plus tard.");
       }
+
     } finally {
       setIsGenerating(false);
     }

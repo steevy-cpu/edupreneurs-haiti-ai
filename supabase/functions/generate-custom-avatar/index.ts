@@ -43,6 +43,16 @@ const avatarSchema = z.object({
   specialEffect: z.string().max(100).optional().default('none'),
 }).strict();
 
+// Founders bypass the avatar cooldown — mirrors src/lib/founderConstants.ts
+const FOUNDER_USER_IDS = [
+  '0de08330-4183-48f9-b169-19b92f4d114f',
+  '7580cd10-e18c-4b2f-ac50-def28d046c9d',
+  'a72154dd-97ae-4dfe-a939-b48ecc7764fb',
+];
+
+/** 3 days between avatar regenerations, enforced server-side */
+const COOLDOWN_MS = 3 * 24 * 60 * 60 * 1000;
+
 // Maps background IDs to descriptive prompt text for DALL-E 3
 const backgroundDescriptions: Record<string, string> = {
   'classroom': 'A warm, well-lit classroom with bookshelves and a chalkboard in the background',
@@ -134,6 +144,28 @@ serve(async (req) => {
       return rateLimitResponse(rateLimit.retryAfter!, rateLimit.remaining, corsHeaders);
     }
 
+    // Server-side 3-day regeneration cooldown — the client check is bypassable and
+    // each generation now bills our Lovable AI credits. Founders are exempt,
+    // matching the client-side superuser bypass.
+    if (!FOUNDER_USER_IDS.includes(userId)) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('last_avatar_generated_at')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      const last = profile?.last_avatar_generated_at ? new Date(profile.last_avatar_generated_at).getTime() : 0;
+      const elapsed = Date.now() - last;
+      if (last && elapsed < COOLDOWN_MS) {
+        const hoursRemaining = Math.ceil((COOLDOWN_MS - elapsed) / (60 * 60 * 1000));
+        return new Response(
+          JSON.stringify({ error: 'Avatar regeneration cooldown active.', code: 'cooldown_active', hoursRemaining }),
+          { status: 429, headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+
     // Validate input
     const body = await req.json();
     const validation = avatarSchema.safeParse(body);
@@ -147,10 +179,12 @@ serve(async (req) => {
 
     const { style, hairColor, eyeColor, expression, accessories, skinTone, gender, hairStyle, outfitStyle, background, specialEffect } = validation.data;
     
-    // Read OpenAI key — replaces Lovable AI Gateway which has persistent 500s on image models
+    // Legacy key kept for phase 3 cleanup — no longer required for this function.
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY not configured');
+    // Built-in Lovable AI connector key — the only credential this function needs now.
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY not configured');
     }
 
     // Build accessory string
@@ -198,84 +232,60 @@ MANDATORY REQUIREMENTS:
 - The character MUST match ALL specified characteristics EXACTLY as described above
 - Double-check: Hair is ${hairDesc}, Eyes are ${eyeColor}, Skin is ${skinDesc}, Gender is ${gender}`;
 
-    console.log('Generating avatar via DALL-E 3');
+    console.log('Generating avatar via Lovable AI (gpt-image-2)');
 
-    // Single DALL-E 3 call — hd quality for improved fidelity.
-    // NOTE: the `style` parameter was removed — OpenAI no longer accepts it on this
-    // endpoint and returned 400 unknown_parameter on every request.
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
+    // Image generation through the built-in Lovable AI connector — billing is
+    // consolidated on LOVABLE_API_KEY, no external provider key needed.
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/images/generations', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'dall-e-3',
+        model: 'openai/gpt-image-2',
         prompt,
         n: 1,
         size: '1024x1024',
-        quality: 'hd',
-        response_format: 'url',
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('DALL-E 3 error:', response.status, errorText);
+      console.error('Lovable AI image error:', response.status, errorText);
 
-      // Distinguish transient throttling from a hard billing/quota stop so the
+      // Distinguish transient throttling from a hard credit stop so the
       // client can show "retry soon" vs "service unavailable".
-      let providerCode: string | undefined;
-      try {
-        providerCode = JSON.parse(errorText)?.error?.code;
-      } catch {
-        // Non-JSON error body — fall back to status-based classification only.
-      }
-
-      if (response.status === 429 && providerCode !== 'insufficient_quota') {
+      if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please try again in a moment.', code: 'rate_limited' }),
           { status: 429, headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // OpenAI signals exhausted credits as either HTTP 402 or 429 + insufficient_quota.
-      if (response.status === 402 || providerCode === 'insufficient_quota' || providerCode === 'billing_hard_limit_reached') {
+      if (response.status === 402) {
         return new Response(
           JSON.stringify({ error: 'Image generation quota exhausted.', code: 'quota_exceeded' }),
           { status: 402, headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      throw new Error(`DALL-E 3 error: ${response.status}`);
+      throw new Error(`Lovable AI image error: ${response.status}`);
     }
 
-
     const data = await response.json();
-    console.log('DALL-E 3 response received');
+    console.log('Lovable AI image response received');
 
-    // Extract image URL from OpenAI response shape
-    const imageUrl = data?.data?.[0]?.url;
-    
-    if (!imageUrl) {
-      console.error('No image in DALL-E 3 response:', JSON.stringify(data));
+    // Gateway normalizes to the OpenAI images shape: base64 PNG in data[0].b64_json
+    const base64 = data?.data?.[0]?.b64_json;
+
+    if (!base64) {
+      console.error('No image in Lovable AI response:', JSON.stringify(data).slice(0, 500));
       throw new Error('No image generated');
     }
 
-    // Fetch image bytes server-side to avoid CORS canvas tainting in the browser
-    const imageResponse = await fetch(imageUrl);
-    if (!imageResponse.ok) {
-      throw new Error(`Failed to fetch generated image: ${imageResponse.status}`);
-    }
-    const arrayBuffer = await imageResponse.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
-    // Convert binary to base64 — loop is required because btoa needs a binary string
-    let binary = '';
-    for (const byte of uint8Array) binary += String.fromCharCode(byte);
-    const base64 = btoa(binary);
     const base64DataUrl = `data:image/png;base64,${base64}`;
 
-    console.log('Image fetched and encoded to base64 successfully');
 
     // Preserve exact response shape for frontend compatibility
     return new Response(
