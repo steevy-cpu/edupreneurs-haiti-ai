@@ -340,7 +340,7 @@ const FirstTimeUserTour = () => {
     supabase.functions.invoke('generate-jude-voice', {
       body: {
         text: "Tu es prêt! Une dernière chose: le mot du jour t'attend.",
-        storageKey: 'onboarding/tour-v2-celebration',
+        storageKey: 'onboarding/tour-v3-celebration',
         context: 'onboarding'
       }
     }).then(({ data }) => {
@@ -490,11 +490,14 @@ const FirstTimeUserTour = () => {
         )}
       </AnimatePresence>
       
-      {/* Tour dialog - repositions to top when spotlighting bottom-right elements (e.g. music FAB) */}
+      {/* Tour dialog - repositions to top when spotlighting bottom-right elements (e.g. music FAB),
+          otherwise the card sits on top of the very element it is pointing at. */}
       {!showCelebration && (
         <div className={[
           "fixed left-4 right-4 sm:left-auto sm:w-96 z-[1004] animate-slide-up",
-          "bottom-20 sm:right-4 sm:bottom-4",
+          currentStep.target === "[data-tour='music-fab']"
+            ? "top-20 sm:right-4 sm:top-4"
+            : "bottom-20 sm:right-4 sm:bottom-4",
         ].join(' ')}>
           <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
             {/* Progress bar */}
