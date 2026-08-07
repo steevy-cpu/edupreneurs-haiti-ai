@@ -217,7 +217,9 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
   // Loading / unavailable: render nothing (parent overlay shows the celebration).
   if (!quiz) return null;
 
-  const isCorrect = selected !== null && selected === quiz.correctIndex;
+  // Correctness read structurally from the selected option, not by string match.
+  const isCorrect = selected !== null && !!quiz.options[selected]?.isCorrect;
+  const correctText = quiz.options.find(o => o.isCorrect)?.text ?? '';
 
   return (
     <div className="w-full max-w-md mx-auto px-6 text-center">
