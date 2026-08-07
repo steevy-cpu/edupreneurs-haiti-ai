@@ -97,6 +97,8 @@ const FirstTimeUserTour = () => {
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
   // 3D: celebration overlay
   const [showCelebration, setShowCelebration] = useState(false);
+  // True once the quiz question is built — hides the static celebration text
+  const [quizVisible, setQuizVisible] = useState(false);
   /** FIX 7: dynamic typing speed — syncs typewriter with voice clip duration */
   const [typingSpeed, setTypingSpeed] = useState(50);
   const [isSpeedReady, setIsSpeedReady] = useState(false);
@@ -440,32 +442,43 @@ const FirstTimeUserTour = () => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[1010] flex flex-col items-center justify-center bg-gradient-to-br from-black/80 via-primary/20 to-black/80"
           >
-            <motion.div
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", damping: 15, stiffness: 200 }}
-              className="flex flex-col items-center gap-6 text-center px-8"
-            >
-              <img
-                src={ericCelebrating}
-                srcSet="/images/eric-celebrating-400w.webp 400w, /images/eric-celebrating-600w.webp 600w, /images/eric-celebrating-800w.webp 800w"
-                sizes="160px"
-                alt="Jude celebrating"
-                className="w-40 h-40 object-contain drop-shadow-2xl"
-                loading="lazy"
+            {!quizVisible && (
+              <motion.div
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", damping: 15, stiffness: 200 }}
+                className="flex flex-col items-center gap-6 text-center px-8"
+              >
+                <img
+                  src={ericCelebrating}
+                  srcSet="/images/eric-celebrating-400w.webp 400w, /images/eric-celebrating-600w.webp 600w, /images/eric-celebrating-800w.webp 800w"
+                  sizes="160px"
+                  alt="Jude celebrating"
+                  className="w-40 h-40 object-contain drop-shadow-2xl"
+                  loading="lazy"
+                />
+                <div className="space-y-2">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white">
+                    🎉 Tu es prêt(e)!
+                  </h2>
+                  <p className="text-lg text-white/90 font-medium">
+                    Bienvenue dans la famille Edupreneurs!
+                  </p>
+                  <p className="text-sm text-white/60">
+                    Ta progression commence maintenant.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Interactive first-success quiz — self-skips if the word can't be fetched */}
+            <Suspense fallback={null}>
+              <OnboardingFirstQuiz
+                userId={firstTimeUser.userId}
+                onReady={() => setQuizVisible(true)}
+                onFinish={handleFinaleDone}
               />
-              <div className="space-y-2">
-                <h2 className="text-2xl sm:text-3xl font-bold text-white">
-                  🎉 Tu es prêt(e)!
-                </h2>
-                <p className="text-lg text-white/90 font-medium">
-                  Bienvenue dans la famille Edupreneurs!
-                </p>
-                <p className="text-sm text-white/60">
-                  Ta progression commence maintenant.
-                </p>
-              </div>
-            </motion.div>
+            </Suspense>
           </motion.div>
         )}
       </AnimatePresence>

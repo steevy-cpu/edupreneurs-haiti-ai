@@ -55,9 +55,11 @@ interface OnboardingFirstQuizProps {
   userId: string | null;
   /** Called when the moment is over (answered, skipped, or unavailable). */
   onFinish: () => void;
+  /** Fired once the question is built, so the parent can hide the static celebration. */
+  onReady?: () => void;
 }
 
-export default function OnboardingFirstQuiz({ userId, onFinish }: OnboardingFirstQuizProps) {
+export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: OnboardingFirstQuizProps) {
   const { shouldAnimate } = useNetworkAwareAnimations();
   const [quiz, setQuiz] = useState<QuizData | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
@@ -120,6 +122,7 @@ export default function OnboardingFirstQuiz({ userId, onFinish }: OnboardingFirs
           options,
           correctIndex: options.indexOf(correct),
         });
+        onReady?.();
       } catch {
         // Never block tour completion on the quiz.
         finishSoon();
@@ -128,7 +131,7 @@ export default function OnboardingFirstQuiz({ userId, onFinish }: OnboardingFirs
 
     load();
     return () => { cancelled = true; };
-  }, [finish]);
+  }, [finish, onReady]);
 
   /** Award gold for participating. Guarded by a durable lesson_completions row. */
   const awardGold = useCallback(async () => {
