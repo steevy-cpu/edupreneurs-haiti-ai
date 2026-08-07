@@ -6,12 +6,13 @@
 export function isPushHintVisible(): boolean {
   if (typeof window === 'undefined') return false;
 
-  // Requires at least 2 logins before showing any push hint
-  const count = parseInt(localStorage.getItem('edupreneurs_login_count') || '0', 10);
+  // Show from the first session (matches usePushPromptEligible's soft-ask timing)
+  const count = parseInt(localStorage.getItem('edupreneurs_login_count') || '1', 10);
   // Only show when permission hasn't been decided yet
   const permission = 'Notification' in window ? Notification.permission : 'denied';
   // Respect user's explicit dismissal of the prompt
   const dismissed = localStorage.getItem('push_prompt_dismissed') === 'true';
 
-  return count >= 2 && permission === 'default' && !dismissed;
+  return count >= 1 && permission === 'default' && !dismissed;
+
 }
