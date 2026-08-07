@@ -127,18 +127,19 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
         const pool = (others ?? []).filter(o => !!o.definition);
         if (pool.length < 3) { finishSoon(); return; }
 
-        // Random 3 distractors
+        // Random 3 distractors. Correctness travels with the option object, so a
+        // distractor whose truncated text collides with the answer can't confuse us.
         const shuffledPool = [...pool].sort(() => Math.random() - 0.5).slice(0, 3);
-        const correct = truncate(word.definition);
-        const options = [correct, ...shuffledPool.map(o => truncate(o.definition))]
-          .sort(() => Math.random() - 0.5);
+        const options: QuizOption[] = [
+          { text: truncate(word.definition), isCorrect: true },
+          ...shuffledPool.map(o => ({ text: truncate(o.definition), isCorrect: false })),
+        ].sort(() => Math.random() - 0.5);
 
         if (cancelled) return;
         setQuiz({
           word: word.word,
           phonetic: word.phonetic ?? null,
           options,
-          correctIndex: options.indexOf(correct),
         });
         onReadyRef.current?.();
       } catch {
@@ -149,7 +150,7 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
 
     load();
     return () => { cancelled = true; };
-  }, [finish]);
+  }, []);
 
   /** Award gold for participating. Guarded by a durable lesson_completions row. */
   const awardGold = useCallback(async () => {
