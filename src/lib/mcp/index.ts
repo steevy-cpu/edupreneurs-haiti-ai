@@ -1,4 +1,3 @@
-import { defineTool } from "@lovable.dev/mcp-js";
 import { defineMcp, auth } from "@lovable.dev/mcp-js";
 import getMyProfile from "./tools/get-my-profile";
 import listSubjects from "./tools/list-subjects";
@@ -7,7 +6,6 @@ import getLesson from "./tools/get-lesson";
 import listMyCompletedLessons from "./tools/list-my-completed-lessons";
 import getWordOfTheDay from "./tools/get-word-of-the-day";
 
-void defineTool; // keep the import list stable for tree-shaking tooling
 
 // The OAuth issuer must be the direct Supabase host, not the Cloud proxy URL.
 // VITE_SUPABASE_PROJECT_ID is inlined as a literal at build time, so this stays import-safe.
