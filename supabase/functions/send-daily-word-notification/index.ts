@@ -22,6 +22,9 @@ const corsHeaders = {
 };
 
 // Founder UUIDs — must match is_founder() DB function
+// Jude is the actor for platform-wide notifications (actor_id is NOT NULL)
+const JUDE_USER_ID = "68f2f959-e14a-47f9-8277-07df3a6fcd79";
+
 const FOUNDER_IDS = [
   '0de08330-4183-48f9-b169-19b92f4d114f',
   '7580cd10-e18c-4b2f-ac50-def28d046c9d'
