@@ -73,6 +73,9 @@ export default function OnboardingFirstQuiz({ userId, onFinish }: OnboardingFirs
   // Build the question client-side — no AI, no edge function (cold starts on 3G).
   useEffect(() => {
     let cancelled = false;
+    // When the quiz can't be built, let the plain celebration breathe for a moment
+    // before completing — avoids a jarring instant dismissal.
+    const finishSoon = () => setTimeout(finish, 2000);
 
     const load = async () => {
       try {
@@ -82,7 +85,7 @@ export default function OnboardingFirstQuiz({ userId, onFinish }: OnboardingFirs
           .select('*', { count: 'exact', head: true })
           .eq('is_active', true);
 
-        if (!count) { finish(); return; }
+        if (!count) { finishSoon(); return; }
 
         const displayOrder = computeDisplayOrder(haitiDate, count);
         const { data: word } = await supabase
@@ -92,7 +95,7 @@ export default function OnboardingFirstQuiz({ userId, onFinish }: OnboardingFirs
           .eq('display_order', displayOrder)
           .maybeSingle();
 
-        if (!word?.definition) { finish(); return; }
+        if (!word?.definition) { finishSoon(); return; }
 
         const { data: others } = await supabase
           .from('daily_words')
@@ -102,7 +105,7 @@ export default function OnboardingFirstQuiz({ userId, onFinish }: OnboardingFirs
           .limit(40);
 
         const pool = (others ?? []).filter(o => !!o.definition);
-        if (pool.length < 3) { finish(); return; }
+        if (pool.length < 3) { finishSoon(); return; }
 
         // Random 3 distractors
         const shuffledPool = [...pool].sort(() => Math.random() - 0.5).slice(0, 3);
@@ -119,7 +122,7 @@ export default function OnboardingFirstQuiz({ userId, onFinish }: OnboardingFirs
         });
       } catch {
         // Never block tour completion on the quiz.
-        finish();
+        finishSoon();
       }
     };
 
