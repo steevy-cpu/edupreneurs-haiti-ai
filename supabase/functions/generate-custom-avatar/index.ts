@@ -198,84 +198,60 @@ MANDATORY REQUIREMENTS:
 - The character MUST match ALL specified characteristics EXACTLY as described above
 - Double-check: Hair is ${hairDesc}, Eyes are ${eyeColor}, Skin is ${skinDesc}, Gender is ${gender}`;
 
-    console.log('Generating avatar via DALL-E 3');
+    console.log('Generating avatar via Lovable AI (gpt-image-2)');
 
-    // Single DALL-E 3 call — hd quality for improved fidelity.
-    // NOTE: the `style` parameter was removed — OpenAI no longer accepts it on this
-    // endpoint and returned 400 unknown_parameter on every request.
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
+    // Image generation through the built-in Lovable AI connector — billing is
+    // consolidated on LOVABLE_API_KEY, no external provider key needed.
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/images/generations', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'dall-e-3',
+        model: 'openai/gpt-image-2',
         prompt,
         n: 1,
         size: '1024x1024',
-        quality: 'hd',
-        response_format: 'url',
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('DALL-E 3 error:', response.status, errorText);
+      console.error('Lovable AI image error:', response.status, errorText);
 
-      // Distinguish transient throttling from a hard billing/quota stop so the
+      // Distinguish transient throttling from a hard credit stop so the
       // client can show "retry soon" vs "service unavailable".
-      let providerCode: string | undefined;
-      try {
-        providerCode = JSON.parse(errorText)?.error?.code;
-      } catch {
-        // Non-JSON error body — fall back to status-based classification only.
-      }
-
-      if (response.status === 429 && providerCode !== 'insufficient_quota') {
+      if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please try again in a moment.', code: 'rate_limited' }),
           { status: 429, headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // OpenAI signals exhausted credits as either HTTP 402 or 429 + insufficient_quota.
-      if (response.status === 402 || providerCode === 'insufficient_quota' || providerCode === 'billing_hard_limit_reached') {
+      if (response.status === 402) {
         return new Response(
           JSON.stringify({ error: 'Image generation quota exhausted.', code: 'quota_exceeded' }),
           { status: 402, headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      throw new Error(`DALL-E 3 error: ${response.status}`);
+      throw new Error(`Lovable AI image error: ${response.status}`);
     }
 
-
     const data = await response.json();
-    console.log('DALL-E 3 response received');
+    console.log('Lovable AI image response received');
 
-    // Extract image URL from OpenAI response shape
-    const imageUrl = data?.data?.[0]?.url;
-    
-    if (!imageUrl) {
-      console.error('No image in DALL-E 3 response:', JSON.stringify(data));
+    // Gateway normalizes to the OpenAI images shape: base64 PNG in data[0].b64_json
+    const base64 = data?.data?.[0]?.b64_json;
+
+    if (!base64) {
+      console.error('No image in Lovable AI response:', JSON.stringify(data).slice(0, 500));
       throw new Error('No image generated');
     }
 
-    // Fetch image bytes server-side to avoid CORS canvas tainting in the browser
-    const imageResponse = await fetch(imageUrl);
-    if (!imageResponse.ok) {
-      throw new Error(`Failed to fetch generated image: ${imageResponse.status}`);
-    }
-    const arrayBuffer = await imageResponse.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
-    // Convert binary to base64 — loop is required because btoa needs a binary string
-    let binary = '';
-    for (const byte of uint8Array) binary += String.fromCharCode(byte);
-    const base64 = btoa(binary);
     const base64DataUrl = `data:image/png;base64,${base64}`;
 
-    console.log('Image fetched and encoded to base64 successfully');
 
     // Preserve exact response shape for frontend compatibility
     return new Response(
