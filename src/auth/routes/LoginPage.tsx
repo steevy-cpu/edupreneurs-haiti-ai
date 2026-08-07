@@ -57,9 +57,14 @@ export default function LoginPage() {
   // Debounce ref for email lockout check
   const lockCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Get returnTo URL from location state OR sessionStorage
-  const returnTo = (location.state as { returnTo?: string })?.returnTo 
+  // Get returnTo URL from ?next= (OAuth consent flow), location state, OR sessionStorage.
+  // `next` is validated as a same-origin relative path before it can be used as a redirect.
+  const rawNext = new URLSearchParams(location.search).get('next');
+  const safeNext = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : null;
+  const returnTo = safeNext
+    || (location.state as { returnTo?: string })?.returnTo
     || sessionStorage.getItem('quiz_battle_return_url');
+
 
   // Check for pending lockout on mount (survives page refresh)
   useEffect(() => {

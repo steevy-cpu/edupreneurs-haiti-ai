@@ -38,8 +38,13 @@ export default function GoogleSignInButton({ label = 'Continuer avec Google' }: 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
+      // Carry ?next= through the provider round-trip, otherwise flows that must return
+      // to a specific page (e.g. the OAuth consent screen) land on the app root instead.
+      const rawNext = new URLSearchParams(window.location.search).get('next');
+      const safeNext = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : null;
+
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: safeNext ? `${window.location.origin}${safeNext}` : window.location.origin,
       });
 
       // Browser will redirect to Google — just return
@@ -51,7 +56,8 @@ export default function GoogleSignInButton({ label = 'Continuer avec Google' }: 
 
       // Session set by lovable SDK — navigate based on setup state
       const needsSetup = sessionStorage.getItem('google_needs_setup') === 'true';
-      navigate(needsSetup ? '/auth/google-setup' : '/dashboard');
+      navigate(needsSetup ? '/auth/google-setup' : (safeNext ?? '/dashboard'));
+
     } catch (err: any) {
       console.error('[GoogleSignIn] Error:', err);
       toast({
