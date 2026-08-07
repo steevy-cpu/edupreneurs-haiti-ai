@@ -203,6 +203,42 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
     }
   }, [userId]);
 
+  // ── Jude voice ────────────────────────────────────────────────────────────
+  // Same plumbing as the tour (useJudeVoice → generate-jude-voice → JudeAudioContext),
+  // so music ducking and single-player rules apply. Every call is fire-and-forget:
+  // a slow or failed generation leaves the quiz fully usable in silence.
+  //
+  // The question line is per-word, so it caches once per word and is then reused by
+  // every student who gets that word. Reactions are static → cached once globally.
+  const questionVoice = useJudeVoice({
+    text: quiz ? `Que veut dire le mot ${quiz.word} ?` : '',
+    storageKey: quiz ? `onboarding/quiz-word-${quiz.wordId}` : 'onboarding/quiz-word-none',
+    context: 'onboarding',
+  });
+  const correctVoice = useJudeVoice({
+    text: VOICE_CORRECT,
+    storageKey: 'onboarding/quiz-reaction-correct-v1',
+    context: 'onboarding',
+    autoPreload: true,
+  });
+  const encourageVoice = useJudeVoice({
+    text: VOICE_ENCOURAGE,
+    storageKey: 'onboarding/quiz-reaction-encourage-v1',
+    context: 'onboarding',
+    autoPreload: true,
+  });
+
+  // Ref-stable so the "read the question" effect fires once when the question appears
+  // and is not retriggered by unrelated re-renders.
+  const questionPlayRef = useRef(questionVoice.play);
+  questionPlayRef.current = questionVoice.play;
+  const spokeQuestionRef = useRef(false);
+  useEffect(() => {
+    if (!quiz || spokeQuestionRef.current) return;
+    spokeQuestionRef.current = true;
+    questionPlayRef.current().catch(() => {});
+  }, [quiz]);
+
   const handleAnswer = async (index: number) => {
     if (selected !== null) return;
     setSelected(index);
