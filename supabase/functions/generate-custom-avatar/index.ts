@@ -134,6 +134,28 @@ serve(async (req) => {
       return rateLimitResponse(rateLimit.retryAfter!, rateLimit.remaining, corsHeaders);
     }
 
+    // Server-side 3-day regeneration cooldown — the client check is bypassable and
+    // each generation now bills our Lovable AI credits. Founders are exempt,
+    // matching the client-side superuser bypass.
+    if (!FOUNDER_USER_IDS.includes(userId)) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('last_avatar_generated_at')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      const last = profile?.last_avatar_generated_at ? new Date(profile.last_avatar_generated_at).getTime() : 0;
+      const elapsed = Date.now() - last;
+      if (last && elapsed < COOLDOWN_MS) {
+        const hoursRemaining = Math.ceil((COOLDOWN_MS - elapsed) / (60 * 60 * 1000));
+        return new Response(
+          JSON.stringify({ error: 'Avatar regeneration cooldown active.', code: 'cooldown_active', hoursRemaining }),
+          { status: 429, headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+
     // Validate input
     const body = await req.json();
     const validation = avatarSchema.safeParse(body);
