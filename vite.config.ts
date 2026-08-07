@@ -4,6 +4,8 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import legacy from '@vitejs/plugin-legacy';
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
+// Generates supabase/functions/mcp/index.ts from src/lib/mcp — do not hand-edit that file.
+import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/supabase/vite";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -36,6 +38,7 @@ export default defineConfig(({ mode }) => {
   },
   plugins: [
     react(),
+    mcpPlugin(),
     // Legacy bundle for old Android WebViews (2018-era phones in Haiti).
     // Modern browsers still load the fast es2020 module build untouched;
     // old browsers get a transpiled SystemJS bundle via nomodule + core-js polyfills.
