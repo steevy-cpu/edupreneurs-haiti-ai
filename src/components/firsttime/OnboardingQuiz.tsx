@@ -395,10 +395,14 @@ const OnboardingQuiz = () => {
     setIsCheckingNickname(true);
     nicknameCheckTimer.current = setTimeout(async () => {
       try {
-        const { data } = await supabase.rpc('check_nickname_available', { nickname_input: nickname });
-        setNicknameAvailable(data === true);
+        const { data, error } = await supabase.rpc('check_nickname_available', { nickname_input: nickname });
+        // Network/RPC failure must not trap the student on 3G — treat it as "assume free"
+        // and let the nickname be validated later. A successful check that returns false
+        // still rejects the nickname.
+        if (error) setNicknameAvailable(true);
+        else setNicknameAvailable(data === true);
       } catch {
-        setNicknameAvailable(null);
+        setNicknameAvailable(true);
       } finally {
         setIsCheckingNickname(false);
       }
