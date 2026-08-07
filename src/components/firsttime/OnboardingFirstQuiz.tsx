@@ -44,11 +44,17 @@ const computeDisplayOrder = (haitiDate: string, totalWords: number): number => {
 const truncate = (s: string, max = 90) =>
   s.length > max ? s.slice(0, max - 1).trimEnd() + '…' : s;
 
+/** Options carry correctness structurally — never resolved by string comparison,
+ *  since two truncated definitions can collide. */
+interface QuizOption {
+  text: string;
+  isCorrect: boolean;
+}
+
 interface QuizData {
   word: string;
   phonetic: string | null;
-  options: string[];
-  correctIndex: number;
+  options: QuizOption[];
 }
 
 interface OnboardingFirstQuizProps {
@@ -68,6 +74,11 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
   // Ref-stable so an inline parent callback can't retrigger the fetch effect
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
+  // Same for onFinish: the parent re-renders often (typewriter, audio, spotlight),
+  // passing a new identity each time. A dependency on it would refetch + reshuffle
+  // the options mid-answer and desync `selected` from the option list.
+  const onFinishRef = useRef(onFinish);
+  onFinishRef.current = onFinish;
 
   const finish = useCallback(() => {
     if (finishedRef.current) return;
@@ -75,15 +86,16 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
     // Release the streak-modal suppression shortly after we leave this screen so a
     // later real milestone in the same session still celebrates.
     setTimeout(() => sessionStorage.removeItem('suppress-streak-milestone-modal'), 10_000);
-    onFinish();
-  }, [onFinish]);
+    onFinishRef.current();
+  }, []);
 
   // Build the question client-side — no AI, no edge function (cold starts on 3G).
+  // Empty deps on purpose: the question must be built exactly ONCE per mount.
   useEffect(() => {
     let cancelled = false;
     // When the quiz can't be built, let the plain celebration breathe for a moment
     // before completing — avoids a jarring instant dismissal.
-    const finishSoon = () => setTimeout(finish, 2000);
+    const finishSoon = () => setTimeout(() => finish(), 2000);
 
     const load = async () => {
       try {
@@ -115,18 +127,19 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
         const pool = (others ?? []).filter(o => !!o.definition);
         if (pool.length < 3) { finishSoon(); return; }
 
-        // Random 3 distractors
+        // Random 3 distractors. Correctness travels with the option object, so a
+        // distractor whose truncated text collides with the answer can't confuse us.
         const shuffledPool = [...pool].sort(() => Math.random() - 0.5).slice(0, 3);
-        const correct = truncate(word.definition);
-        const options = [correct, ...shuffledPool.map(o => truncate(o.definition))]
-          .sort(() => Math.random() - 0.5);
+        const options: QuizOption[] = [
+          { text: truncate(word.definition), isCorrect: true },
+          ...shuffledPool.map(o => ({ text: truncate(o.definition), isCorrect: false })),
+        ].sort(() => Math.random() - 0.5);
 
         if (cancelled) return;
         setQuiz({
           word: word.word,
           phonetic: word.phonetic ?? null,
           options,
-          correctIndex: options.indexOf(correct),
         });
         onReadyRef.current?.();
       } catch {
@@ -137,7 +150,7 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
 
     load();
     return () => { cancelled = true; };
-  }, [finish]);
+  }, []);
 
   /** Award gold for participating. Guarded by a durable lesson_completions row. */
   const awardGold = useCallback(async () => {
@@ -158,7 +171,9 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
       });
       if (error) throw error;
 
-      await supabase.from('lesson_completions').upsert(
+      // Written after the gold RPC; if this fails the student keeps the gold but the
+      // guard row is missing, so log it distinctly rather than swallowing it below.
+      const { error: guardError } = await supabase.from('lesson_completions').upsert(
         {
           user_id: userId,
           lesson_slug: ONBOARDING_QUIZ_SLUG,
@@ -168,6 +183,9 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
         },
         { onConflict: 'user_id,lesson_slug' }
       );
+      if (guardError) {
+        console.error('[OnboardingFirstQuiz] anti-farm guard row NOT written:', guardError);
+      }
 
       setAwarded(true);
       celebrateFirstGold();
@@ -199,7 +217,9 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
   // Loading / unavailable: render nothing (parent overlay shows the celebration).
   if (!quiz) return null;
 
-  const isCorrect = selected !== null && selected === quiz.correctIndex;
+  // Correctness read structurally from the selected option, not by string match.
+  const isCorrect = selected !== null && !!quiz.options[selected]?.isCorrect;
+  const correctText = quiz.options.find(o => o.isCorrect)?.text ?? '';
 
   return (
     <div className="w-full max-w-md mx-auto px-6 text-center">
@@ -220,7 +240,7 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
                 onClick={() => handleAnswer(i)}
                 className="w-full rounded-xl border border-white/25 bg-white/10 px-4 py-3 text-left text-sm text-white hover:bg-white/20 active:scale-[0.99] transition"
               >
-                {opt}
+                {opt.text}
               </button>
             ))}
           </div>
@@ -249,7 +269,7 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
           </h2>
           {/* No "incorrect" framing — we simply teach the answer. */}
           <p className="text-white/85 text-sm leading-relaxed">
-            «&nbsp;{quiz.word}&nbsp;» veut dire : {quiz.options[quiz.correctIndex]}
+            «&nbsp;{quiz.word}&nbsp;» veut dire : {correctText}
           </p>
 
           {awarded && (
