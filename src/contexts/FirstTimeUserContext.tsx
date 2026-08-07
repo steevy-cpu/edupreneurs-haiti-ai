@@ -6,12 +6,14 @@ import { useSessionAuth } from '@/contexts/SessionAuthContext';
 import { FREE_ACCESS_MODE } from '@/config/access';
 
 // Map tour step index to nav icon path for mobile highlighting.
+// 6-step order: dashboard KPI → dashboard music FAB → matieres → feed → passion → community
 const TOUR_STEP_NAV_PATHS: Record<number, string | null> = {
   0: '/dashboard',
-  1: '/matieres',
-  2: '/feed',
-  3: null, // /passion-discovery has no bottom-nav icon
-  4: '/community',
+  1: '/dashboard',
+  2: '/matieres',
+  3: '/feed',
+  4: null, // /passion-discovery has no bottom-nav icon
+  5: '/community',
 };
 
 interface FirstTimeUserContextType {

@@ -17,8 +17,14 @@ import { GoldBadge } from '@/components/shared/GoldBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { celebrateFirstGold } from '@/hooks/useFirstGoldCelebration';
 import { useNetworkAwareAnimations } from '@/hooks/useNetworkAwareAnimations';
+import { useJudeVoice } from '@/hooks/useJudeVoice';
 
 const ericCelebrating = '/images/eric-celebrating-400w.webp';
+
+/** Static reaction lines — same text for every student, so each caches once in
+ *  Storage and is instant afterwards (critical on 3G). */
+const VOICE_CORRECT = "Bravo, c'est exactement ça! Tu commences très fort.";
+const VOICE_ENCOURAGE = "Pas grave, c'est comme ça qu'on apprend. Tu viens de découvrir un nouveau mot.";
 
 /** Gold granted for completing the first quiz.
  *  Sits between the per-activity award (1) and a full lesson quiz (score + 50):
@@ -52,6 +58,7 @@ interface QuizOption {
 }
 
 interface QuizData {
+  wordId: string;
   word: string;
   phonetic: string | null;
   options: QuizOption[];
@@ -137,6 +144,7 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
 
         if (cancelled) return;
         setQuiz({
+          wordId: word.id,
           word: word.word,
           phonetic: word.phonetic ?? null,
           options,
@@ -195,9 +203,50 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
     }
   }, [userId]);
 
+  // ── Jude voice ────────────────────────────────────────────────────────────
+  // Same plumbing as the tour (useJudeVoice → generate-jude-voice → JudeAudioContext),
+  // so music ducking and single-player rules apply. Every call is fire-and-forget:
+  // a slow or failed generation leaves the quiz fully usable in silence.
+  //
+  // The question line is per-word, so it caches once per word and is then reused by
+  // every student who gets that word. Reactions are static → cached once globally.
+  const questionVoice = useJudeVoice({
+    text: quiz ? `Que veut dire le mot ${quiz.word} ?` : '',
+    storageKey: quiz ? `onboarding/quiz-word-${quiz.wordId}` : 'onboarding/quiz-word-none',
+    context: 'onboarding',
+  });
+  const correctVoice = useJudeVoice({
+    text: VOICE_CORRECT,
+    storageKey: 'onboarding/quiz-reaction-correct-v1',
+    context: 'onboarding',
+    autoPreload: true,
+  });
+  const encourageVoice = useJudeVoice({
+    text: VOICE_ENCOURAGE,
+    storageKey: 'onboarding/quiz-reaction-encourage-v1',
+    context: 'onboarding',
+    autoPreload: true,
+  });
+
+  // Ref-stable so the "read the question" effect fires once when the question appears
+  // and is not retriggered by unrelated re-renders.
+  const questionPlayRef = useRef(questionVoice.play);
+  questionPlayRef.current = questionVoice.play;
+  const spokeQuestionRef = useRef(false);
+  useEffect(() => {
+    if (!quiz || spokeQuestionRef.current) return;
+    spokeQuestionRef.current = true;
+    questionPlayRef.current().catch(() => {});
+  }, [quiz]);
+
   const handleAnswer = async (index: number) => {
     if (selected !== null) return;
     setSelected(index);
+
+    // Warm reaction, never shaming on a wrong answer. Fire-and-forget: audio must
+    // never gate the reveal or the gold award.
+    const answeredCorrectly = !!quiz?.options[index]?.isCorrect;
+    (answeredCorrectly ? correctVoice.play() : encourageVoice.play()).catch(() => {});
 
     // The DB trigger update_streak_on_activity starts the streak when gold increases.
     // Suppress the streak modal so celebrations don't stack on this screen.
