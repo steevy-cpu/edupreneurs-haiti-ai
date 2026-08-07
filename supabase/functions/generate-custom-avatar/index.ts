@@ -43,6 +43,16 @@ const avatarSchema = z.object({
   specialEffect: z.string().max(100).optional().default('none'),
 }).strict();
 
+// Founders bypass the avatar cooldown — mirrors src/lib/founderConstants.ts
+const FOUNDER_USER_IDS = [
+  '0de08330-4183-48f9-b169-19b92f4d114f',
+  '7580cd10-e18c-4b2f-ac50-def28d046c9d',
+  'a72154dd-97ae-4dfe-a939-b48ecc7764fb',
+];
+
+/** 3 days between avatar regenerations, enforced server-side */
+const COOLDOWN_MS = 3 * 24 * 60 * 60 * 1000;
+
 // Maps background IDs to descriptive prompt text for DALL-E 3
 const backgroundDescriptions: Record<string, string> = {
   'classroom': 'A warm, well-lit classroom with bookshelves and a chalkboard in the background',
