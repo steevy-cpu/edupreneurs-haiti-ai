@@ -322,16 +322,21 @@ export const AIAvatarGenerator = ({
         // invoke() collapses every non-2xx into a generic message — read the real
         // body so we can tell throttling apart from an exhausted quota.
         let code: string | undefined;
+        let hoursRemaining: number | undefined;
         try {
           const raw = await (error as any)?.context?.text?.();
-          code = raw ? JSON.parse(raw)?.code : undefined;
+          const parsed = raw ? JSON.parse(raw) : undefined;
+          code = parsed?.code;
+          hoursRemaining = parsed?.hoursRemaining;
         } catch {
           // Body unreadable — fall through to the generic error path.
         }
-        const err = new Error(code ?? "unknown") as Error & { code?: string };
+        const err = new Error(code ?? "unknown") as Error & { code?: string; hoursRemaining?: number };
         err.code = code;
+        err.hoursRemaining = hoursRemaining;
         throw err;
       }
+
       if (data.error) throw new Error(data.error);
       setGeneratedImage(data.imageUrl);
       toast.success("Avatar généré avec succès!");
