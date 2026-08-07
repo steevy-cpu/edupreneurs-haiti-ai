@@ -9,14 +9,18 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { UserProfile, NotificationGroup } from "@/types/settings.types";
 
-/** The 5 notification groups shown on the Notifications tab */
+/** The notification groups shown on the Notifications tab.
+ *  word_of_day is its own group so a student can silence the daily word
+ *  without losing lesson/post notifications. */
 const NOTIFICATION_GROUPS: NotificationGroup[] = [
   { key: 'interactions', categories: ['like', 'comment', 'share', 'mention'], label: 'Interactions', description: 'Likes, commentaires, partages et mentions' },
   { key: 'social', categories: ['follow'], label: 'Social', description: 'Nouvelles abonnements et demandes de suivi' },
   { key: 'messages', categories: ['message'], label: 'Messages', description: 'Messages privés et messages de groupe' },
-  { key: 'contenu', categories: ['post', 'lesson', 'word_of_day'], label: 'Contenu', description: 'Nouveaux posts, commentaires de leçons et mot du jour' },
+  { key: 'contenu', categories: ['post', 'lesson'], label: 'Contenu', description: 'Nouveaux posts et commentaires de leçons' },
+  { key: 'word_of_day', categories: ['word_of_day'], label: 'Mot du jour', description: 'Le mot du jour, chaque matin' },
   { key: 'system', categories: ['system'], label: 'Système', description: "Renouvellements d'abonnement et annonces" },
 ];
+
 
 export { NOTIFICATION_GROUPS };
 
