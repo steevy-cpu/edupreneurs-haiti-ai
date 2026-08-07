@@ -245,3 +245,10 @@ verify_jwt = false
 
 [functions.indexnow-submit]
 verify_jwt = false
+
+# MCP server: the gateway JWT check must be off so unauthenticated MCP
+# handshake + OAuth discovery reach the handler. The handler enforces its own
+# OAuth verification and every tool queries with the user's token (RLS applies).
+[functions.mcp]
+verify_jwt = false
+
