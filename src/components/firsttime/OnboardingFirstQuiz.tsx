@@ -243,6 +243,11 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
     if (selected !== null) return;
     setSelected(index);
 
+    // Warm reaction, never shaming on a wrong answer. Fire-and-forget: audio must
+    // never gate the reveal or the gold award.
+    const answeredCorrectly = !!quiz?.options[index]?.isCorrect;
+    (answeredCorrectly ? correctVoice.play() : encourageVoice.play()).catch(() => {});
+
     // The DB trigger update_streak_on_activity starts the streak when gold increases.
     // Suppress the streak modal so celebrations don't stack on this screen.
     sessionStorage.setItem('suppress-streak-milestone-modal', 'true');
