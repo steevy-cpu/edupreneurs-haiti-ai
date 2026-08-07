@@ -313,11 +313,11 @@ serve(async (req) => {
     let successCount = 0;
     let failCount = 0;
 
-    for (let i = 0; i < eligibleUserIds.length; i += BATCH_SIZE) {
-      const batch = eligibleUserIds.slice(i, i + BATCH_SIZE);
+    for (let i = 0; i < pushTargets.length; i += BATCH_SIZE) {
+      const batch = pushTargets.slice(i, i + BATCH_SIZE);
 
       const batchResults = await Promise.all(
-        batch.map(async (userId) => {
+        batch.map(async (userId: string) => {
           try {
             const response = await supabase.functions.invoke('send-push-notification', {
               body: {
@@ -342,10 +342,11 @@ serve(async (req) => {
       successCount += batchResults.filter(r => r).length;
       failCount += batchResults.filter(r => !r).length;
 
-      if (i + BATCH_SIZE < eligibleUserIds.length) {
+      if (i + BATCH_SIZE < pushTargets.length) {
         await new Promise(resolve => setTimeout(resolve, BATCH_DELAY_MS));
       }
     }
+
 
     console.log(`📊 Daily word notification results: ${successCount} success, ${failCount} failed`);
 
