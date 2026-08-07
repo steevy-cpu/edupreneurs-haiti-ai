@@ -114,12 +114,13 @@ export default function PushPermissionPrompt({ userId, onDismiss }: PushPermissi
             <div className="flex-1 min-w-0">
               {/* Title */}
               <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
-                Ne rate rien! <Bell className="w-4 h-4 text-primary" />
+                Je t'accompagne chaque jour <Bell className="w-4 h-4 text-primary" />
               </h3>
 
-              {/* Description */}
+              {/* Description — study value, not social noise */}
               <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Active les notifications pour être informé des nouveaux messages, likes et activités de tes amis.
+                Reçois le mot du jour, un petit rappel pour garder ta série et réviser,
+                et les alertes de préparation aux examens. Rien d'autre, promis.
               </p>
 
               {/* Action buttons */}
@@ -130,8 +131,9 @@ export default function PushPermissionPrompt({ userId, onDismiss }: PushPermissi
                   disabled={activating}
                   className="text-xs h-8"
                 >
-                  {activating ? 'Activation...' : 'Activer les notifications'}
+                  {activating ? 'Activation...' : 'Oui, active les rappels'}
                 </Button>
+
                 <Button
                   size="sm"
                   variant="ghost"
