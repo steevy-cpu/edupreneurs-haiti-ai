@@ -15,6 +15,7 @@ import { createSignupPayment } from "../../services/payment.service";
 import { saveSignupProgress, getSignupProgress, getAuthFlow } from "../../store/authFlow.store";
 import { cn } from "@/lib/utils";
 import GiftLinkTab from "./GiftLinkTab";
+import { FREE_ACCESS_MODE } from "@/config/access";
 
 type AccessTab = 'trial' | 'promo' | 'moncash' | 'gift';
 
@@ -165,6 +166,15 @@ export default function SignupStep3() {
         <p className="text-sm text-muted-foreground">Choisissez votre méthode d'accès</p>
       </div>
 
+      {/* Launch-period notice — gated so the paid UI returns intact when the flag flips */}
+      {FREE_ACCESS_MODE && (
+        <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-center">
+          <p className="text-sm font-medium text-foreground">
+            🎉 L'accès est gratuit pendant la période de lancement — aucun paiement requis.
+          </p>
+        </div>
+      )}
+
       {/* Tab Toggle — promo first, then trial, moncash, famille */}
       <div className="flex gap-1 p-1 rounded-lg border border-input bg-muted/30">
         <button
@@ -191,6 +201,7 @@ export default function SignupStep3() {
         >
           🎉 Essai gratuit
         </button>
+        {!FREE_ACCESS_MODE && (
         <button
           type="button"
           onClick={() => setActiveTab('moncash')}
@@ -203,6 +214,7 @@ export default function SignupStep3() {
         >
           💳 MonCash
         </button>
+        )}
         <button
           type="button"
           onClick={() => setActiveTab('gift')}
@@ -284,7 +296,7 @@ export default function SignupStep3() {
       )}
 
       {/* MonCash Tab */}
-      {activeTab === 'moncash' && (
+      {activeTab === 'moncash' && !FREE_ACCESS_MODE && (
         <div className="space-y-3 p-4 border-2 border-primary rounded-lg bg-primary/5 animate-in fade-in duration-200">
           <div className="text-center space-y-2">
             <h4 className="font-bold text-base">Accès Premium</h4>

@@ -109,7 +109,7 @@ const Index = () => {
         <title>EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA | Éducation Haïti</title>
         <meta
           name="description"
-          content="EDUPRENEURS: Plateforme éducative haïtienne avec assistant IA personnalisé. Programme MENFP complet de la 7AF à NS4. Cours, examens officiels. Essai gratuit 7 jours."
+          content="EDUPRENEURS: Plateforme éducative haïtienne avec assistant IA personnalisé. Programme MENFP complet de la 7AF à NS4. Cours, examens officiels. ${FREE_ACCESS_MODE ? "Accès gratuit pendant la période de lancement." : "Essai gratuit 7 jours."}"
         />
         <meta
           name="keywords"
@@ -118,7 +118,7 @@ const Index = () => {
         <meta property="og:title" content="EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA" />
         <meta
           property="og:description"
-          content="Plateforme éducative avec assistant IA personnalisé. Programme MENFP complet. Essai gratuit 7 jours."
+          content="Plateforme éducative avec assistant IA personnalisé. Programme MENFP complet. ${FREE_ACCESS_MODE ? "Accès gratuit pendant la période de lancement." : "Essai gratuit 7 jours."}"
         />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="fr_HT" />

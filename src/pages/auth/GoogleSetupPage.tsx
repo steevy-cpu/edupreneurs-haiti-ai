@@ -21,6 +21,7 @@ import { createSignupPayment } from "@/auth/services/payment.service";
 import { saveSignupProgress, getSignupProgress } from "@/auth/store/authFlow.store";
 import { cn } from "@/lib/utils";
 import GiftLinkTab from "@/auth/routes/signup/GiftLinkTab";
+import { FREE_ACCESS_MODE } from "@/config/access";
 
 type AccessTab = "trial" | "promo" | "moncash" | "gift";
 
@@ -30,7 +31,7 @@ export default function GoogleSetupPage() {
   const { isAuthenticated, isLoading: authLoading, user } = useSessionAuth();
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<AccessTab>("promo");
+  const [activeTab, setActiveTab] = useState<AccessTab>("trial");
 
   // Promo code state
   const [promoCode, setPromoCode] = useState("");
@@ -187,6 +188,15 @@ export default function GoogleSetupPage() {
         <p className="text-sm text-muted-foreground">Sélectionnez votre méthode d'accès pour commencer</p>
       </div>
 
+      {/* Launch-period notice — mirrors Step3, gated on FREE_ACCESS_MODE */}
+      {FREE_ACCESS_MODE && (
+        <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-center">
+          <p className="text-sm font-medium text-foreground">
+            🎉 L'accès est gratuit pendant la période de lancement — aucun paiement requis.
+          </p>
+        </div>
+      )}
+
       {/* Tab Toggle — same layout as Step3 */}
       <div className="flex gap-1 p-1 rounded-lg border border-input bg-muted/30">
         <button
@@ -213,6 +223,7 @@ export default function GoogleSetupPage() {
         >
           🎉 Essai gratuit
         </button>
+        {!FREE_ACCESS_MODE && (
         <button
           type="button"
           onClick={() => setActiveTab("moncash")}
@@ -225,6 +236,7 @@ export default function GoogleSetupPage() {
         >
           💳 MonCash
         </button>
+        )}
         <button
           type="button"
           onClick={() => setActiveTab("gift")}
@@ -317,7 +329,7 @@ export default function GoogleSetupPage() {
       )}
 
       {/* MonCash Tab */}
-      {activeTab === "moncash" && (
+      {activeTab === "moncash" && !FREE_ACCESS_MODE && (
         <div className="space-y-3 p-4 border-2 border-primary rounded-lg bg-primary/5 animate-in fade-in duration-200">
           <div className="text-center space-y-2">
             <h4 className="font-bold text-base">Accès Premium</h4>
