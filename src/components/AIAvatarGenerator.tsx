@@ -323,7 +323,7 @@ export const AIAvatarGenerator = ({
           background: selectedBackground,
           specialEffect: selectedEffect,
         },
-        // @ts-expect-error supabase-js forwards this to fetch even if untyped in some versions
+        // Forwarded to fetch so the request is actually cancelled on timeout.
         signal: controller.signal,
         }));
       } catch (invokeErr) {
