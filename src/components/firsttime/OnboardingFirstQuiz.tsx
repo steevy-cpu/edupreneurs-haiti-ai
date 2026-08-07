@@ -58,6 +58,7 @@ interface QuizOption {
 }
 
 interface QuizData {
+  wordId: string;
   word: string;
   phonetic: string | null;
   options: QuizOption[];
@@ -143,6 +144,7 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
 
         if (cancelled) return;
         setQuiz({
+          wordId: word.id,
           word: word.word,
           phonetic: word.phonetic ?? null,
           options,
