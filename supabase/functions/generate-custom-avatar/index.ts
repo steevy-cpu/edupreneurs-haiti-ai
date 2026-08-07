@@ -147,10 +147,12 @@ serve(async (req) => {
 
     const { style, hairColor, eyeColor, expression, accessories, skinTone, gender, hairStyle, outfitStyle, background, specialEffect } = validation.data;
     
-    // Read OpenAI key — replaces Lovable AI Gateway which has persistent 500s on image models
+    // Legacy key kept for phase 3 cleanup — no longer required for this function.
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY not configured');
+    // Built-in Lovable AI connector key — the only credential this function needs now.
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY not configured');
     }
 
     // Build accessory string
