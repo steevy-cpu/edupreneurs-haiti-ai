@@ -39,7 +39,7 @@ export function usePushPromptEligible(): boolean {
       notDismissed = !isNaN(dismissedAt) && Date.now() - dismissedAt > sevenDaysMs;
     }
 
-    const shouldShow = count >= 2 && permissionDefault && notDismissed && tourCompleted && hasServiceWorker;
+    const shouldShow = count >= 1 && permissionDefault && notDismissed && tourCompleted && hasServiceWorker;
 
     if (!shouldShow) return;
 
