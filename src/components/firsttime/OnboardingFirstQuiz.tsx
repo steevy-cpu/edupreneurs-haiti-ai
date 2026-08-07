@@ -74,6 +74,11 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
   // Ref-stable so an inline parent callback can't retrigger the fetch effect
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
+  // Same for onFinish: the parent re-renders often (typewriter, audio, spotlight),
+  // passing a new identity each time. A dependency on it would refetch + reshuffle
+  // the options mid-answer and desync `selected` from the option list.
+  const onFinishRef = useRef(onFinish);
+  onFinishRef.current = onFinish;
 
   const finish = useCallback(() => {
     if (finishedRef.current) return;
@@ -81,15 +86,16 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
     // Release the streak-modal suppression shortly after we leave this screen so a
     // later real milestone in the same session still celebrates.
     setTimeout(() => sessionStorage.removeItem('suppress-streak-milestone-modal'), 10_000);
-    onFinish();
-  }, [onFinish]);
+    onFinishRef.current();
+  }, []);
 
   // Build the question client-side — no AI, no edge function (cold starts on 3G).
+  // Empty deps on purpose: the question must be built exactly ONCE per mount.
   useEffect(() => {
     let cancelled = false;
     // When the quiz can't be built, let the plain celebration breathe for a moment
     // before completing — avoids a jarring instant dismissal.
-    const finishSoon = () => setTimeout(finish, 2000);
+    const finishSoon = () => setTimeout(() => finish(), 2000);
 
     const load = async () => {
       try {
