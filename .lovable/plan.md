@@ -1,41 +1,66 @@
-## Objectif
-Générer un pitch deck PPTX téléchargeable (~14 slides) positionnant Edupreneurs comme un SaaS EdTech, ciblant les investisseurs / VC. Livré sous `/mnt/documents/edupreneurs-pitch-vc.pptx` avec artefact affiché.
+# MCP connector returns zero tools — diagnosis
 
-## Direction visuelle
-- **Palette Paper & Teal** (cohérente avec branding): fond ivoire `#F7F5F0`, Teal `#087E7E`, Amber accent `#FF9F00`, charcoal `#0F1720`, gris muet `#6B7280`.
-- **Typo**: Georgia (titres, éditorial, ~54pt) + Calibri (body 24-32pt). Kickers Amber uppercase tracked.
-- **Motif**: bande verticale Teal côté gauche des slides de section, gros chiffres (100pt+) pour stats, cartes ivoire avec bordure fine 1px.
-- **Densité**: 1 idée par slide, respect du budget (headers 100px, footers 80px, max 3 cartes/ligne).
+## Section 1 — Edge function logs (`mcp`)
 
-## Structure (14 slides)
+The function serving `/functions/v1/mcp` is `supabase/functions/mcp` (auto-generated from `src/lib/mcp/index.ts`; entry at `supabase/functions/mcp/index.ts:250` — `Deno.serve(createSupabaseHandler(mcp_default, { functionName: "mcp" }))`).
 
-1. **Cover** — Logo É + "Edupreneurs" · tagline "The learning OS for Haitian students" · mon-edupreneur.com
-2. **The Problem** — 3 stats chocs: 60% élèves Haïti sans accès au soutien scolaire · profs tuteurs $$$ · contenu FR/créole rare & non-personnalisé
-3. **Market** — TAM/SAM/SOM: Haïti 2.5M étudiants K-12, diaspora francophone 4M, LATAM/Afrique francophone 80M — approche bottom-up
-4. **The Product** — 4 piliers: AI Tutor (Jude) · Curriculum MENFP · Community & Battles · Passions (musique, échecs, arts)
-5. **How it works** — Screenshot Dashboard + flow 3 étapes (Inscription → IA personnalise → Progression trackée)
-6. **AI Moat** — 11 tuteurs IA spécialisés · contenu généré + validé · voix Eric ElevenLabs · KaTeX math native
-7. **Traction (projections)** — Placeholder: 200 users actifs → 2 000 (Q4 2026) → 20 000 (2027). Marqué "Projections"
-8. **Business Model SaaS** — $1.50/mois/user (200 HTG) · B2C direct · B2B écoles ($3-5/élève) · Diaspora premium ($9.99)
-9. **Unit Economics** — CAC $2.50 (organique + referral), LTV $18, LTV/CAC 7.2x, payback 2 mois — projections marquées
-10. **Competitive Landscape** — Matrice 2x2: Local vs Global × Généraliste vs Curriculum-specific. Kartable/Khan Academy loin du marché haïtien
-11. **Go-to-Market** — 3 vagues: (1) Étudiants urbains Port-au-Prince/Cap-Haïtien via TikTok, (2) Partenariats écoles privées, (3) Diaspora US/Canada/France
-12. **Team & Vision** — Founders (placeholder) · advisors · vision "Le Duolingo de l'éducation francophone émergente"
-13. **The Ask** — Seed $500K pour 18 mois · usage: 40% produit/IA, 30% growth, 20% équipe, 10% ops
-14. **Closing** — "Rejoins-nous" · mon-edupreneur.com · email contact · logo
+a) **The log query returns nothing at all**: `No logs found for edge function 'mcp'`. No `initialize`, no `tools/list`, no `OPTIONS`, no status lines.
 
-## Implementation
+b) No raw lines to quote — the log stream is empty.
 
-- **Skill**: `pptx` (pptxgenjs).
-- **Script**: `/tmp/build-pitch.mjs` génère le PPTX avec pptxgenjs, embed logo Edupreneurs (SVG É gradient teal→amber inline shape), tokens couleur ci-dessus.
-- **QA**: convertir en PDF via LibreOffice, rasteriser toutes les 14 slides à 150dpi, inspecter chaque image, corriger overflow/contraste/alignement avant livraison.
-- **Livraison**: `<presentation-artifact path="edupreneurs-pitch-vc.pptx" mime_type="application/vnd.openxmlformats-officedocument.presentationml.presentation">`.
+c) Because of that, logs alone cannot distinguish gateway rejection from a routing problem. So I issued live unauthenticated probes against the deployed endpoint instead. Those show our handler **is** running:
 
-Tous les chiffres financiers/traction seront marqués "Projections — non-audité" en footer des slides concernées (7, 8, 9).
+- `POST /functions/v1/mcp` (initialize, `Accept: application/json, text/event-stream`) → `HTTP/2 401`, body `{"error":"unauthorized"}`, with
+  `www-authenticate: Bearer realm="mcp", resource_metadata="https://<ref>.supabase.co/functions/v1/mcp/.well-known/oauth-protected-resource"`
+  and `access-control-expose-headers: WWW-Authenticate, Mcp-Session-Id, Mcp-Protocol-Version`.
+  A bare gateway 401 would carry none of those headers — this is the SDK's own OAuth challenge.
+- `POST` `tools/list` unauthenticated → same 401 challenge.
+- `OPTIONS` preflight → `HTTP/2 204`, `access-control-allow-headers: Authorization, Content-Type, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-ID`, `access-control-allow-methods: POST, OPTIONS`.
+- `GET /functions/v1/mcp/.well-known/oauth-protected-resource` → `HTTP/2 200`
+  `{"resource":".../functions/v1/mcp","authorization_servers":["https://<ref>.supabase.co/auth/v1"],"bearer_methods_supported":["header"],"resource_name":"edupreneurs-haiti-ai"}`
 
-## Ce qui n'est PAS inclus
-- Pas de code appli modifié (pitch = livrable externe uniquement).
-- Pas de nouvelle page `/pitch` dans l'app.
-- Pas de vidéo (déjà couvert par le workflow Promo v7 existant).
+Conclusion for this section: requests reach our code; the empty log view is a log-surfacing gap, not evidence of gateway blocking.
 
-Prêt à générer.
+## Section 2 — Function source
+
+a) **Protocol.** The JSON-RPC layer (`initialize`, `notifications/initialized`, `tools/list`, `tools/call`) lives inside `@lovable.dev/mcp-js@0.26.1`'s `createSupabaseHandler`, not in our file, so the advertised `protocolVersion` string is not visible in project source. The tool list is static, built from the `tools:` array at `supabase/functions/mcp/index.ts:245` (six tools: `get_my_profile`, `list_subjects`, `list_lessons`, `get_lesson`, `list_my_completed_lessons`, `get_word_of_the_day`), mirrored in `.lovable/mcp/manifest.json`. It cannot legitimately come back empty — an empty tool list in the client means `tools/list` never returned 200, not that the array is empty.
+
+b) **Transport.** Streamable HTTP via the SDK handler; the OPTIONS response allows only `POST, OPTIONS` and exposes `Mcp-Session-Id` / `Mcp-Protocol-Version`, and `Last-Event-ID` is allowlisted (SSE resume). The `Accept: application/json, text/event-stream` header was sent in my probe and was not the cause of the 401.
+
+c) **Auth.** `supabase/functions/mcp/index.ts:241-244` — `auth.oauth.issuer({ issuer: "https://xdyavylcmucjpueybdku.supabase.co/auth/v1", acceptedAudiences: "authenticated" })`. With no bearer token the handler returns the 401 + `WWW-Authenticate` challenge shown above. Each tool additionally guards with `ctx.isAuthenticated()` (e.g. `:68`, `:96`, `:126`) and queries through `supabaseForUser(ctx)` (`:51-58`), which forwards the user's token so RLS applies.
+
+d) **CORS/OPTIONS.** Handled, 204, and both `Mcp-Session-Id` and `Mcp-Protocol-Version` **are** in `access-control-allow-headers`. Not the cause.
+
+## Section 3 — Config
+
+`supabase/config.toml:249-253` has the block:
+
+```
+[functions.mcp]
+verify_jwt = false
+```
+
+It is present and correct, and the live probes confirm it took effect (our handler, not the gateway, produced the 401).
+
+## Actual cause vs. merely suspicious
+
+**Actual cause (high confidence): the project's auth still uses legacy symmetric (HS256) signing keys, so the resource server cannot verify any access token.**
+
+```
+GET https://xdyavylcmucjpueybdku.supabase.co/auth/v1/.well-known/jwks.json
+→ {"keys":[]}
+```
+
+The authorization-server metadata is otherwise healthy (authorize, token, and `oauth/clients/register` endpoints all present, so OAuth 2.1 + dynamic client registration are enabled). `auth.oauth.issuer` verifies bearer tokens against that JWKS. With zero published keys, **every** authenticated request fails verification and returns the same 401 challenge — which is exactly the observed behaviour: Claude completes registration/consent and shows "connected", then its `tools/list` 401s and it renders zero tools.
+
+Merely suspicious, ruled out:
+- Gateway JWT rejection — ruled out, `verify_jwt = false` is in place and our handler answers.
+- CORS / missing `mcp-session-id`, `mcp-protocol-version` allowlist — ruled out, both allowed.
+- Empty/dynamic tool array — ruled out, the list is static with six tools.
+- Empty logs — a log-surfacing gap; the probes substitute for it.
+
+## Proposed fix (not applied — diagnosis only)
+
+1. Migrate the project's auth signing keys to asymmetric (ECC/RSA) so `/auth/v1/.well-known/jwks.json` publishes a key. This is the single blocking change and is a project auth setting, not code.
+2. Re-run the unauthenticated probes (expect unchanged 401 challenge), then reconnect the connector in Claude and confirm `tools/list` returns the six tools.
+3. If tools still do not appear after the key migration, capture the token Claude presents and check the `client_id` claim (`requireOAuthClientClaim` defaults to true) before touching any tool code.
