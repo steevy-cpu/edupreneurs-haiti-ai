@@ -342,13 +342,20 @@ export const AIAvatarGenerator = ({
       toast.success("Avatar généré avec succès!");
     } catch (error) {
       console.error("Error generating avatar:", error);
-      if (isOnboarding) {
+      const err = error as { code?: string; hoursRemaining?: number };
+      if (err?.code === "cooldown_active") {
+        // Server-side cooldown — tell the student exactly when they can retry.
+        const hours = err.hoursRemaining ?? 72;
+        const label = hours >= 24 ? `${Math.ceil(hours / 24)} jour(s)` : `${hours} heure(s)`;
+        toast.error(`Tu peux régénérer ton avatar dans ${label}.`);
+      } else if (isOnboarding) {
         setGenerationFailed(true);
-      } else if ((error as { code?: string })?.code === "rate_limited") {
+      } else if (err?.code === "rate_limited") {
         toast.error("Trop de demandes en ce moment. Réessaie dans quelques minutes.");
       } else {
         toast.error("La génération d'avatar est temporairement indisponible. Réessaie plus tard.");
       }
+
     } finally {
       setIsGenerating(false);
     }
