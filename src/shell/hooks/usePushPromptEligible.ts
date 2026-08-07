@@ -22,7 +22,10 @@ export function usePushPromptEligible(): boolean {
     // Wait until tour status is loaded before evaluating
     if (tourLoading) return;
 
-    const count = parseInt(localStorage.getItem('edupreneurs_login_count') || '0', 10);
+    // Soft-ask right after the onboarding tour (1st login) instead of waiting for a 2nd
+    // session — most users never came back, so the ask never fired.
+    const count = parseInt(localStorage.getItem('edupreneurs_login_count') || '1', 10);
+
     const permissionDefault = 'Notification' in window && Notification.permission === 'default';
     const hasServiceWorker = 'serviceWorker' in navigator;
 
@@ -36,7 +39,7 @@ export function usePushPromptEligible(): boolean {
       notDismissed = !isNaN(dismissedAt) && Date.now() - dismissedAt > sevenDaysMs;
     }
 
-    const shouldShow = count >= 2 && permissionDefault && notDismissed && tourCompleted && hasServiceWorker;
+    const shouldShow = count >= 1 && permissionDefault && notDismissed && tourCompleted && hasServiceWorker;
 
     if (!shouldShow) return;
 
