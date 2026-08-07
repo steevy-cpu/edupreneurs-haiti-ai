@@ -44,11 +44,17 @@ const computeDisplayOrder = (haitiDate: string, totalWords: number): number => {
 const truncate = (s: string, max = 90) =>
   s.length > max ? s.slice(0, max - 1).trimEnd() + '…' : s;
 
+/** Options carry correctness structurally — never resolved by string comparison,
+ *  since two truncated definitions can collide. */
+interface QuizOption {
+  text: string;
+  isCorrect: boolean;
+}
+
 interface QuizData {
   word: string;
   phonetic: string | null;
-  options: string[];
-  correctIndex: number;
+  options: QuizOption[];
 }
 
 interface OnboardingFirstQuizProps {
