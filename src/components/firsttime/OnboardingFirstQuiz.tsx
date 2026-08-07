@@ -72,6 +72,9 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
   const finish = useCallback(() => {
     if (finishedRef.current) return;
     finishedRef.current = true;
+    // Release the streak-modal suppression shortly after we leave this screen so a
+    // later real milestone in the same session still celebrates.
+    setTimeout(() => sessionStorage.removeItem('suppress-streak-milestone-modal'), 10_000);
     onFinish();
   }, [onFinish]);
 
