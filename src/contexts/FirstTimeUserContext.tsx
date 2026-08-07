@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSessionAuth } from '@/contexts/SessionAuthContext';
+import { FREE_ACCESS_MODE } from '@/config/access';
 
 // Map tour step index to nav icon path for mobile highlighting.
 const TOUR_STEP_NAV_PATHS: Record<number, string | null> = {
@@ -160,8 +161,12 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
         // Track pending_gift status so OnboardingQuiz can show waiting UI
         setIsPendingGift(profile?.subscription_status === 'pending_gift');
 
-        // Skip onboarding if subscription is not active (allow pending_gift through)
-        if (!profile?.has_free_access && profile?.subscription_status !== 'pending_gift') {
+        // Skip onboarding if subscription is not active (allow pending_gift through).
+        // During FREE_ACCESS_MODE the raw DB entitlement columns are stale (most users are
+        // 'expired' / has_free_access=false) while useSubscription forces isActive=true, so
+        // reading them here would silently block onboarding. Must stay in sync with the
+        // override in src/hooks/useSubscription.ts.
+        if (!FREE_ACCESS_MODE && !profile?.has_free_access && profile?.subscription_status !== 'pending_gift') {
           const isActive = profile?.subscription_status === 'active'
             && profile?.subscription_end_date
             && new Date(profile.subscription_end_date) > new Date();

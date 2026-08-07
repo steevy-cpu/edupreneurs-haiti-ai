@@ -302,7 +302,13 @@ export const AIAvatarGenerator = ({
     setGeneratedImage(null);
     setGenerationFailed(false);
     try {
-      const { data, error } = await supabase.functions.invoke("generate-custom-avatar", {
+      // 60s ceiling: on 3G the invoke can hang indefinitely and leave the student
+      // staring at a spinner with no way forward.
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60_000);
+      let data: any, error: any;
+      try {
+        ({ data, error } = await supabase.functions.invoke("generate-custom-avatar", {
         body: {
           gender,
           style: selectedStyle,
@@ -317,7 +323,19 @@ export const AIAvatarGenerator = ({
           background: selectedBackground,
           specialEffect: selectedEffect,
         },
-      });
+        // Forwarded to fetch so the request is actually cancelled on timeout.
+        signal: controller.signal,
+        }));
+      } catch (invokeErr) {
+        if (controller.signal.aborted) {
+          const t = new Error("timeout") as Error & { code?: string };
+          t.code = "timeout";
+          throw t;
+        }
+        throw invokeErr;
+      } finally {
+        clearTimeout(timeoutId);
+      }
       if (error) {
         // invoke() collapses every non-2xx into a generic message — read the real
         // body so we can tell throttling apart from an exhausted quota.
@@ -343,7 +361,11 @@ export const AIAvatarGenerator = ({
     } catch (error) {
       console.error("Error generating avatar:", error);
       const err = error as { code?: string; hoursRemaining?: number };
-      if (err?.code === "cooldown_active") {
+      if (err?.code === "timeout") {
+        toast.error("La génération prend trop de temps. Réessaie ou passe cette étape.");
+        // In onboarding, surface the retry/skip UI so the student is never stuck.
+        if (isOnboarding) setGenerationFailed(true);
+      } else if (err?.code === "cooldown_active") {
         // Server-side cooldown — tell the student exactly when they can retry.
         const hours = err.hoursRemaining ?? 72;
         const label = hours >= 24 ? `${Math.ceil(hours / 24)} jour(s)` : `${hours} heure(s)`;
