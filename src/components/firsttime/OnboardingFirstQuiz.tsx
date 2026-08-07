@@ -240,7 +240,7 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
                 onClick={() => handleAnswer(i)}
                 className="w-full rounded-xl border border-white/25 bg-white/10 px-4 py-3 text-left text-sm text-white hover:bg-white/20 active:scale-[0.99] transition"
               >
-                {opt}
+                {opt.text}
               </button>
             ))}
           </div>
