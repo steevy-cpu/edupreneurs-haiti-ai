@@ -6,6 +6,8 @@
 
 import { useState, useEffect } from 'react';
 import { useFirstTimeUser } from '@/contexts/FirstTimeUserContext';
+import { isPushPromptDismissed } from './usePushHintVisible';
+
 
 /**
  * Returns true when all conditions are met after a 3s delay:
@@ -29,17 +31,11 @@ export function usePushPromptEligible(): boolean {
     const permissionDefault = 'Notification' in window && Notification.permission === 'default';
     const hasServiceWorker = 'serviceWorker' in navigator;
 
-    // 7-day re-prompt logic: timestamp = soft dismiss, 'permanent' = never show again
-    const dismissed = localStorage.getItem('push_prompt_dismissed');
-    let notDismissed = !dismissed;
-    if (dismissed && dismissed !== 'permanent') {
-      const dismissedAt = parseInt(dismissed, 10);
-      const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-      // NaN from legacy 'true' values → treated as permanent (safe default)
-      notDismissed = !isNaN(dismissedAt) && Date.now() - dismissedAt > sevenDaysMs;
-    }
+    // Shared interpretation: timestamp = 7-day backoff, 'permanent' = never again
+    const notDismissed = !isPushPromptDismissed();
 
     const shouldShow = count >= 1 && permissionDefault && notDismissed && tourCompleted && hasServiceWorker;
+
 
     if (!shouldShow) return;
 
