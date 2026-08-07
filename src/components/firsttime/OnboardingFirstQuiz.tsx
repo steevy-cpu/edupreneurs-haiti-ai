@@ -17,8 +17,14 @@ import { GoldBadge } from '@/components/shared/GoldBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { celebrateFirstGold } from '@/hooks/useFirstGoldCelebration';
 import { useNetworkAwareAnimations } from '@/hooks/useNetworkAwareAnimations';
+import { useJudeVoice } from '@/hooks/useJudeVoice';
 
 const ericCelebrating = '/images/eric-celebrating-400w.webp';
+
+/** Static reaction lines — same text for every student, so each caches once in
+ *  Storage and is instant afterwards (critical on 3G). */
+const VOICE_CORRECT = "Bravo, c'est exactement ça! Tu commences très fort.";
+const VOICE_ENCOURAGE = "Pas grave, c'est comme ça qu'on apprend. Tu viens de découvrir un nouveau mot.";
 
 /** Gold granted for completing the first quiz.
  *  Sits between the per-activity award (1) and a full lesson quiz (score + 50):
