@@ -50,6 +50,9 @@ function lazyWithRetry<T extends ComponentType<unknown>>(
 
 // Lazy load all pages for better 3G performance
 const Index = lazy(() => import("./pages/Index"));
+// OAuth consent screen for external agent/MCP clients (Supabase OAuth 2.1 authorization server)
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
+
 
 // Auth routes - Route-based architecture for persistent flow state
 const AuthLayout = lazy(() => import("./auth/layout/AuthLayout").then(m => ({ default: m.AuthLayout })));
@@ -182,6 +185,13 @@ const App = () => (
                             <Index />
                           </Suspense>
                         } />
+                        {/* OAuth consent — public route; it redirects to login itself when signed out */}
+                        <Route path="/.lovable/oauth/consent" element={
+                          <Suspense fallback={<GenericPageSkeleton />}>
+                            <OAuthConsent />
+                          </Suspense>
+                        } />
+
                         <Route path="/blog" element={
                           <Suspense fallback={<GenericPageSkeleton />}>
                             <Blog />
