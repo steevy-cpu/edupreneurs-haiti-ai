@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, lazy, Suspense } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useJudeAudio } from '@/contexts/JudeAudioContext';
 import { supabase } from '@/integrations/supabase/client';
+const OnboardingFirstQuiz = lazy(() => import('@/components/firsttime/OnboardingFirstQuiz'));
 
 interface TourStep {
   path: string;
@@ -24,20 +25,15 @@ interface TourStep {
 
 const tourSteps: TourStep[] = [
   {
+    // Merged: KPI cards + music FAB — both live on /dashboard, one step instead of two.
     path: "/dashboard",
-    title: "Votre tableau de bord 📊",
-    description: "Suivez votre progression, vos pièces d'or gagnées et vos statistiques d'apprentissage. Tout est centralisé ici!",
+    title: "Ton tableau de bord 📊",
+    description: "Ici tu suis ta progression, tes pièces d'or et tes statistiques. Et pendant que tu révises, tu peux lancer de la musique d'étude avec le bouton flottant en bas à droite! 🎵",
     target: "[data-tour='kpi-cards']",
   },
   {
-    path: "/dashboard",
-    title: "Musique d'étude 🎵",
-    description: "Tu peux écouter de la musique pendant que tu étudies! 🎵 Clique sur ce bouton pour ouvrir le lecteur et choisir ta playlist préférée.",
-    target: "[data-tour='music-fab']",
-  },
-  {
     path: "/matieres",
-    title: "Vos matières 📚",
+    title: "Tes matières 📚",
     description: "Accédez aux cours de votre niveau. Chaque leçon a des résumés clairs, des exercices et des quiz interactifs!",
     target: "[data-tour='subject-grid']",
   },
@@ -46,12 +42,6 @@ const tourSteps: TourStep[] = [
     title: "Fil d'actualité 📱",
     description: "Partagez vos succès, posez des questions et connectez-vous avec d'autres étudiants de la communauté!",
     target: "[data-tour='feed-content']",
-  },
-  {
-    path: "/leaderboard",
-    title: "Classement 🏆",
-    description: "Voyez les meilleurs apprenants et leur progression. Gagnez des pièces d'or en étudiant et montez dans le classement!",
-    target: "[data-tour='leaderboard-list']",
   },
   {
     path: "/passion-discovery",
@@ -65,25 +55,20 @@ const tourSteps: TourStep[] = [
     description: "Discutez en privé avec d'autres étudiants et formez des groupes d'étude pour réviser ensemble!",
     target: "[data-tour='community-list']",
   },
-  {
-    path: "/settings",
-    title: "Votre profil ⚙️",
-    description: "Personnalisez votre compte, changez votre avatar et gérez vos préférences. C'est votre espace!",
-    target: "[data-tour='settings-content']",
-  },
 ];
 
 /** Clean text versions of each tour step for TTS — no emojis, natural speech */
 const TOUR_VOICE_TEXTS: string[] = [
-  "Votre tableau de bord. Suivez votre progression, vos pièces d'or gagnées et vos statistiques d'apprentissage.",
-  "Musique d'étude. Tu peux écouter de la musique pendant que tu étudies.",
-  "Vos matières. Accédez aux cours de votre niveau. Chaque leçon a des résumés clairs, des exercices et des quiz interactifs!",
+  "Ton tableau de bord. Tu suis ici ta progression et tes pièces d'or. Tu peux aussi lancer de la musique d'étude pendant que tu révises.",
+  "Tes matières. Accédez aux cours de votre niveau. Chaque leçon a des résumés clairs, des exercices et des quiz interactifs!",
   "Fil d'actualité. Partagez vos succès, posez des questions et connectez-vous avec d'autres étudiants.",
-  "Classement. Voyez les meilleurs apprenants et leur progression. Gagnez des pièces d'or en étudiant!",
   "Découverte des passions. Explorez la musique, les arts, les échecs et le développement personnel.",
   "Messages. Discutez en privé avec d'autres étudiants et formez des groupes d'étude.",
-  "Votre profil. Personnalisez votre compte, changez votre avatar et gérez vos préférences.",
 ];
+
+/** Voice cache prefix. Bumped to v2 because step indices now map to different text —
+ *  the old `onboarding/tour-step-${i}` clips would play the wrong line. */
+const TOUR_VOICE_KEY_PREFIX = 'onboarding/tour-v2-step-';
 
 /** Spotlight rect state */
 interface SpotlightRect {
@@ -112,6 +97,8 @@ const FirstTimeUserTour = () => {
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
   // 3D: celebration overlay
   const [showCelebration, setShowCelebration] = useState(false);
+  // True once the quiz question is built — hides the static celebration text
+  const [quizVisible, setQuizVisible] = useState(false);
   /** FIX 7: dynamic typing speed — syncs typewriter with voice clip duration */
   const [typingSpeed, setTypingSpeed] = useState(50);
   const [isSpeedReady, setIsSpeedReady] = useState(false);
@@ -165,7 +152,7 @@ const FirstTimeUserTour = () => {
     // Fire-and-forget parallel fetches — populate preloadedTourUrls as each resolves
     TOUR_VOICE_TEXTS.forEach((text, i) => {
       supabase.functions.invoke('generate-jude-voice', {
-        body: { text, storageKey: `onboarding/tour-step-${i}`, context: 'onboarding' }
+        body: { text, storageKey: `${TOUR_VOICE_KEY_PREFIX}${i}`, context: 'onboarding' }
       }).then(({ data }) => {
         if (data?.url) {
           setPreloadedTourUrls(prev => new Map(prev).set(i, data.url));
@@ -181,10 +168,8 @@ const FirstTimeUserTour = () => {
   const EAGER_PRELOAD: Record<string, () => Promise<unknown>> = {
     '/matieres':          () => import('@/pages/Matieres'),
     '/feed':              () => import('@/pages/Feed'),
-    '/leaderboard':       () => import('@/pages/Leaderboard'),
     '/passion-discovery': () => import('@/pages/PassionDiscovery'),
     '/community':         () => import('@/pages/Community'),
-    '/settings':          () => import('@/pages/Settings'),
   };
 
   const currentStep = tourSteps[firstTimeUser.tourStep];
@@ -321,7 +306,7 @@ const FirstTimeUserTour = () => {
       supabase.functions.invoke('generate-jude-voice', {
         body: {
           text,
-          storageKey: `onboarding/tour-step-${firstTimeUser.tourStep}`,
+          storageKey: `${TOUR_VOICE_KEY_PREFIX}${firstTimeUser.tourStep}`,
           context: 'onboarding'
         }
       }).then(({ data }) => {
@@ -347,8 +332,8 @@ const FirstTimeUserTour = () => {
     if (!showCelebration || isMuted) return;
     supabase.functions.invoke('generate-jude-voice', {
       body: {
-        text: "Tu es prêt! Bienvenue dans la famille Edupreneurs!",
-        storageKey: 'onboarding/tour-celebration',
+        text: "Tu es prêt! Une dernière chose: le mot du jour t'attend.",
+        storageKey: 'onboarding/tour-v2-celebration',
         context: 'onboarding'
       }
     }).then(({ data }) => {
@@ -382,18 +367,18 @@ const FirstTimeUserTour = () => {
     }
 
     if (isLastStep) {
-      // 3D: celebration before completing
+      // Finale: celebration shell hosts the interactive first-quiz moment.
+      // No timer — the student advances by tapping.
       setShowCelebration(true);
-      confetti({
-        particleCount: 120,
-        spread: 80,
-        origin: { y: 0.5 },
-        colors: ['#7c3aed', '#a78bfa', '#f59e0b', '#10b981', '#ec4899'],
-      });
-      setTimeout(() => {
-        setShowCelebration(false);
-        firstTimeUser.completeTour();
-      }, 2500);
+      // Gate confetti: many students are on low-end 2018 Androids.
+      if (shouldAnimate) {
+        confetti({
+          particleCount: 120,
+          spread: 80,
+          origin: { y: 0.5 },
+          colors: ['#7c3aed', '#a78bfa', '#f59e0b', '#10b981', '#ec4899'],
+        });
+      }
     } else {
       firstTimeUser.nextTourStep();
     }
@@ -401,6 +386,18 @@ const FirstTimeUserTour = () => {
 
   const handleSkip = () => {
     firstTimeUser.skipTour();
+  };
+
+  /** Called when the quiz finale is over (answered, skipped, or unavailable).
+   *  completeTour() alone leaves the student stranded, so we route them somewhere
+   *  actionable. UNIV/NONE grades have no subject content → dashboard. */
+  const handleFinaleDone = async () => {
+    setShowCelebration(false);
+    stop();
+    await firstTimeUser.completeTour();
+    const grade = firstTimeUser.userGrade;
+    const hasSubjects = !!grade && grade !== 'UNIV' && grade !== 'NONE';
+    navigate(hasSubjects ? '/matieres' : '/dashboard');
   };
 
   // Custom description for matieres page
@@ -445,32 +442,43 @@ const FirstTimeUserTour = () => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[1010] flex flex-col items-center justify-center bg-gradient-to-br from-black/80 via-primary/20 to-black/80"
           >
-            <motion.div
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", damping: 15, stiffness: 200 }}
-              className="flex flex-col items-center gap-6 text-center px-8"
-            >
-              <img
-                src={ericCelebrating}
-                srcSet="/images/eric-celebrating-400w.webp 400w, /images/eric-celebrating-600w.webp 600w, /images/eric-celebrating-800w.webp 800w"
-                sizes="160px"
-                alt="Jude celebrating"
-                className="w-40 h-40 object-contain drop-shadow-2xl"
-                loading="lazy"
+            {!quizVisible && (
+              <motion.div
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", damping: 15, stiffness: 200 }}
+                className="flex flex-col items-center gap-6 text-center px-8"
+              >
+                <img
+                  src={ericCelebrating}
+                  srcSet="/images/eric-celebrating-400w.webp 400w, /images/eric-celebrating-600w.webp 600w, /images/eric-celebrating-800w.webp 800w"
+                  sizes="160px"
+                  alt="Jude celebrating"
+                  className="w-40 h-40 object-contain drop-shadow-2xl"
+                  loading="lazy"
+                />
+                <div className="space-y-2">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white">
+                    🎉 Tu es prêt(e)!
+                  </h2>
+                  <p className="text-lg text-white/90 font-medium">
+                    Bienvenue dans la famille Edupreneurs!
+                  </p>
+                  <p className="text-sm text-white/60">
+                    Ta progression commence maintenant.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Interactive first-success quiz — self-skips if the word can't be fetched */}
+            <Suspense fallback={null}>
+              <OnboardingFirstQuiz
+                userId={firstTimeUser.userId}
+                onReady={() => setQuizVisible(true)}
+                onFinish={handleFinaleDone}
               />
-              <div className="space-y-2">
-                <h2 className="text-2xl sm:text-3xl font-bold text-white">
-                  🎉 Tu es prêt(e)!
-                </h2>
-                <p className="text-lg text-white/90 font-medium">
-                  Bienvenue dans la famille Edupreneurs!
-                </p>
-                <p className="text-sm text-white/60">
-                  Ta progression commence maintenant.
-                </p>
-              </div>
-            </motion.div>
+            </Suspense>
           </motion.div>
         )}
       </AnimatePresence>
@@ -479,10 +487,7 @@ const FirstTimeUserTour = () => {
       {!showCelebration && (
         <div className={[
           "fixed left-4 right-4 sm:left-auto sm:w-96 z-[1004] animate-slide-up",
-          // Step 1 = music FAB (bottom-right) → anchor to top so card doesn't cover the FAB
-          firstTimeUser.tourStep === 1
-            ? "top-4 sm:right-4"
-            : "bottom-20 sm:right-4 sm:bottom-4",
+          "bottom-20 sm:right-4 sm:bottom-4",
         ].join(' ')}>
           <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
             {/* Progress bar */}
