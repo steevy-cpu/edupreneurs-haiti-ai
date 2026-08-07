@@ -25,11 +25,17 @@ interface TourStep {
 
 const tourSteps: TourStep[] = [
   {
-    // Merged: KPI cards + music FAB — both live on /dashboard, one step instead of two.
     path: "/dashboard",
     title: "Ton tableau de bord 📊",
-    description: "Ici tu suis ta progression, tes pièces d'or et tes statistiques. Et pendant que tu révises, tu peux lancer de la musique d'étude avec le bouton flottant en bas à droite! 🎵",
+    description: "Ici tu suis ta progression, tes pièces d'or et tes statistiques en un coup d'œil!",
     target: "[data-tour='kpi-cards']",
+  },
+  {
+    // Own step again — the music beat is part of the tour's rhythm.
+    path: "/dashboard",
+    title: "Un peu de musique? 🎵",
+    description: "Mais avant de continuer, mettons un peu de musique. Ce bouton en bas à droite lance de la musique d'étude pour t'aider à te concentrer pendant tes révisions.",
+    target: "[data-tour='music-fab']",
   },
   {
     path: "/matieres",
@@ -59,16 +65,17 @@ const tourSteps: TourStep[] = [
 
 /** Clean text versions of each tour step for TTS — no emojis, natural speech */
 const TOUR_VOICE_TEXTS: string[] = [
-  "Ton tableau de bord. Tu suis ici ta progression et tes pièces d'or. Tu peux aussi lancer de la musique d'étude pendant que tu révises.",
+  "Ton tableau de bord. Tu suis ici ta progression, tes pièces d'or et tes statistiques en un coup d'œil.",
+  "Mais avant de continuer, mettons un peu de musique. Ce bouton en bas à droite lance de la musique d'étude pour t'aider à te concentrer pendant tes révisions.",
   "Tes matières. Accédez aux cours de votre niveau. Chaque leçon a des résumés clairs, des exercices et des quiz interactifs!",
   "Fil d'actualité. Partagez vos succès, posez des questions et connectez-vous avec d'autres étudiants.",
   "Découverte des passions. Explorez la musique, les arts, les échecs et le développement personnel.",
   "Messages. Discutez en privé avec d'autres étudiants et formez des groupes d'étude.",
 ];
 
-/** Voice cache prefix. Bumped to v2 because step indices now map to different text —
- *  the old `onboarding/tour-step-${i}` clips would play the wrong line. */
-const TOUR_VOICE_KEY_PREFIX = 'onboarding/tour-v2-step-';
+/** Voice cache prefix. Bumped to v3 — v2 keys may hold partial/failed artifacts and
+ *  step indices shifted again when the music step was restored. */
+const TOUR_VOICE_KEY_PREFIX = 'onboarding/tour-v3-step-';
 
 /** Spotlight rect state */
 interface SpotlightRect {
