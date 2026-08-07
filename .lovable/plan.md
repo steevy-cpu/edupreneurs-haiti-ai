@@ -129,6 +129,17 @@ WWW-Authenticate: Bearer realm="mcp", resource_metadata=".../.well-known/oauth-p
 
 Ruled out earlier and still ruled out: gateway `verify_jwt` (`supabase/config.toml:249-253` sets it false, and our handler answers), CORS/`Mcp-Session-Id`/`Mcp-Protocol-Version` allowlist, and an empty tool array (static six at `supabase/functions/mcp/index.ts:245`).
 
-## Recommended next action (not applied)
+## Recommended next action (not applied — awaiting approval)
 
-Run `supabase--migrate_signing_keys` (production environment) from the Lovable side, re-check that `/auth/v1/.well-known/jwks.json` publishes an ES256 key, then reconnect the connector in Claude and confirm `tools/list` returns six tools. No change to `src/lib/mcp/**` is warranted — no code-only workaround exists in this package version.
+Nothing runs until you approve. When approved, in this order:
+
+1. Schedule a low-traffic window (Haiti overnight) — the change is effectively irreversible for the owner (section 4, rollback a).
+2. Capture a pre-migration access + refresh token (checklist step 0).
+3. Run `supabase--migrate_signing_keys` (no parameters — the schema accepts none).
+4. Work the 6-step verification checklist. Stop and report on any FAIL, especially step 2.
+5. Only then reconnect the connector in Claude. If it fails with "OAuth client claim is required", follow the Addition-4 branch — which does not begin by disabling the flag.
+
+No change to `src/lib/mcp/**` is warranted today; no code-only workaround exists in this package version.
+
+**Open question before we start:** I need a disposable test account (email/password) for checklist steps 4-5, and a test Google account if you want step 6 covered fully rather than partially. Without them I can run steps 0-3 and a preview-session variant of step 5, and I will label steps 4 and 6 as partial coverage.
+
