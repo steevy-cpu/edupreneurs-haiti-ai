@@ -216,52 +216,46 @@ serve(async (req) => {
 
     console.log(`📖 Today's word: "${todaysWord.word}" [${todaysWord.phonetic}]`);
 
-    // Fetch all users with push subscriptions
-    const { data: subscriptions, error: subError } = await supabase
-      .from('push_subscriptions')
-      .select('user_id')
-      .order('user_id');
+    // ── Audience: EVERY user gets the in-app notification; push is a bonus ──
+    // Previously the function only targeted users with a push subscription, so
+    // the ~90% of users without one never even saw the bell notification.
+    const { data: allProfiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('user_id');
 
-    if (subError) {
-      console.error('Error fetching subscriptions:', subError);
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError);
       return new Response(
-        JSON.stringify({ error: 'Failed to fetch subscriptions' }),
+        JSON.stringify({ error: 'Failed to fetch users' }),
         { status: 500, headers: responseHeaders }
       );
     }
 
-    const uniqueUserIds = [...new Set(subscriptions?.map(s => s.user_id) || [])];
-    console.log(`👥 Found ${uniqueUserIds.length} users with push subscriptions`);
+    const allUserIds = [...new Set((allProfiles || []).map((p: any) => p.user_id).filter(Boolean))];
 
-    if (uniqueUserIds.length === 0) {
-      // Still record the send to prevent retry
-      await recordSendDate(supabase, haitiDate, todaysWord.word);
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: 'No users with push subscriptions',
-          word: todaysWord.word,
-          sentCount: 0
-        }),
-        { headers: responseHeaders }
-      );
+    const { data: subscriptions, error: subError } = await supabase
+      .from('push_subscriptions')
+      .select('user_id');
+
+    if (subError) {
+      console.error('Error fetching subscriptions:', subError);
     }
 
-    // Check notification preferences for word_of_day category (opt-out model)
+    const pushUserIds = new Set((subscriptions || []).map((s: any) => s.user_id));
+    console.log(`👥 ${allUserIds.length} users total, ${pushUserIds.size} with push subscriptions`);
+
+    // Opt-out model: only an explicit enabled=false row excludes a user.
+    // Fetched without an .in() filter to avoid URL-length limits as users grow.
     const { data: preferences } = await supabase
       .from('notification_preferences')
       .select('user_id, enabled')
-      .eq('category', 'word_of_day')
-      .in('user_id', uniqueUserIds);
+      .eq('category', 'word_of_day');
 
-    // Absence of a preference defaults to enabled
-    const prefMap = new Map<string, boolean>();
-    preferences?.forEach(p => prefMap.set(p.user_id, p.enabled));
+    const optedOut = new Set(
+      (preferences || []).filter((p: any) => p.enabled === false).map((p: any) => p.user_id)
+    );
 
-    const eligibleUserIds = uniqueUserIds.filter(userId => {
-      const pref = prefMap.get(userId);
-      return pref === undefined || pref === true;
-    });
+    const eligibleUserIds = allUserIds.filter((userId: string) => !optedOut.has(userId));
 
     console.log(`✅ ${eligibleUserIds.length} users eligible for word_of_day notification`);
 
@@ -278,13 +272,40 @@ serve(async (req) => {
       );
     }
 
+    // ── In-app notifications (bell) for every eligible user ────────────────
+    const notificationBody = `[${todaysWord.phonetic}] - ${todaysWord.definition.substring(0, 100)}${todaysWord.definition.length > 100 ? '...' : ''}`;
+    let inAppInserted = 0;
+    const INSERT_CHUNK = 200;
+    for (let i = 0; i < eligibleUserIds.length; i += INSERT_CHUNK) {
+      const rows = eligibleUserIds.slice(i, i + INSERT_CHUNK).map((userId: string) => ({
+        user_id: userId,
+        actor_id: JUDE_USER_ID, // Jude is the sender of system-wide notifications
+        type: 'word_of_day',
+        content: `📖 Mot du jour: ${todaysWord.word} — ${notificationBody}`,
+        read: false,
+      }));
+      const { error: insertError, count } = await supabase
+        .from('notifications')
+        .insert(rows, { count: 'exact' });
+      if (insertError) {
+        console.error('In-app notification insert failed:', insertError.message);
+      } else {
+        inAppInserted += count ?? rows.length;
+      }
+    }
+    console.log(`🔔 ${inAppInserted} in-app notifications inserted`);
+
+    // ── Web push, only to eligible users that actually have a subscription ──
+    const pushTargets = eligibleUserIds.filter((userId: string) => pushUserIds.has(userId));
+
     // Build notification payload
     const notificationPayload = {
       title: `📖 Mot du jour: ${todaysWord.word}`,
-      body: `[${todaysWord.phonetic}] - ${todaysWord.definition.substring(0, 100)}${todaysWord.definition.length > 100 ? '...' : ''}`,
+      body: notificationBody,
       type: 'word_of_day',
       url: '/dashboard',
     };
+
 
     // Send in batches of 10 with a short delay to avoid rate limits
     const BATCH_SIZE = 10;
