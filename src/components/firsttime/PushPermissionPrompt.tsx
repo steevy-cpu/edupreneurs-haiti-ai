@@ -41,11 +41,21 @@ export default function PushPermissionPrompt({ userId, onDismiss }: PushPermissi
     setTimeout(onDismiss, 400);
   }, [onDismiss]);
 
-  // Auto-dismiss after 15 seconds of no action
+  /** Timeout hide — the student never decided, so do NOT persist a dismissal.
+   *  The ask simply comes back next session instead of starting the 7-day backoff. */
+  const handleAutoHide = useCallback(() => {
+    if (dismissedRef.current) return;
+    dismissedRef.current = true;
+    setVisible(false);
+    setTimeout(onDismiss, 400);
+  }, [onDismiss]);
+
+  // Auto-hide after 15 seconds of no action (no dismissal persisted)
   useEffect(() => {
-    const timer = setTimeout(handleDismiss, AUTO_DISMISS_MS);
+    const timer = setTimeout(handleAutoHide, AUTO_DISMISS_MS);
     return () => clearTimeout(timer);
-  }, [handleDismiss]);
+  }, [handleAutoHide]);
+
 
   /** Request push permission via existing infrastructure */
   const handleActivate = useCallback(async () => {
