@@ -171,7 +171,9 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
       });
       if (error) throw error;
 
-      await supabase.from('lesson_completions').upsert(
+      // Written after the gold RPC; if this fails the student keeps the gold but the
+      // guard row is missing, so log it distinctly rather than swallowing it below.
+      const { error: guardError } = await supabase.from('lesson_completions').upsert(
         {
           user_id: userId,
           lesson_slug: ONBOARDING_QUIZ_SLUG,
@@ -181,6 +183,9 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
         },
         { onConflict: 'user_id,lesson_slug' }
       );
+      if (guardError) {
+        console.error('[OnboardingFirstQuiz] anti-farm guard row NOT written:', guardError);
+      }
 
       setAwarded(true);
       celebrateFirstGold();
