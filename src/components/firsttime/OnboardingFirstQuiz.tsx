@@ -65,6 +65,9 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
   const [selected, setSelected] = useState<number | null>(null);
   const [awarded, setAwarded] = useState(false);
   const finishedRef = useRef(false);
+  // Ref-stable so an inline parent callback can't retrigger the fetch effect
+  const onReadyRef = useRef(onReady);
+  onReadyRef.current = onReady;
 
   const finish = useCallback(() => {
     if (finishedRef.current) return;
@@ -122,7 +125,7 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
           options,
           correctIndex: options.indexOf(correct),
         });
-        onReady?.();
+        onReadyRef.current?.();
       } catch {
         // Never block tour completion on the quiz.
         finishSoon();
@@ -131,7 +134,7 @@ export default function OnboardingFirstQuiz({ userId, onFinish, onReady }: Onboa
 
     load();
     return () => { cancelled = true; };
-  }, [finish, onReady]);
+  }, [finish]);
 
   /** Award gold for participating. Guarded by a durable lesson_completions row. */
   const awardGold = useCallback(async () => {

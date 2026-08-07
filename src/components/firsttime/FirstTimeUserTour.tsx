@@ -332,8 +332,8 @@ const FirstTimeUserTour = () => {
     if (!showCelebration || isMuted) return;
     supabase.functions.invoke('generate-jude-voice', {
       body: {
-        text: "Tu es prêt! Bienvenue dans la famille Edupreneurs!",
-        storageKey: 'onboarding/tour-celebration',
+        text: "Tu es prêt! Une dernière chose: le mot du jour t'attend.",
+        storageKey: 'onboarding/tour-v2-celebration',
         context: 'onboarding'
       }
     }).then(({ data }) => {

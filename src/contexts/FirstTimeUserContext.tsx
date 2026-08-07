@@ -8,13 +8,10 @@ import { FREE_ACCESS_MODE } from '@/config/access';
 // Map tour step index to nav icon path for mobile highlighting.
 const TOUR_STEP_NAV_PATHS: Record<number, string | null> = {
   0: '/dashboard',
-  1: '/dashboard',
-  2: '/matieres',
-  3: '/feed',
-  4: null,
-  5: null,
-  6: '/community',
-  7: null,
+  1: '/matieres',
+  2: '/feed',
+  3: null, // /passion-discovery has no bottom-nav icon
+  4: '/community',
 };
 
 interface FirstTimeUserContextType {

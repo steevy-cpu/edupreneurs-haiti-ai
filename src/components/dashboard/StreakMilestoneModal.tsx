@@ -17,7 +17,11 @@ import { STREAK_MILESTONES } from '@/lib/streakConstants';
 export function StreakMilestoneModal() {
   const { pendingMilestone, clearPendingMilestone } = useStreak();
 
-  if (!pendingMilestone) return null;
+  // Suppressed during the onboarding first-quiz moment so celebrations don't stack.
+  const suppressed = typeof window !== 'undefined'
+    && sessionStorage.getItem('suppress-streak-milestone-modal') === 'true';
+
+  if (!pendingMilestone || suppressed) return null;
 
   return (
     <AnimatePresence>
