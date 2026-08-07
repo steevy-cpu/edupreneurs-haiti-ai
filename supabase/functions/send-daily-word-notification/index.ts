@@ -359,10 +359,13 @@ serve(async (req) => {
         word: todaysWord.word,
         phonetic: todaysWord.phonetic,
         definition: todaysWord.definition,
-        totalUsers: uniqueUserIds.length,
+        totalUsers: allUserIds.length,
         eligibleUsers: eligibleUserIds.length,
+        inAppInserted,
+        pushTargets: pushTargets.length,
         sentCount: successCount,
         failedCount: failCount
+
       }),
       { headers: responseHeaders }
     );
