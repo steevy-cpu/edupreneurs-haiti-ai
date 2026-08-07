@@ -6,6 +6,8 @@
 
 import { useState, useEffect } from 'react';
 import { useFirstTimeUser } from '@/contexts/FirstTimeUserContext';
+import { isPushPromptDismissed } from './usePushHintVisible';
+
 
 /**
  * Returns true when all conditions are met after a 3s delay:
