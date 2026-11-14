@@ -1,0 +1,2 @@
+- Orientation & Métiers catalogue is static (src/data/metiersData.ts) and diagnostic answers persist in localStorage — zero network cost on 3G; move to a DB table only when editors need to manage métiers.
+- Pages open Jude with a pre-filled question via `window.dispatchEvent(new CustomEvent("jude:open", { detail: { prompt } }))` — keeps the shell chat decoupled without a new provider.

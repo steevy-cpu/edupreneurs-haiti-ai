@@ -6,6 +6,7 @@
  */
 
 import { 
+  Briefcase,
   Home, 
   BookOpen, 
   Users, 
@@ -102,6 +103,7 @@ export const SIDEBAR_NAVIGATION: NavSection[] = [
       { to: '/leaderboard', icon: Trophy, label: 'Classement' },
       { to: '/affiliations', icon: Lock, label: 'Affiliations', badge: 'soon' },
       { to: '/passion-discovery', icon: Palette, label: 'Mes Passions' },
+      { to: '/orientation', icon: Briefcase, label: 'Orientation & Métiers' },
       { to: '/settings', icon: Settings, label: 'Paramètres' },
     ]
   },

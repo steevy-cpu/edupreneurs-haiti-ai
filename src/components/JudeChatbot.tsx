@@ -100,6 +100,17 @@ export const JudeChatbot = () => {
   const [userNickname, setUserNickname] = useState<string>("");
   const [userAvatarUrl, setUserAvatarUrl] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Allow other pages (e.g. Fiche Métier) to open Jude with a pre-filled question.
+  // Window event keeps it decoupled from the shell — no new context provider needed.
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      const prompt = (e as CustomEvent<{ prompt?: string }>).detail?.prompt;
+      setIsOpen(true);
+      if (prompt) setInput(prompt); // pre-fill only; student chooses to send
+    };
+    window.addEventListener('jude:open', onOpen);
+    return () => window.removeEventListener('jude:open', onOpen);
+  }, []);
   const { toast } = useToast();
   const { isSlowConnection, shouldShowAnimations, shouldShowBlur } = useNetworkAwareLoading();
   // Fix 2: Mobile tooltip that shows once on first visit

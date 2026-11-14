@@ -101,6 +101,7 @@ const DemoLessonPage = lazy(() => import("./pages/DemoLessonPage"));
 
 // Use lazyWithRetry for routes that have been experiencing chunk load failures
 const PassionDiscovery = lazyWithRetry(() => import("./pages/PassionDiscovery"));
+const Orientation = lazyWithRetry(() => import("./pages/Orientation"));
 const ChessGame = lazy(() => import("./pages/ChessGame"));
 const ChessMultiplayerLobby = lazy(() => import("./pages/ChessMultiplayerLobby"));
 const ChessMultiplayerGame = lazy(() => import("./pages/ChessMultiplayerGame"));
@@ -463,6 +464,11 @@ const App = () => (
                           <Route path="/passion-discovery" element={
                             <Suspense fallback={<GenericPageSkeleton />}>
                               <PassionDiscovery />
+                            </Suspense>
+                          } />
+                          <Route path="/orientation" element={
+                            <Suspense fallback={<GenericPageSkeleton />}>
+                              <Orientation />
                             </Suspense>
                           } />
                           
