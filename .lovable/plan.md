@@ -1,145 +1,95 @@
-# MCP zero-tools — package-level investigation (read-only)
+# Améliorer Orientation & Métiers
 
-## 1. Auth strategies exported by `@lovable.dev/mcp-js@0.26.1`
+## Objectif
+Transformer la première version en un parcours d’orientation fiable, clair et concret pour les élèves haïtiens, sans alourdir leur connexion ni présenter un test de quatre questions comme un verdict sur leur avenir.
 
-`node_modules/@lovable.dev/mcp-js/dist/index.d.ts:51-56`:
+Le plan concerne uniquement **Orientation & Métiers**. Aucun changement de l’application n’est réalisé avant approbation. Le précédent plan MCP est conservé séparément et reste en attente : aucune migration, modification ou publication MCP n’est autorisée par ce plan.
 
-```ts
-declare const auth: Readonly<{
-  oauth: Readonly<{
-    issuer: typeof issuer;
-  }>;
-}>;
-```
+## Ce qui existe déjà
+- Un questionnaire en quatre étapes, sept domaines, quatorze fiches métiers, trois recommandations et deux alternatives.
+- Un catalogue filtrable par secteur et un bouton ouvrant Jude avec une question préremplie.
+- Un accès dans le menu, sous Profil ; les réponses finales sont conservées sur l’appareil.
 
-**`auth.oauth.issuer` is the only strategy the package exports.** Signature (`index.d.ts:50`): `declare function issuer(options: IssuerOAuthOptions): McpAuthConfig`. It verifies bearer JWTs against the issuer's JWKS.
+## 1. Priorité : fiabiliser les conseils et les résultats
 
-- a) **Symmetric / HS256 verifier — does not exist, and is explicitly forbidden.** `dist/index.js:24`:
-  `if (/^HS\d+$/i.test(algorithm) || algorithm.toLowerCase() === "none") throw new Error(`@lovable.dev/mcp-js: auth.algorithms cannot include "${algorithm}"; this verifier is JWKS-only`);`
-  There is no `secret` option anywhere in the auth types.
-- b) **Custom verifier hook — does not exist.** No `verify`, `verifyToken`, `validate`, or callback field exists in `IssuerOAuthOptionsBase` (`index.d.ts:21-33`) or `McpAuthConfig` (`dist/types-C0Wgm9zp.d.ts:45-85`). There is no way to hand the SDK our own async token validator, so the "call `supabase.auth.getUser(token)` ourselves" idea is not expressible through the package.
-- c) **No-auth / public mode — exists**, by omitting `auth`: `readonly auth?: McpAuthConfig;` (`types-C0Wgm9zp.d.ts:300`). That makes every tool unauthenticated (`ctx.getToken()` returns nothing), which is unusable here — all six tools read per-student RLS data.
-- d) **Static bearer token / API-key mode — does not exist.**
+### Fiches métiers
+- Revoir les quatorze fiches avant d’élargir le catalogue : établissements, durées d’études, conditions d’accès et professions réglementées.
+- Ajouter des sources consultables et une date de vérification aux informations factuelles. Signaler ce qui reste à confirmer ; ne pas présenter une demande « forte » comme un fait sans source.
+- Corriger le repère scolaire : les séries du Nouveau Secondaire concernent NS3–NS4 ; expliquer les sigles et présenter une série comme une piste conseillée, non comme une obligation d’admission.
+- Distinguer formation, qualification professionnelle et exercice autorisé : une formation courte ne donne pas automatiquement accès à tous les postes cités.
 
-## 2. Every `auth.oauth.issuer` option
+### Recommandations
+- Conserver les quatre axes et les poids actuels : intérêts 40, matières 25, style 20, motivation 15.
+- Corriger la normalisation des matières : actuellement, une seule matière choisie et parfaitement compatible ne rapporte que 12,5 points sur 25. Une correspondance complète doit obtenir les 25 points, que l’élève sélectionne une ou deux matières.
+- Clarifier le rôle des intérêts : le code actuel attribue 40 points dès qu’un intérêt correspond ; son commentaire évoque à tort un bonus pour le secteur principal. Garder cette règle pour cette phase et retirer l’ambiguïté.
+- Remplacer les pourcentages affichés par des correspondances descriptives et des raisons concrètes : « Tu as choisi la santé et aider les autres ». Le score interne n’est pas une probabilité de réussite ni un diagnostic psychologique.
+- Conserver trois pistes principales et deux alternatives distinctes. Éviter deux alternatives du même secteur lorsqu’au moins deux secteurs supplémentaires sont disponibles ; expliquer une faible correspondance sans inventer une affinité.
 
-`dist/index.d.ts:20-48` and `dist/types-C0Wgm9zp.d.ts:45-85`:
+**Résultat attendu :** chaque suggestion se comprend, et les conseils non vérifiés ne se présentent plus comme des certitudes.
 
-| Option | Type | Default / behaviour |
+## 2. Sécuriser la sauvegarde et simplifier le questionnaire
+- Valider les réponses sauvegardées avant de les utiliser : structure, valeurs autorisées, limites de choix et questionnaire complet pour afficher des résultats.
+- Sauvegarder aussi la progression pour reprendre un questionnaire interrompu, sans confondre brouillon et résultat terminé.
+- Isoler les réponses par compte sur les téléphones partagés ; ne pas attribuer automatiquement une ancienne sauvegarde non identifiée à l’élève connecté.
+- Prévoir une suppression explicite des réponses et un fonctionnement temporaire si l’appareil refuse la sauvegarde.
+- Afficher le nombre de choix restants et un état clair lorsque le maximum est atteint, au lieu d’ignorer silencieusement un clic.
+- Garder les retours entre étapes sans perdre les réponses ; permettre de modifier les choix depuis les résultats.
+
+**Résultat attendu :** moins de réponses perdues et aucune confusion entre élèves utilisant le même appareil.
+
+## 3. Passer d’une fiche à une action concrète
+- Ajouter à chaque fiche une petite section « Je peux commencer maintenant » : une compétence à travailler et une première activité réaliste, sans achat obligatoire.
+- Relier les compétences aux cours et modules de découverte déjà disponibles, uniquement lorsque leur contenu correspond réellement ; ne pas créer de liens vides.
+- Ajouter des favoris privés sur l’appareil et une comparaison de deux métiers : quotidien, parcours, compétences et matériel nécessaire.
+- Transmettre à Jude le métier et les choix pertinents du questionnaire, sans nom, adresse, téléphone ou autre donnée personnelle ; ne jamais prétendre que Jude garantit une admission ou un emploi.
+- Fermer explicitement la fiche lorsque Jude s’ouvre, plutôt que dépendre d’une détection générale des clics sur les boutons.
+
+**Résultat attendu :** l’élève repart avec une prochaine étape, pas seulement une liste de professions.
+
+## 4. Améliorer l’exploration et la lecture sur téléphone
+- Rendre les fiches, filtres et choix utilisables au clavier et correctement annoncés par les lecteurs d’écran.
+- Ne plus tronquer les intitulés de métiers ; les afficher sur plusieurs lignes si nécessaire.
+- Rechercher sans distinction d’accents, dans les titres, secteurs et mots-clés métiers, avec remise à zéro des filtres quand aucun résultat ne correspond.
+- Présenter les six rubriques avec une hiérarchie lisible et des sections repliables sur téléphone ; conserver les couleurs et les composants de l’application.
+- Ajouter une entrée visible depuis Découverte des passions et une action discrète depuis le tableau de bord, sans changer la navigation générale.
+- Après validation des fiches existantes, élargir progressivement les métiers techniques et de proximité sous-représentés, plutôt qu’ajouter beaucoup de fiches non vérifiées.
+
+**Résultat attendu :** une exploration plus accessible, sans nouvelle page promotionnelle ni refonte globale.
+
+## 5. Ordre de livraison proposé
+
+| Lot | Contenu | Condition de validation |
 | --- | --- | --- |
-| `issuer` | `string` (required) | Discovery + `iss` check (`iss` accepted with or without trailing slash, `cors-i00R-ohe.js:594`) |
-| `acceptedAudiences` / `resource` | `string \| readonly string[]` (one required) | Audience acceptance policy |
-| `jwksUri` | `string` | **Exists.** Optional override; must be HTTPS (`index.js:37`). Defaults to the issuer's discovered `jwks_uri`. Still JWKS-only — cannot help an HS256 project. |
-| `algorithms` | `readonly string[]` | Defaults to `DEFAULT_JWT_ALGORITHMS` (asymmetric). HS* and `none` rejected at construction. |
-| `requireOAuthClientClaim` | `boolean` | **Default true.** `cors-i00R-ohe.js:638-643`: rejects any token lacking `client_id`/`azp` — "Rejects copied app-session JWTs that were not issued to an OAuth client." |
-| `acceptResourceClaim` | `boolean` | Default true (`types:65-72`) |
-| `accessTokenTyp` | `readonly string[]` | Defaults to `["at+jwt","JWT"]` |
-| `clockToleranceSeconds` | `number` | `DEFAULT_CLOCK_TOLERANCE_SECONDS` |
-| `requiredScopes` | `readonly string[]` | Unset (correct for Supabase) |
-| `resourceName`, `resourceDocumentation`, `protectedResourceMetadataUrl` | `string` | Metadata only |
+| 1 — Fiabilité | Calcul, explications, validation des sauvegardes, séparation par compte, corrections scolaires et signalement des informations incertaines | Tests de calcul et de sauvegarde réussis ; recommandations explicables |
+| 2 — Parcours | Reprise du questionnaire, limites visibles, recherche, accessibilité, lecture des fiches | Parcours complet testé sur téléphone et ordinateur |
+| 3 — Passage à l’action | Favoris, comparaison, liens vers contenus existants, contexte Jude | Liens réels vérifiés ; ouverture de Jude vérifiée avec une session active |
+| 4 — Enrichissement | Sources et vérification éditoriale approfondie, nouveaux métiers | Sources disponibles et revue du contenu avant diffusion |
 
-No `secret`, no `verify`, no `verifyToken`.
+**Recommandation :** commencer par les lots 1 et 2. Les favoris, la comparaison et l’enrichissement viennent ensuite ; aucune nouvelle génération vocale ou illustration lourde n’est nécessaire.
 
-## 3. Custom-verifier code sketch
+## Détails techniques
+- Garder le catalogue statique et la page chargée à la demande : aucune nouvelle table, aucun appel réseau pour calculer les résultats et aucune nouvelle dépendance.
+- Conserver l’AppShell, l’ordre des fournisseurs de contexte et l’événement `jude:open` existants. Ne pas ajouter d’écoute permanente ni de nouvel appel IA au chargement.
+- Extraire seulement la validation/persistance et les vues qui deviennent difficiles à maintenir ; pas de restructuration sans bénéfice mesurable.
+- Versionner les sauvegardes et séparer brouillon, réponses terminées et favoris. Une ancienne sauvegarde sans compte ne doit pas être importée silencieusement.
+- Les favoris et réponses restent locaux : pas de synchronisation entre appareils dans ce plan. Une gestion éditoriale en ligne fera l’objet d’un plan séparé si elle devient nécessaire.
+- Ajouter de petits tests de logique : poids 40/25/20/15, une ou deux matières totalement compatibles = 25 points, limites de trois intérêts et deux matières, résultats sans doublon et alternatives diversifiées lorsque possible, rejet de données invalides, isolation entre comptes.
 
-Not applicable — item 1b does not exist in the package, so there is no auth block to write. I am not proposing an approximation (e.g. moving `getUser(token)` into each tool handler) because with `auth` omitted `ctx.getToken()` returns nothing and `supabaseForUser(ctx)` (`src/lib/mcp/supabase.ts:60-67`) has no token to forward; the raw bearer never reaches tool code in public mode.
+## Vérification de sécurité et de compatibilité
 
-## 4. Lovable-side options without a Supabase dashboard (rewritten, with evidence)
+| Point | Engagement du plan | Vérification avant livraison |
+| --- | --- | --- |
+| Données et droits d’accès | Aucune migration ni modification des droits | Diff limité au module et à ses accès existants |
+| Téléphone partagé | Sauvegardes isolées par compte, ancienne donnée non attribuée automatiquement | Deux comptes sur le même navigateur ne retrouvent pas les réponses de l’autre |
+| Navigation et outils globaux | AppShell et fournisseurs inchangés | Ouvrir/fermer la fiche puis Jude, naviguer ailleurs sans perdre les outils |
+| Connexion 3G | Catalogue et calcul locaux ; aucun nouveau service requis | Questionnaire et résultats accessibles sans réseau après chargement ; Jude reste non bloquant |
+| Informations sensibles | Aucun identifiant personnel dans la question envoyée à Jude | Vérifier le contenu réellement transmis |
+| Conseils d’orientation | Pas de promesse d’emploi ou de diagnostic scientifique | Revue des fiches, sources et formulation prudente |
+| Compatibilité des sauvegardes | Lecture défensive, suppression possible, absence de stockage tolérée | Données corrompues, brouillon, stockage refusé et anciennes réponses testés |
+| Mobile et accessibilité | Titres complets, commandes accessibles, fiche sans chevauchement | Vérification à 360 px, au format actuel 704 × 722 et sur ordinateur ; parcours clavier |
+| Authentification | Aucun changement de connexion ou de confiance des appareils | Parcours de la section vérifié avec une session active |
 
-The Cloud UI does not expose JWT signing keys or the JWT secret, and the owner cannot flip that himself. Lovable does expose an agent-side tool, `supabase--migrate_signing_keys`, which I can run. Here is its description **verbatim**, as surfaced in my tool schema:
-
-```text
-Migrates a Lovable Cloud project's Supabase auth to asymmetric (ES256) JWT signing keys, which MCP OAuth
-requires. Projects on the legacy symmetric HS256 secret have an empty JWKS, so Supabase refuses to sign the
-OIDC ID token at /oauth/token and MCP sign-in fails with "HS256 is not supported for ID token signing".
-Idempotent: a no-op when an asymmetric key is already active; otherwise activates an existing standby
-asymmetric key, or imports the legacy secret (when the project has no keys) and then creates and activates a
-new ES256 key. Existing HS256-signed sessions keep verifying until they expire. Applies when an MCP client
-cannot complete OAuth against a Lovable Cloud project and supabase--debug_oauth_server or the JWKS endpoint
-shows no asymmetric signing key. When the project has separate Test and Live databases, pass
-environment=production: published-app MCP OAuth runs against the Live instance.
-```
-
-Input schema, verbatim: `{"properties":{},"required":[]}`.
-
-- **a) Idempotency — stated by the tool, not my inference.** The word "Idempotent" and the "no-op when an asymmetric key is already active" clause are the tool's own text. My earlier plan asserted it without the quote; that was the defect you caught.
-- **b) Legacy-token survival — stated by the tool, but with no stated window.** Verbatim: "Existing HS256-signed sessions keep verifying until they expire." It does **not** state a rotation window length, and it does not state whether the legacy secret is retained as an explicit verification-only key. **Assumption (labelled as such):** Supabase's standard rotation keeps the previous key in a `previously_used` state so already-issued tokens verify until their natural (~1h) expiry, after which refresh re-mints under ES256. I have **not** verified that for this project — treat the exact retention behaviour as **unknown**.
-- **c) Parameters — none.** The declared input schema has no properties and no required fields: there is **no** `environment`, key-type, or confirmation flag I can pass, despite the description mentioning `environment=production`. That mismatch matters — **I cannot explicitly target Test vs Live**; the tool acts on whatever instance it resolves internally. Unknown, not assumed.
-
-### Rollback path (Addition 2)
-
-- **a) There is no revert tool on my side.** The Lovable tool surface exposes `supabase--migrate_signing_keys` only; there is no revert counterpart, and `supabase--configure_auth` does not cover signing keys. Reverting to HS256 is a Supabase dashboard/API operation. Since the owner has no dashboard access: **this change is effectively irreversible for him.**
-- **b) Worst realistic failure mode:** newly issued tokens are ES256 while some component still expects HS256, breaking sign-in or session refresh for live students. Recovery would mean going through Lovable support to restore key state — not doable in-product by either of us, potentially hours of disruption for ~50 students. Lower-severity mode: existing sessions invalidate early and students must sign in again (annoying, self-healing).
-- **c) Standby/previous key:** Supabase does maintain key states (`standby`, `in_use`, `previously_used`), and the tool's own text references "an existing standby asymmetric key". Promoting a key back is a dashboard/API action, so the same access constraint applies. **Unknown** whether the legacy HS256 secret is retained here in a promotable state.
-
-**Consequence for scheduling:** run this in a low-traffic window (Haiti overnight), never mid-day.
-
-### Verification checklist — all must pass before reconnecting the connector (Addition 3)
-
-Run in order. Any FAIL stops the process and is reported before touching Claude.
-
-0. **Pre-migration capture.** Mint and save a current HS256 access token + refresh token from the signed-in preview session. Pass = both saved and the access token returns 200 from `/auth/v1/user`. (Needed for steps 2-3.)
-1. **JWKS publishes an asymmetric key.** `curl .../auth/v1/.well-known/jwks.json`. Pass = at least one key with `kty` `EC`/`RSA`/`OKP` and `alg: ES256`. Fail = `{"keys":[]}`.
-2. **A pre-migration session still works — the load-bearing test for live students.** Replay the step-0 token: `GET /auth/v1/user` with that Bearer + `apikey`. Pass = 200, same user id. Fail = 401 → students mid-session were logged out; report immediately, do not proceed.
-3. **Session refresh succeeds.** `POST /auth/v1/token?grant_type=refresh_token` with the saved refresh token. Pass = 200, new access token whose header decodes to `alg: ES256`, and that token returns 200 from `/auth/v1/user`.
-4. **Fresh email/password sign-in.** `POST /auth/v1/token?grant_type=password` with a disposable test account. Pass = 200 with `access_token` + `refresh_token`, and the new token verifies at `/auth/v1/user`.
-5. **RLS-protected read still scoped correctly.** With the step-4 token, run the exact query `get_my_profile` uses against `/rest/v1/profiles`. Pass = only that user's row, zero foreign rows. Fail = 401, 403, or any other user's data.
-6. **Google OAuth sign-in.** Drive the published sign-in page with Playwright through the Google hand-off; with a test Google account, complete it. Pass = redirect back with a session and `/auth/v1/user` 200. Without a test account, the honest partial check is that `/auth/v1/authorize?provider=google` still 302s to `accounts.google.com` with a valid `state` — that proves provider config survived, **not** a full round-trip, and I will label it partial.
-
-Only after 1-6 pass do we reconnect the connector in Claude and expect `tools/list` to return six tools.
-
-### Pre-planned second failure mode: `requireOAuthClientClaim` (Addition 4)
-
-`dist/cors-i00R-ohe.js:638-643`:
-
-```js
-/** Rejects copied app-session JWTs that were not issued to an OAuth client. */
-...
-if (auth.requireOAuthClientClaim !== false && !clientId) {
-  throw new OAuthTokenError(401, "invalid_token", "OAuth client claim is required");
-}
-```
-
-and `:664`: `clientId: stringClaim(claims, "client_id") ?? stringClaim(claims, "azp")`.
-
-- **a) How we determine whether Claude's token carries `client_id`/`azp`:** after migration and a Claude reconnect attempt, pull `supabase--edge_function_logs` for `mcp`. This branch fails with `invalid_token` / "OAuth client claim is required", textually distinct from today's signature failure — that alone tells us which branch we are in, without printing any token. If the claim set must be inspected directly, decode the *unverified* payload and log only claim **names** plus presence/absence of `client_id`/`azp` — never the token, never `sub`.
-- **b) The exact change if it is missing:** one line inside `auth.oauth.issuer({ ... })` in `src/lib/mcp/index.ts`: `requireOAuthClientClaim: false,`. What we give up is precisely the guard quoted above — the server would then accept **any** valid Supabase-issued user JWT, including a plain app-session token copied out of a student's browser localStorage, as a legitimate MCP caller. It stops being "only tokens minted for a registered OAuth client".
-- **c) Acceptable for a platform holding minors' data? No — not as a first move.** It widens the accepted set from OAuth-client tokens to every app session token in existence, and a copied session token is exactly the leak path this product must assume. Better options, in order: (1) confirm Supabase's OAuth 2.1 authorization-code flow does stamp `client_id` — the managed server issues client-bound tokens, so the likely outcome is this branch never fires; (2) if it genuinely does not, treat it as a provider-side gap worth escalating rather than silently disabling the check; (3) only if forced, set the flag false **and** compensate inside every tool (reject in `src/lib/mcp/tools/*` unless `ctx.getClaims()` shows an OAuth-issued token shape) so the check moves rather than disappears. Plain removal with no compensation is not on the table.
-
-
-## 5. Diagnosis re-verified with a real user token
-
-Minted from the live preview session (`LOVABLE_BROWSER_AUTH_STATUS=injected`):
-
-- Token header: `{"alg":"HS256","typ":"JWT"}`
-- Claims: `iss=https://xdyavylcmucjpueybdku.supabase.co/auth/v1`, `aud=["authenticated"]`, `role=authenticated`, `client_id=null`, `azp=null`
-
-`POST /functions/v1/mcp` with `{"jsonrpc":"2.0","id":2,"method":"tools/list"}` and that Bearer token:
-
-```
-STATUS 401
-WWW-Authenticate: Bearer realm="mcp", resource_metadata=".../.well-known/oauth-protected-resource",
-                  error="invalid_token", error_description="Invalid access token"
-{"error":"unauthorized"}
-```
-
-**It 401'd with a valid user token — token verification is confirmed as the failing step.** It did not return the six tools. Two independent reasons, in order of firing:
-1. The token is HS256 and JWKS is empty (`{"keys":[]}`), so `jwtVerify` cannot verify it at all — and the SDK refuses HS* by design.
-2. Even if it verified, `client_id`/`azp` are null and `requireOAuthClientClaim` defaults to true, so a plain app-session JWT is rejected. A real OAuth-client token from Claude's flow would carry `client_id`, so this second reason applies only to my probe, not to Claude.
-
-Ruled out earlier and still ruled out: gateway `verify_jwt` (`supabase/config.toml:249-253` sets it false, and our handler answers), CORS/`Mcp-Session-Id`/`Mcp-Protocol-Version` allowlist, and an empty tool array (static six at `supabase/functions/mcp/index.ts:245`).
-
-## Recommended next action (not applied — awaiting approval)
-
-Nothing runs until you approve. When approved, in this order:
-
-1. Schedule a low-traffic window (Haiti overnight) — the change is effectively irreversible for the owner (section 4, rollback a).
-2. Capture a pre-migration access + refresh token (checklist step 0).
-3. Run `supabase--migrate_signing_keys` (no parameters — the schema accepts none).
-4. Work the 6-step verification checklist. Stop and report on any FAIL, especially step 2.
-5. Only then reconnect the connector in Claude. If it fails with "OAuth client claim is required", follow the Addition-4 branch — which does not begin by disabling the flag.
-
-No change to `src/lib/mcp/**` is warranted today; no code-only workaround exists in this package version.
-
-**Open question before we start:** I need a disposable test account (email/password) for checklist steps 4-5, and a test Google account if you want step 6 covered fully rather than partially. Without them I can run steps 0-3 and a preview-session variant of step 5, and I will label steps 4 and 6 as partial coverage.
-
+## Limites et dépendances
+- Les informations d’admission, les établissements et la demande du marché ne sont pas encore vérifiés par cette analyse du code. Leur validation demande des sources officielles et, si nécessaire, une revue par un conseiller local.
+- Le catalogue local évite de nouveaux appels réseau ; l’accès initial à l’application et la discussion avec Jude ne sont pas pour autant garantis hors connexion.
+- Ce plan ne modifie ni abonnements, ni récompenses, ni MCP et ne publie rien automatiquement.
