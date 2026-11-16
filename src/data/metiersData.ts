@@ -11,7 +11,8 @@ export const METIERS: Metier[] = [
     quotidien: "Tu crées des sites et des applications : tu écris du code, tu corriges des bugs et tu travailles avec des clients pour transformer leurs idées en outils utiles.",
     debouches: { postes: ["Développeur front-end", "Développeur back-end", "Développeur mobile", "Intégrateur web"], secteurs: ["Entreprises privées", "Banques et télécoms", "ONG", "Travail à distance (remote)"], entrepreneuriat: "Créer des sites pour les petits commerces, écoles et églises de ta zone, ou lancer ta propre application." },
     serie_ns: ["SMP"],
-    parcours_etudes: { duree: "6 mois (bootcamp) à 4 ans (licence)", diplomes: "Certificat technique ou licence en informatique", etablissements: ["UEH – Faculté des Sciences", "Universités privées (ESIH, UNIQ…)", "Formations en ligne certifiantes"] },
+    // A short introductory course is not equivalent to a recognized degree.
+    parcours_etudes: { duree: "Variable selon la formation courte ou le cursus diplômant", diplomes: "Formation technique ou diplôme en informatique à vérifier", etablissements: ["Programmes d'informatique à vérifier auprès des universités", "Centres accrédités et formations en ligne à évaluer"] },
     competences: { hard: ["HTML, CSS, JavaScript", "Bases de données", "Git"], soft: ["Patience", "Logique", "Autonomie"] },
     realites: { demande: "Forte", freelance: true, materiel: "Un ordinateur portable et une connexion internet." },
     prompt_jude: "Salut Jude, je m'intéresse au métier de développeur web. Quelles compétences puis-je commencer à apprendre dès maintenant ?",
@@ -42,7 +43,8 @@ export const METIERS: Metier[] = [
     slug: "infirmier", titre: "Infirmier·ère", secteur: "sante",
     tags: { interets: ["sante"], styles: ["public", "terrain"], matieres: ["sciences_exp"], objectifs: ["aider"] },
     quotidien: "Tu soignes les patients au quotidien, administres les traitements et accompagnes les familles.",
-    debouches: { postes: ["Infirmier hospitalier", "Infirmier communautaire", "Sage-femme (spécialisation)"], secteurs: ["Hôpitaux", "Centres de santé", "ONG"], entrepreneuriat: "Proposer des soins à domicile." },
+    // Midwifery has its own qualification requirements; don't imply automatic access.
+    debouches: { postes: ["Infirmier hospitalier", "Infirmier communautaire"], secteurs: ["Hôpitaux", "Centres de santé", "ONG"], entrepreneuriat: "Étudier les soins à domicile uniquement avec les qualifications et autorisations nécessaires." },
     serie_ns: ["SVT"],
     parcours_etudes: { duree: "3 à 4 ans", diplomes: "Diplôme / licence en sciences infirmières", etablissements: ["Écoles nationales d'infirmières", "Universités privées"] },
     competences: { hard: ["Soins de base", "Pharmacologie"], soft: ["Empathie", "Endurance", "Écoute"] },
@@ -53,7 +55,8 @@ export const METIERS: Metier[] = [
     slug: "avocat", titre: "Avocat·e", secteur: "justice",
     tags: { interets: ["justice"], styles: ["public"], matieres: ["langues", "sciences_sociales"], objectifs: ["defendre"] },
     quotidien: "Tu conseilles et défends des personnes ou entreprises, rédiges des actes et plaides devant les tribunaux.",
-    debouches: { postes: ["Avocat", "Juriste d'entreprise", "Notaire (formation complémentaire)"], secteurs: ["Cabinets", "Entreprises", "Fonction publique", "ONG de droits humains"], entrepreneuriat: "Ouvrir ton propre cabinet." },
+    // Legal careers do not share automatic licensing or appointment paths.
+    debouches: { postes: ["Avocat après accès à la profession", "Juriste d'entreprise selon les exigences du poste"], secteurs: ["Cabinets", "Entreprises", "Fonction publique", "ONG de droits humains"], entrepreneuriat: "Envisager un cabinet après admission à la profession et vérification des règles applicables." },
     serie_ns: ["LLA", "SES"],
     parcours_etudes: { duree: "4 ans + stage", diplomes: "Licence en droit, puis inscription au barreau", etablissements: ["UEH – Faculté de Droit et des Sciences Économiques", "Facultés de droit privées"] },
     competences: { hard: ["Expression écrite", "Connaissance des lois"], soft: ["Éloquence", "Sens de la justice", "Rigueur"] },
@@ -130,7 +133,8 @@ export const METIERS: Metier[] = [
     slug: "electricien-solaire", titre: "Technicien·ne en énergie solaire", secteur: "construction",
     tags: { interets: ["construction", "environnement"], styles: ["terrain", "atelier"], matieres: ["maths_physique"], objectifs: ["resoudre"] },
     quotidien: "Tu installes et répares des panneaux solaires, batteries et onduleurs chez les familles et entreprises.",
-    debouches: { postes: ["Installateur solaire", "Électricien", "Technicien de maintenance"], secteurs: ["Entreprises d'énergie", "ONG", "Particuliers"], entrepreneuriat: "Entreprise d'installation solaire — très demandée en Haïti." },
+    // No market-demand claim is made without a dated supporting source.
+    debouches: { postes: ["Installateur solaire", "Électricien", "Technicien de maintenance"], secteurs: ["Entreprises d'énergie", "ONG", "Particuliers"], entrepreneuriat: "Étudier un service d'installation solaire selon les besoins locaux et les qualifications de sécurité." },
     serie_ns: ["SMP"],
     parcours_etudes: { duree: "6 mois à 2 ans", diplomes: "Formation technique professionnelle", etablissements: ["Centres de formation professionnelle (INFP)", "Écoles techniques"] },
     competences: { hard: ["Électricité", "Sécurité"], soft: ["Débrouillardise", "Fiabilité"] },

@@ -12,6 +12,8 @@ import { visitorDashboardData } from "@/data/visitorDemoData";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { WordOfTheDayCard } from "@/components/dashboard/WordOfTheDayCard";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
+import { Button } from "@/components/ui/button";
+import { Compass } from "lucide-react";
 import { DashboardFullSkeleton } from "@/components/shared/SkeletonLoaders";
 import type { FeatureState, Note, LeaderboardUser, RecentSubjectProgress } from "@/types/dashboard.types";
 
@@ -232,6 +234,11 @@ const Dashboard = () => {
 
           {/* Always visible: Word of the Day */}
           <WordOfTheDayCard />
+
+          {/* Reuse navigation instead of fetching orientation data on the dashboard. */}
+          <Button variant="outline" onClick={() => navigate("/orientation")} className="gap-2">
+            <Compass className="h-4 w-4" /> Orientation & Métiers
+          </Button>
 
           {/* Tab-based content */}
           <DashboardTabs

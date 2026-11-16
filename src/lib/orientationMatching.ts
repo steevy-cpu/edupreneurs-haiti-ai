@@ -11,12 +11,13 @@ export function scoreMetier(m: Metier, a: DiagnosticAnswers): number {
   let s = 0;
   if (a.interets.length) {
     const hits = a.interets.filter((i) => m.tags.interets.includes(i)).length;
-    // Any interest hit counts fully; the primary sector gets a small bonus via tags order.
+    // One matching interest grants this axis; tag order does not imply a bonus.
     s += hits > 0 ? WEIGHTS.interet : 0;
   }
   if (a.matieres.length) {
     const hits = a.matieres.filter((x) => m.tags.matieres.includes(x)).length;
-    s += (WEIGHTS.matiere * Math.min(hits, 2)) / 2;
+    // Normalize by selected subjects so a single fully matching subject earns 25 too.
+    s += (WEIGHTS.matiere * hits) / a.matieres.length;
   }
   if (a.style && m.tags.styles.includes(a.style)) s += WEIGHTS.style;
   if (a.objectif && m.tags.objectifs.includes(a.objectif)) s += WEIGHTS.objectif;
@@ -35,6 +36,8 @@ export function recommend(catalogue: Metier[], a: DiagnosticAnswers) {
   const used = new Set(principaux.map((r) => r.metier.secteur));
   const rest = ranked.slice(3);
   const alt = rest.filter((r) => !used.has(r.metier.secteur));
-  const alternatifs = (alt.length >= 2 ? alt : [...alt, ...rest.filter((r) => !alt.includes(r))]).slice(0, 2);
+  // Prefer different alternative sectors before filling any remaining position.
+  const distinct = alt.filter((r, index) => alt.findIndex(x => x.metier.secteur === r.metier.secteur) === index);
+  const alternatifs = [...distinct, ...rest.filter(r => !distinct.includes(r))].slice(0, 2);
   return { principaux, alternatifs };
 }

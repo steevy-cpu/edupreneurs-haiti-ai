@@ -1172,6 +1172,12 @@ const PassionDiscoveryContent = () => {
               </div>
 
               {/* Search Bar */}
+              {/* Bridge to career exploration without changing the existing wizard. */}
+              <div className="flex justify-center mb-4">
+                <Button variant="outline" onClick={() => navigate("/orientation")}>
+                  Explorer les métiers liés à mes intérêts
+                </Button>
+              </div>
               <div className="max-w-md mx-auto mb-6 md:mb-8">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
