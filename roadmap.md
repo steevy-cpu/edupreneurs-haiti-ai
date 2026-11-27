@@ -1,4 +1,8 @@
 # Orientation & Métiers
+## MCP connection recovery
+- [x] Restore OAuth approval support and verify loading/error recovery without weakening token validation.
+- [ ] Complete Claude authorization: requires republishing and a new request in the user's browser; real grant not verified here.
+
 - [x] Fiabiliser recommandations et sauvegardes privées par compte.
 - [x] Améliorer questionnaire, recherche et accessibilité.
 - [x] Ajouter favoris, comparaison, actions concrètes et contexte Jude.

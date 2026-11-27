@@ -2,3 +2,4 @@
 - Pages open Jude with a pre-filled question via `window.dispatchEvent(new CustomEvent("jude:open", { detail: { prompt } }))` — keeps the shell chat decoupled without a new provider.
 - Orientation local state is schema-validated, versioned and keyed by the central session's user ID; never import unowned legacy answers, to protect shared-device users.
 - Orientation sources explicitly name the claims they support; unsourced admissions and market estimates remain unconfirmed, to avoid presenting guidance as verified professional advice.
+- OAuth consent requires an auth SDK exposing `auth.oauth`; bound lookups and decisions to ten seconds and catch exceptions so approval never hangs silently.

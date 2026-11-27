@@ -9,7 +9,7 @@ import { defineMcp, auth } from "npm:@lovable.dev/mcp-js@0.26.1";
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.26.1";
 
 // src/lib/mcp/supabase.ts
-import { createClient } from "npm:@supabase/supabase-js@^2.58.0";
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 function runtimeEnv(name) {
   const runtime = globalThis;
   return runtime.Deno?.env?.get?.(name) ?? runtime.process?.env?.[name];

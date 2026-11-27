@@ -11,6 +11,7 @@ import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Loader2, ShieldCheck } from 'lucide-react';
+import { oauthRequest } from '@/lib/oauth-request';
 
 // Minimal local typing: supabase.auth.oauth is still beta and absent from generated types.
 type OAuthNamespace = {
@@ -18,7 +19,12 @@ type OAuthNamespace = {
   approveAuthorization: (id: string) => Promise<{ data: any; error: any }>;
   denyAuthorization: (id: string) => Promise<{ data: any; error: any }>;
 };
-const oauthApi = () => (supabase.auth as unknown as { oauth: OAuthNamespace }).oauth;
+const oauthApi = () => {
+  // Fail visibly if an old cached client is missing the OAuth methods.
+  const api = (supabase.auth as unknown as { oauth?: OAuthNamespace }).oauth;
+  if (!api) throw new Error('La connexion nécessite une mise à jour. Recharge cette page.');
+  return api;
+};
 
 export default function OAuthConsent() {
   const [params] = useSearchParams();
@@ -26,22 +32,28 @@ export default function OAuthConsent() {
   const [details, setDetails] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let active = true;
     (async () => {
+      setError(null);
+      setDetails(null);
+      try {
       if (!authorizationId) {
         setError("Identifiant d'autorisation manquant.");
         return;
       }
-      const { data: sess } = await supabase.auth.getSession();
+      const { data: sess, error: sessionError } = await oauthRequest(() => supabase.auth.getSession());
+      if (!active) return;
+      if (sessionError) throw sessionError;
       if (!sess.session) {
         // Preserve the full consent URL so the user lands back here after login.
         const next = window.location.pathname + window.location.search;
         window.location.href = '/auth/login?next=' + encodeURIComponent(next);
         return;
       }
-      const { data, error: detailsError } = await oauthApi().getAuthorizationDetails(authorizationId);
+      const { data, error: detailsError } = await oauthRequest(() => oauthApi().getAuthorizationDetails(authorizationId));
       if (!active) return;
       if (detailsError) {
         setError(detailsError.message);
@@ -53,18 +65,24 @@ export default function OAuthConsent() {
         window.location.href = immediate;
         return;
       }
+      if (!data?.client) throw new Error('Cette demande est invalide ou expirée. Relance la connexion depuis Claude.');
       setDetails(data);
+      } catch (cause) {
+        // SDK exceptions and network stalls must never leave an endless spinner.
+        if (active) setError(cause instanceof Error ? cause.message : 'Impossible de charger cette demande. Réessaie.');
+      }
     })();
     return () => {
       active = false;
     };
-  }, [authorizationId]);
+  }, [authorizationId, attempt]);
 
   async function decide(approve: boolean) {
     setBusy(true);
-    const { data, error: decideError } = approve
-      ? await oauthApi().approveAuthorization(authorizationId)
-      : await oauthApi().denyAuthorization(authorizationId);
+    try {
+    const { data, error: decideError } = await oauthRequest(() => approve
+      ? oauthApi().approveAuthorization(authorizationId)
+      : oauthApi().denyAuthorization(authorizationId));
     if (decideError) {
       setBusy(false);
       setError(decideError.message);
@@ -77,6 +95,11 @@ export default function OAuthConsent() {
       return;
     }
     window.location.href = target;
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Impossible de confirmer cette demande. Réessaie.');
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -86,6 +109,7 @@ export default function OAuthConsent() {
           <>
             <h1 className="text-xl font-bold text-foreground mb-2">Connexion impossible</h1>
             <p className="text-sm text-muted-foreground">{error}</p>
+            <Button className="mt-4" onClick={() => setAttempt(value => value + 1)}>Réessayer</Button>
           </>
         ) : !details ? (
           <div className="flex items-center gap-3 text-muted-foreground">
