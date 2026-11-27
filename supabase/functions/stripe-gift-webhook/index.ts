@@ -127,6 +127,19 @@ serve(async (req) => {
       );
     }
 
+    // Stripe can deliver the same event more than once. Record the invoice first; the primary key
+    // rejects a repeat, so each paid invoice extends the subscription only once.
+    const { error: ledgerError } = await supabaseAdmin
+      .from("gift_renewal_invoices")
+      .insert({ invoice_id: invoiceId, gift_id: gift.id });
+    if (ledgerError) {
+      if (ledgerError.code === "23505") {
+        console.log(`[GIFT-WEBHOOK] Invoice ${invoiceId} already renewed, skipping`);
+        return new Response(JSON.stringify({ received: true, skipped: "already_processed" }), { status: 200 });
+      }
+      throw ledgerError;
+    }
+
     console.log(`[GIFT-WEBHOOK] Processing renewal for student ${studentUserId}`);
 
     // Extend student subscription by 30 days (stacking logic)
@@ -153,6 +166,8 @@ serve(async (req) => {
 
     if (subError) {
       console.error("[GIFT-WEBHOOK] Error extending subscription:", subError);
+      // Release the invoice so Stripe's retry can try again.
+      await supabaseAdmin.from("gift_renewal_invoices").delete().eq("invoice_id", invoiceId);
       return new Response(JSON.stringify({ error: "Failed to extend subscription" }), { status: 500 });
     }
 
